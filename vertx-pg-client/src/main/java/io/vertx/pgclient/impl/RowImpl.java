@@ -416,4 +416,5 @@ public class RowImpl extends ArrayTuple implements Row {
       return ret;
     }
     return null;
-  }}
+  }
+}

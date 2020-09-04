@@ -21,6 +21,7 @@ import java.util.function.Predicate;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -44,6 +45,7 @@ public class DB2ConnectionFactory implements ConnectionFactory {
   private final int preparedStatementCacheSize;
   private final Predicate<String> preparedStatementCacheSqlFilter;
   private final int pipeliningLimit;
+  private final CloseFuture clientCloseFuture = new CloseFuture();
 
   public DB2ConnectionFactory(ContextInternal context, DB2ConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
@@ -62,17 +64,18 @@ public class DB2ConnectionFactory implements ConnectionFactory {
     this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
     this.pipeliningLimit = options.getPipeliningLimit();
 
-    this.netClient = context.owner().createNetClient(netClientOptions);
+    this.netClient = context.owner().createNetClient(netClientOptions, clientCloseFuture);
   }
 
-  public Future<Void> close() {
-    return netClient.close();
+  @Override
+  public void close(Promise<Void> promise) {
+    clientCloseFuture.close(promise);
   }
 
   @Override
   public Future<Connection> connect() {
     Promise<Connection> promise = context.promise();
-    context.dispatch(null, v -> doConnect(promise));
+    context.emit(null, v -> doConnect(promise));
     return promise.future();
   }
 

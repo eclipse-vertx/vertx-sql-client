@@ -15,6 +15,7 @@
  */
 package io.vertx.sqlclient.tck;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import io.vertx.core.Future;
@@ -283,6 +284,7 @@ public abstract class TransactionTestBase {
       .execute()
       .mapEmpty()
       .flatMap(v -> Future.failedFuture(failure))
+    )
       .onComplete(ctx.asyncAssertFailure(err -> {
         ctx.assertEquals(failure, err);
         pool
@@ -291,13 +293,14 @@ public abstract class TransactionTestBase {
             ctx.assertEquals(0, rows.size());
             async.complete();
           }));
-      })));
+      }));
   }
 
   @Test
   public void testWithTransactionImplicitRollback(TestContext ctx) {
     Async async = ctx.async();
     Pool pool = createPool();
+    AtomicReference<Throwable> failure = new AtomicReference<>();
     pool.withTransaction(client -> client
       .query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')")
       .execute()
@@ -305,13 +308,15 @@ public abstract class TransactionTestBase {
       .flatMap(v -> client
         .query("INVALID")
         .execute())
-      .onComplete(ctx.asyncAssertFailure(err-> {
-        pool
-          .query("SELECT id, val FROM mutable")
-          .execute(ctx.asyncAssertSuccess(rows -> {
-            ctx.assertEquals(0, rows.size());
-            async.complete();
-          }));
-      })));
+      .onFailure(failure::set)
+    ).onComplete(ctx.asyncAssertFailure(err -> {
+      ctx.assertEquals(err, failure.get());
+      pool
+        .query("SELECT id, val FROM mutable")
+        .execute(ctx.asyncAssertSuccess(rows -> {
+          ctx.assertEquals(0, rows.size());
+          async.complete();
+        }));
+    }));
   }
 }

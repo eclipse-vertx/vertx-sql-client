@@ -11,6 +11,7 @@
 
 package io.vertx.mssqlclient.impl;
 
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.core.*;
@@ -34,6 +35,7 @@ class MSSQLConnectionFactory implements ConnectionFactory {
   private final String password;
   private final String database;
   private final Map<String, String> properties;
+  private final CloseFuture clientCloseFuture = new CloseFuture();
 
   MSSQLConnectionFactory(ContextInternal context, MSSQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
@@ -45,13 +47,13 @@ class MSSQLConnectionFactory implements ConnectionFactory {
     this.password = options.getPassword();
     this.database = options.getDatabase();
     this.properties = new HashMap<>(options.getProperties());
-    this.netClient = context.owner().createNetClient(netClientOptions);
+    this.netClient = context.owner().createNetClient(netClientOptions, clientCloseFuture);
   }
 
   @Override
   public Future<Connection> connect() {
     Promise<Connection> promise = context.promise();
-    context.dispatch(null, v -> doConnect(promise));
+    context.emit(promise, this::doConnect);
     return promise.future();
   }
 
@@ -81,7 +83,8 @@ class MSSQLConnectionFactory implements ConnectionFactory {
     completionHandler.handle(Future.succeededFuture());
   }
 
-  public Future<Void> close() {
-    return netClient.close();
+  @Override
+  public void close(Promise<Void> promise) {
+    clientCloseFuture.close(promise);
   }
 }

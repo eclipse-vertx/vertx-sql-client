@@ -13,7 +13,6 @@ package io.vertx.sqlclient.impl.cache;
 
 import io.vertx.sqlclient.impl.PreparedStatement;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,9 +20,11 @@ import java.util.List;
  */
 public class PreparedStatementCache {
 
+  private final int capacity;
   private final LruCache<String, PreparedStatement> cache;
 
   public PreparedStatementCache(int cacheCapacity) {
+    this.capacity = cacheCapacity;
     this.cache = new LruCache<>(cacheCapacity);
   }
 
@@ -38,14 +39,7 @@ public class PreparedStatementCache {
    * @return the list of prepared statement to evict and close
    */
   public List<PreparedStatement> put(PreparedStatement preparedStatement) {
-    cache.put(preparedStatement.sql(), preparedStatement);
-    if (cache.removed != null) {
-      List<PreparedStatement> evicted = cache.removed;
-      cache.removed = null;
-      return evicted;
-    } else {
-      return Collections.emptyList();
-    }
+    return cache.cache(preparedStatement.sql(), preparedStatement);
   }
 
   /**
@@ -55,5 +49,20 @@ public class PreparedStatementCache {
    */
   public void remove(String sql) {
     this.cache.remove(sql);
+  }
+
+  public PreparedStatement evict() {
+    return cache.evict();
+  }
+
+  public boolean isFull() {
+    return cache.size() == capacity;
+  }
+
+  /**
+   * @return the cache size
+   */
+  public int size() {
+    return cache.size();
   }
 }

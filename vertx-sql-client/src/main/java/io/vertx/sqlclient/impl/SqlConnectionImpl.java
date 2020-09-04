@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -41,12 +42,12 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   @Override
-  protected <T> Promise<T> promise() {
+  protected <T> PromiseInternal<T> promise() {
     return context.promise();
   }
 
   @Override
-  protected <T> Promise<T> promise(Handler<AsyncResult<T>> handler) {
+  protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
     return context.promise(handler);
   }
 

@@ -4,6 +4,7 @@ import static org.junit.Assume.assumeFalse;
 
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -71,4 +72,10 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
     super.testSelectAll(ctx);
   }
 
+  @Test
+  @Ignore
+  @Override
+  public void testToJsonObject(TestContext ctx) {
+    super.testToJsonObject(ctx);
+  }
 }

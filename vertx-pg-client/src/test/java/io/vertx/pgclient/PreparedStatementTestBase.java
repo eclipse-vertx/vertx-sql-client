@@ -40,6 +40,7 @@ import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.lang.reflect.Array;

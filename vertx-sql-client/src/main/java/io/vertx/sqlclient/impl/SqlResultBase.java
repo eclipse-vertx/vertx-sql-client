@@ -55,9 +55,15 @@ public abstract class SqlResultBase<T> implements SqlResult<T> {
       return null;
     } else {
       Object value = properties.get(property);
+      if (value == null) {
+        return null;
+      }
       Class<V> type = property.type();
-      // if the property is unknown or the value is null then we return null to the user
-      return type.cast(value);
+      if (type.isInstance(value)) {
+        return type.cast(value);
+      } else {
+        throw new IllegalArgumentException("Invalid property kind: " + value.getClass().getName() + " is not an instance of " + type.getName());
+      }
     }
   }
 

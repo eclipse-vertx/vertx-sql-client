@@ -101,6 +101,11 @@
         <artifactId>maven-processor-plugin</artifactId>
         <executions>
           <execution>
+            <id>generate-sources</id>
+            <!-- Run after compilation otherwise it won't find the generator class declared by the SPI -->
+            <phase>process-classes</phase>
+          </execution>
+          <execution>
             <id>generate-test-sources</id>
             <goals>
               <goal>process-test</goal>

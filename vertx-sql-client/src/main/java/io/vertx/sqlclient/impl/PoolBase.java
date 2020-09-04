@@ -17,19 +17,16 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Closeable;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.pool.ConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
@@ -39,6 +36,7 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
  */
 public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implements Pool, Closeable {
 
+  private final ContextInternal context;
   private final VertxInternal vertx;
   private final ConnectionFactory factory;
   private final ConnectionPool pool;
@@ -46,6 +44,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   public PoolBase(ContextInternal context, ConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
     super(tracer, metrics);
+    this.context = context;
     this.vertx = context.owner();
     this.factory = factory;
     this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
@@ -57,12 +56,12 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   }
 
   @Override
-  protected <T> Promise<T> promise() {
+  protected <T> PromiseInternal<T> promise() {
     return vertx.promise();
   }
 
   @Override
-  protected <T> Promise<T> promise(Handler<AsyncResult<T>> handler) {
+  protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
     return vertx.promise(handler);
   }
 
@@ -119,8 +118,10 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
           metrics.dequeueRequest(metric);
         }
         conn.schedule(cmd, promise);
-        // Use null promise instead
-        conn.close(this, Promise.promise());
+        promise.future().onComplete(ar -> {
+          // Use null promise instead
+          conn.close(this, Promise.promise());
+        });
       }
       @Override
       protected void onFailure(Throwable cause) {
@@ -188,7 +189,11 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   private Future<Void> doClose() {
     // TODO : flatMap -> always
-    return pool.close().flatMap(v -> factory.close()).onComplete(v -> {
+    return pool.close().flatMap(v -> {
+      PromiseInternal<Void> promise = context.promise();
+      factory.close(promise);
+      return promise;
+    }).onComplete(v -> {
       if (metrics != null) {
         metrics.close();
       }

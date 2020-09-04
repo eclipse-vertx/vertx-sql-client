@@ -18,7 +18,7 @@
 package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.PromiseInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
@@ -83,7 +83,7 @@ public class ConnectionPool {
 
   public void acquire(Handler<AsyncResult<Connection>> waiter) {
     if (context != null) {
-      context.dispatch(waiter, this::doAcquire);
+      context.emit(waiter, this::doAcquire);
     } else {
       doAcquire(waiter);
     }
@@ -105,7 +105,7 @@ public class ConnectionPool {
 
   public Future<Void> close() {
     PromiseInternal<Void> promise = context.promise();
-    context.dispatch(promise, this::close);
+    context.emit(promise, this::close);
     return promise.future();
   }
 
@@ -147,7 +147,7 @@ public class ConnectionPool {
     public boolean isSsl() {
       return conn.isSsl();
     }
-    
+
     @Override
     public DatabaseMetadata getDatabaseMetaData() {
       return conn.getDatabaseMetaData();
@@ -176,7 +176,7 @@ public class ConnectionPool {
     @Override
     public void close(Holder holder, Promise<Void> promise) {
       if (context != null) {
-        context.dispatch(v -> doClose(holder, promise));
+        context.emit(v -> doClose(holder, promise));
       } else {
         doClose(holder, promise);
       }
