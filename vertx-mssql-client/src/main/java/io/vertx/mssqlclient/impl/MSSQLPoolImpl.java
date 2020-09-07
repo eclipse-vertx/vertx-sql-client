@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,23 +11,19 @@
 
 package io.vertx.mssqlclient.impl;
 
-import io.vertx.core.Future;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
-
-import java.util.function.Function;
 
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
 
@@ -66,10 +62,5 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection connection) {
     return new MSSQLConnectionImpl(connectionFactory, context, connection, tracer, metrics);
-  }
-
-  @Override
-  public <T> Future<T> withTransaction(Function<SqlClient, Future<T>> function) {
-    return Future.failedFuture("Transaction is not supported for now");
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -20,6 +20,7 @@ import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 import java.util.stream.Collector;
 
+import static io.vertx.mssqlclient.impl.protocol.EnvChange.*;
 import static io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId.*;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends MSSQLCommandCodec<Boolean, C> {
@@ -33,11 +34,11 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
     return collector.finisher().apply(collector.supplier().get());
   }
 
-  protected void encodeTransactionDescriptor(ByteBuf payload, long transactionDescriptor, int outstandingRequestCount) {
+  protected void encodeTransactionDescriptor(ByteBuf payload) {
     payload.writeIntLE(18); // HeaderLength is always 18
     payload.writeShortLE(0x0002); // HeaderType
-    payload.writeLongLE(transactionDescriptor);
-    payload.writeIntLE(outstandingRequestCount);
+    payload.writeLongLE(encoder.transactionDescriptor);
+    payload.writeIntLE(1);
   }
 
   protected MSSQLRowDesc decodeColmetadataToken(ByteBuf payload) {
@@ -138,6 +139,29 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       default:
         throw new UnsupportedOperationException("Unsupported type with typeinfo: " + typeInfo);
     }
+  }
+
+  void handleEnvChangeToken(ByteBuf messageBody) {
+    int totalLength = messageBody.readUnsignedShortLE();
+    int startPos = messageBody.readerIndex();
+    int type = messageBody.readUnsignedByte();
+    switch (type) {
+      case XACT_BEGIN:
+      case DTC_ENLIST:
+        if (messageBody.readUnsignedByte() != 8) {
+          throw new IllegalStateException();
+        }
+        encoder.transactionDescriptor = messageBody.readLongLE();
+        break;
+      case XACT_COMMIT:
+      case XACT_ROLLBACK:
+      case DTC_DEFECT:
+        encoder.transactionDescriptor = 0;
+        break;
+      default:
+        break;
+    }
+    messageBody.readerIndex(startPos + totalLength);
   }
 }
 
