@@ -17,17 +17,17 @@ import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.TupleInternal;
 
 public class MSSQLPreparedStatement implements PreparedStatement {
-  final String sql;
-  final MSSQLParamDesc paramDesc;
 
-  public MSSQLPreparedStatement(String sql, MSSQLParamDesc paramDesc) {
+  final String sql;
+  int handle;
+
+  public MSSQLPreparedStatement(String sql) {
     this.sql = sql;
-    this.paramDesc = paramDesc;
   }
 
   @Override
   public ParamDesc paramDesc() {
-    return paramDesc;
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -42,7 +42,6 @@ public class MSSQLPreparedStatement implements PreparedStatement {
 
   @Override
   public String prepare(TupleInternal values) {
-//    return paramDesc.prepare(values);
     return null;
   }
 }

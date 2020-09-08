@@ -29,6 +29,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 
+import static io.vertx.mssqlclient.impl.codec.MSSQLDataTypeCodec.decodeIntN;
 import static io.vertx.mssqlclient.impl.codec.MSSQLDataTypeCodec.inferenceParamDefinitionByValueType;
 
 class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
@@ -49,51 +50,64 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
   void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
     ByteBuf messageBody = message.content();
     while (messageBody.isReadable()) {
-      int tokenByte = messageBody.readUnsignedByte();
-      switch (tokenByte) {
-        case DataPacketStreamTokenType.COLMETADATA_TOKEN:
+      DataPacketStreamTokenType tokenType = DataPacketStreamTokenType.valueOf(messageBody.readUnsignedByte());
+      if (tokenType == null) {
+        throw new UnsupportedOperationException("Unsupported token: " + tokenType);
+      }
+      MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
+      switch (tokenType) {
+        case COLMETADATA_TOKEN:
           MSSQLRowDesc rowDesc = decodeColmetadataToken(messageBody);
           rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
           break;
-        case DataPacketStreamTokenType.ROW_TOKEN:
+        case ROW_TOKEN:
           handleRow(messageBody);
           break;
-        case DataPacketStreamTokenType.NBCROW_TOKEN:
+        case NBCROW_TOKEN:
           handleNbcRow(messageBody);
           break;
-        case DataPacketStreamTokenType.DONE_TOKEN:
+        case DONE_TOKEN:
           messageBody.skipBytes(12); // this should only be after ERROR_TOKEN?
           handleDoneToken();
           break;
-        case DataPacketStreamTokenType.INFO_TOKEN:
+        case INFO_TOKEN:
           int infoTokenLength = messageBody.readUnsignedShortLE();
           //TODO not used for now
           messageBody.skipBytes(infoTokenLength);
           break;
-        case DataPacketStreamTokenType.ERROR_TOKEN:
+        case ERROR_TOKEN:
           handleErrorToken(messageBody);
           break;
-        case DataPacketStreamTokenType.DONEINPROC_TOKEN:
+        case DONEINPROC_TOKEN:
           short status = messageBody.readShortLE();
           short curCmd = messageBody.readShortLE();
           long doneRowCount = messageBody.readLongLE();
-          if ((status | DoneToken.STATUS_DONE_FINAL) != 0){
+          if ((status | DoneToken.STATUS_DONE_FINAL) != 0) {
             rowCount += doneRowCount;
           } else {
             handleResultSetDone((int) doneRowCount);
             handleDoneToken();
           }
           break;
-        case DataPacketStreamTokenType.RETURNSTATUS_TOKEN:
+        case RETURNSTATUS_TOKEN:
           messageBody.skipBytes(4);
           break;
-        case DataPacketStreamTokenType.RETURNVALUE_TOKEN:
+        case RETURNVALUE_TOKEN:
+          if (ps.handle == 0) {
+            messageBody.skipBytes(2); // skip ordinal position
+            messageBody.skipBytes(2 * messageBody.readUnsignedByte()); // skip param name
+            messageBody.skipBytes(1); // skip status
+            messageBody.skipBytes(4); // skip user type
+            messageBody.skipBytes(2); // skip flags
+            messageBody.skipBytes(1); // skip type id
+            ps.handle = ((Number) decodeIntN(messageBody)).intValue();
+          }
           messageBody.skipBytes(messageBody.readableBytes()); // FIXME
           handleResultSetDone(rowCount);
           handleDoneToken();
           break;
         default:
-          throw new UnsupportedOperationException("Unsupported token: " + tokenByte);
+          throw new UnsupportedOperationException("Unsupported token: " + tokenType);
       }
     }
   }
@@ -150,6 +164,43 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     for (int i = 0; i < params.size(); i++) {
       encodeParamValue(packet, params.getValue(i));
     }
+
+    int packetLen = packet.writerIndex() - packetLenIdx + 2;
+    packet.setShort(packetLenIdx, packetLen);
+
+    chctx.writeAndFlush(packet);
+  }
+
+  private void sendUnprepareRequest() {
+    ChannelHandlerContext chctx = encoder.chctx;
+
+    ByteBuf packet = chctx.alloc().ioBuffer();
+
+    // packet header
+    packet.writeByte(MessageType.RPC.value());
+    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
+    int packetLenIdx = packet.writerIndex();
+    packet.writeShort(0); // set length later
+    packet.writeShort(0x00);
+    packet.writeByte(0x00); // FIXME packet ID
+    packet.writeByte(0x00);
+
+    int start = packet.writerIndex();
+    packet.writeIntLE(0x00); // TotalLength for ALL_HEADERS
+    encodeTransactionDescriptor(packet);
+    // set TotalLength for ALL_HEADERS
+    packet.setIntLE(start, packet.writerIndex() - start);
+
+    /*
+      RPCReqBatch
+     */
+    packet.writeShortLE(0xFFFF);
+    packet.writeShortLE(ProcId.Sp_Unprepare);
+
+    // Option flags
+    packet.writeShortLE(0x0000);
+
+    encodeParamValue(packet, ((MSSQLPreparedStatement) cmd.ps).handle);
 
     int packetLen = packet.writerIndex() - packetLenIdx + 2;
     packet.setShort(packetLenIdx, packetLen);
