@@ -12,10 +12,6 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataType;
-import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
-import io.vertx.mssqlclient.impl.protocol.datatype.NumericDataType;
-import io.vertx.mssqlclient.impl.protocol.datatype.TimeNDataType;
 import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.vertx.sqlclient.data.Numeric;
 
@@ -279,7 +275,7 @@ class MSSQLDataTypeCodec {
     return new BigInteger(result);
   }
 
-  static Object decodeIntN(ByteBuf buffer) {
+  private static Object decodeIntN(ByteBuf buffer) {
     int intNDataTypeLength = buffer.readByte();
     switch (intNDataTypeLength) {
       case 0:

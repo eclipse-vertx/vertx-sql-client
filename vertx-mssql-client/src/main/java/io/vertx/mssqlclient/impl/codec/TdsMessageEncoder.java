@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -71,6 +71,8 @@ class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
       } else {
         return new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
       }
+    } else if (cmd instanceof CloseStatementCommand) {
+      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
     } else if (cmd == CloseConnectionCommand.INSTANCE) {
       return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
     } else {

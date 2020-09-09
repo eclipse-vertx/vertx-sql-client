@@ -29,7 +29,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 
-import static io.vertx.mssqlclient.impl.codec.MSSQLDataTypeCodec.decodeIntN;
 import static io.vertx.mssqlclient.impl.codec.MSSQLDataTypeCodec.inferenceParamDefinitionByValueType;
 
 class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
@@ -43,7 +42,12 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
   @Override
   void encode(TdsMessageEncoder encoder) {
     super.encode(encoder);
-    sendPrepexecRequest();
+    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
+    if (ps.handle > 0) {
+      sendExecRequest();
+    } else {
+      sendPrepexecRequest();
+    }
   }
 
   @Override
@@ -68,7 +72,6 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
           break;
         case DONE_TOKEN:
           messageBody.skipBytes(12); // this should only be after ERROR_TOKEN?
-          handleDoneToken();
           break;
         case INFO_TOKEN:
           int infoTokenLength = messageBody.readUnsignedShortLE();
@@ -78,6 +81,10 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
         case ERROR_TOKEN:
           handleErrorToken(messageBody);
           break;
+        case DONEPROC_TOKEN:
+          messageBody.skipBytes(messageBody.readableBytes());
+          handleResultSetDone(rowCount);
+          break;
         case DONEINPROC_TOKEN:
           short status = messageBody.readShortLE();
           short curCmd = messageBody.readShortLE();
@@ -86,7 +93,6 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
             rowCount += doneRowCount;
           } else {
             handleResultSetDone((int) doneRowCount);
-            handleDoneToken();
           }
           break;
         case RETURNSTATUS_TOKEN:
@@ -100,16 +106,17 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
             messageBody.skipBytes(4); // skip user type
             messageBody.skipBytes(2); // skip flags
             messageBody.skipBytes(1); // skip type id
-            ps.handle = ((Number) decodeIntN(messageBody)).intValue();
+            messageBody.skipBytes(2); // max length and length
+            ps.handle = messageBody.readIntLE();
           }
           messageBody.skipBytes(messageBody.readableBytes()); // FIXME
           handleResultSetDone(rowCount);
-          handleDoneToken();
           break;
         default:
           throw new UnsupportedOperationException("Unsupported token: " + tokenType);
       }
     }
+    complete();
   }
 
   private void sendPrepexecRequest() {
@@ -149,7 +156,8 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     packet.writeByte(MSSQLDataTypeId.INTNTYPE_ID);
     packet.writeByte(0x04);
     packet.writeByte(0x04);
-    packet.writeIntLE(0x00);
+    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.ps;
+    packet.writeIntLE(ps.handle);
 
     Tuple params = cmd.params();
 
@@ -171,7 +179,7 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     chctx.writeAndFlush(packet);
   }
 
-  private void sendUnprepareRequest() {
+  private void sendExecRequest() {
     ChannelHandlerContext chctx = encoder.chctx;
 
     ByteBuf packet = chctx.alloc().ioBuffer();
@@ -195,12 +203,28 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
       RPCReqBatch
      */
     packet.writeShortLE(0xFFFF);
-    packet.writeShortLE(ProcId.Sp_Unprepare);
+    packet.writeShortLE(ProcId.Sp_Execute);
 
     // Option flags
     packet.writeShortLE(0x0000);
 
-    encodeParamValue(packet, ((MSSQLPreparedStatement) cmd.ps).handle);
+    // Parameter
+
+    // OUT Parameter
+    packet.writeByte(0x00);
+    packet.writeByte(0x00);
+    packet.writeByte(MSSQLDataTypeId.INTNTYPE_ID);
+    packet.writeByte(0x04); // Max length
+    packet.writeByte(0x04); // Length
+    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.ps;
+    packet.writeIntLE(ps.handle);
+
+    Tuple params = cmd.params();
+
+    // Param values
+    for (int i = 0; i < params.size(); i++) {
+      encodeParamValue(packet, params.getValue(i));
+    }
 
     int packetLen = packet.writerIndex() - packetLenIdx + 2;
     packet.setShort(packetLenIdx, packetLen);

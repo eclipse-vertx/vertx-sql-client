@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -59,10 +59,10 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
         case ENVCHANGE_TOKEN:
           break;
         case DONE_TOKEN:
-          handleDoneToken();
           break;
       }
     }
+    complete();
   }
 
   private void sendLoginMessage() {

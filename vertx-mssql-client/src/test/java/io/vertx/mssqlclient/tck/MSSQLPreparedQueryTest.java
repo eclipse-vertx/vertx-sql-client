@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,6 +14,9 @@ package io.vertx.mssqlclient.tck;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -31,4 +34,31 @@ public class MSSQLPreparedQueryTest extends MSSQLPreparedQueryTestBase {
     connector = ClientConfig.CONNECT.connect(vertx, options);
   }
 
+  @Test
+  public void closePreparedNotExecuted(TestContext ctx) {
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM IMMUTABLE WHERE id = @p1", ctx.asyncAssertSuccess(ps -> {
+        ps.close(ctx.asyncAssertSuccess());
+      }));
+    }));
+  }
+
+  @Test
+  public void closePreparedExecuted(TestContext ctx) {
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM IMMUTABLE WHERE id = @p1", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of(3), ctx.asyncAssertSuccess(rs -> {
+          Row row = rs.iterator().next();
+          ctx.assertEquals(3, row.getInteger(0));
+          ctx.assertEquals("After enough decimal places, nobody gives a damn.", row.getString(1));
+          ps.query().execute(Tuple.of(7), ctx.asyncAssertSuccess(rs2 -> {
+            Row row2 = rs2.iterator().next();
+            ctx.assertEquals(7, row2.getInteger(0));
+            ctx.assertEquals("Any program that runs right is obsolete.", row2.getString(1));
+            ps.close(ctx.asyncAssertSuccess());
+          }));
+        }));
+      }));
+    }));
+  }
 }
