@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,14 +11,14 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
 import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
 import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -104,7 +104,7 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
 
     int start = packet.writerIndex();
     packet.writeIntLE(0x00); // TotalLength for ALL_HEADERS
-    encodeTransactionDescriptor(packet, 0, 1);
+    encodeTransactionDescriptor(packet);
     // set TotalLength for ALL_HEADERS
     packet.setIntLE(start, packet.writerIndex() - start);
 
