@@ -32,7 +32,6 @@ import io.vertx.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import jdk.nashorn.internal.scripts.JD;
 
 import java.sql.JDBCType;
 import java.time.*;
