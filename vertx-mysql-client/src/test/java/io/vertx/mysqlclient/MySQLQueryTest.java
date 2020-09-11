@@ -89,18 +89,18 @@ public class MySQLQueryTest extends MySQLTestBase {
   public void testCachePreparedStatementWithDifferentSql(TestContext ctx) {
     // we set the cache size to be the same with max_prepared_stmt_count
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)
-      .setPreparedStatementCacheMaxSize(16382), ctx.asyncAssertSuccess(conn -> {
+      .setPreparedStatementCacheMaxSize(1024), ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
-        ctx.assertEquals(16382, maxPreparedStatementCount);
+        ctx.assertEquals(1024, maxPreparedStatementCount);
 
-        for (int i = 0; i < 10000; i++) {
-          String randomString = UUID.randomUUID().toString();
+        for (int i = 0; i < (1024 + 256); i++) {
+          String value = "value-" + i;
           for (int j = 0; j < 2; j++) {
-            conn.preparedQuery("SELECT '" + randomString + "'").execute(ctx.asyncAssertSuccess(res2 -> {
-              ctx.assertEquals(randomString, res2.iterator().next().getString(0));
+            conn.preparedQuery("SELECT '" + value + "'").execute(ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(value, res2.iterator().next().getString(0));
             }));
           }
         }
@@ -115,9 +115,9 @@ public class MySQLQueryTest extends MySQLTestBase {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
-        ctx.assertEquals(16382, maxPreparedStatementCount);
+        ctx.assertEquals(1024, maxPreparedStatementCount);
 
-        for (int i = 0; i < 20000; i++) {
+        for (int i = 0; i < 2000; i++) {
           conn.preparedQuery("SELECT 'test'").execute(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("test", res2.iterator().next().getString(0));
           }));
@@ -133,9 +133,9 @@ public class MySQLQueryTest extends MySQLTestBase {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
-        ctx.assertEquals(16382, maxPreparedStatementCount);
+        ctx.assertEquals(1024, maxPreparedStatementCount);
 
-        for (int i = 0; i < 20000; i++) {
+        for (int i = 0; i < 2000; i++) {
           int val = i * 1000;
           List<Tuple> tuples = new ArrayList<>();
           tuples.add(Tuple.of(val));
@@ -158,9 +158,9 @@ public class MySQLQueryTest extends MySQLTestBase {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
-        ctx.assertEquals(16382, maxPreparedStatementCount);
+        ctx.assertEquals(1024, maxPreparedStatementCount);
 
-        for (int i = 0; i < 20000; i++) {
+        for (int i = 0; i < 2000; i++) {
           // if we don't close the statement automatically in the codec, the statement handles would leak and raise an statement limit error
           conn.preparedQuery("SELECT 'test'").execute(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("test", res2.iterator().next().getString(0));
@@ -177,9 +177,9 @@ public class MySQLQueryTest extends MySQLTestBase {
         Row row = res0.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
-        ctx.assertEquals(16382, maxPreparedStatementCount);
+        ctx.assertEquals(1024, maxPreparedStatementCount);
 
-        for (int i = 0; i < 20000; i++) {
+        for (int i = 0; i < 2000; i++) {
           // if we don't close the statement automatically in the codec, the statement handles would leak and raise an statement limit error
           List<Tuple> params = Arrays.asList(Tuple.of(1), Tuple.of(2), Tuple.of(3));
           conn.preparedQuery("SELECT CAST(? AS CHAR)").executeBatch(params, ctx.asyncAssertSuccess(res1 -> {
