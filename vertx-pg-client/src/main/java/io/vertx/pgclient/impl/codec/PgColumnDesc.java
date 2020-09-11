@@ -53,6 +53,11 @@ class PgColumnDesc implements ColumnDescriptor {
   }
 
   @Override
+  public boolean isArray() {
+    return dataType.array;
+  }
+
+  @Override
   public JDBCType jdbcType() {
     return dataType.jdbcType;
   }

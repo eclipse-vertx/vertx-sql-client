@@ -35,7 +35,7 @@ class DB2RowDesc extends RowDesc {
   ColumnMetaData columnDefinitions() {
     return columnDefinitions;
   }
-  
+
   private static List<ColumnDescriptor> columns(ColumnMetaData md) {
     List<String> names = md.getColumnNames();
     List<JDBCType> types = md.getJdbcTypes();
@@ -45,12 +45,12 @@ class DB2RowDesc extends RowDesc {
     }
     return columns;
   }
-  
+
   static class DB2ColumnDesc implements ColumnDescriptor {
-    
+
     private final String name;
     private final JDBCType type;
-    
+
     public DB2ColumnDesc(String name, JDBCType type) {
       this.name = name;
       this.type = type;
@@ -65,7 +65,11 @@ class DB2RowDesc extends RowDesc {
     public JDBCType jdbcType() {
       return type;
     }
-    
-  }
 
+    @Override
+    public boolean isArray() {
+      // Array don't seem supported for the moment
+      return false;
+    }
+  }
 }

@@ -90,6 +90,12 @@ public final class ColumnDefinition implements ColumnDescriptor {
   }
 
   @Override
+  public boolean isArray() {
+    // MySQL array not yet supported
+    return false;
+  }
+
+  @Override
   public JDBCType jdbcType() {
     return type.jdbcType;
   }

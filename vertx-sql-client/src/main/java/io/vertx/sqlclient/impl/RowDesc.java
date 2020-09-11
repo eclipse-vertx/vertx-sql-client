@@ -42,6 +42,10 @@ public class RowDesc {
       public JDBCType jdbcType() {
         return JDBCType.OTHER;
       }
+      @Override
+      public boolean isArray() {
+        return false;
+      }
     }).collect(Collectors.toList()));
   }
 

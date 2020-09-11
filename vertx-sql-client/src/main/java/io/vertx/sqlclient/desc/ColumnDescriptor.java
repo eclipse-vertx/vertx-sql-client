@@ -23,8 +23,19 @@ import java.sql.JDBCType;
 @VertxGen
 public interface ColumnDescriptor {
 
+  /**
+   * @return the column name
+   */
   String name();
 
+  /**
+   * @return whether the column is an array
+   */
+  boolean isArray();
+
+  /**
+   * @return the most appropriate {@code JDBCType}
+   */
   JDBCType jdbcType();
 
 }

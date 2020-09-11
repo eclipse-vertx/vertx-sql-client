@@ -132,6 +132,7 @@ enum DataType {
   private static final Map<Class<?>, DataType> encodingTypeToDataType = new HashMap<>();
 
   final int id;
+  final boolean array;
   final boolean supportsBinary;
   final Class<?> encodingType; // Not really used for now
   final Class<?> decodingType;
@@ -147,6 +148,7 @@ enum DataType {
     this.encodingType = encodingType;
     this.decodingType = decodingType;
     this.jdbcType = jdbcType;
+    this.array = decodingType.isArray();
   }
 
   static DataType valueOf(int oid) {
