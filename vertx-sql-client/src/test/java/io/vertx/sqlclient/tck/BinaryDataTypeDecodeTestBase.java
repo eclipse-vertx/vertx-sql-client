@@ -47,7 +47,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
 
   @Test
   public void testBoolean(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_boolean", Boolean.class, JDBCType.BIT, true);
+    testDecodeGeneric(ctx, "test_boolean", Boolean.class, JDBCType.BOOLEAN, true);
   }
 
   @Test
@@ -67,7 +67,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
 
   @Test
   public void testTime(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_time", LocalTime.class, JDBCType.DATE, LocalTime.of(18, 45, 2));
+    testDecodeGeneric(ctx, "test_time", LocalTime.class, JDBCType.TIME, LocalTime.of(18, 45, 2));
   }
 
   protected <T> void testDecodeGeneric(TestContext ctx,

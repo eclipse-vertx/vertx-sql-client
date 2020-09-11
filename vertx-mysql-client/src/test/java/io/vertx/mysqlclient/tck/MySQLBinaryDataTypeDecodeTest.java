@@ -44,7 +44,7 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   @Override
   public void testTime(TestContext ctx) {
     // MySQL TIME type is mapped to java.time.Duration so we need to override here
-    testDecodeGeneric(ctx, "test_time", Duration.class, JDBCType.DATE, Duration.ofHours(18).plusMinutes(45).plusSeconds(2));
+    testDecodeGeneric(ctx, "test_time", Duration.class, JDBCType.TIME, Duration.ofHours(18).plusMinutes(45).plusSeconds(2));
   }
 
   @Test

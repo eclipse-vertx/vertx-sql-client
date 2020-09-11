@@ -24,16 +24,16 @@ public enum DataType {
   NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, Numeric.class, Numeric.class, JDBCType.NUMERIC), // DECIMAL
   STRING(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, Buffer.class, String.class, JDBCType.VARCHAR), // CHAR, BINARY
   VARSTRING(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, Buffer.class, String.class, JDBCType.VARCHAR), //VARCHAR, VARBINARY
-  TINYBLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_TINY_BLOB, Buffer.class, String.class, JDBCType.BINARY),
-  BLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_BLOB, Buffer.class, String.class, JDBCType.BINARY),
-  MEDIUMBLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_MEDIUM_BLOB, Buffer.class, String.class, JDBCType.BINARY),
-  LONGBLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_LONG_BLOB, Buffer.class, String.class, JDBCType.BINARY),
+  TINYBLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_TINY_BLOB, Buffer.class, String.class, JDBCType.BLOB),
+  BLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_BLOB, Buffer.class, String.class, JDBCType.BLOB),
+  MEDIUMBLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_MEDIUM_BLOB, Buffer.class, String.class, JDBCType.BLOB),
+  LONGBLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_LONG_BLOB, Buffer.class, String.class, JDBCType.BLOB),
   DATE(ColumnDefinition.ColumnType.MYSQL_TYPE_DATE, LocalDate.class, LocalDate.class, JDBCType.DATE),
-  TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, Duration.class, Duration.class, JDBCType.DATE),
-  DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, LocalDateTime.class, LocalDateTime.class, JDBCType.DATE),
-  YEAR(ColumnDefinition.ColumnType.MYSQL_TYPE_YEAR, Short.class, Short.class, JDBCType.DATE),
-  TIMESTAMP(ColumnDefinition.ColumnType.MYSQL_TYPE_TIMESTAMP, LocalDateTime.class, LocalDateTime.class, JDBCType.DATE),
-  BIT(ColumnDefinition.ColumnType.MYSQL_TYPE_BIT, Long.class, Long.class, JDBCType.OTHER),
+  TIME(ColumnDefinition.ColumnType.MYSQL_TYPE_TIME, Duration.class, Duration.class, JDBCType.TIME),
+  DATETIME(ColumnDefinition.ColumnType.MYSQL_TYPE_DATETIME, LocalDateTime.class, LocalDateTime.class, JDBCType.TIMESTAMP),
+  YEAR(ColumnDefinition.ColumnType.MYSQL_TYPE_YEAR, Short.class, Short.class, JDBCType.SMALLINT),
+  TIMESTAMP(ColumnDefinition.ColumnType.MYSQL_TYPE_TIMESTAMP, LocalDateTime.class, LocalDateTime.class, JDBCType.TIMESTAMP),
+  BIT(ColumnDefinition.ColumnType.MYSQL_TYPE_BIT, Long.class, Long.class, JDBCType.BIT),
   JSON(ColumnDefinition.ColumnType.MYSQL_TYPE_JSON, Object.class, Object.class, JDBCType.OTHER),
   NULL(ColumnDefinition.ColumnType.MYSQL_TYPE_NULL, Object.class, Object.class, JDBCType.OTHER), // useful for mariadb prepare statement response
   UNBIND(-1, Object.class, Object.class, JDBCType.OTHER); // useful for binding param values
