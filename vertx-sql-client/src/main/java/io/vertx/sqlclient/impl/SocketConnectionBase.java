@@ -165,6 +165,14 @@ public abstract class SocketConnectionBase implements Connection {
           if (queryCmd.ps == null) {
             // Execute prepare
             boolean cache = psCache != null && preparedStatementCacheSqlFilter.test(queryCmd.sql());
+            if (cache) {
+              CloseStatementCommand closeCmd = evictStatementIfNecessary();
+              if (closeCmd != null) {
+                inflight++;
+                written++;
+                ctx.write(closeCmd);
+              }
+            }
             PrepareStatementCommand prepareCmd = prepareCommand(queryCmd, cache, false);
             paused = true;
             inflight++;
@@ -250,21 +258,25 @@ public abstract class SocketConnectionBase implements Connection {
     notice.log(logger);
   }
 
+  private CloseStatementCommand evictStatementIfNecessary() {
+    if (psCache != null && psCache.isFull()) {
+      PreparedStatement evicted = psCache.evict();
+      CloseStatementCommand closeCmd = new CloseStatementCommand(evicted);
+      closeCmd.handler = ar -> {
+        if (ar.failed()) {
+          logger.error("Error when closing cached prepared statement", ar.cause());
+        }
+      };
+      return closeCmd;
+    } else {
+      return null;
+    }
+  }
+
   private void cacheStatement(PreparedStatement preparedStatement) {
     if (psCache != null) {
       List<PreparedStatement> evictedList = psCache.put(preparedStatement);
-      if (evictedList.size() > 0) {
-        ChannelHandlerContext ctx = socket.channelHandlerContext();
-        for (PreparedStatement evicted : evictedList) {
-          CloseStatementCommand closeCmd = new CloseStatementCommand(evicted);
-          closeCmd.handler = ar -> {
-            if (ar.failed()) {
-              logger.error("Error when closing cached prepared statement", ar.cause());
-            }
-          };
-          ctx.write(closeCmd);
-        }
-      }
+      assert evictedList.size() == 0;
     }
   }
 
