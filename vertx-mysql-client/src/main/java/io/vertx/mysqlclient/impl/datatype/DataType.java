@@ -21,7 +21,7 @@ public enum DataType {
   INT8(ColumnDefinition.ColumnType.MYSQL_TYPE_LONGLONG, Long.class, Long.class, JDBCType.BIGINT),
   DOUBLE(ColumnDefinition.ColumnType.MYSQL_TYPE_DOUBLE, Double.class, Double.class, JDBCType.DOUBLE),
   FLOAT(ColumnDefinition.ColumnType.MYSQL_TYPE_FLOAT, Float.class, Float.class, JDBCType.REAL),
-  NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, Numeric.class, Numeric.class, JDBCType.NUMERIC), // DECIMAL
+  NUMERIC(ColumnDefinition.ColumnType.MYSQL_TYPE_NEWDECIMAL, Numeric.class, Numeric.class, JDBCType.DECIMAL), // DECIMAL
   STRING(ColumnDefinition.ColumnType.MYSQL_TYPE_STRING, Buffer.class, String.class, JDBCType.VARCHAR), // CHAR, BINARY
   VARSTRING(ColumnDefinition.ColumnType.MYSQL_TYPE_VAR_STRING, Buffer.class, String.class, JDBCType.VARCHAR), //VARCHAR, VARBINARY
   TINYBLOB(ColumnDefinition.ColumnType.MYSQL_TYPE_TINY_BLOB, Buffer.class, String.class, JDBCType.BLOB),

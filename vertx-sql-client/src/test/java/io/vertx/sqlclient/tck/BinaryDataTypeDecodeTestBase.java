@@ -10,6 +10,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
+
+  public JDBCType NUMERIC_TYPE;
+
+
   @Test
   public void testSmallInt(TestContext ctx) {
     testDecodeGeneric(ctx, "test_int_2", Short.class, JDBCType.SMALLINT, (short) 32767);
@@ -37,12 +41,12 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
 
   @Test
   public void testNumeric(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_numeric", Numeric.class, JDBCType.NUMERIC, Numeric.parse("999.99"));
+    testDecodeGeneric(ctx, "test_numeric", Numeric.class, NUMERIC_TYPE, Numeric.parse("999.99"));
   }
 
   @Test
   public void testDecimal(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_decimal", Numeric.class, JDBCType.NUMERIC, Numeric.parse("12345"));
+    testDecodeGeneric(ctx, "test_decimal", Numeric.class, NUMERIC_TYPE, Numeric.parse("12345"));
   }
 
   @Test

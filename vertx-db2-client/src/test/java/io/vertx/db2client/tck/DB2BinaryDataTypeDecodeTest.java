@@ -32,6 +32,10 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
     System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
   }
 
+  public DB2BinaryDataTypeDecodeTest() {
+    NUMERIC_TYPE = JDBCType.NUMERIC;
+  }
+
   @Override
   protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
@@ -67,25 +71,25 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
     // For DB2/z the largest value that can be stored in a DOUBLE column is 7.2E75
     testDecodeGeneric(ctx, "test_float_8", Double.class, JDBCType.DOUBLE, (double) 7.2E75);
   }
-  
+
   @Override
   public void testChar(TestContext ctx) {
     // Override to expecting JDBCType.CHAR instead of VARCHAR
     testDecodeGeneric(ctx, "test_char", String.class, JDBCType.CHAR, "testchar");
   }
-  
+
   @Override
   public void testNumeric(TestContext ctx) {
     // Override to expecting JDBCType.DECIMAL instead of NUMERIC
     testDecodeGeneric(ctx, "test_numeric", Numeric.class, JDBCType.DECIMAL, Numeric.parse("999.99"));
   }
-  
+
   @Override
   public void testDecimal(TestContext ctx) {
     // Override to expecting JDBCType.DECIMAL instead of NUMERIC
     testDecodeGeneric(ctx, "test_decimal", Numeric.class, JDBCType.DECIMAL, Numeric.parse("12345"));
   }
-  
+
   @Override
   public void testTime(TestContext ctx) {
     // Override to expecting JDBCType.TIME instead of DATE

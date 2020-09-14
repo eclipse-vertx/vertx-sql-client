@@ -20,6 +20,10 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   @ClassRule
   public static MySQLRule rule = MySQLRule.SHARED_INSTANCE;
 
+  public MySQLBinaryDataTypeDecodeTest() {
+    NUMERIC_TYPE = JDBCType.DECIMAL;
+  }
+
   @Override
   protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
