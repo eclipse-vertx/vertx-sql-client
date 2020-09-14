@@ -13,6 +13,8 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.vertx.sqlclient.impl.RowDesc;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,7 +22,7 @@ class MSSQLRowDesc extends RowDesc {
   final ColumnData[] columnDatas;
 
   MSSQLRowDesc(ColumnData[] columnDatas) {
-    super(Stream.of(columnDatas).map(ColumnData::colName).collect(Collectors.toList()));
+    super(Stream.of(columnDatas).map(ColumnData::colName).collect(Collectors.toList()), Collections.unmodifiableList(Arrays.asList(columnDatas)));
     this.columnDatas = columnDatas;
   }
 }

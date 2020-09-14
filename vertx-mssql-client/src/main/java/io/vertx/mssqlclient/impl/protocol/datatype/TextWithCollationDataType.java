@@ -11,12 +11,14 @@
 
 package io.vertx.mssqlclient.impl.protocol.datatype;
 
+import java.sql.JDBCType;
+
 // BIGCHARTYPE, BIGVARCHRTYPE, TEXTTYPE, NTEXTTYPE, NCHARTYPE, or NVARCHARTYPE
 public class TextWithCollationDataType extends MSSQLDataType {
   private final String collation;
 
   public TextWithCollationDataType(int id, Class<?> mappedJavaType, String collation) {
-    super(id, mappedJavaType);
+    super(id, mappedJavaType, JDBCType.VARCHAR);
     this.collation = collation;
   }
 

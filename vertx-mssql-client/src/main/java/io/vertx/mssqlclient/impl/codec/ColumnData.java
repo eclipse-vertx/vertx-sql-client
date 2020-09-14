@@ -12,8 +12,11 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataType;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 
-public final class ColumnData {
+import java.sql.JDBCType;
+
+public final class ColumnData implements ColumnDescriptor {
   /*
     Protocol reference: https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-tds/58880b9f-381c-43b2-bf8b-0727a98c4f4c
    */
@@ -52,6 +55,20 @@ public final class ColumnData {
     return tableName;
   }
 
+  @Override
+  public String name() {
+    return colName;
+  }
+
+  @Override
+  public boolean isArray() {
+    return false;
+  }
+
+  @Override
+  public JDBCType jdbcType() {
+    return dataType.jdbcType();
+  }
 
   public static final class Flags {
     public static final int NULLABLE = 0x0001;
