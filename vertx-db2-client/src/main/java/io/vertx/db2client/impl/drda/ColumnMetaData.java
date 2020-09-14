@@ -15,11 +15,12 @@
  */
 package io.vertx.db2client.impl.drda;
 
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ColumnMetaData {
-
+  
     public int columns_;
 
     public boolean[] nullable_;
@@ -104,6 +105,18 @@ public class ColumnMetaData {
         this.sqlxRdbnam_ = new String[numColumns];
         this.types_ = new int[numColumns];
         this.clientParamtertype_ = new int[numColumns];
+    }
+    
+    public List<JDBCType> getJdbcTypes() {
+      List<JDBCType> jdbcTypes = new ArrayList<>(columns_);
+      for (int i = 0; i < columns_; i++) {
+        try {
+          jdbcTypes.add(JDBCType.valueOf(types_[i]));
+        } catch (IllegalArgumentException e) {
+          jdbcTypes.add(JDBCType.OTHER);
+        }
+      }
+      return jdbcTypes;
     }
 
     public List<String> getColumnNames() {

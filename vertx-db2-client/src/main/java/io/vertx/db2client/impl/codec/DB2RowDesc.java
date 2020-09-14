@@ -15,7 +15,12 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import java.sql.JDBCType;
+import java.util.ArrayList;
+import java.util.List;
+
 import io.vertx.db2client.impl.drda.ColumnMetaData;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowDesc;
 
 class DB2RowDesc extends RowDesc {
@@ -23,7 +28,7 @@ class DB2RowDesc extends RowDesc {
   private final ColumnMetaData columnDefinitions;
 
   DB2RowDesc(ColumnMetaData columnDefinitions) {
-    super(columnDefinitions.getColumnNames());
+    super(columnDefinitions.getColumnNames(), columns(columnDefinitions));
     this.columnDefinitions = columnDefinitions;
   }
 
@@ -31,4 +36,40 @@ class DB2RowDesc extends RowDesc {
     return columnDefinitions;
   }
 
+  private static List<ColumnDescriptor> columns(ColumnMetaData md) {
+    List<String> names = md.getColumnNames();
+    List<JDBCType> types = md.getJdbcTypes();
+    List<ColumnDescriptor> columns = new ArrayList<>(names.size());
+    for (int i = 0; i < names.size(); i++) {
+      columns.add(new DB2ColumnDesc(names.get(i), types.get(i)));
+    }
+    return columns;
+  }
+
+  static class DB2ColumnDesc implements ColumnDescriptor {
+
+    private final String name;
+    private final JDBCType type;
+
+    public DB2ColumnDesc(String name, JDBCType type) {
+      this.name = name;
+      this.type = type;
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
+
+    @Override
+    public JDBCType jdbcType() {
+      return type;
+    }
+
+    @Override
+    public boolean isArray() {
+      // Array don't seem supported for the moment
+      return false;
+    }
+  }
 }

@@ -53,6 +53,7 @@ class SqlResultHandler<T, R extends SqlResultBase<T, R>, L extends SqlResult<T>>
       r.updated = updatedCount;
       r.size = size;
       r.columnNames = desc != null ? desc.columnNames() : null;
+      r.columnDescriptors = desc != null ? desc.columnDescriptor() : null;
       handleResult(r);
     }
   }

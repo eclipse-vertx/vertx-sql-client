@@ -5,73 +5,79 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
+import java.sql.JDBCType;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
+
+  public JDBCType NUMERIC_TYPE;
+
+
   @Test
   public void testSmallInt(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_int_2", Short.class, (short) 32767);
+    testDecodeGeneric(ctx, "test_int_2", Short.class, JDBCType.SMALLINT, (short) 32767);
   }
 
   @Test
   public void testInteger(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_int_4", Integer.class, (int) 2147483647);
+    testDecodeGeneric(ctx, "test_int_4", Integer.class, JDBCType.INTEGER, (int) 2147483647);
   }
 
   @Test
   public void testBigInt(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_int_8", Long.class, (long) 9223372036854775807L);
+    testDecodeGeneric(ctx, "test_int_8", Long.class, JDBCType.BIGINT, (long) 9223372036854775807L);
   }
 
   @Test
   public void testFloat4(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_float_4", Float.class, (float) 3.40282e38F);
+    testDecodeGeneric(ctx, "test_float_4", Float.class, JDBCType.REAL, (float) 3.40282e38F);
   }
 
   @Test
   public void testDouble(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_float_8", Double.class, (double) 1.7976931348623157E308);
+    testDecodeGeneric(ctx, "test_float_8", Double.class, JDBCType.DOUBLE, (double) 1.7976931348623157E308);
   }
 
   @Test
   public void testNumeric(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_numeric", Numeric.class, Numeric.parse("999.99"));
+    testDecodeGeneric(ctx, "test_numeric", Numeric.class, NUMERIC_TYPE, Numeric.parse("999.99"));
   }
 
   @Test
   public void testDecimal(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_decimal", Numeric.class, Numeric.parse("12345"));
+    testDecodeGeneric(ctx, "test_decimal", Numeric.class, NUMERIC_TYPE, Numeric.parse("12345"));
   }
 
   @Test
   public void testBoolean(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_boolean", Boolean.class, true);
+    testDecodeGeneric(ctx, "test_boolean", Boolean.class, JDBCType.BOOLEAN, true);
   }
 
   @Test
   public void testChar(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_char", String.class, "testchar");
+    testDecodeGeneric(ctx, "test_char", String.class, JDBCType.VARCHAR, "testchar");
   }
 
   @Test
   public void testVarchar(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_varchar", String.class, "testvarchar");
+    testDecodeGeneric(ctx, "test_varchar", String.class, JDBCType.VARCHAR, "testvarchar");
   }
 
   @Test
   public void testDate(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_date", LocalDate.class, LocalDate.of(2019, 1, 1));
+    testDecodeGeneric(ctx, "test_date", LocalDate.class, JDBCType.DATE, LocalDate.of(2019, 1, 1));
   }
 
   @Test
   public void testTime(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_time", LocalTime.class, LocalTime.of(18, 45, 2));
+    testDecodeGeneric(ctx, "test_time", LocalTime.class, JDBCType.TIME, LocalTime.of(18, 45, 2));
   }
 
   protected <T> void testDecodeGeneric(TestContext ctx,
                                        String columnName,
                                        Class<T> clazz,
+                                       JDBCType jdbcType,
                                        T expected) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
@@ -79,6 +85,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));
         ctx.assertEquals(expected, row.getValue(columnName));
+        ctx.assertEquals(jdbcType, result.columnDescriptors().get(0).jdbcType());
 //        ctx.assertEquals(expected, row.get(clazz, 0));
 //        ColumnChecker.checkColumn(0, columnName)
 //          .returns(Tuple::getValue, Row::getValue, expected)
