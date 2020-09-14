@@ -2,6 +2,9 @@ package io.vertx.db2client.tck;
 
 import static org.junit.Assume.assumeFalse;
 
+import java.sql.JDBCType;
+import java.time.LocalTime;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -14,6 +17,7 @@ import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.tck.BinaryDataTypeDecodeTestBase;
 
 @RunWith(VertxUnitRunner.class)
@@ -27,6 +31,10 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @Before
   public void printTestName(TestContext ctx) throws Exception {
     System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+  }
+
+  public DB2BinaryDataTypeDecodeTest() {
+    NUMERIC_TYPE = JDBCType.NUMERIC;
   }
 
   @Override
@@ -62,7 +70,31 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
     }
 
     // For DB2/z the largest value that can be stored in a DOUBLE column is 7.2E75
-    testDecodeGeneric(ctx, "test_float_8", Double.class, (double) 7.2E75);
+    testDecodeGeneric(ctx, "test_float_8", Double.class, JDBCType.DOUBLE, (double) 7.2E75);
+  }
+
+  @Override
+  public void testChar(TestContext ctx) {
+    // Override to expecting JDBCType.CHAR instead of VARCHAR
+    testDecodeGeneric(ctx, "test_char", String.class, JDBCType.CHAR, "testchar");
+  }
+
+  @Override
+  public void testNumeric(TestContext ctx) {
+    // Override to expecting JDBCType.DECIMAL instead of NUMERIC
+    testDecodeGeneric(ctx, "test_numeric", Numeric.class, JDBCType.DECIMAL, Numeric.parse("999.99"));
+  }
+
+  @Override
+  public void testDecimal(TestContext ctx) {
+    // Override to expecting JDBCType.DECIMAL instead of NUMERIC
+    testDecodeGeneric(ctx, "test_decimal", Numeric.class, JDBCType.DECIMAL, Numeric.parse("12345"));
+  }
+
+  @Override
+  public void testTime(TestContext ctx) {
+    // Override to expecting JDBCType.TIME instead of DATE
+    testDecodeGeneric(ctx, "test_time", LocalTime.class, JDBCType.TIME, LocalTime.of(18, 45, 2));
   }
 
   @Test

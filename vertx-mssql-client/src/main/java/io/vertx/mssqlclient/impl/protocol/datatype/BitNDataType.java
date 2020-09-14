@@ -1,5 +1,7 @@
 package io.vertx.mssqlclient.impl.protocol.datatype;
 
+import java.sql.JDBCType;
+
 /**
  * BITNTYPE, the only valid lengths are 0x01 for non-null instances and 0x00 for NULL instances.
  */
@@ -9,7 +11,7 @@ public class BitNDataType extends MSSQLDataType {
   private final int length;
 
   public BitNDataType(int id, Class<?> mappedJavaType, int length) {
-    super(id, mappedJavaType);
+    super(id, mappedJavaType, JDBCType.BOOLEAN);
     this.length = length;
   }
 

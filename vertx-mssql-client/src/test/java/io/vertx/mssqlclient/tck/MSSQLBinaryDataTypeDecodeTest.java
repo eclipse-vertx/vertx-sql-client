@@ -20,10 +20,16 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.sql.JDBCType;
+
 @RunWith(VertxUnitRunner.class)
 public class MSSQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @ClassRule
   public static MSSQLRule rule = MSSQLRule.SHARED_INSTANCE;
+
+  public MSSQLBinaryDataTypeDecodeTest() {
+    NUMERIC_TYPE = JDBCType.NUMERIC;
+  }
 
   @Override
   protected void initConnector() {

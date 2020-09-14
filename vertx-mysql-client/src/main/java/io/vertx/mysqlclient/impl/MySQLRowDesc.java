@@ -20,6 +20,7 @@ import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.impl.RowDesc;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,7 +33,7 @@ public class MySQLRowDesc extends RowDesc {
   public MySQLRowDesc(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
     super(Collections.unmodifiableList(Stream.of(columnDefinitions)
       .map(ColumnDefinition::name)
-      .collect(Collectors.toList())));
+      .collect(Collectors.toList())), Collections.unmodifiableList(Arrays.asList(columnDefinitions)));
     this.columnDefinitions = columnDefinitions;
     this.dataFormat = dataFormat;
   }

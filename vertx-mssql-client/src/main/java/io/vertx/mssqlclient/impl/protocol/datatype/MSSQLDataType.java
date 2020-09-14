@@ -11,6 +11,8 @@
 
 package io.vertx.mssqlclient.impl.protocol.datatype;
 
+import java.sql.JDBCType;
+
 /*
   DATE MUST NOT have a TYPE_VARLEN.
   The value is either 3 bytes or 0 bytes (null).
@@ -25,10 +27,12 @@ package io.vertx.mssqlclient.impl.protocol.datatype;
 public abstract class MSSQLDataType {
   protected final int id;
   protected final Class<?> mappedJavaType;
+  protected final JDBCType jdbcType;
 
-  public MSSQLDataType(int id, Class<?> mappedJavaType) {
+  public MSSQLDataType(int id, Class<?> mappedJavaType, JDBCType jdbcType) {
     this.id = id;
     this.mappedJavaType = mappedJavaType;
+    this.jdbcType = jdbcType;
   }
 
   public int id() {
@@ -38,4 +42,9 @@ public abstract class MSSQLDataType {
   public Class<?> mappedJavaType() {
     return mappedJavaType;
   }
+
+  public JDBCType jdbcType() {
+    return jdbcType;
+  }
+
 }
