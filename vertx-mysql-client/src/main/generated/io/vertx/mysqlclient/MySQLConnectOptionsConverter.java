@@ -2,6 +2,7 @@ package io.vertx.mysqlclient;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.impl.JsonUtil;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 
@@ -37,7 +38,7 @@ public class MySQLConnectOptionsConverter {
           break;
         case "serverRsaPublicKeyValue":
           if (member.getValue() instanceof String) {
-            obj.setServerRsaPublicKeyValue(io.vertx.core.buffer.Buffer.buffer(java.util.Base64.getDecoder().decode((String)member.getValue())));
+            obj.setServerRsaPublicKeyValue(io.vertx.core.buffer.Buffer.buffer(JsonUtil.BASE64_DECODER.decode((String)member.getValue())));
           }
           break;
         case "sslMode":
@@ -72,7 +73,7 @@ public class MySQLConnectOptionsConverter {
       json.put("serverRsaPublicKeyPath", obj.getServerRsaPublicKeyPath());
     }
     if (obj.getServerRsaPublicKeyValue() != null) {
-      json.put("serverRsaPublicKeyValue", java.util.Base64.getEncoder().encodeToString(obj.getServerRsaPublicKeyValue().getBytes()));
+      json.put("serverRsaPublicKeyValue", JsonUtil.BASE64_ENCODER.encodeToString(obj.getServerRsaPublicKeyValue().getBytes()));
     }
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());
