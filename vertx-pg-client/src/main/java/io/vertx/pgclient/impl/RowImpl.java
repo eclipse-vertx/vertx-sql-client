@@ -183,20 +183,6 @@ public class RowImpl extends ArrayTuple implements Row {
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
 
-  /**
-   * Get a {@link io.vertx.core.json.JsonObject} or {@link io.vertx.core.json.JsonArray} value.
-   */
-  private Object getJsonElement(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof JsonObject) {
-      return val;
-    } else if (val instanceof JsonArray) {
-      return val;
-    } else {
-      throw new ClassCastException();
-    }
-  }
-
   private Point getPoint(int pos) {
     return (Point) getValue(pos);
   }

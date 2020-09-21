@@ -202,6 +202,7 @@ public class ColumnChecker {
       if (!blackList.contains(m.method())) {
         try {
           Object v = m.apply(row, index);
+          v = m.apply(row, index);
           fail("Was expecting " + m.method() + " to throw ClassCastException instead of returning " + v);
         } catch (ClassCastException ignore) {
         }

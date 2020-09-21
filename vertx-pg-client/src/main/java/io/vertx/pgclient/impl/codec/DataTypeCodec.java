@@ -38,11 +38,9 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.IntFunction;
-import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
@@ -602,81 +600,6 @@ class DataTypeCodec {
       default:
         return defaultDecodeText(index, len, buff);
     }
-  }
-
-
-  public static Object prepare(DataType type, Object value) {
-    if (value instanceof Enum) {
-      value = prepare(type, (Enum<?>) value);
-    } else if (value instanceof Enum[]) {
-      value = prepare(type, (Enum<?>[]) value);
-    }
-    switch (type) {
-      case JSON:
-      case JSONB:
-        if (value == null ||
-          value == Tuple.JSON_NULL ||
-          value instanceof String ||
-          value instanceof Boolean ||
-          value instanceof Number ||
-          value instanceof JsonObject ||
-          value instanceof JsonArray) {
-          return value;
-        } else {
-          return REFUSED_SENTINEL;
-        }
-      case UNKNOWN:
-        if (value instanceof String[]) {
-          return Arrays.stream((String[]) value).collect(Collectors.joining(",", "{", "}"));
-        } else if (value == null || value instanceof String) {
-          return value;
-        }
-        break;
-    }
-    Class<?> javaType = type.decodingType;
-    if (value == null || javaType.isInstance(value)) {
-      return value;
-    }
-    return REFUSED_SENTINEL;
-  }
-
-  private static Object prepare(DataType type, Enum<?> value) {
-    switch (type) {
-      case INT2:
-      case INT4:
-      case INT8:
-        return value.ordinal();
-      case UNKNOWN:
-      case VARCHAR:
-      case TEXT:
-        return value.name();
-    }
-    return value;
-  }
-
-  private static Object prepare(DataType type, Enum<?>[] value) {
-    int len = value.length;
-    switch (type) {
-      case INT2_ARRAY:
-      case INT4_ARRAY:
-      case INT8_ARRAY: {
-        Number[] ret = new Number[len];
-        for (int i = 0; i < len; i++) {
-          ret[i] = value[i].ordinal();
-        }
-        return ret;
-      }
-      case UNKNOWN:
-      case VARCHAR_ARRAY:
-      case TEXT_ARRAY: {
-        String[] ret = new String[len];
-        for (int i = 0; i < len; i++) {
-          ret[i] = value[i].name();
-        }
-        return ret;
-      }
-    }
-    return value;
   }
 
   private static Object defaultDecodeText(int index, int len, ByteBuf buff) {

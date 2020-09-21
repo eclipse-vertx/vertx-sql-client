@@ -513,6 +513,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{1}))
               .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{1}))
               .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{1}))
+              .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(1)}))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -537,6 +538,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{2, 3, 4}))
                 .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{2, 3, 4}))
                 .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{2, 3, 4}))
+                .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(2), Numeric.create(3), Numeric.create(4)}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -559,6 +561,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{2}))
               .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{2}))
               .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{2}))
+              .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(2)}))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -583,6 +586,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{3, 4, 5, 6}))
                 .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{3, 4, 5, 6}))
                 .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{3, 4, 5, 6}))
+                .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(3), Numeric.create(4), Numeric.create(5), Numeric.create(6)}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -605,6 +609,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getLongArray, Row::getLongArray, new Long[]{3L})
               .returns(Tuple::getFloatArray, Row::getFloatArray, new Float[]{3F})
               .returns(Tuple::getDoubleArray, Row::getDoubleArray, new Double[]{3D})
+              .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(3)}))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -629,6 +634,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{4, 5, 6, 7, 8}))
                 .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{4, 5, 6, 7, 8}))
                 .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{4, 5, 6, 7, 8}))
+                .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(4), Numeric.create(5), Numeric.create(6), Numeric.create(7), Numeric.create(8)}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -651,6 +657,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{(long)4.1f}))
               .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{4.1f}))
               .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{(double)4.1f}))
+              .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(4.1f)}))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -675,6 +682,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{(long)5.2f, (long)5.3f, (long)5.4f}))
                 .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{5.2f, 5.3f, 5.4f}))
                 .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{(double)5.2f, (double)5.3f, (double)5.4f}))
+                .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(5.2f), Numeric.create(5.3f), Numeric.create(5.4f)}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -697,6 +705,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{5L}))
               .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{5.2F}))
               .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{5.2D}))
+              .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(5.2D)}))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -721,6 +730,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{(long)6.3}))
                 .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{(float)6.3}))
                 .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{6.3}))
+                .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{Numeric.create(6.3)}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -745,6 +755,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getLongArray, Row::getLongArray, ColumnChecker.toObjectArray(new long[]{}))
                 .returns(Tuple::getFloatArray, Row::getFloatArray, ColumnChecker.toObjectArray(new float[]{}))
                 .returns(Tuple::getDoubleArray, Row::getDoubleArray, ColumnChecker.toObjectArray(new double[]{}))
+                .returns(Tuple::getNumericArray, Row::getNumericArray, ColumnChecker.toObjectArray(new Numeric[]{}))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -773,7 +784,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
               .returns(Tuple::getLongArray, Row::getLongArray, new Long[]{0L,1L,2L,3L})
               .returns(Tuple::getFloatArray, Row::getFloatArray, new Float[]{0f,1f,2f,3f})
               .returns(Tuple::getDoubleArray, Row::getDoubleArray, new Double[]{0D,1D,2D,3D})
-              .returns(Numeric.class, expected)
+              .returns(Tuple::getNumericArray, Row::getNumericArray, new Numeric[]{Numeric.create(0),Numeric.create(1),Numeric.create(2),Numeric.create(3)})
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -802,6 +813,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
                 .returns(Tuple::getLongArray, Row::getLongArray, new Long[]{expected[0].longValue(), expected[1].longValue()})
                 .returns(Tuple::getFloatArray, Row::getFloatArray, new Float[]{expected[0].floatValue(), expected[1].floatValue()})
                 .returns(Tuple::getDoubleArray, Row::getDoubleArray, new Double[]{expected[0].doubleValue(), expected[1].doubleValue()})
+                .returns(Tuple::getNumericArray, Row::getNumericArray, new Numeric[]{Numeric.create(expected[0]), Numeric.create(expected[1])})
                 .returns(Numeric.class, expected)
                 .forRow(result.iterator().next());
               async.complete();

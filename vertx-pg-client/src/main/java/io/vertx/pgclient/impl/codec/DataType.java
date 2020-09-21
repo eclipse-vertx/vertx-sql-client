@@ -26,18 +26,22 @@ import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
 import io.vertx.pgclient.data.Line;
 import io.vertx.pgclient.data.LineSegment;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.data.Interval;
 import io.vertx.pgclient.data.Path;
 import io.vertx.pgclient.data.Point;
 import io.vertx.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.sql.JDBCType;
 import java.time.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
@@ -47,60 +51,60 @@ import java.util.UUID;
  */
 enum DataType {
 
-  BOOL(16, true, Boolean.class, JDBCType.BOOLEAN),
-  BOOL_ARRAY(1000, true, Boolean[].class, JDBCType.BOOLEAN),
-  INT2(21, true, Short.class, Number.class, JDBCType.SMALLINT),
-  INT2_ARRAY(1005, true, Short[].class, Number[].class, JDBCType.SMALLINT),
-  INT4(23, true, Integer.class, Number.class, JDBCType.INTEGER),
-  INT4_ARRAY(1007, true, Integer[].class, Number[].class, JDBCType.INTEGER),
-  INT8(20, true, Long.class, Number.class, JDBCType.BIGINT),
-  INT8_ARRAY(1016, true, Long[].class, Number[].class, JDBCType.BIGINT),
-  FLOAT4(700, true, Float.class, Number.class, JDBCType.REAL),
-  FLOAT4_ARRAY(1021, true, Float[].class, Number[].class, JDBCType.REAL),
-  FLOAT8(701, true, Double.class, Number.class, JDBCType.DOUBLE),
-  FLOAT8_ARRAY(1022, true, Double[].class, Number[].class, JDBCType.DOUBLE),
-  NUMERIC(1700, false, Numeric.class, Number.class, JDBCType.NUMERIC),
-  NUMERIC_ARRAY(1231, false, Numeric[].class, Number[].class, JDBCType.NUMERIC),
+  BOOL(16, true, Boolean.class, JDBCType.BOOLEAN, Tuple::getBoolean),
+  BOOL_ARRAY(1000, true, Boolean[].class, JDBCType.BOOLEAN, Tuple::getBooleanArray),
+  INT2(21, true, Short.class, Number.class, JDBCType.SMALLINT, Tuple::getShort),
+  INT2_ARRAY(1005, true, Short[].class, Number[].class, JDBCType.SMALLINT, Tuple::getShortArray),
+  INT4(23, true, Integer.class, Number.class, JDBCType.INTEGER, Tuple::getInteger),
+  INT4_ARRAY(1007, true, Integer[].class, Number[].class, JDBCType.INTEGER, Tuple::getIntegerArray),
+  INT8(20, true, Long.class, Number.class, JDBCType.BIGINT, Tuple::getLong),
+  INT8_ARRAY(1016, true, Long[].class, Number[].class, JDBCType.BIGINT, Tuple::getLongArray),
+  FLOAT4(700, true, Float.class, Number.class, JDBCType.REAL, Tuple::getFloat),
+  FLOAT4_ARRAY(1021, true, Float[].class, Number[].class, JDBCType.REAL, Tuple::getFloatArray),
+  FLOAT8(701, true, Double.class, Number.class, JDBCType.DOUBLE, Tuple::getDouble),
+  FLOAT8_ARRAY(1022, true, Double[].class, Number[].class, JDBCType.DOUBLE, Tuple::getDoubleArray),
+  NUMERIC(1700, false, Numeric.class, Number.class, JDBCType.NUMERIC, Tuple::getNumeric),
+  NUMERIC_ARRAY(1231, false, Numeric[].class, Number[].class, JDBCType.NUMERIC, Tuple::getNumericArray),
   MONEY(790, true, Object.class, null),
   MONEY_ARRAY(791, true, Object[].class, null),
   BIT(1560, true, Object.class, JDBCType.BIT),
   BIT_ARRAY(1561, true, Object[].class, JDBCType.BIT),
   VARBIT(1562, true, Object.class, JDBCType.OTHER),
   VARBIT_ARRAY(1563, true, Object[].class, JDBCType.BIT),
-  CHAR(18, true, String.class, JDBCType.BIT),
-  CHAR_ARRAY(1002, true, String[].class, JDBCType.CHAR),
-  VARCHAR(1043, true, String.class, JDBCType.VARCHAR),
-  VARCHAR_ARRAY(1015, true, String[].class, JDBCType.VARCHAR),
-  BPCHAR(1042, true, String.class, JDBCType.VARCHAR),
-  BPCHAR_ARRAY(1014, true, String[].class, JDBCType.VARCHAR),
-  TEXT(25, true, String.class, JDBCType.LONGVARCHAR),
-  TEXT_ARRAY(1009, true, String[].class, JDBCType.LONGVARCHAR),
-  NAME(19, true, String.class, JDBCType.VARCHAR),
-  NAME_ARRAY(1003, true, String[].class, JDBCType.VARCHAR),
-  DATE(1082, true, LocalDate.class, JDBCType.DATE),
-  DATE_ARRAY(1182, true, LocalDate[].class, JDBCType.DATE),
-  TIME(1083, true, LocalTime.class, JDBCType.TIME),
-  TIME_ARRAY(1183, true, LocalTime[].class, JDBCType.TIME),
-  TIMETZ(1266, true, OffsetTime.class, JDBCType.TIME_WITH_TIMEZONE),
-  TIMETZ_ARRAY(1270, true, OffsetTime[].class, JDBCType.TIME_WITH_TIMEZONE),
-  TIMESTAMP(1114, true, LocalDateTime.class, JDBCType.TIMESTAMP),
-  TIMESTAMP_ARRAY(1115, true, LocalDateTime[].class, JDBCType.TIMESTAMP),
-  TIMESTAMPTZ(1184, true, OffsetDateTime.class, JDBCType.TIMESTAMP_WITH_TIMEZONE),
-  TIMESTAMPTZ_ARRAY(1185, true, OffsetDateTime[].class, JDBCType.TIMESTAMP_WITH_TIMEZONE),
+  CHAR(18, true, String.class, JDBCType.BIT, Tuple::getString),
+  CHAR_ARRAY(1002, true, String[].class, JDBCType.CHAR, Tuple::getStringArray),
+  VARCHAR(1043, true, String.class, JDBCType.VARCHAR, Tuple::getString),
+  VARCHAR_ARRAY(1015, true, String[].class, JDBCType.VARCHAR, Tuple::getStringArray),
+  BPCHAR(1042, true, String.class, JDBCType.VARCHAR, Tuple::getString),
+  BPCHAR_ARRAY(1014, true, String[].class, JDBCType.VARCHAR, Tuple::getStringArray),
+  TEXT(25, true, String.class, JDBCType.LONGVARCHAR, Tuple::getString),
+  TEXT_ARRAY(1009, true, String[].class, JDBCType.LONGVARCHAR, Tuple::getStringArray),
+  NAME(19, true, String.class, JDBCType.VARCHAR, Tuple::getString),
+  NAME_ARRAY(1003, true, String[].class, JDBCType.VARCHAR, Tuple::getStringArray),
+  DATE(1082, true, LocalDate.class, JDBCType.DATE, Tuple::getLocalDate),
+  DATE_ARRAY(1182, true, LocalDate[].class, JDBCType.DATE, Tuple::getLocalDateArray),
+  TIME(1083, true, LocalTime.class, JDBCType.TIME, Tuple::getLocalTime),
+  TIME_ARRAY(1183, true, LocalTime[].class, JDBCType.TIME, Tuple::getLocalTimeArray),
+  TIMETZ(1266, true, OffsetTime.class, JDBCType.TIME_WITH_TIMEZONE, Tuple::getOffsetTime),
+  TIMETZ_ARRAY(1270, true, OffsetTime[].class, JDBCType.TIME_WITH_TIMEZONE, Tuple::getOffsetTimeArray),
+  TIMESTAMP(1114, true, LocalDateTime.class, JDBCType.TIMESTAMP, Tuple::getLocalDateTime),
+  TIMESTAMP_ARRAY(1115, true, LocalDateTime[].class, JDBCType.TIMESTAMP, Tuple::getLocalDateTimeArray),
+  TIMESTAMPTZ(1184, true, OffsetDateTime.class, JDBCType.TIMESTAMP_WITH_TIMEZONE, Tuple::getOffsetDateTime),
+  TIMESTAMPTZ_ARRAY(1185, true, OffsetDateTime[].class, JDBCType.TIMESTAMP_WITH_TIMEZONE, Tuple::getOffsetDateTimeArray),
   INTERVAL(1186, true, Interval.class, JDBCType.DATE),
   INTERVAL_ARRAY(1187, true, Interval[].class, JDBCType.DATE),
-  BYTEA(17, true, Buffer.class, JDBCType.BINARY),
-  BYTEA_ARRAY(1001, true, Buffer[].class, JDBCType.BINARY),
+  BYTEA(17, true, Buffer.class, JDBCType.BINARY, Tuple::getBuffer),
+  BYTEA_ARRAY(1001, true, Buffer[].class, JDBCType.BINARY, Tuple::getBufferArray),
   MACADDR(829, true, Object.class, JDBCType.OTHER),
   INET(869, true, Object[].class, JDBCType.OTHER),
   CIDR(650, true, Object.class, JDBCType.OTHER),
   MACADDR8(774, true, Object[].class, JDBCType.OTHER),
-  UUID(2950, true, UUID.class, JDBCType.OTHER),
-  UUID_ARRAY(2951, true, UUID[].class, JDBCType.OTHER),
-  JSON(114, true, Object.class, JDBCType.OTHER),
-  JSON_ARRAY(199, true, Object[].class, JDBCType.OTHER),
-  JSONB(3802, true, Object.class, JDBCType.OTHER),
-  JSONB_ARRAY(3807, true, Object[].class, JDBCType.OTHER),
+  UUID(2950, true, UUID.class, JDBCType.OTHER, Tuple::getUUID),
+  UUID_ARRAY(2951, true, UUID[].class, JDBCType.OTHER, Tuple::getUUIDArray),
+  JSON(114, true, Object.class, JDBCType.OTHER, Tuple::getJsonElement),
+  JSON_ARRAY(199, true, Object[].class, JDBCType.OTHER, Tuple::getJsonElementArray),
+  JSONB(3802, true, Object.class, JDBCType.OTHER, Tuple::getJsonElement),
+  JSONB_ARRAY(3807, true, Object[].class, JDBCType.OTHER, Tuple::getJsonElementArray),
   XML(142, true, Object.class, JDBCType.OTHER),
   XML_ARRAY(143, true, Object[].class, JDBCType.OTHER),
   POINT(600, true, Point.class, JDBCType.OTHER),
@@ -121,7 +125,7 @@ enum DataType {
   OID(26, true, Object.class, JDBCType.OTHER),
   OID_ARRAY(1028, true, Object[].class, JDBCType.OTHER),
   VOID(2278, true, Object.class, JDBCType.OTHER),
-  UNKNOWN(705, false, String.class, JDBCType.OTHER),
+  UNKNOWN(705, false, String.class, JDBCType.OTHER, ParamExtractor::extractUnknownType),
   TS_VECTOR(3614, false, String.class, JDBCType.OTHER),
   TS_VECTOR_ARRAY(3643, false, String[].class, JDBCType.OTHER),
   TS_QUERY(3615, false,  String.class, JDBCType.OTHER),
@@ -137,18 +141,24 @@ enum DataType {
   final Class<?> encodingType; // Not really used for now
   final Class<?> decodingType;
   final JDBCType jdbcType;
+  final ParamExtractor<?> paramExtractor;
 
-  DataType(int id, boolean supportsBinary, Class<?> type, JDBCType jdbcType) {
-    this(id, supportsBinary, type, type, jdbcType);
+  <T> DataType(int id, boolean supportsBinary, Class<T> type, JDBCType jdbcType, ParamExtractor<T> paramExtractor) {
+    this(id, supportsBinary, type, type, jdbcType, paramExtractor);
   }
 
-  DataType(int id, boolean supportsBinary, Class<?> encodingType, Class<?> decodingType, JDBCType jdbcType) {
+  <T> DataType(int id, boolean supportsBinary, Class<T> type, JDBCType jdbcType) {
+    this(id, supportsBinary, type, type, jdbcType, null);
+  }
+
+  <T> DataType(int id, boolean supportsBinary, Class<T> encodingType, Class<?> decodingType, JDBCType jdbcType, ParamExtractor<T> paramExtractor) {
     this.id = id;
     this.supportsBinary = supportsBinary;
     this.encodingType = encodingType;
     this.decodingType = decodingType;
     this.jdbcType = jdbcType;
     this.array = decodingType.isArray();
+    this.paramExtractor = paramExtractor;
   }
 
   static DataType valueOf(int oid) {

@@ -28,6 +28,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.impl.ListTuple;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
@@ -243,6 +244,8 @@ public interface Tuple {
       return (Short) val;
     } else if (val instanceof Number) {
       return ((Number) val).shortValue();
+    } else if (val instanceof Enum<?>) {
+      return (short)((Enum<?>) val).ordinal();
     } else {
       return (Short) val; // Throw CCE
     }
@@ -262,6 +265,8 @@ public interface Tuple {
       return (Integer) val;
     } else if (val instanceof Number) {
       return ((Number) val).intValue();
+    } else if (val instanceof Enum<?>) {
+      return ((Enum<?>) val).ordinal();
     } else {
       return (Integer) val; // Throw CCE
     }
@@ -281,6 +286,8 @@ public interface Tuple {
       return (Long) val;
     } else if (val instanceof Number) {
       return ((Number) val).longValue();
+    } else if (val instanceof Enum<?>) {
+      return (long)((Enum<?>) val).ordinal();
     } else {
       return (Long) val; // Throw CCE
     }
@@ -300,6 +307,8 @@ public interface Tuple {
       return (Float) val;
     } else if (val instanceof Number) {
       return ((Number) val).floatValue();
+    } else if (val instanceof Enum<?>) {
+      return (float)((Enum<?>) val).ordinal();
     } else {
       return (Float) val; // Throw CCE
     }
@@ -319,6 +328,8 @@ public interface Tuple {
       return (Double) val;
     } else if (val instanceof Number) {
       return ((Number) val).doubleValue();
+    } else if (val instanceof Enum<?>) {
+      return (double)((Enum<?>) val).ordinal();
     } else {
       return (Double) val; // Throw CCE
     }
@@ -338,7 +349,7 @@ public interface Tuple {
     } else if (val instanceof Numeric) {
       return (Numeric) val;
     } else if (val instanceof Number) {
-      return Numeric.parse(val.toString());
+      return Numeric.create((Number) val);
     } else {
       return (Numeric) val; // Throw CCE
     }
@@ -351,7 +362,16 @@ public interface Tuple {
    * @return the value
    */
   default String getString(int pos) {
-    return (String) getValue(pos);
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof String) {
+      return (String) val;
+    } else if (val instanceof Enum<?>) {
+      return ((Enum<?>) val).name();
+    } else {
+      throw new ClassCastException();
+    }
   }
 
   /**
@@ -372,6 +392,21 @@ public interface Tuple {
    */
   default JsonArray getJsonArray(int pos) {
     return (JsonArray) getValue(pos);
+  }
+
+  default Object getJsonElement(int pos) {
+    Object val = getValue(pos);
+    if (val == null ||
+      val == Tuple.JSON_NULL ||
+      val instanceof String ||
+      val instanceof Boolean ||
+      val instanceof Number ||
+      val instanceof JsonObject ||
+      val instanceof JsonArray) {
+      return val;
+    } else {
+      throw new ClassCastException();
+    }
   }
 
   /**
@@ -592,6 +627,17 @@ public interface Tuple {
         }
       }
       return arr;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Short[] arr = new Short[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (short)elt.ordinal();
+        }
+      }
+      return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Short[] shortArray = new Short[array.length];
@@ -628,6 +674,17 @@ public interface Tuple {
         Number elt = a[i];
         if (elt != null) {
           arr[i] = elt.intValue();
+        }
+      }
+      return arr;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Integer[] arr = new Integer[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.ordinal();
         }
       }
       return arr;
@@ -670,6 +727,17 @@ public interface Tuple {
         }
       }
       return arr;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Long[] arr = new Long[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (long)elt.ordinal();
+        }
+      }
+      return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Long[] longArray = new Long[array.length];
@@ -706,6 +774,17 @@ public interface Tuple {
         Number elt = a[i];
         if (elt != null) {
           arr[i] = elt.floatValue();
+        }
+      }
+      return arr;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Float[] arr = new Float[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (float)elt.ordinal();
         }
       }
       return arr;
@@ -748,6 +827,17 @@ public interface Tuple {
         }
       }
       return arr;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Double[] arr = new Double[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (double)elt.ordinal();
+        }
+      }
+      return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Double[] doubleArray = new Double[array.length];
@@ -768,7 +858,43 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Numeric[] getNumericArray(int pos) {
-    return (Numeric[]) getValue(pos);
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof Numeric[]) {
+      return (Numeric[]) val;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      Numeric[] arr = new Numeric[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = Numeric.create(elt);
+        }
+      }
+      return arr;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Numeric[] arr = new Numeric[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = Numeric.create(elt.ordinal());
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
+      Object[] array = (Object[]) val;
+      Numeric[] doubleArray = new Numeric[array.length];
+      for (int i = 0;i < array.length;i++) {
+        doubleArray[i] = Numeric.create((Number) array[i]);
+      }
+      return doubleArray;
+    } else {
+      throw new ClassCastException();
+    }
   }
 
   /**
@@ -787,6 +913,17 @@ public interface Tuple {
       return null;
     } else if (val instanceof String[]) {
       return (String[]) val;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      String[] arr = new String[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.name();
+        }
+      }
+      return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       String[] stringArray = new String[array.length];
@@ -842,6 +979,36 @@ public interface Tuple {
       return jsonObjectArray;
     } else {
       return (JsonArray[]) val; // Throw CCE
+    }
+  }
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Object[] getJsonElementArray(int pos) {
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof JsonObject[]
+      || val instanceof JsonArray[]
+      || val instanceof Number[]
+      || val instanceof Boolean[]
+      || val instanceof String[]) {
+      return (Object[]) val;
+    } else if (val.getClass() == Object[].class) {
+      Object[] array = (Object[]) val;
+      for (int i = 0; i < array.length; i++) {
+        Object elt = Array.get(val, i);
+        if (elt != null && !(elt == Tuple.JSON_NULL ||
+          elt instanceof String ||
+          elt instanceof Boolean ||
+          elt instanceof Number ||
+          elt instanceof JsonObject ||
+          elt instanceof JsonArray)) {
+          throw new ClassCastException();
+        }
+      }
+      return array;
+    } else {
+      throw new ClassCastException();
     }
   }
 

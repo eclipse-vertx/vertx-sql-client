@@ -6,7 +6,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.After;
 import org.junit.Before;
 
@@ -71,6 +70,7 @@ public abstract class DataTypeTestBase extends PgTestBase {
       tupleMethods.add(Tuple::getLongArray);
       tupleMethods.add(Tuple::getFloatArray);
       tupleMethods.add(Tuple::getDoubleArray);
+      tupleMethods.add(Tuple::getNumericArray);
       tupleMethods.add(Tuple::getStringArray);
       tupleMethods.add(Tuple::getLocalDateArray);
       tupleMethods.add(Tuple::getLocalTimeArray);
@@ -78,8 +78,6 @@ public abstract class DataTypeTestBase extends PgTestBase {
       tupleMethods.add(Tuple::getLocalDateTimeArray);
       tupleMethods.add(Tuple::getBufferArray);
       tupleMethods.add(Tuple::getUUIDArray);
-      tupleMethods.add(getByIndex(Numeric.class));
-      tupleMethods.add(getValuesByIndex(Numeric.class));
       tupleMethods.add(getByIndex(Point.class));
       tupleMethods.add(getValuesByIndex(Point.class));
       tupleMethods.add(getValuesByIndex(Line.class));
@@ -125,6 +123,7 @@ public abstract class DataTypeTestBase extends PgTestBase {
       rowMethods.add(Row::getLongArray);
       rowMethods.add(Row::getFloatArray);
       rowMethods.add(Row::getDoubleArray);
+      rowMethods.add(Row::getNumericArray);
       rowMethods.add(Row::getStringArray);
       rowMethods.add(Row::getLocalDateArray);
       rowMethods.add(Row::getLocalTimeArray);
@@ -132,8 +131,6 @@ public abstract class DataTypeTestBase extends PgTestBase {
       rowMethods.add(Row::getLocalDateTimeArray);
       rowMethods.add(Row::getBufferArray);
       rowMethods.add(Row::getUUIDArray);
-      rowMethods.add(getByName(Numeric.class));
-      rowMethods.add(getValuesByName(Numeric.class));
       rowMethods.add(getByName(Point.class));
       rowMethods.add(getValuesByName(Point.class));
       rowMethods.add(getValuesByName(Line.class));
