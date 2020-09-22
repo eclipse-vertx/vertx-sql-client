@@ -8,6 +8,7 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 public class NullSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
+
   @Test
   public void testNull(TestContext ctx) {
     Async async = ctx.async();
@@ -16,7 +17,7 @@ public class NullSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
         .query("SELECT null \"NullValue\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
-          ColumnChecker.checkColumn(0, "NullValue").forRow(row);
+          ColumnChecker.checkColumn(0, "NullValue").returnsNull().forRow(row);
           async.complete();
         }));
     }));

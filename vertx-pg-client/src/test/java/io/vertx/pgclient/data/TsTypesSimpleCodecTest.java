@@ -40,9 +40,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
         Row row = result.iterator().next();
         String expected = null;
         ColumnChecker.checkColumn(0, "TsQuery")
-          .returns(Tuple::getString, Row::getString, expected)
-          .returns(Tuple::getValue, Row::getValue, expected)
-          .returns(String.class, expected)
+          .returnsNull()
           .forRow(row);
           async.complete();
       }));
@@ -94,11 +92,8 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
       conn.query("SELECT null::tsvector as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
-        String expected = null;
         ColumnChecker.checkColumn(0, "TsVector")
-          .returns(Tuple::getString, Row::getString, expected)
-          .returns(Tuple::getValue, Row::getValue, expected)
-          .returns(String.class, expected)
+          .returnsNull()
           .forRow(row);
           async.complete();
       }));

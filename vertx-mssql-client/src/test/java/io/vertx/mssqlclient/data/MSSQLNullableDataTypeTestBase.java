@@ -58,9 +58,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullTinyInt(TestContext ctx) {
     testDecodeNullValue(ctx, "test_tinyint", row -> {
       ColumnChecker.checkColumn(0, "test_tinyint")
-        .returns(Tuple::getValue, Row::getValue, SHORT_NULL_VALUE)
-        .returns(Tuple::getShort, Row::getShort, SHORT_NULL_VALUE)
-        .returns(Short.class, SHORT_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -69,9 +67,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullSmallIntInt(TestContext ctx) {
     testDecodeNullValue(ctx, "test_smallint", row -> {
       ColumnChecker.checkColumn(0, "test_smallint")
-        .returns(Tuple::getValue, Row::getValue, SHORT_NULL_VALUE)
-        .returns(Tuple::getShort, Row::getShort, SHORT_NULL_VALUE)
-        .returns(Short.class, SHORT_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -80,9 +76,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullInt(TestContext ctx) {
     testDecodeNullValue(ctx, "test_int", row -> {
       ColumnChecker.checkColumn(0, "test_int")
-        .returns(Tuple::getValue, Row::getValue, INT_NULL_VALUE)
-        .returns(Tuple::getInteger, Row::getInteger, INT_NULL_VALUE)
-        .returns(Integer.class, INT_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -91,9 +85,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullBigInt(TestContext ctx) {
     testDecodeNullValue(ctx, "test_bigint", row -> {
       ColumnChecker.checkColumn(0, "test_bigint")
-        .returns(Tuple::getValue, Row::getValue, LONG_NULL_VALUE)
-        .returns(Tuple::getLong, Row::getLong, LONG_NULL_VALUE)
-        .returns(Long.class, LONG_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -102,9 +94,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullFloat4(TestContext ctx) {
     testDecodeNullValue(ctx, "test_float_4", row -> {
       ColumnChecker.checkColumn(0, "test_float_4")
-        .returns(Tuple::getValue, Row::getValue, FLOAT_NULL_VALUE)
-        .returns(Tuple::getFloat, Row::getFloat, FLOAT_NULL_VALUE)
-        .returns(Float.class, FLOAT_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -113,9 +103,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullFloat8(TestContext ctx) {
     testDecodeNullValue(ctx, "test_float_8", row -> {
       ColumnChecker.checkColumn(0, "test_float_8")
-        .returns(Tuple::getValue, Row::getValue, DOUBLE_NULL_VALUE)
-        .returns(Tuple::getDouble, Row::getDouble, DOUBLE_NULL_VALUE)
-        .returns(Double.class, DOUBLE_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -124,8 +112,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullNumeric(TestContext ctx) {
     testDecodeNullValue(ctx, "test_numeric", row -> {
       ColumnChecker.checkColumn(0, "test_numeric")
-        .returns(Tuple::getValue, Row::getValue, NUMERIC_NULL_VALUE)
-        .returns(Numeric.class, NUMERIC_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -134,8 +121,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullDecimal(TestContext ctx) {
     testDecodeNullValue(ctx, "test_decimal", row -> {
       ColumnChecker.checkColumn(0, "test_decimal")
-        .returns(Tuple::getValue, Row::getValue, NUMERIC_NULL_VALUE)
-        .returns(Numeric.class, NUMERIC_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -144,9 +130,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullBit(TestContext ctx) {
     testDecodeNullValue(ctx, "test_boolean", row -> {
       ColumnChecker.checkColumn(0, "test_boolean")
-        .returns(Tuple::getValue, Row::getValue, BOOLEAN_NULL_VALUE)
-        .returns(Tuple::getBoolean, Row::getBoolean, BOOLEAN_NULL_VALUE)
-        .returns(Boolean.class, BOOLEAN_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -156,9 +140,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullChar(TestContext ctx) {
     testDecodeNullValue(ctx, "test_char", row -> {
       ColumnChecker.checkColumn(0, "test_char")
-        .returns(Tuple::getValue, Row::getValue, STRING_NULL_VALUE)
-        .returns(Tuple::getString, Row::getString, STRING_NULL_VALUE)
-        .returns(String.class, STRING_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -167,9 +149,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullVarChar(TestContext ctx) {
     testDecodeNullValue(ctx, "test_varchar", row -> {
       ColumnChecker.checkColumn(0, "test_varchar")
-        .returns(Tuple::getValue, Row::getValue, STRING_NULL_VALUE)
-        .returns(Tuple::getString, Row::getString, STRING_NULL_VALUE)
-        .returns(String.class, STRING_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -178,9 +158,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullDate(TestContext ctx) {
     testDecodeNullValue(ctx, "test_varchar", row -> {
       ColumnChecker.checkColumn(0, "test_varchar")
-        .returns(Tuple::getValue, Row::getValue, LOCALDATE_NULL_VALUE)
-        .returns(Tuple::getLocalDate, Row::getLocalDate, LOCALDATE_NULL_VALUE)
-        .returns(LocalDate.class, LOCALDATE_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -189,9 +167,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullTime(TestContext ctx) {
     testDecodeNullValue(ctx, "test_time", row -> {
       ColumnChecker.checkColumn(0, "test_time")
-        .returns(Tuple::getValue, Row::getValue, LOCALTIME_NULL_VALUE)
-        .returns(Tuple::getLocalTime, Row::getLocalTime, LOCALTIME_NULL_VALUE)
-        .returns(LocalTime.class, LOCALTIME_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }

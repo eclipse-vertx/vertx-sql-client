@@ -14,6 +14,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 
 public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
+
   @Test
   public void testJSONB(TestContext ctx) {
     testJson(ctx, "JSONB");
@@ -89,7 +90,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
             .returns(Object.class, " Really Awesome! ")
             .forRow(row);
           ColumnChecker.checkColumn(8, "Null")
-            .returns(Tuple::getValue, Row::getValue, (Object) null)
+            .returnsNull()
             .forRow(row);
           async.complete();
         }));
