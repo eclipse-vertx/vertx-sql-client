@@ -7,12 +7,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.data.Numeric;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 
 public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
+
   @Test
   public void testJSONB(TestContext ctx) {
     testJson(ctx, "JSONB");
@@ -68,6 +70,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
             .returns(Tuple::getFloat, Row::getFloat, 7.502f)
             .returns(Tuple::getDouble, Row::getDouble, 7.502d)
             .<BigDecimal>returns(Tuple::getBigDecimal, Row::getBigDecimal, val -> Assert.assertEquals(val.doubleValue(), 7.502d, 0.1))
+            .<Numeric>returns(Tuple::getNumeric, Row::getNumeric, val -> Assert.assertEquals(val.doubleValue(), 7.502d, 0.1))
             .returns(Object.class, 7.502d)
             .forRow(row);
           ColumnChecker.checkColumn(6, "Number2")
@@ -78,6 +81,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
             .returns(Tuple::getFloat, Row::getFloat, (float) 8)
             .returns(Tuple::getDouble, Row::getDouble, (double) 8)
             .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(8))
+            .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(8))
             .returns(Object.class, 8)
             .forRow(row);
           ColumnChecker.checkColumn(7, "Text")
@@ -86,7 +90,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
             .returns(Object.class, " Really Awesome! ")
             .forRow(row);
           ColumnChecker.checkColumn(8, "Null")
-            .returns(Tuple::getValue, Row::getValue, (Object) null)
+            .returnsNull()
             .forRow(row);
           async.complete();
         }));

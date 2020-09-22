@@ -109,8 +109,8 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Object getValue(String name) {
-    int pos = getColumnIndex(name);
+  public Object getValue(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getValue(pos);
   }
 
@@ -127,55 +127,55 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Boolean getBoolean(String name) {
-    int pos = getColumnIndex(name);
+  public Boolean getBoolean(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getBoolean(pos);
   }
 
   @Override
-  public Short getShort(String name) {
-    int pos = getColumnIndex(name);
+  public Short getShort(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getShort(pos);
   }
 
   @Override
-  public Integer getInteger(String name) {
-    int pos = getColumnIndex(name);
+  public Integer getInteger(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getInteger(pos);
   }
 
   @Override
-  public Long getLong(String name) {
-    int pos = getColumnIndex(name);
+  public Long getLong(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getLong(pos);
   }
 
   @Override
-  public Float getFloat(String name) {
-    int pos = getColumnIndex(name);
+  public Float getFloat(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getFloat(pos);
   }
 
   @Override
-  public Double getDouble(String name) {
-    int pos = getColumnIndex(name);
+  public Double getDouble(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getDouble(pos);
   }
 
-  public Numeric getNumeric(String name) {
-    int pos = getColumnIndex(name);
+  public Numeric getNumeric(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getNumeric(pos);
   }
 
   @Override
-  public String getString(String name) {
-    int pos = getColumnIndex(name);
+  public String getString(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getString(pos);
   }
 
   @Override
-  public Buffer getBuffer(String name) {
-    int pos = getColumnIndex(name);
+  public Buffer getBuffer(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getBuffer(pos);
   }
 
@@ -194,128 +194,118 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Temporal getTemporal(String name) {
+  public Temporal getTemporal(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDate getLocalDate(String name) {
-    int pos = getColumnIndex(name);
+  public LocalDate getLocalDate(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getLocalDate(pos);
   }
 
   @Override
-  public LocalTime getLocalTime(String name) {
-    int pos = getColumnIndex(name);
+  public LocalTime getLocalTime(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getLocalTime(pos);
   }
 
   @Override
-  public LocalDateTime getLocalDateTime(String name) {
-    int pos = getColumnIndex(name);
+  public LocalDateTime getLocalDateTime(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getLocalDateTime(pos);
   }
 
   @Override
-  public OffsetTime getOffsetTime(String name) {
+  public OffsetTime getOffsetTime(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetDateTime getOffsetDateTime(String name) {
+  public OffsetDateTime getOffsetDateTime(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public UUID getUUID(String name) {
-    int pos = getColumnIndex(name);
+  public UUID getUUID(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getUUID(pos);
   }
 
   @Override
-  public BigDecimal getBigDecimal(String name) {
-    int pos = getColumnIndex(name);
+  public BigDecimal getBigDecimal(String column) {
+    int pos = getColumnIndex(column);
     return pos == -1 ? null : getBigDecimal(pos);
   }
 
   @Override
-  public Integer[] getIntegerArray(String name) {
+  public Integer[] getIntegerArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Boolean[] getBooleanArray(String name) {
+  public Boolean[] getBooleanArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Short[] getShortArray(String name) {
+  public Short[] getShortArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Long[] getLongArray(String name) {
+  public Long[] getLongArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Float[] getFloatArray(String name) {
+  public Float[] getFloatArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Double[] getDoubleArray(String name) {
+  public Double[] getDoubleArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public String[] getStringArray(String name) {
+  public String[] getStringArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDate[] getLocalDateArray(String name) {
+  public LocalDate[] getLocalDateArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalTime[] getLocalTimeArray(String name) {
+  public LocalTime[] getLocalTimeArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetTime[] getOffsetTimeArray(String name) {
+  public OffsetTime[] getOffsetTimeArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDateTime[] getLocalDateTimeArray(String name) {
+  public LocalDateTime[] getLocalDateTimeArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetDateTime[] getOffsetDateTimeArray(String name) {
+  public OffsetDateTime[] getOffsetDateTimeArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Buffer[] getBufferArray(String name) {
+  public Buffer[] getBufferArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public UUID[] getUUIDArray(String name) {
+  public UUID[] getUUIDArray(String column) {
     throw new UnsupportedOperationException();
-  }
-
-  private Numeric getNumeric(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Numeric) {
-      return (Numeric) val;
-    } else if (val instanceof Number) {
-      return Numeric.parse(val.toString());
-    }
-    return null;
   }
 
   private Byte getByte(int pos) {
@@ -335,7 +325,7 @@ public class DB2RowImpl extends ArrayTuple implements Row {
     }
     return null;
   }
-  
+
   private Object getEnum(Class enumType, int position) {
     Object val = getValue(position);
     if (val instanceof String) {
