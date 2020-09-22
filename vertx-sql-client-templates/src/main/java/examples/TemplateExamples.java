@@ -3,10 +3,12 @@ package examples;
 import io.vertx.codegen.format.QualifiedCase;
 import io.vertx.codegen.format.SnakeCase;
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.templates.SqlTemplate;
+import io.vertx.sqlclient.templates.TupleMapper;
 import io.vertx.sqlclient.templates.annotations.Column;
 import io.vertx.sqlclient.templates.annotations.ParametersMapped;
 import io.vertx.sqlclient.templates.annotations.RowMapped;
@@ -84,6 +86,18 @@ public class TemplateExamples {
       });
   }
 
+  public void bindingRowWithAnemicJsonMapper(SqlClient client) {
+    SqlTemplate
+      .forQuery(client, "SELECT * FROM users WHERE id=#{id}")
+      .mapTo(row -> row.toJson())
+      .execute(Collections.singletonMap("id", 1))
+      .onSuccess(users -> {
+        users.forEach(user -> {
+          System.out.println(user.encode());
+        });
+      });
+  }
+
   private static final Function<User, Map<String, Object>> PARAMETERS_USER_MAPPER = user -> {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("id", user.id);
@@ -124,6 +138,21 @@ public class TemplateExamples {
       .executeBatch(users)
       .onSuccess(res -> {
         System.out.println("Users inserted");
+      });
+  }
+
+  public void bindingParamsWithAnemicJsonMapper(SqlClient client) {
+    JsonObject user = new JsonObject();
+    user.put("id", 1);
+    user.put("firstName", "Dale");
+    user.put("lastName", "Cooper");
+
+    SqlTemplate
+      .forUpdate(client, "INSERT INTO users VALUES (#{id},#{firstName},#{lastName})")
+      .mapFrom(TupleMapper.jsonObject())
+      .execute(user)
+      .onSuccess(res -> {
+        System.out.println("User inserted");
       });
   }
 

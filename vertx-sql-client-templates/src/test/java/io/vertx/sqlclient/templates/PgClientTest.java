@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.templates;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.data.Path;
@@ -152,5 +153,26 @@ public class PgClientTest extends PgTemplateTestBase {
       value,
       extractor,
       column);
+  }
+
+  @Test
+  public void testAnemicJson(TestContext ctx) {
+    SqlTemplate<JsonObject, RowSet<Row>> template = SqlTemplate
+      .forQuery(connection, "SELECT " +
+        "#{integer} :: INT4 \"integer\", " +
+        "#{boolean} :: BOOL \"boolean\", " +
+        "#{string} :: VARCHAR \"string\"")
+      .mapFrom(TupleMapper.jsonObject());
+    JsonObject params = new JsonObject()
+      .put("integer", 4)
+      .put("string", "hello world")
+      .put("boolean", true);
+    template.execute(params, ctx.asyncAssertSuccess(res -> {
+      ctx.assertEquals(1, res.size());
+      Row row = res.iterator().next();
+      ctx.assertEquals(4, row.getInteger(0));
+      ctx.assertEquals(true, row.getBoolean(1));
+      ctx.assertEquals("hello world", row.getString(2));
+    }));
   }
 }

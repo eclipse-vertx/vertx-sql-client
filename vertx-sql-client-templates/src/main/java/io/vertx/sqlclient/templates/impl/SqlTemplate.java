@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SqlTemplate {
+public class SqlTemplate implements IntFunction<String> {
 
   private static Pattern PARAM_PATTERN = Pattern.compile("(?<!\\\\)#\\{(\\p{javaUnicodeIdentifierStart}\\p{javaUnicodeIdentifierPart}*)}");
   private static Pattern BACKSLASH_DOLLAR_PATTERN = Pattern.compile("\\\\#");
@@ -79,6 +80,15 @@ public class SqlTemplate {
 
   public String getSql() {
     return sql;
+  }
+
+  @Override
+  public String apply(int value) {
+    return mapping[value];
+  }
+
+  public int numberOfParams() {
+    return mapping.length;
   }
 
   public Tuple mapTuple(Map<String, Object> args) {
