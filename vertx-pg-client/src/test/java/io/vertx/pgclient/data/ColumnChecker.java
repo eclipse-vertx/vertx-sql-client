@@ -61,6 +61,8 @@ public class ColumnChecker {
     rowMethods.add(Row::getFloat);
     tupleMethods.add(Tuple::getDouble);
     rowMethods.add(Row::getDouble);
+    tupleMethods.add(Tuple::getNumeric);
+    rowMethods.add(Row::getNumeric);
     tupleMethods.add(Tuple::getBigDecimal);
     rowMethods.add(Row::getBigDecimal);
     tupleMethods.add(Tuple::getString);
@@ -95,6 +97,8 @@ public class ColumnChecker {
     rowMethods.add(Row::getFloatArray);
     tupleMethods.add(Tuple::getDoubleArray);
     rowMethods.add(Row::getDoubleArray);
+    tupleMethods.add(Tuple::getNumericArray);
+    rowMethods.add(Row::getNumericArray);
     tupleMethods.add(Tuple::getStringArray);
     rowMethods.add(Row::getStringArray);
     tupleMethods.add(Tuple::getLocalDateArray);
@@ -109,10 +113,6 @@ public class ColumnChecker {
     rowMethods.add(Row::getBufferArray);
     tupleMethods.add(Tuple::getUUIDArray);
     rowMethods.add(Row::getUUIDArray);
-    tupleMethods.add(getByIndex(Numeric.class));
-    rowMethods.add(getByName(Numeric.class));
-    tupleMethods.add(getValuesByIndex(Numeric.class));
-    rowMethods.add(getValuesByName(Numeric.class));
     tupleMethods.add(getByIndex(Point.class));
     rowMethods.add(getByName(Point.class));
     tupleMethods.add(getValuesByIndex(Point.class));
@@ -155,6 +155,26 @@ public class ColumnChecker {
   private ColumnChecker(int index, String name) {
     this.index = index;
     this.name = name;
+  }
+
+  public ColumnChecker returnsNull() {
+    tupleMethods
+      .forEach(m -> {
+      blackList.add(m.method());
+      expects.add(row -> {
+        Object v = m.apply(row, index);
+        assertNull(v);
+      });
+    });
+    rowMethods
+      .forEach(m -> {
+        blackList.add(m.method());
+        expects.add(row -> {
+          Object v = m.apply(row, name);
+          assertNull(v);
+        });
+      });
+    return this;
   }
 
   public <R> ColumnChecker returns(Class<R> type, R expected) {
@@ -265,19 +285,20 @@ public class ColumnChecker {
   public void forRow(Row row) {
     for (SerializableBiFunction<Tuple, Integer, ?> m : tupleMethods) {
       if (!blackList.contains(m.method())) {
-        Object v = m.apply(row, index);
         try {
-          assertNull("Was expecting null for " + m.method() + " instead of " + v, v);
-        } catch (Throwable e) {
-          e.printStackTrace();
-          throw e;
+          Object v = m.apply(row, index);
+          fail("Was expecting " + m.method() + " to throw ClassCastException instead of returning " + v);
+        } catch (ClassCastException ignore) {
         }
       }
     }
     for (SerializableBiFunction<Row, String, ?> m : rowMethods) {
       if (!blackList.contains(m.method())) {
-        Object v = m.apply(row, name);
-        assertNull(v);
+        try {
+          Object v = m.apply(row, name);
+          fail("Was expecting " + m.method() + " to throw ClassCastException instead of returning " + v);
+        } catch (ClassCastException ignore) {
+        }
       }
     }
     for (Consumer<? super Row> e : expects) {

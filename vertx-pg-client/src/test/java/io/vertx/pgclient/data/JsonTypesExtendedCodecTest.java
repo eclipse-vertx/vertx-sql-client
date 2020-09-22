@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -93,6 +94,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
               .returns(Tuple::getFloat, Row::getFloat, (float)4)
               .returns(Tuple::getDouble, Row::getDouble, (double)4)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(4))
+              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(4))
               .returns(Object.class, 4)
               .forRow(row);
             ColumnChecker.checkColumn(3, "String")
@@ -115,8 +117,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
               .returns(Object.class, Tuple.JSON_NULL)
               .forRow(row);
             ColumnChecker.checkColumn(7, "Null")
-              .returns(Tuple::getValue, Row::getValue, (Object) null)
-              .returns(Object.class, (Object) null)
+              .returnsNull()
               .forRow(row);
             async.complete();
           }));
@@ -179,6 +180,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
               .returns(Tuple::getFloat, Row::getFloat, (float)4)
               .returns(Tuple::getDouble, Row::getDouble, (double)4)
               .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(4))
+              .returns(Tuple::getNumeric, Row::getNumeric, Numeric.create(4))
               .returns(Object.class, 4)
               .forRow(row);
             ColumnChecker.checkColumn(3, "String")
@@ -201,8 +203,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
               .returns(Object.class, Tuple.JSON_NULL)
               .forRow(row);
             ColumnChecker.checkColumn(7, "Null")
-              .returns(Tuple::getValue, Row::getValue, (Object) null)
-              .returns(Object.class, (Object) null)
+              .returnsNull()
               .forRow(row);
             async.complete();
           }));

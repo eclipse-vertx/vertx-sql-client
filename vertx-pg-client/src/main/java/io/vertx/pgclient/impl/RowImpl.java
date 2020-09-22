@@ -183,11 +183,6 @@ public class RowImpl extends ArrayTuple implements Row {
     throw new UnsupportedOperationException("Unsupported type " + type.getName());
   }
 
-  public Numeric getNumeric(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getNumeric(pos);
-  }
-
   public Point getPoint(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getPoint(pos);
@@ -231,11 +226,6 @@ public class RowImpl extends ArrayTuple implements Row {
   public Object[] getJsonArray(String name) {
     int pos = desc.columnIndex(name);
     return pos == -1 ? null : getJsonArray(pos);
-  }
-
-  public Numeric[] getNumericArray(String name) {
-    int pos = desc.columnIndex(name);
-    return pos == -1 ? null : getNumericArray(pos);
   }
 
   public Point[] getPointArray(String name) {
@@ -292,16 +282,6 @@ public class RowImpl extends ArrayTuple implements Row {
     }
   }
 
-  public Numeric getNumeric(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Numeric) {
-      return (Numeric) val;
-    } else if (val instanceof Number) {
-      return Numeric.parse(val.toString());
-    }
-    return null;
-  }
-
   /**
    * Get a {@link io.vertx.core.json.JsonObject} or {@link io.vertx.core.json.JsonArray} value.
    */
@@ -312,181 +292,82 @@ public class RowImpl extends ArrayTuple implements Row {
     } else if (val instanceof JsonArray) {
       return val;
     } else {
-      return null;
+      throw new ClassCastException();
     }
   }
 
-  public Point getPoint(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Point) {
-      return (Point) val;
-    } else {
-      return null;
-    }
+  private Point getPoint(int pos) {
+    return (Point) getValue(pos);
   }
 
-  public Line getLine(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Line) {
-      return (Line) val;
-    } else {
-      return null;
-    }
+  private Line getLine(int pos) {
+    return (Line) getValue(pos);
   }
 
-  public LineSegment getLineSegment(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof LineSegment) {
-      return (LineSegment) val;
-    } else {
-      return null;
-    }
+  private LineSegment getLineSegment(int pos) {
+    return (LineSegment) getValue(pos);
   }
 
-  public Box getBox(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Box) {
-      return (Box) val;
-    } else {
-      return null;
-    }
+  private Box getBox(int pos) {
+    return (Box) getValue(pos);
   }
 
-  public Path getPath(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Path) {
-      return (Path) val;
-    } else {
-      return null;
-    }
+  private Path getPath(int pos) {
+    return (Path) getValue(pos);
   }
 
-  public Polygon getPolygon(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Polygon) {
-      return (Polygon) val;
-    } else {
-      return null;
-    }
+  private Polygon getPolygon(int pos) {
+    return (Polygon) getValue(pos);
   }
 
-  public Circle getCircle(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Circle) {
-      return (Circle) val;
-    } else {
-      return null;
-    }
+  private Circle getCircle(int pos) {
+    return (Circle) getValue(pos);
   }
 
-  public Interval getInterval(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Interval) {
-      return (Interval) val;
-    } else {
-      return null;
-    }
+  private Interval getInterval(int pos) {
+    return (Interval) getValue(pos);
   }
 
   public Character[] getCharArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Character[]) {
-      return (Character[]) val;
-    } else {
-      return null;
-    }
+    return (Character[]) getValue(pos);
   }
 
   /**
    * Get a {@code Json} array value, the {@code Json} value may be a string, number, JSON object, array, boolean or null.
    */
-  public Object[] getJsonArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Object[]) {
-      return (Object[]) val;
-    } else {
-      return null;
-    }
+  private Object[] getJsonArray(int pos) {
+    return (Object[]) getValue(pos);
   }
 
-  public Numeric[] getNumericArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Numeric[]) {
-      return (Numeric[]) val;
-    } else {
-      return null;
-    }
+  private Point[] getPointArray(int pos) {
+    return (Point[]) getValue(pos);
   }
 
-  public Point[] getPointArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Point[]) {
-      return (Point[]) val;
-    } else {
-      return null;
-    }
+  private Line[] getLineArray(int pos) {
+    return (Line[]) getValue(pos);
   }
 
-  public Line[] getLineArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Line[]) {
-      return (Line[]) val;
-    } else {
-      return null;
-    }
+  private LineSegment[] getLineSegmentArray(int pos) {
+    return (LineSegment[]) getValue(pos);
   }
 
-  public LineSegment[] getLineSegmentArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof LineSegment[]) {
-      return (LineSegment[]) val;
-    } else {
-      return null;
-    }
+  private Box[] getBoxArray(int pos) {
+    return (Box[]) getValue(pos);
   }
 
-  public Box[] getBoxArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Box[]) {
-      return (Box[]) val;
-    } else {
-      return null;
-    }
+  private Path[] getPathArray(int pos) {
+    return (Path[]) getValue(pos);
   }
 
-  public Path[] getPathArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Path[]) {
-      return (Path[]) val;
-    } else {
-      return null;
-    }
+  private Polygon[] getPolygonArray(int pos) {
+    return (Polygon[]) getValue(pos);
   }
 
-  public Polygon[] getPolygonArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Polygon[]) {
-      return (Polygon[]) val;
-    } else {
-      return null;
-    }
+  private Circle[] getCircleArray(int pos) {
+    return (Circle[]) getValue(pos);
   }
 
-  public Circle[] getCircleArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Circle[]) {
-      return (Circle[]) val;
-    } else {
-      return null;
-    }
-  }
-
-  public Interval[] getIntervalArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Interval[]) {
-      return (Interval[]) val;
-    } else {
-      return null;
-    }
+  private Interval[] getIntervalArray(int pos) {
+    return (Interval[]) getValue(pos);
   }
 }

@@ -55,7 +55,7 @@ public class MySQLPooledConnectionTest extends MySQLTestBase {
         conn1.begin();
         conn1.query("INSERT INTO mutable (id, val) VALUES (5, 'some-value')").execute(ctx.asyncAssertSuccess());
         conn1.query(txnIdSql).execute(ctx.asyncAssertSuccess(result -> {
-          Long txid1 = result.iterator().next().getLong(0);
+          Object txid1 = result.iterator().next().getValue(0);
           conn1.close();
           // It will be the same connection
           connector.accept(ctx.asyncAssertSuccess(conn2 -> {
@@ -64,7 +64,7 @@ public class MySQLPooledConnectionTest extends MySQLTestBase {
               done.countDown();
             }));
             conn2.query(txnIdSql).execute(ctx.asyncAssertSuccess(result2 -> {
-              Long txid2 = result.iterator().next().getLong(0);
+              Object txid2 = result.iterator().next().getValue(0);
               ctx.assertEquals(txid1, txid2);
               done.countDown();
             }));
