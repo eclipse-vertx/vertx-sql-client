@@ -13,8 +13,8 @@ public class LocalDateTimeDataObjectRowMapper implements java.util.function.Func
   public LocalDateTimeDataObject apply(io.vertx.sqlclient.Row row) {
     LocalDateTimeDataObject obj = new LocalDateTimeDataObject();
     Object val;
-    val = row.getLocalDateTime("localDateTime");
-    if (val != null) {
+    int idx;
+    if ((idx = row.getColumnIndex("localDateTime")) != -1 && (val = row.getLocalDateTime(idx)) != null) {
       obj.setLocalDateTime((java.time.LocalDateTime)val);
     }
     return obj;

@@ -68,6 +68,7 @@ public class RowMapperGen extends MapperGenBase {
     writer.print("  " + visibility + " " + model.getType().getSimpleName() + " apply(io.vertx.sqlclient.Row row) {\n");
     writer.print("    " + model.getType().getSimpleName() + " obj = new " + model.getType().getSimpleName() + "();\n");
     writer.print("    Object val;\n");
+    writer.print("    int idx;\n");
     genFromSingleValued(model, writer);
     writer.print("    return obj;\n");
     writer.print("  }\n");
@@ -118,8 +119,7 @@ public class RowMapperGen extends MapperGenBase {
           String columnName = getMappingName(prop, Column.class.getName());
           if (columnName != null) {
             String rowType = rowType(prop.getType());
-            writer.print("    val = " + meth.apply(columnName) + ";\n");
-            writer.print("    if (val != null) {\n");
+            writer.print("    if ((idx = row.getColumnIndex(\"" + columnName + "\")) != -1 && (val = " + meth.apply("idx") + ") != null) {\n");
             writer.print("      for (" + rowType + " elt : (" + rowType + "[])val) {\n");
             writer.print("        obj." + prop.getAdderMethod() + "(" + wrapExpr(prop.getType(), "elt") + ");\n");
             writer.print("      }\n");
@@ -132,8 +132,7 @@ public class RowMapperGen extends MapperGenBase {
   private void bilto4(PrintWriter writer, Function<String, String> getter, PropertyInfo prop, String converter) {
     String columnName = getMappingName(prop, Column.class.getName());
     if (columnName != null) {
-      writer.print("    val = " + getter.apply(columnName) + ";\n");
-      writer.print("    if (val != null) {\n");
+      writer.print("    if ((idx = row.getColumnIndex(\"" + columnName + "\")) != -1 && (val = " + getter.apply("idx") + ") != null) {\n");
       writer.print("      obj." + prop.getSetterMethod() + "(" + converter +  ");\n");
       writer.print("    }\n");
     }
@@ -168,13 +167,13 @@ public class RowMapperGen extends MapperGenBase {
   private static Function<String, String> getter_(TypeInfo type, boolean isArray) {
     String getter = getter(type);
     if (getter != null) {
-      return col -> "row." + getter + (isArray ? "Array" : "") + "(\"" + col + "\")";
+      return arg -> "row." + getter + (isArray ? "Array" : "") + "(" + arg + ")";
     }
     if (type.getKind() == ClassKind.ENUM || type instanceof ClassTypeInfo) {
       if (isArray) {
-        return col -> "row.get(" + type.getName() + "[].class, \"" + col + "\")";
+        return arg -> "row.get(" + type.getName() + "[].class, " + arg + ")";
       } else {
-        return col -> "row.get(" + type.getName() + ".class, \"" + col + "\")";
+        return arg -> "row.get(" + type.getName() + ".class, " + arg + ")";
       }
     }
     return null;

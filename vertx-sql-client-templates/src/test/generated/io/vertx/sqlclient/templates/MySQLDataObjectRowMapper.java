@@ -13,8 +13,8 @@ public class MySQLDataObjectRowMapper implements java.util.function.Function<io.
   public MySQLDataObject apply(io.vertx.sqlclient.Row row) {
     MySQLDataObject obj = new MySQLDataObject();
     Object val;
-    val = row.get(java.time.Duration.class, "duration");
-    if (val != null) {
+    int idx;
+    if ((idx = row.getColumnIndex("duration")) != -1 && (val = row.get(java.time.Duration.class, idx)) != null) {
       obj.setDuration((java.time.Duration)val);
     }
     return obj;
