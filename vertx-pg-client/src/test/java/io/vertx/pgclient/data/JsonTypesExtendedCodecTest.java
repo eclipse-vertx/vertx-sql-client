@@ -118,8 +118,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
               .returns(Object.class, Tuple.JSON_NULL)
               .forRow(row);
             ColumnChecker.checkColumn(7, "Null")
-              .returns(Tuple::getValue, Row::getValue, (Object) null)
-              .returns(Object.class, (Object) null)
+              .returnsNull()
               .forRow(row);
             async.complete();
           }));
@@ -206,8 +205,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
               .returns(Object.class, Tuple.JSON_NULL)
               .forRow(row);
             ColumnChecker.checkColumn(7, "Null")
-              .returns(Tuple::getValue, Row::getValue, (Object) null)
-              .returns(Object.class, (Object) null)
+              .returnsNull()
               .forRow(row);
             async.complete();
           }));

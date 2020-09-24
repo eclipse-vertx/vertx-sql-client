@@ -73,6 +73,16 @@ to achieve row level mapping instead:
 {@link examples.TemplateExamples#bindingRowWithCustomFunction}
 ----
 
+== Anemic JSON row mapping
+
+Anemic JSON row mapping is a trivial mapping between template row columns and a JSON object
+using the {@link io.vertx.sqlclient.Row#toJson()}
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingRowWithAnemicJsonMapper}
+----
+
 == Parameters mapping
 
 Templates consume `Map<String, Object>` as default input.
@@ -97,6 +107,15 @@ You can also perform batching easily:
 [source,$lang]
 ----
 {@link examples.TemplateExamples#batchBindingParamsWithCustomFunction}
+----
+
+== Anemic JSON parameters mapping
+
+Anemic JSON parameters mapping is a trivial mapping between template parameters and a JSON object:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingParamsWithAnemicJsonMapper}
 ----
 
 == Mapping with Jackson databind

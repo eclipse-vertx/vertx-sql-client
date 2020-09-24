@@ -40,6 +40,7 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 public class RowTest extends PgTestBase {
@@ -60,14 +61,20 @@ public class RowTest extends PgTestBase {
   private static <T> Function<String, T> accessor(Row row, Class<T> type) {
     return name -> {
       int idx = row.getColumnIndex(name);
-      return idx == -1 ? null : row.get(type, idx);
+      if (idx == -1) {
+        throw new NoSuchElementException();
+      }
+      return row.get(type, idx);
     };
   }
 
   private static <T> Function<String, T[]> arrayAccessor(Row row, Class<T> type) {
     return name -> {
       int idx = row.getColumnIndex(name);
-      return idx == -1 ? null : (T[]) row.get(Array.newInstance(type, 0).getClass(), idx);
+      if (idx == -1) {
+        throw new NoSuchElementException();
+      }
+      return (T[]) row.get(Array.newInstance(type, 0).getClass(), idx);
     };
   }
 
@@ -80,15 +87,15 @@ public class RowTest extends PgTestBase {
           Row row = result.iterator().next();
           List<Function<String, ?>> functions = Arrays.asList(
             row::getValue,
-            row::getString,
-            row::getBuffer,
-            row::getDouble,
             row::getShort,
             row::getInteger,
             row::getLong,
-            row::getBigDecimal,
-            accessor(row, Numeric.class),
             row::getFloat,
+            row::getDouble,
+            row::getBigDecimal,
+            row::getNumeric,
+            row::getString,
+            row::getBuffer,
             row::getLocalDate,
             row::getLocalTime,
             row::getOffsetDateTime,
@@ -104,19 +111,21 @@ public class RowTest extends PgTestBase {
             accessor(row, Polygon.class),
             accessor(row, Circle.class),
             accessor(row, Interval.class),
-            row::getBooleanArray,
             row::getShortArray,
             row::getIntegerArray,
             row::getLongArray,
             row::getFloatArray,
             row::getDoubleArray,
+            row::getBigDecimalArray,
+            row::getNumericArray,
             row::getStringArray,
+            row::getBufferArray,
             row::getLocalDateArray,
             row::getLocalTimeArray,
-            row::getOffsetTimeArray,
-            row::getLocalDateTimeArray,
             row::getOffsetDateTimeArray,
-            row::getBufferArray,
+            row::getLocalDateTimeArray,
+            row::getOffsetTimeArray,
+            row::getTemporalArray,
             row::getUUIDArray,
             arrayAccessor(row, Point.class),
             arrayAccessor(row, Line.class),
@@ -128,7 +137,11 @@ public class RowTest extends PgTestBase {
             arrayAccessor(row, Interval.class)
           );
           functions.forEach(f -> {
-            ctx.assertEquals(null, f.apply("bar"));
+            try {
+              f.apply("bar");
+              ctx.fail("Was expecting an NSEE");
+            } catch (NoSuchElementException ignore) {
+            }
             try {
               f.apply(null);
               ctx.fail("Was expecting an NPE");

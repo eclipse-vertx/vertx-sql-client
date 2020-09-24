@@ -13,16 +13,14 @@ public class UserDataObjectRowMapper implements java.util.function.Function<io.v
   public UserDataObject apply(io.vertx.sqlclient.Row row) {
     UserDataObject obj = new UserDataObject();
     Object val;
-    val = row.getString("first_name");
-    if (val != null) {
+    int idx;
+    if ((idx = row.getColumnIndex("first_name")) != -1 && (val = row.getString(idx)) != null) {
       obj.setFirstName((java.lang.String)val);
     }
-    val = row.getLong("id");
-    if (val != null) {
+    if ((idx = row.getColumnIndex("id")) != -1 && (val = row.getLong(idx)) != null) {
       obj.setId((long)val);
     }
-    val = row.getString("last_name");
-    if (val != null) {
+    if ((idx = row.getColumnIndex("last_name")) != -1 && (val = row.getString(idx)) != null) {
       obj.setLastName((java.lang.String)val);
     }
     return obj;

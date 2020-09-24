@@ -104,12 +104,6 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Object getValue(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getValue(pos);
-  }
-
-  @Override
   public Boolean getBoolean(int pos) {
     // DB2 stores booleans as TINYINT
     Object val = getValue(pos);
@@ -119,59 +113,6 @@ public class DB2RowImpl extends ArrayTuple implements Row {
       return (Short) val != 0;
     }
     return null;
-  }
-
-  @Override
-  public Boolean getBoolean(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBoolean(pos);
-  }
-
-  @Override
-  public Short getShort(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getShort(pos);
-  }
-
-  @Override
-  public Integer getInteger(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getInteger(pos);
-  }
-
-  @Override
-  public Long getLong(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLong(pos);
-  }
-
-  @Override
-  public Float getFloat(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getFloat(pos);
-  }
-
-  @Override
-  public Double getDouble(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getDouble(pos);
-  }
-
-  public Numeric getNumeric(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getNumeric(pos);
-  }
-
-  @Override
-  public String getString(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getString(pos);
-  }
-
-  @Override
-  public Buffer getBuffer(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBuffer(pos);
   }
 
   public RowId getRowId(int pos) {
@@ -189,128 +130,93 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Temporal getTemporal(String name) {
+  public Temporal getTemporal(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDate getLocalDate(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalDate(pos);
-  }
-
-  @Override
-  public LocalTime getLocalTime(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalTime(pos);
-  }
-
-  @Override
-  public LocalDateTime getLocalDateTime(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalDateTime(pos);
-  }
-
-  @Override
-  public OffsetTime getOffsetTime(String name) {
+  public OffsetTime getOffsetTime(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetDateTime getOffsetDateTime(String name) {
+  public OffsetDateTime getOffsetDateTime(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public UUID getUUID(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getUUID(pos);
-  }
-
-  @Override
-  public BigDecimal getBigDecimal(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBigDecimal(pos);
-  }
-
-  @Override
-  public Integer[] getIntegerArray(String name) {
+  public Integer[] getIntegerArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Boolean[] getBooleanArray(String name) {
+  public Boolean[] getBooleanArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Short[] getShortArray(String name) {
+  public Short[] getShortArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Long[] getLongArray(String name) {
+  public Long[] getLongArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Float[] getFloatArray(String name) {
+  public Float[] getFloatArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Double[] getDoubleArray(String name) {
+  public Double[] getDoubleArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public String[] getStringArray(String name) {
+  public Numeric[] getNumericArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDate[] getLocalDateArray(String name) {
+  public String[] getStringArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalTime[] getLocalTimeArray(String name) {
+  public LocalDate[] getLocalDateArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetTime[] getOffsetTimeArray(String name) {
+  public LocalTime[] getLocalTimeArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDateTime[] getLocalDateTimeArray(String name) {
+  public OffsetTime[] getOffsetTimeArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetDateTime[] getOffsetDateTimeArray(String name) {
+  public LocalDateTime[] getLocalDateTimeArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Buffer[] getBufferArray(String name) {
+  public OffsetDateTime[] getOffsetDateTimeArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public UUID[] getUUIDArray(String name) {
+  public Buffer[] getBufferArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
-  private Numeric getNumeric(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Numeric) {
-      return (Numeric) val;
-    } else if (val instanceof Number) {
-      return Numeric.parse(val.toString());
-    }
-    return null;
+  @Override
+  public UUID[] getUUIDArray(int pos) {
+    throw new UnsupportedOperationException();
   }
 
   private Byte getByte(int pos) {
@@ -330,7 +236,7 @@ public class DB2RowImpl extends ArrayTuple implements Row {
     }
     return null;
   }
-  
+
   private Object getEnum(Class enumType, int position) {
     Object val = getValue(position);
 	if (val instanceof String) {

@@ -49,15 +49,18 @@ class PgParamDesc extends ParamDesc {
     }
     for (int i = 0; i < paramDescLength; i++) {
       DataType paramDataType = paramDataTypes[i];
-      Object value = values.getValue(i);
-      Object val = DataTypeCodec.prepare(paramDataType, value);
-      if (val != value) {
-        if (val == DataTypeCodec.REFUSED_SENTINEL) {
-          return ErrorMessageFactory.buildWhenArgumentsTypeNotMatched(paramDataType.decodingType, i, value);
+      ParamExtractor<?> extractor = paramDataType.paramExtractor;
+      Object val;
+      try {
+        if (extractor != null) {
+          val = extractor.get(values, i);
         } else {
-          values.setValue(i, val);
+          val = values.get(paramDataType.encodingType, i);
         }
+      } catch (ClassCastException e) {
+        return ErrorMessageFactory.buildWhenArgumentsTypeNotMatched(paramDataType.decodingType, i, values.getValue(i));
       }
+      values.setValue(i, val);
     }
     return null;
   }

@@ -209,6 +209,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
           .returns(Tuple::getLongArray, Row::getLongArray, new Long[]{value[0].longValue()})
           .returns(Tuple::getFloatArray, Row::getFloatArray, new Float[]{value[0].floatValue()})
           .returns(Tuple::getDoubleArray, Row::getDoubleArray, new Double[]{value[0].doubleValue()})
+          .returns(Tuple::getNumericArray, Row::getNumericArray, new Numeric[]{Numeric.create(value[0])})
           .forRow(row);
         async.complete();
       }));
@@ -230,6 +231,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
             .returns(Tuple::getLongArray, Row::getLongArray, (Object[]) new Long[0])
             .returns(Tuple::getFloatArray, Row::getFloatArray, (Object[]) new Float[0])
             .returns(Tuple::getDoubleArray, Row::getDoubleArray, (Object[]) new Double[0])
+            .returns(Tuple::getNumericArray, Row::getNumericArray, (Object[]) new Numeric[0])
             .forRow(result.iterator().next());
           async.complete();
         }));

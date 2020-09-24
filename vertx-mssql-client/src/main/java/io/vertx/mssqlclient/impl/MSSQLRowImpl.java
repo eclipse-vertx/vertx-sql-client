@@ -37,11 +37,11 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public int getColumnIndex(String columnName) {
-    if (columnName == null) {
+  public int getColumnIndex(String column) {
+    if (column == null) {
       throw new IllegalArgumentException("Column name can not be null");
     }
-    return rowDesc.columnNames().indexOf(columnName);
+    return rowDesc.columnNames().indexOf(column);
   }
 
   @Override
@@ -78,102 +78,107 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Buffer getBuffer(String columnName) {
+  public Buffer getBuffer(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Temporal getTemporal(String columnName) {
+  public Temporal getTemporal(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDateTime getLocalDateTime(String columnName) {
+  public LocalDateTime getLocalDateTime(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetTime getOffsetTime(String columnName) {
+  public OffsetTime getOffsetTime(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetDateTime getOffsetDateTime(String columnName) {
+  public OffsetDateTime getOffsetDateTime(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public UUID getUUID(String columnName) {
+  public UUID getUUID(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Integer[] getIntegerArray(String columnName) {
+  public Integer[] getIntegerArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Boolean[] getBooleanArray(String columnName) {
+  public Boolean[] getBooleanArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Short[] getShortArray(String columnName) {
+  public Short[] getShortArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Long[] getLongArray(String columnName) {
+  public Long[] getLongArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Float[] getFloatArray(String columnName) {
+  public Float[] getFloatArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Double[] getDoubleArray(String columnName) {
+  public Double[] getDoubleArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public String[] getStringArray(String columnName) {
+  public Numeric[] getNumericArray(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDate[] getLocalDateArray(String columnName) {
+  public String[] getStringArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalTime[] getLocalTimeArray(String columnName) {
+  public LocalDate[] getLocalDateArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetTime[] getOffsetTimeArray(String columnName) {
+  public LocalTime[] getLocalTimeArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDateTime[] getLocalDateTimeArray(String columnName) {
+  public OffsetTime[] getOffsetTimeArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetDateTime[] getOffsetDateTimeArray(String columnName) {
+  public LocalDateTime[] getLocalDateTimeArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Buffer[] getBufferArray(String columnName) {
+  public OffsetDateTime[] getOffsetDateTimeArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public UUID[] getUUIDArray(String columnName) {
+  public Buffer[] getBufferArray(int pos) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public UUID[] getUUIDArray(int pos) {
     throw new UnsupportedOperationException();
   }
 
@@ -183,16 +188,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
       return (Byte) val;
     } else if (val instanceof Number) {
       return ((Number) val).byteValue();
-    }
-    return null;
-  }
-
-  private Numeric getNumeric(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Numeric) {
-      return (Numeric) val;
-    } else if (val instanceof Number) {
-      return Numeric.parse(val.toString());
     }
     return null;
   }
