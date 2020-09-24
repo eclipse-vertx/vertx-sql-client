@@ -10,7 +10,6 @@
  */
 package io.vertx.sqlclient.templates;
 
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
@@ -18,14 +17,13 @@ import io.vertx.sqlclient.templates.impl.JsonTuple;
 
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 
 /**
- * Map an arbitrary {@code I} object to a {@link Tuple}.
- * @param <I>
+ * Map an arbitrary {@code T} object to a {@link Tuple}.
  */
 @VertxGen
-public interface TupleMapper<I> {
+@FunctionalInterface
+public interface TupleMapper<T> {
 
   /**
    * Create a mapper that associates a parameters object to a map of named parameters to
@@ -61,7 +59,6 @@ public interface TupleMapper<I> {
    * @param params the parameters object
    * @return the tuple
    */
-  @GenIgnore
-  Tuple map(IntFunction<String> mapping, int size, I params);
+  Tuple map(Function<Integer, String> mapping, int size, T params);
 
 }

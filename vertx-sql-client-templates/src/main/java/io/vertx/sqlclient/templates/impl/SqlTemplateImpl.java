@@ -10,6 +10,7 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.TupleMapper;
 
 import java.util.List;
@@ -60,8 +61,8 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
   }
 
   @Override
-  public <U> io.vertx.sqlclient.templates.SqlTemplate<I, RowSet<U>> mapTo(Function<Row, U> mapper) {
-    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.mapping(mapper), tupleMapper);
+  public <U> io.vertx.sqlclient.templates.SqlTemplate<I, RowSet<U>> mapTo(RowMapper<U> mapper) {
+    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.mapping(mapper::map), tupleMapper);
   }
 
   @Override

@@ -1,6 +1,7 @@
 package io.vertx.sqlclient.templates;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
 import io.vertx.pgclient.data.Interval;
@@ -25,6 +26,12 @@ public class PostgreSQLDataObject {
   private Path path;
   private Point point;
   private Polygon polygon;
+
+  public PostgreSQLDataObject() {
+  }
+
+  public PostgreSQLDataObject(JsonObject json) {
+  }
 
   public Box getBox() {
     return box;

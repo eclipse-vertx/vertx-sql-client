@@ -4,13 +4,17 @@ package io.vertx.sqlclient.templates;
  * Mapper for {@link UserDataObject}.
  * NOTE: This class has been automatically generated from the {@link UserDataObject} original class using Vert.x codegen.
  */
-public class UserDataObjectRowMapper implements java.util.function.Function<io.vertx.sqlclient.Row, UserDataObject> {
+@io.vertx.codegen.annotations.VertxGen
+public interface UserDataObjectRowMapper extends io.vertx.sqlclient.templates.RowMapper<UserDataObject> {
 
-  public static final java.util.function.Function<io.vertx.sqlclient.Row, UserDataObject> INSTANCE = new UserDataObjectRowMapper();
+  @io.vertx.codegen.annotations.GenIgnore
+  UserDataObjectRowMapper INSTANCE = new UserDataObjectRowMapper() { };
 
-  public static final java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<UserDataObject>> COLLECTOR = java.util.stream.Collectors.mapping(INSTANCE, java.util.stream.Collectors.toList());
+  @io.vertx.codegen.annotations.GenIgnore
+  java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<UserDataObject>> COLLECTOR = java.util.stream.Collectors.mapping(INSTANCE::map, java.util.stream.Collectors.toList());
 
-  public UserDataObject apply(io.vertx.sqlclient.Row row) {
+  @io.vertx.codegen.annotations.GenIgnore
+  default UserDataObject map(io.vertx.sqlclient.Row row) {
     UserDataObject obj = new UserDataObject();
     Object val;
     int idx;

@@ -14,16 +14,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.TupleInternal;
 
-import java.util.Map;
-import java.util.function.IntFunction;
+import java.util.function.Function;
 
 public class JsonTuple implements TupleInternal {
 
   private final int size;
-  private final IntFunction<String> columnMapping;
+  private final Function<Integer, String> columnMapping;
   private final JsonObject json;
 
-  public JsonTuple(IntFunction<String> columnMapping, int size, JsonObject json) {
+  public JsonTuple(Function<Integer, String> columnMapping, int size, JsonObject json) {
     this.columnMapping = columnMapping;
     this.size = size;
     this.json = json;

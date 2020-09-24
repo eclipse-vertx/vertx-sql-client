@@ -7,6 +7,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import io.vertx.sqlclient.templates.TupleMapper;
 import io.vertx.sqlclient.templates.annotations.Column;
@@ -56,7 +58,7 @@ public class TemplateExamples {
       });
   }
 
-  private static final Function<Row, User> ROW_USER_MAPPER = row -> {
+  private static final RowMapper<User> ROW_USER_MAPPER = row -> {
     User user = new User();
     user.id = row.getInteger("id");
     user.firstName = row.getString("firstName");
@@ -65,7 +67,7 @@ public class TemplateExamples {
   };
 
   public void rowUserMapper() {
-    Function<Row, User> ROW_USER_MAPPER = row -> {
+    RowMapper<User> ROW_USER_MAPPER = row -> {
       User user = new User();
       user.id = row.getInteger("id");
       user.firstName = row.getString("firstName");
@@ -74,7 +76,7 @@ public class TemplateExamples {
     };
   }
 
-  public void bindingRowWithCustomFunction(SqlClient client) {
+  public void bindingRowWithCustomMapper(SqlClient client) {
     SqlTemplate
       .forQuery(client, "SELECT * FROM users WHERE id=#{id}")
       .mapTo(ROW_USER_MAPPER)
@@ -89,7 +91,7 @@ public class TemplateExamples {
   public void bindingRowWithAnemicJsonMapper(SqlClient client) {
     SqlTemplate
       .forQuery(client, "SELECT * FROM users WHERE id=#{id}")
-      .mapTo(row -> row.toJson())
+      .mapTo(Row::toJson)
       .execute(Collections.singletonMap("id", 1))
       .onSuccess(users -> {
         users.forEach(user -> {
@@ -98,25 +100,25 @@ public class TemplateExamples {
       });
   }
 
-  private static final Function<User, Map<String, Object>> PARAMETERS_USER_MAPPER = user -> {
+  private static final TupleMapper<User> PARAMETERS_USER_MAPPER = TupleMapper.mapper(user -> {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("id", user.id);
     parameters.put("firstName", user.firstName);
     parameters.put("lastName", user.lastName);
     return parameters;
-  };
+  });
 
   public void paramsUserMapper() {
-    Function<User, Map<String, Object>> PARAMETERS_USER_MAPPER = user -> {
+    TupleMapper<User> PARAMETERS_USER_MAPPER = TupleMapper.mapper(user -> {
       Map<String, Object> parameters = new HashMap<>();
       parameters.put("id", user.id);
       parameters.put("firstName", user.firstName);
       parameters.put("lastName", user.lastName);
       return parameters;
-    };
+    });
   }
 
-  public void bindingParamsWithCustomFunction(SqlClient client) {
+  public void bindingParamsWithCustomMapper(SqlClient client) {
     User user = new User();
     user.id = 1;
     user.firstName = "Dale";
@@ -131,7 +133,7 @@ public class TemplateExamples {
       });
   }
 
-  public void batchBindingParamsWithCustomFunction(SqlClient client, List<User> users) {
+  public void batchBindingParamsWithCustomMapper(SqlClient client, List<User> users) {
     SqlTemplate
       .forUpdate(client, "INSERT INTO users VALUES (#{id},#{firstName},#{lastName})")
       .mapFrom(PARAMETERS_USER_MAPPER)
@@ -403,22 +405,22 @@ public class TemplateExamples {
     public UserDataObject setLastName(String value) { throw new UnsupportedOperationException(); }
   }
 
-  public static class UserDataObjectRowMapper implements java.util.function.Function<io.vertx.sqlclient.Row, UserDataObject> {
+  public static class UserDataObjectRowMapper implements RowMapper<UserDataObject> {
 
     public static final UserDataObjectRowMapper INSTANCE = new UserDataObjectRowMapper();
 
     @Override
-    public UserDataObject apply(Row row) {
+    public UserDataObject map(Row row) {
       throw new UnsupportedOperationException();
     }
   }
 
-  public static class UserDataObjectParamMapper implements java.util.function.Function<UserDataObject, Map<String, Object>> {
+  public static class UserDataObjectParamMapper implements TupleMapper<UserDataObject> {
 
     public static final UserDataObjectParamMapper INSTANCE = new UserDataObjectParamMapper();
 
     @Override
-    public Map<String, Object> apply(UserDataObject userDataObject) {
+    public Tuple map(Function<Integer, String> mapping, int size, UserDataObject params) {
       throw new UnsupportedOperationException();
     }
   }

@@ -359,7 +359,7 @@ public class DataObjectTypesTest extends PgTemplateTestBase {
       ctx,
       sqlType,
       TestDataObjectRowMapper.INSTANCE,
-      Function.identity(),
+      TupleMapper.mapper(Function.identity()),
       "value",
       Collections.singletonMap("value", param),
       value,
