@@ -11,8 +11,6 @@
 
 package io.vertx.mssqlclient.impl.protocol.datatype;
 
-import jdk.nashorn.internal.scripts.JD;
-
 import java.sql.JDBCType;
 
 /**
