@@ -4,13 +4,17 @@ package io.vertx.sqlclient.templates;
  * Mapper for {@link TestDataObject}.
  * NOTE: This class has been automatically generated from the {@link TestDataObject} original class using Vert.x codegen.
  */
-public class TestDataObjectRowMapper implements java.util.function.Function<io.vertx.sqlclient.Row, TestDataObject> {
+@io.vertx.codegen.annotations.VertxGen
+public interface TestDataObjectRowMapper extends io.vertx.sqlclient.templates.RowMapper<TestDataObject> {
 
-  public static final java.util.function.Function<io.vertx.sqlclient.Row, TestDataObject> INSTANCE = new TestDataObjectRowMapper();
+  @io.vertx.codegen.annotations.GenIgnore
+  TestDataObjectRowMapper INSTANCE = new TestDataObjectRowMapper() { };
 
-  public static final java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<TestDataObject>> COLLECTOR = java.util.stream.Collectors.mapping(INSTANCE, java.util.stream.Collectors.toList());
+  @io.vertx.codegen.annotations.GenIgnore
+  java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<TestDataObject>> COLLECTOR = java.util.stream.Collectors.mapping(INSTANCE::map, java.util.stream.Collectors.toList());
 
-  public TestDataObject apply(io.vertx.sqlclient.Row row) {
+  @io.vertx.codegen.annotations.GenIgnore
+  default TestDataObject map(io.vertx.sqlclient.Row row) {
     TestDataObject obj = new TestDataObject();
     Object val;
     int idx;

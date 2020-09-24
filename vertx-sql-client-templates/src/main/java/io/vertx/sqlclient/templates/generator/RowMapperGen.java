@@ -11,6 +11,7 @@ import io.vertx.codegen.type.DataObjectInfo;
 import io.vertx.codegen.type.MapperInfo;
 import io.vertx.codegen.type.PrimitiveTypeInfo;
 import io.vertx.codegen.type.TypeInfo;
+import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.annotations.Column;
 import io.vertx.sqlclient.templates.annotations.RowMapped;
 
@@ -37,6 +38,12 @@ public class RowMapperGen extends MapperGenBase {
   }
 
   @Override
+  protected void renderDeclaration(DataObjectModel model, PrintWriter writer) {
+    writer.print("@io.vertx.codegen.annotations.VertxGen\n");
+    writer.print("public interface " + genSimpleName(model) + " extends " + genFunctionExtends(model) + " {\n");
+  }
+
+  @Override
   protected String genSimpleName(DataObjectModel model) {
     return model.getType().getSimpleName() + "RowMapper";
   }
@@ -54,18 +61,20 @@ public class RowMapperGen extends MapperGenBase {
     genFromRow(visibility, model, writer);
   }
 
-  @Override
-  protected String genFunctionExtends(DataObjectModel model) {
-    return "java.util.function.Function<io.vertx.sqlclient.Row, " + model.getType().getSimpleName() + ">";
+  private String genFunctionExtends(DataObjectModel model) {
+    return RowMapper.class.getName() + "<" + model.getType().getSimpleName() + ">";
   }
 
   private void genFromRow(String visibility, DataObjectModel model, PrintWriter writer) {
     writer.print("\n");
-    writer.print("  " + visibility + " static final java.util.function.Function<io.vertx.sqlclient.Row, " +  model.getType().getSimpleName() + "> INSTANCE = new " + genSimpleName(model) + "();\n");
+    writer.print("  @io.vertx.codegen.annotations.GenIgnore\n");
+    writer.print("  " + genSimpleName(model) + " INSTANCE = new " + genSimpleName(model) + "() { };\n");
     writer.print("\n");
-    writer.print("  " + visibility + " static final java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<" + model.getType().getSimpleName() + ">> COLLECTOR = " + "java.util.stream.Collectors.mapping(INSTANCE, java.util.stream.Collectors.toList());\n");
+    writer.print("  @io.vertx.codegen.annotations.GenIgnore\n");
+    writer.print("  java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<" + model.getType().getSimpleName() + ">> COLLECTOR = " + "java.util.stream.Collectors.mapping(INSTANCE::map, java.util.stream.Collectors.toList());\n");
     writer.print("\n");
-    writer.print("  " + visibility + " " + model.getType().getSimpleName() + " apply(io.vertx.sqlclient.Row row) {\n");
+    writer.print("  @io.vertx.codegen.annotations.GenIgnore\n");
+    writer.print("  default " + model.getType().getSimpleName() + " map(io.vertx.sqlclient.Row row) {\n");
     writer.print("    " + model.getType().getSimpleName() + " obj = new " + model.getType().getSimpleName() + "();\n");
     writer.print("    Object val;\n");
     writer.print("    int idx;\n");

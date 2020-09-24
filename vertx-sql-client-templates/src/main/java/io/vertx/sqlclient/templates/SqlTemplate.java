@@ -60,19 +60,6 @@ public interface SqlTemplate<I, R> {
   /**
    * Set a parameters user defined mapping function.
    *
-   * <p> At query execution, the {@code mapper} function is called to map the parameters object
-   * to a {@code Map<String, Object>} that configures the prepared query.
-   *
-   * @param mapper the mapping function
-   * @return a new template
-   */
-  default <T> SqlTemplate<T, R> mapFrom(Function<T, Map<String, Object>> mapper) {
-    return mapFrom(TupleMapper.mapper(mapper));
-  }
-
-  /**
-   * Set a parameters user defined mapping function.
-   *
    * <p> At query execution, the {@code mapper} is called to map the parameters object
    * to a {@code Tuple} that configures the prepared query.
    *
@@ -94,7 +81,7 @@ public interface SqlTemplate<I, R> {
    * @return a new template
    */
   default <T> SqlTemplate<T, R> mapFrom(Class<T> type) {
-    return mapFrom(params -> JsonObject.mapFrom(params).getMap());
+    return mapFrom(TupleMapper.mapper(params -> JsonObject.mapFrom(params).getMap()));
   }
 
   /**
@@ -106,7 +93,7 @@ public interface SqlTemplate<I, R> {
    * @param mapper the mapping function
    * @return a new template
    */
-  <U> SqlTemplate<I, RowSet<U>> mapTo(Function<Row, U> mapper);
+  <U> SqlTemplate<I, RowSet<U>> mapTo(RowMapper<U> mapper);
 
   /**
    * Set a row user defined mapping function.

@@ -157,6 +157,12 @@ public class TestDataObject {
   private List<JsonArrayWrapper> jsonArrayAddedMethodMappedDataObjects = new ArrayList<>();
   private List<TimeUnit> addedTimeUnits = new ArrayList<>();
 
+  public TestDataObject() {
+  }
+
+  public TestDataObject(JsonObject json) {
+  }
+
   public boolean isPrimitiveBoolean() {
     return primitiveBoolean;
   }

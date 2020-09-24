@@ -4,13 +4,17 @@ package io.vertx.sqlclient.templates;
  * Mapper for {@link PostgreSQLDataObject}.
  * NOTE: This class has been automatically generated from the {@link PostgreSQLDataObject} original class using Vert.x codegen.
  */
-public class PostgreSQLDataObjectRowMapper implements java.util.function.Function<io.vertx.sqlclient.Row, PostgreSQLDataObject> {
+@io.vertx.codegen.annotations.VertxGen
+public interface PostgreSQLDataObjectRowMapper extends io.vertx.sqlclient.templates.RowMapper<PostgreSQLDataObject> {
 
-  public static final java.util.function.Function<io.vertx.sqlclient.Row, PostgreSQLDataObject> INSTANCE = new PostgreSQLDataObjectRowMapper();
+  @io.vertx.codegen.annotations.GenIgnore
+  PostgreSQLDataObjectRowMapper INSTANCE = new PostgreSQLDataObjectRowMapper() { };
 
-  public static final java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<PostgreSQLDataObject>> COLLECTOR = java.util.stream.Collectors.mapping(INSTANCE, java.util.stream.Collectors.toList());
+  @io.vertx.codegen.annotations.GenIgnore
+  java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<PostgreSQLDataObject>> COLLECTOR = java.util.stream.Collectors.mapping(INSTANCE::map, java.util.stream.Collectors.toList());
 
-  public PostgreSQLDataObject apply(io.vertx.sqlclient.Row row) {
+  @io.vertx.codegen.annotations.GenIgnore
+  default PostgreSQLDataObject map(io.vertx.sqlclient.Row row) {
     PostgreSQLDataObject obj = new PostgreSQLDataObject();
     Object val;
     int idx;

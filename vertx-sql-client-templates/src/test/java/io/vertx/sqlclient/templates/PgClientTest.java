@@ -147,7 +147,7 @@ public class PgClientTest extends PgTemplateTestBase {
       ctx,
       sqlType,
       PostgreSQLDataObjectRowMapper.INSTANCE,
-      Function.identity(),
+      TupleMapper.mapper(Function.identity()),
       "value",
       Collections.singletonMap("value", value),
       value,
