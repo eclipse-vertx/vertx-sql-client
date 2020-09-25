@@ -362,6 +362,29 @@ public abstract class PreparedQueryTestBase {
     });
   }
 
+  @Test
+  public void testStreamQueryPauseResume(TestContext ctx) {
+    Async async = ctx.async();
+    testCursor(ctx, conn -> {
+      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+        RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
+        List<Tuple> rows = new ArrayList<>();
+        AtomicInteger ended = new AtomicInteger();
+        stream.handler(tuple -> {
+          System.out.println("TUPLE " + tuple);
+          ctx.assertEquals(0, ended.get());
+          rows.add(tuple);
+        });
+        stream.pause();
+        stream.resume();
+        stream.endHandler(v -> {
+          System.out.println(rows);
+          async.complete();
+        });
+      }));
+    });
+  }
+
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {

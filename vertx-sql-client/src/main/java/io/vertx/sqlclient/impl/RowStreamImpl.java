@@ -43,7 +43,7 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
   private long demand;
   private boolean emitting;
   private Cursor cursor;
-
+  private boolean readInProgress;
   private Iterator<Row> result;
 
   RowStreamImpl(PreparedStatementImpl ps, ContextInternal context, int fetch, Tuple params) {
@@ -72,16 +72,20 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
         if (cursor == null) {
           rowHandler = handler;
           c = cursor = ps.cursor(params);
+          if (readInProgress) {
+            return this;
+          }
+          readInProgress = true;
         } else {
           throw new UnsupportedOperationException("Handle me gracefully");
         }
       } else {
+        rowHandler = null;
         if (cursor != null) {
           cursor.close();
+          readInProgress = false;
           cursor = null;
           result = null; // Will stop the current emission if any
-        } else {
-          rowHandler = null;
         }
         return this;
       }
@@ -106,9 +110,6 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
       if (demand < 0L) {
         demand = Long.MAX_VALUE;
       }
-      if (cursor == null) {
-        return this;
-      }
     }
     checkPending();
     return this;
@@ -129,19 +130,23 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
   public void handle(AsyncResult<RowSet<Row>> ar) {
     if (ar.failed()) {
       Handler<Throwable> handler;
-      synchronized (RowStreamImpl.this) {
+      synchronized (this) {
+        readInProgress = false;
         cursor = null;
+        result = null;
         handler = exceptionHandler;
       }
       if (handler != null) {
         handler.handle(ar.cause());
       }
     } else {
-      RowIterator<Row> it = ar.result().iterator();
-      if (it.hasNext()) {
-        result = it;
+      synchronized (this) {
+        readInProgress = false;
+        RowIterator<Row> it = ar.result().iterator();
+        if (it.hasNext()) {
+          result = it;
+        }
       }
-      // Still need to check pending to close the cursor
       checkPending();
     }
   }
@@ -194,16 +199,21 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
           }
         } else {
           emitting = false;
-          if (cursor == null) {
-            break;
-          } else if (cursor.hasMore()) {
-            cursor.read(fetch, this);
+          if (readInProgress) {
             break;
           } else {
-            cursor.close();
-            cursor = null;
-            handler = endHandler;
-            event = null;
+            if (cursor == null) {
+              break;
+            } else if (cursor.hasMore()) {
+              readInProgress = true;
+              cursor.read(fetch, this);
+              break;
+            } else {
+              cursor.close();
+              cursor = null;
+              handler = endHandler;
+              event = null;
+            }
           }
         }
         if (handler != null) {
