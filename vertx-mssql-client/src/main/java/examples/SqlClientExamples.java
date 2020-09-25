@@ -16,11 +16,13 @@
  */
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.*;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Source
@@ -193,6 +195,24 @@ public class SqlClientExamples {
           }
         });
       }
+    });
+  }
+
+  public void usingConnections03(Pool pool) {
+    Future<Integer> future = pool.withConnection(conn -> conn
+      .query("SELECT id FROM USERS WHERE name = 'Julien'")
+      .execute()
+      .flatMap(rowSet -> {
+        Iterator<Row> rows = rowSet.iterator();
+        if (rows.hasNext()) {
+          Row row = rows.next();
+          return Future.succeededFuture(row.getInteger("id"));
+        } else {
+          return Future.failedFuture("No results");
+        }
+      }));
+    future.onSuccess(id -> {
+      System.out.println("User id: " + id);
     });
   }
 

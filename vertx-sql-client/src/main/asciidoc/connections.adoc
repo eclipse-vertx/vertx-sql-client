@@ -1,5 +1,7 @@
 == Using connections
 
+=== Getting a connection
+
 When you need to execute sequential queries (without a transaction), you can create a new connection
 or borrow one from the pool:
 
@@ -13,4 +15,20 @@ Prepared queries can be created:
 [source,$lang]
 ----
 {@link examples.SqlClientExamples#usingConnections02(io.vertx.sqlclient.SqlConnection)}
+----
+
+=== Simplified transaction API
+
+When you use a pool, you can call {@link io.vertx.sqlclient.Pool#withConnection} to pass it a function executed
+within a connection.
+
+It borrows a connection from the pool and calls the function with this connection.
+
+The function must return a future of an arbitrary result.
+
+After the future completes, the connection is returned to the pool and the overall result is provided.
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#usingConnections03(io.vertx.sqlclient.Pool)}
 ----
