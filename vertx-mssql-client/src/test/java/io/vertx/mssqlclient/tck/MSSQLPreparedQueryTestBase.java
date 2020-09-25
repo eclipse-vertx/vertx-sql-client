@@ -85,6 +85,14 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
   @Override
   @Test
   @Ignore
+  public void testStreamQueryPauseResume(TestContext ctx) {
+    // TODO streaming support
+    super.testStreamQueryPauseResume(ctx);
+  }
+
+  @Override
+  @Test
+  @Ignore
   public void testStreamQuery(TestContext ctx) {
     // TODO streaming support
     super.testStreamQuery(ctx);
