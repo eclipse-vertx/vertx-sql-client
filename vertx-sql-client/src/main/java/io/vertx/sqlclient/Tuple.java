@@ -370,7 +370,7 @@ public interface Tuple {
     } else if (val instanceof Enum<?>) {
       return ((Enum<?>) val).name();
     } else {
-      throw new ClassCastException();
+      return String.valueOf(val);
     }
   }
 
@@ -474,7 +474,14 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDateTime getLocalDateTime(int pos) {
-    return (LocalDateTime) getValue(pos);
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof LocalDateTime) {
+      return (LocalDateTime) val;
+    } else {
+      return (LocalDateTime) val; // Throw CCE
+    }
   }
 
   /**
@@ -508,7 +515,14 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetDateTime getOffsetDateTime(int pos) {
-    return (OffsetDateTime) getValue(pos);
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof OffsetDateTime) {
+      return (OffsetDateTime)val;
+    } else {
+      return (OffsetDateTime) val; // Throw CCE
+    }
   }
 
   /**

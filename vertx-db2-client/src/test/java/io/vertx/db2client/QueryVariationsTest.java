@@ -4,6 +4,7 @@ import static org.junit.Assume.assumeFalse;
 
 import java.util.Arrays;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +41,46 @@ public class QueryVariationsTest extends DB2TestBase {
         ctx.assertEquals("Computers make very fast, very accurate mistakes.", row.getString(1));
         ctx.assertEquals("Computers make very fast, very accurate mistakes.", row.getString("the message"));
         ctx.assertFalse(rows.hasNext());
+        conn.close();
+      }));
+    }));
+  }
+  
+  private void verifyTimestamp(TestContext ctx, String tStamp) {
+    // ex: 2020-09-26T03:10:52.263752
+    ctx.assertTrue(Pattern.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*", tStamp),
+        "Expected to get a timestamp matching the format YYYY-MM-DDThh:mm:ss.nnnnnn but got: " + tStamp);
+  }
+  
+  @Test
+  public void testCurrentTimestamp(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT CURRENT TIMESTAMP FROM SYSIBM.SYSDUMMY1").execute(
+          ctx.asyncAssertSuccess(rowSet -> {
+        ctx.assertEquals(1, rowSet.size());
+        RowIterator<Row> rows = rowSet.iterator();
+        ctx.assertTrue(rows.hasNext());
+        Row row = rows.next();
+        // Should be able to read the row as a LocalDateTime or String
+        verifyTimestamp(ctx, row.getLocalDateTime(0).toString());
+        verifyTimestamp(ctx, row.getString(0));
+        conn.close();
+      }));
+    }));
+  }
+  
+  @Test
+  public void testCurrentTimestampPrepared(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT CURRENT TIMESTAMP FROM SYSIBM.SYSDUMMY1").execute(
+          ctx.asyncAssertSuccess(rowSet -> {
+        ctx.assertEquals(1, rowSet.size());
+        RowIterator<Row> rows = rowSet.iterator();
+        ctx.assertTrue(rows.hasNext());
+        Row row = rows.next();
+        // Should be able to read the row as a LocalDateTime or String
+        verifyTimestamp(ctx, row.getLocalDateTime(0).toString());
+        verifyTimestamp(ctx, row.getString(0));
         conn.close();
       }));
     }));
