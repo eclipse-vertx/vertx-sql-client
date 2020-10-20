@@ -178,7 +178,7 @@ public class PgPoolTest extends PgPoolTestBase {
           pool.query("select pg_sleep(5)").execute(ctx.asyncAssertSuccess(res -> async.countDown()));
         });
       }
-      vertx.setTimer(10 * (poolSize + 1), event -> {
+      vertx.setTimer(10 * poolSize + 50, event -> {
         ctrlConn.query("select count(*) as cnt from pg_stat_activity where application_name like '%vertx%'").execute(ctx.asyncAssertSuccess(rows -> {
           Integer count = rows.iterator().next().getInteger("cnt");
           ctx.assertEquals(poolSize + 1, count);
