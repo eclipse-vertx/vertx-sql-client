@@ -74,7 +74,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
                           boolean autoCommit,
                           boolean singleton,
                           PromiseInternal<L> promise) {
-    ContextInternal context = (ContextInternal) promise.context();
+    ContextInternal context = promise.context();
     Object payload;
     if (tracer != null) {
       payload = tracer.sendRequest(context, sql);
