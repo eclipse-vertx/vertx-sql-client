@@ -51,8 +51,8 @@ public interface Transaction {
    * Return the transaction completion {@code Future} that
    *
    * <ul>
-   *   <li>succeeds when the transaction commits</li>
-   *   <li>fails with {@link TransactionRollbackException} when the transaction rollbacks</li>
+   *   <li>succeeds when the transaction commits and</li>
+   *   <li>fails with {@link TransactionRollbackException} when the transaction rolls back</li>
    * </ul>
    *
    * @return the transaction result
