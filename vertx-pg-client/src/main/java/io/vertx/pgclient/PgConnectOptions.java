@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.pgclient.impl.PgConnectionUriParser;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
@@ -436,6 +437,11 @@ public class PgConnectOptions extends SqlConnectOptions {
   @Override
   public PgConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
     return (PgConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
+  }
+
+  @Override
+  public PgConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
+    return (PgConnectOptions) super.setTracingPolicy(tracingPolicy);
   }
 
   /**
