@@ -35,6 +35,7 @@ import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.core.net.SSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.db2client.impl.DB2ConnectionUriParser;
 import io.vertx.db2client.impl.drda.SQLState;
 import io.vertx.db2client.impl.drda.SqlCode;
@@ -241,6 +242,11 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     }
     this.pipeliningLimit = pipeliningLimit;
     return this;
+  }
+
+  @Override
+  public DB2ConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
+    return (DB2ConnectOptions) super.setTracingPolicy(tracingPolicy);
   }
 
   @Override

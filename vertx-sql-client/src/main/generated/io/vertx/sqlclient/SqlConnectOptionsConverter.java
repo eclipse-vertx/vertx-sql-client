@@ -61,6 +61,11 @@ public class SqlConnectOptionsConverter {
             obj.setProperties(map);
           }
           break;
+        case "tracingPolicy":
+          if (member.getValue() instanceof String) {
+            obj.setTracingPolicy(io.vertx.core.tracing.TracingPolicy.valueOf((String)member.getValue()));
+          }
+          break;
         case "user":
           if (member.getValue() instanceof String) {
             obj.setUser((String)member.getValue());
@@ -91,6 +96,9 @@ public class SqlConnectOptionsConverter {
       JsonObject map = new JsonObject();
       obj.getProperties().forEach((key, value) -> map.put(key, value));
       json.put("properties", map);
+    }
+    if (obj.getTracingPolicy() != null) {
+      json.put("tracingPolicy", obj.getTracingPolicy().name());
     }
     if (obj.getUser() != null) {
       json.put("user", obj.getUser());

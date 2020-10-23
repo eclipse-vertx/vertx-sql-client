@@ -24,6 +24,7 @@ import io.vertx.core.net.PfxOptions;
 import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.SSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.HashMap;
@@ -312,6 +313,11 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   @Override
   public MSSQLConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
     return (MSSQLConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
+  }
+
+  @Override
+  public MSSQLConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
+    return (MSSQLConnectOptions) super.setTracingPolicy(tracingPolicy);
   }
 
   /**

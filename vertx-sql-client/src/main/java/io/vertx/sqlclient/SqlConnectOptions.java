@@ -16,6 +16,7 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.tracing.TracingPolicy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,6 +43,7 @@ public class SqlConnectOptions extends NetClientOptions {
   private int preparedStatementCacheMaxSize = DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE;
   private Predicate<String> preparedStatementCacheSqlFilter = DEFAULT_PREPARED_STATEMENT_CACHE_FILTER;
   private Map<String, String> properties = new HashMap<>(4);
+  private TracingPolicy tracingPolicy;
 
   public SqlConnectOptions() {
     super();
@@ -289,6 +291,24 @@ public class SqlConnectOptions extends NetClientOptions {
   @GenIgnore
   public SocketAddress getSocketAddress() {
     return SocketAddress.inetSocketAddress(getPort(), getHost());
+  }
+
+  /**
+   * @return the tracing policy
+   */
+  public TracingPolicy getTracingPolicy() {
+    return tracingPolicy;
+  }
+
+  /**
+   * Set the tracing policy for the client behavior when Vert.x has tracing enabled.
+   *
+   * @param tracingPolicy the tracing policy
+   * @return a reference to this, so the API can be used fluently
+   */
+  public SqlConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
+    this.tracingPolicy = tracingPolicy;
+    return this;
   }
 
   @Override

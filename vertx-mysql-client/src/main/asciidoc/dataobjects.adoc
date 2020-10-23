@@ -102,6 +102,7 @@ Set the link for the client, this option can be used to specify the desired secu
 |[[tcpKeepAlive]]`@tcpKeepAlive`|`Boolean`|-
 |[[tcpNoDelay]]`@tcpNoDelay`|`Boolean`|-
 |[[tcpQuickAck]]`@tcpQuickAck`|`Boolean`|-
+|[[tracingPolicy]]`@tracingPolicy`|`link:enums.html#TracingPolicy[TracingPolicy]`|-
 |[[trafficClass]]`@trafficClass`|`Number (int)`|-
 |[[trustAll]]`@trustAll`|`Boolean`|-
 |[[useAffectedRows]]`@useAffectedRows`|`Boolean`|+++

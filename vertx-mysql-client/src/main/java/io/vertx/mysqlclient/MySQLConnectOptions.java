@@ -16,6 +16,7 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -525,6 +526,11 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   @Override
   public MySQLConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
     return (MySQLConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
+  }
+
+  @Override
+  public MySQLConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
+    return (MySQLConnectOptions) super.setTracingPolicy(tracingPolicy);
   }
 
   /**
