@@ -94,6 +94,10 @@ A simple way to configure the client is to specify a `MSSQLConnectOptions` data 
 
 include::queries.adoc[]
 
+== Tracing queries
+
+include::tracing.adoc[]
+
 == DATATYPE support
 
 Currently the client supports the following SQL Server types

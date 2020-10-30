@@ -228,6 +228,10 @@ include::transactions.adoc[]
 
 include::cursor.adoc[]
 
+== Tracing queries
+
+include::tracing.adoc[]
+
 == MySQL type mapping
 
 Currently the client supports the following MySQL types

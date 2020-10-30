@@ -18,7 +18,9 @@ package examples;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
+import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.*;
 
 import java.util.ArrayList;
@@ -373,5 +375,9 @@ public class SqlClientExamples {
         });
       }
     });
+  }
+
+  public void tracing01(MSSQLConnectOptions options) {
+    options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 }

@@ -18,7 +18,9 @@ package examples;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -361,5 +363,9 @@ public class SqlClientExamples {
         });
       }
     });
+  }
+
+  public void tracing01(MySQLConnectOptions options) {
+    options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 }

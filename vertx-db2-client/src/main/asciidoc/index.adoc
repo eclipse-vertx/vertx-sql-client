@@ -152,6 +152,10 @@ include::transactions.adoc[]
 
 include::cursor.adoc[]
 
+== Tracing queries
+
+include::tracing.adoc[]
+
 == DB2 type mapping
 
 Currently the client supports the following DB2 types

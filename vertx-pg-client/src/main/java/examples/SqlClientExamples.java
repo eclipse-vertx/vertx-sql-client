@@ -18,10 +18,11 @@ package examples;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
+import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -376,5 +377,9 @@ public class SqlClientExamples {
         });
       }
     });
+  }
+
+  public void tracing01(PgConnectOptions options) {
+    options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 }

@@ -21,6 +21,8 @@ import java.util.List;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
@@ -375,5 +377,9 @@ public class SqlClientExamples {
         });
       }
     });
+  }
+
+  public void tracing01(DB2ConnectOptions options) {
+    options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 }
