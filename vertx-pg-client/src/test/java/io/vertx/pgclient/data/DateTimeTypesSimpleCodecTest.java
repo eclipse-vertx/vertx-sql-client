@@ -13,16 +13,38 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
+import java.time.ZoneOffset;
 
 public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
 
+  private static final LocalDateTime NOW = LocalDateTime.now();
+  private static final LocalDateTime TODAY = LocalDateTime.of(NOW.toLocalDate(), LocalTime.MIDNIGHT);
+
   @Test
   public void testDate(TestContext ctx) {
+    testDate(ctx, "1981-05-30", LocalDate.parse("1981-05-30"));
+  }
+
+  @Test
+  public void testDatePlusToday(TestContext ctx) {
+    testDate(ctx, "today", TODAY.toLocalDate());
+  }
+
+  @Test
+  public void testDatePlusInfinity(TestContext ctx) {
+    testDate(ctx, "infinity", LocalDate.MAX);
+  }
+
+  @Test
+  public void testDateMinusInfinity(TestContext ctx) {
+    testDate(ctx, "-infinity", LocalDate.MIN);
+  }
+
+  private void testDate(TestContext ctx, String value, LocalDate ld) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '1981-05-30'::DATE \"LocalDate\"").execute(ctx.asyncAssertSuccess(result -> {
-          LocalDate ld = LocalDate.parse("1981-05-30");
+        .query("SELECT '" + value + "'::DATE \"LocalDate\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "LocalDate")
@@ -75,19 +97,37 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
 
   @Test
   public void testTimestamp(TestContext ctx) {
+    testTimestamp(ctx, "2017-05-14 19:35:58.237666", LocalDateTime.parse("2017-05-14T19:35:58.237666"));
+  }
+
+  @Test
+  public void testTimestampToday(TestContext ctx) {
+    testTimestamp(ctx, "today", TODAY);
+  }
+
+  @Test
+  public void testTimestampPlusInfinity(TestContext ctx) {
+    testTimestamp(ctx, "infinity", LocalDateTime.MAX);
+  }
+
+  @Test
+  public void testTimestampMinusInfinity(TestContext ctx) {
+    testTimestamp(ctx, "-infinity", LocalDateTime.MIN);
+  }
+
+  private void testTimestamp(TestContext ctx, String value, LocalDateTime expected) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '2017-05-14 19:35:58.237666'::TIMESTAMP \"LocalDateTime\"").execute(ctx.asyncAssertSuccess(result -> {
-          LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
+        .query("SELECT '" + value + "'::TIMESTAMP \"LocalDateTime\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "LocalDateTime")
-            .returns(Tuple::getValue, Row::getValue, ldt)
-            .returns(Tuple::getLocalTime, Row::getLocalTime, ldt.toLocalTime())
-            .returns(Tuple::getLocalDate, Row::getLocalDate, ldt.toLocalDate())
-            .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, ldt)
-            .returns(Tuple::getTemporal, Row::getTemporal, ldt)
+            .returns(Tuple::getValue, Row::getValue, expected)
+            .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+            .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+            .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected)
+            .returns(Tuple::getTemporal, Row::getTemporal, expected)
             .forRow(row);
           async.complete();
         }));
@@ -96,18 +136,36 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
 
   @Test
   public void testTimestampTz(TestContext ctx) {
+    testTimestampTz(ctx, "2017-05-14 22:35:58.237666-03", OffsetDateTime.parse("2017-05-15T01:35:58.237666Z"));
+  }
+
+  @Test
+  public void testTimestampTzToday(TestContext ctx) {
+    testTimestampTz(ctx, "today", OffsetDateTime.of(TODAY, ZoneOffset.UTC));
+  }
+
+  @Test
+  public void testTimestampTzPlusInfinity(TestContext ctx) {
+    testTimestampTz(ctx, "infinity", OffsetDateTime.MAX);
+  }
+
+  @Test
+  public void testTimestampTzMinusInfinity(TestContext ctx) {
+    testTimestampTz(ctx, "-infinity", OffsetDateTime.MIN);
+  }
+
+  private void testTimestampTz(TestContext ctx, String value, OffsetDateTime expected) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
-        conn.query("SELECT '2017-05-14 22:35:58.237666-03'::TIMESTAMPTZ \"OffsetDateTime\"").execute(ctx.asyncAssertSuccess(result -> {
-          OffsetDateTime odt = OffsetDateTime.parse("2017-05-15T01:35:58.237666Z");
+        conn.query("SELECT '" + value + "'::TIMESTAMPTZ \"OffsetDateTime\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "OffsetDateTime")
-            .returns(Tuple::getValue, Row::getValue, odt)
-            .returns(Tuple::getOffsetTime, Row::getOffsetTime, odt.toOffsetTime())
-            .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, odt)
-            .returns(Tuple::getTemporal, Row::getTemporal, odt)
+            .returns(Tuple::getValue, Row::getValue, expected)
+            .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
+            .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, expected)
+            .returns(Tuple::getTemporal, Row::getTemporal, expected)
             .forRow(row);
           async.complete();
         }));

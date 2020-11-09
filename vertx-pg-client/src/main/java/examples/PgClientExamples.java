@@ -30,6 +30,7 @@ import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collector;
@@ -464,6 +465,19 @@ public class PgClientExamples {
 
     // Get the first array of string
     String[] array = tuple.getStringArray(0);
+  }
+
+  public void infinitySpecialValue(SqlClient client) {
+    client
+      .query("SELECT 'infinity'::DATE \"LocalDate\"")
+      .execute(ar -> {
+        if (ar.succeeded()) {
+          Row row = ar.result().iterator().next();
+          System.out.println(row.getLocalDate("LocalDate").equals(LocalDate.MAX));
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
+      });
   }
 
   public void customType01Example(SqlClient client) {

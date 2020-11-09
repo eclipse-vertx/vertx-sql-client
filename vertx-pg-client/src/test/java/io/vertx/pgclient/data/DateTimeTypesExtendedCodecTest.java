@@ -16,9 +16,20 @@ import java.time.OffsetTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
+
   @Test
   public void testDecodeDateBeforePgEpoch(TestContext ctx) {
     testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.parse("1981-05-30"));
+  }
+
+  @Test
+  public void testDecodeDatePlusInfinity(TestContext ctx) {
+    testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.MAX);
+  }
+
+  @Test
+  public void testDecodeDateMinuxInfinity(TestContext ctx) {
+    testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.MIN);
   }
 
   @Test
@@ -147,6 +158,30 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   }
 
   @Test
+  public void testDecodeTimestampPlusInfinity(TestContext ctx) {
+    LocalDateTime expected = LocalDateTime.MAX;
+    ColumnChecker checker = ColumnChecker.checkColumn(0, "Timestamp")
+      .returns(Tuple::getValue, Row::getValue, expected)
+      .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+      .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+      .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected)
+      .returns(Tuple::getTemporal, Row::getTemporal, expected);
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITHOUT TIME ZONE", "Timestamp", checker, expected);
+  }
+
+  @Test
+  public void testDecodeTimestampMinusInfinity(TestContext ctx) {
+    LocalDateTime expected = LocalDateTime.MIN;
+    ColumnChecker checker = ColumnChecker.checkColumn(0, "Timestamp")
+      .returns(Tuple::getValue, Row::getValue, expected)
+      .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+      .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+      .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected)
+      .returns(Tuple::getTemporal, Row::getTemporal, expected);
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITHOUT TIME ZONE", "Timestamp", checker, expected);
+  }
+
+  @Test
   public void testEncodeTimestampBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
@@ -171,7 +206,6 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         }));
     }));
   }
-
 
   @Test
   public void testDecodeTimestampAfterPgEpoch(TestContext ctx) {
@@ -213,6 +247,28 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testDecodeTimestampTzBeforePgEpoch(TestContext ctx) {
     OffsetDateTime expected = OffsetDateTime.parse("1800-01-02T02:59:59.237666Z");
+    ColumnChecker checker = ColumnChecker.checkColumn(0, "TimestampTz")
+      .returns(Tuple::getValue, Row::getValue, expected)
+      .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
+      .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, expected)
+      .returns(Tuple::getTemporal, Row::getTemporal, expected);
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", checker, expected);
+  }
+
+  @Test
+  public void testDecodeTimestampTzPlusInfinity(TestContext ctx) {
+    OffsetDateTime expected = OffsetDateTime.MAX;
+    ColumnChecker checker = ColumnChecker.checkColumn(0, "TimestampTz")
+      .returns(Tuple::getValue, Row::getValue, expected)
+      .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
+      .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, expected)
+      .returns(Tuple::getTemporal, Row::getTemporal, expected);
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", checker, expected);
+  }
+
+  @Test
+  public void testDecodeTimestampTzMinusInfinity(TestContext ctx) {
+    OffsetDateTime expected = OffsetDateTime.MIN;
     ColumnChecker checker = ColumnChecker.checkColumn(0, "TimestampTz")
       .returns(Tuple::getValue, Row::getValue, expected)
       .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
