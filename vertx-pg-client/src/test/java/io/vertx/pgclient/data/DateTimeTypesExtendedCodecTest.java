@@ -15,9 +15,20 @@ import java.time.OffsetTime;
 import java.time.format.DateTimeFormatter;
 
 public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
+
   @Test
   public void testDecodeDateBeforePgEpoch(TestContext ctx) {
     testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.parse("1981-05-30"));
+  }
+
+  @Test
+  public void testDecodeDatePlusInfinity(TestContext ctx) {
+    testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.MAX);
+  }
+
+  @Test
+  public void testDecodeDateMinuxInfinity(TestContext ctx) {
+    testDecodeDataTimeGeneric(ctx, "DATE", "Date", Tuple::getLocalDate, Row::getLocalDate, LocalDate.MIN);
   }
 
   @Test
@@ -139,6 +150,16 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   }
 
   @Test
+  public void testDecodeTimestampPlusInfinity(TestContext ctx) {
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITHOUT TIME ZONE", "Timestamp", Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.MAX);
+  }
+
+  @Test
+  public void testDecodeTimestampMinusInfinity(TestContext ctx) {
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITHOUT TIME ZONE", "Timestamp", Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.MIN);
+  }
+
+  @Test
   public void testEncodeTimestampBeforePgEpoch(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
@@ -161,7 +182,6 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         }));
     }));
   }
-
 
   @Test
   public void testDecodeTimestampAfterPgEpoch(TestContext ctx) {
@@ -195,6 +215,16 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testDecodeTimestampTzBeforePgEpoch(TestContext ctx) {
     testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", Tuple::getOffsetDateTime, Row::getOffsetDateTime, OffsetDateTime.parse("1800-01-02T02:59:59.237666Z"));
+  }
+
+  @Test
+  public void testDecodeTimestampTzPlusInfinity(TestContext ctx) {
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", Tuple::getOffsetDateTime, Row::getOffsetDateTime, OffsetDateTime.MAX);
+  }
+
+  @Test
+  public void testDecodeTimestampTzMinusInfinity(TestContext ctx) {
+    testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", Tuple::getOffsetDateTime, Row::getOffsetDateTime, OffsetDateTime.MIN);
   }
 
   @Test

@@ -314,6 +314,21 @@ Arrays are available on {@link io.vertx.sqlclient.Tuple} and {@link io.vertx.sql
 {@link examples.PgClientExamples#arrayExample}
 ----
 
+== Handling Date/Time infinity
+
+PostgreSQL defines special values to represent infinity.
+
+The max/min constants of the corresponding type represents https://www.postgresql.org/docs/9.0/datatype-datetime.html[special value].
+
+- `OffsetDateTime.MAX`/OffsetDateTime.MIN`
+- `LocalDateTime.MAX`/LocalDateTime.MIN`
+- `LocalDate.MAX`/LocalDate.MIN`
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#infinitySpecialValue}
+----
+
 == Handling custom types
 
 Strings are used to represent custom types, both sent to and returned from Postgres.
