@@ -221,6 +221,11 @@ class TransactionImpl implements Transaction {
   }
 
   @Override
+  public void completion(Handler<AsyncResult<Void>> handler) {
+    completion.future().onComplete(handler);
+  }
+
+  @Override
   public Future<Void> completion() {
     return completion.future();
   }

@@ -48,6 +48,11 @@ public interface Transaction {
   void rollback(Handler<AsyncResult<Void>> handler);
 
   /**
+   * Like {@link #completion()} but with a callback
+   */
+  void completion(Handler<AsyncResult<Void>> handler);
+
+  /**
    * Return the transaction completion {@code Future} that
    *
    * <ul>
