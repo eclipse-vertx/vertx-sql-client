@@ -225,16 +225,18 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor Boolean.
    */
   default Boolean getBoolean(int pos) {
     return (Boolean) getValue(pos);
   }
 
   /**
-   * Get a short value at {@code pos}.
+   * Get a short value at {@code pos}, the short value of an Enum is {@link Enum#ordinal()}.
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an instance of Number or Enum
    */
   default Short getShort(int pos) {
     Object val = getValue(pos);
@@ -252,10 +254,11 @@ public interface Tuple {
   }
 
   /**
-   * Get an integer value at {@code pos}.
+   * Get an integer value at {@code pos}, the integer value of an Enum is {@link Enum#ordinal()}.
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an instance of Number or Enum
    */
   default Integer getInteger(int pos) {
     Object val = getValue(pos);
@@ -273,10 +276,11 @@ public interface Tuple {
   }
 
   /**
-   * Get a long value at {@code pos}.
+   * Get a long value at {@code pos}, the long value of an Enum is {@link Enum#ordinal()}.
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an instance of Number or Enum
    */
   default Long getLong(int pos) {
     Object val = getValue(pos);
@@ -294,10 +298,11 @@ public interface Tuple {
   }
 
   /**
-   * Get a float value at {@code pos}.
+   * Get a float value at {@code pos}, the float value of an Enum is {@link Enum#ordinal()}.
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an instance of Number or Enum
    */
   default Float getFloat(int pos) {
     Object val = getValue(pos);
@@ -315,10 +320,11 @@ public interface Tuple {
   }
 
   /**
-   * Get a double value at {@code pos}.
+   * Get a double value at {@code pos}, the double value of an Enum is {@link Enum#ordinal()}.
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an instance of Number or Enum
    */
   default Double getDouble(int pos) {
     Object val = getValue(pos);
@@ -340,6 +346,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor
+   *    an instance of {@link Numeric} or {@link Number}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Numeric getNumeric(int pos) {
@@ -356,10 +364,11 @@ public interface Tuple {
   }
 
   /**
-   * Get a string value at {@code pos}.
+   * Get a string value at {@code pos}, the string value of an Enum is {@link Enum#name()}.
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor a String nor an instance of Enum
    */
   default String getString(int pos) {
     Object val = getValue(pos);
@@ -379,6 +388,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an instance of JsonObject
    */
   default JsonObject getJsonObject(int pos) {
     return (JsonObject) getValue(pos);
@@ -389,6 +399,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an instance of JsonArray
    */
   default JsonArray getJsonArray(int pos) {
     return (JsonArray) getValue(pos);
@@ -414,6 +425,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link java.time.temporal.Temporal}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Temporal getTemporal(int pos) {
@@ -428,6 +441,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link LocalDate} or {@link LocalDateTime}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDate getLocalDate(int pos) {
@@ -451,6 +466,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link LocalTime} or {@link LocalDateTime}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalTime getLocalTime(int pos) {
@@ -471,6 +488,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link LocalDateTime}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDateTime getLocalDateTime(int pos) {
@@ -485,6 +504,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link OffsetTime} or {@link OffsetDateTime}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetTime getOffsetTime(int pos) {
@@ -505,6 +526,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link OffsetDateTime}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetDateTime getOffsetDateTime(int pos) {
@@ -516,6 +539,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link Buffer}, {@link ByteBuf} or {@code byte[]}
    */
   default Buffer getBuffer(int pos) {
     Object val = getValue(pos);
@@ -537,6 +562,9 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link UUID} nor a String that can be
+   *    parsed as an UUID value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default UUID getUUID(int pos) {
@@ -557,6 +585,8 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null
+   *    nor an instance of {@link BigDecimal} or {@link Number}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default BigDecimal getBigDecimal(int pos) {
@@ -580,6 +610,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Boolean[] getBooleanArray(int pos) {
@@ -608,6 +639,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Short[] getShortArray(int pos) {
@@ -658,6 +690,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Integer[] getIntegerArray(int pos) {
@@ -708,6 +741,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Long[] getLongArray(int pos) {
@@ -758,6 +792,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Float[] getFloatArray(int pos) {
@@ -808,6 +843,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Double[] getDoubleArray(int pos) {
@@ -853,8 +889,12 @@ public interface Tuple {
   /**
    * Get an array of {@link Numeric} value at {@code pos}.
    *
+   * <p>Target element instance of {@code Number[]} or {@code Object[]} will be
+   * coerced to {@code Numeric[]}.
+   *
    * @param pos the column
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Numeric[] getNumericArray(int pos) {
@@ -905,6 +945,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default String[] getStringArray(int pos) {
@@ -941,6 +982,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default JsonObject[] getJsonObjectArray(int pos) {
@@ -964,6 +1006,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default JsonArray[] getJsonArrayArray(int pos) {
@@ -1017,6 +1060,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an array of {@link Temporal}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Temporal[] getTemporalArray(int pos) {
@@ -1031,6 +1075,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDate[] getLocalDateArray(int pos) {
@@ -1063,6 +1108,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalTime[] getLocalTimeArray(int pos) {
@@ -1092,6 +1138,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an array of {@link LocalDateTime}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDateTime[] getLocalDateTimeArray(int pos) {
@@ -1106,6 +1153,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is not null and coercion fails
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetTime[] getOffsetTimeArray(int pos) {
@@ -1135,6 +1183,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an array of {@link OffsetDateTime}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetDateTime[] getOffsetDateTimeArray(int pos) {
@@ -1146,6 +1195,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
+   * @throws ClassCastException if value is neither null nor an array of {@link Buffer}
    */
   @GenIgnore
   default Buffer[] getBufferArray(int pos) {
@@ -1157,6 +1207,7 @@ public interface Tuple {
    *
    * @param pos the column
    * @return the value
+   * @throws ClassCastException if value is neither null nor an array of {@link UUID}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default UUID[] getUUIDArray(int pos) {
@@ -1168,6 +1219,7 @@ public interface Tuple {
    *
    * @param pos the column
    * @return the value
+   * @throws ClassCastException if value is neither null nor an array of {@link BigDecimal}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default BigDecimal[] getBigDecimalArray(int pos) {
