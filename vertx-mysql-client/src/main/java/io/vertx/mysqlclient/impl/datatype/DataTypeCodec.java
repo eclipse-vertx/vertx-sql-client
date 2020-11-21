@@ -16,6 +16,7 @@ import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -710,7 +711,7 @@ public class DataTypeCodec {
   }
 
   private static Object textDecodeJson(int collationId, ByteBuf buffer, int index, int length) {
-    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
+    Charset charset = StandardCharsets.UTF_8; // MySQL JSON data type will only be UTF-8 string
     // Try to do without the intermediary String (?)
     CharSequence cs = buffer.getCharSequence(index, length, charset);
     Object value = null;
