@@ -24,23 +24,23 @@ jobs:
         with:
           path: ~/.m2/repository
           key: maven-java-${{ matrix.jdk }}
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Install JDK
-        uses: joschi/setup-jdk@v2
-        with:
-          java-version: ${{ matrix.jdk }}
-      - name: Run tests
-        run: mvn -q clean verify -B -DskipDefault -P ${{ matrix.profile }}
       - name: test 1
         run: echo ${{ github.repository_owner }}
       - name: test 2
         run: echo ${{ env.github_event_path }}
-      - name: Publish Unit Test Results
-        uses: scacap/action-surefire-report@v1
-        if: ${{ github.repository_owner == 'eclipse-vertx' && always() }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v2
+#      - name: Install JDK
+#        uses: joschi/setup-jdk@v2
+#        with:
+#          java-version: ${{ matrix.jdk }}
+#      - name: Run tests
+#        run: mvn -q clean verify -B -DskipDefault -P ${{ matrix.profile }}
+#      - name: Publish Unit Test Results
+#        uses: scacap/action-surefire-report@v1
+#        if: ${{ github.repository_owner == 'eclipse-vertx' && always() }}
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
   Deploy:
     name: Deploy to OSSRH
     if: ${{ github.repository_owner == 'eclipse-vertx' && github.event_name == 'push' }}
