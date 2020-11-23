@@ -32,8 +32,20 @@ jobs:
           java-version: ${{ matrix.jdk }}
       - name: Run tests
         run: mvn -q clean verify -B -DskipDefault -P ${{ matrix.profile }}
-      - name: show repo owner
-        run: echo ${{ github.repository_owner }} ${{ false && always() }} ${{ github.repository_owner == 'eclipse-vertx' && always() }}
+      - name: test 1
+        run: echo ${{ github.repository_owner }}
+      - name: test 2
+        run: echo test2
+        if: ${{ always() }}
+      - name: test 3
+        run: echo test3
+        if: ${{ github.repository_owner == 'eclipse-vertx' && always() }}
+      - name: test 4
+        run: echo test4
+        if: ${{ false && always() }}
+      - name: test 5
+        run: echo test5
+        if: ${{ false }}
       - name: Publish Unit Test Results
         uses: scacap/action-surefire-report@v1
         if: ${{ github.repository_owner == 'eclipse-vertx' && always() }}
