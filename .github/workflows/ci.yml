@@ -27,7 +27,7 @@ jobs:
       - name: test 1
         run: echo ${{ github.repository_owner }}
       - name: test 2
-        run: echo ${{ env.github_event_path }}
+        run: echo ${{ env.GITHUB_EVENT_PATH }}
       - name: Checkout
         uses: actions/checkout@v2
 #      - name: Install JDK
