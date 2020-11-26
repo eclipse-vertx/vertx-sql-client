@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -145,7 +146,7 @@ public interface Pool extends SqlClient {
    * @param function the code to execute
    * @param handler the result handler
    */
-  default <T> void withTransaction(Function<SqlConnection, Future<T>> function, Handler<AsyncResult<T>> handler) {
+  default <T> void withTransaction(Function<SqlConnection, Future<@Nullable T>> function, Handler<AsyncResult<@Nullable T>> handler) {
     Future<T> res = withTransaction(function);
     if (handler != null) {
       res.onComplete(handler);
@@ -155,7 +156,7 @@ public interface Pool extends SqlClient {
   /**
    * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  default <T> Future<T> withTransaction(Function<SqlConnection, Future<T>> function) {
+  default <T> Future<@Nullable T> withTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
     return getConnection()
       .flatMap(conn -> conn
         .begin()
@@ -182,7 +183,7 @@ public interface Pool extends SqlClient {
    * @param function the code to execute
    * @param handler the result handler
    */
-  default <T> void withConnection(Function<SqlConnection, Future<T>> function, Handler<AsyncResult<T>> handler) {
+  default <T> void withConnection(Function<SqlConnection, Future<@Nullable T>> function, Handler<AsyncResult<@Nullable T>> handler) {
     Future<T> res = withConnection(function);
     if (handler != null) {
       res.onComplete(handler);
@@ -192,7 +193,7 @@ public interface Pool extends SqlClient {
   /**
    * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result
    */
-  default <T> Future<T> withConnection(Function<SqlConnection, Future<T>> function) {
+  default <T> Future<@Nullable T> withConnection(Function<SqlConnection, Future<@Nullable T>> function) {
     return getConnection().flatMap(conn -> function.apply(conn).onComplete(ar -> conn.close()));
   }
 
