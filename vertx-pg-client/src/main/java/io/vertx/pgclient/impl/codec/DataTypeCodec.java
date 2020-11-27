@@ -41,6 +41,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
@@ -1065,7 +1066,8 @@ class DataTypeCodec {
   // 294277-01-09 04:00:54.775807
   public static final LocalDateTime LDT_PLUS_INFINITY = LOCAL_DATE_TIME_EPOCH.plus(Long.MAX_VALUE, ChronoUnit.MICROS);
   // 4714-11-24 00:00:00 BC
-  public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G"));
+  public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC",
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.ROOT));
 
   private static void binaryEncodeTIMESTAMP(LocalDateTime value, ByteBuf buff) {
     if (value.compareTo(LDT_PLUS_INFINITY) >= 0) {
