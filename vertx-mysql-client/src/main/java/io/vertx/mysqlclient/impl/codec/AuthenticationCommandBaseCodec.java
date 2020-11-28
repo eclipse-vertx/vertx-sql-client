@@ -12,6 +12,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.util.ReferenceCountUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.impl.command.AuthenticationCommandBase;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
@@ -93,12 +94,19 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
   }
 
   protected final void encodeConnectionAttributes(Map<String, String> clientConnectionAttributes, ByteBuf packet) {
-    ByteBuf kv = allocateBuffer();
-    for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
-      BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
-      BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+    ByteBuf kv = null;
+    try {
+      kv = allocateBuffer();
+      for (Map.Entry<String, String> attribute : clientConnectionAttributes.entrySet()) {
+        BufferUtils.writeLengthEncodedString(kv, attribute.getKey(), StandardCharsets.UTF_8);
+        BufferUtils.writeLengthEncodedString(kv, attribute.getValue(), StandardCharsets.UTF_8);
+      }
+      BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
+      packet.writeBytes(kv);
+    } finally {
+      if (kv != null) {
+        ReferenceCountUtil.release(kv);
+      }
     }
-    BufferUtils.writeLengthEncodedInteger(packet, kv.readableBytes());
-    packet.writeBytes(kv);
   }
 }
