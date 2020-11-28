@@ -17,6 +17,8 @@
 
 package io.vertx.sqlclient;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.netty.buffer.ByteBuf;
@@ -349,7 +351,26 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   default String getString(int pos) {
-    return (String) getValue(pos);
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof String) {
+      return (String) val;
+    } else if (val instanceof Enum<?>) {
+      return ((Enum<?>) val).name();
+    } else if (val instanceof Number) {
+      return val.toString();
+    } else if (val instanceof Boolean){
+      return val.toString();
+    } else if (val instanceof JsonObject) {
+      return ((JsonObject) val).encode();
+    } else if (val instanceof JsonArray) {
+      return ((JsonArray) val).encode();
+    } else if (val == JSON_NULL) {
+      return null;
+    } else {
+      throw new ClassCastException();
+    }
   }
 
   /**

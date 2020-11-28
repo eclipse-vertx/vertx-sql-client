@@ -132,11 +132,13 @@ public class JsonBinaryCodecTest extends JsonDataTypeTest {
               .put("phrase", "à tout à l'heure");
             ctx.assertEquals(phrase, row1.get(JsonObject.class, 0));
             ctx.assertEquals(phrase, row1.getValue(0));
+            assertJsonStringEquals(ctx, phrase, row1.getString(0));
             Row row2 = iterator.next();
             JsonObject emoji = new JsonObject()
               .put("emoji", "\uD83D\uDE00\uD83E\uDD23\uD83D\uDE0A\uD83D\uDE07\uD83D\uDE33\uD83D\uDE31");
             ctx.assertEquals(emoji, row2.get(JsonObject.class, 0));
             ctx.assertEquals(emoji, row2.getValue(0));
+            assertJsonStringEquals(ctx, emoji, row2.getString(0));
           }));
         }));
       }));
@@ -151,6 +153,7 @@ public class JsonBinaryCodecTest extends JsonDataTypeTest {
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));
         ctx.assertEquals(expected, row.getValue("json"));
+        assertJsonStringEquals(ctx, expected, row.getString("json"));
         if (checker != null) {
           checker.accept(row);
         }
@@ -172,6 +175,7 @@ public class JsonBinaryCodecTest extends JsonDataTypeTest {
             Row row = result.iterator().next();
             ctx.assertEquals(expected, row.getValue(0));
             ctx.assertEquals(expected, row.getValue("json"));
+            assertJsonStringEquals(ctx, expected, row.getString("json"));
             if (checker != null) {
               checker.accept(row);
             }

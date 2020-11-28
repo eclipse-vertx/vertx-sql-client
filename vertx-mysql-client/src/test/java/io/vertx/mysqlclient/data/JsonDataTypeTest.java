@@ -103,5 +103,29 @@ public abstract class JsonDataTypeTest extends MySQLDataTypeTestBase {
     testDecodeJson(ctx, "SELECT CAST(" + data + " AS JSON) json;", expected, checker);
   }
 
+  protected void assertJsonStringEquals(TestContext ctx, Object expected, String actual) {
+    if (expected instanceof JsonObject) {
+      // the JsonObject fields may be reordered
+      ctx.assertEquals(expected, new JsonObject(actual));
+    } else {
+      ctx.assertEquals(retrieveJsonAsString(expected), actual);
+    }
+  }
+
+  private String retrieveJsonAsString(Object obj) {
+    if (obj == null || obj == Tuple.JSON_NULL) {
+      return null;
+    } else if (obj instanceof Number || obj instanceof Boolean) {
+      return obj.toString();
+    } else if (obj instanceof JsonObject) {
+      return ((JsonObject) obj).encode();
+    } else if (obj instanceof JsonArray) {
+      return ((JsonArray) obj).encode();
+    } else if (obj instanceof String) {
+      return (String) obj;
+    }
+    throw new IllegalStateException("Unknown JSON Type");
+  }
+
   protected abstract void testDecodeJson(TestContext ctx, String script, Object expected, Consumer<Row> checker);
 }
