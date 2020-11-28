@@ -369,6 +369,16 @@ public interface Tuple {
       return (String) val;
     } else if (val instanceof Enum<?>) {
       return ((Enum<?>) val).name();
+    } else if (val instanceof Number) {
+      return val.toString();
+    } else if (val instanceof Boolean){
+      return val.toString();
+    } else if (val instanceof JsonObject) {
+      return ((JsonObject) val).encode();
+    } else if (val instanceof JsonArray) {
+      return ((JsonArray) val).encode();
+    } else if (val == JSON_NULL) {
+      return null;
     } else {
       throw new ClassCastException();
     }
