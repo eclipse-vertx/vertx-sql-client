@@ -32,10 +32,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * A general purpose tuple.
@@ -370,7 +367,7 @@ public interface Tuple {
     } else if (val instanceof Enum<?>) {
       return ((Enum<?>) val).name();
     } else {
-      throw new ClassCastException();
+      throw new ClassCastException("Invalid String value type " + val.getClass());
     }
   }
 
@@ -394,6 +391,20 @@ public interface Tuple {
     return (JsonArray) getValue(pos);
   }
 
+  /**
+   * Get a JSON value at {@code pos}, the JSON value might be one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   *   <li>Null</li>
+   * </ul>
+   *
+   * @param pos the position
+   * @return the value
+   */
   default Object getJsonElement(int pos) {
     Object val = getValue(pos);
     if (val == null ||
@@ -405,7 +416,7 @@ public interface Tuple {
       val instanceof JsonArray) {
       return val;
     } else {
-      throw new ClassCastException();
+      throw new ClassCastException("Invalid JSON value type " + val.getClass());
     }
   }
 
@@ -982,6 +993,20 @@ public interface Tuple {
     }
   }
 
+  /**
+   * Get an array of JSON value at {@code pos}, the JSON value might be one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   *   <li>Null</li>
+   * </ul>
+   *
+   * @param pos the position
+   * @return the value
+   */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Object[] getArrayOfJsonElements(int pos) {
     Object val = getValue(pos);
