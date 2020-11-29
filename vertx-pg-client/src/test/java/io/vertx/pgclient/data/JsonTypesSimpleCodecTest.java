@@ -48,7 +48,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
             .forRow(row);
           ColumnChecker.checkColumn(1, "JsonArray")
             .returns(Tuple::getValue, Row::getValue, array)
-            .returns(Tuple::getJsonElement, Row::getJsonElement, object)
+            .returns(Tuple::getJsonElement, Row::getJsonElement, array)
             .forRow(row);
           ColumnChecker.checkColumn(2, "TrueValue")
             .returns(Tuple::getValue, Row::getValue, true)
