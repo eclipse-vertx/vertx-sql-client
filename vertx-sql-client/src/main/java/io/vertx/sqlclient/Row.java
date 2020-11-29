@@ -186,6 +186,29 @@ public interface Row extends Tuple {
   }
 
   /**
+   * Get a JSON value for the given {@code column}, the JSON value might be one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   *   <li>Null</li>
+   * </ul>
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  default Object getJsonElement(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getJsonElement(pos);
+  }
+
+  /**
    * Get a temporal value for the given {@code column}.
    *
    * @param column the column name
@@ -840,5 +863,28 @@ public interface Row extends Tuple {
 
   @GenIgnore
   <T> T[] getValues(Class<T> type, int idx);
+
+  /**
+   * Get an array of JSON value for the given {@code column}, the JSON value might be one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   *   <li>Null</li>
+   * </ul>
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Object[] getJsonElementArray(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getJsonElementArray(pos);
+  }
 
 }
