@@ -40,7 +40,7 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
   public void testBooleanArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: BOOL[])) AS t (c)",
-      new Boolean[][]{new Boolean[]{true, null, false}}, Tuple::getBooleanArray);
+      new Boolean[][]{new Boolean[]{true, null, false}}, Tuple::getArrayOfBoolean);
   }
 
   @Test
@@ -53,7 +53,7 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Boolean")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
-              .returns(Tuple::getBooleanArray, Row::getBooleanArray, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
+              .returns(Tuple::getArrayOfBoolean, Row::getArrayOfBoolean, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -68,12 +68,12 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
-              .addBooleanArray(new Boolean[]{Boolean.FALSE, Boolean.TRUE})
+              .addArrayOfBoolean(new Boolean[]{Boolean.FALSE, Boolean.TRUE})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Boolean")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE, Boolean.TRUE}))
-                .returns(Tuple::getBooleanArray, Row::getBooleanArray, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE, Boolean.TRUE}))
+                .returns(Tuple::getArrayOfBoolean, Row::getArrayOfBoolean, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE, Boolean.TRUE}))
                 .forRow(result.iterator().next());
               async.complete();
             }));

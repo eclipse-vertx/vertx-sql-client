@@ -55,11 +55,11 @@ public class BinaryDataTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTest
 
   @Test
   public void testDecodeHexByteaArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [decode('48454c4c4f', 'hex') :: BYTEA]", "BufferArray", Tuple::getBufferArray, Row::getBufferArray, Buffer.buffer("HELLO"));
+    testDecodeGenericArray(ctx, "ARRAY [decode('48454c4c4f', 'hex') :: BYTEA]", "BufferArray", Tuple::getArrayOfBuffer, Row::getArrayOfBuffer, Buffer.buffer("HELLO"));
   }
 
   @Test
   public void testDecodeEscapeByteaArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [decode('abc \\153\\154\\155 \\052\\251\\124', 'escape') :: BYTEA]", "BufferArray2", Tuple::getBufferArray, Row::getBufferArray, Buffer.buffer(new byte[]{'a', 'b', 'c', ' ', 'k', 'l', 'm', ' ', '*', (byte) 0xA9, 'T'}));
+    testDecodeGenericArray(ctx, "ARRAY [decode('abc \\153\\154\\155 \\052\\251\\124', 'escape') :: BYTEA]", "BufferArray2", Tuple::getArrayOfBuffer, Row::getArrayOfBuffer, Buffer.buffer(new byte[]{'a', 'b', 'c', ' ', 'k', 'l', 'm', ' ', '*', (byte) 0xA9, 'T'}));
   }
 }

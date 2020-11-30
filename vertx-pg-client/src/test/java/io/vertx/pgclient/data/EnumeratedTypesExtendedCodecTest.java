@@ -63,7 +63,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Enum")
               .returns(Tuple::getValue, Row::getValue, expected)
-              .returns(Tuple::getStringArray, Row::getStringArray, expected)
+              .returns(Tuple::getArrayOfString, Row::getArrayOfString, expected)
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -78,12 +78,12 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
-              .addStringArray(new String[]{"unhappy"})
+              .addArrayOfString(new String[]{"unhappy"})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{"unhappy"})
-                .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"unhappy"})
+                .returns(Tuple::getArrayOfString, Row::getArrayOfString, new String[]{"unhappy"})
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -98,12 +98,12 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
-              .addStringArray(new String[]{"unhappy", "ok"})
+              .addArrayOfString(new String[]{"unhappy", "ok"})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{"unhappy", "ok"})
-                .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"unhappy", "ok"})
+                .returns(Tuple::getArrayOfString, Row::getArrayOfString, new String[]{"unhappy", "ok"})
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -118,16 +118,16 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\", \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
-              .addStringArray(new String[]{})
+              .addArrayOfString(new String[]{})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{})
-                .returns(Tuple::getStringArray, Row::getStringArray, new String[]{})
+                .returns(Tuple::getArrayOfString, Row::getArrayOfString, new String[]{})
                 .forRow(result.iterator().next());
               ColumnChecker.checkColumn(1, "Boolean")
                 .returns(Tuple::getValue, Row::getValue, new Boolean[]{true})
-                .returns(Tuple::getBooleanArray, Row::getBooleanArray, new Boolean[]{true})
+                .returns(Tuple::getArrayOfBoolean, Row::getArrayOfBoolean, new Boolean[]{true})
                 .forRow(result.iterator().next());
               async.complete();
             }));

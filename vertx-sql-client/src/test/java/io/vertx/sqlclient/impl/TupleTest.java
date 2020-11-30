@@ -250,22 +250,22 @@ public class TupleTest {
     UUID[] uuidArray = new UUID[]{UUID.randomUUID()};
 
     Tuple tuple = tuple();
-    tuple.addBooleanArray(booleanArray);
-    tuple.addShortArray(shortArray);
-    tuple.addIntegerArray(integerArray);
-    tuple.addLongArray(longArray);
-    tuple.addFloatArray(floatArray);
-    tuple.addDoubleArray(doubleArray);
-    tuple.addStringArray(stringArray);
-    tuple.addBufferArray(bufferArray);
-    tuple.addLocalDateArray(localDateArray);
-    tuple.addLocalTimeArray(localTimeArray);
-    tuple.addLocalDateTimeArray(localDateTimeArray);
-    tuple.addOffsetTimeArray(offsetTimeArray);
-    tuple.addOffsetDateTimeArray(offsetDateTimeArray);
-    tuple.addUUIDArray(uuidArray);
+    tuple.addArrayOfBoolean(booleanArray);
+    tuple.addArrayOfShort(shortArray);
+    tuple.addArrayOfInteger(integerArray);
+    tuple.addArrayOfLong(longArray);
+    tuple.addArrayOfFloat(floatArray);
+    tuple.addArrayOfDouble(doubleArray);
+    tuple.addArrayOfString(stringArray);
+    tuple.addArrayOfBuffer(bufferArray);
+    tuple.addArrayOfLocalDate(localDateArray);
+    tuple.addArrayOfLocalTime(localTimeArray);
+    tuple.addArrayOfLocalDateTime(localDateTimeArray);
+    tuple.addArrayOfOffsetTime(offsetTimeArray);
+    tuple.addArrayOfOffsetDateTime(offsetDateTimeArray);
+    tuple.addArrayOfUUID(uuidArray);
 
-    assertArrayEquals(booleanArray, tuple.getBooleanArray(0));
+    assertArrayEquals(booleanArray, tuple.getArrayOfBoolean(0));
     assertArrayEquals(booleanArray, (Boolean[]) tuple.getValue(0));
     assertArrayEquals(booleanArray, tuple.getValues(Boolean.class, 0));
     assertArrayEquals(shortArray, tuple.getShortArray(1));

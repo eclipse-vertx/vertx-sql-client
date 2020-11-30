@@ -289,7 +289,16 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public LocalDateTime[] getArrayOfLocalDateTime(int pos) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public LocalDateTime[] getLocalDateTimeArray(String column) {
+    throw new UnsupportedOperationException();
+  }
+
+  public OffsetDateTime[] getArrayOfOffsetDateTime(int pos) {
     throw new UnsupportedOperationException();
   }
 
@@ -299,7 +308,17 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Buffer[] getArrayOfBuffer(String column) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Buffer[] getBufferArray(String column) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public UUID[] getArrayOfUUID(String column) {
     throw new UnsupportedOperationException();
   }
 

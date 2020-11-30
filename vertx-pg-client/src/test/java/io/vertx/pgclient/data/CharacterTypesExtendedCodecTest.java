@@ -171,7 +171,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
 
   @Test
   public void testDecodeStringArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::TEXT[]\"Text\"", new String[][]{new String[]{"Knock, knock.Who’s there?very long pause….Java."}}, Tuple::getStringArray);
+    testGeneric(ctx, "SELECT $1::TEXT[]\"Text\"", new String[][]{new String[]{"Knock, knock.Who’s there?very long pause….Java."}}, Tuple::getArrayOfString);
   }
 
   @Test
@@ -181,12 +181,12 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Text\" = $1  WHERE \"id\" = $2 RETURNING \"Text\"",
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
-              .addStringArray(new String[]{"Knock, knock.Who’s there?"})
+              .addArrayOfString(new String[]{"Knock, knock.Who’s there?"})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Text")
                 .returns(Tuple::getValue, Row::getValue, new String[]{"Knock, knock.Who’s there?"})
-                .returns(Tuple::getStringArray, Row::getStringArray, new String[]{"Knock, knock.Who’s there?"})
+                .returns(Tuple::getArrayOfString, Row::getArrayOfString, new String[]{"Knock, knock.Who’s there?"})
                 .forRow(result.iterator().next());
               async.complete();
             }));

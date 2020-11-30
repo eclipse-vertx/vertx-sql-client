@@ -196,28 +196,28 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
 
   @Test
   public void testDecodeDATEArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['1998-05-11' :: DATE, '1998-05-11' :: DATE]", "LocalDate", Tuple::getLocalDateArray, Row::getLocalDateArray, LocalDate.parse("1998-05-11"), LocalDate.parse("1998-05-11"));
+    testDecodeGenericArray(ctx, "ARRAY ['1998-05-11' :: DATE, '1998-05-11' :: DATE]", "LocalDate", Tuple::getArrayOfLocalDate, Row::getArrayOfLocalDate, LocalDate.parse("1998-05-11"), LocalDate.parse("1998-05-11"));
   }
 
   @Test
   public void testDecodeTIMEArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['17:55:04.90512' :: TIME WITHOUT TIME ZONE]", "LocalTime", Tuple::getLocalTimeArray, Row::getLocalTimeArray, lt);
+    testDecodeGenericArray(ctx, "ARRAY ['17:55:04.90512' :: TIME WITHOUT TIME ZONE]", "LocalTime", Tuple::getArrayOfLocalTime, Row::getArrayOfLocalTime, lt);
   }
 
   @Test
   public void testDecodeTIMETZArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['17:55:04.90512+03' :: TIME WITH TIME ZONE]", "OffsetTime", Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, dt);
+    testDecodeGenericArray(ctx, "ARRAY ['17:55:04.90512+03' :: TIME WITH TIME ZONE]", "OffsetTime", Tuple::getArrayOfOffsetTime, Row::getArrayOfOffsetTime, dt);
   }
 
   @Test
   public void testDecodeTIMESTAMPArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE]", "LocalDateTime", Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, ldt);
+    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 19:35:58.237666' :: TIMESTAMP WITHOUT TIME ZONE]", "LocalDateTime", Tuple::getArrayOfLocalDateTime, Row::getArrayOfLocalDateTime, ldt);
 
   }
 
   @Test
   public void testDecodeTIMESTAMPTZArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE]", "OffsetDateTime", Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, odt);
+    testDecodeGenericArray(ctx, "ARRAY ['2017-05-14 23:59:59.237666-03' :: TIMESTAMP WITH TIME ZONE]", "OffsetDateTime", Tuple::getArrayOfOffsetDateTime, Row::getArrayOfOffsetDateTime, odt);
   }
 
   @Test

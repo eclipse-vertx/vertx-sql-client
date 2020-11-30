@@ -336,6 +336,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Boolean[] getArrayOfBoolean(String column) {
+    return getBooleanArray(column);
+  }
+
+  /**
+   * Get an array of {@link Boolean} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfBoolean(String)}
+   */
+  @Deprecated
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Boolean[] getBooleanArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -351,6 +365,20 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Short[] getArrayOfShort(String column) {
+    return getShortArray(column);
+  }
+
+  /**
+   * Get an array of {@link Short} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfShort(String)}
+   */
+  @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Short[] getShortArray(String column) {
     int pos = getColumnIndex(column);
@@ -368,6 +396,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Integer[] getArrayOfInteger(String column) {
+    return getIntegerArray(column);
+  }
+
+  /**
+   * Get an array of {@link Integer} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfInteger(String)}
+   */
+  @Deprecated
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Integer[] getIntegerArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -383,6 +425,20 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Long[] getArrayOfLong(String column) {
+    return getLongArray(column);
+  }
+
+  /**
+   * Get an array of {@link Long} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfLong(String)}
+   */
+  @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Long[] getLongArray(String column) {
     int pos = getColumnIndex(column);
@@ -400,6 +456,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Float[] getArrayOfFloat(String column) {
+    return getFloatArray(column);
+  }
+
+  /**
+   * Get an array of {@link Float} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfFloat(String)}
+   */
+  @Deprecated
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Float[] getFloatArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -415,6 +485,20 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Double[] getArrayOfDouble(String column) {
+    return getDoubleArray(column);
+  }
+
+  /**
+   * Get an array of {@link Double} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfDouble(String)}
+   */
+  @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Double[] getDoubleArray(String column) {
     int pos = getColumnIndex(column);
@@ -432,6 +516,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Numeric[] getArrayOfNumeric(String column) {
+    return getNumericArray(column);
+  }
+
+  /**
+   * Get an array of {@link Numeric} value for the given {@code column}.
+   *
+   * @param column the column
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfNumeric(String)}
+   */
+  @Deprecated
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Numeric[] getNumericArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -447,6 +545,20 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default String[] getArrayOfString(String column) {
+    return getStringArray(column);
+  }
+
+  /**
+   * Get an array of {@link String} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfString(String)}
+   */
+  @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default String[] getStringArray(String column) {
     int pos = getColumnIndex(column);
@@ -464,6 +576,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Temporal[] getArrayOfTemporal(String column) {
+    return getTemporalArray(column);
+  }
+
+  /**
+   * Get an array of {@link Temporal} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfTemporal(String)}
+   */
+  @Deprecated
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Temporal[] getTemporalArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -479,6 +605,20 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default LocalDate[] getArrayOfLocalDate(String column) {
+    return getLocalDateArray(column);
+  }
+
+  /**
+   * Get an array of {@link LocalDate} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfLocalDate(String)}
+   */
+  @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDate[] getLocalDateArray(String column) {
     int pos = getColumnIndex(column);
@@ -496,6 +636,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default LocalTime[] getArrayOfLocalTime(String column) {
+    return getLocalTimeArray(column);
+  }
+
+  /**
+   * Get an array of {@link LocalTime} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfLocalTime(String)}
+   */
+  @Deprecated
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalTime[] getLocalTimeArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -511,6 +665,20 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default LocalDateTime[] getArrayOfLocalDateTime(String column) {
+    return getLocalDateTimeArray(column);
+  }
+
+  /**
+   * Get an array of {@link LocalDateTime} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfLocalDateTime(String)}
+   */
+  @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDateTime[] getLocalDateTimeArray(String column) {
     int pos = getColumnIndex(column);
@@ -528,6 +696,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default OffsetTime[] getArrayOfOffsetTime(String column) {
+    return getOffsetTimeArray(column);
+  }
+
+  /**
+   * Get an array of {@link OffsetTime} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfOffsetTime(String)}
+   */
+  @Deprecated
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetTime[] getOffsetTimeArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -543,6 +725,20 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default OffsetDateTime[] getArrayOfOffsetDateTime(String column) {
+    return getOffsetDateTimeArray(column);
+  }
+
+  /**
+   * Get an array of {@link OffsetDateTime} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfOffsetDateTime(String)}
+   */
+  @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetDateTime[] getOffsetDateTimeArray(String column) {
     int pos = getColumnIndex(column);
@@ -560,6 +756,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore
+  default Buffer[] getArrayOfBuffer(String column) {
+    return getBufferArray(column);
+  }
+
+  /**
+   * Get an array of {@link Buffer} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfBuffer(String)}
+   */
+  @Deprecated
+  @GenIgnore
   default Buffer[] getBufferArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -576,6 +786,20 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default UUID[] getArrayOfUUID(String column) {
+    return getUUIDArray(column);
+  }
+
+  /**
+   * Get an array of {@link UUID} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfUUID(String)}
+   */
+  @Deprecated
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default UUID[] getUUIDArray(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
@@ -591,6 +815,20 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default BigDecimal[] getArrayOfBigDecimal(String column) {
+    return getBigDecimalArray(column);
+  }
+
+  /**
+   * Get an array of {@link BigDecimal} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   * @deprecated instead use {@link #getArrayOfBigDecimal(String)}
+   */
+  @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default BigDecimal[] getBigDecimalArray(String column) {
     int pos = getColumnIndex(column);

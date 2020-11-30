@@ -167,8 +167,17 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public LocalDateTime[] getArrayOfLocalDateTime(int pos) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public LocalDateTime[] getLocalDateTimeArray(String column) {
     throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(column), column, LocalDateTime[].class));
+  }
+
+  public OffsetDateTime[] getArrayOfOffsetDateTime(int pos) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -177,8 +186,18 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
+  public Buffer[] getArrayOfBuffer(String column) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Buffer[] getBufferArray(String column) {
     throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(column), column, Buffer[].class));
+  }
+
+  @Override
+  public UUID[] getArrayOfUUID(String column) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
