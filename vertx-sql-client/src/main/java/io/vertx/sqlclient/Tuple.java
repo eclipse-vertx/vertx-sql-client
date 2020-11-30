@@ -392,14 +392,13 @@ public interface Tuple {
   }
 
   /**
-   * Get a JSON value at {@code pos}, the JSON value might be one of the following types:
+   * Get a JSON element at {@code pos}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
    * <ul>
    *   <li>String</li>
    *   <li>Number</li>
    *   <li>JsonObject</li>
    *   <li>JsonArray</li>
    *   <li>Boolean</li>
-   *   <li>Null</li>
    * </ul>
    *
    * @param pos the position
@@ -994,14 +993,13 @@ public interface Tuple {
   }
 
   /**
-   * Get an array of JSON value at {@code pos}, the JSON value might be one of the following types:
+   * Get an array of JSON elements at {@code pos}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
    * <ul>
    *   <li>String</li>
    *   <li>Number</li>
    *   <li>JsonObject</li>
    *   <li>JsonArray</li>
    *   <li>Boolean</li>
-   *   <li>Null</li>
    * </ul>
    *
    * @param pos the position
