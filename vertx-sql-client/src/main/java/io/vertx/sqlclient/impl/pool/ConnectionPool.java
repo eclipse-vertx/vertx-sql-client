@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Todo :
@@ -51,7 +52,7 @@ public class ConnectionPool {
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
   private final int maxWaitQueueSize;
-  private boolean checkInProgress;
+  private AtomicBoolean checkInProgress = new AtomicBoolean(false);
   private boolean closed;
 
   public ConnectionPool(ConnectionFactory connector, int maxSize) {
@@ -250,8 +251,7 @@ public class ConnectionPool {
     if (closed) {
       return;
     }
-    if (!checkInProgress) {
-      checkInProgress = true;
+    if (!checkInProgress.getAndSet(true)) {
       try {
         while (waiters.size() > 0) {
           if (available.size() > 0) {
@@ -289,7 +289,7 @@ public class ConnectionPool {
           }
         }
       } finally {
-        checkInProgress = false;
+        checkInProgress.set(false);
       }
     }
   }
