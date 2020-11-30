@@ -461,10 +461,10 @@ public class PgClientExamples {
     Tuple tuple = Tuple.of(new String[]{ "a", "tuple", "with", "arrays" });
 
     // Add a string array to the tuple
-    tuple.addStringArray(new String[]{"another", "array"});
+    tuple.addArrayOfString(new String[]{"another", "array"});
 
     // Get the first array of string
-    String[] array = tuple.getStringArray(0);
+    String[] array = tuple.getArrayOfString(0);
   }
 
   public void infinitySpecialValue(SqlClient client) {

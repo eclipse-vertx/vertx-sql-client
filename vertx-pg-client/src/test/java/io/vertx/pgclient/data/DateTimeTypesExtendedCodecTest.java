@@ -406,7 +406,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
 
   @Test
   public void testDecodeLocalDateArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: DATE [] \"LocalDate\"", new LocalDate[][]{new LocalDate[]{LocalDate.parse("1998-05-11"), LocalDate.parse("1998-05-11")}}, Row::getLocalDateArray);
+    testGeneric(ctx, "SELECT $1 :: DATE [] \"LocalDate\"", new LocalDate[][]{new LocalDate[]{LocalDate.parse("1998-05-11"), LocalDate.parse("1998-05-11")}}, Row::getArrayOfLocalDate);
   }
 
   @Test
@@ -417,12 +417,12 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         ctx.asyncAssertSuccess(p -> {
           final LocalDate dt = LocalDate.parse("1998-05-12");
           p.query().execute(Tuple.tuple()
-              .addLocalDateArray(new LocalDate[]{dt})
+              .addArrayOfLocalDate(new LocalDate[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "LocalDate")
                 .returns(Tuple::getValue, Row::getValue, new LocalDate[]{dt})
-                .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new LocalDate[]{dt})
+                .returns(Tuple::getArrayOfLocalDate, Row::getArrayOfLocalDate, new LocalDate[]{dt})
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -432,7 +432,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
 
   @Test
   public void testDecodeLocalTimeArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: TIME WITHOUT TIME ZONE [] \"LocalTime\"", new LocalTime[][]{new LocalTime[]{lt}}, Row::getLocalTimeArray);
+    testGeneric(ctx, "SELECT $1 :: TIME WITHOUT TIME ZONE [] \"LocalTime\"", new LocalTime[][]{new LocalTime[]{lt}}, Row::getArrayOfLocalTime);
   }
 
   @Test
@@ -444,12 +444,12 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
           final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSS");
           final LocalTime dt = LocalTime.parse("17:55:04.90512", dtf);
           p.query().execute(Tuple.tuple()
-              .addLocalTimeArray(new LocalTime[]{dt})
+              .addArrayOfLocalTime(new LocalTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "LocalTime")
                 .returns(Tuple::getValue, Row::getValue, new LocalTime[]{dt})
-                .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{dt})
+                .returns(Tuple::getArrayOfLocalTime, Row::getArrayOfLocalTime, new LocalTime[]{dt})
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -459,7 +459,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
 
   @Test
   public void testDecodeOffsetTimeArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: TIME WITH TIME ZONE [] \"OffsetTime\"", new OffsetTime[][]{new OffsetTime[]{dt}}, Row::getOffsetTimeArray);
+    testGeneric(ctx, "SELECT $1 :: TIME WITH TIME ZONE [] \"OffsetTime\"", new OffsetTime[][]{new OffsetTime[]{dt}}, Row::getArrayOfOffsetTime);
   }
 
   @Test
@@ -470,12 +470,12 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         ctx.asyncAssertSuccess(p -> {
           final OffsetTime dt = OffsetTime.parse("17:56:04.90512+03:07");
           p.query().execute(Tuple.tuple()
-              .addOffsetTimeArray(new OffsetTime[]{dt})
+              .addArrayOfOffsetTime(new OffsetTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "OffsetTime")
                 .returns(Tuple::getValue, Row::getValue, new OffsetTime[]{dt})
-                .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new OffsetTime[]{dt})
+                .returns(Tuple::getArrayOfOffsetTime, Row::getArrayOfOffsetTime, new OffsetTime[]{dt})
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -485,7 +485,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
 
   @Test
   public void testDecodeLocalDateTimeArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: TIMESTAMP WITHOUT TIME ZONE [] \"LocalDateTime\"", new LocalDateTime[][]{new LocalDateTime[]{LocalDateTime.parse("2017-05-14T19:35:58.237666")}}, Row::getLocalDateTimeArray);
+    testGeneric(ctx, "SELECT $1 :: TIMESTAMP WITHOUT TIME ZONE [] \"LocalDateTime\"", new LocalDateTime[][]{new LocalDateTime[]{LocalDateTime.parse("2017-05-14T19:35:58.237666")}}, Row::getArrayOfLocalDateTime);
   }
 
   @Test
@@ -496,14 +496,14 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         ctx.asyncAssertSuccess(p -> {
           final LocalDateTime dt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
           p.query().execute(Tuple.tuple()
-              .addLocalDateTimeArray(new LocalDateTime[]{dt})
+              .addArrayOfLocalDateTime(new LocalDateTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "LocalDateTime")
                 .returns(Tuple::getValue, Row::getValue, new LocalDateTime[]{dt})
-                .returns(Tuple::getLocalTimeArray, Row::getLocalTimeArray, new LocalTime[]{dt.toLocalTime()})
-                .returns(Tuple::getLocalDateArray, Row::getLocalDateArray, new LocalDate[]{dt.toLocalDate()})
-                .returns(Tuple::getLocalDateTimeArray, Row::getLocalDateTimeArray, new LocalDateTime[]{dt})
+                .returns(Tuple::getArrayOfLocalTime, Row::getArrayOfLocalTime, new LocalTime[]{dt.toLocalTime()})
+                .returns(Tuple::getArrayOfLocalDate, Row::getArrayOfLocalDate, new LocalDate[]{dt.toLocalDate()})
+                .returns(Tuple::getArrayOfLocalDateTime, Row::getArrayOfLocalDateTime, new LocalDateTime[]{dt})
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -513,7 +513,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
 
   @Test
   public void testDecodeOffsetDateTimeArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1 :: TIMESTAMP WITH TIME ZONE [] \"OffsetDateTime\"", new OffsetDateTime[][]{new OffsetDateTime[]{odt}}, Row::getOffsetDateTimeArray);
+    testGeneric(ctx, "SELECT $1 :: TIMESTAMP WITH TIME ZONE [] \"OffsetDateTime\"", new OffsetDateTime[][]{new OffsetDateTime[]{odt}}, Row::getArrayOfOffsetDateTime);
   }
 
   @Test
@@ -524,13 +524,13 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         ctx.asyncAssertSuccess(p -> {
           final OffsetDateTime dt = OffsetDateTime.parse("2017-05-14T19:35:58.237666Z");
           p.query().execute(Tuple.tuple()
-              .addOffsetDateTimeArray(new OffsetDateTime[]{dt})
+              .addArrayOfOffsetDateTime(new OffsetDateTime[]{dt})
               .addInteger(2)
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "OffsetDateTime")
                 .returns(Tuple::getValue, Row::getValue, new OffsetDateTime[]{dt})
-                .returns(Tuple::getOffsetTimeArray, Row::getOffsetTimeArray, new OffsetTime[]{dt.toOffsetTime()})
-                .returns(Tuple::getOffsetDateTimeArray, Row::getOffsetDateTimeArray, new OffsetDateTime[]{dt})
+                .returns(Tuple::getArrayOfOffsetTime, Row::getArrayOfOffsetTime, new OffsetTime[]{dt.toOffsetTime()})
+                .returns(Tuple::getArrayOfOffsetDateTime, Row::getArrayOfOffsetDateTime, new OffsetDateTime[]{dt})
                 .forRow(result.iterator().next());
               async.complete();
             }));

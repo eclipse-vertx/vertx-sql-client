@@ -145,77 +145,21 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Integer[] getIntegerArray(int pos) {
+  public LocalDateTime[] getArrayOfLocalDateTime(int pos) {
+    throw new UnsupportedOperationException();
+  }
+
+  public OffsetDateTime[] getArrayOfOffsetDateTime(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Boolean[] getBooleanArray(int pos) {
+  public Buffer[] getArrayOfBuffer(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Short[] getShortArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Long[] getLongArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Float[] getFloatArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Double[] getDoubleArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Numeric[] getNumericArray(String column) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public String[] getStringArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalDate[] getLocalDateArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalTime[] getLocalTimeArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public OffsetTime[] getOffsetTimeArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalDateTime[] getLocalDateTimeArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public OffsetDateTime[] getOffsetDateTimeArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Buffer[] getBufferArray(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public UUID[] getUUIDArray(int pos) {
+  public UUID[] getArrayOfUUID(String column) {
     throw new UnsupportedOperationException();
   }
 

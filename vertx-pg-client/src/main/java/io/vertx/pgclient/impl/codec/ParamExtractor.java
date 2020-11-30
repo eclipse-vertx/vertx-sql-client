@@ -20,7 +20,7 @@ interface ParamExtractor<T> {
   static String extractUnknownType(TupleInternal tuple, int pos) {
     Object value = tuple.getValue(pos);
     if (value instanceof Object[]) {
-      String[] strings = tuple.getStringArray(pos);
+      String[] strings = tuple.getArrayOfString(pos);
       return Arrays.stream(strings).collect(Collectors.joining(",", "{", "}"));
     } else {
       return tuple.getString(pos);

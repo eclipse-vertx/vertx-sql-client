@@ -176,7 +176,18 @@ public class RowMapperGen extends MapperGenBase {
   private static Function<String, String> getter_(TypeInfo type, boolean isArray) {
     String getter = getter(type);
     if (getter != null) {
-      return arg -> "row." + getter + (isArray ? "Array" : "") + "(" + arg + ")";
+      String name;
+      String prefix;
+      if (getter.startsWith("get")) {
+        prefix = "get";
+        name = getter.substring(3);
+      } else if (getter.startsWith("is")) {
+        prefix = "is";
+        name = getter.substring(2);
+      } else {
+        throw new IllegalStateException();
+      }
+      return arg -> "row." + prefix + (isArray ? "ArrayOf" : "") + name + "(" + arg + ")";
     }
     if (type.getKind() == ClassKind.ENUM || type instanceof ClassTypeInfo) {
       if (isArray) {

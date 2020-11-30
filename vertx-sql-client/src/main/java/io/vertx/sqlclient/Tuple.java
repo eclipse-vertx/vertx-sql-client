@@ -582,7 +582,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Boolean[] getBooleanArray(int pos) {
+  default Boolean[] getArrayOfBoolean(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -610,7 +610,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Short[] getShortArray(int pos) {
+  default Short[] getArrayOfShort(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -660,7 +660,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Integer[] getIntegerArray(int pos) {
+  default Integer[] getArrayOfInteger(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -710,7 +710,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Long[] getLongArray(int pos) {
+  default Long[] getArrayOfLong(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -760,7 +760,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Float[] getFloatArray(int pos) {
+  default Float[] getArrayOfFloat(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -810,7 +810,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Double[] getDoubleArray(int pos) {
+  default Double[] getArrayOfDouble(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -857,7 +857,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Numeric[] getNumericArray(int pos) {
+  default Numeric[] getArrayOfNumeric(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -907,7 +907,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default String[] getStringArray(int pos) {
+  default String[] getArrayOfString(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -943,7 +943,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonObject[] getJsonObjectArray(int pos) {
+  default JsonObject[] getArrayOfJsonObject(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -966,7 +966,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonArray[] getJsonArrayArray(int pos) {
+  default JsonArray[] getArrayOfJsonArray(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -983,7 +983,7 @@ public interface Tuple {
   }
 
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Object[] getJsonElementArray(int pos) {
+  default Object[] getArrayOfJsonElement(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -1019,7 +1019,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Temporal[] getTemporalArray(int pos) {
+  default Temporal[] getArrayOfTemporal(int pos) {
     return (Temporal[]) getValue(pos);
   }
 
@@ -1033,7 +1033,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDate[] getLocalDateArray(int pos) {
+  default LocalDate[] getArrayOfLocalDate(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -1065,7 +1065,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalTime[] getLocalTimeArray(int pos) {
+  default LocalTime[] getArrayOfLocalTime(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -1094,7 +1094,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDateTime[] getLocalDateTimeArray(int pos) {
+  default LocalDateTime[] getArrayOfLocalDateTime(int pos) {
     return (LocalDateTime[]) getValue(pos);
   }
 
@@ -1108,7 +1108,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetTime[] getOffsetTimeArray(int pos) {
+  default OffsetTime[] getArrayOfOffsetTime(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -1137,7 +1137,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetDateTime[] getOffsetDateTimeArray(int pos) {
+  default OffsetDateTime[] getArrayOfOffsetDateTime(int pos) {
     return (OffsetDateTime[]) getValue(pos);
   }
 
@@ -1148,7 +1148,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore
-  default Buffer[] getBufferArray(int pos) {
+  default Buffer[] getArrayOfBuffer(int pos) {
     return (Buffer[]) getValue(pos);
   }
 
@@ -1159,7 +1159,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default UUID[] getUUIDArray(int pos) {
+  default UUID[] getArrayOfUUID(int pos) {
     return (UUID[]) getValue(pos);
   }
 
@@ -1170,7 +1170,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default BigDecimal[] getBigDecimalArray(int pos) {
+  default BigDecimal[] getArrayOfBigDecimal(int pos) {
     return (BigDecimal[]) getValue(pos);
   }
 
@@ -1388,7 +1388,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addBooleanArray(Boolean[] value) {
+  default Tuple addArrayOfBoolean(Boolean[] value) {
     return addValue(value);
   }
 
@@ -1399,7 +1399,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addShortArray(Short[] value) {
+  default Tuple addArrayOfShort(Short[] value) {
     return addValue(value);
   }
 
@@ -1413,7 +1413,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addIntegerArray(Integer[] value) {
+  default Tuple addArrayOfInteger(Integer[] value) {
     return addValue(value);
   }
 
@@ -1424,7 +1424,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addLongArray(Long[] value) {
+  default Tuple addArrayOfLong(Long[] value) {
     return addValue(value);
   }
 
@@ -1435,7 +1435,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addFloatArray(Float[] value) {
+  default Tuple addArrayOfFloat(Float[] value) {
     return addValue(value);
   }
 
@@ -1446,7 +1446,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addDoubleArray(Double[] value) {
+  default Tuple addArrayOfDouble(Double[] value) {
     return addValue(value);
   }
 
@@ -1457,7 +1457,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addStringArray(String[] value) {
+  default Tuple addArrayOfString(String[] value) {
     return addValue(value);
   }
 
@@ -1468,7 +1468,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addJsonObjectArray(JsonObject[] value) {
+  default Tuple addArrayOfJsonObject(JsonObject[] value) {
     return addValue(value);
   }
 
@@ -1479,7 +1479,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addJsonArrayArray(JsonArray[] value) {
+  default Tuple addArrayOfJsonArray(JsonArray[] value) {
     return addValue(value);
   }
 
@@ -1490,7 +1490,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addTemporalArray(Temporal[] value) {
+  default Tuple addArrayOfTemporal(Temporal[] value) {
     return addValue(value);
   }
 
@@ -1501,7 +1501,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addLocalDateArray(LocalDate[] value) {
+  default Tuple addArrayOfLocalDate(LocalDate[] value) {
     return addValue(value);
   }
 
@@ -1512,7 +1512,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addLocalTimeArray(LocalTime[] value) {
+  default Tuple addArrayOfLocalTime(LocalTime[] value) {
     return addValue(value);
   }
 
@@ -1523,7 +1523,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addLocalDateTimeArray(LocalDateTime[] value) {
+  default Tuple addArrayOfLocalDateTime(LocalDateTime[] value) {
     return addValue(value);
   }
 
@@ -1534,7 +1534,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addOffsetTimeArray(OffsetTime[] value) {
+  default Tuple addArrayOfOffsetTime(OffsetTime[] value) {
     return addValue(value);
   }
 
@@ -1545,7 +1545,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addOffsetDateTimeArray(OffsetDateTime[] value) {
+  default Tuple addArrayOfOffsetDateTime(OffsetDateTime[] value) {
     return addValue(value);
   }
 
@@ -1556,7 +1556,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  default Tuple addBufferArray(Buffer[] value) {
+  default Tuple addArrayOfBuffer(Buffer[] value) {
     return addValue(value);
   }
 
@@ -1567,7 +1567,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addUUIDArray(UUID[] value) {
+  default Tuple addArrayOfUUID(UUID[] value) {
     return addValue(value);
   }
 
@@ -1578,7 +1578,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addBigDecimalArray(BigDecimal[] value) {
+  default Tuple addArrayOfBigDecimal(BigDecimal[] value) {
     return addValue(value);
   }
 

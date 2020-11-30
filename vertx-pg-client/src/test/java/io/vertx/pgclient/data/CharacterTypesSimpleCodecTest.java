@@ -39,21 +39,21 @@ public class CharacterTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestB
 
   @Test
   public void testDecodeCHARArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY['01234567' :: CHAR(8)]", "CharArray", Tuple::getStringArray, Row::getStringArray, "01234567");
+    testDecodeGenericArray(ctx, "ARRAY['01234567' :: CHAR(8)]", "CharArray", Tuple::getArrayOfString, Row::getArrayOfString, "01234567");
   }
 
   @Test
   public void testDecodeTEXTArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['Knock, knock.Who’s there?very long pause….Java.' :: TEXT]", "TextArray", Tuple::getStringArray, Row::getStringArray, "Knock, knock.Who’s there?very long pause….Java.");
+    testDecodeGenericArray(ctx, "ARRAY ['Knock, knock.Who’s there?very long pause….Java.' :: TEXT]", "TextArray", Tuple::getArrayOfString, Row::getArrayOfString, "Knock, knock.Who’s there?very long pause….Java.");
   }
 
   @Test
   public void testDecodeVARCHARArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['Knock, knock.Who’s there?very long pause….Java.' :: VARCHAR]", "VarcharArray", Tuple::getStringArray, Row::getStringArray, "Knock, knock.Who’s there?very long pause….Java.");
+    testDecodeGenericArray(ctx, "ARRAY ['Knock, knock.Who’s there?very long pause….Java.' :: VARCHAR]", "VarcharArray", Tuple::getArrayOfString, Row::getArrayOfString, "Knock, knock.Who’s there?very long pause….Java.");
   }
 
   @Test
   public void testDecodeNAMEArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['Knock, knock.Who’s there?very long pause….Java.' :: NAME]", "NameArray", Tuple::getStringArray, Row::getStringArray, "Knock, knock.Who’s there?very long pause….Java.");
+    testDecodeGenericArray(ctx, "ARRAY ['Knock, knock.Who’s there?very long pause….Java.' :: NAME]", "NameArray", Tuple::getArrayOfString, Row::getArrayOfString, "Knock, knock.Who’s there?very long pause….Java.");
   }
 }

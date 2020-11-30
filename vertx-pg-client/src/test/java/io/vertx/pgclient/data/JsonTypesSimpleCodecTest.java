@@ -110,15 +110,15 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void testDecodeJSONArray(TestContext ctx) {
     ColumnChecker checker = ColumnChecker.checkColumn(0, "JSON")
       .returns(Tuple::getValue, Row::getValue, expected)
-      .skip(Tuple::getBooleanArray, Row::getBooleanArray)
-      .skip(Tuple::getShortArray, Row::getShortArray)
-      .skip(Tuple::getIntegerArray, Row::getIntegerArray)
-      .skip(Tuple::getLongArray, Row::getLongArray)
-      .skip(Tuple::getFloatArray, Row::getFloatArray)
-      .skip(Tuple::getDoubleArray, Row::getDoubleArray)
-      .skip(Tuple::getStringArray, Row::getStringArray)
-      .skip(Tuple::getJsonObjectArray, Row::getJsonObjectArray)
-      .skip(Tuple::getJsonArrayArray, Row::getJsonArrayArray);
+      .skip(Tuple::getArrayOfBoolean, Row::getArrayOfBoolean)
+      .skip(Tuple::getArrayOfShort, Row::getArrayOfShort)
+      .skip(Tuple::getArrayOfInteger, Row::getArrayOfInteger)
+      .skip(Tuple::getArrayOfLong, Row::getArrayOfLong)
+      .skip(Tuple::getArrayOfFloat, Row::getArrayOfFloat)
+      .skip(Tuple::getArrayOfDouble, Row::getArrayOfDouble)
+      .skip(Tuple::getArrayOfString, Row::getArrayOfString)
+      .skip(Tuple::getArrayOfJsonObject, Row::getArrayOfJsonObject)
+      .skip(Tuple::getArrayOfJsonArray, Row::getArrayOfJsonArray);
     testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
       "JSON", checker);
   }
@@ -127,15 +127,15 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   public void testDecodeJSONBArray(TestContext ctx) {
     ColumnChecker checker = ColumnChecker.checkColumn(0, "JSONB")
       .returns(Tuple::getValue, Row::getValue, expected)
-      .skip(Tuple::getBooleanArray, Row::getBooleanArray)
-      .skip(Tuple::getShortArray, Row::getShortArray)
-      .skip(Tuple::getIntegerArray, Row::getIntegerArray)
-      .skip(Tuple::getLongArray, Row::getLongArray)
-      .skip(Tuple::getFloatArray, Row::getFloatArray)
-      .skip(Tuple::getDoubleArray, Row::getDoubleArray)
-      .skip(Tuple::getStringArray, Row::getStringArray)
-      .skip(Tuple::getJsonObjectArray, Row::getJsonObjectArray)
-      .skip(Tuple::getJsonArrayArray, Row::getJsonArrayArray);
+      .skip(Tuple::getArrayOfBoolean, Row::getArrayOfBoolean)
+      .skip(Tuple::getArrayOfShort, Row::getArrayOfShort)
+      .skip(Tuple::getArrayOfInteger, Row::getArrayOfInteger)
+      .skip(Tuple::getArrayOfLong, Row::getArrayOfLong)
+      .skip(Tuple::getArrayOfFloat, Row::getArrayOfFloat)
+      .skip(Tuple::getArrayOfDouble, Row::getArrayOfDouble)
+      .skip(Tuple::getArrayOfString, Row::getArrayOfString)
+      .skip(Tuple::getArrayOfJsonObject, Row::getArrayOfJsonObject)
+      .skip(Tuple::getArrayOfJsonArray, Row::getArrayOfJsonArray);
     testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
       "JSONB", checker);
   }

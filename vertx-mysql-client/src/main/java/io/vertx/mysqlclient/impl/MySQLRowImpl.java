@@ -130,78 +130,22 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Integer[] getIntegerArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), Integer[].class));
+  public LocalDateTime[] getArrayOfLocalDateTime(int pos) {
+    throw new UnsupportedOperationException();
   }
 
-  @Override
-  public Boolean[] getBooleanArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), Boolean[].class));
-  }
-
-  @Override
-  public Short[] getShortArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), Short[].class));
-  }
-
-  @Override
-  public Long[] getLongArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), Long[].class));
-  }
-
-  @Override
-  public Float[] getFloatArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), Float[].class));
-  }
-
-  @Override
-  public Double[] getDoubleArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), Double[].class));
-  }
-
-  @Override
-  public Numeric[] getNumericArray(String column) {
+  public OffsetDateTime[] getArrayOfOffsetDateTime(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public String[] getStringArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), String[].class));
+  public Buffer[] getArrayOfBuffer(String column) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDate[] getLocalDateArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), LocalDate[].class));
-  }
-
-  @Override
-  public LocalTime[] getLocalTimeArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), LocalTime[].class));
-  }
-
-  @Override
-  public OffsetTime[] getOffsetTimeArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), OffsetTime[].class));
-  }
-
-  @Override
-  public LocalDateTime[] getLocalDateTimeArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), LocalDateTime[].class));
-  }
-
-  @Override
-  public OffsetDateTime[] getOffsetDateTimeArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), OffsetDateTime[].class));
-  }
-
-  @Override
-  public Buffer[] getBufferArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), Buffer[].class));
-  }
-
-  @Override
-  public UUID[] getUUIDArray(int pos) {
-    throw new UnsupportedOperationException(buildIllegalAccessMessage(getValue(pos), getColumnName(pos), UUID[].class));
+  public UUID[] getArrayOfUUID(String column) {
+    throw new UnsupportedOperationException();
   }
 
   @Override
