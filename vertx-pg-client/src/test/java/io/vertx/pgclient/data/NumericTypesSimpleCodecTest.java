@@ -169,27 +169,27 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
 
   @Test
   public void testDecodeINT2Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [1 :: INT2]", "Short", Tuple::getArrayOfShort, Row::getArrayOfShort, (short) 1);
+    testDecodeGenericArray(ctx, "ARRAY [1 :: INT2]", "Short", Tuple::getArrayOfShorts, Row::getArrayOfShorts, (short) 1);
   }
 
   @Test
   public void testDecodeINT4Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [2 :: INT4]", "Integer", Tuple::getArrayOfInteger, Row::getArrayOfInteger, 2);
+    testDecodeGenericArray(ctx, "ARRAY [2 :: INT4]", "Integer", Tuple::getArrayOfIntegers, Row::getArrayOfIntegers, 2);
   }
 
   @Test
   public void testDecodeINT8Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [3 :: INT8]", "Long", Tuple::getArrayOfLong, Row::getArrayOfLong, 3L);
+    testDecodeGenericArray(ctx, "ARRAY [3 :: INT8]", "Long", Tuple::getArrayOfLongs, Row::getArrayOfLongs, 3L);
   }
 
   @Test
   public void testDecodeFLOAT4Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [4.1 :: FLOAT4]", "Float", Tuple::getArrayOfFloat, Row::getArrayOfFloat, 4.1f);
+    testDecodeGenericArray(ctx, "ARRAY [4.1 :: FLOAT4]", "Float", Tuple::getArrayOfFloats, Row::getArrayOfFloats, 4.1f);
   }
 
   @Test
   public void testDecodeFLOAT8Array(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY [5.2 :: FLOAT8]", "Double", Tuple::getArrayOfDouble, Row::getArrayOfDouble, 5.2d);
+    testDecodeGenericArray(ctx, "ARRAY [5.2 :: FLOAT8]", "Double", Tuple::getArrayOfDoubles, Row::getArrayOfDoubles, 5.2d);
   }
 
   @Test
@@ -202,7 +202,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
         ctx.asyncAssertSuccess(result -> {
           ColumnChecker.checkColumn(0, "array")
             .returns(Tuple::getValue, Row::getValue, (Object[]) new Long[0])
-            .returns(Tuple::getArrayOfLong, Row::getArrayOfLong, (Object[]) new Long[0])
+            .returns(Tuple::getArrayOfLongs, Row::getArrayOfLongs, (Object[]) new Long[0])
             .forRow(result.iterator().next());
           async.complete();
         }));

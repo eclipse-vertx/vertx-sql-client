@@ -265,7 +265,7 @@ public class TupleTest {
     tuple.addArrayOfOffsetDateTime(offsetDateTimeArray);
     tuple.addArrayOfUUID(uuidArray);
 
-    assertArrayEquals(booleanArray, tuple.getArrayOfBoolean(0));
+    assertArrayEquals(booleanArray, tuple.getArrayOfBooleans(0));
     assertArrayEquals(booleanArray, (Boolean[]) tuple.getValue(0));
     assertArrayEquals(booleanArray, tuple.getValues(Boolean.class, 0));
     assertArrayEquals(shortArray, tuple.getShortArray(1));

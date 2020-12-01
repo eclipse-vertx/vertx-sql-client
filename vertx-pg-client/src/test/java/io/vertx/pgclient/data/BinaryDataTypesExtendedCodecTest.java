@@ -51,7 +51,7 @@ public class BinaryDataTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
           p.query().execute(Tuple.of(Buffer.buffer(bytes)), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Bytea")
               .returns(Tuple::getValue, Row::getValue, new Buffer[]{Buffer.buffer(bytes)})
-              .returns(Tuple::getArrayOfBuffer, Row::getArrayOfBuffer, new Buffer[]{Buffer.buffer(bytes)})
+              .returns(Tuple::getArrayOfBuffers, Row::getArrayOfBuffers, new Buffer[]{Buffer.buffer(bytes)})
               .forRow(result.iterator().next());
             async.complete();
           }));

@@ -486,7 +486,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Boolean[] getArrayOfBoolean(int pos) {
+  default Boolean[] getArrayOfBooleans(int pos) {
     return getBooleanArray(pos);
   }
 
@@ -498,7 +498,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfBoolean(int)}
+   * @deprecated instead use {@link #getArrayOfBooleans(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -513,7 +513,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Short[] getArrayOfShort(int pos) {
+  default Short[] getArrayOfShorts(int pos) {
     return getShortArray(pos);
   }
 
@@ -525,7 +525,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfShort(int)}
+   * @deprecated instead use {@link #getArrayOfShorts(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -540,7 +540,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Integer[] getArrayOfInteger(int pos) {
+  default Integer[] getArrayOfIntegers(int pos) {
     return getIntegerArray(pos);
   }
 
@@ -552,7 +552,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfInteger(int)}
+   * @deprecated instead use {@link #getArrayOfIntegers(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -567,7 +567,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Long[] getArrayOfLong(int pos) {
+  default Long[] getArrayOfLongs(int pos) {
     return getLongArray(pos);
   }
 
@@ -579,7 +579,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfLong(int)}
+   * @deprecated instead use {@link #getArrayOfLongs(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -594,7 +594,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Float[] getArrayOfFloat(int pos) {
+  default Float[] getArrayOfFloats(int pos) {
     return getFloatArray(pos);
   }
 
@@ -606,7 +606,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfFloat(int)}
+   * @deprecated instead use {@link #getArrayOfFloats(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -621,7 +621,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Double[] getArrayOfDouble(int pos) {
+  default Double[] getArrayOfDoubles(int pos) {
     return getDoubleArray(pos);
   }
 
@@ -633,7 +633,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfDouble(int)}
+   * @deprecated instead use {@link #getArrayOfDoubles(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -648,7 +648,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Numeric[] getArrayOfNumeric(int pos) {
+  default Numeric[] getArrayOfNumerics(int pos) {
     return getNumericArray(pos);
   }
 
@@ -657,7 +657,7 @@ public interface Tuple {
    *
    * @param pos the column
    * @return the value
-   * @deprecated instead use {@link #getArrayOfNumeric(int)}
+   * @deprecated instead use {@link #getArrayOfNumerics(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -672,7 +672,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default String[] getArrayOfString(int pos) {
+  default String[] getArrayOfStrings(int pos) {
     return getStringArray(pos);
   }
 
@@ -684,7 +684,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfString(int)}
+   * @deprecated instead use {@link #getArrayOfStrings(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -699,7 +699,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Temporal[] getArrayOfTemporal(int pos) {
+  default Temporal[] getArrayOfTemporals(int pos) {
     return getTemporalArray(pos);
   }
 
@@ -708,7 +708,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfTemporal(int)}
+   * @deprecated instead use {@link #getArrayOfTemporals(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -723,7 +723,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDate[] getArrayOfLocalDate(int pos) {
+  default LocalDate[] getArrayOfLocalDates(int pos) {
     return getLocalDateArray(pos);
   }
 
@@ -735,7 +735,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfLocalDate(int)}
+   * @deprecated instead use {@link #getArrayOfLocalDates(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -750,7 +750,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalTime[] getArrayOfLocalTime(int pos) {
+  default LocalTime[] getArrayOfLocalTimes(int pos) {
     return getLocalTimeArray(pos);
   }
 
@@ -762,7 +762,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfLocalTime(int)}
+   * @deprecated instead use {@link #getArrayOfLocalTimes(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -777,7 +777,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDateTime[] getArrayOfLocalDateTime(int pos) {
+  default LocalDateTime[] getArrayOfLocalDateTimes(int pos) {
     return getLocalDateTimeArray(pos);
   }
 
@@ -786,7 +786,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfLocalDateTime(int)}
+   * @deprecated instead use {@link #getArrayOfLocalDateTimes(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -801,7 +801,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetTime[] getArrayOfOffsetTime(int pos) {
+  default OffsetTime[] getArrayOfOffsetTimes(int pos) {
     return getOffsetTimeArray(pos);
   }
 
@@ -813,7 +813,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfOffsetTime(int)}
+   * @deprecated instead use {@link #getArrayOfOffsetTimes(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -828,7 +828,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetDateTime[] getArrayOfOffsetDateTime(int pos) {
+  default OffsetDateTime[] getArrayOfOffsetDateTimes(int pos) {
     return getOffsetDateTimeArray(pos);
   }
 
@@ -837,7 +837,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfOffsetDateTime(int)}
+   * @deprecated instead use {@link #getArrayOfOffsetDateTimes(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -852,7 +852,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore
-  default Buffer[] getArrayOfBuffer(int pos) {
+  default Buffer[] getArrayOfBuffers(int pos) {
     return getBufferArray(pos);
   }
 
@@ -861,7 +861,7 @@ public interface Tuple {
    *
    * @param pos the position
    * @return the value
-   * @deprecated instead use {@link #getArrayOfBuffer(int)}
+   * @deprecated instead use {@link #getArrayOfBuffers(int)}
    */
   @Deprecated
   @GenIgnore
@@ -876,7 +876,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default UUID[] getArrayOfUUID(int pos) {
+  default UUID[] getArrayOfUUIDs(int pos) {
     return getUUIDArray(pos);
   }
 
@@ -885,7 +885,7 @@ public interface Tuple {
    *
    * @param pos the column
    * @return the value
-   * @deprecated instead use {@link #getArrayOfUUID(int)}
+   * @deprecated instead use {@link #getArrayOfUUIDs(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
@@ -900,7 +900,7 @@ public interface Tuple {
    * @return the value or {@code null}
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default BigDecimal[] getArrayOfBigDecimal(int pos) {
+  default BigDecimal[] getArrayOfBigDecimals(int pos) {
     return getBigDecimalArray(pos);
   }
 
@@ -909,7 +909,7 @@ public interface Tuple {
    *
    * @param pos the column
    * @return the value
-   * @deprecated instead use {@link #getArrayOfBigDecimal(int)}
+   * @deprecated instead use {@link #getArrayOfBigDecimals(int)}
    */
   @Deprecated
   @GenIgnore(GenIgnore.PERMITTED_TYPE)

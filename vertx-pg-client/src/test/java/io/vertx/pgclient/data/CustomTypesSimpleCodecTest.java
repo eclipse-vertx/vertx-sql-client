@@ -30,6 +30,6 @@ public class CustomTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase
   public void testDecodeCustomTypeArray(TestContext ctx) {
     String [] addresses = new String [] {"(Anytown,\"Main St\",t)", "(Anytown,\"First St\",f)"};
 
-    testDecodeXXXArray(ctx, "CustomType", "ArrayDataType", Tuple::getArrayOfString, Row::getArrayOfString, addresses);
+    testDecodeXXXArray(ctx, "CustomType", "ArrayDataType", Tuple::getArrayOfStrings, Row::getArrayOfStrings, addresses);
   }
 }

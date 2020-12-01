@@ -63,7 +63,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Enum")
               .returns(Tuple::getValue, Row::getValue, expected)
-              .returns(Tuple::getArrayOfString, Row::getArrayOfString, expected)
+              .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, expected)
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -83,7 +83,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{"unhappy"})
-                .returns(Tuple::getArrayOfString, Row::getArrayOfString, new String[]{"unhappy"})
+                .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{"unhappy"})
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -103,7 +103,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{"unhappy", "ok"})
-                .returns(Tuple::getArrayOfString, Row::getArrayOfString, new String[]{"unhappy", "ok"})
+                .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{"unhappy", "ok"})
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -123,11 +123,11 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{})
-                .returns(Tuple::getArrayOfString, Row::getArrayOfString, new String[]{})
+                .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{})
                 .forRow(result.iterator().next());
               ColumnChecker.checkColumn(1, "Boolean")
                 .returns(Tuple::getValue, Row::getValue, new Boolean[]{true})
-                .returns(Tuple::getArrayOfBoolean, Row::getArrayOfBoolean, new Boolean[]{true})
+                .returns(Tuple::getArrayOfBooleans, Row::getArrayOfBooleans, new Boolean[]{true})
                 .forRow(result.iterator().next());
               async.complete();
             }));
