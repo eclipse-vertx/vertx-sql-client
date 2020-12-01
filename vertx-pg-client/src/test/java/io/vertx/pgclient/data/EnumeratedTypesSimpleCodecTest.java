@@ -29,6 +29,6 @@ public class EnumeratedTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTest
   @Test
   public void testDecodeENUMArray(TestContext ctx) {
     String [] moods = new String [] {"ok", "unhappy", "happy"};
-    testDecodeXXXArray(ctx, "Enum", "ArrayDataType", Tuple::getArrayOfString, Row::getArrayOfString, moods);
+    testDecodeXXXArray(ctx, "Enum", "ArrayDataType", Tuple::getArrayOfStrings, Row::getArrayOfStrings, moods);
   }
 }

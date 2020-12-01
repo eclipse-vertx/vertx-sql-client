@@ -41,7 +41,7 @@ public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBas
 
   @Test
   public void testDecodeUUIDArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::UUID[] \"UUID\"", new UUID[][]{new UUID[]{uuid}}, Tuple::getArrayOfUUID);
+    testGeneric(ctx, "SELECT $1::UUID[] \"UUID\"", new UUID[][]{new UUID[]{uuid}}, Tuple::getArrayOfUUIDs);
   }
 
   @Test
@@ -57,7 +57,7 @@ public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBas
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "UUID")
                 .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
-                .returns(Tuple::getArrayOfUUID, Row::getArrayOfUUID, new UUID[]{uuid})
+                .returns(Tuple::getArrayOfUUIDs, Row::getArrayOfUUIDs, new UUID[]{uuid})
                 .forRow(result.iterator().next());
               async.complete();
             }));

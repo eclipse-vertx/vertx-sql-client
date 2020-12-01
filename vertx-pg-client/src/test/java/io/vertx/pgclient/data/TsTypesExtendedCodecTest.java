@@ -68,7 +68,7 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
             Row row = result.iterator().next();
             String[] expected = new String[]{"'postgradu':1", "'ate':9 'cat':3 'fat':2,11 'mat':7 'rat':12 'sat':4"};
             ColumnChecker.checkColumn(0, "TsVector")
-              .returns(Tuple::getArrayOfString, Row::getArrayOfString, expected)
+              .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, expected)
               .returns(Tuple::getValue, Row::getValue, expected)
               .forRow(row);
             async.complete();
@@ -114,7 +114,7 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
             Row row = result.iterator().next();
             String[] expected = new String[]{"'fat':AB & 'cat'", "'super':*"};
             ColumnChecker.checkColumn(0, "TsQuery")
-              .returns(Tuple::getArrayOfString, Row::getArrayOfString, expected)
+              .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, expected)
               .returns(Tuple::getValue, Row::getValue, expected)
               .forRow(row);
             async.complete();

@@ -165,11 +165,11 @@ public class TupleTest {
     assertEquals(4.5, tuple.getDouble(4), 0.0D);
     assertEquals(4.5, tuple.getDouble(5), 0.0D);
 
-    testNumber(Number::shortValue, Tuple::getShort, Tuple::getArrayOfShort);
-    testNumber(Number::intValue, Tuple::getInteger, Tuple::getArrayOfInteger);
-    testNumber(Number::longValue, Tuple::getLong, Tuple::getArrayOfLong);
-    testNumber(Number::floatValue, Tuple::getFloat, Tuple::getArrayOfFloat);
-    testNumber(Number::doubleValue, Tuple::getDouble, Tuple::getArrayOfDouble);
+    testNumber(Number::shortValue, Tuple::getShort, Tuple::getArrayOfShorts);
+    testNumber(Number::intValue, Tuple::getInteger, Tuple::getArrayOfIntegers);
+    testNumber(Number::longValue, Tuple::getLong, Tuple::getArrayOfLongs);
+    testNumber(Number::floatValue, Tuple::getFloat, Tuple::getArrayOfFloats);
+    testNumber(Number::doubleValue, Tuple::getDouble, Tuple::getArrayOfDoubles);
   }
 
   private <T extends Number> void testNumber(Function<Number, T> f, BiFunction<Tuple, Integer, T> abc, BiFunction<Tuple, Integer, T[]> def) {
@@ -299,46 +299,46 @@ public class TupleTest {
     tuple.addArrayOfOffsetDateTime(offsetDateTimeArray);
     tuple.addArrayOfUUID(uuidArray);
 
-    assertArrayEquals(booleanArray, tuple.getArrayOfBoolean(0));
+    assertArrayEquals(booleanArray, tuple.getArrayOfBooleans(0));
     assertArrayEquals(booleanArray, (Boolean[]) tuple.getValue(0));
     assertArrayEquals(booleanArray, tuple.get(Boolean[].class, 0));
-    assertArrayEquals(shortArray, tuple.getArrayOfShort(1));
+    assertArrayEquals(shortArray, tuple.getArrayOfShorts(1));
     assertArrayEquals(shortArray, (Short[]) tuple.getValue(1));
     assertArrayEquals(shortArray, tuple.get(Short[].class, 1));
-    assertArrayEquals(integerArray, tuple.getArrayOfInteger(2));
+    assertArrayEquals(integerArray, tuple.getArrayOfIntegers(2));
     assertArrayEquals(integerArray, (Integer[]) tuple.getValue(2));
     assertArrayEquals(integerArray, tuple.get(Integer[].class, 2));
-    assertArrayEquals(longArray, tuple.getArrayOfLong(3));
+    assertArrayEquals(longArray, tuple.getArrayOfLongs(3));
     assertArrayEquals(longArray, (Long[]) tuple.getValue(3));
     assertArrayEquals(longArray, (Long[]) tuple.get(Long[].class, 3));
-    assertArrayEquals(floatArray, tuple.getArrayOfFloat(4));
+    assertArrayEquals(floatArray, tuple.getArrayOfFloats(4));
     assertArrayEquals(floatArray, (Float[]) tuple.getValue(4));
     assertArrayEquals(floatArray, tuple.get(Float[].class, 4));
-    assertArrayEquals(doubleArray, tuple.getArrayOfDouble(5));
+    assertArrayEquals(doubleArray, tuple.getArrayOfDoubles(5));
     assertArrayEquals(doubleArray, (Double[]) tuple.getValue(5));
     assertArrayEquals(doubleArray, tuple.get(Double[].class, 5));
-    assertArrayEquals(stringArray, tuple.getArrayOfString(6));
+    assertArrayEquals(stringArray, tuple.getArrayOfStrings(6));
     assertArrayEquals(stringArray, (String[]) tuple.getValue(6));
     assertArrayEquals(stringArray, tuple.get(String[].class, 6));
-    assertArrayEquals(bufferArray, tuple.getArrayOfBuffer(7));
+    assertArrayEquals(bufferArray, tuple.getArrayOfBuffers(7));
     assertArrayEquals(bufferArray, (Buffer[]) tuple.getValue(7));
     assertArrayEquals(bufferArray, tuple.get(Buffer[].class, 7));
-    assertArrayEquals(localDateArray, tuple.getArrayOfLocalDate(8));
+    assertArrayEquals(localDateArray, tuple.getArrayOfLocalDates(8));
     assertArrayEquals(localDateArray, (LocalDate[]) tuple.getValue(8));
     assertArrayEquals(localDateArray, tuple.get(LocalDate[].class, 8));
-    assertArrayEquals(localTimeArray, tuple.getArrayOfLocalTime(9));
+    assertArrayEquals(localTimeArray, tuple.getArrayOfLocalTimes(9));
     assertArrayEquals(localTimeArray, (LocalTime[]) tuple.getValue(9));
     assertArrayEquals(localTimeArray, tuple.get(LocalTime[].class, 9));
-    assertArrayEquals(localDateTimeArray, tuple.getArrayOfLocalDateTime(10));
+    assertArrayEquals(localDateTimeArray, tuple.getArrayOfLocalDateTimes(10));
     assertArrayEquals(localDateTimeArray, (LocalDateTime[]) tuple.getValue(10));
     assertArrayEquals(localDateTimeArray, tuple.get(LocalDateTime[].class, 10));
-    assertArrayEquals(offsetTimeArray, tuple.getArrayOfOffsetTime(11));
+    assertArrayEquals(offsetTimeArray, tuple.getArrayOfOffsetTimes(11));
     assertArrayEquals(offsetTimeArray, (Object[]) tuple.getValue(11));
     assertArrayEquals(offsetTimeArray, tuple.get(OffsetTime[].class, 11));
-    assertArrayEquals(offsetDateTimeArray, tuple.getArrayOfOffsetDateTime(12));
+    assertArrayEquals(offsetDateTimeArray, tuple.getArrayOfOffsetDateTimes(12));
     assertArrayEquals(offsetDateTimeArray, (OffsetDateTime[]) tuple.getValue(12));
     assertArrayEquals(offsetDateTimeArray, tuple.get(OffsetDateTime[].class, 12));
-    assertArrayEquals(uuidArray, tuple.getArrayOfUUID(13));
+    assertArrayEquals(uuidArray, tuple.getArrayOfUUIDs(13));
     assertArrayEquals(uuidArray, (UUID[]) tuple.getValue(13));
     assertArrayEquals(uuidArray, tuple.get(UUID[].class, 13));
     try {
@@ -356,7 +356,7 @@ public class TupleTest {
   @Test
   public void testShortArrayCoercion() {
     Tuple tuple = of((Object)new Long[]{5L, null, Long.MAX_VALUE});
-    Short[] res = tuple.getArrayOfShort(0);
+    Short[] res = tuple.getArrayOfShorts(0);
     assertEquals(3, res.length);
     assertEquals(5, (int)res[0]);
     assertNull(res[1]);
@@ -366,7 +366,7 @@ public class TupleTest {
   @Test
   public void testIntegerArrayCoercion() {
     Tuple tuple = of((Object)new Long[]{5L, null, Long.MAX_VALUE});
-    Integer[] res = tuple.getArrayOfInteger(0);
+    Integer[] res = tuple.getArrayOfIntegers(0);
     assertEquals(3, res.length);
     assertEquals(5, (int)res[0]);
     assertNull(res[1]);
@@ -376,7 +376,7 @@ public class TupleTest {
   @Test
   public void testLongArrayCoercion() {
     Tuple tuple = of((Object)new Integer[]{5, null});
-    Long[] res = tuple.getArrayOfLong(0);
+    Long[] res = tuple.getArrayOfLongs(0);
     assertEquals(2, res.length);
     assertEquals(5, (long)res[0]);
     assertNull(res[1]);
@@ -385,7 +385,7 @@ public class TupleTest {
   @Test
   public void testFloatArrayCoercion() {
     Tuple tuple = of((Object)new Double[]{5D, null, Double.MAX_VALUE});
-    Float[] res = tuple.getArrayOfFloat(0);
+    Float[] res = tuple.getArrayOfFloats(0);
     assertEquals(3, res.length);
     assertEquals(5, res[0], 0.0);
     assertNull(res[1]);
@@ -395,7 +395,7 @@ public class TupleTest {
   @Test
   public void testDoubleArrayCoercion() {
     Tuple tuple = of((Object)new Float[]{5F, null, Float.MAX_VALUE});
-    Double[] res = tuple.getArrayOfDouble(0);
+    Double[] res = tuple.getArrayOfDoubles(0);
     assertEquals(3, res.length);
     assertEquals(5, res[0], 0.0);
     assertNull(res[1]);
@@ -407,7 +407,7 @@ public class TupleTest {
     Tuple tuple = of(localDateTime);
     assertEquals(localTime, tuple.getLocalTime(0));
     tuple = of((Object)new LocalDateTime[]{localDateTime});
-    LocalTime[] array = tuple.getArrayOfLocalTime(0);
+    LocalTime[] array = tuple.getArrayOfLocalTimes(0);
     assertEquals(1, array.length);
     assertEquals(localTime, array[0]);
   }
@@ -417,7 +417,7 @@ public class TupleTest {
     Tuple tuple = of(localDateTime);
     assertEquals(localDate, tuple.getLocalDate(0));
     tuple = of((Object)new LocalDateTime[]{localDateTime});
-    LocalDate[] array = tuple.getArrayOfLocalDate(0);
+    LocalDate[] array = tuple.getArrayOfLocalDates(0);
     assertEquals(1, array.length);
     assertEquals(localDate, array[0]);
   }
@@ -427,7 +427,7 @@ public class TupleTest {
     Tuple tuple = of(offsetDateTime);
     assertEquals(offsetTime, tuple.getOffsetTime(0));
     tuple = of((Object)new OffsetDateTime[]{offsetDateTime});
-    OffsetTime[] array = tuple.getArrayOfOffsetTime(0);
+    OffsetTime[] array = tuple.getArrayOfOffsetTimes(0);
     assertEquals(1, array.length);
     assertEquals(offsetTime, array[0]);
   }
@@ -437,7 +437,7 @@ public class TupleTest {
     Tuple tuple = of(jsonObject);
     assertEquals(jsonObject, tuple.getJsonObject(0));
     tuple = of((Object)new Object[]{jsonObject});
-    JsonObject[] array = tuple.getArrayOfJsonObject(0);
+    JsonObject[] array = tuple.getArrayOfJsonObjects(0);
     assertEquals(1, array.length);
     assertEquals(jsonObject, array[0]);
   }
@@ -447,7 +447,7 @@ public class TupleTest {
     Tuple tuple = of(jsonArray);
     assertEquals(jsonArray, tuple.getJsonArray(0));
     tuple = of((Object)new Object[]{jsonArray});
-    JsonArray[] array = tuple.getArrayOfJsonArray(0);
+    JsonArray[] array = tuple.getArrayOfJsonArrays(0);
     assertEquals(1, array.length);
     assertEquals(jsonArray, array[0]);
   }
@@ -458,7 +458,7 @@ public class TupleTest {
     Tuple tuple = of(expected);
     assertEquals(expected, tuple.getString(0));
     tuple = of((Object)new Object[]{expected});
-    String[] array = tuple.getArrayOfString(0);
+    String[] array = tuple.getArrayOfStrings(0);
     assertEquals(1, array.length);
     assertEquals(expected, array[0]);
   }
@@ -468,7 +468,7 @@ public class TupleTest {
     Tuple tuple = of(true);
     assertEquals(true, tuple.getBoolean(0));
     tuple = of((Object)new Object[]{true,false});
-    Boolean[] array = tuple.getArrayOfBoolean(0);
+    Boolean[] array = tuple.getArrayOfBooleans(0);
     assertEquals(2, array.length);
     assertEquals(true, array[0]);
     assertEquals(false, array[1]);

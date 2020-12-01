@@ -145,21 +145,21 @@ public class DB2RowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public LocalDateTime[] getArrayOfLocalDateTime(int pos) {
+  public LocalDateTime[] getArrayOfLocalDateTimes(int pos) {
     throw new UnsupportedOperationException();
   }
 
-  public OffsetDateTime[] getArrayOfOffsetDateTime(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Buffer[] getArrayOfBuffer(String column) {
+  public OffsetDateTime[] getArrayOfOffsetDateTimes(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public UUID[] getArrayOfUUID(String column) {
+  public Buffer[] getArrayOfBuffers(String column) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public UUID[] getArrayOfUUIDs(String column) {
     throw new UnsupportedOperationException();
   }
 

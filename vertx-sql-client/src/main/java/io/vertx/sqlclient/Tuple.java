@@ -582,7 +582,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Boolean[] getArrayOfBoolean(int pos) {
+  default Boolean[] getArrayOfBooleans(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -610,7 +610,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Short[] getArrayOfShort(int pos) {
+  default Short[] getArrayOfShorts(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -660,7 +660,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Integer[] getArrayOfInteger(int pos) {
+  default Integer[] getArrayOfIntegers(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -710,7 +710,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Long[] getArrayOfLong(int pos) {
+  default Long[] getArrayOfLongs(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -760,7 +760,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Float[] getArrayOfFloat(int pos) {
+  default Float[] getArrayOfFloats(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -810,7 +810,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Double[] getArrayOfDouble(int pos) {
+  default Double[] getArrayOfDoubles(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -857,7 +857,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Numeric[] getArrayOfNumeric(int pos) {
+  default Numeric[] getArrayOfNumerics(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -907,7 +907,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default String[] getArrayOfString(int pos) {
+  default String[] getArrayOfStrings(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -943,7 +943,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonObject[] getArrayOfJsonObject(int pos) {
+  default JsonObject[] getArrayOfJsonObjects(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -966,7 +966,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonArray[] getArrayOfJsonArray(int pos) {
+  default JsonArray[] getArrayOfJsonArrays(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -983,7 +983,7 @@ public interface Tuple {
   }
 
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Object[] getArrayOfJsonElement(int pos) {
+  default Object[] getArrayOfJsonElements(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -1019,7 +1019,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Temporal[] getArrayOfTemporal(int pos) {
+  default Temporal[] getArrayOfTemporals(int pos) {
     return (Temporal[]) getValue(pos);
   }
 
@@ -1033,7 +1033,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDate[] getArrayOfLocalDate(int pos) {
+  default LocalDate[] getArrayOfLocalDates(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -1065,7 +1065,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalTime[] getArrayOfLocalTime(int pos) {
+  default LocalTime[] getArrayOfLocalTimes(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -1094,7 +1094,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDateTime[] getArrayOfLocalDateTime(int pos) {
+  default LocalDateTime[] getArrayOfLocalDateTimes(int pos) {
     return (LocalDateTime[]) getValue(pos);
   }
 
@@ -1108,7 +1108,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetTime[] getArrayOfOffsetTime(int pos) {
+  default OffsetTime[] getArrayOfOffsetTimes(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;
@@ -1137,7 +1137,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetDateTime[] getArrayOfOffsetDateTime(int pos) {
+  default OffsetDateTime[] getArrayOfOffsetDateTimes(int pos) {
     return (OffsetDateTime[]) getValue(pos);
   }
 
@@ -1148,7 +1148,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore
-  default Buffer[] getArrayOfBuffer(int pos) {
+  default Buffer[] getArrayOfBuffers(int pos) {
     return (Buffer[]) getValue(pos);
   }
 
@@ -1159,7 +1159,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default UUID[] getArrayOfUUID(int pos) {
+  default UUID[] getArrayOfUUIDs(int pos) {
     return (UUID[]) getValue(pos);
   }
 
@@ -1170,7 +1170,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default BigDecimal[] getArrayOfBigDecimal(int pos) {
+  default BigDecimal[] getArrayOfBigDecimals(int pos) {
     return (BigDecimal[]) getValue(pos);
   }
 

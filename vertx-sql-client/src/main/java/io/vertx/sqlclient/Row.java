@@ -369,12 +369,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Boolean[] getArrayOfBoolean(String column) {
+  default Boolean[] getArrayOfBooleans(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfBoolean(pos);
+    return getArrayOfBooleans(pos);
   }
 
   /**
@@ -385,12 +385,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Short[] getArrayOfShort(String column) {
+  default Short[] getArrayOfShorts(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfShort(pos);
+    return getArrayOfShorts(pos);
   }
 
   /**
@@ -401,12 +401,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Integer[] getArrayOfInteger(String column) {
+  default Integer[] getArrayOfIntegers(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfInteger(pos);
+    return getArrayOfIntegers(pos);
   }
 
   /**
@@ -417,12 +417,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Long[] getArrayOfLong(String column) {
+  default Long[] getArrayOfLongs(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfLong(pos);
+    return getArrayOfLongs(pos);
   }
 
   /**
@@ -433,12 +433,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Float[] getArrayOfFloat(String column) {
+  default Float[] getArrayOfFloats(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfFloat(pos);
+    return getArrayOfFloats(pos);
   }
 
   /**
@@ -449,12 +449,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Double[] getArrayOfDouble(String column) {
+  default Double[] getArrayOfDoubles(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfDouble(pos);
+    return getArrayOfDoubles(pos);
   }
 
   /**
@@ -465,12 +465,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Numeric[] getArrayOfNumeric(String column) {
+  default Numeric[] getArrayOfNumerics(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfNumeric(pos);
+    return getArrayOfNumerics(pos);
   }
 
   /**
@@ -481,12 +481,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default String[] getArrayOfString(String column) {
+  default String[] getArrayOfStrings(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfString(pos);
+    return getArrayOfStrings(pos);
   }
 
   /**
@@ -497,12 +497,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonObject[] getArrayOfJsonObject(String column) {
+  default JsonObject[] getArrayOfJsonObjects(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfJsonObject(pos);
+    return getArrayOfJsonObjects(pos);
   }
 
   /**
@@ -513,12 +513,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonArray[] getArrayOfJsonArray(String column) {
+  default JsonArray[] getArrayOfJsonArrays(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfJsonArray(pos);
+    return getArrayOfJsonArrays(pos);
   }
 
   /**
@@ -529,12 +529,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Temporal[] getArrayOfTemporal(String column) {
+  default Temporal[] getArrayOfTemporals(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfTemporal(pos);
+    return getArrayOfTemporals(pos);
   }
 
   /**
@@ -545,12 +545,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDate[] getArrayOfLocalDate(String column) {
+  default LocalDate[] getArrayOfLocalDates(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfLocalDate(pos);
+    return getArrayOfLocalDates(pos);
   }
 
   /**
@@ -561,12 +561,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalTime[] getArrayOfLocalTime(String column) {
+  default LocalTime[] getArrayOfLocalTimes(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfLocalTime(pos);
+    return getArrayOfLocalTimes(pos);
   }
 
   /**
@@ -577,12 +577,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDateTime[] getArrayOfLocalDateTime(String column) {
+  default LocalDateTime[] getArrayOfLocalDateTimes(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfLocalDateTime(pos);
+    return getArrayOfLocalDateTimes(pos);
   }
 
   /**
@@ -593,12 +593,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetTime[] getArrayOfOffsetTime(String column) {
+  default OffsetTime[] getArrayOfOffsetTimes(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfOffsetTime(pos);
+    return getArrayOfOffsetTimes(pos);
   }
 
   /**
@@ -609,12 +609,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetDateTime[] getArrayOfOffsetDateTime(String column) {
+  default OffsetDateTime[] getArrayOfOffsetDateTimes(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfOffsetDateTime(pos);
+    return getArrayOfOffsetDateTimes(pos);
   }
 
   /**
@@ -625,12 +625,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore
-  default Buffer[] getArrayOfBuffer(String column) {
+  default Buffer[] getArrayOfBuffers(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfBuffer(pos);
+    return getArrayOfBuffers(pos);
   }
 
   /**
@@ -641,12 +641,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default UUID[] getArrayOfUUID(String column) {
+  default UUID[] getArrayOfUUIDs(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfUUID(pos);
+    return getArrayOfUUIDs(pos);
   }
 
   /**
@@ -657,12 +657,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default BigDecimal[] getArrayOfBigDecimal(String column) {
+  default BigDecimal[] getArrayOfBigDecimals(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfBigDecimal(pos);
+    return getArrayOfBigDecimals(pos);
   }
 
   /**

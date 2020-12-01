@@ -187,7 +187,7 @@ public class RowMapperGen extends MapperGenBase {
       } else {
         throw new IllegalStateException();
       }
-      return arg -> "row." + prefix + (isArray ? "ArrayOf" : "") + name + "(" + arg + ")";
+      return arg -> "row." + prefix + (isArray ? "ArrayOf" : "") + name + (isArray ? "s" : "") + "(" + arg + ")";
     }
     if (type.getKind() == ClassKind.ENUM || type instanceof ClassTypeInfo) {
       if (isArray) {
