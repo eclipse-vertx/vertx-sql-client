@@ -50,7 +50,12 @@ public interface Tuple {
    * It is used to distinguish a JSON null literal value from the Java {@code null} value. This is only
    * used when the database supports JSON types.
    */
-  Object JSON_NULL = new Object();
+  Object JSON_NULL = new Object() {
+    @Override
+    public String toString() {
+      return "null";
+    }
+  };
 
   /**
    * @return a new empty tuple
