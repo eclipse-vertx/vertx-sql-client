@@ -702,12 +702,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Object[] getArrayOfJson(String column) {
+  default Object[] getArrayOfJsons(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getArrayOfJson(pos);
+    return getArrayOfJsons(pos);
   }
 
   /**

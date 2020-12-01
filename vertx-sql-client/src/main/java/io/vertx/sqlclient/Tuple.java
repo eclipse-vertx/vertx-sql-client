@@ -1011,7 +1011,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Object[] getArrayOfJson(int pos) {
+  default Object[] getArrayOfJsons(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;

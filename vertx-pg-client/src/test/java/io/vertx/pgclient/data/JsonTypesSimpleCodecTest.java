@@ -127,7 +127,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
       .skip(Tuple::getArrayOfStrings, Row::getArrayOfStrings)
       .skip(Tuple::getArrayOfJsonObjects, Row::getArrayOfJsonObjects)
       .skip(Tuple::getArrayOfJsonArrays, Row::getArrayOfJsonArrays)
-      .skip(Tuple::getArrayOfJson, Row::getArrayOfJson);
+      .skip(Tuple::getArrayOfJsons, Row::getArrayOfJsons);
     testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
       "JSON", checker);
   }
@@ -145,7 +145,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
       .skip(Tuple::getArrayOfStrings, Row::getArrayOfStrings)
       .skip(Tuple::getArrayOfJsonObjects, Row::getArrayOfJsonObjects)
       .skip(Tuple::getArrayOfJsonArrays, Row::getArrayOfJsonArrays)
-      .skip(Tuple::getArrayOfJson, Row::getArrayOfJson);
+      .skip(Tuple::getArrayOfJsons, Row::getArrayOfJsons);
     testDecodeGenericArray(ctx, "ARRAY ['  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }' :: JSON, '[1,true,null,9.5,\"Hi\"]' :: JSON, '4' :: JSON, '\"Hello World\"' :: JSON, 'true' :: JSON, 'false' :: JSON, 'null' :: JSON]",
       "JSONB", checker);
   }
