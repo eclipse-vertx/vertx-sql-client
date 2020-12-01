@@ -99,6 +99,10 @@ public class ConnectionPool {
       }
       return;
     }
+    add(waiter);
+  }
+
+  private synchronized void add(Handler<AsyncResult<Connection>> waiter) {
     waiters.add(waiter);
     check();
   }
@@ -239,57 +243,50 @@ public class ConnectionPool {
     }
   }
 
-  private void release(PooledConnection proxy) {
+  private synchronized void release(PooledConnection proxy) {
     if (all.contains(proxy)) {
       available.add(proxy);
       check();
     }
   }
 
-  private void check() {
+  private synchronized void check() {
     if (closed) {
       return;
     }
-    if (!checkInProgress) {
-      checkInProgress = true;
-      try {
-        while (waiters.size() > 0) {
-          if (available.size() > 0) {
-            PooledConnection proxy = available.poll();
-            Handler<AsyncResult<Connection>> waiter = waiters.poll();
-            waiter.handle(Future.succeededFuture(proxy));
-          } else {
-            if (size < maxSize) {
-              Handler<AsyncResult<Connection>> waiter = waiters.poll();
-              size++;
-              connector.connect().onComplete(ar -> {
-                if (ar.succeeded()) {
-                  Connection conn = ar.result();
-                  PooledConnection proxy = new PooledConnection(conn);
-                  all.add(proxy);
-                  conn.init(proxy);
-                  waiter.handle(Future.succeededFuture(proxy));
-                } else {
-                  size--;
-                  waiter.handle(Future.failedFuture(ar.cause()));
-                  check();
-                }
-              });
+    while (!waiters.isEmpty()) {
+      if (!available.isEmpty()) {
+        PooledConnection proxy = available.poll();
+        Handler<AsyncResult<Connection>> waiter = waiters.poll();
+        waiter.handle(Future.succeededFuture(proxy));
+      } else {
+        if (size < maxSize) {
+          Handler<AsyncResult<Connection>> waiter = waiters.poll();
+          size++;
+          connector.connect().onComplete(ar -> {
+            if (ar.succeeded()) {
+              Connection conn = ar.result();
+              PooledConnection proxy = new PooledConnection(conn);
+              all.add(proxy);
+              conn.init(proxy);
+              waiter.handle(Future.succeededFuture(proxy));
             } else {
-              if (maxWaitQueueSize >= 0) {
-                int numInProgress = size - all.size();
-                int numToFail = waiters.size() - (maxWaitQueueSize + numInProgress);
-                while (numToFail-- > 0) {
-                  Handler<AsyncResult<Connection>> waiter = waiters.pollLast();
-                  waiter.handle(Future.failedFuture("Max waiter size reached"));
-                }
-              }
-              break;
+              size--;
+              waiter.handle(Future.failedFuture(ar.cause()));
+              check();
+            }
+          });
+        } else {
+          if (maxWaitQueueSize >= 0) {
+            int numInProgress = size - all.size();
+            int numToFail = waiters.size() - (maxWaitQueueSize + numInProgress);
+            while (numToFail-- > 0) {
+              Handler<AsyncResult<Connection>> waiter = waiters.pollLast();
+              waiter.handle(Future.failedFuture("Max waiter size reached"));
             }
           }
+          break;
         }
-      } finally {
-        checkInProgress = false;
       }
     }
   }
