@@ -404,7 +404,7 @@ public interface Tuple {
    * @param pos the position
    * @return the value
    */
-  default Object getJsonElement(int pos) {
+  default Object getJson(int pos) {
     Object val = getValue(pos);
     if (val == null ||
       val == Tuple.JSON_NULL ||
@@ -1006,7 +1006,7 @@ public interface Tuple {
    * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Object[] getArrayOfJsonElements(int pos) {
+  default Object[] getArrayOfJson(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;

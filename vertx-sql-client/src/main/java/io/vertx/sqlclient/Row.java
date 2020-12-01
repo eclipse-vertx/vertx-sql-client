@@ -202,12 +202,12 @@ public interface Row extends Tuple {
    * @return the {@code column} value
    * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default Object getJsonElement(String column) {
+  default Object getJson(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getJsonElement(pos);
+    return getJson(pos);
   }
 
   /**
@@ -702,12 +702,12 @@ public interface Row extends Tuple {
    * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Object[] getJsonElementArray(String column) {
+  default Object[] getArrayOfJson(String column) {
     int pos = getColumnIndex(column);
     if (pos == -1) {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
-    return getJsonElementArray(pos);
+    return getArrayOfJson(pos);
   }
 
   /**

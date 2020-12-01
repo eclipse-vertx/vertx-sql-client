@@ -171,9 +171,9 @@ public class RowImpl extends ArrayTuple implements Row {
       } else if (type == Box.class) {
         return type.cast(getBox(position));
       } else if (type == JsonObject.class) {
-        return type.cast(getJsonElement(position));
+        return type.cast(getJson(position));
       } else if (type == JsonArray.class) {
-        return type.cast(getJsonElement(position));
+        return type.cast(getJson(position));
       } else if (type == Object.class) {
         return type.cast(getValue(position));
       } else if (type.isEnum()) {
