@@ -373,7 +373,6 @@ public abstract class PreparedQueryTestBase {
         List<Tuple> rows = new ArrayList<>();
         AtomicInteger ended = new AtomicInteger();
         stream.handler(tuple -> {
-          System.out.println("TUPLE " + tuple);
           ctx.assertEquals(0, ended.get());
           rows.add(tuple);
         });
