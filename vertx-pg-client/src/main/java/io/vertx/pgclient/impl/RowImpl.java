@@ -282,20 +282,6 @@ public class RowImpl extends ArrayTuple implements Row {
     }
   }
 
-  /**
-   * Get a {@link io.vertx.core.json.JsonObject} or {@link io.vertx.core.json.JsonArray} value.
-   */
-  public Object getJson(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof JsonObject) {
-      return val;
-    } else if (val instanceof JsonArray) {
-      return val;
-    } else {
-      throw new ClassCastException();
-    }
-  }
-
   private Point getPoint(int pos) {
     return (Point) getValue(pos);
   }

@@ -48,27 +48,27 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
             .forRow(row);
           ColumnChecker.checkColumn(1, "JsonArray")
             .returns(Tuple::getValue, Row::getValue, array)
-            .returns(Tuple::getJsonElement, Row::getJsonElement, array)
+            .returns(Tuple::getJson, Row::getJson, array)
             .forRow(row);
           ColumnChecker.checkColumn(2, "TrueValue")
             .returns(Tuple::getValue, Row::getValue, true)
             .returns(Tuple::getBoolean, Row::getBoolean, true)
-            .returns(Tuple::getJsonElement, Row::getJsonElement, true)
+            .returns(Tuple::getJson, Row::getJson, true)
             .returns(Object.class, true)
             .forRow(row);
           ColumnChecker.checkColumn(3, "FalseValue")
             .returns(Tuple::getValue, Row::getValue, false)
             .returns(Tuple::getBoolean, Row::getBoolean, false)
-            .returns(Tuple::getJsonElement, Row::getJsonElement, false)
+            .returns(Tuple::getJson, Row::getJson, false)
             .returns(Object.class, false)
             .forRow(row);
           ColumnChecker.checkColumn(4, "NullValue")
             .returns(Tuple::getValue, Row::getValue, Tuple.JSON_NULL)
-            .returns(Tuple::getJsonElement, Row::getJsonElement, Tuple.JSON_NULL)
+            .returns(Tuple::getJson, Row::getJson, Tuple.JSON_NULL)
             .forRow(row);
           ColumnChecker.checkColumn(5, "Number1")
             .returns(Tuple::getValue, Row::getValue, 7.502d)
-            .returns(Tuple::getJsonElement, Row::getJsonElement, 7.502d)
+            .returns(Tuple::getJson, Row::getJson, 7.502d)
             .returns(Tuple::getShort, Row::getShort, (short) 7)
             .returns(Tuple::getInteger, Row::getInteger, 7)
             .returns(Tuple::getLong, Row::getLong, (long) 7)
@@ -80,7 +80,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
             .forRow(row);
           ColumnChecker.checkColumn(6, "Number2")
             .returns(Tuple::getValue, Row::getValue, 8)
-            .returns(Tuple::getJsonElement, Row::getJsonElement, 8)
+            .returns(Tuple::getJson, Row::getJson, 8)
             .returns(Tuple::getShort, Row::getShort, (short) 8)
             .returns(Tuple::getInteger, Row::getInteger, 8)
             .returns(Tuple::getLong, Row::getLong, (long) 8)
@@ -92,7 +92,7 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
             .forRow(row);
           ColumnChecker.checkColumn(7, "Text")
             .returns(Tuple::getValue, Row::getValue, " Really Awesome! ")
-            .returns(Tuple::getJsonElement, Row::getJsonElement, " Really Awesome! ")
+            .returns(Tuple::getJson, Row::getJson, " Really Awesome! ")
             .returns(Tuple::getString, Row::getString, " Really Awesome! ")
             .returns(Object.class, " Really Awesome! ")
             .forRow(row);
