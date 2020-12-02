@@ -17,6 +17,8 @@
 
 package io.vertx.sqlclient;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.netty.buffer.ByteBuf;
@@ -26,6 +28,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.impl.ListTuple;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
@@ -33,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
+
 
 /**
  * A general purpose tuple.
@@ -46,7 +50,12 @@ public interface Tuple {
    * It is used to distinguish a JSON null literal value from the Java {@code null} value. This is only
    * used when the database supports JSON types.
    */
-  Object JSON_NULL = new Object();
+  Object JSON_NULL = new Object() {
+    @Override
+    public String toString() {
+      return "null";
+    }
+  };
 
   /**
    * @return a new empty tuple
@@ -350,6 +359,35 @@ public interface Tuple {
    */
   default String getString(int pos) {
     return (String) getValue(pos);
+
+  }
+
+  /**
+   * Get a JSON element at {@code pos}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param pos the position
+   * @return the value
+   */
+  default Object getJson(int pos) {
+    Object val = getValue(pos);
+    if (val == null ||
+      val == Tuple.JSON_NULL ||
+      val instanceof String ||
+      val instanceof Boolean ||
+      val instanceof Number ||
+      val instanceof JsonObject ||
+      val instanceof JsonArray) {
+      return val;
+    } else {
+      throw new ClassCastException("Invalid JSON value type " + val.getClass());
+    }
   }
 
   /**
@@ -690,6 +728,49 @@ public interface Tuple {
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default String[] getStringArray(int pos) {
     return (String[]) getValue(pos);
+  }
+
+  /**
+   * Get an array of JSON elements at {@code pos}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param pos the position
+   * @return the value
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Object[] getArrayOfJsons(int pos) {
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof JsonObject[]
+      || val instanceof JsonArray[]
+      || val instanceof Number[]
+      || val instanceof Boolean[]
+      || val instanceof String[]) {
+      return (Object[]) val;
+    } else if (val.getClass() == Object[].class) {
+      Object[] array = (Object[]) val;
+      for (int i = 0; i < array.length; i++) {
+        Object elt = Array.get(val, i);
+        if (elt != null && !(elt == Tuple.JSON_NULL ||
+          elt instanceof String ||
+          elt instanceof Boolean ||
+          elt instanceof Number ||
+          elt instanceof JsonObject ||
+          elt instanceof JsonArray)) {
+          throw new ClassCastException();
+        }
+      }
+      return array;
+    } else {
+      throw new ClassCastException();
+    }
   }
 
   /**
