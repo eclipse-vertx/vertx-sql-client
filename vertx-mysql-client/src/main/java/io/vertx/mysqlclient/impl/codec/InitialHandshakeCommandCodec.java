@@ -190,19 +190,22 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     byte[] nonce = new byte[NONCE_LENGTH];
     payload.readBytes(nonce);
-    byte[] scrambledPassword;
+    byte[] authResponse;
     switch (pluginName) {
       case "mysql_native_password":
-        scrambledPassword = Native41Authenticator.encode(password, nonce);
+        authResponse = Native41Authenticator.encode(password, nonce);
         break;
       case "caching_sha2_password":
-        scrambledPassword = CachingSha2Authenticator.encode(password, nonce);
+        authResponse = CachingSha2Authenticator.encode(password, nonce);
+        break;
+      case "mysql_clear_password":
+        authResponse = password;
         break;
       default:
         completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
         return;
     }
-    sendBytesAsPacket(scrambledPassword);
+    sendBytesAsPacket(authResponse);
   }
 
   private void sendSslRequest() {
@@ -238,26 +241,29 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     if (password.isEmpty()) {
       packet.writeByte(0);
     } else {
-      byte[] scrambledPassword;
+      byte[] authResponse;
       switch (authMethod) {
         case "mysql_native_password":
-          scrambledPassword = Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
+          authResponse = Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
           break;
         case "caching_sha2_password":
-          scrambledPassword = CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
+          authResponse = CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
+          break;
+        case "mysql_clear_password":
+          authResponse = password.getBytes(StandardCharsets.UTF_8);
           break;
         default:
           LOGGER.warn("Unknown authentication method: " + authMethod + ", the client will try to use mysql_native_password instead.");
           authMethod = "mysql_native_password";
-          scrambledPassword = Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
+          authResponse = Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
           break;
       }
       if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0) {
-        BufferUtils.writeLengthEncodedInteger(packet, scrambledPassword.length);
-        packet.writeBytes(scrambledPassword);
+        BufferUtils.writeLengthEncodedInteger(packet, authResponse.length);
+        packet.writeBytes(authResponse);
       } else if ((clientCapabilitiesFlags & CLIENT_SECURE_CONNECTION) != 0) {
-        packet.writeByte(scrambledPassword.length);
-        packet.writeBytes(scrambledPassword);
+        packet.writeByte(authResponse.length);
+        packet.writeBytes(authResponse);
       } else {
         packet.writeByte(0);
       }
