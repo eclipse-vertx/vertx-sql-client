@@ -377,7 +377,6 @@ public abstract class PreparedQueryTestBase {
         stream.pause();
         stream.resume();
         stream.endHandler(v -> {
-          System.out.println(rows);
           async.complete();
         });
       }));
