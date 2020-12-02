@@ -488,6 +488,7 @@ Currently the following plugins are supported:
 
 - mysql_native_password
 - caching_sha2_password
+- mysql_clear_password
 
 [source,$lang]
 ----
