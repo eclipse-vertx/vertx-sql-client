@@ -22,6 +22,7 @@ import io.netty.handler.codec.DecoderException;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NetSocketInternal;
+import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
@@ -59,8 +60,9 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                           SslMode sslMode,
                           int initialCapabilitiesFlags,
                           Charset charsetEncoding,
+                          MySQLAuthenticationPlugin authenticationPlugin,
                           Handler<? super CommandResponse<Connection>> completionHandler) {
-    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding);
+    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin);
     cmd.handler = completionHandler;
     schedule(cmd);
   }

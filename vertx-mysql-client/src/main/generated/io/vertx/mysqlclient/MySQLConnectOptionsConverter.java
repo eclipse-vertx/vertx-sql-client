@@ -14,6 +14,11 @@ public class MySQLConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MySQLConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "authenticationPlugin":
+          if (member.getValue() instanceof String) {
+            obj.setAuthenticationPlugin(io.vertx.mysqlclient.MySQLAuthenticationPlugin.valueOf((String)member.getValue()));
+          }
+          break;
         case "characterEncoding":
           if (member.getValue() instanceof String) {
             obj.setCharacterEncoding((String)member.getValue());
@@ -58,6 +63,9 @@ public class MySQLConnectOptionsConverter {
   }
 
   public static void toJson(MySQLConnectOptions obj, java.util.Map<String, Object> json) {
+    if (obj.getAuthenticationPlugin() != null) {
+      json.put("authenticationPlugin", obj.getAuthenticationPlugin().name());
+    }
     if (obj.getCharacterEncoding() != null) {
       json.put("characterEncoding", obj.getCharacterEncoding());
     }

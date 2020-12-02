@@ -16,6 +16,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.NetSocketInternal;
 import io.vertx.core.net.*;
+import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.impl.Connection;
@@ -46,6 +47,7 @@ public class MySQLConnectionFactory {
   private final Predicate<String> preparedStatementCacheSqlFilter;
   private final int initialCapabilitiesFlags;
   private final Closeable hook;
+  private MySQLAuthenticationPlugin authenticationPlugin;
 
   public MySQLConnectionFactory(ContextInternal context, boolean registerCloseHook, MySQLConnectOptions options) {
     NetClientOptions netClientOptions = new NetClientOptions(options);
@@ -84,6 +86,7 @@ public class MySQLConnectionFactory {
     this.collation = collation;
     this.useAffectedRows = options.isUseAffectedRows();
     this.sslMode = options.isUsingDomainSocket() ? SslMode.DISABLED : options.getSslMode();
+    this.authenticationPlugin = options.getAuthenticationPlugin();
 
     // server RSA public key
     Buffer serverRsaPublicKey = null;
@@ -139,7 +142,7 @@ public class MySQLConnectionFactory {
         NetSocketInternal socket = (NetSocketInternal) ar1.result();
         MySQLSocketConnection conn = new MySQLSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, charsetEncoding, handler);
+        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, handler);
       } else {
         handler.handle(Future.failedFuture(ar1.cause()));
       }
