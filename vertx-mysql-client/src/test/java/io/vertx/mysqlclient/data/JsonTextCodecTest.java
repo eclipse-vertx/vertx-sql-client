@@ -39,11 +39,13 @@ public class JsonTextCodecTest extends JsonDataTypeTest {
               .put("phrase", "à tout à l'heure");
             ctx.assertEquals(phrase, row1.getJsonObject(0));
             ctx.assertEquals(phrase, row1.getValue(0));
+            ctx.assertEquals(phrase, row1.getJson(0));
             Row row2 = iterator.next();
             JsonObject emoji = new JsonObject()
               .put("emoji", "\uD83D\uDE00\uD83E\uDD23\uD83D\uDE0A\uD83D\uDE07\uD83D\uDE33\uD83D\uDE31");
             ctx.assertEquals(emoji, row2.getJsonObject(0));
             ctx.assertEquals(emoji, row2.getValue(0));
+            ctx.assertEquals(emoji, row2.getJson(0));
           }));
         }));
       }));
@@ -58,6 +60,8 @@ public class JsonTextCodecTest extends JsonDataTypeTest {
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));
         ctx.assertEquals(expected, row.getValue("json"));
+        ctx.assertEquals(expected, row.getJson(0));
+        ctx.assertEquals(expected, row.getJson("json"));
         if (checker != null) {
           checker.accept(row);
         }

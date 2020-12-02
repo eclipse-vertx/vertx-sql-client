@@ -32,10 +32,7 @@ import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * A general purpose tuple.
@@ -49,7 +46,12 @@ public interface Tuple {
    * It is used to distinguish a JSON null literal value from the Java {@code null} value. This is only
    * used when the database supports JSON types.
    */
-  Object JSON_NULL = new Object();
+  Object JSON_NULL = new Object() {
+    @Override
+    public String toString() {
+      return "null";
+    }
+  };
 
   /**
    * @return a new empty tuple
@@ -370,7 +372,7 @@ public interface Tuple {
     } else if (val instanceof Enum<?>) {
       return ((Enum<?>) val).name();
     } else {
-      throw new ClassCastException();
+      throw new ClassCastException("Invalid String value type " + val.getClass());
     }
   }
 
@@ -394,7 +396,20 @@ public interface Tuple {
     return (JsonArray) getValue(pos);
   }
 
-  default Object getJsonElement(int pos) {
+  /**
+   * Get a JSON element at {@code pos}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param pos the position
+   * @return the value
+   */
+  default Object getJson(int pos) {
     Object val = getValue(pos);
     if (val == null ||
       val == Tuple.JSON_NULL ||
@@ -405,7 +420,7 @@ public interface Tuple {
       val instanceof JsonArray) {
       return val;
     } else {
-      throw new ClassCastException();
+      throw new ClassCastException("Invalid JSON value type " + val.getClass());
     }
   }
 
@@ -982,8 +997,21 @@ public interface Tuple {
     }
   }
 
+  /**
+   * Get an array of JSON elements at {@code pos}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param pos the position
+   * @return the value
+   */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Object[] getArrayOfJsonElements(int pos) {
+  default Object[] getArrayOfJsons(int pos) {
     Object val = getValue(pos);
     if (val == null) {
       return null;

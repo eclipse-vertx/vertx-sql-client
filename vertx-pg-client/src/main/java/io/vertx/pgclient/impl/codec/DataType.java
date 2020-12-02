@@ -33,15 +33,12 @@ import io.vertx.pgclient.data.Path;
 import io.vertx.pgclient.data.Point;
 import io.vertx.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.sql.JDBCType;
 import java.time.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * PostgreSQL <a href="https://github.com/postgres/postgres/blob/master/src/include/catalog/pg_type.h">object
@@ -101,10 +98,10 @@ enum DataType {
   MACADDR8(774, true, Object[].class, JDBCType.OTHER),
   UUID(2950, true, UUID.class, JDBCType.OTHER, Tuple::getUUID),
   UUID_ARRAY(2951, true, UUID[].class, JDBCType.OTHER, Tuple::getArrayOfUUIDs),
-  JSON(114, true, Object.class, JDBCType.OTHER, Tuple::getJsonElement),
-  JSON_ARRAY(199, true, Object[].class, JDBCType.OTHER, Tuple::getArrayOfJsonElements),
-  JSONB(3802, true, Object.class, JDBCType.OTHER, Tuple::getJsonElement),
-  JSONB_ARRAY(3807, true, Object[].class, JDBCType.OTHER, Tuple::getArrayOfJsonElements),
+  JSON(114, true, Object.class, JDBCType.OTHER, Tuple::getJson),
+  JSON_ARRAY(199, true, Object[].class, JDBCType.OTHER, Tuple::getArrayOfJsons),
+  JSONB(3802, true, Object.class, JDBCType.OTHER, Tuple::getJson),
+  JSONB_ARRAY(3807, true, Object[].class, JDBCType.OTHER, Tuple::getArrayOfJsons),
   XML(142, true, Object.class, JDBCType.OTHER),
   XML_ARRAY(143, true, Object[].class, JDBCType.OTHER),
   POINT(600, true, Point.class, JDBCType.OTHER),

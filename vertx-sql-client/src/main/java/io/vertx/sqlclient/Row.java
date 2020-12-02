@@ -189,6 +189,28 @@ public interface Row extends Tuple {
   }
 
   /**
+   * Get a JSON element for the given {@code column}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  default Object getJson(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getJson(pos);
+  }
+
+  /**
    * Get a {@link JsonObject} value for the given {@code column}.
    *
    * @param column the column name
@@ -663,6 +685,29 @@ public interface Row extends Tuple {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
     return getArrayOfBigDecimals(pos);
+  }
+
+  /**
+   * Get an array of JSON elements for the given {@code column}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Object[] getArrayOfJsons(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfJsons(pos);
   }
 
   /**
