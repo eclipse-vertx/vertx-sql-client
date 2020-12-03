@@ -1,5 +1,34 @@
 = Enums
 
+[[MySQLAuthenticationPlugin]]
+== MySQLAuthenticationPlugin
+
+++++
+ MySQL authentication plugins which can be specified at the connection start, more information could be found in <a href="https://dev.mysql.com/doc/refman/8.0/en/authentication-plugins.html">MySQL Reference Manual</a>.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[DEFAULT]]`DEFAULT`|+++
+Default authentication plugin, the client will firstly try to use the plugin name provided by the server.
++++
+|[[MYSQL_CLEAR_PASSWORD]]`MYSQL_CLEAR_PASSWORD`|+++
+Authentication plugin which enables the client to send password to the server as cleartext without encryption.
++++
+|[[MYSQL_NATIVE_PASSWORD]]`MYSQL_NATIVE_PASSWORD`|+++
+Authentication plugin which uses SHA-1 hash function to scramble the password and send it to the server.
++++
+|[[SHA256_PASSWORD]]`SHA256_PASSWORD`|+++
+Authentication plugin which uses SHA-256 hash function to scramble the password and send it to the server.
++++
+|[[CACHING_SHA2_PASSWORD]]`CACHING_SHA2_PASSWORD`|+++
+Like <code>sha256_password</code> but enables caching on the server side for better performance and with wider applicability.
++++
+|===
+
 [[MySQLSetOption]]
 == MySQLSetOption
 
