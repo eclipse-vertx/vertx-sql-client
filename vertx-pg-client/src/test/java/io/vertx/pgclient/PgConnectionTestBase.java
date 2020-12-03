@@ -402,29 +402,23 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
   @Test
   public void testTransactionAbort(TestContext ctx) {
     Async done = ctx.async();
+    Async done2 = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         Transaction tx = conn.begin();
-        AtomicInteger failures = new AtomicInteger();
-        tx.abortHandler(v -> ctx.assertEquals(0, failures.getAndIncrement()));
-        AtomicReference<AsyncResult<RowSet<Row>>> queryAfterFailed = new AtomicReference<>();
-        AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
+        tx.abortHandler(v -> {
+          done2.complete();
+        });
         conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
-        conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
-          ctx.assertNotNull(queryAfterFailed.get());
-          ctx.assertTrue(queryAfterFailed.get().failed());
-          ctx.assertNotNull(commit.get());
-          ctx.assertTrue(commit.get().failed());
-          ctx.assertTrue(ar2.failed());
-          ctx.assertEquals(1, failures.get());
+        conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')").execute(ctx.asyncAssertFailure(err -> {
           // This query won't be made in the same TX
           conn.query("SELECT id FROM Test WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(0, result.size());
             done.complete();
           }));
-        });
-        conn.query("SELECT id FROM Test").execute(queryAfterFailed::set);
-        tx.commit(commit::set);
+        }));
+        conn.query("SELECT id FROM Test").execute(ctx.asyncAssertFailure());
+        tx.commit(ctx.asyncAssertFailure());
       });
     }));
   }
