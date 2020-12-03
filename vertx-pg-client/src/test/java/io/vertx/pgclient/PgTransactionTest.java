@@ -122,4 +122,17 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
     }));
   }
 
+  @Test
+  public void testRollbackPendingQueries(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(tx -> {
+      tx.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure());
+      tx.query("SELECT 1").execute(ctx.asyncAssertFailure(err -> {
+        tx.rollback(ctx.asyncAssertFailure(v -> {
+          // Already rolled back
+          async.complete();
+        }));
+      }));
+    }));
+  }
 }

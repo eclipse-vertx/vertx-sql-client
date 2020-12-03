@@ -16,13 +16,11 @@
  */
 package io.vertx.sqlclient.impl;
 
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.RowSet;
 import io.vertx.core.*;
 
 import java.util.ArrayDeque;
@@ -36,14 +34,14 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   private static final int ST_COMPLETED = 3;
 
   private final Handler<Void> disposeHandler;
-  private Deque<CommandBase<?>> pending = new ArrayDeque<>();
-  private Handler<Void> failedHandler;
+  private final Deque<CommandBase<?>> pending = new ArrayDeque<>();
+  private Handler<Void> abortHandler;
   private int status = ST_BEGIN;
 
   public TransactionImpl(Context context, Connection conn, Handler<Void> disposeHandler) {
     super(context, conn);
     this.disposeHandler = disposeHandler;
-    doSchedule(doQuery("BEGIN", this::afterBegin));
+    doSchedule(wrapCommandHandler(createQueryCommand("BEGIN", this::afterBegin)));
   }
 
   private void doSchedule(CommandBase<?> cmd) {
@@ -63,43 +61,30 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     checkPending();
   }
 
-  private boolean isComplete(CommandBase<?> cmd) {
-    if (cmd instanceof QueryCommandBase<?>) {
-      String sql = ((QueryCommandBase) cmd).sql().trim();
-      return sql.equalsIgnoreCase("COMMIT") || sql.equalsIgnoreCase("ROLLBACK");
-    }
-    return false;
-  }
-
-  private synchronized void checkPending() {
-    switch (status) {
-      case ST_BEGIN:
-        break;
-      case ST_PENDING: {
-        CommandBase<?> cmd = pending.poll();
-        if (cmd != null) {
-          if (isComplete(cmd)) {
-            status = ST_COMPLETED;
-          } else {
-            wrap(cmd);
-            status = ST_PROCESSING;
-          }
-          doSchedule(cmd);
+  private void checkPending() {
+    while (true) {
+      CommandBase<?> cmd;
+      synchronized (this) {
+        switch (status) {
+          case ST_PENDING:
+            cmd = pending.poll();
+            if (cmd != null) {
+              status = ST_PROCESSING;
+              doSchedule(cmd);
+            }
+            return;
+          case ST_COMPLETED:
+            cmd = pending.poll();
+            if (cmd == null) {
+              return;
+            }
+            break;
+          default:
+            return;
         }
-        break;
       }
-      case ST_PROCESSING:
-        break;
-      case ST_COMPLETED: {
-        if (pending.size() > 0) {
-          VertxException err = new VertxException("Transaction already completed");
-          CommandBase<?> cmd;
-          while ((cmd = pending.poll()) != null) {
-            cmd.fail(err);
-          }
-        }
-        break;
-      }
+      VertxException err = new VertxException("Transaction already completed", false);
+      cmd.fail(err);
     }
   }
 
@@ -110,37 +95,11 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   public void schedule(CommandBase<?> cmd) {
+    wrapCommandHandler(cmd);
     synchronized (this) {
       pending.add(cmd);
     }
     checkPending();
-  }
-
-  private <T> void wrap(CommandBase<T> cmd) {
-    Handler<? super CommandResponse<T>> handler = cmd.handler;
-    cmd.handler = ar -> {
-      synchronized (TransactionImpl.this) {
-        status = ST_PENDING;
-        if (ar.toAsyncResult().failed()) {
-          // We won't recover from this so rollback
-          CommandBase<?> c;
-          while ((c = pending.poll()) != null) {
-            c.fail(new RuntimeException("rollback exception"));
-          }
-          Handler<Void> h = failedHandler;
-          if (h != null) {
-            context.runOnContext(h);
-          }
-          schedule(doQuery("ROLLBACK", ar2 -> {
-            disposeHandler.handle(null);
-            handler.handle(ar);
-          }));
-        } else {
-          handler.handle(ar);
-          checkPending();
-        }
-      }
-    };
   }
 
   @Override
@@ -149,27 +108,15 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   public void commit(Handler<AsyncResult<Void>> handler) {
-    switch (status) {
-      case ST_BEGIN:
-      case ST_PENDING:
-      case ST_PROCESSING:
-        schedule(doQuery("COMMIT", ar -> {
-          disposeHandler.handle(null);
-          if (handler != null) {
-            if (ar.succeeded()) {
-              handler.handle(Future.succeededFuture());
-            } else {
-              handler.handle(Future.failedFuture(ar.cause()));
-            }
-          }
-        }));
-        break;
-      case ST_COMPLETED:
+    synchronized (this) {
+      pending.add(createQueryCommand("COMMIT", ar -> {
+        tryComplete();
         if (handler != null) {
-          handler.handle(Future.failedFuture("Transaction already completed"));
+          handler.handle(ar.mapEmpty());
         }
-        break;
+      }));
     }
+    checkPending();
   }
 
   @Override
@@ -177,20 +124,39 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
     rollback(null);
   }
 
-  public void rollback(Handler<AsyncResult<Void>> handler) {
-    if (status == ST_COMPLETED) {
-      if (handler != null) {
-        handler.handle(Future.failedFuture("Transaction already completed"));
-      }
-    } else {
-      schedule(doQuery("ROLLBACK", ar -> {
-        disposeHandler.handle(null);
-        if (handler != null) {
-          handler.handle(ar.mapEmpty());
+  public void rollback(Handler<AsyncResult<Void>> completionHandler) {
+    synchronized (this) {
+      CommandBase<?> cmd = createQueryCommand("ROLLBACK", ar -> {
+        if (tryComplete()) {
+          Handler<Void> handler;
+          synchronized (TransactionImpl.this) {
+            handler = abortHandler;
+          }
+          if (handler != null) {
+            handler.handle(null);
+          }
         }
-      }));
+        if (completionHandler != null) {
+          completionHandler.handle(ar.mapEmpty());
+        }
+      });
+      pending.addFirst(cmd);
     }
+    checkPending();
   }
+
+  private boolean tryComplete() {
+    synchronized (this) {
+      if (status == ST_COMPLETED) {
+        return false;
+      }
+      status = ST_COMPLETED;
+    }
+    disposeHandler.handle(null);
+    checkPending();
+    return true;
+  }
+
 
   @Override
   public void close() {
@@ -198,28 +164,42 @@ public class TransactionImpl extends SqlConnectionBase<TransactionImpl> implemen
   }
 
   @Override
-  public io.vertx.sqlclient.Transaction abortHandler(Handler<Void> handler) {
-    failedHandler = handler;
+  public synchronized io.vertx.sqlclient.Transaction abortHandler(Handler<Void> handler) {
+    abortHandler = handler;
     return this;
   }
 
-  private CommandBase<?> doQuery(String sql, Handler<AsyncResult<RowSet<Row>>> handler) {
-    SimpleQueryCommand<Void> cmd = new SimpleQueryCommand<>(sql, false, autoCommit(),
-        QueryCommandBase.NULL_COLLECTOR,
-        QueryResultHandler.NOOP_HANDLER);
-    cmd.handler = h -> {
-        if (h.succeeded()) {
-          handler.handle(Future.succeededFuture());
-        } else {
-          handler.handle(Future.failedFuture(h.cause()));
+  private <T> CommandBase<T> wrapCommandHandler(CommandBase<T> cmd) {
+    Handler<? super CommandResponse<T>> handler = cmd.handler;
+    cmd.handler = ar -> {
+      synchronized (TransactionImpl.this) {
+        if (status == ST_PROCESSING) {
+          status = ST_PENDING;
         }
+      }
+      if (ar.toAsyncResult().failed()) {
+        rollback(a -> handler.handle(ar));
+      } else {
+        handler.handle(ar);
+        checkPending();
+      }
     };
+    return cmd;
+  }
+
+  private CommandBase<?> createQueryCommand(String sql, Handler<AsyncResult<?>> handler) {
+    SimpleQueryCommand<Void> cmd = new SimpleQueryCommand<>(
+      sql,
+      false,
+      autoCommit(),
+      QueryCommandBase.NULL_COLLECTOR,
+      QueryResultHandler.NOOP_HANDLER);
+    cmd.handler = handler;
     return cmd;
   }
 
   @Override
   boolean autoCommit() {
-  return false;
+    return false;
   }
-
 }
