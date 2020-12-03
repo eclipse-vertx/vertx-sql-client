@@ -27,7 +27,6 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
@@ -95,7 +94,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
 
     while (remainingLen >= PACKET_PAYLOAD_LENGTH_LIMIT) {
       final int currentOffset = offset;
-      sendingFileInPacketContList.add(() -> sendFileInPacket(filename, currentOffset, 0xFFFFFF));
+      sendingFileInPacketContList.add(() -> sendFileInPacket(filename, currentOffset, PACKET_PAYLOAD_LENGTH_LIMIT));
       remainingLen -= PACKET_PAYLOAD_LENGTH_LIMIT;
       offset += PACKET_PAYLOAD_LENGTH_LIMIT;
     }
@@ -111,13 +110,13 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     }
 
     if (tailLength > 0) {
-      // the last sliced packet being sent whose size is less than than the packet limit
+      // the last sliced packet being sent whose size is less than the packet limit
       cont = cont.flatMap(v -> sendFileInPacket(filename, tailOffset, tailLength));
     } else {
       // empty file or nothing else to send
     }
 
-    // an empty packet needs to be sent after the file is sent in MySQL packets
+    // an empty packet needs to be sent after the whole file is sent in MySQL packets
     cont.onComplete(v -> sendEmptyPacket());
   }
 
