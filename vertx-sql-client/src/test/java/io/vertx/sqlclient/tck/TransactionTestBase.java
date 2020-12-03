@@ -253,6 +253,21 @@ public abstract class TransactionTestBase {
   }
 
   @Test
+  public void testRollbackPendingQueries(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.client.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(v -> {
+      }));
+      res.client.query("SELECT 1").execute(ctx.asyncAssertFailure(err -> {
+        res.tx.rollback(ctx.asyncAssertFailure(v -> {
+          // Already rolled back
+          async.complete();
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testWithTransactionCommit(TestContext ctx) {
     Async async = ctx.async();
     Pool pool = createPool();
