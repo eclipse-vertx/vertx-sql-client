@@ -188,8 +188,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   }
 
   private Future<Void> doClose() {
-    // TODO : flatMap -> always
-    return pool.close().flatMap(v -> {
+    return pool.close().eventually(v -> {
       PromiseInternal<Void> promise = context.promise();
       factory.close(promise);
       return promise;
