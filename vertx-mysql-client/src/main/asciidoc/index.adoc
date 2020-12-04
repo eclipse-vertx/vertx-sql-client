@@ -421,6 +421,22 @@ This client supports for handling the LOCAL INFILE Request, if you want to load 
 
 == Authentication
 
+=== Default authentication plugin
+
+This client supports for specifying the default authentication plugin to use at the connection start.
+Currently the following plugins are supported:
+
+- mysql_native_password
+- caching_sha2_password
+- mysql_clear_password
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#defaultAuthPluginExample}
+----
+
+=== New authentication method introduced in MySQL 8
+
 MySQL 8.0 introduces a new authentication method named `caching_sha2_password` and it's the default one to authenticate.
 In order to connect to the server using this new authentication method, you need either use a secure connection(i.e. enable TLS/SSL) or exchange the encrypted password using an RSA key pair to avoid leaks of password. The RSA key pair is automatically exchanged during the communication, but the server RSA public key may be hacked during the process since it's transferred on a insecure connection.
 So if you're on a insecure connection and want to avoid the risk of exposing the server RSA public key, you can set the server RSA public key like this:

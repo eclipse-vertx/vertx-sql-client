@@ -17,6 +17,9 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.MySQLDatabaseMetadata;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
@@ -35,6 +38,8 @@ import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
 class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitialHandshakeCommand> {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(InitialHandshakeCommandCodec.class);
 
   private static final int AUTH_PLUGIN_DATA_PART1_LENGTH = 8;
 
@@ -69,7 +74,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     String serverVersion = BufferUtils.readNullTerminatedString(payload, StandardCharsets.US_ASCII);
     MySQLDatabaseMetadata md = new MySQLDatabaseMetadata(serverVersion);
     ((MySQLSocketConnection)cmd.connection()).metaData = md;
-    if (md.majorVersion() == 5 && 
+    if (md.majorVersion() == 5 &&
         (md.minorVersion() < 7 || (md.minorVersion() == 7 && md.getDatabasMicroVersion() < 5))) {
       // EOF_HEADER is enabled
     } else {
@@ -114,7 +119,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     payload.readByte(); // reserved byte
 
     // we assume the server supports auth plugin
-    final String authPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
+    final String serverAuthPluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
 
     boolean upgradeToSsl;
     SslMode sslMode = cmd.sslMode();
@@ -141,20 +146,21 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
       encoder.socketConnection.upgradeToSSLConnection(upgrade -> {
         if (upgrade.succeeded()) {
-          doSendHandshakeResponseMessage(authPluginName, authPluginData, serverCapabilitiesFlags);
+          doSendHandshakeResponseMessage(serverAuthPluginName, cmd.authenticationPlugin(), authPluginData, serverCapabilitiesFlags);
         } else {
           completionHandler.handle(CommandResponse.failure(upgrade.cause()));
         }
       });
     } else {
-      doSendHandshakeResponseMessage(authPluginName, authPluginData, serverCapabilitiesFlags);
+      doSendHandshakeResponseMessage(serverAuthPluginName, cmd.authenticationPlugin(), authPluginData, serverCapabilitiesFlags);
     }
   }
 
-  private void doSendHandshakeResponseMessage(String authMethodName, byte[] nonce, int serverCapabilitiesFlags) {
+  private void doSendHandshakeResponseMessage(String serverAuthPluginName, MySQLAuthenticationPlugin authPlugin, byte[] nonce, int serverCapabilitiesFlags) {
     Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
     encoder.clientCapabilitiesFlag &= serverCapabilitiesFlags;
-    sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), nonce, authMethodName, clientConnectionAttributes);
+    String clientPluginName = authPlugin == MySQLAuthenticationPlugin.DEFAULT ? serverAuthPluginName : authPlugin.value;
+    sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), nonce, clientPluginName, clientConnectionAttributes);
   }
 
   private void handleAuthentication(ByteBuf payload) {
@@ -184,19 +190,22 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     byte[] nonce = new byte[NONCE_LENGTH];
     payload.readBytes(nonce);
-    byte[] scrambledPassword;
+    byte[] authResponse;
     switch (pluginName) {
       case "mysql_native_password":
-        scrambledPassword = Native41Authenticator.encode(password, nonce);
+        authResponse = Native41Authenticator.encode(password, nonce);
         break;
       case "caching_sha2_password":
-        scrambledPassword = CachingSha2Authenticator.encode(password, nonce);
+        authResponse = CachingSha2Authenticator.encode(password, nonce);
+        break;
+      case "mysql_clear_password":
+        authResponse = password;
         break;
       default:
         completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
         return;
     }
-    sendBytesAsPacket(scrambledPassword);
+    sendBytesAsPacket(authResponse);
   }
 
   private void sendSslRequest() {
@@ -214,7 +223,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     sendNonSplitPacket(packet);
   }
 
-  private void sendHandshakeResponseMessage(String username, String password, String database, byte[] nonce, String authMethodName, Map<String, String> clientConnectionAttributes) {
+  private void sendHandshakeResponseMessage(String username, String password, String database, byte[] nonce, String clientPluginName, Map<String, String> clientConnectionAttributes) {
     ByteBuf packet = allocateBuffer();
     // encode packet header
     int packetStartIdx = packet.writerIndex();
@@ -228,27 +237,33 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     packet.writeByte(cmd.collation().collationId());
     packet.writeZero(23); // filler
     BufferUtils.writeNullTerminatedString(packet, username, StandardCharsets.UTF_8);
+    String authMethod = clientPluginName;
     if (password.isEmpty()) {
       packet.writeByte(0);
     } else {
-      byte[] scrambledPassword;
-      switch (authMethodName) {
+      byte[] authResponse;
+      switch (authMethod) {
         case "mysql_native_password":
-          scrambledPassword = Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
+          authResponse = Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
           break;
         case "caching_sha2_password":
-          scrambledPassword = CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
+          authResponse = CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
+          break;
+        case "mysql_clear_password":
+          authResponse = password.getBytes(StandardCharsets.UTF_8);
           break;
         default:
-          completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + authMethodName)));
-          return;
+          LOGGER.warn("Unknown authentication method: " + authMethod + ", the client will try to use mysql_native_password instead.");
+          authMethod = "mysql_native_password";
+          authResponse = Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
+          break;
       }
       if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0) {
-        BufferUtils.writeLengthEncodedInteger(packet, scrambledPassword.length);
-        packet.writeBytes(scrambledPassword);
+        BufferUtils.writeLengthEncodedInteger(packet, authResponse.length);
+        packet.writeBytes(authResponse);
       } else if ((clientCapabilitiesFlags & CLIENT_SECURE_CONNECTION) != 0) {
-        packet.writeByte(scrambledPassword.length);
-        packet.writeBytes(scrambledPassword);
+        packet.writeByte(authResponse.length);
+        packet.writeBytes(authResponse);
       } else {
         packet.writeByte(0);
       }
@@ -257,7 +272,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
       BufferUtils.writeNullTerminatedString(packet, database, StandardCharsets.UTF_8);
     }
     if ((clientCapabilitiesFlags & CLIENT_PLUGIN_AUTH) != 0) {
-      BufferUtils.writeNullTerminatedString(packet, authMethodName, StandardCharsets.UTF_8);
+      BufferUtils.writeNullTerminatedString(packet, authMethod, StandardCharsets.UTF_8);
     }
     if ((clientCapabilitiesFlags & CLIENT_CONNECT_ATTRS) != 0) {
       encodeConnectionAttributes(clientConnectionAttributes, packet);
