@@ -290,6 +290,26 @@ public class MySQLQueryTest extends MySQLTestBase {
   }
 
   @Test
+  public void testLocalInfileRequestEmptyFile(TestContext ctx) {
+    FileSystem fileSystem = vertx.fileSystem();
+    Buffer fileData = Buffer.buffer();
+    fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
+      fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
+        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+          conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
+            conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
+              conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {
+                ctx.assertEquals(0, rowSet.size());
+                conn.close();
+              }));
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
   public void testLocalInfileRequestInPackets(TestContext ctx) {
     FileSystem fileSystem = vertx.fileSystem();
     Buffer fileData = Buffer.buffer();
