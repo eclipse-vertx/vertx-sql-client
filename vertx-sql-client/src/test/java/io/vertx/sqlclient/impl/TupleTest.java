@@ -473,4 +473,14 @@ public class TupleTest {
     assertEquals(true, array[0]);
     assertEquals(false, array[1]);
   }
+
+  @Test
+  public void testWrapList() {
+    List<Integer> list = new ArrayList<>();
+    list.add(1);
+    list.add(2);
+    list.add(3);
+    Tuple tuple = Tuple.wrap(list);
+    assertEquals(3, tuple.size());
+  }
 }

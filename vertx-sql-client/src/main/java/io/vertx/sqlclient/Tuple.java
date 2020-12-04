@@ -67,8 +67,9 @@ public interface Tuple {
    *
    * @return the list wrapped as a tuple
    */
-  static Tuple wrap(List<Object> list) {
-    return new ListTuple(list);
+  @SuppressWarnings("unchecked")
+  static <T> Tuple wrap(List<T> list) {
+    return new ListTuple((List<Object>) list);
   }
 
   /**
@@ -79,7 +80,7 @@ public interface Tuple {
    * @return the list wrapped as a tuple
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  static Tuple wrap(Object... array) {
+  static Tuple wrap(Object[] array) {
     return new ListTuple(Arrays.asList(array));
   }
 
