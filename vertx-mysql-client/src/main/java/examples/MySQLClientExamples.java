@@ -484,6 +484,16 @@ public class MySQLClientExamples {
     });
   }
 
+  public void defaultAuthPluginExample() {
+    MySQLConnectOptions options = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setAuthenticationPlugin(MySQLAuthenticationPlugin.MYSQL_NATIVE_PASSWORD); // set the default authentication plugin
+  }
+
   public void rsaPublicKeyExample() {
 
     MySQLConnectOptions options1 = new MySQLConnectOptions()

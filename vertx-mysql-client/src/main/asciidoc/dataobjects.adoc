@@ -50,6 +50,9 @@ Specify the user account to be used for the authentication.
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[authenticationPlugin]]`@authenticationPlugin`|`link:enums.html#MySQLAuthenticationPlugin[MySQLAuthenticationPlugin]`|+++
+Set the default link for the client, the option will take effect at the connection start.
++++
 |[[cachePreparedStatements]]`@cachePreparedStatements`|`Boolean`|-
 |[[characterEncoding]]`@characterEncoding`|`String`|+++
 Set the Java charset for encoding string values, this value is UTF-8 by default.

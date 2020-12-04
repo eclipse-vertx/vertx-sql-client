@@ -12,6 +12,7 @@
 package io.vertx.mysqlclient.impl.command;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.sqlclient.impl.Connection;
@@ -25,6 +26,7 @@ public class InitialHandshakeCommand extends AuthenticationCommandBase<Connectio
   private final SslMode sslMode;
   private final int initialCapabilitiesFlags;
   private final Charset charsetEncoding;
+  private final MySQLAuthenticationPlugin authenticationPlugin;
 
   public InitialHandshakeCommand(SocketConnectionBase conn,
                                  String username,
@@ -35,12 +37,14 @@ public class InitialHandshakeCommand extends AuthenticationCommandBase<Connectio
                                  Map<String, String> connectionAttributes,
                                  SslMode sslMode,
                                  int initialCapabilitiesFlags,
-                                 Charset charsetEncoding) {
+                                 Charset charsetEncoding,
+                                 MySQLAuthenticationPlugin authenticationPlugin) {
     super(username, password, database, collation, serverRsaPublicKey, connectionAttributes);
     this.conn = conn;
     this.sslMode = sslMode;
     this.initialCapabilitiesFlags = initialCapabilitiesFlags;
     this.charsetEncoding = charsetEncoding;
+    this.authenticationPlugin = authenticationPlugin;
   }
 
   public SocketConnectionBase connection() {
@@ -57,5 +61,9 @@ public class InitialHandshakeCommand extends AuthenticationCommandBase<Connectio
 
   public Charset charsetEncoding() {
     return charsetEncoding;
+  }
+
+  public MySQLAuthenticationPlugin authenticationPlugin() {
+    return authenticationPlugin;
   }
 }
