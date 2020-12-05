@@ -30,4 +30,8 @@ public abstract class CommandBase<R> {
   public final void fail(Throwable err) {
     handler.handle(CommandResponse.failure(err));
   }
+
+  public final void fail(String failureMsg) {
+    handler.handle(CommandResponse.failure(failureMsg));
+  }
 }
