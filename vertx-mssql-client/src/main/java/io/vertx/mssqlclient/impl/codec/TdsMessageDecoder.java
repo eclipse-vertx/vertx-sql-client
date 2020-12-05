@@ -48,7 +48,7 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
     } else {
       if (message == null) {
         // first packet of this message and there will be more packets
-        CompositeByteBuf messageData = channelHandlerContext.alloc().compositeBuffer();
+        CompositeByteBuf messageData = channelHandlerContext.alloc().compositeDirectBuffer();
         messageData.addComponent(true, tdsPacket.content());
         message = TdsMessage.newTdsMessage(tdsPacket.type(), tdsPacket.status(), tdsPacket.processId(), messageData);
       } else {
@@ -58,8 +58,21 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
     }
   }
 
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    clearInflightCommands("Fail to read any response from the server, the underlying connection might get lost unexpectedly.");
+    super.channelInactive(ctx);
+  }
+
   private void decodeMessage() {
     inflight.peek().decodeMessage(message, encoder);
     this.message = null;
+  }
+
+  private void clearInflightCommands(String failureMsg) {
+    // SQL Server provides a rollback mechanism, this is used for low level connection getting lost.
+    for (MSSQLCommandCodec<?, ?> commandCodec : inflight) {
+      commandCodec.cmd.fail(failureMsg);
+    }
   }
 }

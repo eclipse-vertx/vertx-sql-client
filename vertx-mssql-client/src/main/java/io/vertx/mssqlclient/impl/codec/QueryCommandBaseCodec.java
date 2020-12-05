@@ -131,11 +131,13 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
         return new TimeNDataType(scale);
       case BIGCHARTYPE_ID:
       case BIGVARCHRTYPE_ID:
+      case NCHARTYPE_ID:
+      case NVARCHARTYPE_ID:
         int size = payload.readUnsignedShortLE();
         short collateCodepage = payload.readShortLE();
         short collateFlags = payload.readShortLE();
         byte collateCharsetId = payload.readByte();
-        return new TextWithCollationDataType(BIGVARCHRTYPE_ID, String.class, null);
+        return new TextWithCollationDataType(typeInfo, String.class, null);
       default:
         throw new UnsupportedOperationException("Unsupported type with typeinfo: " + typeInfo);
     }

@@ -27,7 +27,7 @@ public final class TdsMessage extends DefaultByteBufHolder {
   }
 
   public static TdsMessage newTdsMessage(MessageType type, MessageStatus status, int processId, ByteBuf data) {
-    return new TdsMessage(type, status, processId, data.retainedSlice());
+    return new TdsMessage(type, status, processId, data);
   }
 
   public static TdsMessage newTdsMessageFromSinglePacket(TdsPacket tdsPacket) {

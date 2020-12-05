@@ -89,7 +89,11 @@ class MSSQLDataTypeCodec {
       case MSSQLDataTypeId.TIMENTYPE_ID:
         return decodeTimeN((TimeNDataType) dataType, in);
       case MSSQLDataTypeId.BIGVARCHRTYPE_ID:
+      case MSSQLDataTypeId.BIGCHARTYPE_ID:
         return decodeVarchar(in);
+      case MSSQLDataTypeId.NCHARTYPE_ID:
+      case MSSQLDataTypeId.NVARCHARTYPE_ID:
+        return decodeNVarchar(in);
       default:
         throw new UnsupportedOperationException("Unsupported datatype: " + dataType);
     }
@@ -123,8 +127,21 @@ class MSSQLDataTypeCodec {
     return LocalTime.ofSecondOfDay(secondsValue).plusNanos(nanosValue);
   }
 
+  private static CharSequence decodeNVarchar(ByteBuf in) {
+    int length = in.readUnsignedShortLE();
+    if (length == 65535) {
+      // CHARBIN_NULL
+      return null;
+    }
+    return in.readCharSequence(length, StandardCharsets.UTF_16LE);
+  }
+
   private static CharSequence decodeVarchar(ByteBuf in) {
     int length = in.readUnsignedShortLE();
+    if (length == 65535) {
+      // CHARBIN_NULL
+      return null;
+    }
     return in.readCharSequence(length, StandardCharsets.UTF_8);
   }
 
