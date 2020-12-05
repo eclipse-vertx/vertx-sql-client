@@ -19,6 +19,7 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.ArrayDeque;
 
@@ -41,7 +42,12 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
 
   private void clearInflightCommands(String failureMsg) {
     for (CommandCodec<?, ?> commandCodec : inflight) {
-      commandCodec.cmd.fail(failureMsg);
+      if (commandCodec instanceof InitialHandshakeCommandCodec) {
+        // we can't tell inflight initial commands to fail when connection gets closed,
+        // because the SSL handshake might fail and close the connection directly to be compatible in 3.x version
+      } else {
+        commandCodec.cmd.fail(failureMsg);
+      }
     }
   }
 }
