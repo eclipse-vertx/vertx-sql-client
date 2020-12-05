@@ -44,6 +44,10 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   // close hook
   protected final CloseFuture clientCloseFuture = new CloseFuture();
 
+  // auto-retry
+  private final int reconnectAttempts;
+  private final long reconnectInterval;
+
   protected SqlConnectionFactoryBase(ContextInternal context, SqlConnectOptions options) {
     this.context = context;
     this.socketAddress = options.getSocketAddress();
@@ -56,23 +60,45 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
     this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
     this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
 
+    this.reconnectAttempts = options.getReconnectAttempts();
+    this.reconnectInterval = options.getReconnectInterval();
+
     initializeConfiguration(options);
 
     NetClientOptions netClientOptions = new NetClientOptions(options);
     configureNetClientOptions(netClientOptions);
+    netClientOptions.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
     this.netClient = context.owner().createNetClient(netClientOptions, clientCloseFuture);
   }
 
   @Override
   public Future<Connection> connect() {
     Promise<Connection> promise = context.promise();
-    context.emit(promise, this::doConnectInternal);
+    context.emit(promise, p -> doConnectWithRetry(promise, reconnectAttempts));
     return promise.future();
   }
 
   @Override
   public void close(Promise<Void> promise) {
     clientCloseFuture.close(promise);
+  }
+
+  private void doConnectWithRetry(Promise<Connection> promise, int remainingAttempts) {
+    Promise<Connection> promise0 = context.promise();
+    promise0.future().onComplete(ar -> {
+      if (ar.succeeded()) {
+        promise.complete(ar.result());
+      } else {
+        if (remainingAttempts >= 0) {
+          context.owner().setTimer(reconnectInterval, id -> {
+            doConnectWithRetry(promise, remainingAttempts - 1);
+          });
+        } else {
+          promise.fail(ar.cause());
+        }
+      }
+    });
+    doConnectInternal(promise0);
   }
 
   /**
