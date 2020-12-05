@@ -16,6 +16,7 @@
  */
 package io.vertx.mysqlclient.impl.codec;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 
@@ -23,10 +24,24 @@ import java.util.ArrayDeque;
 
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 
+  ArrayDeque<CommandCodec<?, ?>> inflight;
+
   public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
-    ArrayDeque<CommandCodec<?, ?>> inflight = new ArrayDeque<>();
+    inflight = new ArrayDeque<>();
     MySQLEncoder encoder = new MySQLEncoder(inflight, mySQLSocketConnection);
     MySQLDecoder decoder = new MySQLDecoder(inflight, mySQLSocketConnection);
     init(decoder, encoder);
+  }
+
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    clearInflightCommands("Fail to read any response from the server, the underlying connection might get lost unexpectedly.");
+    super.channelInactive(ctx);
+  }
+
+  private void clearInflightCommands(String failureMsg) {
+    for (CommandCodec<?, ?> commandCodec : inflight) {
+      commandCodec.cmd.fail(failureMsg);
+    }
   }
 }

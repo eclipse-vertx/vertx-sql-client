@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Row;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,6 +57,29 @@ public class MySQLConnectionTest extends MySQLTestBase {
       .setDatabase("emptyschema");
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.close();
+    }));
+  }
+
+  @Test
+  public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn1 -> {
+      conn1.query("DO SLEEP(20)").execute(ctx.asyncAssertFailure(t -> {
+        ctx.assertEquals("Fail to read any response from the server, the underlying connection might get lost unexpectedly.", t.getMessage());
+      }));
+      MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn2 -> {
+        conn2.query("SHOW PROCESSLIST").execute(ctx.asyncAssertSuccess(processRes -> {
+          for (Row row : processRes) {
+            Long id = row.getLong("Id");
+            String state = row.getString("State");
+            String info = row.getString("Info");
+            if ("User sleep".equals(state) || "DO SLEEP(10)".equals(info)) {
+              // kill the connection
+              conn2.query("KILL CONNECTION " + id).execute(ctx.asyncAssertSuccess(v -> conn2.close()));
+              break;
+            }
+          }
+        }));
+      }));
     }));
   }
 }
