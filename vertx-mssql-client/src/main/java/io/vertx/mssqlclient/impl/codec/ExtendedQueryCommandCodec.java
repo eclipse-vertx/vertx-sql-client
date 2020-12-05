@@ -18,6 +18,7 @@ import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
 import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
+import io.vertx.mssqlclient.impl.protocol.server.DoneToken;
 import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
@@ -30,6 +31,8 @@ import java.time.temporal.ChronoUnit;
 import static io.vertx.mssqlclient.impl.codec.MSSQLDataTypeCodec.inferenceParamDefinitionByValueType;
 
 class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
+
+  private int rowCount;
 
   ExtendedQueryCommandCodec(ExtendedQueryCommand cmd) {
     super(cmd);
@@ -73,14 +76,20 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
           short status = messageBody.readShortLE();
           short curCmd = messageBody.readShortLE();
           long doneRowCount = messageBody.readLongLE();
-          handleResultSetDone((int) doneRowCount);
-          handleDoneToken();
+          if ((status | DoneToken.STATUS_DONE_FINAL) != 0){
+            rowCount += doneRowCount;
+          } else {
+            handleResultSetDone((int) doneRowCount);
+            handleDoneToken();
+          }
           break;
         case DataPacketStreamTokenType.RETURNSTATUS_TOKEN:
           messageBody.skipBytes(4);
           break;
         case DataPacketStreamTokenType.RETURNVALUE_TOKEN:
           messageBody.skipBytes(messageBody.readableBytes()); // FIXME
+          handleResultSetDone(rowCount);
+          handleDoneToken();
           break;
         default:
           throw new UnsupportedOperationException("Unsupported token: " + tokenByte);
