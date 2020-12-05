@@ -45,6 +45,8 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
+  private static final String PENDING_CMD_CONNECTION_CORRUPT_MSG = "Pending requests failed to be sent due to connection has been closed.";
+
   protected final PreparedStatementCache psCache;
   private final Predicate<String> preparedStatementCacheSqlFilter;
   private final Context context;
@@ -308,7 +310,7 @@ public abstract class SocketConnectionBase implements Connection {
           }
         }
       }
-      Throwable cause = t == null ? new VertxException("closed") : t;
+      Throwable cause = t == null ? new NoStackTraceThrowable(PENDING_CMD_CONNECTION_CORRUPT_MSG) : new VertxException(PENDING_CMD_CONNECTION_CORRUPT_MSG, t);
       CommandBase<?> cmd;
       while ((cmd = pending.poll()) != null) {
         CommandBase<?> c = cmd;

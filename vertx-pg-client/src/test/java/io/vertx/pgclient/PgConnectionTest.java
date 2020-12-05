@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
@@ -112,6 +113,25 @@ public class PgConnectionTest extends PgConnectionTestBase {
         async.countDown();
       });
       conn.close();
+    }));
+  }
+
+  @Test
+  public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
+    connector.accept(ctx.asyncAssertSuccess(conn1 -> {
+      conn1.query("SELECT pg_sleep(20)").execute(ctx.asyncAssertFailure(t -> {
+        ctx.assertEquals("Fail to read any response from the server, the underlying connection might get lost unexpectedly.", t.getMessage());
+      }));
+      connector.accept(ctx.asyncAssertSuccess(conn2 -> {
+        conn2.query("SELECT * FROM pg_stat_activity WHERE state = 'active' AND query = 'SELECT pg_sleep(20)'").execute(ctx.asyncAssertSuccess(statRes -> {
+          for (Row row : statRes) {
+            Integer id = row.getInteger("pid");
+            // kill the connection
+            conn2.query(String.format("SELECT pg_terminate_backend(%d);", id)).execute(ctx.asyncAssertSuccess(v -> conn2.close()));
+            break;
+          }
+        }));
+      }));
     }));
   }
 }
