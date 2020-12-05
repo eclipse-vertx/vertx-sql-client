@@ -19,8 +19,11 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 
@@ -35,13 +38,17 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands("Fail to read any response from the server, the underlying connection might get lost unexpectedly.");
+    clearInflightCommands(ctx, "Fail to read any response from the server, the underlying connection might get lost unexpectedly.");
     super.channelInactive(ctx);
   }
 
-  private void clearInflightCommands(String failureMsg) {
-    for (CommandCodec<?, ?> commandCodec : inflight) {
-      commandCodec.cmd.fail(failureMsg);
+  private void clearInflightCommands(ChannelHandlerContext ctx, String failureMsg) {
+    for (Iterator<CommandCodec<?, ?>> it = inflight.iterator(); it.hasNext();) {
+      CommandCodec<?, ?> codec = it.next();
+      it.remove();
+      CommandResponse<Object> failure = CommandResponse.failure(failureMsg);
+      failure.cmd = (CommandBase) codec.cmd;
+      ctx.fireChannelRead(failure);
     }
   }
 }

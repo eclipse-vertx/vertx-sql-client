@@ -17,8 +17,11 @@ import io.vertx.mssqlclient.impl.protocol.TdsPacket;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.List;
 
 class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
@@ -60,7 +63,7 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands("Fail to read any response from the server, the underlying connection might get lost unexpectedly.");
+    clearInflightCommands(ctx, "Fail to read any response from the server, the underlying connection might get lost unexpectedly.");
     super.channelInactive(ctx);
   }
 
@@ -69,10 +72,14 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
     this.message = null;
   }
 
-  private void clearInflightCommands(String failureMsg) {
+  private void clearInflightCommands(ChannelHandlerContext ctx, String failureMsg) {
     // SQL Server provides a rollback mechanism, this is used for low level connection getting lost.
-    for (MSSQLCommandCodec<?, ?> commandCodec : inflight) {
-      commandCodec.cmd.fail(failureMsg);
+    for (Iterator<MSSQLCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext();) {
+      MSSQLCommandCodec<?, ?> codec = it.next();
+      it.remove();
+      CommandResponse<Object> failure = CommandResponse.failure(failureMsg);
+      failure.cmd = (CommandBase) codec.cmd;
+      ctx.fireChannelRead(failure);
     }
   }
 }
