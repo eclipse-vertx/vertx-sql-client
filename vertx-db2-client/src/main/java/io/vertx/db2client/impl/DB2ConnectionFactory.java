@@ -15,79 +15,47 @@
  */
 package io.vertx.db2client.impl;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.function.Predicate;
-
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.DB2ConnectOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
+import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
 
-public class DB2ConnectionFactory implements ConnectionFactory {
+public class DB2ConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
 
-  private final NetClient netClient;
-  private final ContextInternal context;
-  private final String host;
-  private final int port;
-  private final String username;
-  private final String password;
-  private final String database;
-  private final Map<String, String> connectionAttributes;
-  private final boolean cachePreparedStatements;
-  private final int preparedStatementCacheSize;
-  private final Predicate<String> preparedStatementCacheSqlFilter;
-  private final int pipeliningLimit;
-  private final CloseFuture clientCloseFuture = new CloseFuture();
+  private int pipeliningLimit;
 
   public DB2ConnectionFactory(ContextInternal context, DB2ConnectOptions options) {
-    NetClientOptions netClientOptions = new NetClientOptions(options);
+    super(context, options);
+  }
 
-    this.context = context;
-    this.host = options.getHost();
-    this.port = options.getPort();
-    this.username = options.getUser();
-    this.password = options.getPassword();
-    this.database = options.getDatabase();
-    this.connectionAttributes = options.getProperties() == null ? null
-        : Collections.unmodifiableMap(options.getProperties());
-
-    this.cachePreparedStatements = options.getCachePreparedStatements();
-    this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
-    this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
+  @Override
+  protected void initializeConfiguration(SqlConnectOptions connectOptions) {
+    DB2ConnectOptions options = (DB2ConnectOptions) connectOptions;
     this.pipeliningLimit = options.getPipeliningLimit();
-
-    this.netClient = context.owner().createNetClient(netClientOptions, clientCloseFuture);
   }
 
   @Override
-  public void close(Promise<Void> promise) {
-    clientCloseFuture.close(promise);
+  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
+    // currently no-op
   }
 
   @Override
-  public Future<Connection> connect() {
-    Promise<Connection> promise = context.promise();
-    context.emit(null, v -> doConnect(promise));
-    return promise.future();
-  }
-
-  public void doConnect(Promise<Connection> promise) {
-    Future<NetSocket> fut = netClient.connect(port, host);
+  protected void doConnectInternal(Promise<Connection> promise) {
+    Future<NetSocket> fut = netClient.connect(socketAddress);
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
         DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
-            preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+          preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, connectionAttributes, promise);
+        conn.sendStartupMessage(username, password, database, properties, promise);
       } else {
         promise.fail(ar.cause());
       }

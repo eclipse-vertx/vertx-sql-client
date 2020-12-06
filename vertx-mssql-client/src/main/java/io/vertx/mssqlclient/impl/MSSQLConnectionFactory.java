@@ -11,54 +11,36 @@
 
 package io.vertx.mssqlclient.impl;
 
-import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.core.*;
 import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
+import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
 
-import java.util.HashMap;
-import java.util.Map;
-
-class MSSQLConnectionFactory implements ConnectionFactory {
-
-  private final NetClient netClient;
-  private final ContextInternal context;
-  private final String host;
-  private final int port;
-  private final String username;
-  private final String password;
-  private final String database;
-  private final Map<String, String> properties;
-  private final CloseFuture clientCloseFuture = new CloseFuture();
+class MSSQLConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
 
   MSSQLConnectionFactory(ContextInternal context, MSSQLConnectOptions options) {
-    NetClientOptions netClientOptions = new NetClientOptions(options);
-
-    this.context = context;
-    this.host = options.getHost();
-    this.port = options.getPort();
-    this.username = options.getUser();
-    this.password = options.getPassword();
-    this.database = options.getDatabase();
-    this.properties = new HashMap<>(options.getProperties());
-    this.netClient = context.owner().createNetClient(netClientOptions, clientCloseFuture);
+    super(context, options);
   }
 
   @Override
-  public Future<Connection> connect() {
-    Promise<Connection> promise = context.promise();
-    context.emit(promise, this::doConnect);
-    return promise.future();
+  protected void initializeConfiguration(SqlConnectOptions options) {
+    // currently no-op
   }
 
-  public void doConnect(Promise<Connection> promise) {
-    Future<NetSocket> fut = netClient.connect(port, host);
+  @Override
+  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
+    // currently no-op
+  }
+
+  @Override
+  protected void doConnectInternal(Promise<Connection> promise) {
+    Future<NetSocket> fut = netClient.connect(socketAddress);
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
@@ -75,16 +57,5 @@ class MSSQLConnectionFactory implements ConnectionFactory {
         promise.fail(ar.cause());
       }
     });
-  }
-
-  // Called by hook
-  private void close(Handler<AsyncResult<Void>> completionHandler) {
-    netClient.close();
-    completionHandler.handle(Future.succeededFuture());
-  }
-
-  @Override
-  public void close(Promise<Void> promise) {
-    clientCloseFuture.close(promise);
   }
 }

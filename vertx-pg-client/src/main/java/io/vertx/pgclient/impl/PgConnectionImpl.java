@@ -37,7 +37,12 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
     if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
       return context.failedFuture("Native transport is not available");
     } else {
-      PgConnectionFactory client = new PgConnectionFactory(context.owner(), context, options);
+      PgConnectionFactory client;
+      try {
+        client = new PgConnectionFactory(context, options);
+      } catch (Exception e) {
+        return context.failedFuture(e);
+      }
       context.addCloseHook(client);
       return client.connect()
         .map(conn -> {

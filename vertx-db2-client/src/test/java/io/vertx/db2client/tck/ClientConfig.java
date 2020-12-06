@@ -57,7 +57,7 @@ public enum ClientConfig {
   POOLED() {
     @Override
     public Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
-      DB2Pool pool = DB2Pool.pool(new DB2ConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1));
+      DB2Pool pool = DB2Pool.pool(vertx, new DB2ConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1));
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
