@@ -68,6 +68,34 @@ public interface Tuple {
    * @return the list wrapped as a tuple
    */
   @SuppressWarnings("unchecked")
+  static <T> Tuple from(List<T> list) {
+    return wrap(new ArrayList<>(list));
+  }
+
+  /**
+   * Wrap the provided {@code array} with a tuple.
+   * <br/>
+   * The array is not copied and is used as store for tuple elements.
+   *
+   * @return the list wrapped as a tuple
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static Tuple from(Object[] array) {
+    ArrayList<Object> list = new ArrayList<>(array.length);
+    for (Object o : array) {
+      list.add(o);
+    }
+    return wrap(list);
+  }
+
+  /**
+   * Wrap the provided {@code list} with a tuple.
+   * <br/>
+   * The list is not copied and is used as store for tuple elements.
+   *
+   * @return the list wrapped as a tuple
+   */
+  @SuppressWarnings("unchecked")
   static <T> Tuple wrap(List<T> list) {
     return new ListTuple((List<Object>) list);
   }

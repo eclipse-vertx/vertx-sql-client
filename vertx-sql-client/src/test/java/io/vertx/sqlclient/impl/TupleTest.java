@@ -94,6 +94,29 @@ public class TupleTest {
       Tuple of(Object... elements) {
         return Tuple.wrap(elements);
       }
+    }, FROM_LIST() {
+      @Override
+      Tuple tuple() {
+        return Tuple.from(new ArrayList<>());
+      }
+
+      @Override
+      Tuple of(Object... elements) {
+        if (elements.length == 0) {
+          throw new IllegalArgumentException();
+        }
+        return Tuple.from(new ArrayList<>(Arrays.asList(elements)));
+      }
+    }, FROM_ARRAY() {
+      @Override
+      Tuple tuple() {
+        return Tuple.from(new Object[0]);
+      }
+
+      @Override
+      Tuple of(Object... elements) {
+        return Tuple.from(elements);
+      }
     };
 
     abstract Tuple tuple();
@@ -482,5 +505,34 @@ public class TupleTest {
     list.add(3);
     Tuple tuple = Tuple.wrap(list);
     assertEquals(3, tuple.size());
+  }
+
+  @Test
+  public void testFromListMutation() {
+    List<Integer> list = new ArrayList<>();
+    list.add(1);
+    list.add(2);
+    list.add(3);
+    Tuple tuple = Tuple.from(list);
+    assertEquals(3, tuple.size());
+    list.add(4);
+    assertEquals(3, tuple.size());
+  }
+
+  @Test
+  public void testFromArrayMutation() {
+    Object[] array = {
+      1, 2, 3
+    };
+    Tuple tuple = Tuple.from(array);
+    assertEquals(3, tuple.size());
+    assertEquals(1, tuple.getValue(0));
+    assertEquals(2, tuple.getValue(1));
+    assertEquals(3, tuple.getValue(2));
+    array[0] = 10;
+    assertEquals(3, tuple.size());
+    assertEquals(1, tuple.getValue(0));
+    assertEquals(2, tuple.getValue(1));
+    assertEquals(3, tuple.getValue(2));
   }
 }
