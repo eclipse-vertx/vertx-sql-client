@@ -16,6 +16,7 @@
  */
 package io.vertx.pgclient.pubsub;
 
+import io.vertx.core.Future;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.impl.pubsub.PgSubscriberImpl;
@@ -72,6 +73,11 @@ public interface PgSubscriber {
   PgChannel channel(String name);
 
   /**
+   * Like {@link #connect(Handler)} but with a future of the result
+   */
+  Future<Void> connect();
+
+  /**
    * Connect the subscriber to Postgres.
    *
    * @param handler the handler notified of the connection success or failure
@@ -119,8 +125,13 @@ public interface PgSubscriber {
   boolean closed();
 
   /**
+   * Like {@link #close(Handler)} but with a future of the result
+   */
+  Future<Void> close();
+
+  /**
    * Close the subscriber, the retry policy will not be invoked.
    */
-  void close();
+  void close(Handler<AsyncResult<Void>> handler);
 
 }
