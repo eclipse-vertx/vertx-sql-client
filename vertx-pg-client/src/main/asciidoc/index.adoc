@@ -102,6 +102,15 @@ Make sure you have added the required `netty-transport-native` dependency in you
 
 More information can be found in the [Vert.x documentation](https://vertx.io/docs/vertx-core/java/#_native_transports).
 
+== Connect retries
+
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#reconnectAttempts}
+----
+
 == Configuration
 
 There are several alternatives for you to configure the client.

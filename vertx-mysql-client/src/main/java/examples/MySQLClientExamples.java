@@ -232,6 +232,13 @@ public class MySQLClientExamples {
     MySQLPool client2 = MySQLPool.pool(vertx, connectOptions, poolOptions);
   }
 
+  public void reconnectAttempts(MySQLConnectOptions options) {
+    // The client will try to connect at most 3 times at a 1 second interval
+    options
+      .setReconnectAttempts(2)
+      .setReconnectInterval(1000);
+  }
+
   public void lastInsertId(SqlClient client) {
     client
       .query("INSERT INTO test(val) VALUES ('v1')")

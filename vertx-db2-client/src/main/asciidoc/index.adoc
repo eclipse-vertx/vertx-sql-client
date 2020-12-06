@@ -137,6 +137,15 @@ Currently the client supports the following parameter key words in connection ur
 
 Note: configuring properties in connection URI will override the default properties.
 
+== Connect retries
+
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#reconnectAttempts}
+----
+
 include::queries.adoc[]
 
 You can fetch generated keys by wrapping your query in `SELECT <COLUMNS> FROM FINAL TABLE ( <SQL> )`, for example:

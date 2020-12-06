@@ -94,6 +94,15 @@ A simple way to configure the client is to specify a `MSSQLConnectOptions` data 
 
 include::queries.adoc[]
 
+== Connect retries
+
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#reconnectAttempts}
+----
+
 == Tracing queries
 
 include::tracing.adoc[]

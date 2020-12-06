@@ -187,6 +187,13 @@ public class DB2ClientExamples {
     });
   }
 
+  public void reconnectAttempts(DB2ConnectOptions options) {
+    // The client will try to connect at most 3 times at a 1 second interval
+    options
+      .setReconnectAttempts(2)
+      .setReconnectInterval(1000);
+  }
+
   public void connecting05(Vertx vertx) {
 
     // Pool options
@@ -222,7 +229,7 @@ public class DB2ClientExamples {
       }
     });
   }
-  
+
   public void connectSsl(Vertx vertx) {
 
     DB2ConnectOptions options = new DB2ConnectOptions()
@@ -244,7 +251,7 @@ public class DB2ClientExamples {
       }
     });
   }
-  
+
   public void generatedKeys(SqlClient client) {
     client
       .preparedQuery("SELECT color_id FROM FINAL TABLE ( INSERT INTO color (color_name) VALUES (?), (?), (?) )")
@@ -260,7 +267,7 @@ public class DB2ClientExamples {
       }
     });
   }
-  
+
   public void typeMapping01(Pool pool) {
     pool
       .query("SELECT an_int_column FROM exampleTable")
@@ -320,15 +327,15 @@ public class DB2ClientExamples {
         }
       });
   }
-  
-  // Enum for days of the week 
+
+  // Enum for days of the week
   enum Days {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
   }
 
   /**
    * Using an enum as a string value in the Row and Tuple methods.
-   */  
+   */
   public void enumStringValues(SqlClient client) {
   	  client.preparedQuery("SELECT day_name FROM FINAL TABLE ( INSERT INTO days (day_name) VALUES (?), (?), (?) )")
   	  .execute(Tuple.of(Days.FRIDAY, Days.SATURDAY, Days.SUNDAY), ar -> {
@@ -341,13 +348,13 @@ public class DB2ClientExamples {
   		  } else {
   			  System.out.println("Failure: " + ar.cause().getMessage());
   		  }
-  	  });  	  
+  	  });
   }
 
   /**
-   * Using an enum as an int value in the Row and Tuple methods.  
-   * The row.get() method returns the corresponding enum's name() value at the ordinal position of the integer value retrieved. 
-   */  
+   * Using an enum as an int value in the Row and Tuple methods.
+   * The row.get() method returns the corresponding enum's name() value at the ordinal position of the integer value retrieved.
+   */
   public void enumIntValues(SqlClient client) {
 	  client.preparedQuery("SELECT day_num FROM FINAL TABLE ( INSERT INTO days (day_num) VALUES (?), (?), (?) )")
       .execute(Tuple.of(Days.FRIDAY.ordinal(), Days.SATURDAY.ordinal(), Days.SUNDAY.ordinal()), ar -> {
@@ -362,5 +369,5 @@ public class DB2ClientExamples {
       	}
       });
   }
-  
+
 }

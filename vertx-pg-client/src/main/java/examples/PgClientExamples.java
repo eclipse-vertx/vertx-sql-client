@@ -272,6 +272,13 @@ public class PgClientExamples {
     PgPool client2 = PgPool.pool(vertx, connectOptions, poolOptions);
   }
 
+  public void reconnectAttempts(PgConnectOptions options) {
+    // The client will try to connect at most 3 times at a 1 second interval
+    options
+      .setReconnectAttempts(2)
+      .setReconnectInterval(1000);
+  }
+
   public void typeMapping01(Pool pool) {
     pool
       .query("SELECT 1::BIGINT \"VAL\"")
