@@ -149,7 +149,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
         conn.close(this, promise);
       }
     } else {
-      context.runOnContext(v -> close());
+      context.runOnContext(v -> close(promise));
     }
   }
 }

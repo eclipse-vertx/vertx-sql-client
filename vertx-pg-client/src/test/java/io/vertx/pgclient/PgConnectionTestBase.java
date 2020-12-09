@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
@@ -461,5 +462,23 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
         }));
       });
     }));
+  }
+
+  @Test
+  public void testCloseConnectionFromDifferentContext(TestContext ctx) {
+    Async done = ctx.async(1);
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+        ctx.assertEquals(1, res.size());
+        // schedule from another context
+        VertxInternal vertxInternal = (VertxInternal) vertx;
+        vertxInternal.createEventLoopContext().runOnContext(v -> {
+          conn.close(v2 -> {
+            done.complete();
+          });
+        });
+      }));
+    }));
+    done.await(2000);
   }
 }
