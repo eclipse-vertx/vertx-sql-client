@@ -141,15 +141,13 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   private void close(Promise<Void> promise) {
-    if (context == Vertx.currentContext()) {
+    context.execute(promise, p -> {
       if (tx != null) {
-        tx.rollback(ar -> conn.close(this, promise));
+        tx.rollback(ar -> conn.close(this, p));
         tx = null;
       } else {
-        conn.close(this, promise);
+        conn.close(this, p);
       }
-    } else {
-      context.runOnContext(v -> close(promise));
-    }
+    });
   }
 }
