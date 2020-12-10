@@ -17,7 +17,7 @@ Prepared queries can be created:
 {@link examples.SqlClientExamples#usingConnections02(io.vertx.sqlclient.SqlConnection)}
 ----
 
-=== Simplified transaction API
+=== Simplified connection API
 
 When you use a pool, you can call {@link io.vertx.sqlclient.Pool#withConnection} to pass it a function executed
 within a connection.
