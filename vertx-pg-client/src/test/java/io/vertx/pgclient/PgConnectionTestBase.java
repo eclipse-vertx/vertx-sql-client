@@ -462,4 +462,20 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
       });
     }));
   }
+
+  @Test
+  public void testCloseConnectionFromDifferentContext(TestContext ctx) {
+    Async done = ctx.async(1);
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+        ctx.assertEquals(1, res.size());
+        // schedule from another context
+        new Thread(() -> {
+          conn.close(v2 -> {
+            done.complete();
+          });
+        }).start();
+      }));
+    }));
+  }
 }
