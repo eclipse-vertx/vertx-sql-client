@@ -194,6 +194,18 @@ public class SqlClientExamples {
     });
   }
 
+  public void usingConnections02(SqlConnection connection) {
+    connection
+      .prepare("SELECT * FROM users WHERE first_name LIKE $1")
+      .compose(pq ->
+        pq.query()
+          .execute(Tuple.of("Julien"))
+          .eventually(v -> pq.close())
+      ).onSuccess(rows -> {
+      // All rows
+    });
+  }
+
   public void usingConnections03(Pool pool) {
     pool.withConnection(connection ->
       connection
@@ -248,7 +260,7 @@ public class SqlClientExamples {
       .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
       .execute()
       .flatMap(res -> client
-        .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+        .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
         .execute()
         // Map to a message result
         .map("Users inserted")))
