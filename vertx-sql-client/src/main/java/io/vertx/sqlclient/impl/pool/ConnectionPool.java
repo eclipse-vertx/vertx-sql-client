@@ -262,7 +262,14 @@ public class ConnectionPool {
             if (size < maxSize) {
               Handler<AsyncResult<Connection>> waiter = waiters.poll();
               size++;
-              connector.connect().onComplete(ar -> {
+              Promise<Connection> promise;
+              if (context == null) {
+                promise = Promise.promise();
+              } else {
+                promise = context.promise();
+              }
+              connector.connect(promise);
+              promise.future().onComplete(ar -> {
                 if (ar.succeeded()) {
                   Connection conn = ar.result();
                   PooledConnection proxy = new PooledConnection(conn);

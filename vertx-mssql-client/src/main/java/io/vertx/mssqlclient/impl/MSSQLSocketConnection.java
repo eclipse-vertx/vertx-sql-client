@@ -16,6 +16,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mssqlclient.impl.codec.MSSQLCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
@@ -39,7 +40,7 @@ class MSSQLSocketConnection extends SocketConnectionBase {
                         int preparedStatementCacheSize,
                         Predicate<String> preparedStatementCacheSqlFilter,
                         int pipeliningLimit,
-                        ContextInternal context) {
+                        EventLoopContext context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 

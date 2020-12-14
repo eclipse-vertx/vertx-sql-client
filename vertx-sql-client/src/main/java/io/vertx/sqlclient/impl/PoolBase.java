@@ -65,13 +65,6 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     return vertx.promise(handler);
   }
 
-  /**
-   * Create a connection and connect to the database server.
-   *
-   * @param completionHandler the handler completed with the result
-   */
-  public abstract void connect(Handler<AsyncResult<Connection>> completionHandler);
-
   @Override
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
     Future<SqlConnection> fut = getConnection();

@@ -14,6 +14,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
@@ -29,7 +30,7 @@ import java.util.function.Predicate;
 public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
 
   protected final NetClient netClient;
-  protected final ContextInternal context;
+  protected final EventLoopContext context;
   protected final SocketAddress socketAddress;
   protected final String username;
   protected final String password;
@@ -48,7 +49,7 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   private final int reconnectAttempts;
   private final long reconnectInterval;
 
-  protected SqlConnectionFactoryBase(ContextInternal context, SqlConnectOptions options) {
+  protected SqlConnectionFactoryBase(EventLoopContext context, SqlConnectOptions options) {
     this.context = context;
     this.socketAddress = options.getSocketAddress();
     this.username = options.getUser();
@@ -72,10 +73,8 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   }
 
   @Override
-  public Future<Connection> connect() {
-    Promise<Connection> promise = context.promise();
+  public void connect(Promise<Connection> promise) {
     context.emit(promise, p -> doConnectWithRetry(promise, reconnectAttempts));
-    return promise.future();
   }
 
   @Override

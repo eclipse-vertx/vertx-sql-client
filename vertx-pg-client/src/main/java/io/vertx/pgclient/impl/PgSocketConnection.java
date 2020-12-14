@@ -20,6 +20,7 @@ package io.vertx.pgclient.impl;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.sqlclient.impl.Connection;
@@ -55,7 +56,7 @@ public class PgSocketConnection extends SocketConnectionBase {
                             int preparedStatementCacheSize,
                             Predicate<String> preparedStatementCacheSqlFilter,
                             int pipeliningLimit,
-                            ContextInternal context) {
+                            EventLoopContext context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
