@@ -24,9 +24,9 @@ import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.*;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
-import io.vertx.core.*;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
@@ -44,7 +44,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
     VertxMetrics vertxMetrics = context.owner().metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(context, connectOptions), tracer, metrics, poolOptions);
+    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(ConnectionFactory.asEventLoopContext(context), connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -65,11 +65,6 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
   public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
     queryBuilder.append('$').append(1 + index);
     return index;
-  }
-
-  @Override
-  public void connect(Handler<AsyncResult<Connection>> completionHandler) {
-    factory.connect().onComplete(completionHandler);
   }
 
   @Override

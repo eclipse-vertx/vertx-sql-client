@@ -17,6 +17,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
@@ -24,6 +25,7 @@ import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
@@ -35,24 +37,19 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     }
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(ctx, options);
+      client = new MySQLConnectionFactory(ConnectionFactory.asEventLoopContext(ctx), options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
     ctx.addCloseHook(client);
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
-    Promise<MySQLConnection> promise = ctx.promise();
-    ctx.emit(v -> connect(client, ctx, tracer, null, promise));
-    return promise.future();
-  }
-
-  private static void connect(MySQLConnectionFactory client, ContextInternal ctx, QueryTracer tracer, ClientMetrics metrics, Promise<MySQLConnection> promise) {
-    client.connect()
-      .map(conn -> {
-        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn, tracer, metrics);
-        conn.init(mySQLConnection);
-        return (MySQLConnection) mySQLConnection;
-      }).onComplete(promise);
+    PromiseInternal<Connection> promise = ctx.promise();
+    client.connect(promise);
+    return promise.future().map(conn -> {
+      MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn, tracer, null);
+      conn.init(mySQLConnection);
+      return mySQLConnection;
+    });
   }
 
   private final MySQLConnectionFactory factory;

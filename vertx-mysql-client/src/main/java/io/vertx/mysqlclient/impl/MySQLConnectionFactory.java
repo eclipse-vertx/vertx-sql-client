@@ -15,6 +15,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
@@ -39,7 +40,7 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
   private int initialCapabilitiesFlags;
   private MySQLAuthenticationPlugin authenticationPlugin;
 
-  public MySQLConnectionFactory(ContextInternal context, MySQLConnectOptions options) {
+  public MySQLConnectionFactory(EventLoopContext context, MySQLConnectOptions options) {
     super(context, options);
   }
 

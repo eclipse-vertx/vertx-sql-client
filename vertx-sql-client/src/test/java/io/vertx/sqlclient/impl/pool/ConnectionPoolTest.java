@@ -220,13 +220,11 @@ public class ConnectionPoolTest {
     ConnectionPool[] poolRef = new ConnectionPool[1];
     ConnectionPool pool = new ConnectionPool(new ConnectionFactory() {
       @Override
-      public Future<Connection> connect() {
-        Promise<Connection> promise = Promise.promise();
+      public void connect(Promise<Connection> promise) {
         poolRef[0].acquire(holder2);
         assertFalse(holder2.isComplete());
         promise.complete(conn);
         assertFalse(holder2.isComplete());
-        return promise.future();
       }
     }, 1, 0);
     poolRef[0] = pool;

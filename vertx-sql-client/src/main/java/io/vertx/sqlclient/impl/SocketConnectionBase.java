@@ -27,6 +27,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -56,7 +57,7 @@ public abstract class SocketConnectionBase implements Connection {
 
   protected final PreparedStatementCache psCache;
   private final Predicate<String> preparedStatementCacheSqlFilter;
-  private final ContextInternal context;
+  private final EventLoopContext context;
   private Holder holder;
   private final int pipeliningLimit;
 
@@ -74,7 +75,7 @@ public abstract class SocketConnectionBase implements Connection {
                               int preparedStatementCacheSize,
                               Predicate<String> preparedStatementCacheSqlFilter,
                               int pipeliningLimit,
-                              ContextInternal context) {
+                              EventLoopContext context) {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;

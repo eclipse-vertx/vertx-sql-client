@@ -22,6 +22,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.TrustOptions;
@@ -41,7 +42,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
   private SslMode sslMode;
   private int pipeliningLimit;
 
-  PgConnectionFactory(ContextInternal context, PgConnectOptions options) {
+  PgConnectionFactory(EventLoopContext context, PgConnectOptions options) {
     super(context, options);
   }
 

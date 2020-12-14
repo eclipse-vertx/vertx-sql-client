@@ -17,11 +17,13 @@
 package io.vertx.pgclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotification;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.AsyncResult;
@@ -39,18 +41,20 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
     } else {
       PgConnectionFactory client;
       try {
-        client = new PgConnectionFactory(context, options);
+        client = new PgConnectionFactory(ConnectionFactory.asEventLoopContext(context), options);
       } catch (Exception e) {
         return context.failedFuture(e);
       }
       context.addCloseHook(client);
-      return client.connect()
+      PromiseInternal<Connection> promise = context.promise();
+      client.connect(promise);
+      return promise.future()
         .map(conn -> {
-        QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), options);
-        PgConnectionImpl pgConn = new PgConnectionImpl(client, context, conn, tracer, null);
-        conn.init(pgConn);
-        return pgConn;
-      });
+          QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), options);
+          PgConnectionImpl pgConn = new PgConnectionImpl(client, context, conn, tracer, null);
+          conn.init(pgConn);
+          return pgConn;
+        });
     }
   }
 

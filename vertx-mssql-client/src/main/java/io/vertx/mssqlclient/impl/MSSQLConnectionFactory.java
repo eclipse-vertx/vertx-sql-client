@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.core.*;
@@ -24,7 +25,7 @@ import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
 
 class MSSQLConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
 
-  MSSQLConnectionFactory(ContextInternal context, MSSQLConnectOptions options) {
+  MSSQLConnectionFactory(EventLoopContext context, MSSQLConnectOptions options) {
     super(context, options);
   }
 

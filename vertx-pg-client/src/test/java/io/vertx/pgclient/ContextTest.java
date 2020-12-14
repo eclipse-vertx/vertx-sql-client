@@ -1,6 +1,9 @@
 package io.vertx.pgclient;
 
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -61,4 +64,22 @@ public class ContextTest extends PgTestBase {
       });
     });
   }
-}
+
+  @Test
+  public void testWorkerContext(TestContext testCtx) {
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      @Override
+      public void start(Promise<Void> startPromise) {
+        PgConnection.connect(vertx, options, testCtx.asyncAssertSuccess(conn -> {
+          testCtx.assertEquals(context, Vertx.currentContext());
+          conn
+            .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
+            .execute(testCtx.asyncAssertSuccess(result -> {
+              testCtx.assertEquals(context, Vertx.currentContext());
+              startPromise.complete();
+            }));
+        }));
+      }
+    }, new DeploymentOptions().setWorker(true), testCtx.asyncAssertSuccess(v -> {
+    }));
+  }}
