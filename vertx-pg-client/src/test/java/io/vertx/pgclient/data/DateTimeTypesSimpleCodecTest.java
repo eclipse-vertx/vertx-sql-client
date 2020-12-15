@@ -16,7 +16,7 @@ import java.time.ZoneOffset;
 
 public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
 
-  private static final LocalDateTime NOW = LocalDateTime.now();
+  private static final LocalDateTime NOW = LocalDateTime.now(ZoneOffset.UTC);
   private static final LocalDateTime TODAY = LocalDateTime.of(NOW.toLocalDate(), LocalTime.MIDNIGHT);
 
   @Test
@@ -42,17 +42,18 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
   private void testDate(TestContext ctx, String value, LocalDate ld) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT '" + value + "'::DATE \"LocalDate\"").execute(ctx.asyncAssertSuccess(result -> {
+      conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
+        conn.query("SELECT '" + value + "'::DATE \"LocalDate\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "LocalDate")
-            .returns(Tuple::getValue, Row::getValue, ld)
-            .returns(Tuple::getLocalDate, Row::getLocalDate, ld)
-            .returns(Tuple::getTemporal, Row::getTemporal, ld)
-            .forRow(row);
+              .returns(Tuple::getValue, Row::getValue, ld)
+              .returns(Tuple::getLocalDate, Row::getLocalDate, ld)
+              .returns(Tuple::getTemporal, Row::getTemporal, ld)
+              .forRow(row);
           async.complete();
         }));
+      }));
     }));
   }
 
