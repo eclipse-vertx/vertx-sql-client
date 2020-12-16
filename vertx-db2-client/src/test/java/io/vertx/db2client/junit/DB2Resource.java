@@ -27,6 +27,7 @@ import java.util.Objects;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.Db2Container;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+import org.testcontainers.utility.DockerImageName;
 
 import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
@@ -34,6 +35,9 @@ import io.vertx.db2client.DB2ConnectOptions;
 public class DB2Resource extends ExternalResource {
 
   private static final boolean CUSTOM_DB2 = get("DB2_HOST") != null;
+
+  private static final DockerImageName db2Image = DockerImageName.parse("aguibert/vertx-db2-ssl:1.0")
+      .asCompatibleSubstituteFor("ibmcom/db2");
 
     /**
      * In order for this container to be reused across test runs you need to add the line:
@@ -45,15 +49,14 @@ public class DB2Resource extends ExternalResource {
     private boolean started = false;
     private boolean isDb2OnZ = false;
     private DB2ConnectOptions options;
-    private final Db2Container instance = new Db2Container()
+
+    private final Db2Container instance = new Db2Container(db2Image)
             .acceptLicense()
             .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()))
             .withUsername("vertx")
             .withPassword("vertx")
             .withDatabaseName("vertx")
             .withExposedPorts(50000, 50001)
-            .withFileSystemBind("src/test/resources/tls/server/", "/certs/")
-            .withFileSystemBind("src/test/resources/tls/db2_tls_setup.sh", "/var/custom/db2_tls_setup.sh")
             .waitingFor(new LogMessageWaitStrategy()
                 .withRegEx(".*VERTX SSH SETUP DONE.*")
                 .withStartupTimeout(Duration.ofMinutes(10)))

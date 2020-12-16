@@ -59,7 +59,7 @@
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
     <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
     <source.skip>true</source.skip>
-    <testcontainers.version>1.12.4</testcontainers.version>
+    <testcontainers.version>1.15.1</testcontainers.version>
   </properties>
 
   <dependencyManagement>
