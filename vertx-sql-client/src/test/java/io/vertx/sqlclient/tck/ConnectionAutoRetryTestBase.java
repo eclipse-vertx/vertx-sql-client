@@ -59,7 +59,7 @@ public abstract class ConnectionAutoRetryTestBase {
     options.setReconnectAttempts(3);
     options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(0);
-    unstableProxyServer.initialize(options.getPort(), ctx.asyncAssertSuccess(v -> {
+    unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
       connectionConnector.connect(ctx.asyncAssertSuccess(conn -> {
         conn.close();
@@ -73,7 +73,7 @@ public abstract class ConnectionAutoRetryTestBase {
     options.setReconnectAttempts(3);
     options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(0);
-    unstableProxyServer.initialize(options.getPort(), ctx.asyncAssertSuccess(v -> {
+    unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
       poolConnector.connect(ctx.asyncAssertSuccess(conn -> {
         conn.close();
@@ -86,7 +86,7 @@ public abstract class ConnectionAutoRetryTestBase {
     options.setReconnectAttempts(1);
     options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(2);
-    unstableProxyServer.initialize(options.getPort(), ctx.asyncAssertSuccess(v -> {
+    unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
       connectionConnector.connect(ctx.asyncAssertFailure(throwable -> {
       }));
@@ -98,7 +98,7 @@ public abstract class ConnectionAutoRetryTestBase {
     options.setReconnectAttempts(1);
     options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(2);
-    unstableProxyServer.initialize(options.getPort(), ctx.asyncAssertSuccess(v -> {
+    unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
       poolConnector.connect(ctx.asyncAssertFailure(throwable -> {
       }));
@@ -110,7 +110,7 @@ public abstract class ConnectionAutoRetryTestBase {
     options.setReconnectAttempts(1);
     options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(1);
-    unstableProxyServer.initialize(options.getPort(), ctx.asyncAssertSuccess(v -> {
+    unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
       connectionConnector.connect(ctx.asyncAssertSuccess(connection -> {
         connection.close();
@@ -123,7 +123,7 @@ public abstract class ConnectionAutoRetryTestBase {
     options.setReconnectAttempts(1);
     options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(1);
-    unstableProxyServer.initialize(options.getPort(), ctx.asyncAssertSuccess(v -> {
+    unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
       poolConnector.connect(ctx.asyncAssertSuccess(conn -> {
         conn.close();
@@ -149,7 +149,7 @@ public abstract class ConnectionAutoRetryTestBase {
       this.counter = new AtomicInteger(retryTimes);
     }
 
-    public void initialize(int targetPort, Handler<AsyncResult<Void>> resultHandler) {
+    public void initialize(SqlConnectOptions targetOptions, Handler<AsyncResult<Void>> resultHandler) {
       this.netClient = vertx.createNetClient();
       this.netServer = vertx.createNetServer()
         .connectHandler(frontendSocket -> {
@@ -171,7 +171,7 @@ public abstract class ConnectionAutoRetryTestBase {
             frontendSocket.close();
           } else {
             // pipe the stream to the database otherwise
-            netClient.connect(targetPort, "localhost")
+            netClient.connect(targetOptions.getPort(), targetOptions.getHost())
               .onSuccess(backendSocket -> {
                 LOGGER.info("Proxy: backend socket connected");
                 frontendSocketToBackendSocket.put(frontendSocket, backendSocket);
