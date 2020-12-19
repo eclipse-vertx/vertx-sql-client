@@ -36,21 +36,21 @@ public interface MySQLPool extends Pool {
   }
 
   /**
-   * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
    */
   static MySQLPool pool(String connectionUri, PoolOptions poolOptions) {
     return pool(fromUri(connectionUri), poolOptions);
   }
 
   /**
-   * Like {@link #pool(Vertx, String,PoolOptions)} with a default {@code poolOptions}..
+   * Like {@link #pool(Vertx, String, PoolOptions)} with a default {@code poolOptions}..
    */
   static MySQLPool pool(Vertx vertx, String connectionUri) {
     return pool(vertx, fromUri(connectionUri), new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(Vertx, MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   * Like {@link #pool(Vertx, MySQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
    */
   static MySQLPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
     return pool(vertx, fromUri(connectionUri), poolOptions);
