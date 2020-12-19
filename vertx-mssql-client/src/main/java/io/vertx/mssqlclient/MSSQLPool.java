@@ -18,11 +18,42 @@ import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.sqlclient.*;
 
+import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
+
 /**
  * A {@link Pool pool} of {@link MSSQLConnection SQL Server connections}.
  */
 @VertxGen
 public interface MSSQLPool extends Pool {
+
+  /**
+   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
+   */
+  static MSSQLPool pool(String connectionUri) {
+    return pool(connectionUri, new PoolOptions());
+  }
+
+  /**
+   * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
+   */
+  static MSSQLPool pool(String connectionUri, PoolOptions poolOptions) {
+    return pool(fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Like {@link #pool(Vertx, String, PoolOptions)} with a default {@code poolOptions}..
+   */
+  static MSSQLPool pool(Vertx vertx, String connectionUri) {
+    return pool(vertx, fromUri(connectionUri), new PoolOptions());
+  }
+
+  /**
+   * Like {@link #pool(Vertx, MSSQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
+   */
+  static MSSQLPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
+    return pool(vertx, fromUri(connectionUri), poolOptions);
+  }
+
   /**
    * Create a connection pool to the SQL server configured with the given {@code connectOptions} and {@code poolOptions}.
    *

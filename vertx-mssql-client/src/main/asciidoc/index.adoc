@@ -103,6 +103,25 @@ You can configure the client to retry when a connection fails to be established.
 {@link examples.MSSQLClientExamples#reconnectAttempts}
 ----
 
+=== connection URI
+
+Apart from configuring with a `MSSQLConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#configureFromUri(io.vertx.core.Vertx)}
+----
+
+The connection URI format is defined by the client in an idiomatic way: `sqlserver://[user[:[password]]@]host[:port][/schema][?attribute1=value1&attribute2=value2...`
+
+Currently, the client supports the following parameter keywords in connection uri (keys are case-insensitive):
+
+* host
+* port
+* user
+* password
+* database
+
 == Tracing queries
 
 include::tracing.adoc[]

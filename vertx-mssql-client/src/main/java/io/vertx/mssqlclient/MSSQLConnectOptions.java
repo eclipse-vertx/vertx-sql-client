@@ -25,6 +25,7 @@ import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.SSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
 import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.HashMap;
@@ -37,6 +38,19 @@ import java.util.concurrent.TimeUnit;
  */
 @DataObject(generateConverter = true)
 public class MSSQLConnectOptions extends SqlConnectOptions {
+
+  /**
+   * Provide a {@link MSSQLConnectOptions} configured from a connection URI.
+   *
+   * @param connectionUri the connection URI to configure from
+   * @return a {@link MSSQLConnectOptions} parsed from the connection URI
+   * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
+   */
+  public static MSSQLConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
+    JsonObject parsedConfiguration = MSSQLConnectionUriParser.parse(connectionUri);
+    return new MSSQLConnectOptions(parsedConfiguration);
+  }
+
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 1433;
   public static final String DEFAULT_USER = "sa";
