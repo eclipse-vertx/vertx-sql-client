@@ -131,7 +131,7 @@ public class MSSQLConnectionUriParserTest {
   }
 
   @Test
-  public void testParsingSchemaName() {
+  public void testParsingDatabaseName() {
     uri = "sqlserver://localhost/mydb";
     actualParsedResult = parse(uri);
 
@@ -181,7 +181,7 @@ public class MSSQLConnectionUriParserTest {
   }
 
   @Test
-  public void testParsingEncodedSchema() {
+  public void testParsingEncodedDatabase() {
     uri = "sqlserver://user_name@198.51.100.2:3306/world%5Fx";
     actualParsedResult = parse(uri);
 
@@ -243,7 +243,7 @@ public class MSSQLConnectionUriParserTest {
   }
 
   @Test
-  public void testParsingSchemaContainExclamationMark(){
+  public void testParsingDatabaseContainExclamationMark(){
     uri = "sqlserver://username:dddd@127.0.0.1:3306/!dbname";
     actualParsedResult = parse(uri);
   }

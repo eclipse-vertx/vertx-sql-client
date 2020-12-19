@@ -25,14 +25,14 @@ import static java.lang.String.format;
 
 /**
  * This is a parser for parsing connection URIs of SQL Server.
- * The format is defined by the client in an idiomatic way: sqlserver://[user[:[password]]@]host[:port][/schema][?attribute1=value1&attribute2=value2...
+ * The format is defined by the client in an idiomatic way: sqlserver://[user[:[password]]@]host[:port][/database][?attribute1=value1&attribute2=value2...
  */
 public class MSSQLConnectionUriParser {
   private static final String SCHEME_DESIGNATOR_REGEX = "(sqlserver)://"; // URI scheme designator
   private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // user name and password
   private static final String NET_LOCATION_REGEX = "(?<netloc>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)?"; // ip v4/v6 address, host, domain socket address
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
-  private static final String SCHEMA_REGEX = "(/(?<schema>[a-zA-Z0-9\\-._~%!]+))?"; // schema name
+  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!]+))?"; // database name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
   private static final String FULL_URI_REGEX = "^" // regex start
@@ -40,7 +40,7 @@ public class MSSQLConnectionUriParser {
     + USER_INFO_REGEX
     + NET_LOCATION_REGEX
     + PORT_REGEX
-    + SCHEMA_REGEX
+    + DATABASE_REGEX
     + ATTRIBUTES_REGEX
     + "$"; // regex end
 
@@ -70,8 +70,8 @@ public class MSSQLConnectionUriParser {
       // parse the port
       parsePort(matcher.group("port"), configuration);
 
-      // parse the schema name
-      parseSchemaName(matcher.group("schema"), configuration);
+      // parse the database name
+      parseDatabaseName(matcher.group("database"), configuration);
 
       // parse the attributes
       parseAttributes(matcher.group("attributes"), configuration);
@@ -124,11 +124,11 @@ public class MSSQLConnectionUriParser {
     configuration.put("port", port);
   }
 
-  private static void parseSchemaName(String schemaInfo, JsonObject configuration) {
-    if (schemaInfo == null || schemaInfo.isEmpty()) {
+  private static void parseDatabaseName(String databaseInfo, JsonObject configuration) {
+    if (databaseInfo == null || databaseInfo.isEmpty()) {
       return;
     }
-    configuration.put("database", decodeUrl(schemaInfo));
+    configuration.put("database", decodeUrl(databaseInfo));
   }
 
   private static void parseAttributes(String attributesInfo, JsonObject configuration) {

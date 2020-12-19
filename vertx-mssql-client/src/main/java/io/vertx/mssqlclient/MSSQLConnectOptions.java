@@ -55,7 +55,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   public static final int DEFAULT_PORT = 1433;
   public static final String DEFAULT_USER = "sa";
   public static final String DEFAULT_PASSWORD = "";
-  public static final String DEFAULT_SCHEMA = "";
+  public static final String DEFAULT_DATABASE = "";
   public static final String DEFAULT_APP_NAME = "vertx-mssql-client";
   public static final String DEFAULT_CLIENT_INTERFACE_NAME = "Vert.x";
   public static final Map<String, String> DEFAULT_PROPERTIES;
@@ -342,7 +342,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     this.setPort(DEFAULT_PORT);
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
-    this.setDatabase(DEFAULT_SCHEMA);
+    this.setDatabase(DEFAULT_DATABASE);
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
   }
 
