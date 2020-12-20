@@ -99,6 +99,6 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
     int packetLen = packet.writerIndex() - packetLenIdx + 2;
     packet.setShort(packetLenIdx, packetLen);
 
-    chctx.writeAndFlush(packet);
+    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 }

@@ -137,7 +137,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     if (out != null) {
       ByteBuf buff = out;
       out = null;
-      ctx.writeAndFlush(buff);
+      ctx.writeAndFlush(buff, ctx.voidPromise());
     } else {
       ctx.flush();
     }

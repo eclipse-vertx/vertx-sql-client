@@ -61,6 +61,6 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   void sendNonSplitPacket(ByteBuf packet) {
-    encoder.chctx.writeAndFlush(packet);
+    encoder.chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 }
