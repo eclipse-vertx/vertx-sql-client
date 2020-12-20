@@ -218,7 +218,7 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     int packetLen = packet.writerIndex() - startIdx + 8;
     packet.setShort(packetLenIdx, packetLen);
 
-    chctx.writeAndFlush(packet);
+    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
 
   }
 

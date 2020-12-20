@@ -153,7 +153,7 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     int packetLen = packet.writerIndex() - packetLenIdx + 2;
     packet.setShort(packetLenIdx, packetLen);
 
-    chctx.writeAndFlush(packet);
+    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 
   private String parseParamDefinitions(Tuple params) {

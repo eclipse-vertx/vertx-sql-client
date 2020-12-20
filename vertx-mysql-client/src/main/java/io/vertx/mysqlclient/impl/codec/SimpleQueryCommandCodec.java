@@ -123,7 +123,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     ByteBuf packetHeader = allocateBuffer(4);
     packetHeader.writeMediumLE(length);
     packetHeader.writeByte(sequenceId++);
-    encoder.chctx.write(packetHeader);
+    encoder.chctx.write(packetHeader, encoder.chctx.voidPromise());
     return encoder.socketConnection.socket().sendFile(filename, offset, length);
   }
 

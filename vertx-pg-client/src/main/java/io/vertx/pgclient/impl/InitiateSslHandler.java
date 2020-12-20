@@ -47,7 +47,7 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
     byteBuf.writeInt(code);
 //    out.writeInt(0x12345679);
     byteBuf.setInt(0, byteBuf.writerIndex());
-    ctx.writeAndFlush(byteBuf);
+    ctx.writeAndFlush(byteBuf, ctx.voidPromise());
     super.channelActive(ctx);
   }
 

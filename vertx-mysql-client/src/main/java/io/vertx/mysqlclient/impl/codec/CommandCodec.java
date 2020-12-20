@@ -78,21 +78,21 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
       ByteBuf packetHeader = allocateBuffer(4);
       packetHeader.writeMediumLE(PACKET_PAYLOAD_LENGTH_LIMIT);
       packetHeader.writeByte(sequenceId++);
-      encoder.chctx.write(packetHeader);
-      encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT));
+      encoder.chctx.write(packetHeader, encoder.chctx.voidPromise());
+      encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT), encoder.chctx.voidPromise());
     }
 
     // send a packet with last part of the payload
     ByteBuf packetHeader = allocateBuffer(4);
     packetHeader.writeMediumLE(payload.readableBytes());
     packetHeader.writeByte(sequenceId++);
-    encoder.chctx.write(packetHeader);
-    encoder.chctx.writeAndFlush(payload);
+    encoder.chctx.write(packetHeader, encoder.chctx.voidPromise());
+    encoder.chctx.writeAndFlush(payload, encoder.chctx.voidPromise());
   }
 
   void sendNonSplitPacket(ByteBuf packet) {
     sequenceId++;
-    encoder.chctx.writeAndFlush(packet);
+    encoder.chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 
   final void sendBytesAsPacket(byte[] payload) {
