@@ -52,8 +52,9 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                                boolean cachePreparedStatements,
                                int preparedStatementCacheSize,
                                Predicate<String> preparedStatementCacheSqlFilter,
+                               int pipeliningLimit,
                                EventLoopContext context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, 1, context);
+    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
   void sendStartupMessage(String username,
