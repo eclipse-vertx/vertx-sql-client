@@ -16,6 +16,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
@@ -90,5 +91,50 @@ public class MySQLPoolTest extends MySQLTestBase {
     } finally {
       pool.close();
     }
+  }
+
+  @Test
+  public void testBorrowedPooledConnectionClosedByServer(TestContext ctx) {
+    Async async = ctx.async();
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(1);
+    MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SET SESSION wait_timeout=3;").execute(ctx.asyncAssertSuccess(wait -> {
+        vertx.setTimer(5000, id -> {
+          conn.query("SELECT 'vertx'").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertEquals("Connection is not active now, current status: CLOSED", err.getMessage());
+            conn.close(); // close should have no effect here
+            pool.query("SELECT 'mysql'").execute(ctx.asyncAssertSuccess(res -> {
+              // the pool will construct a new connection and use it
+              ctx.assertEquals(1, res.size());
+              Row row = res.iterator().next();
+              ctx.assertEquals("mysql", row.getString(0));
+              async.complete();
+            }));
+          }));
+        });
+      }));
+    }));
+  }
+
+  @Test
+  public void testPooledConnectionClosedByServer(TestContext ctx) {
+    Async async = ctx.async();
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(1);
+    MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SET SESSION wait_timeout=3;").execute(ctx.asyncAssertSuccess(wait -> {
+        conn.close(); // return it back to the pool
+        vertx.setTimer(5000, id -> {
+          // the query should succeed using a new connection
+          pool.query("SELECT 'vertx'").execute(ctx.asyncAssertSuccess(res -> {
+            ctx.assertEquals(1, res.size());
+            Row row = res.iterator().next();
+            ctx.assertEquals("vertx", row.getString(0));
+            async.complete();
+          }));
+        });
+      }));
+    }));
   }
 }
