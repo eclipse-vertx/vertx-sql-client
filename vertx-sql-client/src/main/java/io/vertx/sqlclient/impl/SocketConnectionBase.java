@@ -159,7 +159,7 @@ public abstract class SocketConnectionBase implements Connection {
       pending.add(cmd);
       checkPending();
     } else {
-      cmd.fail(new VertxException("Connection not open " + status));
+      cmd.fail(new NoStackTraceThrowable("Connection is not active now, current status: " + status));
     }
   }
 

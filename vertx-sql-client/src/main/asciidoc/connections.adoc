@@ -3,7 +3,7 @@
 === Getting a connection
 
 When you need to execute sequential queries (without a transaction), you can create a new connection
-or borrow one from the pool:
+or borrow one from the pool. Remember that between acquiring the connection from the pool and returning it to the pool, you should take care of the connection because it might be closed by the server for some reason such as an idle time out.
 
 [source,$lang]
 ----
