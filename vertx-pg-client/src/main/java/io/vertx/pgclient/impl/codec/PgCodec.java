@@ -31,7 +31,7 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
 
   public PgCodec() {
     PgDecoder decoder = new PgDecoder(inflight);
-    PgEncoder encoder = new PgEncoder(decoder, inflight);
+    PgEncoder encoder = new PgEncoder(inflight);
     init(decoder, encoder);
   }
 
