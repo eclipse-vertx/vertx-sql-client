@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,14 +11,15 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.netty.buffer.ByteBuf;
+import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ class MSSQLDataTypeCodec {
     parameterDefinitionsMapping.put(String.class, "nvarchar(4000)");
     parameterDefinitionsMapping.put(LocalDate.class, "date");
     parameterDefinitionsMapping.put(LocalTime.class, "time");
+    parameterDefinitionsMapping.put(LocalDateTime.class, "datetime2");
   }
 
   static String inferenceParamDefinitionByValueType(Object value) {
@@ -88,6 +90,8 @@ class MSSQLDataTypeCodec {
         return decodeDateN(in);
       case MSSQLDataTypeId.TIMENTYPE_ID:
         return decodeTimeN((TimeNDataType) dataType, in);
+      case MSSQLDataTypeId.DATETIME2NTYPE_ID:
+        return decodeDateTime2N((DateTime2NDataType) dataType, in);
       case MSSQLDataTypeId.BIGVARCHRTYPE_ID:
       case MSSQLDataTypeId.BIGCHARTYPE_ID:
         return decodeVarchar(in);
@@ -118,6 +122,10 @@ class MSSQLDataTypeCodec {
       default:
         throw new IllegalStateException("Unexpected timeLength of [" + timeLength + "]");
     }
+    return getLocalTime(scale, timeValue);
+  }
+
+  private static LocalTime getLocalTime(int scale, long timeValue) {
     for (int i = 0; i < 7 - scale; i++) {
       timeValue *= 10;
     }
@@ -125,6 +133,33 @@ class MSSQLDataTypeCodec {
     long secondsValue = timeValue / 100000000;
     long nanosValue = timeValue % 100000000;
     return LocalTime.ofSecondOfDay(secondsValue).plusNanos(nanosValue);
+  }
+
+  private static LocalDateTime decodeDateTime2N(DateTime2NDataType dataType, ByteBuf in) {
+    int scale = dataType.scale();
+    byte timeLength = in.readByte();
+    long timeValue;
+    switch (timeLength) {
+      case 0:
+        return null;
+      case 3 + 3:
+        timeValue = in.readUnsignedMediumLE();
+        break;
+      case 4 + 3:
+        timeValue = in.readUnsignedIntLE();
+        break;
+      case 5 + 3:
+        timeValue = readUnsignedInt40LE(in);
+        break;
+      default:
+        throw new IllegalStateException("Unexpected timeLength of [" + timeLength + "]");
+    }
+    LocalTime localTime = getLocalTime(scale, timeValue);
+
+    int days = in.readUnsignedMediumLE();
+    LocalDate localDate = getLocalDate(days);
+
+    return LocalDateTime.of(localDate, localTime);
   }
 
   private static CharSequence decodeNVarchar(ByteBuf in) {
@@ -151,10 +186,14 @@ class MSSQLDataTypeCodec {
       return null;
     } else if (dateLength == 3) {
       int days = in.readUnsignedMediumLE();
-      return START_DATE.plus(days, ChronoUnit.DAYS);
+      return getLocalDate(days);
     } else {
       throw new IllegalStateException("Unexpected dateLength of [" + dateLength + "]");
     }
+  }
+
+  private static LocalDate getLocalDate(int days) {
+    return START_DATE.plus(days, ChronoUnit.DAYS);
   }
 
   private static boolean decodeBit(ByteBuf in) {

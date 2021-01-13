@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -25,6 +25,7 @@ import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 
@@ -207,6 +208,8 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
       encodeDateNParameter(payload, (LocalDate) value);
     } else if (value instanceof LocalTime) {
       encodeTimeNParameter(payload, (LocalTime) value, (byte) 6);
+    } else if (value instanceof LocalDateTime) {
+      encodeDateTimeNParameter(payload, (LocalDateTime) value, (byte) 6);
     } else if (value instanceof Numeric) {
       encodeNumericParameter(payload, (Numeric) value);
     } else {
@@ -307,6 +310,35 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
       int seconds = time.toSecondOfDay();
       long value = (long) ((long) seconds * Math.pow(10, scale) + nanos);
       encodeInt40(payload, value);
+    }
+  }
+
+  private void encodeDateTimeNParameter(ByteBuf payload, LocalDateTime dateTime, byte scale) {
+    payload.writeByte(0x00);
+    payload.writeByte(0x00);
+    payload.writeByte(MSSQLDataTypeId.DATETIME2NTYPE_ID);
+
+    payload.writeByte(scale); //FIXME scale?
+    if (dateTime == null) {
+      payload.writeByte(0);
+    } else {
+      int length;
+      if (scale <= 2) {
+        length = 3;
+      } else if (scale <= 4) {
+        length = 4;
+      } else {
+        length = 5;
+      }
+      length += 3;
+      payload.writeByte(length);
+      LocalTime localTime = dateTime.toLocalTime();
+      long nanos = localTime.getNano();
+      int seconds = localTime.toSecondOfDay();
+      long value = (long) ((long) seconds * Math.pow(10, scale) + nanos);
+      encodeInt40(payload, value);
+      long days = ChronoUnit.DAYS.between(MSSQLDataTypeCodec.START_DATE, dateTime.toLocalDate());
+      payload.writeMediumLE((int) days);
     }
   }
 

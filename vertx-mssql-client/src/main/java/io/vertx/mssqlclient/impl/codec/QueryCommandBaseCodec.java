@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -88,6 +88,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
 
   private MSSQLDataType decodeDataTypeMetadata(ByteBuf payload) {
     int typeInfo = payload.readUnsignedByte();
+    byte scale;
     switch (typeInfo) {
       /*
        * FixedLen DataType
@@ -113,8 +114,8 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       case DECIMALNTYPE_ID:
         short numericTypeSize = payload.readUnsignedByte();
         byte numericPrecision = payload.readByte();
-        byte numericScale = payload.readByte();
-        return new NumericDataType(NUMERICNTYPE_ID, Numeric.class, numericPrecision, numericScale);
+        scale = payload.readByte();
+        return new NumericDataType(NUMERICNTYPE_ID, Numeric.class, numericPrecision, scale);
       case INTNTYPE_ID:
         byte intNTypeLength = payload.readByte();
         return IntNDataType.valueOf(intNTypeLength);
@@ -127,8 +128,11 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       case DATENTYPE_ID:
         return FixedLenDataType.DATENTYPE;
       case TIMENTYPE_ID:
-        byte scale = payload.readByte();
+        scale = payload.readByte();
         return new TimeNDataType(scale);
+      case DATETIME2NTYPE_ID:
+        scale = payload.readByte();
+        return new DateTime2NDataType(scale);
       case BIGCHARTYPE_ID:
       case BIGVARCHRTYPE_ID:
       case NCHARTYPE_ID:

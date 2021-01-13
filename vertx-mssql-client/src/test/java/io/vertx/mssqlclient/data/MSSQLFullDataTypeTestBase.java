@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.mssqlclient.data;
 
 import io.vertx.ext.unit.TestContext;
@@ -9,6 +20,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.function.Consumer;
 
@@ -30,6 +42,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase{
       ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
       ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue("test_date"));
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
+      ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2), row.getValue("test_datetime2"));
     });
   }
 
@@ -140,6 +153,19 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase{
         .returns(Tuple::getValue, Row::getValue, LocalTime.of(18, 45, 2))
         .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 2))
         .returns(LocalTime.class, LocalTime.of(18, 45, 2))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeDateTime(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_datetime2", row -> {
+      ColumnChecker.checkColumn(0, "test_datetime2")
+        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
+        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(2019, 1, 1))
+        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 2))
+        .returns(LocalDateTime.class, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
         .forRow(row);
     });
   }
