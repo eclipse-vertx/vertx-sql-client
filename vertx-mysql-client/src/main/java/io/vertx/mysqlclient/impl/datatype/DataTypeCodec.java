@@ -695,6 +695,10 @@ public class DataTypeCodec {
   private static LocalDate textDecodeDate(int collationId, ByteBuf buffer, int index, int length) {
     Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     CharSequence cs = buffer.toString(index, length, charset);
+    if (cs.equals("0000-00-00")) {
+      // Invalid datetime will be converted to zero
+      return null;
+    }
     return LocalDate.parse(cs);
   }
 
