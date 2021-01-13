@@ -90,6 +90,16 @@ public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
   }
 
   @Test
+  public void testDecodeDateEmpty(TestContext ctx) {
+      testDecodeGeneric(ctx, "0000-00-00", "DATE", "test_date", null);
+  }
+  
+  @Test
+  public void testDecodeDateTimeEmpty(TestContext ctx) {
+      testDecodeGeneric(ctx, "0000-00-00 00:00:00", "DATETIME", "test_datetime", null);
+  }
+  
+  @Test
   public void testDecodeDatetime(TestContext ctx) {
     testDecodeGeneric(ctx, "2000-01-01 10:20:30", "DATETIME", "test_datetime", LocalDateTime.of(2000, 1, 1, 10, 20, 30));
   }
