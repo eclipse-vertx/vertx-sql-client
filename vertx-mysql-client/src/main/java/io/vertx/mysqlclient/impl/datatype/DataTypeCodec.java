@@ -592,7 +592,11 @@ public class DataTypeCodec {
   }
 
   private static LocalDate binaryDecodeDate(ByteBuf buffer) {
-    return binaryDecodeDatetime(buffer).toLocalDate();
+    LocalDateTime localDateTime = binaryDecodeDatetime(buffer);
+    if (localDateTime != null) {
+        return localDateTime.toLocalDate();
+    }
+    return null;
   }
 
   private static Duration binaryDecodeTime(ByteBuf buffer) {
