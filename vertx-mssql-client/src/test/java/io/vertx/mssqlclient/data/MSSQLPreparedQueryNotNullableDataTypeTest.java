@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.mssqlclient.data;
 
 import io.vertx.ext.unit.TestContext;
@@ -12,6 +23,7 @@ import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.function.Consumer;
 
@@ -110,6 +122,19 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
         .returns(Tuple::getValue, Row::getValue, LocalTime.of(23, 10, 45))
         .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(23, 10, 45))
         .returns(LocalTime.class, LocalTime.of(23, 10, 45))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeDateTime(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime2", LocalDateTime.of(1999, 12, 31, 23, 10, 45), row -> {
+      ColumnChecker.checkColumn(0, "test_datetime2")
+        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
+        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(1999, 12, 31))
+        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(23, 10, 45))
+        .returns(LocalDateTime.class, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
         .forRow(row);
     });
   }

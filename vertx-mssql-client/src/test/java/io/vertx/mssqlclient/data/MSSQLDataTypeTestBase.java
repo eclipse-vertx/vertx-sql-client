@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -27,7 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static io.vertx.sqlclient.ColumnChecker.*;
+import static io.vertx.sqlclient.ColumnChecker.getByIndex;
+import static io.vertx.sqlclient.ColumnChecker.getByName;
 
 public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
   Vertx vertx;
@@ -48,6 +49,7 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
       tupleMethods.add(Tuple::getBoolean);
       tupleMethods.add(Tuple::getLocalDate);
       tupleMethods.add(Tuple::getLocalTime);
+      tupleMethods.add(Tuple::getLocalDateTime);
 
       tupleMethods.add(getByIndex(Numeric.class));
       return tupleMethods;
@@ -65,7 +67,7 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
       rowMethods.add(Row::getBoolean);
       rowMethods.add(Row::getLocalDate);
       rowMethods.add(Row::getLocalTime);
-
+      rowMethods.add(Row::getLocalDateTime);
 
       rowMethods.add(getByName(Numeric.class));
 

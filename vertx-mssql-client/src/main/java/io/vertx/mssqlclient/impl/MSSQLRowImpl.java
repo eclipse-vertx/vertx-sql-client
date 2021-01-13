@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -68,7 +68,9 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getLocalDate(position));
     } else if (type == LocalTime.class) {
       return type.cast(getLocalTime(position));
-    }else if (type == Object.class) {
+    } else if (type == LocalDateTime.class) {
+      return type.cast(getLocalDateTime(position));
+    } else if (type == Object.class) {
       return type.cast(getValue(position));
     } else if (type.isEnum()) {
       return type.cast(getEnum(type, position));
@@ -84,11 +86,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
 
   @Override
   public Temporal getTemporal(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalDateTime getLocalDateTime(int pos) {
     throw new UnsupportedOperationException();
   }
 

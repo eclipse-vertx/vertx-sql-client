@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,11 +14,11 @@ package io.vertx.mssqlclient.data;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.function.Consumer;
 
@@ -34,6 +34,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   protected static final String STRING_NULL_VALUE = null;
   protected static final LocalDate LOCALDATE_NULL_VALUE = null;
   protected static final LocalTime LOCALTIME_NULL_VALUE = null;
+  protected static final LocalDateTime LOCALDATETIME_NULL_VALUE = null;
 
   @Test
   public void testDecodeNullAllColumns(TestContext ctx) {
@@ -51,6 +52,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
       ctx.assertEquals(null, row.getValue("test_varchar"));
       ctx.assertEquals(null, row.getValue("test_date"));
       ctx.assertEquals(null, row.getValue("test_time"));
+      ctx.assertEquals(null, row.getValue("test_datetime2"));
     });
   }
 
@@ -167,6 +169,15 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullTime(TestContext ctx) {
     testDecodeNullValue(ctx, "test_time", row -> {
       ColumnChecker.checkColumn(0, "test_time")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullDateTime(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_datetime2", row -> {
+      ColumnChecker.checkColumn(0, "test_datetime2")
         .returnsNull()
         .forRow(row);
     });
