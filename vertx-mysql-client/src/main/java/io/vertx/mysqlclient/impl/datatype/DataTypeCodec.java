@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -592,7 +592,11 @@ public class DataTypeCodec {
   }
 
   private static LocalDate binaryDecodeDate(ByteBuf buffer) {
-    return binaryDecodeDatetime(buffer).toLocalDate();
+    LocalDateTime localDateTime = binaryDecodeDatetime(buffer);
+    if (localDateTime != null) {
+        return localDateTime.toLocalDate();
+    }
+    return null;
   }
 
   private static Duration binaryDecodeTime(ByteBuf buffer) {
@@ -695,6 +699,10 @@ public class DataTypeCodec {
   private static LocalDate textDecodeDate(int collationId, ByteBuf buffer, int index, int length) {
     Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     CharSequence cs = buffer.toString(index, length, charset);
+    if (cs.equals("0000-00-00")) {
+      // Invalid date will be converted to zero
+      return null;
+    }
     return LocalDate.parse(cs);
   }
 
