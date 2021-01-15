@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -108,6 +108,16 @@ public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
   @Test
   public void testDecodeInvalidDatetime(TestContext ctx) {
     testDecodeGeneric(ctx, "2000-00-34 25:20:30", "DATETIME", "test_datetime", null);
+  }
+
+  @Test
+  public void testDecodeDateEmpty(TestContext ctx) {
+      testDecodeGeneric(ctx, "0000-00-00", "DATE", "test_date", null);
+  }
+
+  @Test
+  public void testDecodeDateTimeEmpty(TestContext ctx) {
+      testDecodeGeneric(ctx, "0000-00-00 00:00:00", "DATETIME", "test_datetime", null);
   }
 
   protected abstract <T> void testDecodeGeneric(TestContext ctx, String data, String dataType, String columnName, T expected);
