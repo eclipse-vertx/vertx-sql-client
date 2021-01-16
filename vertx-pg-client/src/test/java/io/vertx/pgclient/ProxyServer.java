@@ -44,6 +44,8 @@ class ProxyServer {
     private final NetSocket serverSocket;
     private Handler<Buffer> clientHandler;
     private Handler<Buffer> serverHandler;
+    private Handler<Void> clientCloseHandler;
+    private Handler<Void> serverCloseHandler;
 
     public Connection(NetSocket clientSo, NetSocket serverSo) {
       this.clientSocket = clientSo;
@@ -73,10 +75,30 @@ class ProxyServer {
     void connect() {
       clientSocket.handler(clientHandler);
       serverSocket.handler(serverHandler);
-      clientSocket.closeHandler(v -> serverSocket.close());
-      serverSocket.closeHandler(v -> clientSocket.close());
+      clientSocket.closeHandler(v -> {
+        serverSocket.close();
+        if (clientCloseHandler != null) {
+          clientCloseHandler.handle(null);
+        }
+      });
+      serverSocket.closeHandler(v -> {
+        clientSocket.close();
+        if (serverCloseHandler != null) {
+          serverCloseHandler.handle(null);
+        }
+      });
       serverSocket.resume();
       clientSocket.resume();
+    }
+
+    Connection clientCloseHandler(Handler<Void> handler) {
+      clientCloseHandler = handler;
+      return this;
+    }
+
+    Connection serverCloseHandler(Handler<Void> handler) {
+      serverCloseHandler = handler;
+      return this;
     }
 
     void close() {

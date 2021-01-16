@@ -181,7 +181,6 @@ public class MySQLPoolTest extends MySQLTestBase {
     int idle = 1000;
     int poolSize = 5;
 
-    options.setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
     PoolOptions poolOptions = new PoolOptions();
     poolOptions.setMaxSize(poolSize).setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
     pool = MySQLPool.pool(options, poolOptions);

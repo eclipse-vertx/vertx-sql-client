@@ -87,7 +87,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
-          SqlResult result = ar.result();
+          SqlResult<?> result = ar.result();
           ctx.assertEquals(10000, result.size());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());

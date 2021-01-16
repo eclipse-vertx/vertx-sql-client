@@ -72,15 +72,15 @@ If you are running with Vert.x you can pass it your Vertx instance:
 {@link examples.PgClientExamples#connecting02}
 ----
 
-You need to release the pool when you don't need it anymore:
+You need to release the client when you don't need it anymore:
 
 [source,$lang]
 ----
 {@link examples.PgClientExamples#connecting03}
 ----
 
-When you need to execute several operations on the same connection, you need to use a client
-{@link io.vertx.pgclient.PgConnection connection}.
+When you need to execute several operations on the same connection, you need to acquire a
+{@link io.vertx.pgclient.PgConnection connection} from a pool.
 
 You can easily get one from the pool:
 
@@ -91,13 +91,27 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Pool versus pooled client
+
+The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled client
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#poolVersusPooledClient}
+----
+
+- pool operations are not pipelined, only connection client are pipelined
+- pooled client operations are pipelined
+
+== Unix domain sockets
+
 Sometimes you want to improve performance via Unix domain socket connection, we achieve this with Vert.x Native transports.
 
 Make sure you have added the required `netty-transport-native` dependency in your classpath and enabled the Unix domain socket option.
 
 [source,$lang]
 ----
-{@link examples.PgClientExamples#connecting06}
+{@link examples.PgClientExamples#unixDomainSockets}
 ----
 
 More information can be found in the https://vertx.io/docs/vertx-core/java/#_native_transports[Vert.x documentation].

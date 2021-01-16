@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -67,14 +67,14 @@ public interface MSSQLPool extends Pool {
     }
     VertxOptions vertxOptions = new VertxOptions();
     Vertx vertx = Vertx.vertx(vertxOptions);
-    return MSSQLPoolImpl.create((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return MSSQLPoolImpl.create((VertxInternal) vertx, true, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MSSQLPool pool(Vertx vertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return MSSQLPoolImpl.create((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return MSSQLPoolImpl.create((VertxInternal) vertx, false, connectOptions, poolOptions);
   }
 
 }

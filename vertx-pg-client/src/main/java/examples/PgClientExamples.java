@@ -17,6 +17,7 @@
 
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
@@ -58,7 +59,7 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    PgPool client = PgPool.pool(connectOptions, poolOptions);
+    SqlClient client = PgPool.client(connectOptions, poolOptions);
 
     // A simple query
     client
@@ -147,7 +148,7 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(connectOptions, poolOptions);
+    SqlClient client = PgPool.client(connectOptions, poolOptions);
   }
 
   public void connecting02(Vertx vertx) {
@@ -165,13 +166,13 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
+    SqlClient client = PgPool.client(vertx, connectOptions, poolOptions);
   }
 
-  public void connecting03(PgPool pool) {
+  public void connecting03(PgPool client) {
 
-    // Close the pool and all the associated resources
-    pool.close();
+    // Close the pooled client and all the associated resources
+    client.close();
   }
 
   public void connecting04(Vertx vertx) {
@@ -189,10 +190,10 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
+    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
 
     // Get a connection from the pool
-    client.getConnection().compose(conn -> {
+    pool.getConnection().compose(conn -> {
       System.out.println("Got a connection from the pool");
 
       // All operations execute on the same connection
@@ -252,7 +253,22 @@ public class PgClientExamples {
     });
   }
 
-  public void connecting06(Vertx vertx) {
+  public void poolVersusPooledClient(Vertx vertx, String sql, PgConnectOptions connectOptions, PoolOptions poolOptions) {
+
+    // Pooled client
+    SqlClient pooledClient = PgPool.client(vertx, connectOptions, poolOptions);
+
+    // Pipelined
+    Future<RowSet<Row>> res1 = pooledClient.query(sql).execute();
+
+    // Connection pool
+    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+
+    // Not pipelined
+    Future<RowSet<Row>> res2 = pool.query(sql).execute();
+  }
+
+  public void unixDomainSockets(Vertx vertx) {
 
     // Connect Options
     // Socket file name will be /var/run/postgresql/.s.PGSQL.5432
