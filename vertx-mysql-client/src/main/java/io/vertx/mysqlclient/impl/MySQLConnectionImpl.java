@@ -25,7 +25,6 @@ import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
@@ -37,7 +36,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     }
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(ConnectionFactory.asEventLoopContext(ctx), options);
+      client = new MySQLConnectionFactory(ctx.owner(), options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }

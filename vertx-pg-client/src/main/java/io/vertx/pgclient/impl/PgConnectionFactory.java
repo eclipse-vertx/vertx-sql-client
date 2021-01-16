@@ -21,8 +21,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.TrustOptions;
@@ -42,7 +43,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
   private SslMode sslMode;
   private int pipeliningLimit;
 
-  PgConnectionFactory(EventLoopContext context, PgConnectOptions options) {
+  PgConnectionFactory(VertxInternal context, PgConnectOptions options) {
     super(context, options);
   }
 
@@ -75,7 +76,8 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
 
   @Override
   protected void doConnectInternal(Promise<Connection> promise) {
-    doConnect().flatMap(conn -> {
+    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
+    doConnect(ConnectionFactory.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
@@ -84,7 +86,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
   }
 
   public void cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
-    doConnect().onComplete(ar -> {
+    doConnect(vertx.createEventLoopContext()).onComplete(ar -> {
       if (ar.succeeded()) {
         PgSocketConnection conn = (PgSocketConnection) ar.result();
         conn.sendCancelRequestMessage(processId, secretKey, handler);
@@ -94,22 +96,22 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
     });
   }
 
-  private Future<Connection> doConnect() {
+  private Future<Connection> doConnect(EventLoopContext context) {
     Future<Connection> connFuture;
     switch (sslMode) {
       case DISABLE:
-        connFuture = doConnect(false);
+        connFuture = doConnect(context,false);
         break;
       case ALLOW:
-        connFuture = doConnect(false).recover(err -> doConnect(true));
+        connFuture = doConnect(context,false).recover(err -> doConnect(context,true));
         break;
       case PREFER:
-        connFuture = doConnect(true).recover(err -> doConnect(false));
+        connFuture = doConnect(context,true).recover(err -> doConnect(context,false));
         break;
       case REQUIRE:
       case VERIFY_CA:
       case VERIFY_FULL:
-        connFuture = doConnect(true);
+        connFuture = doConnect(context, true);
         break;
       default:
         return context.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
@@ -117,7 +119,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
     return connFuture;
   }
 
-  private Future<Connection> doConnect(boolean ssl) {
+  private Future<Connection> doConnect(EventLoopContext context, boolean ssl) {
     Future<NetSocket> soFut;
     try {
       soFut = netClient.connect(socketAddress, (String) null);
@@ -125,7 +127,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
       // Client is closed
       return context.failedFuture(e);
     }
-    Future<Connection> connFut = soFut.map(so -> newSocketConnection((NetSocketInternal) so));
+    Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so));
     if (ssl && !socketAddress.isDomainSocket()) {
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
@@ -142,7 +144,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
     return connFut;
   }
 
-  private PgSocketConnection newSocketConnection(NetSocketInternal socket) {
+  private PgSocketConnection newSocketConnection(EventLoopContext context, NetSocketInternal socket) {
     return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 }

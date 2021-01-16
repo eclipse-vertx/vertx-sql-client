@@ -36,7 +36,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     DB2ConnectionFactory client;
     try {
-      client = new DB2ConnectionFactory(ConnectionFactory.asEventLoopContext(ctx), options);
+      client = new DB2ConnectionFactory(ctx.owner(), options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
