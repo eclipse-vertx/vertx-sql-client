@@ -17,16 +17,21 @@
 
 package io.vertx.sqlclient.impl.pool;
 
-import io.vertx.core.*;
-import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.core.*;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Todo :
@@ -36,37 +41,35 @@ import java.util.*;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class ConnectionPool {
+public class SqlConnectionPool {
 
   private final ConnectionFactory connector;
-  private final EventLoopContext context;
+  private final ContextInternal context;
   private final int maxSize;
   private final ArrayDeque<Handler<AsyncResult<Connection>>> waiters = new ArrayDeque<>();
   private final Set<PooledConnection> all = new HashSet<>();
   private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
   private int size;
   private final int maxWaitQueueSize;
-  private long idleTimeout;
   private boolean checkInProgress;
   private boolean closed;
 
-  public ConnectionPool(ConnectionFactory connector, int maxSize) {
+  public SqlConnectionPool(ConnectionFactory connector, int maxSize) {
     this(connector, maxSize, PoolOptions.DEFAULT_MAX_WAIT_QUEUE_SIZE);
   }
 
-  public ConnectionPool(ConnectionFactory connector, int maxSize, int maxWaitQueueSize) {
-    this(connector, null, maxSize, maxWaitQueueSize, PoolOptions.DEFAULT_IDLE_TIMEOUT);
+  public SqlConnectionPool(ConnectionFactory connector, int maxSize, int maxWaitQueueSize) {
+    this(connector, null, maxSize, maxWaitQueueSize);
   }
 
-  public ConnectionPool(ConnectionFactory connector, EventLoopContext context, int maxSize, int maxWaitQueueSize, long idleTimeout) {
+  public SqlConnectionPool(ConnectionFactory connector, Context context, int maxSize, int maxWaitQueueSize) {
     Objects.requireNonNull(connector, "No null connector");
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
     this.maxSize = maxSize;
-    this.context = context;
+    this.context = (ContextInternal) context;
     this.maxWaitQueueSize = maxWaitQueueSize;
-    this.idleTimeout = idleTimeout;
     this.connector = connector;
   }
 
@@ -135,13 +138,9 @@ public class ConnectionPool {
 
     private final Connection conn;
     private Holder holder;
-    private long timerId;
 
     PooledConnection(Connection conn) {
       this.conn = conn;
-      if (context == null) {
-        idleTimeout = 0;
-      }
     }
 
     @Override
@@ -229,19 +228,6 @@ public class ConnectionPool {
       }
     }
 
-    public void idleStart() {
-      if (idleTimeout > 0) {
-        timerId = context.owner().setTimer(idleTimeout, v -> handleClosed());
-      }
-    }
-
-    public boolean idleStop() {
-      if (idleTimeout > 0) {
-        return context.owner().cancelTimer(timerId);
-      }
-      return true;
-    }
-
     @Override
     public int getProcessId() {
       return conn.getProcessId();
@@ -255,7 +241,6 @@ public class ConnectionPool {
 
   private void release(PooledConnection proxy) {
     if (all.contains(proxy)) {
-      proxy.idleStart();
       available.add(proxy);
       check();
     }
@@ -271,9 +256,6 @@ public class ConnectionPool {
         while (waiters.size() > 0) {
           if (available.size() > 0) {
             PooledConnection proxy = available.poll();
-            if (!proxy.idleStop()) {
-              continue;
-            }
             Handler<AsyncResult<Connection>> waiter = waiters.poll();
             waiter.handle(Future.succeededFuture(proxy));
           } else {
