@@ -154,8 +154,8 @@ public class SqlConnectionPool {
     }
 
     @Override
-    public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
-      conn.schedule(cmd, handler);
+    public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
+      return conn.schedule(context, cmd);
     }
 
     /**

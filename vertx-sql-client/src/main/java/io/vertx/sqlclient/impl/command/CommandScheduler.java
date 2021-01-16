@@ -16,11 +16,12 @@
  */
 package io.vertx.sqlclient.impl.command;
 
-import io.vertx.core.Promise;
+import io.vertx.core.Future;
+import io.vertx.core.impl.ContextInternal;
 
 @FunctionalInterface
 public interface CommandScheduler {
 
-  <R> void schedule(CommandBase<R> cmd, Promise<R> handler);
+  <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd);
 
 }

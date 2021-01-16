@@ -68,7 +68,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                           MySQLAuthenticationPlugin authenticationPlugin,
                           Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin);
-    schedule(cmd, completionHandler);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   @Override
