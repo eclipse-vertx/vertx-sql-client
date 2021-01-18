@@ -72,8 +72,18 @@ class MySQLDecoder extends ByteToMessageDecoder {
   }
 
   private void decodePacket(ByteBuf payload, int payloadLength, int sequenceId) {
+    checkFireAndForgetCommands();
     CommandCodec<?, ?> ctx = inflight.peek();
     ctx.sequenceId = sequenceId + 1;
     ctx.decodePayload(payload, payloadLength);
+    checkFireAndForgetCommands();
+  }
+
+  private void checkFireAndForgetCommands() {
+    // check if there is any completed command
+    CommandCodec<?, ?> commandCodec;
+    while ((commandCodec = inflight.peek()) != null && commandCodec.receiveNoResponsePacket()) {
+      commandCodec.decodePayload(null, 0);
+    }
   }
 }

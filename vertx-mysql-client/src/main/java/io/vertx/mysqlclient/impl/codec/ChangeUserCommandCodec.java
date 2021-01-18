@@ -48,7 +48,7 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
         handleAuthMoreData(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
         break;
       case OK_PACKET_HEADER:
-        completionHandler.handle(CommandResponse.success(null));
+        encoder.onCommandResponse(CommandResponse.success(null));
         break;
       case ERROR_PACKET_HEADER:
         handleErrorPacketPayload(payload);
@@ -74,7 +74,7 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
         authResponse = password;
         break;
       default:
-        completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
+        encoder.onCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
         return;
     }
     sendBytesAsPacket(authResponse);

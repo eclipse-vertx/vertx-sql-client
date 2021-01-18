@@ -37,7 +37,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
     if (params.isEmpty() && statement.paramDesc.paramDefinitions().length > 0) {
-      completionHandler.handle(CommandResponse.failure("Statement parameter is not set because of the empty batch param list"));
+      encoder.onCommandResponse(CommandResponse.failure("Statement parameter is not set because of the empty batch param list"));
       return;
     }
     doExecuteBatch();
@@ -61,7 +61,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       // binding parameters
       String bindMsg = statement.bindParameters(param);
       if (bindMsg != null) {
-        completionHandler.handle(CommandResponse.failure(bindMsg));
+        encoder.onCommandResponse(CommandResponse.failure(bindMsg));
         return;
       }
       sendBatchStatementExecuteCommand(statement, param);
