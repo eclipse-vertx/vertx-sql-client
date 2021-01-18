@@ -61,6 +61,12 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       } else {
         // CURSOR_TYPE_NO_CURSOR
         sendStatementExecuteCommand(statement, statement.sendTypesToServer(), params, CURSOR_TYPE_NO_CURSOR);
+
+        // Close managed prepare statement
+        MySQLPreparedStatement ps = (MySQLPreparedStatement) this.cmd.ps;
+        if (ps.closeAfterUsage) {
+          sendCloseStatementCommand(ps);
+        }
       }
     }
   }
