@@ -41,17 +41,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
     }
   }
 
-  @Override
-  protected void handleAllResultsetDecodingCompleted() {
-    // Close prepare statement
-    MySQLPreparedStatement ps = (MySQLPreparedStatement) this.cmd.ps;
-    if (ps.closeAfterUsage) {
-      sendCloseStatementCommand(ps);
-    }
-    super.handleAllResultsetDecodingCompleted();
-  }
-
-  private void sendCloseStatementCommand(MySQLPreparedStatement statement) {
+  protected final void sendCloseStatementCommand(MySQLPreparedStatement statement) {
     ByteBuf packet = allocateBuffer(9);
     // encode packet header
     packet.writeMediumLE(5);
