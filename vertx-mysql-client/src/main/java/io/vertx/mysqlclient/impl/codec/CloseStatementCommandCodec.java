@@ -28,13 +28,13 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
     super.encode(encoder);
     MySQLPreparedStatement statement = (MySQLPreparedStatement) cmd.statement();
     sendCloseStatementCommand(statement);
-
-    completionHandler.handle(CommandResponse.success(null));
   }
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
     // no statement response
+    // it will be called by the connection in order
+    encoder.onCommandResponse(CommandResponse.success(null));
   }
 
   private void sendCloseStatementCommand(MySQLPreparedStatement statement) {
@@ -48,5 +48,10 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
     packet.writeIntLE((int) statement.statementId);
 
     sendNonSplitPacket(packet);
+  }
+
+  @Override
+  boolean receiveNoResponsePacket() {
+    return true;
   }
 }

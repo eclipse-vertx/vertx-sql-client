@@ -17,7 +17,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.Handler;
 import io.vertx.mysqlclient.MySQLException;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.datatype.DataType;
@@ -33,7 +32,6 @@ import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
 
-  Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
   public R result;
   final C cmd;
@@ -113,7 +111,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     switch (header) {
       case EOF_PACKET_HEADER:
       case OK_PACKET_HEADER:
-        completionHandler.handle(CommandResponse.success(null));
+        encoder.onCommandResponse(CommandResponse.success(null));
         break;
       case ERROR_PACKET_HEADER:
         handleErrorPacketPayload(payload);
@@ -128,7 +126,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     payload.skipBytes(1); // SQL state marker will always be #
     String sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
     String errorMessage = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-    completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
+    encoder.onCommandResponse(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
   }
 
   // simplify the ok packet as those properties are actually not used for now
@@ -189,5 +187,9 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
 
   boolean isDeprecatingEofFlagEnabled() {
     return (encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_DEPRECATE_EOF) != 0;
+  }
+
+  boolean receiveNoResponsePacket() {
+    return false;
   }
 }

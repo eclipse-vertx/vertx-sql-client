@@ -52,7 +52,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       // binding parameters
       String bindMsg = statement.bindParameters(params);
       if (bindMsg != null) {
-        completionHandler.handle(CommandResponse.failure(bindMsg));
+        encoder.onCommandResponse(CommandResponse.failure(bindMsg));
         return;
       }
 

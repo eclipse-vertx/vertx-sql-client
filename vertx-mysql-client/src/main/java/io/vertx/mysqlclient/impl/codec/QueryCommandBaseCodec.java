@@ -171,7 +171,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     } else {
       response = CommandResponse.success(this.result);
     }
-    completionHandler.handle(response);
+    encoder.onCommandResponse(response);
   }
 
   private int decodeColumnCountPacketPayload(ByteBuf payload) {
