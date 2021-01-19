@@ -65,7 +65,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
   public static final SslMode DEFAULT_SSL_MODE = SslMode.DISABLED;
   public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
-  public static final int DEFAULT_PIPELINING_LIMIT = 256; // FIXME use 1 later as this will check all tests working or not in pipelining mode
+  public static final int DEFAULT_PIPELINING_LIMIT = 1;
 
   static {
     Map<String, String> defaultAttributes = new HashMap<>();
@@ -303,12 +303,25 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     return serverRsaPublicKeyValue;
   }
 
-  //FIXME add javadoc and reference guide later
+  /**
+   * Get the pipelining limit count.
+   *
+   * @return the pipelining count
+   */
   public int getPipeliningLimit() {
     return pipeliningLimit;
   }
 
+  /**
+   * Set the pipelining limit count.
+   *
+   * @param pipeliningLimit the count to configure
+   * @return a reference to this, so the API can be used fluently
+   */
   public MySQLConnectOptions setPipeliningLimit(int pipeliningLimit) {
+    if (pipeliningLimit < 1) {
+      throw new IllegalArgumentException("pipelining limit can not be less than 1");
+    }
     this.pipeliningLimit = pipeliningLimit;
     return this;
   }
