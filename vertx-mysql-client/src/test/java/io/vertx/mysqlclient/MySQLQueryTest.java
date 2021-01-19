@@ -138,7 +138,6 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testCachePreparedStatementBatchWithSameSql(TestContext ctx) {
-    //TODO the batch order is broken
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
@@ -183,7 +182,6 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testAutoClosingNonCacheOneShotPreparedBatchStatement(TestContext ctx) {
-    // batch order is broken
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res0 -> {
         Row row = res0.iterator().next();

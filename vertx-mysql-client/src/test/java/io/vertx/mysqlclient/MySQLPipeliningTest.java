@@ -219,8 +219,39 @@ public class MySQLPipeliningTest extends MySQLTestBase {
   }
 
   @Test
-  public void testBatchException(TestContext ctx) {
-    // TODO
+  public void testBatchInsertException(TestContext ctx) {
+    options.setPipeliningLimit(64);
+    MySQLConnection.connect(vertx, options)
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
+        List<Tuple> batchParams = new ArrayList<>();
+        for (int i = 0; i < 1000; i++) {
+          batchParams.add(Tuple.of(i, String.format("val-%d", i)));
+        }
+        batchParams.add(501, Tuple.of(500, "error")); // primary key violation error occurs in the 501st iteration
+
+        conn.preparedQuery("INSERT INTO mutable(id, val) VALUES (?, ?)")
+          .executeBatch(batchParams)
+          .onComplete(ctx.asyncAssertFailure(error -> {
+            ctx.assertEquals(MySQLBatchException.class, error.getClass());
+            MySQLBatchException mySQLBatchException = (MySQLBatchException) error;
+            ctx.assertTrue(mySQLBatchException.getIterationError().containsKey(501));
+
+            // all the param will be executed
+            conn.query("SELECT id, val FROM mutable")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(res2-> {
+                ctx.assertEquals(1000, res2.size());
+                int i = 0;
+                for (Row row : res2) {
+                  ctx.assertEquals(2, row.size());
+                  ctx.assertEquals(i, row.getInteger(0));
+                  ctx.assertEquals(String.format("val-%d", i), row.getString(1));
+                  i++;
+                }
+                conn.close();
+              }));
+          }));
+      }));
   }
 
   private void cleanTestTable(TestContext ctx) {
