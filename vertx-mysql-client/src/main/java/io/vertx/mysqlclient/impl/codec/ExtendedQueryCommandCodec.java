@@ -17,8 +17,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.datatype.DataType;
-import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -116,58 +114,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
         super.decodePayload(payload, payloadLength);
       }
     }
-  }
-
-  private void sendStatementExecuteCommand(MySQLPreparedStatement statement, boolean sendTypesToServer, Tuple params, byte cursorType) {
-    ByteBuf packet = allocateBuffer();
-    // encode packet header
-    int packetStartIdx = packet.writerIndex();
-    packet.writeMediumLE(0); // will set payload length later by calculation
-    packet.writeByte(sequenceId);
-
-    // encode packet payload
-    packet.writeByte(CommandType.COM_STMT_EXECUTE);
-    packet.writeIntLE((int) statement.statementId);
-    packet.writeByte(cursorType);
-    // iteration count, always 1
-    packet.writeIntLE(1);
-
-    int numOfParams = statement.bindingTypes().length;
-    int bitmapLength = (numOfParams + 7) / 8;
-    byte[] nullBitmap = new byte[bitmapLength];
-
-    int pos = packet.writerIndex();
-
-    if (numOfParams > 0) {
-      // write a dummy bitmap first
-      packet.writeBytes(nullBitmap);
-      packet.writeBoolean(sendTypesToServer);
-
-      if (sendTypesToServer) {
-        for (DataType bindingType : statement.bindingTypes()) {
-          packet.writeByte(bindingType.id);
-          packet.writeByte(0); // parameter flag: signed
-        }
-      }
-
-      for (int i = 0; i < numOfParams; i++) {
-        Object value = params.getValue(i);
-        if (value != null) {
-          DataTypeCodec.encodeBinary(statement.bindingTypes()[i], value, encoder.encodingCharset, packet);
-        } else {
-          nullBitmap[i / 8] |= (1 << (i & 7));
-        }
-      }
-
-      // padding null-bitmap content
-      packet.setBytes(pos, nullBitmap);
-    }
-
-    // set payload length
-    int payloadLength = packet.writerIndex() - packetStartIdx - 4;
-    packet.setMediumLE(packetStartIdx, payloadLength);
-
-    sendPacket(packet, payloadLength);
   }
 
   private void sendStatementFetchCommand(long statementId, int count) {

@@ -120,13 +120,18 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   void handleErrorPacketPayload(ByteBuf payload) {
+    MySQLException mySQLException = decodeErrorPacketPayload(payload);
+    encoder.onCommandResponse(CommandResponse.failure(mySQLException));
+  }
+
+  final MySQLException decodeErrorPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip ERR packet header
     int errorCode = payload.readUnsignedShortLE();
     // CLIENT_PROTOCOL_41 capability flag will always be set
     payload.skipBytes(1); // SQL state marker will always be #
     String sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
     String errorMessage = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-    encoder.onCommandResponse(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
+    return new MySQLException(errorMessage, errorCode, sqlState);
   }
 
   // simplify the ok packet as those properties are actually not used for now

@@ -12,7 +12,8 @@
 package io.vertx.mysqlclient;
 
 /**
- * A {@link RuntimeException} signals that an error occurred.
+ * {@code MySQLException} is the class representing that a MySQL error packet is received from the server,
+ * This usually signals that an error occurred during a connection establishment or command executions.
  */
 public class MySQLException extends RuntimeException {
   private final int errorCode;
