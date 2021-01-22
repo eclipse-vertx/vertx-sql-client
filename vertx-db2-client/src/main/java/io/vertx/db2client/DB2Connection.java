@@ -32,7 +32,7 @@ import static io.vertx.db2client.DB2ConnectOptions.fromUri;
  */
 @VertxGen
 public interface DB2Connection extends SqlConnection {
-  
+
   /**
    * Create a connection to DB2 server with the given {@code connectOptions}.
    *
@@ -110,4 +110,15 @@ public interface DB2Connection extends SqlConnection {
    */
   Future<Void> debug();
 
+  /**
+   * Cast a {@link SqlConnection} to {@link DB2Connection}.
+   *
+   * This is mostly useful for Vert.x generated APIs like RxJava/Mutiny.
+   *
+   * @param sqlConnection the connection to cast
+   * @return a {@link DB2Connection instance}
+   */
+  static DB2Connection cast(SqlConnection sqlConnection) {
+    return (DB2Connection) sqlConnection;
+  }
 }

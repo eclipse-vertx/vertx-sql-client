@@ -199,4 +199,16 @@ public interface MySQLConnection extends SqlConnection {
    * Like {@link #changeUser(MySQLAuthOptions, Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<Void> changeUser(MySQLAuthOptions options);
+
+  /**
+   * Cast a {@link SqlConnection} to {@link MySQLConnection}.
+   *
+   * This is mostly useful for Vert.x generated APIs like RxJava/Mutiny.
+   *
+   * @param sqlConnection the connection to cast
+   * @return a {@link MySQLConnection instance}
+   */
+  static MySQLConnection cast(SqlConnection sqlConnection) {
+    return (MySQLConnection) sqlConnection;
+  }
 }
