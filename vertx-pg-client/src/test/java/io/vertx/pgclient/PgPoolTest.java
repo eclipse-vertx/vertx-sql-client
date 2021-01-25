@@ -25,6 +25,8 @@ import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -195,5 +197,47 @@ public class PgPoolTest extends PgPoolTestBase {
       }
       pool.close();
     }
+  }
+
+  @Test
+  public void testPipelining(TestContext ctx) {
+    AtomicLong latency = new AtomicLong(0L);
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    proxy.proxyHandler(conn -> {
+      conn.clientHandler(buff -> {
+        long delay = latency.get();
+        if (delay == 0L) {
+          conn.serverSocket().write(buff);
+        } else {
+          vertx.setTimer(delay, id -> {
+            conn.serverSocket().write(buff);
+          });
+        }
+      });
+      conn.connect();
+    });
+    Async latch = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(res -> latch.complete()));
+    latch.awaitSuccess(20_000);
+    options.setPort(8080);
+    options.setHost("localhost");
+
+    int num = 3;
+    Async async = ctx.async(num);
+    PgPool pool = PgPool.pool(options, new PoolOptions().setMaxSize(1));
+    AtomicLong start = new AtomicLong();
+    // Connect to the database
+    pool.query("select 1").execute(ctx.asyncAssertSuccess(res1 -> {
+      // We have a connection in the pool
+      start.set(System.currentTimeMillis());
+      latency.set(1000);
+      for (int i = 0; i < num; i++) {
+        pool.query("select 1").execute(ctx.asyncAssertSuccess(res2 -> async.countDown()));
+      }
+    }));
+
+    async.awaitSuccess(20_000);
+    long elapsed = System.currentTimeMillis() - start.get();
+    ctx.assertTrue(elapsed < 2000, "Was expecting pipelined latency " + elapsed + " < 2000");
   }
 }

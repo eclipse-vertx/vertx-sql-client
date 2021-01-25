@@ -42,12 +42,14 @@ class ProxyServer {
 
     private final NetSocket clientSocket;
     private final NetSocket serverSocket;
-    private Function<Buffer, Buffer> serverSocketFilter = Function.identity();
-    private Function<Buffer, Buffer> clientSocketFilter = Function.identity();
+    private Handler<Buffer> clientHandler;
+    private Handler<Buffer> serverHandler;
 
     public Connection(NetSocket clientSo, NetSocket serverSo) {
       this.clientSocket = clientSo;
       this.serverSocket = serverSo;
+      this.clientHandler = serverSocket::write;
+      this.serverHandler = clientSocket::write;
     }
 
     NetSocket clientSocket() {
@@ -58,19 +60,19 @@ class ProxyServer {
       return serverSocket;
     }
 
-    Connection serverSocketFilter(Function<Buffer, Buffer> filter) {
-      serverSocketFilter = filter;
+    Connection clientHandler(Handler<Buffer> handler) {
+      clientHandler = handler;
       return this;
     }
 
-    Connection clientSocketFilter(Function<Buffer, Buffer> filter) {
-      clientSocketFilter = filter;
+    Connection serverHandler(Handler<Buffer> handler) {
+      serverHandler = handler;
       return this;
     }
 
     void connect() {
-      clientSocket.handler(buff -> serverSocket.write(serverSocketFilter.apply(buff)));
-      serverSocket.handler(buff -> clientSocket.write(clientSocketFilter.apply(buff)));
+      clientSocket.handler(clientHandler);
+      serverSocket.handler(serverHandler);
       clientSocket.closeHandler(v -> serverSocket.close());
       serverSocket.closeHandler(v -> clientSocket.close());
       serverSocket.resume();
