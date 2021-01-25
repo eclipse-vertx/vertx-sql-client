@@ -69,4 +69,15 @@ public interface MSSQLConnection extends SqlConnection {
   @Override
   MSSQLConnection closeHandler(Handler<Void> handler);
 
+  /**
+   * Cast a {@link SqlConnection} to {@link MSSQLConnection}.
+   *
+   * This is mostly useful for Vert.x generated APIs like RxJava/Mutiny.
+   *
+   * @param sqlConnection the connection to cast
+   * @return a {@link MSSQLConnection instance}
+   */
+  static MSSQLConnection cast(SqlConnection sqlConnection) {
+    return (MSSQLConnection) sqlConnection;
+  }
 }
