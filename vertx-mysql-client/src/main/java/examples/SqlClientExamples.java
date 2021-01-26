@@ -16,11 +16,15 @@
  */
 package examples;
 
+import io.netty.buffer.ByteBuf;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.MySQLConnectOptions;
+import io.vertx.mysqlclient.typecodec.MySQLDataTypeDefaultCodecs;
+import io.vertx.mysqlclient.typecodec.MySQLType;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -33,7 +37,13 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.codec.DataType;
+import io.vertx.sqlclient.codec.DataTypeCodec;
+import io.vertx.sqlclient.codec.DataTypeCodecRegistry;
+import io.vertx.sqlclient.impl.codec.CommonCodec;
 
+import java.nio.charset.Charset;
+import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -327,5 +337,165 @@ public class SqlClientExamples {
 
   public void tracing01(MySQLConnectOptions options) {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
+  }
+
+  public void customDataTypeCodecExample01(SqlConnection connection) {
+    // usecase01-byte as boolean
+    DataTypeCodec<Boolean, Boolean> tinyintCodec = new DataTypeCodec<Boolean, Boolean>() {
+
+      private final DataType<Boolean, Boolean> tinyintDatatype = new DataType<Boolean, Boolean>() {
+        @Override
+        public int identifier() {
+          return MySQLType.TINYINT.identifier();
+        }
+
+        @Override
+        public JDBCType jdbcType() {
+          return JDBCType.TINYINT;
+        }
+
+        @Override
+        public Class<Boolean> encodingJavaClass() {
+          return Boolean.class;
+        }
+
+        @Override
+        public Class<Boolean> decodingJavaClass() {
+          return Boolean.class;
+        }
+      };
+
+      @Override
+      public DataType<Boolean, Boolean> dataType() {
+        return tinyintDatatype;
+      }
+
+      @Override
+      public void encode(ByteBuf buffer, Boolean value) {
+        buffer.writeBoolean(value);
+      }
+
+      @Override
+      public Boolean binaryDecode(ByteBuf buffer, int readerIndex, long length, Charset charset) {
+        return buffer.readBoolean();
+      }
+
+      @Override
+      public Boolean textualDecode(ByteBuf buffer, int readerIndex, long length, Charset charset) {
+        byte b = (byte) CommonCodec.decodeDecStringToLong(readerIndex, (int) length, buffer);
+        return b != 0;
+      }
+    };
+
+    DataTypeCodecRegistry dataTypeCodecRegistry = connection.dataTypeCodecRegistry();
+    dataTypeCodecRegistry.unregister(MySQLDataTypeDefaultCodecs.TinyIntTypeCodec.INSTANCE);
+    dataTypeCodecRegistry.register(tinyintCodec);
+  }
+
+  public void customDataTypeCodecExample02(SqlConnection connection) {
+    // usecase02-custom JSON https://github.com/eclipse-vertx/vertx-sql-client/issues/862
+    DataTypeCodec<CustomJSON, CustomJSON> jsonCustomTypeCodec = new DataTypeCodec<CustomJSON, CustomJSON>() {
+
+      private final DataType<CustomJSON, CustomJSON> customJSONDatatype = new DataType<CustomJSON, CustomJSON>() {
+        @Override
+        public int identifier() {
+          return MySQLType.JSON.identifier();
+        }
+
+        @Override
+        public JDBCType jdbcType() {
+          return JDBCType.OTHER;
+        }
+
+        @Override
+        public Class<CustomJSON> encodingJavaClass() {
+          return CustomJSON.class;
+        }
+
+        @Override
+        public Class<CustomJSON> decodingJavaClass() {
+          return CustomJSON.class;
+        }
+      };
+
+      @Override
+      public DataType<CustomJSON, CustomJSON> dataType() {
+        return customJSONDatatype;
+      }
+
+      @Override
+      public void encode(ByteBuf buffer, CustomJSON value) {
+        // write to bytebuf directly from the custom json
+        // ...
+      }
+
+      @Override
+      public CustomJSON binaryDecode(ByteBuf buffer, int readerIndex, long length, Charset charset) {
+        // read from bytebuf directly
+        // ...
+      }
+
+      @Override
+      public CustomJSON textualDecode(ByteBuf buffer, int readerIndex, long length, Charset charset) {
+        // read from bytebuf directly
+        // ...
+      }
+    };
+
+    DataTypeCodecRegistry dataTypeCodecRegistry = connection.dataTypeCodecRegistry();
+    dataTypeCodecRegistry.unregister(MySQLDataTypeDefaultCodecs.JsonTypeCodec.INSTANCE);
+    dataTypeCodecRegistry.register(jsonCustomTypeCodec);
+  }
+
+  public void customDataTypeCodecExample03(SqlConnection connection) {
+    // usecase03 - row values direct buffer
+    DataTypeCodec<ByteBuf, ByteBuf> rowValueRawBufCodec = new DataTypeCodec<ByteBuf, ByteBuf>() {
+
+      private final DataType<ByteBuf, ByteBuf> tinyintDatatype = new DataType<ByteBuf, ByteBuf>() {
+        @Override
+        public int identifier() {
+          return MySQLType.TINYINT.identifier();
+        }
+
+        @Override
+        public JDBCType jdbcType() {
+          return JDBCType.TINYINT;
+        }
+
+        @Override
+        public Class<ByteBuf> encodingJavaClass() {
+          return ByteBuf.class;
+        }
+
+        @Override
+        public Class<ByteBuf> decodingJavaClass() {
+          return ByteBuf.class;
+        }
+      };
+
+      @Override
+      public DataType<ByteBuf, ByteBuf> dataType() {
+        return tinyintDatatype;
+      }
+
+      @Override
+      public void encode(ByteBuf buffer, ByteBuf value) {
+        buffer.writeBytes(value);
+      }
+
+      @Override
+      public ByteBuf binaryDecode(ByteBuf buffer, int readerIndex, long length, Charset charset) {
+        return buffer.readRetainedSlice((int) length);
+      }
+
+      @Override
+      public ByteBuf textualDecode(ByteBuf buffer, int readerIndex, long length, Charset charset) {
+        return buffer.readRetainedSlice((int) length);
+      }
+    };
+
+    DataTypeCodecRegistry dataTypeCodecRegistry = connection.dataTypeCodecRegistry();
+    dataTypeCodecRegistry.unregister(MySQLDataTypeDefaultCodecs.TinyIntTypeCodec.INSTANCE);
+    dataTypeCodecRegistry.register(rowValueRawBufCodec);
   }
 }

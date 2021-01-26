@@ -12,13 +12,16 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLRowDesc;
 import io.vertx.mysqlclient.impl.MySQLRowImpl;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
-import io.vertx.mysqlclient.impl.datatype.DataType;
-import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
+import io.vertx.mysqlclient.impl.util.BufferUtils;
+import io.vertx.mysqlclient.typecodec.MySQLDataTypeCodecRegistry;
+import io.vertx.mysqlclient.typecodec.MySQLType;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.codec.DataTypeCodec;
 import io.vertx.sqlclient.impl.RowDecoder;
 
 import java.util.stream.Collector;
@@ -27,10 +30,12 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   private static final int NULL = 0xFB;
 
   MySQLRowDesc rowDesc;
+  MySQLDataTypeCodecRegistry dataTypeCodecRegistry;
 
-  RowResultDecoder(Collector<Row, C, R> collector, MySQLRowDesc rowDesc) {
+  RowResultDecoder(Collector<Row, C, R> collector, MySQLRowDesc rowDesc, MySQLDataTypeCodecRegistry dataTypeCodecRegistry) {
     super(collector);
     this.rowDesc = rowDesc;
+    this.dataTypeCodecRegistry = dataTypeCodecRegistry;
   }
 
   @Override
@@ -55,10 +60,12 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
         if (nullByte == 0) {
           // non-null
           ColumnDefinition columnDef = rowDesc.columnDefinitions()[c];
-          DataType dataType = columnDef.type();
+          int type = columnDef.type();
           int collationId = rowDesc.columnDefinitions()[c].characterSet();
           int columnDefinitionFlags = columnDef.flags();
-          decoded = DataTypeCodec.decodeBinary(dataType, collationId, columnDefinitionFlags, in);
+
+          // data type codec decoding
+          decoded = decodeBinaryRowValue(type, collationId, columnDefinitionFlags, in);
         }
         row.addValue(decoded);
       }
@@ -69,15 +76,79 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
         if (in.getUnsignedByte(in.readerIndex()) == NULL) {
           in.skipBytes(1);
         } else {
-          DataType dataType = rowDesc.columnDefinitions()[c].type();
+          int type = rowDesc.columnDefinitions()[c].type();
           int columnDefinitionFlags = rowDesc.columnDefinitions()[c].flags();
           int collationId = rowDesc.columnDefinitions()[c].characterSet();
-          decoded = DataTypeCodec.decodeText(dataType, collationId, columnDefinitionFlags, in);
+          decoded = decodeTextualRowValue(type, collationId, columnDefinitionFlags, in);
         }
         row.addValue(decoded);
       }
     }
     return row;
   }
+
+
+  private Object decodeBinaryRowValue(int type, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
+    MySQLType mySQLType;
+    DataTypeCodec<?, ?> dataTypeCodec;
+    long len;
+
+    switch (type) {
+      case ColumnDefinition.ColumnType.MYSQL_TYPE_TINY:
+        mySQLType = isUnsignedNumeric(columnDefinitionFlags) ? MySQLType.UNSIGNED_TINYINT : MySQLType.TINYINT;
+        len = 1;
+        break;
+      case ColumnDefinition.ColumnType.MYSQL_TYPE_STRING:
+        mySQLType = MySQLType.STRING;
+        len = BufferUtils.readLengthEncodedInteger(buffer);
+        break;
+      //TODO many other types implementation
+      default:
+        mySQLType = MySQLType.UNKNOWN;
+        len = BufferUtils.readLengthEncodedInteger(buffer);
+        break;
+    }
+    try {
+      dataTypeCodec = dataTypeCodecRegistry.registries().get(mySQLType.identifier());
+    } catch (Exception ex) {
+      // log
+      return null;
+    }
+
+
+    return dataTypeCodec.binaryDecode(buffer, buffer.readerIndex(), len, MySQLCollation.getJavaCharsetByCollationId(collationId));
+  }
+
+  private Object decodeTextualRowValue(int type, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
+    MySQLType mySQLType;
+    DataTypeCodec<?, ?> dataTypeCodec;
+    long len = BufferUtils.readLengthEncodedInteger(buffer);
+
+    switch (type) {
+      case ColumnDefinition.ColumnType.MYSQL_TYPE_TINY:
+        mySQLType = isUnsignedNumeric(columnDefinitionFlags) ? MySQLType.UNSIGNED_TINYINT : MySQLType.TINYINT;
+        break;
+      case ColumnDefinition.ColumnType.MYSQL_TYPE_STRING:
+        mySQLType = MySQLType.STRING;
+        break;
+      //TODO many other types implementation
+      default:
+        mySQLType = MySQLType.UNKNOWN;
+        break;
+    }
+    try {
+      dataTypeCodec = dataTypeCodecRegistry.registries().get(mySQLType.identifier());
+    } catch (Exception ex) {
+      // log
+      return null;
+    }
+
+    return dataTypeCodec.textualDecode(buffer, buffer.readerIndex(), len, MySQLCollation.getJavaCharsetByCollationId(collationId));
+  }
+
+  private static boolean isUnsignedNumeric(int columnDefinitionFlags) {
+    return (columnDefinitionFlags & ColumnDefinition.ColumnDefinitionFlags.UNSIGNED_FLAG) != 0;
+  }
+
 }
 

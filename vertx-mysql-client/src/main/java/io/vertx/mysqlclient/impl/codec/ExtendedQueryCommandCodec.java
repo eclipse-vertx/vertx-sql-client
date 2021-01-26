@@ -20,6 +20,7 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
+import io.vertx.mysqlclient.typecodec.MySQLDataTypeCodecRegistry;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -42,7 +43,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     super.encode(encoder);
 
     if (statement.isCursorOpen) {
-      decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
+      decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc, encoder.socketConnection.getDataTypeCodecRegistry());
       sendStatementFetchCommand(statement.statementId, cmd.fetch());
     } else {
       Tuple params = cmd.params();
@@ -96,7 +97,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             // need to reset packet number so that we can send a fetch request
             sequenceId = 0;
             // send fetch after cursor opened
-            decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
+            decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc, encoder.socketConnection.getDataTypeCodecRegistry());
 
             statement.isCursorOpen = true;
 
@@ -146,7 +147,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
       for (int i = 0; i < numOfParams; i++) {
         Object value = params.getValue(i);
         if (value != null) {
-          DataTypeCodec.encodeBinary(statement.bindingTypes()[i], value, encoder.encodingCharset, packet);
+          encodeRowValue(packet, value, value.getClass());
         } else {
           nullBitmap[i / 8] |= (1 << (i & 7));
         }
@@ -161,6 +162,13 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     packet.setMediumLE(packetStartIdx, payloadLength);
 
     sendPacket(packet, payloadLength);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> void encodeRowValue(ByteBuf buf, T value, Class<?> clazz) {
+    MySQLDataTypeCodecRegistry dataTypeCodecRegistry = encoder.socketConnection.getDataTypeCodecRegistry();
+    io.vertx.sqlclient.codec.DataTypeCodec<T, ?> dataTypeCodec = (io.vertx.sqlclient.codec.DataTypeCodec<T, ?>) dataTypeCodecRegistry.lookupForEncoding(clazz);
+    dataTypeCodec.encode(buf, value);
   }
 
   private void sendStatementFetchCommand(long statementId, int count) {

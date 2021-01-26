@@ -106,6 +106,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       for (int i = 0; i < numOfParams; i++) {
         Object value = params.getValue(i);
         if (value != null) {
+          // FIXME encoding using customized codec
           DataTypeCodec.encodeBinary(DataTypeCodec.inferDataTypeByEncodingValue(value), value, encoder.encodingCharset, packet);
         } else {
           nullBitmap[i / 8] |= (1 << (i & 7));

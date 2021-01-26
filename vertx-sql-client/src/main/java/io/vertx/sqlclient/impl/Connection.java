@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
+import io.vertx.sqlclient.codec.DataTypeCodecRegistry;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
@@ -35,6 +36,8 @@ public interface Connection extends CommandScheduler  {
   boolean isSsl();
 
   DatabaseMetadata getDatabaseMetaData();
+
+  DataTypeCodecRegistry getDataTypeCodecRegistry();
 
   void close(Holder holder, Promise<Void> promise);
 

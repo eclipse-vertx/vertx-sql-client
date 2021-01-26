@@ -27,6 +27,8 @@ import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
+import io.vertx.mysqlclient.typecodec.MySQLDataTypeCodecRegistry;
+import io.vertx.sqlclient.codec.DataTypeCodecRegistry;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -102,5 +104,10 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
     return metaData;
+  }
+
+  @Override
+  public MySQLDataTypeCodecRegistry getDataTypeCodecRegistry() {
+    return MySQLDataTypeCodecRegistry.INSTANCE;
   }
 }

@@ -21,6 +21,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.codec.DataTypeCodecRegistry;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
 
@@ -88,6 +89,11 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   @Override
   public DatabaseMetadata databaseMetadata() {
     return conn.getDatabaseMetaData();
+  }
+
+  @Override
+  public DataTypeCodecRegistry dataTypeCodecRegistry() {
+    return conn.getDataTypeCodecRegistry();
   }
 
   @Override

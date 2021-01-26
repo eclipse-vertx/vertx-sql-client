@@ -22,6 +22,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.codec.DataTypeCodecRegistry;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 /**
@@ -89,10 +90,11 @@ public interface SqlConnection extends SqlClient {
    * @param handler the completion handler
    */
   void close(Handler<AsyncResult<Void>> handler);
-  
+
   /**
    * @return The static metadata about the backend database server for this connection
    */
   DatabaseMetadata databaseMetadata();
 
+  DataTypeCodecRegistry dataTypeCodecRegistry();
 }
