@@ -100,7 +100,7 @@ Make sure you have added the required `netty-transport-native` dependency in you
 {@link examples.PgClientExamples#connecting06}
 ----
 
-More information can be found in the [Vert.x documentation](https://vertx.io/docs/vertx-core/java/#_native_transports).
+More information can be found in the https://vertx.io/docs/vertx-core/java/#_native_transports[Vert.x documentation].
 
 == Connect retries
 
