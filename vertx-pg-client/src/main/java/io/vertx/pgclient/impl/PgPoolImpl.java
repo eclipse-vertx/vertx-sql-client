@@ -28,6 +28,8 @@ import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Todo :
@@ -44,7 +46,8 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
     VertxMetrics vertxMetrics = context.owner().metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(ConnectionFactory.asEventLoopContext(context), connectOptions), tracer, metrics, poolOptions);
+    long idleTimeOut = TimeUnit.MILLISECONDS.convert(connectOptions.getIdleTimeout(), connectOptions.getIdleTimeoutUnit());
+    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(ConnectionFactory.asEventLoopContext(context), connectOptions), tracer, metrics, poolOptions, idleTimeOut);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -56,8 +59,8 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
 
-  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
-    super(context, factory, tracer, metrics, poolOptions);
+  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, long idle) {
+    super(context, factory, tracer, metrics, poolOptions, idle);
     this.factory = factory;
   }
 

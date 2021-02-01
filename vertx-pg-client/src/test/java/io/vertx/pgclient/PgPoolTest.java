@@ -17,10 +17,20 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.Handler;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -195,5 +205,44 @@ public class PgPoolTest extends PgPoolTestBase {
       }
       pool.close();
     }
+  }
+
+  // Scenario:
+  // When a user gets a connection from pgPool some milliseconds behind IDLE expiration time,
+  // sometimes you get the following error:
+  // Fail to read any response from the server, the underlying connection might get lost unexpectedly.
+  @Test(expected = TimeoutException.class)
+  public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
+    Async async = ctx.async();
+    int idle = 1000;
+    options.setIdleTimeout(idle);
+    options.setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+
+    PgPool pool = createPool(new PgConnectOptions(options), 5);
+    AtomicInteger at = new AtomicInteger(0);
+    Handler<Long> handler = l -> {
+      System.out.println("###################################################: ");
+      IntStream.range(1, 30).forEach(n -> {
+        CompletableFuture.runAsync(() -> {
+          pool.query("SELECT CURRENT_TIMESTAMP;").execute()
+            .map(RowSet::iterator).onSuccess(it -> {
+              while (it.hasNext()){
+                Row row = it.next();
+                System.out.println("Connection #" + at.incrementAndGet() + " " + row.getOffsetDateTime(0));
+              }
+          })
+            .onFailure(err -> {
+              System.err.println("Error: " + at.get());
+              System.err.println("Error on query: '" + err.getMessage() + "'");
+              ctx.fail(err.getMessage());
+              async.complete();
+            });
+        });
+      });
+
+    };
+
+    vertx.setPeriodic(idle + 3, l -> handler.handle(l));
+    async.await(Duration.ofMinutes(3).toMillis());
   }
 }

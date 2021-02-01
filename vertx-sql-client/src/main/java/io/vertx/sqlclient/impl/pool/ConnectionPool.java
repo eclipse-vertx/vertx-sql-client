@@ -19,9 +19,11 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.net.TCPSSLOptions;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
+import io.vertx.sqlclient.impl.ExpiryQueue;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.core.*;
@@ -48,7 +50,7 @@ public class ConnectionPool {
   private final int maxSize;
   private final ArrayDeque<Handler<AsyncResult<Connection>>> waiters = new ArrayDeque<>();
   private final Set<PooledConnection> all = new HashSet<>();
-  private final ArrayDeque<PooledConnection> available = new ArrayDeque<>();
+  private final ExpiryQueue<PooledConnection> available;
   private int size;
   private final int maxWaitQueueSize;
   private boolean checkInProgress;
@@ -59,10 +61,10 @@ public class ConnectionPool {
   }
 
   public ConnectionPool(ConnectionFactory connector, int maxSize, int maxWaitQueueSize) {
-    this(connector, null, maxSize, maxWaitQueueSize);
+    this(connector, null, maxSize, maxWaitQueueSize, TCPSSLOptions.DEFAULT_IDLE_TIMEOUT);
   }
 
-  public ConnectionPool(ConnectionFactory connector, Context context, int maxSize, int maxWaitQueueSize) {
+  public ConnectionPool(ConnectionFactory connector, Context context, int maxSize, int maxWaitQueueSize, long idle) {
     Objects.requireNonNull(connector, "No null connector");
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
@@ -71,6 +73,7 @@ public class ConnectionPool {
     this.context = (ContextInternal) context;
     this.maxWaitQueueSize = maxWaitQueueSize;
     this.connector = connector;
+    this.available = new ExpiryQueue<>(idle);
   }
 
   public int available() {
@@ -253,9 +256,10 @@ public class ConnectionPool {
     if (!checkInProgress) {
       checkInProgress = true;
       try {
-        while (waiters.size() > 0) {
+        while (waiters.size() > 0) { // TODO: decouple this while in several methods
           if (available.size() > 0) {
             PooledConnection proxy = available.poll();
+            if(proxy == null) continue;
             Handler<AsyncResult<Connection>> waiter = waiters.poll();
             waiter.handle(Future.succeededFuture(proxy));
           } else {
