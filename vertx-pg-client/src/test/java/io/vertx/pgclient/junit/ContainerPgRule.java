@@ -16,6 +16,7 @@
  */
 package io.vertx.pgclient.junit;
 
+import io.vertx.sqlclient.PoolOptions;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -40,25 +41,27 @@ public class ContainerPgRule extends ExternalResource {
 
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
-  
+
   private PostgreSQLContainer server;
   private PgConnectOptions options;
   private String databaseVersion;
   private boolean ssl;
 
-  
+
   public ContainerPgRule ssl(boolean ssl) {
     this.ssl = ssl;
     return this;
   }
-  
+
   public PgConnectOptions options() {
     return new PgConnectOptions(options);
   }
 
+  public PoolOptions poolOptions() { return new PoolOptions();}
+
   private void initServer(String version) throws Exception {
     File setupFile = getTestResource("resources" + File.separator + "create-postgres.sql");
-    
+
     server = (PostgreSQLContainer) new PostgreSQLContainer("postgres:" + version)
         .withDatabaseName("postgres")
         .withUsername("postgres")
@@ -70,7 +73,7 @@ public class ContainerPgRule extends ExternalResource {
             .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("ssl.sh").toPath()), "/docker-entrypoint-initdb.d/ssl.sh");
     }
   }
-  
+
   private static File getTestResource(String name) throws Exception {
     File file = null;
     try(InputStream in = new FileInputStream(new File("docker" + File.separator + "postgres" + File.separator + name))) {
@@ -130,14 +133,14 @@ public class ContainerPgRule extends ExternalResource {
   protected void before() throws Throwable {
     // use an external database for testing
     if (isTestingWithExternalDatabase()) {
-      
+
       if (ssl) {
         options =  PgConnectOptions.fromUri(tlsConnectionUri);
       }
       else {
-        options =  PgConnectOptions.fromUri(connectionUri);        
+        options =  PgConnectOptions.fromUri(connectionUri);
       }
-      
+
       return;
     }
 
@@ -149,7 +152,7 @@ public class ContainerPgRule extends ExternalResource {
     this.databaseVersion =  getPostgresVersion();
     options = startServer(databaseVersion);
   }
-  
+
   public static boolean isAtLeastPg10() {
     // hackish ;-)
     return !getPostgresVersion().startsWith("9.");

@@ -24,6 +24,7 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Todo :
@@ -46,7 +47,8 @@ public abstract class PoolBase<P extends PoolBase<P>> extends SqlClientBase<P> i
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
     this.context = context;
-    this.pool = new ConnectionPool(this::connect, maxSize, options.getMaxWaitQueueSize());
+    long idleTimeOut = TimeUnit.MILLISECONDS.convert(options.getIdleTimeout(), options.getIdleTimeUnit());
+    this.pool = new ConnectionPool(context, this::connect, maxSize, options.getMaxWaitQueueSize(), idleTimeOut);
     this.closeVertx = closeVertx;
   }
 

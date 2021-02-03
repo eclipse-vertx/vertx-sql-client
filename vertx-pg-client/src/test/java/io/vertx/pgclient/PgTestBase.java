@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.sqlclient.PoolOptions;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.ClassRule;
@@ -38,9 +39,11 @@ public abstract class PgTestBase {
   public static ContainerPgRule rule = new ContainerPgRule();
 
   protected PgConnectOptions options;
+  protected PoolOptions poolOptions;
 
   public void setup() throws Exception {
     options = rule.options();
+    poolOptions = rule.poolOptions();
   }
 
   static void deleteFromTestTable(TestContext ctx, SqlClient client, Runnable completionHandler) {
