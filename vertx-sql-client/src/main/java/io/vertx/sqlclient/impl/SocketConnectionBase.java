@@ -189,7 +189,7 @@ public abstract class SocketConnectionBase implements Connection {
               if (closeCmd != null) {
                 inflight++;
                 written++;
-                ctx.write(closeCmd);
+                ctx.write(closeCmd, ctx.voidPromise());
               }
             }
             PrepareStatementCommand prepareCmd = prepareCommand(queryCmd, cache, false);
@@ -206,7 +206,7 @@ public abstract class SocketConnectionBase implements Connection {
           }
         }
         written++;
-        ctx.write(cmd);
+        ctx.write(cmd, ctx.voidPromise());
       }
       if (written > 0) {
         ctx.flush();
@@ -232,7 +232,7 @@ public abstract class SocketConnectionBase implements Connection {
           queryCmd.fail(new NoStackTraceThrowable(msg));
         } else {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
-          ctx.write(queryCmd);
+          ctx.write(queryCmd, ctx.voidPromise());
           ctx.flush();
         }
       } else {
@@ -240,7 +240,7 @@ public abstract class SocketConnectionBase implements Connection {
         if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           // We cannot cache this prepared statement because it might be executed with another type
-          ctx.write(prepareCommand(queryCmd, false, true));
+          ctx.write(prepareCommand(queryCmd, false, true), ctx.voidPromise());
           ctx.flush();
         } else {
           inflight--;
