@@ -27,6 +27,8 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import java.util.Arrays;
+import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +72,9 @@ public abstract class PgPoolTestBase extends PgTestBase {
             SqlResult result = ar.result();
             ctx.assertEquals(10000, result.size());
           } else {
-            ctx.assertEquals("closed", ar.cause().getMessage());
+            List<String> expectedReason = Arrays.asList("closed", "Connection pool closed");
+            String cause = ar.cause().getMessage();
+            ctx.assertTrue(expectedReason.contains(cause), "Unexpected connection close cause:" + cause);
           }
           conn.close();
           async.countDown();

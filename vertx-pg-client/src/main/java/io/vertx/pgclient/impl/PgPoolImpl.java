@@ -19,6 +19,7 @@ package io.vertx.pgclient.impl;
 
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.*;
@@ -47,7 +48,8 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     VertxMetrics vertxMetrics = context.owner().metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
     long idleTimeOut = TimeUnit.MILLISECONDS.convert(connectOptions.getIdleTimeout(), connectOptions.getIdleTimeoutUnit());
-    PgPoolImpl pool = new PgPoolImpl(context, new PgConnectionFactory(ConnectionFactory.asEventLoopContext(context), connectOptions), tracer, metrics, poolOptions, idleTimeOut);
+    EventLoopContext eventLoopContext = ConnectionFactory.asEventLoopContext(context);
+    PgPoolImpl pool = new PgPoolImpl(eventLoopContext, new PgConnectionFactory(eventLoopContext, connectOptions), tracer, metrics, poolOptions, idleTimeOut);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -59,7 +61,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
 
-  private PgPoolImpl(ContextInternal context, PgConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, long idle) {
+  private PgPoolImpl(EventLoopContext context, PgConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, long idle) {
     super(context, factory, tracer, metrics, poolOptions, idle);
     this.factory = factory;
   }

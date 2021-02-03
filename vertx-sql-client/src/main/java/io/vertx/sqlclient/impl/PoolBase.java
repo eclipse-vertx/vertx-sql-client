@@ -20,6 +20,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.*;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.TCPSSLOptions;
@@ -43,11 +44,11 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   private final ConnectionPool pool;
   private final CloseFuture closeFuture;
 
-  public PoolBase(ContextInternal context, ConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions){
+  public PoolBase(EventLoopContext context, ConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions){
     this( context,  factory,  tracer,  metrics,  poolOptions, TCPSSLOptions.DEFAULT_IDLE_TIMEOUT);
   }
 
-  public PoolBase(ContextInternal context, ConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, long idle) {
+  public PoolBase(EventLoopContext context, ConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, long idle) {
     super(tracer, metrics);
     this.context = context;
     this.vertx = context.owner();

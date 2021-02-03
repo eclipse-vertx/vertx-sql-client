@@ -22,6 +22,7 @@ import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import java.util.Arrays;
 import org.junit.Test;
 
 import java.util.ArrayList;

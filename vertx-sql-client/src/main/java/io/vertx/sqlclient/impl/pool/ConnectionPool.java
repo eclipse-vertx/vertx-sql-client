@@ -17,7 +17,7 @@
 
 package io.vertx.sqlclient.impl.pool;
 
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.TCPSSLOptions;
 import io.vertx.sqlclient.PoolOptions;
@@ -46,7 +46,7 @@ import java.util.Set;
 public class ConnectionPool {
 
   private final ConnectionFactory connector;
-  private final ContextInternal context;
+  private final EventLoopContext context;
   private final int maxSize;
   private final ArrayDeque<Handler<AsyncResult<Connection>>> waiters = new ArrayDeque<>();
   private final Set<PooledConnection> all = new HashSet<>();
@@ -64,13 +64,13 @@ public class ConnectionPool {
     this(connector, null, maxSize, maxWaitQueueSize, TCPSSLOptions.DEFAULT_IDLE_TIMEOUT);
   }
 
-  public ConnectionPool(ConnectionFactory connector, Context context, int maxSize, int maxWaitQueueSize, long idle) {
+  public ConnectionPool(ConnectionFactory connector, EventLoopContext context, int maxSize, int maxWaitQueueSize, long idle) {
     Objects.requireNonNull(connector, "No null connector");
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
     this.maxSize = maxSize;
-    this.context = (ContextInternal) context;
+    this.context = context;
     this.maxWaitQueueSize = maxWaitQueueSize;
     this.connector = connector;
     this.available = new ExpiryQueue<>(idle);

@@ -13,6 +13,7 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLConnectOptions;
@@ -30,7 +31,8 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
     QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
     VertxMetrics vertxMetrics = context.owner().metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    MySQLPoolImpl pool = new MySQLPoolImpl(context, new MySQLConnectionFactory(ConnectionFactory.asEventLoopContext(context), connectOptions), tracer, metrics, poolOptions);
+    EventLoopContext eventLoopContext = ConnectionFactory.asEventLoopContext(context);
+    MySQLPoolImpl pool = new MySQLPoolImpl(eventLoopContext, new MySQLConnectionFactory(eventLoopContext, connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
       closeFuture.onComplete(ar -> context.owner().close());
@@ -42,7 +44,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
 
   private final MySQLConnectionFactory factory;
 
-  private MySQLPoolImpl(ContextInternal context, MySQLConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
+  private MySQLPoolImpl(EventLoopContext context, MySQLConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
     super(context, factory, tracer, metrics, poolOptions);
     this.factory = factory;
   }
