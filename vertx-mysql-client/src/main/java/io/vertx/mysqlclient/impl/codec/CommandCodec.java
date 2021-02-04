@@ -175,7 +175,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     long lengthOfFixedLengthFields = BufferUtils.readLengthEncodedInteger(payload);
     int characterSet = payload.readUnsignedShortLE();
     long columnLength = payload.readUnsignedIntLE();
-    DataType type = DataType.valueOf(payload.readUnsignedByte());
+    short type = payload.readUnsignedByte();
     int flags = payload.readUnsignedShortLE();
     byte decimals = payload.readByte();
     return new ColumnDefinition(catalog, schema, table, orgTable, name, orgName, characterSet, columnLength, type, flags, decimals);

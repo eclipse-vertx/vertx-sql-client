@@ -28,7 +28,8 @@ public final class ColumnDefinition implements ColumnDescriptor {
   private final String orgName;
   private final int characterSet;
   private final long columnLength;
-  private final DataType type;
+  private final int type;
+  private final JDBCType jdbcType;
   private final int flags;
   private final byte decimals;
 
@@ -40,7 +41,7 @@ public final class ColumnDefinition implements ColumnDescriptor {
                    String orgName,
                    int characterSet,
                    long columnLength,
-                   DataType type,
+                   int type,
                    int flags,
                    byte decimals) {
     this.catalog = catalog;
@@ -52,6 +53,7 @@ public final class ColumnDefinition implements ColumnDescriptor {
     this.characterSet = characterSet;
     this.columnLength = columnLength;
     this.type = type;
+    this.jdbcType = DataType.valueOf(type).jdbcType;
     this.flags = flags;
     this.decimals = decimals;
   }
@@ -88,7 +90,7 @@ public final class ColumnDefinition implements ColumnDescriptor {
     return columnLength;
   }
 
-  public DataType type() {
+  public int type() {
     return type;
   }
 
@@ -108,7 +110,7 @@ public final class ColumnDefinition implements ColumnDescriptor {
 
   @Override
   public JDBCType jdbcType() {
-    return type.jdbcType;
+    return jdbcType;
   }
 
   @Override
