@@ -16,6 +16,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Assume;
@@ -170,6 +171,139 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
             }
           }));
         }
+      }));
+    }));
+  }
+
+  @Test
+  public void testPrepareQueryWithOptionalResultMetadata(TestContext ctx) {
+    Assume.assumeTrue(rule.isUsingMySQL8());
+    options.setOptionalResultSetMetadata(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT id, message FROM immutable WHERE id = ?", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          ctx.assertEquals(1, row.getInteger(0));
+          ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+
+          conn.query("SET SESSION resultset_metadata = 'NONE';").execute(ctx.asyncAssertSuccess(set -> {
+            ps.query().execute(Tuple.of(4), ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(1, res2.size());
+              Row row2 = res2.iterator().next();
+              ctx.assertEquals(4, row2.getInteger(0));
+              ctx.assertEquals("A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1", row2.getString(1));
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testOneshotPrepareQueryWithOptionalResultMetadata(TestContext ctx) {
+    Assume.assumeTrue(rule.isUsingMySQL8());
+    options.setCachePreparedStatements(true);
+    options.setOptionalResultSetMetadata(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
+        .execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          ctx.assertEquals(1, row.getInteger(0));
+          ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+
+          conn.query("SET SESSION resultset_metadata = 'NONE';").execute(ctx.asyncAssertSuccess(set -> {
+            conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?").execute(Tuple.of(4), ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(1, res2.size());
+              Row row2 = res2.iterator().next();
+              ctx.assertEquals(4, row2.getInteger(0));
+              ctx.assertEquals("A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1", row2.getString(1));
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+  }
+
+  @Test
+  public void testPrepareBatchWithOptionalResultMetadata(TestContext ctx) {
+    Assume.assumeTrue(rule.isUsingMySQL8());
+    options.setOptionalResultSetMetadata(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT id, message FROM immutable WHERE id = ?", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          ctx.assertEquals(1, row.getInteger(0));
+          ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+
+          conn.query("SET SESSION resultset_metadata = 'NONE';").execute(ctx.asyncAssertSuccess(set -> {
+            ps.query().executeBatch(Arrays.asList(Tuple.of(4), Tuple.of(8)), ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(1, res2.size());
+              Row row2 = res2.iterator().next();
+              ctx.assertEquals(4, row2.getInteger(0));
+              ctx.assertEquals("A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1", row2.getString(1));
+
+              RowSet<Row> res3 = res2.next();
+              ctx.assertEquals(1, res3.size());
+              Row row3 = res3.iterator().next();
+              ctx.assertEquals(8, row3.getInteger(0));
+              ctx.assertEquals("A list is only as strong as its weakest link. — Donald Knuth", row3.getString(1));
+
+              conn.close();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testOneshotPrepareBatchWithOptionalResultMetadata(TestContext ctx) {
+    Assume.assumeTrue(rule.isUsingMySQL8());
+    options.setCachePreparedStatements(true);
+    options.setOptionalResultSetMetadata(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
+        .execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          ctx.assertEquals(1, row.getInteger(0));
+          ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+
+          conn.query("SET SESSION resultset_metadata = 'NONE';").execute(ctx.asyncAssertSuccess(set -> {
+            conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?").executeBatch(Arrays.asList(Tuple.of(4), Tuple.of(8)), ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertEquals(1, res2.size());
+              Row row2 = res2.iterator().next();
+              ctx.assertEquals(4, row2.getInteger(0));
+              ctx.assertEquals("A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1", row2.getString(1));
+
+              RowSet<Row> res3 = res2.next();
+              ctx.assertEquals(1, res3.size());
+              Row row3 = res3.iterator().next();
+              ctx.assertEquals(8, row3.getInteger(0));
+              ctx.assertEquals("A list is only as strong as its weakest link. — Donald Knuth", row3.getString(1));
+
+              conn.close();
+            }));
+          }));
+        }));
+    }));
+  }
+
+
+  @Test
+  public void testPrepareFailWithOptionalResultMetadata(TestContext ctx) {
+    Assume.assumeTrue(rule.isUsingMySQL8());
+    options.setOptionalResultSetMetadata(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SET SESSION resultset_metadata = 'NONE';").execute(ctx.asyncAssertSuccess(set -> {
+        conn.prepare("SELECT id, message FROM immutable WHERE id = ?", ctx.asyncAssertFailure(err -> {
+          ctx.assertEquals("Failed to prepare statements according to no metadata packet is following, make you have set server variable resultset_metadata='FULL'", err.getMessage());
+          conn.close();
+        }));
       }));
     }));
   }

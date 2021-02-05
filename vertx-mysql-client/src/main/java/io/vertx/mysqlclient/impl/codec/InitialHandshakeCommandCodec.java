@@ -158,6 +158,10 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
   private void doSendHandshakeResponseMessage(String serverAuthPluginName, MySQLAuthenticationPlugin authPlugin, byte[] nonce, int serverCapabilitiesFlags) {
     Map<String, String> clientConnectionAttributes = cmd.connectionAttributes();
     encoder.clientCapabilitiesFlag &= serverCapabilitiesFlags;
+    if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_OPTIONAL_RESULTSET_METADATA) != 0) {
+      // trust the server once the flag is set the feature is supported
+      encoder.socketConnection.isOptionalMetadataSupported = true;
+    }
     String clientPluginName = authPlugin == MySQLAuthenticationPlugin.DEFAULT ? serverAuthPluginName : authPlugin.value;
     sendHandshakeResponseMessage(cmd.username(), cmd.password(), cmd.database(), nonce, clientPluginName, clientConnectionAttributes);
   }

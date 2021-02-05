@@ -12,9 +12,11 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.MySQLRowDesc;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -42,6 +44,21 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
     } else {
       handleResultsetColumnCountPacketBody(payload);
     }
+  }
+
+  @Override
+  protected final void handleResultsetColumnCountPacketBody(ByteBuf payload) {
+    int columnCount = decodeColumnCountPacketPayload(payload);
+    if (encoder.socketConnection.isOptionalMetadataSupported) {
+      boolean metadataFollows = payload.readBoolean();
+      if (!metadataFollows) {
+        commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
+        decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
+        return;
+      }
+    }
+    commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
+    columnDefinitions = new ColumnDefinition[columnCount];
   }
 
   protected final void sendStatementExecuteCommand(MySQLPreparedStatement statement, boolean sendTypesToServer, Tuple params, byte cursorType) {

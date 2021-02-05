@@ -40,6 +40,7 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
   private int initialCapabilitiesFlags;
   private int pipeliningLimit;
   private MySQLAuthenticationPlugin authenticationPlugin;
+  private boolean optionalResultSetMetadata;
 
   public MySQLConnectionFactory(EventLoopContext context, MySQLConnectOptions options) {
     super(context, options);
@@ -74,6 +75,7 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
     this.useAffectedRows = options.isUseAffectedRows();
     this.sslMode = options.isUsingDomainSocket() ? SslMode.DISABLED : options.getSslMode();
     this.authenticationPlugin = options.getAuthenticationPlugin();
+    this.optionalResultSetMetadata = options.isOptionalResultSetMetadata();
 
     // server RSA public key
     Buffer serverRsaPublicKey = null;
@@ -134,6 +136,9 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
     }
     if (!useAffectedRows) {
       capabilitiesFlags |= CLIENT_FOUND_ROWS;
+    }
+    if (optionalResultSetMetadata) {
+      capabilitiesFlags |= CLIENT_OPTIONAL_RESULTSET_METADATA;
     }
 
     return capabilitiesFlags;

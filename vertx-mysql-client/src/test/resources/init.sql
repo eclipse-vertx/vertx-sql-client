@@ -1,3 +1,6 @@
+-- necessary for make sure the import sql client is using UTF8 instead of a container host system charset
+SET NAMES utf8mb4;
+
 # testing change schema
 CREATE DATABASE emptyschema;
 GRANT ALL ON emptyschema.* TO 'mysql'@'%';

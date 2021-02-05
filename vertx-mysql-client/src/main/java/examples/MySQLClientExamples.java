@@ -114,6 +114,30 @@ public class MySQLClientExamples {
     connectOptions.setProperties(attributes);
   }
 
+  public void optionalResultsetMetadata(Vertx vertx, MySQLConnectOptions options) {
+    // enable the option
+    options.setOptionalResultSetMetadata(true);
+
+    // after connecting...
+    MySQLConnection.connect(vertx, options)
+      .onSuccess(conn -> {
+        // prepare the statement
+        conn.prepare("SELECT * FROM users WHERE id = ?")
+          .onSuccess(preparedStatement -> {
+            // disable the resultset metadata transfer
+            conn.query("SET SESSION resultset_metadata = 'NONE';")
+              .execute()
+              .onSuccess(v -> {
+                // execute with performance boost
+                preparedStatement.query().execute(Tuple.of(1))
+                  .onComplete(ar -> {
+                    // handle the result
+                  });
+              });
+          });
+      });
+  }
+
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI

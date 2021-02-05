@@ -138,6 +138,17 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testCachePreparedStatementBatchWithSameSql(TestContext ctx) {
+    testCachePreparedStatementBatchWithSameSql0(ctx);
+  }
+
+  @Test
+  public void testCachePreparedStatementBatchWithSameSqlWithOptionalResultsetMetadata(TestContext ctx) {
+    options.setOptionalResultSetMetadata(true);
+    testCachePreparedStatementBatchWithSameSql0(ctx);
+  }
+
+
+  private void testCachePreparedStatementBatchWithSameSql0(TestContext ctx) {
     MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
@@ -366,6 +377,27 @@ public class MySQLQueryTest extends MySQLTestBase {
                 conn.close();
               }));
             }));
+          }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testQueryMetadataFail(TestContext ctx) {
+    Assume.assumeTrue(rule.isUsingMySQL8());
+    options.setOptionalResultSetMetadata(true);
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, message FROM immutable WHERE id = 1").execute(ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertEquals(1, res1.size());
+        Row row = res1.iterator().next();
+        ctx.assertEquals(1, row.getInteger(0));
+        ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+
+        conn.query("SET SESSION resultset_metadata = 'NONE';").execute(ctx.asyncAssertSuccess(set -> {
+          conn.query("SELECT id, message FROM immutable WHERE id = 4;").execute(ctx.asyncAssertFailure(err -> {
+            ctx.assertEquals("Failed to execute simple queries according to no metadata packet is following, make you have set server variable resultset_metadata='FULL'", err.getMessage());
+            conn.close();
           }));
         }));
       }));

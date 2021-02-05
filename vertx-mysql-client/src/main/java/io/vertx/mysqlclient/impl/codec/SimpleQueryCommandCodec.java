@@ -19,7 +19,9 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Future;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.io.File;
@@ -134,5 +136,19 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     packet.writeByte(sequenceId);
 
     sendNonSplitPacket(packet);
+  }
+
+  @Override
+  protected final void handleResultsetColumnCountPacketBody(ByteBuf payload) {
+    int columnCount = decodeColumnCountPacketPayload(payload);
+    if (encoder.socketConnection.isOptionalMetadataSupported) {
+      boolean metadataFollows = payload.readBoolean();
+      if (!metadataFollows) {
+        encoder.onCommandResponse(CommandResponse.failure("Failed to execute simple queries according to no metadata packet is following, make you have set server variable resultset_metadata='FULL'"));
+        return;
+      }
+    }
+    commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
+    columnDefinitions = new ColumnDefinition[columnCount];
   }
 }

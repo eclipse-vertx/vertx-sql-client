@@ -48,6 +48,8 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   public MySQLDatabaseMetadata metaData;
   private MySQLCodec codec;
 
+  public boolean isOptionalMetadataSupported = false;
+
   public MySQLSocketConnection(NetSocketInternal socket,
                                boolean cachePreparedStatements,
                                int preparedStatementCacheSize,

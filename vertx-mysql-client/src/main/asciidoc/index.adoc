@@ -129,7 +129,7 @@ Then set the path to the domain socket in {@link io.vertx.mysqlclient.MySQLConne
 {@link examples.MySQLClientExamples#connectWithUnixDomainSocket}
 ----
 
-More information about native transports can be found in the [Vert.x documentation](https://vertx.io/docs/vertx-core/java/#_native_transports).
+More information about native transports can be found in the https://vertx.io/docs/vertx-core/java/#_native_transports[Vert.x documentation].
 
 == Configuration
 
@@ -187,6 +187,17 @@ More information about client connection attributes can be found in the https://
 You can configure the `useAffectedRows` option to decide whether to set `CLIENT_FOUND_ROWS` flag when connecting to the server. If the `CLIENT_FOUND_ROWS` flag is specified then the affected rows count is the numeric value of rows found rather than affected.
 
 More information about this can be found in the https://dev.mysql.com/doc/refman/8.0/en/mysql-affected-rows.html[MySQL Reference Manual]
+
+==== optional resultset metadata
+
+You can configure the `optionalResultSetMetadata` option to control whether it's possible to enable/disable resultset metadata transfer using system variable `resultset_metadata`. Note the server variable is only available for using since MySQL 8.0.3.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#optionalResultsetMetadata(io.vertx.core.Vertx, io.vertx.mysqlclient.MySQLConnectOptions)}
+----
+
+More information about this can be found in the https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_resultset_metadata[MySQL Reference Manual]
 
 === connection URI
 

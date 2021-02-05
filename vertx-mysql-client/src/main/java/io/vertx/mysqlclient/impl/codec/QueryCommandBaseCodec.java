@@ -71,11 +71,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected abstract void handleInitPacket(ByteBuf payload);
 
-  protected void handleResultsetColumnCountPacketBody(ByteBuf payload) {
-    int columnCount = decodeColumnCountPacketPayload(payload);
-    commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
-    columnDefinitions = new ColumnDefinition[columnCount];
-  }
+  abstract protected void handleResultsetColumnCountPacketBody(ByteBuf payload);
 
   protected void handleResultsetColumnDefinitions(ByteBuf payload) {
     ColumnDefinition def = decodeColumnDefinitionPacketPayload(payload);
@@ -124,7 +120,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       handleSingleResultsetDecodingCompleted(serverStatusFlags, affectedRows, lastInsertId);
     } else {
       // accept a row data
-      decoder.handleRow(columnDefinitions.length, payload);
+      decoder.handleRow(decoder.rowDesc.columnDefinitions().length, payload);
     }
   }
 
@@ -173,7 +169,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     encoder.onCommandResponse(response);
   }
 
-  private int decodeColumnCountPacketPayload(ByteBuf payload) {
+  protected final int decodeColumnCountPacketPayload(ByteBuf payload) {
     long columnCount = BufferUtils.readLengthEncodedInteger(payload);
     return (int) columnCount;
   }
