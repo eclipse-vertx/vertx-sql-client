@@ -305,7 +305,7 @@ public enum MySQLCollation {
         Charset charset = Charset.forName(collation.mappedJavaCharsetName);
         idToJavaCharsetMapping.put(collation.collationId, charset);
       } catch (Exception e) {
-        LOGGER.warn(String.format("Java charset: [%s] is not supported by this platform, data with collation[%s] will be decoded in UTF-8 instead.", collation.mysqlCharsetName, collation.name()));
+        LOGGER.info(String.format("Java charset: [%s] is not supported by this platform, data with collation[%s] will be decoded in UTF-8 instead.", collation.mysqlCharsetName, collation.name()));
       }
     }
   }

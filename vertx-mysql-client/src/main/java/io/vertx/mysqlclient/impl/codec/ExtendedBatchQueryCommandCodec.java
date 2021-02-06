@@ -54,7 +54,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
     MySQLException mySQLException = decodeErrorPacketPayload(payload);
     reportError(batchIdx, mySQLException.getMessage());
     // state needs to be reset
-    commandHandlerState = CommandHandlerState.INIT;
+    commandHandlerState = INIT;
     batchIdx++;
   }
 

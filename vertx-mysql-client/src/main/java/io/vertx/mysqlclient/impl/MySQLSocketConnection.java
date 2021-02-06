@@ -18,6 +18,7 @@
 package io.vertx.mysqlclient.impl;
 
 import io.netty.channel.ChannelPipeline;
+import io.netty.handler.flush.FlushConsolidationHandler;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
@@ -79,6 +80,9 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     codec = new MySQLCodec(this);
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
+    if (pipeliningLimit > 1) {
+      pipeline.addBefore("codec", "flush", new FlushConsolidationHandler(pipeliningLimit / 2, true));
+    }
     super.init();
   }
 

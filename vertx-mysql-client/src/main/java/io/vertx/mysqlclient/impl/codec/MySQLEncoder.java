@@ -14,6 +14,8 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.command.*;
@@ -22,6 +24,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayDeque;
 
 class MySQLEncoder extends ChannelOutboundHandlerAdapter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(MySQLEncoder.class);
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
   ChannelHandlerContext chctx;
@@ -106,7 +110,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     } else if (cmd instanceof ChangeUserCommand) {
       return new ChangeUserCommandCodec((ChangeUserCommand) cmd);
     } else {
-      System.out.println("Unsupported command " + cmd);
+      LOGGER.error("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");
     }
   }

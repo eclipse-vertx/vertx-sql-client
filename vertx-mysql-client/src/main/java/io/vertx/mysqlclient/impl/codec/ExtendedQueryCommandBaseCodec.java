@@ -52,12 +52,12 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
     if (encoder.socketConnection.isOptionalMetadataSupported) {
       boolean metadataFollows = payload.readBoolean();
       if (!metadataFollows) {
-        commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
+        commandHandlerState = HANDLING_ROW_DATA_OR_END_PACKET;
         decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
         return;
       }
     }
-    commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
+    commandHandlerState = HANDLING_COLUMN_DEFINITION;
     columnDefinitions = new ColumnDefinition[columnCount];
   }
 

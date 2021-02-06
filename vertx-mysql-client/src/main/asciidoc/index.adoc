@@ -12,13 +12,12 @@ scalability and low overhead.
 * Prepared queries caching
 * Cursor support
 * Row streaming
-* RxJava 1 and RxJava 2
+* Command pipelining
 * Direct memory to object without unnecessary copies
 * Complete data type support
 * Stored Procedures support
 * TLS/SSL support
 * MySQL utilities commands support
-* Working with MySQL and MariaDB
 * Rich collation and charset support
 * Unix domain socket
 

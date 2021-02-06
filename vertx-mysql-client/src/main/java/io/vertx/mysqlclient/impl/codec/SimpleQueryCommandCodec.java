@@ -148,7 +148,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
         return;
       }
     }
-    commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
+    commandHandlerState = HANDLING_COLUMN_DEFINITION;
     columnDefinitions = new ColumnDefinition[columnCount];
   }
 }

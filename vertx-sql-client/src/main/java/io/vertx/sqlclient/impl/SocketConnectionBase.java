@@ -59,7 +59,7 @@ public abstract class SocketConnectionBase implements Connection {
   private final Predicate<String> preparedStatementCacheSqlFilter;
   private final EventLoopContext context;
   private Holder holder;
-  private final int pipeliningLimit;
+  protected final int pipeliningLimit;
 
   // Command pipeline state
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();

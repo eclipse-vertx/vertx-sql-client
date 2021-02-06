@@ -40,13 +40,13 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
   private static final Logger LOGGER = LoggerFactory.getLogger(InitialHandshakeCommandCodec.class);
 
-  private static final int AUTH_PLUGIN_DATA_PART1_LENGTH = 8;
+  private static final byte AUTH_PLUGIN_DATA_PART1_LENGTH = 8;
 
-  private static final int ST_CONNECTING = 0;
-  private static final int ST_AUTHENTICATING = 1;
-  private static final int ST_CONNECTED = 2;
+  private static final byte ST_CONNECTING = 0;
+  private static final byte ST_AUTHENTICATING = 1;
+  private static final byte ST_CONNECTED = 2;
 
-  private int status = ST_CONNECTING;
+  private byte status = ST_CONNECTING;
 
   InitialHandshakeCommandCodec(InitialHandshakeCommand cmd) {
     super(cmd);
