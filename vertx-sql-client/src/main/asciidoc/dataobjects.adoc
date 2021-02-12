@@ -13,10 +13,10 @@
 |===
 ^|Name | Type ^| Description
 |[[idleTimeUnit]]`@idleTimeUnit`|`link:enums.html#TimeUnit[TimeUnit]`|+++
-Establish a idle time unit for connections in the pool
+Establish an idle time unit for pooled connections.
 +++
 |[[idleTimeout]]`@idleTimeout`|`Number (int)`|+++
-Establish a idle timeout for connections in the pool
+Establish an idle timeout for pooled connections.
 +++
 |[[maxSize]]`@maxSize`|`Number (int)`|+++
 Set the maximum pool size

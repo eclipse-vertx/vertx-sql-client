@@ -109,15 +109,17 @@ public class PoolOptions {
   }
 
   /**
-   * @return the pool connection idle time unit
+   * @return the pooled connection idle time unit
    */
   public TimeUnit getIdleTimeUnit() {
     return idleTimeUnit;
   }
 
   /**
-   * Establish a idle time unit for connections in the pool
-   * @param idleTimeUnit
+   * Establish an idle time unit for pooled connections.
+   *
+   * @param idleTimeUnit pooled connection idle time unit
+   * @return a reference to this, so the API can be used fluently
    */
   public PoolOptions setIdleTimeUnit(TimeUnit idleTimeUnit) {
     this.idleTimeUnit = idleTimeUnit;
@@ -125,15 +127,17 @@ public class PoolOptions {
   }
 
   /**
-   * @return the pool connection idle timeout
+   * @return pooled connection idle timeout
    */
   public int getIdleTimeout() {
     return idleTimeout;
   }
 
   /**
-   * Establish a idle timeout for connections in the pool
-   * @param idleTimeout
+   * Establish an idle timeout for pooled connections.
+   *
+   * @param idleTimeout the pool connection idle time unitq
+   * @return a reference to this, so the API can be used fluently
    */
   public PoolOptions setIdleTimeout(int idleTimeout) {
     this.idleTimeout = idleTimeout;
