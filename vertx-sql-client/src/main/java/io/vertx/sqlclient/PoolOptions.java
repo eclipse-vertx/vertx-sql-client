@@ -19,6 +19,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The options for configuring a connection pool.
@@ -27,6 +28,16 @@ import io.vertx.core.json.JsonObject;
  */
 @DataObject(generateConverter = true)
 public class PoolOptions {
+
+  /**
+   * Default connection timeout in the pool = 0 (no timeout)
+   */
+  public static final int DEFAULT_IDLE_TIMEOUT = 0;
+
+  /**
+   * Default connection idle time unit in the pool = seconds
+   */
+  public static final TimeUnit DEFAULT_IDLE_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
   /**
    * The default maximum number of connections a client will pool = 4
@@ -40,6 +51,8 @@ public class PoolOptions {
 
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
+  private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
+  private TimeUnit idleTimeUnit = DEFAULT_IDLE_TIMEOUT_TIME_UNIT;
 
   public PoolOptions() {
   }
@@ -51,6 +64,8 @@ public class PoolOptions {
   public PoolOptions(PoolOptions other) {
     maxSize = other.maxSize;
     maxWaitQueueSize = other.maxWaitQueueSize;
+    idleTimeout = other.idleTimeout;
+    idleTimeUnit = other.idleTimeUnit;
   }
 
   /**
@@ -90,6 +105,38 @@ public class PoolOptions {
    */
   public PoolOptions setMaxWaitQueueSize(int maxWaitQueueSize) {
     this.maxWaitQueueSize = maxWaitQueueSize;
+    return this;
+  }
+
+  /**
+   * @return the pool connection idle time unit
+   */
+  public TimeUnit getIdleTimeUnit() {
+    return idleTimeUnit;
+  }
+
+  /**
+   * Establish a idle time unit for connections in the pool
+   * @param idleTimeUnit
+   */
+  public PoolOptions setIdleTimeUnit(TimeUnit idleTimeUnit) {
+    this.idleTimeUnit = idleTimeUnit;
+    return this;
+  }
+
+  /**
+   * @return the pool connection idle timeout
+   */
+  public int getIdleTimeout() {
+    return idleTimeout;
+  }
+
+  /**
+   * Establish a idle timeout for connections in the pool
+   * @param idleTimeout
+   */
+  public PoolOptions setIdleTimeout(int idleTimeout) {
+    this.idleTimeout = idleTimeout;
     return this;
   }
 

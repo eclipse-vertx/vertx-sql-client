@@ -20,9 +20,8 @@ package io.vertx.pgclient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.PoolOptions;
-import org.junit.Test;
-
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -30,8 +29,8 @@ import java.util.concurrent.atomic.AtomicReference;
 public class PgPoolTest extends PgPoolTestBase {
 
   @Override
-  protected PgPool createPool(PgConnectOptions options, int size) {
-    return PgPool.pool(vertx, options, new PoolOptions().setMaxSize(size));
+  protected PgPool createPool(PgConnectOptions options, PoolOptions poolOpts) {
+    return PgPool.pool(vertx, options, poolOpts);
   }
 
   @Test
@@ -44,7 +43,7 @@ public class PgPoolTest extends PgPoolTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
+      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), poolOptions.setMaxSize(1));
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         proxyConn.get().close();
       }));
@@ -59,7 +58,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testAuthFailure(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = createPool(new PgConnectOptions(options).setPassword("wrong"), 1);
+    PgPool pool = createPool(new PgConnectOptions(options).setPassword("wrong"), poolOptions.setMaxSize(1));
     pool.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertFailure(v2 -> {
       async.complete();
     }));
@@ -163,3 +162,4 @@ public class PgPoolTest extends PgPoolTestBase {
     }
   }
 }
+

@@ -17,16 +17,22 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.Repeat;
+import io.vertx.ext.unit.junit.RepeatRule;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.Tuple;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.IntStream;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -34,6 +40,9 @@ import java.util.concurrent.atomic.AtomicReference;
 public abstract class PgPoolTestBase extends PgTestBase {
 
   Vertx vertx;
+
+  @Rule
+  public RepeatRule rule = new RepeatRule();
 
   @Before
   public void setup() throws Exception {
@@ -46,13 +55,13 @@ public abstract class PgPoolTestBase extends PgTestBase {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
-  protected abstract PgPool createPool(PgConnectOptions options, int size);
+  protected abstract PgPool createPool(PgConnectOptions options, PoolOptions poolOpts);
 
   @Test
   public void testPool(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    PgPool pool = createPool(options, poolOptions.setMaxSize(4));
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
@@ -73,7 +82,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testQuery(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    PgPool pool = createPool(options, poolOptions.setMaxSize(4));
     for (int i = 0;i < num;i++) {
       pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
@@ -100,7 +109,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   private void testQueryWithParams(TestContext ctx, PgConnectOptions options) {
     int num = 2;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 1);
+    PgPool pool = createPool(options, poolOptions.setMaxSize(1));
     for (int i = 0;i < num;i++) {
       pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1").execute(Tuple.of(i + 1), ar -> {
         if (ar.succeeded()) {
@@ -119,7 +128,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testUpdate(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    PgPool pool = createPool(options, poolOptions.setMaxSize(4));
     for (int i = 0;i < num;i++) {
       pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute( ar -> {
         if (ar.succeeded()) {
@@ -137,7 +146,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testUpdateWithParams(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    PgPool pool = createPool(options, poolOptions.setMaxSize(4));
     for (int i = 0;i < num;i++) {
       pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1").execute(Tuple.of(9), ar -> {
         if (ar.succeeded()) {
@@ -161,7 +170,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
+      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), poolOptions.setMaxSize(1));
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
@@ -180,7 +189,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   @Test
   public void testCancelRequest(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = createPool(options, 4);
+    PgPool pool = createPool(options, poolOptions.setMaxSize(4));
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT pg_sleep(10)").execute(ctx.asyncAssertFailure(error -> {
         ctx.assertEquals("canceling statement due to user request", error.getMessage());
@@ -189,5 +198,28 @@ public abstract class PgPoolTestBase extends PgTestBase {
       }));
       ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
     }));
+  }
+
+  @Repeat(500)
+  @Test
+  public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
+    final int concurrentRequestAmount = 100;
+    final int idle = 1000;
+    final int poolSize = 5;
+    Async async = ctx.async(concurrentRequestAmount);
+
+    options.setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+    poolOptions.setMaxSize(poolSize).setIdleTimeout(idle).setIdleTimeUnit(TimeUnit.MILLISECONDS);
+
+    PgPool pool = createPool(new PgConnectOptions(options), poolOptions);
+
+    IntStream.range(0, concurrentRequestAmount).forEach(n -> CompletableFuture.runAsync(() ->
+      pool.query("SELECT CURRENT_TIMESTAMP;").execute(ctx.asyncAssertSuccess(rowSet -> {
+        pool.query("select count(*) as cnt from pg_stat_activity where application_name like '%vertx%' and state = 'active'").execute(ctx.asyncAssertSuccess(rows -> {
+          Integer count = rows.iterator().next().getInteger("cnt");
+          ctx.assertInRange(count , 1, poolSize, "Oops!...Connections exceed poolSize. Are you leaked connections?.");
+          async.countDown();
+        }));
+      }))));
   }
 }
