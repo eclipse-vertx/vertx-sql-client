@@ -20,19 +20,14 @@ package io.vertx.pgclient;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.Repeat;
-import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -40,9 +35,6 @@ import org.junit.Test;
 public abstract class PgPoolTestBase extends PgTestBase {
 
   Vertx vertx;
-
-  @Rule
-  public RepeatRule rule = new RepeatRule();
 
   @Before
   public void setup() throws Exception {
@@ -198,28 +190,5 @@ public abstract class PgPoolTestBase extends PgTestBase {
       }));
       ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
     }));
-  }
-
-  @Repeat(500)
-  @Test
-  public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
-    final int concurrentRequestAmount = 100;
-    final int idle = 1000;
-    final int poolSize = 5;
-    Async async = ctx.async(concurrentRequestAmount);
-
-    options.setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
-    poolOptions.setMaxSize(poolSize).setIdleTimeout(idle).setIdleTimeUnit(TimeUnit.MILLISECONDS);
-
-    PgPool pool = createPool(new PgConnectOptions(options), poolOptions);
-
-    IntStream.range(0, concurrentRequestAmount).forEach(n -> CompletableFuture.runAsync(() ->
-      pool.query("SELECT CURRENT_TIMESTAMP;").execute(ctx.asyncAssertSuccess(rowSet -> {
-        pool.query("select count(*) as cnt from pg_stat_activity where application_name like '%vertx%' and state = 'active'").execute(ctx.asyncAssertSuccess(rows -> {
-          Integer count = rows.iterator().next().getInteger("cnt");
-          ctx.assertInRange(count , 1, poolSize, "Oops!...Connections exceed poolSize. Are you leaked connections?.");
-          async.countDown();
-        }));
-      }))));
   }
 }

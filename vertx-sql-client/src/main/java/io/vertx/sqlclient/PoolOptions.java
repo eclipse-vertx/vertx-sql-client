@@ -19,6 +19,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,7 +53,7 @@ public class PoolOptions {
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
-  private TimeUnit idleTimeUnit = DEFAULT_IDLE_TIMEOUT_TIME_UNIT;
+  private TimeUnit idleTimeoutUnit = DEFAULT_IDLE_TIMEOUT_TIME_UNIT;
 
   public PoolOptions() {
   }
@@ -65,7 +66,7 @@ public class PoolOptions {
     maxSize = other.maxSize;
     maxWaitQueueSize = other.maxWaitQueueSize;
     idleTimeout = other.idleTimeout;
-    idleTimeUnit = other.idleTimeUnit;
+    idleTimeoutUnit = other.idleTimeoutUnit;
   }
 
   /**
@@ -109,20 +110,20 @@ public class PoolOptions {
   }
 
   /**
-   * @return the pooled connection idle time unit
+   * @return the pooled connection idle timeout unit
    */
-  public TimeUnit getIdleTimeUnit() {
-    return idleTimeUnit;
+  public TimeUnit getIdleTimeoutUnit() {
+    return idleTimeoutUnit;
   }
 
   /**
-   * Establish an idle time unit for pooled connections.
+   * Establish an idle timeout unit for pooled connections.
    *
-   * @param idleTimeUnit pooled connection idle time unit
+   * @param idleTimeoutUnit pooled connection idle time unit
    * @return a reference to this, so the API can be used fluently
    */
-  public PoolOptions setIdleTimeUnit(TimeUnit idleTimeUnit) {
-    this.idleTimeUnit = idleTimeUnit;
+  public PoolOptions setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
+    this.idleTimeoutUnit = idleTimeoutUnit;
     return this;
   }
 
