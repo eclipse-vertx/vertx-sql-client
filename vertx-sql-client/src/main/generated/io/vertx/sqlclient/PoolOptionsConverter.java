@@ -16,6 +16,16 @@ public class PoolOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, PoolOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "idleTimeout":
+          if (member.getValue() instanceof Number) {
+            obj.setIdleTimeout(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "idleTimeoutUnit":
+          if (member.getValue() instanceof String) {
+            obj.setIdleTimeoutUnit(java.util.concurrent.TimeUnit.valueOf((String)member.getValue()));
+          }
+          break;
         case "maxSize":
           if (member.getValue() instanceof Number) {
             obj.setMaxSize(((Number)member.getValue()).intValue());
@@ -35,6 +45,10 @@ public class PoolOptionsConverter {
   }
 
   public static void toJson(PoolOptions obj, java.util.Map<String, Object> json) {
+    json.put("idleTimeout", obj.getIdleTimeout());
+    if (obj.getIdleTimeoutUnit() != null) {
+      json.put("idleTimeoutUnit", obj.getIdleTimeoutUnit().name());
+    }
     json.put("maxSize", obj.getMaxSize());
     json.put("maxWaitQueueSize", obj.getMaxWaitQueueSize());
   }

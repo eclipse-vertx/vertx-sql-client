@@ -14,14 +14,20 @@ package io.vertx.mysqlclient;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.Repeat;
+import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLPoolTest extends MySQLTestBase {
@@ -29,6 +35,9 @@ public class MySQLPoolTest extends MySQLTestBase {
   Vertx vertx;
   MySQLConnectOptions options;
   MySQLPool pool;
+
+  @Rule
+  public RepeatRule rule = new RepeatRule();
 
   @Before
   public void setup() {
@@ -39,6 +48,9 @@ public class MySQLPoolTest extends MySQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
+    if (pool != null) {
+      pool.close();
+    }
     vertx.close(ctx.asyncAssertSuccess());
   }
 
@@ -136,5 +148,38 @@ public class MySQLPoolTest extends MySQLTestBase {
         });
       }));
     }));
+  }
+
+  @Repeat(500)
+  @Test
+  public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
+    pool.close();
+
+    int concurrentRequestAmount = 100;
+    int idle = 1000;
+    int poolSize = 5;
+
+    options.setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+    PoolOptions poolOptions = new PoolOptions();
+    poolOptions.setMaxSize(poolSize).setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+    pool = MySQLPool.pool(options, poolOptions);
+
+    Async async = ctx.async(concurrentRequestAmount);
+    for (int i = 0; i < concurrentRequestAmount; i++) {
+      CompletableFuture.runAsync(() -> {
+        pool.query("SELECT CURRENT_TIMESTAMP;").execute(ctx.asyncAssertSuccess(rowSet -> {
+          pool.query("SHOW FULL PROCESSLIST").execute(ctx.asyncAssertSuccess(rows -> {
+            int filtered = 0;
+            for (Row row : rows) {
+              if (options.getUser().equals(row.getString("User")) && options.getDatabase().equals(row.getString("db"))) {
+                filtered++;
+              }
+            }
+            ctx.assertEquals(poolSize, filtered);
+            async.countDown();
+          }));
+        }));
+      });
+    }
   }
 }
