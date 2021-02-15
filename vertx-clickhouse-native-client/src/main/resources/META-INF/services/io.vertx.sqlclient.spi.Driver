@@ -1,1 +1,1 @@
-io.vertx.pgclient.spi.PgDriver
+io.vertx.clickhouse.clickhousenative.spi.ClickhouseNativeDriver

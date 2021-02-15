@@ -1,7 +1,7 @@
-package io.vertx.clickhouse.clikhousenative.impl;
+package io.vertx.clickhouse.clickhousenative.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.vertx.clickhouse.clikhousenative.impl.codec.ClickhouseNativeCodec;
+import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeCodec;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;

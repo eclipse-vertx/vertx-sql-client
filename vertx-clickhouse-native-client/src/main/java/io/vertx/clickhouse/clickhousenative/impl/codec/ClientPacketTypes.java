@@ -1,5 +1,5 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec;
 
-public class PacketTypes {
+public class ClientPacketTypes {
   public static final int HELLO = 0;
 }

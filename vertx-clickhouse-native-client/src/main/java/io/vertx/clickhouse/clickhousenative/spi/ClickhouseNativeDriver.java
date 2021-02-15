@@ -1,7 +1,7 @@
-package io.vertx.clickhouse.clikhousenative.spi;
+package io.vertx.clickhouse.clickhousenative.spi;
 
-import io.vertx.clickhouse.clikhousenative.ClickhouseNativeConnectOptions;
-import io.vertx.clickhouse.clikhousenative.ClickhouseNativePool;
+import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnectOptions;
+import io.vertx.clickhouse.clickhousenative.ClickhouseNativePool;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
