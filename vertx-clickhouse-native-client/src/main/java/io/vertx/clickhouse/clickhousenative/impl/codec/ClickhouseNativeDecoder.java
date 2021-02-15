@@ -1,9 +1,9 @@
-package io.vertx.clickhouse.clikhousenative.impl.codec;
+package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.vertx.clickhouse.clikhousenative.impl.ClickhouseNativeSocketConnection;
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeSocketConnection;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 

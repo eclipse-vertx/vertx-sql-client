@@ -1,11 +1,12 @@
-package io.vertx.clickhouse.clikhousenative.impl;
+package io.vertx.clickhouse.clickhousenative.impl;
 
-import io.vertx.clickhouse.clikhousenative.ClickhouseNativeConnectOptions;
-import io.vertx.clickhouse.clikhousenative.ClickhouseNativeConnection;
+import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnectOptions;
+import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnection;
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
@@ -34,7 +35,11 @@ public class ClickhouseNativeConnectionImpl extends SqlConnectionImpl<Clickhouse
 
   ClickhouseNativeConnectionImpl(ClickhouseNativeConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(context, conn, tracer, metrics);
-
     this.factory = factory;
+  }
+
+  @Override
+  public Future<Transaction> begin() {
+    throw new UnsupportedOperationException();
   }
 }

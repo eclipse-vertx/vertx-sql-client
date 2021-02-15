@@ -1,6 +1,6 @@
-package io.vertx.clickhouse.clikhousenative.impl;
+package io.vertx.clickhouse.clickhousenative.impl;
 
-import io.vertx.clickhouse.clikhousenative.ClickhouseNativeConnectOptions;
+import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnectOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.EventLoopContext;

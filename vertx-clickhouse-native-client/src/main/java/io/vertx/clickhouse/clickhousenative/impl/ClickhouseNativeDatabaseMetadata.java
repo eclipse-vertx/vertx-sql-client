@@ -1,18 +1,27 @@
-package io.vertx.clickhouse.clikhousenative.impl;
+package io.vertx.clickhouse.clickhousenative.impl;
 
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   private final String productName;
   private final String fullVersion;
-  private final String major;
-  private final String minor;
+  private final int major;
+  private final int minor;
+  private final int revision;
+  private final int patchVersion;
+  private final String displayName;
+  private final String timezone;
 
-  public ClickhouseNativeDatabaseMetadata(String productName, String fullVersion, String major, String minor) {
+  public ClickhouseNativeDatabaseMetadata(String productName, String fullVersion, int major, int minor, int revision,
+                                          int patchVersion, String displayName, String timezone) {
     this.productName = productName;
     this.fullVersion = fullVersion;
     this.major = major;
     this.minor = minor;
+    this.revision = revision;
+    this.patchVersion = patchVersion;
+    this.displayName = displayName;
+    this.timezone = timezone;
   }
 
   @Override
@@ -33,5 +42,19 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   @Override
   public int minorVersion() {
     return 0;
+  }
+
+  @Override
+  public String toString() {
+    return "ClickhouseNativeDatabaseMetadata{" +
+      "productName='" + productName + '\'' +
+      ", fullVersion='" + fullVersion + '\'' +
+      ", major=" + major +
+      ", minor=" + minor +
+      ", revision=" + revision +
+      ", patchVersion=" + patchVersion +
+      ", displayName='" + displayName + '\'' +
+      ", timezone='" + timezone + '\'' +
+      '}';
   }
 }

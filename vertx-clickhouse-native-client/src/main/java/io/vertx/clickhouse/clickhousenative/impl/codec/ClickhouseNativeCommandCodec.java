@@ -1,4 +1,4 @@
-package io.vertx.clickhouse.clikhousenative.impl.codec;
+package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

@@ -1,11 +1,12 @@
-package io.vertx.clickhouse.clikhousenative.impl.codec;
+package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.vertx.clickhouse.clikhousenative.impl.ClickhouseNativeSocketConnection;
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeSocketConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.InitCommand;
+import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.util.ArrayDeque;
 
@@ -58,6 +59,8 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
   private ClickhouseNativeCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
     if (cmd instanceof InitCommand) {
       return new InitCommandCodec((InitCommand) cmd);
+    } else if (cmd instanceof SimpleQueryCommand) {
+      return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
     }
     throw new UnsupportedOperationException(cmd.getClass().getName());
   }
