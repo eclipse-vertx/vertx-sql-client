@@ -42,7 +42,8 @@ abstract class QueryBase<T, R extends SqlResult<T>> implements Query<R> {
   @Override
   public <U> Query<SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
     Objects.requireNonNull(collector, "Supplied collector must not be null");
-    return copy(new SqlResultBuilder<>(SqlResultImpl::new, collector));
+    Function<U, SqlResultImpl<U>> function = SqlResultImpl::new;
+    return copy(new SqlResultBuilder<>(function, collector));
   }
 
   @Override
