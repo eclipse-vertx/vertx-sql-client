@@ -150,7 +150,7 @@ public class MySQLPoolTest extends MySQLTestBase {
     }));
   }
 
-  @Repeat(500)
+  @Repeat(50)
   @Test
   public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
     pool.close();
