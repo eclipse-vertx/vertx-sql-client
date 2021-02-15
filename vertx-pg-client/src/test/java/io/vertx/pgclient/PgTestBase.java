@@ -17,15 +17,15 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.junit.ContainerPgRule;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlClient;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.sqlclient.SqlClient;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -40,11 +40,9 @@ public abstract class PgTestBase {
   public static ContainerPgRule rule = new ContainerPgRule();
 
   protected PgConnectOptions options;
-  protected PoolOptions poolOptions;
 
   public void setup() throws Exception {
     options = rule.options();
-    poolOptions = rule.poolOptions();
   }
 
   static void deleteFromTestTable(TestContext ctx, SqlClient client, Runnable completionHandler) {

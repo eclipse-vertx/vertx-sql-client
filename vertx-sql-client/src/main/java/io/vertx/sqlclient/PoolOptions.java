@@ -20,8 +20,6 @@ package io.vertx.sqlclient;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * The options for configuring a connection pool.
  *
@@ -40,20 +38,8 @@ public class PoolOptions {
    */
   public static final int DEFAULT_MAX_WAIT_QUEUE_SIZE = -1;
 
-  /**
-   * Default connection timeout in the pool = 0 (no timeout)
-   */
-  public static final int DEFAULT_IDLE_TIMEOUT = 0;
-
-  /**
-   * Default connection idle time unit in the pool = seconds
-   */
-  public static final TimeUnit DEFAULT_IDLE_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
-
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
-  private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
-  private TimeUnit idleTimeoutUnit = DEFAULT_IDLE_TIMEOUT_TIME_UNIT;
 
   public PoolOptions() {
   }
@@ -65,8 +51,6 @@ public class PoolOptions {
   public PoolOptions(PoolOptions other) {
     maxSize = other.maxSize;
     maxWaitQueueSize = other.maxWaitQueueSize;
-    idleTimeout = other.idleTimeout;
-    idleTimeoutUnit = other.idleTimeoutUnit;
   }
 
   /**
@@ -106,42 +90,6 @@ public class PoolOptions {
    */
   public PoolOptions setMaxWaitQueueSize(int maxWaitQueueSize) {
     this.maxWaitQueueSize = maxWaitQueueSize;
-    return this;
-  }
-
-  /**
-   * @return the pooled connection idle timeout unit
-   */
-  public TimeUnit getIdleTimeoutUnit() {
-    return idleTimeoutUnit;
-  }
-
-  /**
-   * Establish an idle timeout unit for pooled connections.
-   *
-   * @param idleTimeoutUnit pooled connection idle time unit
-   * @return a reference to this, so the API can be used fluently
-   */
-  public PoolOptions setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
-    this.idleTimeoutUnit = idleTimeoutUnit;
-    return this;
-  }
-
-  /**
-   * @return pooled connection idle timeout
-   */
-  public int getIdleTimeout() {
-    return idleTimeout;
-  }
-
-  /**
-   * Establish an idle timeout for pooled connections.
-   *
-   * @param idleTimeout the pool connection idle time unitq
-   * @return a reference to this, so the API can be used fluently
-   */
-  public PoolOptions setIdleTimeout(int idleTimeout) {
-    this.idleTimeout = idleTimeout;
     return this;
   }
 

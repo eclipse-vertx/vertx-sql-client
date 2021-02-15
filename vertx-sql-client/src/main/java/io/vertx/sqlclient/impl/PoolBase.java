@@ -31,8 +31,6 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.ConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -50,8 +48,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     this.context = context;
     this.vertx = context.owner();
     this.factory = factory;
-    long idleTimeOut = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
-    this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize(), idleTimeOut);
+    this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize());
     this.closeFuture = new CloseFuture(this);
   }
 
