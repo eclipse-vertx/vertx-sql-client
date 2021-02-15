@@ -216,7 +216,8 @@ public class ColumnChecker {
   public <R> ColumnChecker returns(SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
                             SerializableBiFunction<Row, String, R> byNameGetter,
                             R expected) {
-    return this.<R>returns(byIndexGetter, byNameGetter, actual -> assertEquals(expected, actual));
+    Consumer<R> consumer = actual -> assertEquals(expected, actual);
+    return this.<R>returns(byIndexGetter, byNameGetter, consumer);
   }
 
   public ColumnChecker returns(SerializableBiFunction<Tuple, Integer, Object> byIndexGetter,
