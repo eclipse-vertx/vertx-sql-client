@@ -107,6 +107,15 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   @Override
+  public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    if (out != null) {
+      ByteBuf buff = out;
+      out = null;
+      buff.release();
+    }
+  }
+
+  @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
     if (msg instanceof CommandBase<?>) {
       CommandBase<?> cmd = (CommandBase<?>) msg;

@@ -104,7 +104,6 @@ public class MySQLPoolTest extends MySQLTestBase {
     }
   }
 
-  @Repeat(50)
   @Test
   public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
     Async killConnections = ctx.async();
