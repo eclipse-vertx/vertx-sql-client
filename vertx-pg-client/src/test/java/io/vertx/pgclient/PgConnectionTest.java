@@ -22,6 +22,7 @@ import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
     }));
   }
 
+  @Ignore
   @Test
   public void testQueueQueries(TestContext ctx) {
     int num = 1000;

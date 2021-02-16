@@ -171,7 +171,6 @@ public class PgPoolTest extends PgPoolTestBase {
     }
   }
 
-  @Repeat(500)
   @Test
   public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
     int concurrentRequestAmount = 100;

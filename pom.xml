@@ -59,7 +59,7 @@
     <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
     <source.skip>true</source.skip>
     <kotlin.version>1.3.0</kotlin.version>
-    <testcontainers.version>1.12.0</testcontainers.version>
+    <testcontainers.version>1.15.2</testcontainers.version>
   </properties>
 
   <dependencyManagement>
@@ -102,13 +102,119 @@
     </dependency>
   </dependencies>
 
-  <modules>
-    <module>vertx-sql-client</module>
-    <module>vertx-pg-client</module>
-    <module>vertx-mysql-client</module>
-    <module>vertx-db2-client</module>
-  </modules>
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <systemPropertyVariables>
+              <io.netty.leakDetectionLevel>DISABLED</io.netty.leakDetectionLevel>
+            </systemPropertyVariables>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
 
-
+  <profiles>
+    <profile>
+      <id>default</id>
+      <activation>
+        <property>
+          <name>skipDefault</name>
+          <value>!true</value>
+        </property>
+      </activation>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-pg-client</module>
+        <module>vertx-mysql-client</module>
+        <module>vertx-db2-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>PostgreSQL-9</id>
+      <properties>
+        <embedded.postgres.version>9.6</embedded.postgres.version>
+      </properties>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-pg-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>PostgreSQL-10</id>
+      <properties>
+        <embedded.postgres.version>10.6</embedded.postgres.version>
+      </properties>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-pg-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>PostgreSQL-11</id>
+      <properties>
+        <embedded.postgres.version>11.5</embedded.postgres.version>
+      </properties>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-pg-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>MySQL-8.0</id>
+      <properties>
+        <testing.mysql.database.server>mysql</testing.mysql.database.server>
+        <testing.mysql.database.version>8.0</testing.mysql.database.version>
+      </properties>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-mysql-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>MySQL-5.6</id>
+      <properties>
+        <testing.mysql.database.server>mysql</testing.mysql.database.server>
+        <testing.mysql.database.version>5.6</testing.mysql.database.version>
+      </properties>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-mysql-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>MySQL-5.7</id>
+      <properties>
+        <testing.mysql.database.server>mysql</testing.mysql.database.server>
+        <testing.mysql.database.version>5.7</testing.mysql.database.version>
+      </properties>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-mysql-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>MariaDB-10.4</id>
+      <properties>
+        <testing.mysql.database.server>mariadb</testing.mysql.database.server>
+        <testing.mysql.database.version>10.4</testing.mysql.database.version>
+      </properties>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-mysql-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>DB2-11.5</id>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-db2-client</module>
+      </modules>
+    </profile>
+  </profiles>
 
 </project>
