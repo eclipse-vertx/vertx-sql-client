@@ -18,6 +18,7 @@ package io.vertx.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
@@ -68,6 +69,15 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
 
   PgEncoder(ArrayDeque<PgCommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
+  }
+
+  @Override
+  public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    if (out != null) {
+      ByteBuf buff = this.out;
+      this.out = null;
+      buff.release();
+    }
   }
 
   void write(CommandBase<?> cmd) {
@@ -129,8 +139,13 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     } else {
       buff = Unpooled.EMPTY_BUFFER;
     }
-    SocketChannel channel = (SocketChannel) channelHandlerContext().channel();
-    ctx.writeAndFlush(buff).addListener(v -> channel.shutdownOutput());
+    ctx.writeAndFlush(buff).addListener(v -> {
+      Channel ch = channelHandlerContext().channel();
+      if (ch instanceof SocketChannel) {
+        SocketChannel channel = (SocketChannel) ch;
+        channel.shutdownOutput();
+      }
+    });
   }
 
   void flush() {

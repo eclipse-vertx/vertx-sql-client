@@ -51,6 +51,15 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   @Override
+  public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    if (in != null) {
+      ByteBuf buff = this.in;
+      this.in = null;
+      buff.release();
+    }
+  }
+
+  @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     ByteBuf buff = (ByteBuf) msg;
     if (in == null) {
