@@ -87,4 +87,14 @@ public class MySQLServerVersionParserTest {
     Assert.assertEquals(7, actual.minorVersion());
     Assert.assertEquals(9, actual.microVersion());
   }
+
+  @Test
+  public void testFacebook_V8_0() {
+    actual = MySQLDatabaseMetadata.parse("8.0.17 Source distribution");
+    Assert.assertEquals("8.0.17 Source distribution", actual.fullVersion());
+    Assert.assertEquals("MySQL", actual.productName());
+    Assert.assertEquals(8, actual.majorVersion());
+    Assert.assertEquals(0, actual.minorVersion());
+    Assert.assertEquals(17, actual.microVersion());
+  }
 }
