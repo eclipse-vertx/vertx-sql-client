@@ -29,6 +29,9 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
   private String name;
   private String message;
   private String stacktrace;
+  private Boolean hasNested;
+
+  private String clientName;
 
   InitCommandCodec(InitCommand cmd) {
     super(cmd);
@@ -40,12 +43,12 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
 
     ByteBuf buf = allocateBuffer();
     ByteBufUtils.writeULeb128(ClientPacketTypes.HELLO, buf);
-    String clientId = "ClickHouse " + cmd.properties()
-      .getOrDefault(ClickhouseConstants.CLIENT_NAME, "vertx-sql");
-    ByteBufUtils.writePascalString(clientId, buf);
-    ByteBufUtils.writeULeb128(20, buf);
-    ByteBufUtils.writeULeb128(10, buf);
-    ByteBufUtils.writeULeb128(54441, buf);
+    clientName = "ClickHouse " + cmd.properties()
+      .getOrDefault(ClickhouseConstants.OPTION_CLIENT_NAME, "vertx-sql");
+    ByteBufUtils.writePascalString(clientName, buf);
+    ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MAJOR, buf);
+    ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MINOR, buf);
+    ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_REVISION, buf);
     ByteBufUtils.writePascalString(cmd.database(), buf);
     ByteBufUtils.writePascalString(cmd.username(), buf);
     ByteBufUtils.writePascalString(cmd.password(), buf);
@@ -62,7 +65,7 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
         return;
       }
     }
-    if (packetType == ServerPacketTypes.HELLO) {
+    if (packetType == ServerPacketType.HELLO.code()) {
       productName = ByteBufUtils.readPascalString(in);
       if (productName == null) {
         return;
@@ -97,20 +100,22 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
           return;
         }
       }
-      patchVersion = revision;
+
       if (revision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_VERSION_PATCH) {
         patchVersion = ByteBufUtils.readULeb128(in);
         if (patchVersion == null) {
           return;
         }
+      } else {
+        patchVersion = revision;
       }
       ClickhouseNativeDatabaseMetadata md = new ClickhouseNativeDatabaseMetadata(productName,
         String.format("%d.%d.%d", major, minor, revision),
-        major, minor, revision, patchVersion, displayName, timezone);
+        major, minor, revision, patchVersion, displayName, timezone, clientName);
       encoder.getConn().setDatabaseMetadata(md);
-      LOG.info("decode: " + md);
+      LOG.info("connected to server: " + md);
       completionHandler.handle(CommandResponse.success(null));
-    } else if (packetType == ServerPacketTypes.EXCEPTION) {
+    } else if (packetType == ServerPacketType.EXCEPTION.code()) {
       if (code == null) {
         if (in.readableBytes() >= 4) {
           code = in.readIntLE();
@@ -136,6 +141,14 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
           return;
         }
       }
+      if (hasNested == null) {
+        if (in.readableBytes() >= 1) {
+          hasNested = in.readByte() != 0;
+        } else {
+          return;
+        }
+      }
+      //TODO smagellan: read nested exception if nested == true
       completionHandler.handle(CommandResponse.failure(new ClickhouseServerException(code, name, message, stacktrace)));
     } else {
       String msg = "unknown packet type: " + packetType;
