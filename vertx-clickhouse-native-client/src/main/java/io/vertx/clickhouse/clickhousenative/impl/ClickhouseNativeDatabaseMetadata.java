@@ -11,9 +11,10 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   private final int patchVersion;
   private final String displayName;
   private final String timezone;
+  private final String clientName;
 
   public ClickhouseNativeDatabaseMetadata(String productName, String fullVersion, int major, int minor, int revision,
-                                          int patchVersion, String displayName, String timezone) {
+                                          int patchVersion, String displayName, String timezone, String clientName) {
     this.productName = productName;
     this.fullVersion = fullVersion;
     this.major = major;
@@ -22,6 +23,7 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
     this.patchVersion = patchVersion;
     this.displayName = displayName;
     this.timezone = timezone;
+    this.clientName = clientName;
   }
 
   @Override
@@ -42,6 +44,26 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   @Override
   public int minorVersion() {
     return 0;
+  }
+
+  public int getRevision() {
+    return revision;
+  }
+
+  public int getPatchVersion() {
+    return patchVersion;
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public String getTimezone() {
+    return timezone;
+  }
+
+  public String getClientName() {
+    return clientName;
   }
 
   @Override

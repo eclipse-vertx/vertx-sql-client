@@ -44,7 +44,7 @@ public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public ClickhouseNativeDatabaseMetadata getDatabaseMetaData() {
     return md;
   }
 }
