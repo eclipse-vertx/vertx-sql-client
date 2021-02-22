@@ -2,6 +2,8 @@ package io.vertx.clickhouse.clickhousenative.impl;
 
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
+import java.time.ZoneId;
+
 public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   private final String productName;
   private final String fullVersion;
@@ -10,11 +12,11 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   private final int revision;
   private final int patchVersion;
   private final String displayName;
-  private final String timezone;
+  private final ZoneId timezone;
   private final String clientName;
 
   public ClickhouseNativeDatabaseMetadata(String productName, String fullVersion, int major, int minor, int revision,
-                                          int patchVersion, String displayName, String timezone, String clientName) {
+                                          int patchVersion, String displayName, ZoneId timezone, String clientName) {
     this.productName = productName;
     this.fullVersion = fullVersion;
     this.major = major;
@@ -58,7 +60,7 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
     return displayName;
   }
 
-  public String getTimezone() {
+  public ZoneId getTimezone() {
     return timezone;
   }
 

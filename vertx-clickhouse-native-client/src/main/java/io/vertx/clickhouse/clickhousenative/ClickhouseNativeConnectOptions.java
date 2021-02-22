@@ -1,5 +1,6 @@
 package io.vertx.clickhouse.clickhousenative;
 
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeConnectionUriParser;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -10,6 +11,15 @@ public class ClickhouseNativeConnectOptions extends SqlConnectOptions {
 
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
+  public static ClickhouseNativeConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
+    JsonObject parsedConfiguration = ClickhouseNativeConnectionUriParser.parse(connectionUri);
+    return new ClickhouseNativeConnectOptions(parsedConfiguration);
+  }
+
+  public ClickhouseNativeConnectOptions() {
+    super();
+  }
+
   public ClickhouseNativeConnectOptions(JsonObject json) {
     super(json);
     ClickhouseNativeConnectOptionsConverter.fromJson(json, this);
@@ -17,9 +27,6 @@ public class ClickhouseNativeConnectOptions extends SqlConnectOptions {
 
   public ClickhouseNativeConnectOptions(SqlConnectOptions other) {
     super(other);
-    if (other instanceof ClickhouseNativeConnectOptions) {
-      ClickhouseNativeConnectOptions opts = (ClickhouseNativeConnectOptions) other;
-    }
   }
 
   public ClickhouseNativeConnectOptions(ClickhouseNativeConnectOptions other) {

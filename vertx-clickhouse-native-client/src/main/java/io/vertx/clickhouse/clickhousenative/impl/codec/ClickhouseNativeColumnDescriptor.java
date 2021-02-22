@@ -14,9 +14,10 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
   private final JDBCType jdbcType;
   private final int elementSize;
   private final boolean nullable;
+  private final boolean unsigned;
 
   public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nativeType,
-                                          boolean isArray, int elementSize, JDBCType jdbcType, boolean nullable) {
+                                          boolean isArray, int elementSize, JDBCType jdbcType, boolean nullable, boolean unsigned) {
     this.name = name;
     this.unparsedNativeType = unparsedNativeType;
     this.nativeType = nativeType;
@@ -24,6 +25,7 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     this.elementSize = elementSize;
     this.jdbcType = jdbcType;
     this.nullable = nullable;
+    this.unsigned = unsigned;
   }
 
   @Override
@@ -47,6 +49,10 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
 
   public boolean isNullable() {
     return nullable;
+  }
+
+  public boolean isUnsigned() {
+    return unsigned;
   }
 
   @Override

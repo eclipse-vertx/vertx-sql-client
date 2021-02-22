@@ -4,6 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeSocketConnection;
+import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.InitCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
@@ -60,7 +61,9 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
     if (cmd instanceof InitCommand) {
       return new InitCommandCodec((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
-      return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
+      return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd);
+    } else if (cmd instanceof CloseConnectionCommand) {
+      return new CloseConnectionCommandCodec((CloseConnectionCommand)cmd);
     }
     throw new UnsupportedOperationException(cmd.getClass().getName());
   }

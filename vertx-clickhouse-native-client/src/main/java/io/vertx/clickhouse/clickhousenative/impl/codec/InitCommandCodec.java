@@ -11,6 +11,8 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
 
+import java.time.ZoneId;
+
 public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, InitCommand> {
   private static final Logger LOG = LoggerFactory.getLogger(InitCommandCodec.class);
 
@@ -111,7 +113,7 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
       }
       ClickhouseNativeDatabaseMetadata md = new ClickhouseNativeDatabaseMetadata(productName,
         String.format("%d.%d.%d", major, minor, revision),
-        major, minor, revision, patchVersion, displayName, timezone, clientName);
+        major, minor, revision, patchVersion, displayName, timezone == null ? null : ZoneId.of(timezone), clientName);
       encoder.getConn().setDatabaseMetadata(md);
       LOG.info("connected to server: " + md);
       completionHandler.handle(CommandResponse.success(null));
