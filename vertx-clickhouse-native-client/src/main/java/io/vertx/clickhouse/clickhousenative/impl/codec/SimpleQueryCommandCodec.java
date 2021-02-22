@@ -12,13 +12,13 @@ import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.util.*;
 
-public class SimpleQueryCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, SimpleQueryCommand<T>>{
-  private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCodec.class);
+public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, SimpleQueryCommand<T>>{
+  private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
   private RowResultDecoder<?, T> rowResultDecoder;
   private PacketReader packetReader;
   private int dataPacketNo;
 
-  protected SimpleQueryCodec(SimpleQueryCommand<T> cmd) {
+  protected SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd) {
     super(cmd);
   }
 
@@ -105,6 +105,9 @@ public class SimpleQueryCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T
 
   private void notifyOperationComplete() {
     Throwable failure = rowResultDecoder.complete();
+    if (failure != null) {
+      failure = new RuntimeException(failure);
+    }
     T result = rowResultDecoder.result();
     int size = rowResultDecoder.size();
     rowResultDecoder.reset();

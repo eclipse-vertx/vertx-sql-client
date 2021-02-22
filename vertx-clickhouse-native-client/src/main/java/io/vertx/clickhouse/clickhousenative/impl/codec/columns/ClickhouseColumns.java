@@ -21,16 +21,16 @@ public class ClickhouseColumns {
   }
 
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String spec, String name, boolean nullable) {
-    if (spec.equals("UInt32")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, false, 4, JDBCType.INTEGER, nullable);
-    } else if (spec.equals("UInt8")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, 1, JDBCType.TINYINT, nullable);
+    if (spec.equals("UInt32") || spec.equals("Int32")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, false, 4, JDBCType.INTEGER, nullable, spec.startsWith("U"));
+    } else if (spec.equals("UInt8") || spec.equals("Int8")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, 1, JDBCType.TINYINT, nullable, spec.startsWith("U"));
     } else if (spec.equals("String")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, ClickhouseNativeColumnDescriptor.NOSIZE, JDBCType.VARCHAR, nullable);
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, ClickhouseNativeColumnDescriptor.NOSIZE, JDBCType.VARCHAR, nullable, false);
     } else if (spec.startsWith(FIXED_STRING_PREFIX)) {
       String lengthStr = spec.substring(FIXED_STRING_PREFIX_LENGTH, spec.length() - 1);
       int bytesLength = Integer.parseInt(lengthStr);
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, bytesLength, JDBCType.VARCHAR, nullable);
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, bytesLength, JDBCType.VARCHAR, nullable, false);
     }
     throw new IllegalArgumentException("unknown spec: " + spec);
   }

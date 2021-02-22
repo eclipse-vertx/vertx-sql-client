@@ -21,4 +21,13 @@ public class UInt32Column extends ClickhouseColumn {
     }
     return null;
   }
+
+  @Override
+  protected Object getElementInternal(int rowNo) {
+    int element = ((int[])this.items)[rowNo];
+    if (columnDescriptor.isUnsigned()) {
+      return Integer.toUnsignedLong(element);
+    }
+    return element;
+  }
 }
