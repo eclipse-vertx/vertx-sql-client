@@ -39,25 +39,25 @@ public class ClickhouseColumns {
     throw new IllegalArgumentException("unknown spec: " + spec);
   }
 
-  public static ClickhouseColumn columnForSpec(String name, Map<String, ClickhouseNativeColumnDescriptor> parsedTypes, int nItems) {
+  public static ClickhouseColumn columnForSpec(String name, Map<String, ClickhouseNativeColumnDescriptor> parsedTypes, int nRows) {
     ClickhouseNativeColumnDescriptor descr = parsedTypes.get(name);
     if (descr == null) {
       throw new IllegalArgumentException("no parsed spec for column name: " + name);
     }
     JDBCType jdbcType = descr.jdbcType();
     if (jdbcType == JDBCType.TINYINT) {
-      return new UInt8Column(nItems, descr);
+      return new UInt8Column(nRows, descr);
     } else if (jdbcType == JDBCType.SMALLINT) {
-      return new UInt16Column(nItems, descr);
+      return new UInt16Column(nRows, descr);
     } else if (jdbcType == JDBCType.INTEGER) {
-      return new UInt32Column(nItems, descr);
+      return new UInt32Column(nRows, descr);
     } else if (jdbcType == JDBCType.BIGINT && descr.getElementSize() == 8) {
-      return new UInt64Column(nItems, descr);
+      return new UInt64Column(nRows, descr);
     } else if (jdbcType == JDBCType.VARCHAR) {
       if (descr.getElementSize() == ClickhouseNativeColumnDescriptor.NOSIZE) {
-        return new StringColumn(nItems, descr);
+        return new StringColumn(nRows, descr);
       } else {
-        return new FixedStringColumn(nItems, descr);
+        return new FixedStringColumn(nRows, descr);
       }
     } else {
       throw new IllegalArgumentException("no column type for jdbc type " + jdbcType);

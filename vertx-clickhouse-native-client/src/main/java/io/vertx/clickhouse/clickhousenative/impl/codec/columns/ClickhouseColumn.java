@@ -5,19 +5,23 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 import java.util.BitSet;
 
 public abstract class ClickhouseColumn {
-  protected final int nItems;
+  protected final int nRows;
   protected final ClickhouseNativeColumnDescriptor columnDescriptor;
   protected BitSet nullsMap;
-  protected Object items;
+  protected Object itemsArray;
 
-  protected ClickhouseColumn(int nItems, ClickhouseNativeColumnDescriptor columnDescriptor) {
+  protected ClickhouseColumn(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
     this.columnDescriptor = columnDescriptor;
-    this.nItems = nItems;
+    this.nRows = nRows;
   }
 
   public void readColumn(ByteBuf in){
     readStatePrefix(in);
     readData(in);
+  }
+
+  public int nRows() {
+    return nRows;
   }
 
   protected void readStatePrefix(ByteBuf in) {
@@ -34,9 +38,9 @@ public abstract class ClickhouseColumn {
   }
 
   protected void readDataInternal(ByteBuf in) {
-    if (items == null) {
-      items = readItems(in);
-      if (items == null) {
+    if (itemsArray == null) {
+      itemsArray = readItems(in);
+      if (itemsArray == null) {
         return;
       }
     }
@@ -48,16 +52,19 @@ public abstract class ClickhouseColumn {
   }
 
   protected BitSet readNullsMap(ByteBuf in) {
-    int nBytes = nItems / 8 + (nItems % 8 == 0 ? 0 : 1);
-    return BitSet.valueOf(in.readSlice(nBytes).nioBuffer());
+    int nBytes = nRows / 8 + (nRows % 8 == 0 ? 0 : 1);
+    if (in.readableBytes() >= nBytes) {
+      return BitSet.valueOf(in.readSlice(nBytes).nioBuffer());
+    }
+    return null;
   }
 
   public boolean isPartial() {
-    return items == null;
+    return itemsArray == null;
   }
 
-  public Object getItems() {
-    return items;
+  public Object getItemsArray() {
+    return itemsArray;
   }
 
   public Object getElement(int rowNo) {
@@ -68,7 +75,12 @@ public abstract class ClickhouseColumn {
   }
 
   protected Object getElementInternal(int rowNo) {
-    return java.lang.reflect.Array.get(items, rowNo);
+    return java.lang.reflect.Array.get(itemsArray, rowNo);
+  }
+
+  protected Object getObjectsArrayElement(int rowNo) {
+    Object[] data = (Object[]) itemsArray;
+    return data[rowNo];
   }
 
   public ClickhouseNativeColumnDescriptor getColumnDescriptor() {

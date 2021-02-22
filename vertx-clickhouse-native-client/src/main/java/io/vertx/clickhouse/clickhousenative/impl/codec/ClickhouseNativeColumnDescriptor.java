@@ -10,9 +10,9 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
   private final String name;
   private final String unparsedNativeType;
   private final String nativeType;
-  private final boolean isArray;
   private final JDBCType jdbcType;
   private final int elementSize;
+  private final boolean isArray;
   private final boolean nullable;
   private final boolean unsigned;
 
