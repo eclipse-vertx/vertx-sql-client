@@ -3,19 +3,21 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 
-public class UInt8Column extends ClickhouseColumn {
-  public static final int ELEMENT_SIZE = 1;
+import java.math.BigInteger;
 
-  public UInt8Column(int nItems, ClickhouseNativeColumnDescriptor columnDescriptor) {
+public class UInt64Column extends ClickhouseColumn {
+  public static final int ELEMENT_SIZE = 8;
+
+  public UInt64Column(int nItems, ClickhouseNativeColumnDescriptor columnDescriptor) {
     super(nItems, columnDescriptor);
   }
 
   @Override
   protected Object readItems(ByteBuf in) {
     if (in.readableBytes() >= ELEMENT_SIZE * nItems) {
-      byte[] data = new byte[nItems];
+      long[] data = new long[nItems];
       for (int i = 0; i < nItems; ++i) {
-        data[i] = in.readByte();
+        data[i] = in.readLongLE();
       }
       return data;
     }
@@ -24,9 +26,13 @@ public class UInt8Column extends ClickhouseColumn {
 
   @Override
   protected Object getElementInternal(int rowNo) {
-    byte element = ((byte[])this.items)[rowNo];
+    long element = ((long[])this.items)[rowNo];
     if (columnDescriptor.isUnsigned()) {
-      return (short)Byte.toUnsignedInt(element);
+      BigInteger ret = BigInteger.valueOf(element);
+      if (element < 0) {
+        ret = ret.negate();
+      }
+      return ret;
     }
     return element;
   }

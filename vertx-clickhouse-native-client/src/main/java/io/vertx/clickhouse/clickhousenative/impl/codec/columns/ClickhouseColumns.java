@@ -21,10 +21,14 @@ public class ClickhouseColumns {
   }
 
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String spec, String name, boolean nullable) {
-    if (spec.equals("UInt32") || spec.equals("Int32")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, false, 4, JDBCType.INTEGER, nullable, spec.startsWith("U"));
-    } else if (spec.equals("UInt8") || spec.equals("Int8")) {
+    if (spec.equals("UInt8") || spec.equals("Int8")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, 1, JDBCType.TINYINT, nullable, spec.startsWith("U"));
+    } else if (spec.equals("UInt16") || spec.equals("Int16")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, 2, JDBCType.SMALLINT, nullable, spec.startsWith("U"));
+    } if (spec.equals("UInt32") || spec.equals("Int32")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, false, 4, JDBCType.INTEGER, nullable, spec.startsWith("U"));
+    } if (spec.equals("UInt64") || spec.equals("Int64")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, false, 8, JDBCType.BIGINT, nullable, spec.startsWith("U"));
     } else if (spec.equals("String")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,false, ClickhouseNativeColumnDescriptor.NOSIZE, JDBCType.VARCHAR, nullable, false);
     } else if (spec.startsWith(FIXED_STRING_PREFIX)) {
@@ -41,10 +45,14 @@ public class ClickhouseColumns {
       throw new IllegalArgumentException("no parsed spec for column name: " + name);
     }
     JDBCType jdbcType = descr.jdbcType();
-    if (jdbcType == JDBCType.INTEGER) {
-      return new UInt32Column(nItems, descr);
-    } else if (jdbcType == JDBCType.TINYINT) {
+    if (jdbcType == JDBCType.TINYINT) {
       return new UInt8Column(nItems, descr);
+    } else if (jdbcType == JDBCType.SMALLINT) {
+      return new UInt16Column(nItems, descr);
+    } else if (jdbcType == JDBCType.INTEGER) {
+      return new UInt32Column(nItems, descr);
+    } else if (jdbcType == JDBCType.BIGINT && descr.getElementSize() == 8) {
+      return new UInt64Column(nItems, descr);
     } else if (jdbcType == JDBCType.VARCHAR) {
       if (descr.getElementSize() == ClickhouseNativeColumnDescriptor.NOSIZE) {
         return new StringColumn(nItems, descr);
