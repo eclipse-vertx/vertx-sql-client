@@ -6,15 +6,15 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 public class UInt16Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 2;
 
-  public UInt16Column(int nItems, ClickhouseNativeColumnDescriptor columnDescriptor) {
-    super(nItems, columnDescriptor);
+  public UInt16Column(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
+    super(nRows, columnDescriptor);
   }
 
   @Override
   protected Object readItems(ByteBuf in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nItems) {
-      short[] data = new short[nItems];
-      for (int i = 0; i < nItems; ++i) {
+    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
+      short[] data = new short[nRows];
+      for (int i = 0; i < nRows; ++i) {
         data[i] = in.readShortLE();
       }
       return data;
@@ -24,7 +24,7 @@ public class UInt16Column extends ClickhouseColumn {
 
   @Override
   protected Object getElementInternal(int rowNo) {
-    short element = ((short[])this.items)[rowNo];
+    short element = ((short[])this.itemsArray)[rowNo];
     if (columnDescriptor.isUnsigned()) {
       return Short.toUnsignedInt(element);
     }

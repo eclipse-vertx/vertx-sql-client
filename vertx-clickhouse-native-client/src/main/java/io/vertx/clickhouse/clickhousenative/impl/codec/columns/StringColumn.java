@@ -11,14 +11,14 @@ public class StringColumn extends ClickhouseColumn {
   private Integer curStrLength;
   private List<Object> elements;
 
-  protected StringColumn(int nItems, ClickhouseNativeColumnDescriptor descriptor) {
-    super(nItems, descriptor);
-    this.elements = new ArrayList<>(nItems);
+  protected StringColumn(int nRows, ClickhouseNativeColumnDescriptor descriptor) {
+    super(nRows, descriptor);
+    this.elements = new ArrayList<>(nRows);
   }
 
   @Override
   protected Object[] readItems(ByteBuf in) {
-    while (elements.size() < nItems) {
+    while (elements.size() < nRows) {
       if (curStrLength == null) {
         curStrLength = ByteBufUtils.readULeb128(in);
         if (curStrLength == null) {
@@ -36,5 +36,10 @@ public class StringColumn extends ClickhouseColumn {
     Object[] ret = elements.toArray();
     elements = null;
     return ret;
+  }
+
+  @Override
+  protected Object getElementInternal(int rowNo) {
+    return getObjectsArrayElement(rowNo);
   }
 }

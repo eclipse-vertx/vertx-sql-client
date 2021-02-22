@@ -13,9 +13,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
-public class ClickhouseTest {
+public class BasicClickhouseTest {
   @ClassRule
   public static ClickhouseResource rule = new ClickhouseResource();
+
   private ClickhouseNativeConnectOptions options;
   private Vertx vertx;
 

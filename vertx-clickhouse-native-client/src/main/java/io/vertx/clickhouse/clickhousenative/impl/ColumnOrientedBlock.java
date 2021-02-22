@@ -22,8 +22,8 @@ public class ColumnOrientedBlock extends BaseBlock {
 
   public int numRows() {
     if (numColumns() > 0) {
-      ClickhouseColumn firstRow = getData().iterator().next();
-      return java.lang.reflect.Array.getLength(firstRow.getItems());
+      ClickhouseColumn firstColumn = getData().iterator().next();
+      return firstColumn.nRows();
     } else {
       return 0;
     }

@@ -6,15 +6,15 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 public class UInt8Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 1;
 
-  public UInt8Column(int nItems, ClickhouseNativeColumnDescriptor columnDescriptor) {
-    super(nItems, columnDescriptor);
+  public UInt8Column(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
+    super(nRows, columnDescriptor);
   }
 
   @Override
   protected Object readItems(ByteBuf in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nItems) {
-      byte[] data = new byte[nItems];
-      for (int i = 0; i < nItems; ++i) {
+    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
+      byte[] data = new byte[nRows];
+      for (int i = 0; i < nRows; ++i) {
         data[i] = in.readByte();
       }
       return data;
@@ -24,7 +24,7 @@ public class UInt8Column extends ClickhouseColumn {
 
   @Override
   protected Object getElementInternal(int rowNo) {
-    byte element = ((byte[])this.items)[rowNo];
+    byte element = ((byte[])this.itemsArray)[rowNo];
     if (columnDescriptor.isUnsigned()) {
       return (short)Byte.toUnsignedInt(element);
     }
