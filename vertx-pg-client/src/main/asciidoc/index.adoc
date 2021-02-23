@@ -216,6 +216,14 @@ You can fetch generated keys with a 'RETURNING' clause in your query:
 {@link examples.PgClientExamples#returning(io.vertx.sqlclient.SqlClient)}
 ----
 
+A batch query with a `RETURNING` clause creates a {@link io.vertx.sqlclient.RowSet}
+containing a single for each element of the batch:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#batchReturning(io.vertx.sqlclient.SqlClient)}
+----
+
 include::connections.adoc[]
 
 include::transactions.adoc[]

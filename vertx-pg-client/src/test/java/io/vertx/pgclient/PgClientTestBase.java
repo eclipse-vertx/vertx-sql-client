@@ -100,6 +100,26 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
   }
 
   @Test
+  public void testInsertReturningBatch(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        List<Tuple> batch = Arrays.asList(
+          Tuple.of(14, "SomeMessage1"),
+          Tuple.of(15, "SomeMessage2"));
+        client
+          .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
+          .executeBatch(batch, ctx.asyncAssertSuccess(r1 -> {
+            ctx.assertEquals(14, r1.iterator().next().getInteger("id"));
+            RowSet<Row> r2 = r1.next();
+            ctx.assertEquals(15, r2.iterator().next().getInteger("id"));
+            async.complete();
+          }));
+      });
+    }));
+  }
+
+  @Test
   public void testInsertReturningError(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(client -> {
