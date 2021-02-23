@@ -31,6 +31,7 @@ import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collector;
@@ -656,5 +657,20 @@ public class PgClientExamples {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
     });
+  }
+
+  public void batchReturning(SqlClient client) {
+    client
+      .preparedQuery("INSERT INTO color (color_name) VALUES ($1) RETURNING color_id")
+      .executeBatch(Arrays.asList(Tuple.of("white"), Tuple.of("red"), Tuple.of("blue")),ar -> {
+        if (ar.succeeded()) {
+          for (RowSet<Row> rows = ar.result();rows.next() != null;rows = rows.next()) {
+            Integer colorId = rows.iterator().next().getInteger("color_id");
+            System.out.println("generated key: " + colorId);
+          }
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
+      });
   }
 }
