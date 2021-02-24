@@ -42,6 +42,23 @@ public class MySQLDecoder extends ChannelInboundHandlerAdapter {
   }
 
   @Override
+  public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    if (accumulationBuffer != null) {
+      ByteBuf buf = this.accumulationBuffer;
+      this.accumulationBuffer = null;
+      buf.release();
+    }
+
+    if (!compositePacket.isEmpty()) {
+      Deque<MySQLPacket> compositePacket = this.compositePacket;
+      for (MySQLPacket mySQLPacket : compositePacket) {
+        mySQLPacket.release();
+      }
+      this.compositePacket.clear();
+    }
+  }
+
+  @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) {
     ByteBuf buffer = (ByteBuf) msg;
 
