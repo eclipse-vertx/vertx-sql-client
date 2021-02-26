@@ -39,7 +39,7 @@ public class StringColumn extends ClickhouseColumn {
   }
 
   @Override
-  protected Object getElementInternal(int rowNo) {
-    return getObjectsArrayElement(rowNo);
+  protected Object getElementInternal(int rowIdx) {
+    return getObjectsArrayElement(rowIdx);
   }
 }

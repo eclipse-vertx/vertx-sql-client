@@ -67,20 +67,20 @@ public abstract class ClickhouseColumn {
     return itemsArray;
   }
 
-  public Object getElement(int rowNo) {
-    if (nullsMap != null && nullsMap.get(rowNo)) {
+  public Object getElement(int rowIdx) {
+    if (nullsMap != null && nullsMap.get(rowIdx)) {
       return null;
     }
-    return getElementInternal(rowNo);
+    return getElementInternal(rowIdx);
   }
 
-  protected Object getElementInternal(int rowNo) {
-    return java.lang.reflect.Array.get(itemsArray, rowNo);
+  protected Object getElementInternal(int rowIdx) {
+    return java.lang.reflect.Array.get(itemsArray, rowIdx);
   }
 
-  protected Object getObjectsArrayElement(int rowNo) {
+  protected Object getObjectsArrayElement(int rowIdx) {
     Object[] data = (Object[]) itemsArray;
-    return data[rowNo];
+    return data[rowIdx];
   }
 
   public ClickhouseNativeColumnDescriptor getColumnDescriptor() {

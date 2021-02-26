@@ -25,8 +25,8 @@ public class UInt64Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object getElementInternal(int rowNo) {
-    long element = ((long[])this.itemsArray)[rowNo];
+  protected Object getElementInternal(int rowIdx) {
+    long element = ((long[])this.itemsArray)[rowIdx];
     if (columnDescriptor.isUnsigned()) {
       BigInteger ret = BigInteger.valueOf(element);
       if (element < 0) {

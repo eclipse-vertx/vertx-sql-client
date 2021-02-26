@@ -10,20 +10,27 @@ import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, SimpleQueryCommand<T>>{
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
   private RowResultDecoder<?, T> rowResultDecoder;
   private PacketReader packetReader;
   private int dataPacketNo;
+  private final ClickhouseNativeSocketConnection conn;
 
-  protected SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd) {
+  protected SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd, ClickhouseNativeSocketConnection conn) {
     super(cmd);
-  }
+    this.conn = conn;
+   }
 
   @Override
   void encode(ClickhouseNativeEncoder encoder) {
+    conn.throwExceptionIfBusy();
     super.encode(encoder);
     ByteBuf buf = allocateBuffer();
     sendQuery(cmd.sql(), buf);
@@ -69,7 +76,18 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   }
 
   private void writeSettings(Map<String, Object> settings, boolean settingsAsStrings, boolean settingsAreImportant, ByteBuf buf) {
-    //TODO smagellan
+    if (settingsAsStrings) {
+      for (Map.Entry<String, Object> entry : settings.entrySet()) {
+          if (!ClickhouseConstants.NON_QUERY_OPTIONS.contains(entry.getKey())) {
+            ByteBufUtils.writePascalString(entry.getKey(), buf);
+            buf.writeBoolean(settingsAreImportant);
+            ByteBufUtils.writePascalString(entry.getValue().toString(), buf);
+          }
+      }
+    } else {
+      //TODO smagellan
+      throw new IllegalArgumentException("not implemented for settingsAsStrings=false");
+    }
     //end of settings
     ByteBufUtils.writePascalString("", buf);
   }

@@ -32,8 +32,7 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
   private String message;
   private String stacktrace;
   private Boolean hasNested;
-
-  private String clientName;
+  private String fullClientName;
 
   InitCommandCodec(InitCommand cmd) {
     super(cmd);
@@ -45,9 +44,9 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
 
     ByteBuf buf = allocateBuffer();
     ByteBufUtils.writeULeb128(ClientPacketTypes.HELLO, buf);
-    clientName = "ClickHouse " + cmd.properties()
+    fullClientName = "ClickHouse " + cmd.properties()
       .getOrDefault(ClickhouseConstants.OPTION_CLIENT_NAME, "vertx-sql");
-    ByteBufUtils.writePascalString(clientName, buf);
+    ByteBufUtils.writePascalString(fullClientName, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MAJOR, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MINOR, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_REVISION, buf);
@@ -113,7 +112,7 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
       }
       ClickhouseNativeDatabaseMetadata md = new ClickhouseNativeDatabaseMetadata(productName,
         String.format("%d.%d.%d", major, minor, revision),
-        major, minor, revision, patchVersion, displayName, timezone == null ? null : ZoneId.of(timezone), clientName);
+        major, minor, revision, patchVersion, displayName, timezone == null ? null : ZoneId.of(timezone), fullClientName, cmd.properties());
       encoder.getConn().setDatabaseMetadata(md);
       LOG.info("connected to server: " + md);
       completionHandler.handle(CommandResponse.success(null));

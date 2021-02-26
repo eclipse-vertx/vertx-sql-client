@@ -4,10 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeSocketConnection;
-import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.InitCommand;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 
@@ -61,9 +58,15 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
     if (cmd instanceof InitCommand) {
       return new InitCommandCodec((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
-      return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd);
+      return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd, conn);
     } else if (cmd instanceof CloseConnectionCommand) {
       return new CloseConnectionCommandCodec((CloseConnectionCommand)cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof ExtendedQueryCommand) {
+      return new ExtendedQueryCodec<>((ExtendedQueryCommand<?>)cmd, conn);
+    } else if (cmd instanceof CloseCursorCommand) {
+      return new CloseCursorCodec((CloseCursorCommand)cmd, conn);
     }
     throw new UnsupportedOperationException(cmd.getClass().getName());
   }

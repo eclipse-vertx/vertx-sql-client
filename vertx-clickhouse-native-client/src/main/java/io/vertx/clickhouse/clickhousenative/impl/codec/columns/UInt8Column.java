@@ -23,8 +23,8 @@ public class UInt8Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object getElementInternal(int rowNo) {
-    byte element = ((byte[])this.itemsArray)[rowNo];
+  protected Object getElementInternal(int rowIdx) {
+    byte element = ((byte[])this.itemsArray)[rowIdx];
     if (columnDescriptor.isUnsigned()) {
       return (short)Byte.toUnsignedInt(element);
     }
