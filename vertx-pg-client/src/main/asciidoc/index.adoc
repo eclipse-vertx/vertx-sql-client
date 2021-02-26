@@ -157,7 +157,7 @@ Currently the client supports the following parameter key words in connection ur
 * sslmode
 * properties including(application_name, fallback_application_name, search_path)
 
-Note: configuring properties in connection URI will override the default properties.
+NOTE: configuring properties in connection URI will override the default properties.
 
 === environment variables
 
@@ -213,7 +213,7 @@ dependencies {
 }
 ----
 
-Note that SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
+NOTE: SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
 
 
 include::queries.adoc[]
@@ -239,7 +239,7 @@ include::transactions.adoc[]
 
 include::cursor.adoc[]
 
-Note: PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
+NOTE: PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
 within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
 
 == Tracing queries
