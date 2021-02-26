@@ -1,6 +1,6 @@
 = Reactive PostgreSQL Client
 :PREPARED_PARAMS: `$1`, `$2`, etc…​
-test
+
 The Reactive PostgreSQL Client is a client for PostgreSQL with a straightforward API focusing on
 scalability and low overhead.
 
