@@ -8,14 +8,15 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.InitCommand;
-import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
   private ClickhouseNativeCodec codec;
   private ClickhouseNativeDatabaseMetadata md;
+  private String pendingCursorId;
 
   public ClickhouseNativeSocketConnection(NetSocketInternal socket,
                             boolean cachePreparedStatements,
@@ -41,6 +42,27 @@ public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
 
   public void setDatabaseMetadata(ClickhouseNativeDatabaseMetadata md) {
     this.md = md;
+  }
+
+  public void setPendingCursorId(String cursorId) {
+    this.pendingCursorId = cursorId;
+  }
+
+  public String getPendingCursorId() {
+    return pendingCursorId;
+  }
+
+  public void releasePendingCursor(String cursorId) {
+    if (!Objects.equals(this.pendingCursorId, cursorId)) {
+      throw new IllegalArgumentException("can't release pending cursor: pending = " + pendingCursorId + "; provided: " + cursorId);
+    }
+    this.pendingCursorId = null;
+  }
+
+  public void throwExceptionIfBusy() {
+    if (pendingCursorId != null) {
+      throw new IllegalArgumentException("connection is busy with cursor " + pendingCursorId);
+    }
   }
 
   @Override

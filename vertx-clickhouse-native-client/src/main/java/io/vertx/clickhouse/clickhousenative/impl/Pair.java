@@ -1,5 +1,7 @@
 package io.vertx.clickhouse.clickhousenative.impl;
 
+import java.util.Objects;
+
 public class Pair <K, V> {
   private final K left;
   private final V right;
@@ -15,6 +17,19 @@ public class Pair <K, V> {
 
   public V getRight() {
     return right;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Pair<?, ?> pair = (Pair<?, ?>) o;
+    return Objects.equals(left, pair.left) && Objects.equals(right, pair.right);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(left, right);
   }
 
   @Override

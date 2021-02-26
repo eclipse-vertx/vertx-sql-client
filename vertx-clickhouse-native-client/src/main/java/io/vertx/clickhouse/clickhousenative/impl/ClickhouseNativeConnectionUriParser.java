@@ -1,5 +1,6 @@
 package io.vertx.clickhouse.clickhousenative.impl;
 
+import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.core.json.JsonObject;
 
 import java.net.URI;

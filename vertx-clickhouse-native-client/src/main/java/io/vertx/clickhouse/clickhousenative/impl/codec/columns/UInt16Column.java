@@ -23,8 +23,8 @@ public class UInt16Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object getElementInternal(int rowNo) {
-    short element = ((short[])this.itemsArray)[rowNo];
+  protected Object getElementInternal(int rowIdx) {
+    short element = ((short[])this.itemsArray)[rowIdx];
     if (columnDescriptor.isUnsigned()) {
       return Short.toUnsignedInt(element);
     }
