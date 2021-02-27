@@ -31,6 +31,7 @@ public class ColumnOrientedBlockReader {
   private ClickhouseColumn columnData;
 
   public ColumnOrientedBlockReader(ClickhouseNativeDatabaseMetadata md) {
+    assert(md != null);
     this.md = md;
     this.serverRevision = md.getRevision();
   }
@@ -41,7 +42,7 @@ public class ColumnOrientedBlockReader {
         tempTableInfo = ByteBufUtils.readPascalString(in);
         LOG.info("tempTableInfo: " + tempTableInfo);
         if (tempTableInfo == null) {
-          return ColumnOrientedBlock.PARTIAL;
+          return null;
         }
       }
     }
@@ -54,21 +55,21 @@ public class ColumnOrientedBlockReader {
       if (blockInfo.isPartial()) {
         blockInfo.readFrom(in);
         if (blockInfo.isPartial()) {
-          return ColumnOrientedBlock.PARTIAL;
+          return null;
         }
       }
     }
     if (nColumns == null) {
       nColumns = ByteBufUtils.readULeb128(in);
       if (nColumns == null) {
-        return ColumnOrientedBlock.PARTIAL;
+        return null;
       }
       colWithTypes = new LinkedHashMap<>();
     }
     if (nRows == null) {
       nRows = ByteBufUtils.readULeb128(in);
       if (nRows == null) {
-        return ColumnOrientedBlock.PARTIAL;
+        return null;
       }
     }
 
@@ -76,13 +77,13 @@ public class ColumnOrientedBlockReader {
       if (colName == null) {
         colName = ByteBufUtils.readPascalString(in);
         if (colName == null) {
-          return ColumnOrientedBlock.PARTIAL;
+          return null;
         }
       }
       if (colType == null) {
         colType = ByteBufUtils.readPascalString(in);
         if (colType == null) {
-          return ColumnOrientedBlock.PARTIAL;
+          return null;
         }
       }
       colWithTypes.put(colName, ClickhouseColumns.columnDescriptorForSpec(colType, colName));
@@ -96,7 +97,7 @@ public class ColumnOrientedBlockReader {
           columnData.readColumn(in);
 
           if (columnData.isPartial()) {
-            return ColumnOrientedBlock.PARTIAL;
+            return null;
           } else {
             data.add(columnData);
             columnData = null;
@@ -112,6 +113,6 @@ public class ColumnOrientedBlockReader {
       LOG.info("decoded: ColumnOrientedBlock");
       return new ColumnOrientedBlock(colWithTypes, data, blockInfo, md);
     }
-    return ColumnOrientedBlock.PARTIAL;
+    return null;
   }
 }

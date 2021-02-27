@@ -1,12 +1,12 @@
 package io.vertx.clickhouse.clickhousenative.impl;
 
 public class ClickhouseServerException extends RuntimeException {
-  private final Integer code;
+  private final int code;
   private final String name;
   private final String message;
   private final String stacktrace;
 
-  public ClickhouseServerException(Integer code, String name, String message, String stacktrace) {
+  public ClickhouseServerException(Integer code, String name, String message, String stacktrace, boolean hasNested) {
     super(message);
     this.code = code;
     this.name = name;
@@ -14,7 +14,7 @@ public class ClickhouseServerException extends RuntimeException {
     this.stacktrace = stacktrace;
   }
 
-  public Integer getCode() {
+  public int getCode() {
     return code;
   }
 

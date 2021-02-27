@@ -6,6 +6,7 @@ import java.util.Map;
 public enum ServerPacketType {
   //Name, version, revision.
   HELLO(0),
+
   //A block of data (compressed or not).
   DATA(1),
 

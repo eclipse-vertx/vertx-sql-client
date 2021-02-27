@@ -96,19 +96,22 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   void decode(ChannelHandlerContext ctx, ByteBuf in) {
     LOG.info("decode: " + in.readableBytes());
     if (packetReader == null) {
-      //TODO: reimplement PacketReader via RowResultDecoder
-      packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData());
+      //TODO: reimplement PacketReader via RowResultDecoder?
+      packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), null, null);
     }
-    ColumnOrientedBlock block = packetReader.receivePacket(ctx, in);
-    if (block != null && block != ColumnOrientedBlock.PARTIAL) {
-      LOG.info("decoded packet: " + block + " row count " + block.numRows());
-      if (dataPacketNo == 0) {
-        ClickhouseNativeRowDesc rowDesc = buildRowDescriptor(block);
-        rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
+    Object packet = packetReader.receivePacket(ctx, in);
+    if (packet != null) {
+      if (packet.getClass() == ColumnOrientedBlock.class) {
+        ColumnOrientedBlock block = (ColumnOrientedBlock)packet;
+        LOG.info("decoded packet: " + block + " row count " + block.numRows());
+        if (dataPacketNo == 0) {
+          ClickhouseNativeRowDesc rowDesc = buildRowDescriptor(block);
+          rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
+        }
+        packetReader = null;
+        rowResultDecoder.generateRows(block);
+        ++dataPacketNo;
       }
-      packetReader = null;
-      rowResultDecoder.generateRows(block);
-      ++dataPacketNo;
     } else if (packetReader.isEndOfStream()) {
       notifyOperationComplete();
     }
