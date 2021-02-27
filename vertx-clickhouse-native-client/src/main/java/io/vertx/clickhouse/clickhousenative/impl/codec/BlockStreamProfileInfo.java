@@ -1,84 +1,45 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec;
 
-import io.netty.buffer.ByteBuf;
-
 public class BlockStreamProfileInfo {
-  private Integer rows;
-  private Integer blocks;
-  private Integer bytes;
-  private Boolean appliedLimit;
-  private Integer rowsBeforeLimit;
-  private Boolean calculatedRowsBeforeLimit;
+  private final int rows;
+  private final int blocks;
+  private final int bytes;
+  private final boolean appliedLimit;
+  private final int rowsBeforeLimit;
+  private final boolean calculatedRowsBeforeLimit;
 
-  public void readFrom(ByteBuf in) {
-    if (rows == null) {
-      rows = ByteBufUtils.readULeb128(in);
-      if (rows == null) {
-        return;
-      }
-    }
-    if (blocks == null) {
-      blocks = ByteBufUtils.readULeb128(in);
-      if (blocks == null) {
-        return;
-      }
-    }
-    if (bytes == null) {
-      bytes = ByteBufUtils.readULeb128(in);
-      if (bytes == null) {
-        return;
-      }
-    }
-    if (appliedLimit == null) {
-      if (in.readableBytes() == 0) {
-        return;
-      }
-      appliedLimit = in.readBoolean();
-    }
-    if (rowsBeforeLimit == null) {
-      rowsBeforeLimit = ByteBufUtils.readULeb128(in);
-      if (rowsBeforeLimit == null) {
-        return;
-      }
-    }
-    if (calculatedRowsBeforeLimit == null) {
-      if (in.readableBytes() == 0) {
-        return;
-      }
-      calculatedRowsBeforeLimit = in.readBoolean();
-    }
+  public BlockStreamProfileInfo(int rows, int blocks, int bytes, boolean appliedLimit, int rowsBeforeLimit,
+                                boolean calculatedRowsBeforeLimit) {
+    this.rows = rows;
+    this.blocks = blocks;
+    this.bytes = bytes;
+    this.appliedLimit = appliedLimit;
+    this.rowsBeforeLimit = rowsBeforeLimit;
+    this.calculatedRowsBeforeLimit = calculatedRowsBeforeLimit;
   }
 
-  public Integer getRows() {
+  public int getRows() {
     return rows;
   }
 
-  public Integer getBlocks() {
+  public int getBlocks() {
     return blocks;
   }
 
-  public Integer getBytes() {
+  public int getBytes() {
     return bytes;
   }
 
-  public Boolean getAppliedLimit() {
+  public boolean getAppliedLimit() {
     return appliedLimit;
   }
 
-  public Integer getRowsBeforeLimit() {
+  public int getRowsBeforeLimit() {
     return rowsBeforeLimit;
   }
 
-  public Boolean getCalculatedRowsBeforeLimit() {
+  public boolean getCalculatedRowsBeforeLimit() {
     return calculatedRowsBeforeLimit;
-  }
-
-  public boolean isComplete() {
-    return !isPartial();
-  }
-
-  public boolean isPartial() {
-    return calculatedRowsBeforeLimit == null;
   }
 
   @Override

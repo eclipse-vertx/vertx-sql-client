@@ -37,6 +37,13 @@ public class BasicClickhouseTest {
   }
 
   @Test
+  public void loginFailureTest(TestContext ctx) {
+    ClickhouseNativeConnectOptions opts = new ClickhouseNativeConnectOptions(options);
+    opts.setPassword("wrong-password");
+    ClickhouseNativeConnection.connect(vertx, opts, ctx.asyncAssertFailure());
+  }
+
+  @Test
   public void baseQueryTest(TestContext ctx) {
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("select 4 as resource, 'aa' as str_col1, CAST('abcdef', 'FixedString(6)') as str_col2").execute(

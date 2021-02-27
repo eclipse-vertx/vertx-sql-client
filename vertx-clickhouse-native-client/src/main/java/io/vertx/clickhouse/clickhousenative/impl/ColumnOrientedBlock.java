@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ColumnOrientedBlock extends BaseBlock {
-  public static final ColumnOrientedBlock PARTIAL = new ColumnOrientedBlock(null, null, null, null);
 
   public ColumnOrientedBlock(Map<String, ClickhouseNativeColumnDescriptor> columnsWithTypes,
                              List<ClickhouseColumn> data, BlockInfo blockInfo, ClickhouseNativeDatabaseMetadata md) {

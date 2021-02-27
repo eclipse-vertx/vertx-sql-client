@@ -3,66 +3,100 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseServerException;
 import io.vertx.clickhouse.clickhousenative.impl.ColumnOrientedBlock;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+
+import java.util.Map;
 
 public class PacketReader {
   private static final Logger LOG = LoggerFactory.getLogger(PacketReader.class);
 
   private final ClickhouseNativeDatabaseMetadata md;
+  private final String fullClientName;
+  private final Map<String, String> properties;
 
-  private Integer packetType;
+  private ServerPacketType packetType;
+  private DatabaseMetadataReader metadataReader;
+  private ClickhouseExceptionReader exceptionReader;
 
   private ColumnOrientedBlockReader columnBlockReader;
 
-  private BlockStreamProfileInfo blockStreamProfileInfo;
-  private QueryProgressInfo queryProgress;
+  private BlockStreamProfileInfoReader blockStreamProfileReader;
+  private QueryProgressInfoReader queryProgressInfoReader;
+
   private boolean endOfStream;
 
-  public PacketReader(ClickhouseNativeDatabaseMetadata md) {
+  public PacketReader(ClickhouseNativeDatabaseMetadata md, String fullClientName, Map<String, String> properties) {
     this.md = md;
+    this.fullClientName = fullClientName;
+    this.properties = properties;
   }
 
-  public ColumnOrientedBlock receivePacket(ChannelHandlerContext ctx, ByteBuf in) {
+  public Object receivePacket(ChannelHandlerContext ctx, ByteBuf in) {
     if (packetType == null) {
-      packetType = ByteBufUtils.readULeb128(in);
-      if (packetType == null) {
-        return ColumnOrientedBlock.PARTIAL;
+      Integer packetTypeCode = ByteBufUtils.readULeb128(in);
+      if (packetTypeCode == null) {
+        return null;
       }
-      LOG.info("packet type: " + ServerPacketType.fromCode(packetType));
+      packetType = ServerPacketType.fromCode(packetTypeCode);
+      LOG.info("packet type: " + packetType);
     }
-    if (packetType == ServerPacketType.DATA.code()) {
+
+    if (packetType == ServerPacketType.HELLO) {
+      if (metadataReader == null) {
+        metadataReader = new DatabaseMetadataReader(fullClientName, properties);
+      }
+      ClickhouseNativeDatabaseMetadata md = metadataReader.readFrom(in);
+      if (md != null) {
+        metadataReader = null;
+        packetType = null;
+        return md;
+      }
+    } else if (packetType == ServerPacketType.DATA) {
       if (columnBlockReader == null) {
         columnBlockReader = new ColumnOrientedBlockReader(md);
       }
       ColumnOrientedBlock block = columnBlockReader.readFrom(in);
-      if (block != ColumnOrientedBlock.PARTIAL) {
+      if (block != null) {
         columnBlockReader = null;
         packetType = null;
       }
       return block;
-    } else if (packetType == ServerPacketType.PROFILE_INFO.code()) {
-      if (blockStreamProfileInfo == null) {
-        blockStreamProfileInfo = new BlockStreamProfileInfo();
+    } else if (packetType == ServerPacketType.EXCEPTION) {
+      if (exceptionReader == null) {
+        exceptionReader = new ClickhouseExceptionReader();
       }
-      blockStreamProfileInfo.readFrom(in);
-      if (blockStreamProfileInfo.isComplete()) {
-        LOG.info("decoded: BlockStreamProfileInfo: " + blockStreamProfileInfo);
-        blockStreamProfileInfo = null;
+      ClickhouseServerException exc = exceptionReader.readFrom(in);
+      if (exc != null) {
+        exceptionReader = null;
         packetType = null;
       }
-    } else if (packetType == ServerPacketType.PROGRESS.code()) {
-      if (queryProgress == null) {
-        queryProgress = new QueryProgressInfo(md);
+      return exc;
+    } else if (packetType == ServerPacketType.PROFILE_INFO) {
+      if (blockStreamProfileReader == null) {
+        blockStreamProfileReader = new BlockStreamProfileInfoReader();
       }
-      queryProgress.readFrom(in);
-      if (queryProgress.isComplete()) {
-        LOG.info("decoded: QueryProgressInfo: " + queryProgress);
-        queryProgress = null;
+      BlockStreamProfileInfo profileInfo = blockStreamProfileReader.readFrom(in);
+      if (profileInfo != null) {
+        LOG.info("decoded: BlockStreamProfileInfo: " + profileInfo);
+        blockStreamProfileReader = null;
         packetType = null;
       }
-    } else if (packetType == ServerPacketType.END_OF_STREAM.code()) {
+      return profileInfo;
+    } else if (packetType == ServerPacketType.PROGRESS) {
+      if (queryProgressInfoReader == null) {
+        queryProgressInfoReader = new QueryProgressInfoReader(md);
+      }
+      QueryProgressInfo queryProgressInfo = queryProgressInfoReader.readFrom(in);
+      if (queryProgressInfo != null) {
+        LOG.info("decoded: QueryProgressInfo: " + queryProgressInfo);
+        queryProgressInfoReader = null;
+        packetType = null;
+      }
+      return queryProgressInfo;
+    } else if (packetType == ServerPacketType.END_OF_STREAM) {
       LOG.info("reached end of stream");
       packetType = null;
       endOfStream = true;
