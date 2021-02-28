@@ -33,6 +33,8 @@ public class ClickhouseConstants {
   public static final String OPTION_INITIAL_USERNAME = "initial_username";
   public static final String OPTION_INITIAL_HOSTNAME = "initial_hostname";
 
+  public static final String OPTION_MAX_BLOCK_SIZE = "max_block_size";
+
   public static final Set<String> NON_QUERY_OPTIONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
     OPTION_CLIENT_NAME, OPTION_INITIAL_USER, OPTION_INITIAL_QUERY_ID, OPTION_INITIAL_ADDRESS, OPTION_INITIAL_USERNAME, OPTION_INITIAL_HOSTNAME)));
 }

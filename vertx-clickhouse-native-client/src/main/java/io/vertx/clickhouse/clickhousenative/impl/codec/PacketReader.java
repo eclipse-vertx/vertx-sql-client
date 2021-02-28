@@ -1,6 +1,7 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseServerException;
@@ -40,8 +41,12 @@ public class PacketReader {
       if (packetTypeCode == null) {
         return null;
       }
-      packetType = ServerPacketType.fromCode(packetTypeCode);
-      LOG.info("packet type: " + packetType);
+      try {
+        packetType = ServerPacketType.fromCode(packetTypeCode);
+        LOG.info("packet type: " + packetType);
+      } catch (IllegalArgumentException ex) {
+        LOG.error("unknown packet type, dump: " + ByteBufUtil.hexDump(in), ex);
+      }
     }
 
     if (packetType == ServerPacketType.HELLO) {
@@ -50,6 +55,7 @@ public class PacketReader {
       }
       ClickhouseNativeDatabaseMetadata md = metadataReader.readFrom(in);
       if (md != null) {
+        LOG.info("decoded: HELLO/ClickhouseNativeDatabaseMetadata");
         metadataReader = null;
         packetType = null;
         return md;
@@ -60,6 +66,7 @@ public class PacketReader {
       }
       ColumnOrientedBlock block = columnBlockReader.readFrom(in);
       if (block != null) {
+        LOG.info("decoded: DATA/ColumnOrientedBlock [" + block.numColumns() + "; " + block.numRows() + "]");
         columnBlockReader = null;
         packetType = null;
       }
@@ -70,36 +77,39 @@ public class PacketReader {
       }
       ClickhouseServerException exc = exceptionReader.readFrom(in);
       if (exc != null) {
+        LOG.info("decoded: EXCEPTION/ClickhouseServerException");
         exceptionReader = null;
         packetType = null;
       }
       return exc;
-    } else if (packetType == ServerPacketType.PROFILE_INFO) {
-      if (blockStreamProfileReader == null) {
-        blockStreamProfileReader = new BlockStreamProfileInfoReader();
-      }
-      BlockStreamProfileInfo profileInfo = blockStreamProfileReader.readFrom(in);
-      if (profileInfo != null) {
-        LOG.info("decoded: BlockStreamProfileInfo: " + profileInfo);
-        blockStreamProfileReader = null;
-        packetType = null;
-      }
-      return profileInfo;
     } else if (packetType == ServerPacketType.PROGRESS) {
       if (queryProgressInfoReader == null) {
         queryProgressInfoReader = new QueryProgressInfoReader(md);
       }
       QueryProgressInfo queryProgressInfo = queryProgressInfoReader.readFrom(in);
       if (queryProgressInfo != null) {
-        LOG.info("decoded: QueryProgressInfo: " + queryProgressInfo);
+        LOG.info("decoded: PROGRESS/QueryProgressInfo: " + queryProgressInfo);
         queryProgressInfoReader = null;
         packetType = null;
       }
       return queryProgressInfo;
     } else if (packetType == ServerPacketType.END_OF_STREAM) {
-      LOG.info("reached end of stream");
+      LOG.info("decoded: END_OF_STREAM");
       packetType = null;
       endOfStream = true;
+    } else if (packetType == ServerPacketType.PROFILE_INFO) {
+      if (blockStreamProfileReader == null) {
+        blockStreamProfileReader = new BlockStreamProfileInfoReader();
+      }
+      BlockStreamProfileInfo profileInfo = blockStreamProfileReader.readFrom(in);
+      if (profileInfo != null) {
+        LOG.info("decoded: PROFILE_INFO/BlockStreamProfileInfo " + profileInfo);
+        blockStreamProfileReader = null;
+        packetType = null;
+      }
+      return profileInfo;
+    } else {
+      throw new IllegalStateException("unknown packet type: " + packetType);
     }
     return null;
   }

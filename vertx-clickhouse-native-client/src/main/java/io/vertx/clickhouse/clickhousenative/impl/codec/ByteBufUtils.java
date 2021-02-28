@@ -1,6 +1,7 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 
 import java.nio.charset.StandardCharsets;
 

@@ -8,7 +8,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,26 +16,28 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, SimpleQueryCommand<T>>{
+public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, QueryCommandBase<T>>{
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
   private RowResultDecoder<?, T> rowResultDecoder;
   private PacketReader packetReader;
   private int dataPacketNo;
-  private final ClickhouseNativeSocketConnection conn;
+  protected final ClickhouseNativeSocketConnection conn;
 
-  protected SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd, ClickhouseNativeSocketConnection conn) {
+  protected SimpleQueryCommandCodec(QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn) {
     super(cmd);
     this.conn = conn;
    }
 
   @Override
   void encode(ClickhouseNativeEncoder encoder) {
-    conn.throwExceptionIfBusy();
+    checkIfBusy();
     super.encode(encoder);
-    ByteBuf buf = allocateBuffer();
-    sendQuery(cmd.sql(), buf);
-    sendExternalTables(buf, Collections.emptyList());
-    encoder.chctx().writeAndFlush(buf, encoder.chctx().voidPromise());
+    if (!isSuspended()) {
+      ByteBuf buf = allocateBuffer();
+      sendQuery(cmd.sql(), buf);
+      sendExternalTables(buf, Collections.emptyList());
+      encoder.chctx().writeAndFlush(buf, encoder.chctx().voidPromise());
+    }
   }
 
   private void sendExternalTables(ByteBuf buf, Collection<RowOrientedBlock> blocks) {
@@ -66,7 +68,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
       clInfo.serializeTo(buf);
     }
     boolean settingsAsStrings = serverRevision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_SETTINGS_SERIALIZED_AS_STRINGS;
-    writeSettings(Collections.emptyMap(), settingsAsStrings, true, buf);
+    writeSettings(settings(), settingsAsStrings, true, buf);
     if (serverRevision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_INTERSERVER_SECRET) {
       ByteBufUtils.writePascalString("", buf);
     }
@@ -75,13 +77,26 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     ByteBufUtils.writePascalString(query, buf);
   }
 
-  private void writeSettings(Map<String, Object> settings, boolean settingsAsStrings, boolean settingsAreImportant, ByteBuf buf) {
+  protected Map<String, String> settings() {
+    return conn.getDatabaseMetaData().getProperties();
+  }
+
+  protected boolean isSuspended() {
+    return false;
+  }
+
+  protected void checkIfBusy() {
+    conn.throwExceptionIfBusy(null);
+  }
+
+  private void writeSettings(Map<String, String> settings, boolean settingsAsStrings, boolean settingsAreImportant, ByteBuf buf) {
     if (settingsAsStrings) {
-      for (Map.Entry<String, Object> entry : settings.entrySet()) {
+      for (Map.Entry<String, String> entry : settings.entrySet()) {
           if (!ClickhouseConstants.NON_QUERY_OPTIONS.contains(entry.getKey())) {
+            LOG.info("writing query setting: " + entry);
             ByteBufUtils.writePascalString(entry.getKey(), buf);
             buf.writeBoolean(settingsAreImportant);
-            ByteBufUtils.writePascalString(entry.getValue().toString(), buf);
+            ByteBufUtils.writePascalString(entry.getValue(), buf);
           }
       }
     } else {
@@ -94,26 +109,33 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
 
   @Override
   void decode(ChannelHandlerContext ctx, ByteBuf in) {
-    LOG.info("decode: " + in.readableBytes());
+    LOG.info("decode, readable bytes: " + in.readableBytes());
     if (packetReader == null) {
-      //TODO: reimplement PacketReader via RowResultDecoder?
       packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), null, null);
     }
     Object packet = packetReader.receivePacket(ctx, in);
     if (packet != null) {
       if (packet.getClass() == ColumnOrientedBlock.class) {
         ColumnOrientedBlock block = (ColumnOrientedBlock)packet;
-        LOG.info("decoded packet: " + block + " row count " + block.numRows());
+        LOG.info("decoded packet " + dataPacketNo + ": " + block + " row count " + block.numRows());
         if (dataPacketNo == 0) {
           ClickhouseNativeRowDesc rowDesc = buildRowDescriptor(block);
           rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
         }
         packetReader = null;
         rowResultDecoder.generateRows(block);
+        if (block.numRows() > 0) {
+          notifyOperationUpdate(true);
+        }
         ++dataPacketNo;
+      } else {
+        String msg = "unknown packet type: " + packet.getClass();
+        LOG.error(msg);
+        //completionHandler.handle(CommandResponse.failure(new RuntimeException(msg)));
       }
     } else if (packetReader.isEndOfStream()) {
-      notifyOperationComplete();
+      notifyOperationUpdate(false);
+      packetReader = null;
     }
   }
 
@@ -124,21 +146,24 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     return new ClickhouseNativeRowDesc(columnNames, columnTypes);
   }
 
-  private void notifyOperationComplete() {
-    Throwable failure = rowResultDecoder.complete();
-    if (failure != null) {
-      failure = new RuntimeException(failure);
-    }
-    T result = rowResultDecoder.result();
-    int size = rowResultDecoder.size();
-    rowResultDecoder.reset();
+  private void notifyOperationUpdate(boolean hasMoreResults) {
+    Throwable failure = null;
+    if (rowResultDecoder != null) {
+      LOG.info("notifying operation update; has more result = " + hasMoreResults);
+      failure = rowResultDecoder.complete();
+      if (failure != null) {
+        failure = new RuntimeException(failure);
+      }
+      T result = rowResultDecoder.result();
+      int size = rowResultDecoder.size();
+      rowResultDecoder.reset();
 
-    cmd.resultHandler().handleResult(0, size, rowResultDecoder.getRowDesc(), result, failure);
-    rowResultDecoder.reset();
+      cmd.resultHandler().handleResult(0, size, rowResultDecoder.getRowDesc(), result, failure);
+    }
 
     CommandResponse<Boolean> response;
     if (failure == null) {
-      response = CommandResponse.success(true);
+      response = CommandResponse.success(hasMoreResults);
     } else {
       response = CommandResponse.failure(failure);
     }

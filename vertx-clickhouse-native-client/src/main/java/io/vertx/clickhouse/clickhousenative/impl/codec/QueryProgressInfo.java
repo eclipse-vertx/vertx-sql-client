@@ -35,4 +35,15 @@ public class QueryProgressInfo {
   public int getWrittenBytes() {
     return writtenBytes;
   }
+
+  @Override
+  public String toString() {
+    return "QueryProgressInfo{" +
+      "rows=" + rows +
+      ", bytes=" + bytes +
+      ", totalRows=" + totalRows +
+      ", writtenRows=" + writtenRows +
+      ", writtenBytes=" + writtenBytes +
+      '}';
+  }
 }

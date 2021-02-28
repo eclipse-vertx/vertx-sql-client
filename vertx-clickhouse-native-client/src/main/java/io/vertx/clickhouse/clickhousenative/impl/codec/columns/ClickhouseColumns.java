@@ -60,8 +60,7 @@ public class ClickhouseColumns {
     throw new IllegalArgumentException("unknown spec: '" + spec + "'");
   }
 
-  public static ClickhouseColumn columnForSpec(String name, Map<String, ClickhouseNativeColumnDescriptor> parsedTypes, int nRows) {
-    ClickhouseNativeColumnDescriptor descr = parsedTypes.get(name);
+  public static ClickhouseColumn columnForSpec(String name, ClickhouseNativeColumnDescriptor descr, int nRows) {
     if (descr == null) {
       throw new IllegalArgumentException("no parsed spec for column name: " + name);
     }

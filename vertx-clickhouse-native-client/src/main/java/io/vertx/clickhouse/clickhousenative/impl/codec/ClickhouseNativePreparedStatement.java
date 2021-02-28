@@ -29,7 +29,7 @@ public class ClickhouseNativePreparedStatement implements PreparedStatement {
 
   @Override
   public String sql() {
-    return null;
+    return sql;
   }
 
   @Override
