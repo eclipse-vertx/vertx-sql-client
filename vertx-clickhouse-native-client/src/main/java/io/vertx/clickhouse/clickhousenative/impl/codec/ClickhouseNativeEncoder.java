@@ -64,9 +64,9 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
     } else if (cmd instanceof PrepareStatementCommand) {
       return new PrepareStatementCodec((PrepareStatementCommand) cmd);
     } else if (cmd instanceof ExtendedQueryCommand) {
-      return new ExtendedQueryCodec<>((ExtendedQueryCommand<?>)cmd, conn);
+      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>)cmd, conn);
     } else if (cmd instanceof CloseCursorCommand) {
-      return new CloseCursorCodec((CloseCursorCommand)cmd, conn);
+      return new CloseCursorCommandCodec((CloseCursorCommand)cmd, conn);
     }
     throw new UnsupportedOperationException(cmd.getClass().getName());
   }

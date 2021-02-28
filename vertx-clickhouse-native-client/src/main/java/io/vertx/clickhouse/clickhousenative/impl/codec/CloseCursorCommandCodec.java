@@ -6,10 +6,10 @@ import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeSocketConnectio
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-public class CloseCursorCodec extends ClickhouseNativeCommandCodec<Void, CloseCursorCommand>{
+public class CloseCursorCommandCodec extends ClickhouseNativeCommandCodec<Void, CloseCursorCommand>{
   private final ClickhouseNativeSocketConnection conn;
 
-  protected CloseCursorCodec(CloseCursorCommand cmd, ClickhouseNativeSocketConnection conn) {
+  protected CloseCursorCommandCodec(CloseCursorCommand cmd, ClickhouseNativeSocketConnection conn) {
     super(cmd);
     this.conn = conn;
   }

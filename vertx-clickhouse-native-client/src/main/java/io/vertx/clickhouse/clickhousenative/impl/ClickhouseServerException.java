@@ -27,7 +27,7 @@ public class ClickhouseServerException extends RuntimeException {
     return message;
   }
 
-  public String getStacktrace() {
+  public String getServerStacktrace() {
     return stacktrace;
   }
 }

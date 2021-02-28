@@ -1,10 +1,12 @@
 package io.vertx.clickhouse.clickhousenative.impl;
 
+import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumn;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class ClickhouseNativeRow implements Row {
   private final int rowNo;
@@ -31,7 +33,8 @@ public class ClickhouseNativeRow implements Row {
 
   @Override
   public Object getValue(int columnIndex) {
-    return block.getData().get(columnIndex).getElement(rowNo);
+    List<ClickhouseColumn> data = block.getData();
+    return data.get(columnIndex).getElement(rowNo);
   }
 
   @Override

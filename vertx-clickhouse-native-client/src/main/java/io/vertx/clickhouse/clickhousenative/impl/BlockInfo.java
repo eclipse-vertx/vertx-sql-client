@@ -11,6 +11,7 @@ public class BlockInfo {
   private Boolean isOverflows;
   private Integer bucketNum;
   private boolean complete;
+  private Integer fieldNum;
 
   public BlockInfo() {
     isOverflows = false;
@@ -40,27 +41,34 @@ public class BlockInfo {
 
   public void readFrom(ByteBuf buf) {
     while (isPartial()) {
-      Integer fieldNum = ByteBufUtils.readULeb128(buf);
-      if (fieldNum != null) {
-        LOG.info("fieldNum: " + fieldNum);
-        if (fieldNum == 0) {
-          complete = true;
+      if (fieldNum == null) {
+        fieldNum = ByteBufUtils.readULeb128(buf);
+        if (fieldNum == null) {
           return;
         }
-        if (fieldNum == 1) {
-          if (buf.readableBytes() >= 1) {
-            isOverflows = buf.readByte() != 0;
-            LOG.info("isOverflows: " + isOverflows);
-          } else {
-            return;
-          }
-        } else if (fieldNum == 2) {
-          if (buf.readableBytes() >= 4) {
-            bucketNum = buf.readInt();
-            LOG.info("bucketNum: " + bucketNum);
-          } else {
-            return;
-          }
+      }
+
+      LOG.info("fieldNum: " + fieldNum);
+      if (fieldNum == 0) {
+        complete = true;
+        return;
+      }
+      if (fieldNum == 1) {
+        if (buf.readableBytes() >= 1) {
+          isOverflows = buf.readBoolean();
+          fieldNum = null;
+          LOG.info("isOverflows: " + isOverflows);
+        } else {
+          return;
+        }
+      } else if (fieldNum == 2) {
+        int readable = buf.readableBytes();
+        if (readable >= 4) {
+          bucketNum = buf.readIntLE();
+          fieldNum = null;
+          LOG.info("bucketNum: " + bucketNum);
+        } else {
+          return;
         }
       }
     }

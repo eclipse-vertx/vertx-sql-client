@@ -59,9 +59,11 @@ public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
     this.pendingCursorId = null;
   }
 
-  public void throwExceptionIfBusy() {
+  public void throwExceptionIfBusy(String callerCursorId) {
     if (pendingCursorId != null) {
-      throw new IllegalArgumentException("connection is busy with cursor " + pendingCursorId);
+      if (!Objects.equals(pendingCursorId, callerCursorId)) {
+        throw new IllegalArgumentException("connection is busy with cursor " + pendingCursorId);
+      }
     }
   }
 

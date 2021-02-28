@@ -29,6 +29,7 @@ public class ColumnOrientedBlockReader {
   private String colName;
   private String colType;
   private ClickhouseColumn columnData;
+  private ClickhouseNativeColumnDescriptor columnDescriptor;
 
   public ColumnOrientedBlockReader(ClickhouseNativeDatabaseMetadata md) {
     assert(md != null);
@@ -73,7 +74,7 @@ public class ColumnOrientedBlockReader {
       }
     }
 
-    if (colWithTypes.size() < nColumns) {
+    while (colWithTypes.size() < nColumns) {
       if (colName == null) {
         colName = ByteBufUtils.readPascalString(in);
         if (colName == null) {
@@ -86,16 +87,20 @@ public class ColumnOrientedBlockReader {
           return null;
         }
       }
-      colWithTypes.put(colName, ClickhouseColumns.columnDescriptorForSpec(colType, colName));
+      if (columnDescriptor == null) {
+        columnDescriptor = ClickhouseColumns.columnDescriptorForSpec(colType, colName);
+      }
       if (nRows > 0) {
         if (data == null) {
           data = new ArrayList<>(nColumns);
         }
         if (columnData == null) {
+          columnData = ClickhouseColumns.columnForSpec(colName, columnDescriptor, nRows);
+        }
+        if (columnData.isPartial()) {
           LOG.info("reading column " + colName + " of type " + colType);
-          columnData = ClickhouseColumns.columnForSpec(colName, colWithTypes, nRows);
-          columnData.readColumn(in);
 
+          columnData.readColumn(in);
           if (columnData.isPartial()) {
             return null;
           } else {
@@ -104,13 +109,12 @@ public class ColumnOrientedBlockReader {
           }
         }
       }
+      colWithTypes.put(colName, columnDescriptor);
+      columnDescriptor = null;
       colName = null;
       colType = null;
     }
     if (colWithTypes.size() == nColumns) {
-      LOG.info("nColumns: " + nColumns + "; nRows: " + nRows);
-      LOG.info("columns: " + colWithTypes);
-      LOG.info("decoded: ColumnOrientedBlock");
       return new ColumnOrientedBlock(colWithTypes, data, blockInfo, md);
     }
     return null;

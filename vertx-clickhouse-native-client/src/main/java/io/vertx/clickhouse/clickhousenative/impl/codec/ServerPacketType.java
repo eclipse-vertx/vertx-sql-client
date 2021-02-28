@@ -59,7 +59,7 @@ public enum ServerPacketType {
   public static ServerPacketType fromCode(int code) {
     ServerPacketType ret = CODE_INDEX.get(code);
     if (ret == null) {
-      throw new IllegalArgumentException("unknown code: " + code);
+      throw new IllegalArgumentException("unknown code: " + code + "(" + Integer.toHexString(code) + ")");
     }
     return ret;
   }
