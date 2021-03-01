@@ -18,14 +18,19 @@ import java.util.Map;
 
 public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, QueryCommandBase<T>>{
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
+  private final boolean requireUpdates;
   private RowResultDecoder<?, T> rowResultDecoder;
   private PacketReader packetReader;
   private int dataPacketNo;
   protected final ClickhouseNativeSocketConnection conn;
 
   protected SimpleQueryCommandCodec(QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn) {
+    this(cmd, conn, false);
+  }
+  protected SimpleQueryCommandCodec(QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn, boolean requireUpdates) {
     super(cmd);
     this.conn = conn;
+    this.requireUpdates = requireUpdates;
    }
 
   @Override
@@ -124,7 +129,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         }
         packetReader = null;
         rowResultDecoder.generateRows(block);
-        if (block.numRows() > 0) {
+        if (requireUpdates && block.numRows() > 0) {
           notifyOperationUpdate(true);
         }
         ++dataPacketNo;
@@ -149,7 +154,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   private void notifyOperationUpdate(boolean hasMoreResults) {
     Throwable failure = null;
     if (rowResultDecoder != null) {
-      LOG.info("notifying operation update; has more result = " + hasMoreResults);
+      LOG.info("notifying operation update; has more result = " + hasMoreResults + "; query: ");
       failure = rowResultDecoder.complete();
       if (failure != null) {
         failure = new RuntimeException(failure);

@@ -2,6 +2,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 
+import java.math.BigInteger;
 import java.sql.JDBCType;
 
 public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
@@ -16,11 +17,13 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
   private final boolean nullable;
   private final boolean unsigned;
   private final boolean lowCardinality;
+  private final BigInteger minValue;
+  private final BigInteger maxValue;
 
   public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nativeType,
                                           boolean isArray, int elementSize, JDBCType jdbcType,
                                           boolean nullable, boolean unsigned,
-                                          boolean lowCardinality) {
+                                          boolean lowCardinality, Number minValue, Number maxValue) {
     this.name = name;
     this.unparsedNativeType = unparsedNativeType;
     this.nativeType = nativeType;
@@ -30,6 +33,15 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     this.nullable = nullable;
     this.unsigned = unsigned;
     this.lowCardinality = lowCardinality;
+    this.minValue = bi(minValue);
+    this.maxValue = bi(maxValue);
+  }
+
+  private BigInteger bi(Number src) {
+    if (src instanceof Byte || src instanceof Integer || src instanceof Long) {
+      return BigInteger.valueOf(src.longValue());
+    }
+    return (BigInteger) src;
   }
 
   @Override
@@ -65,6 +77,14 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
 
   public boolean isLowCardinality() {
     return lowCardinality;
+  }
+
+  public BigInteger getMinValue() {
+    return minValue;
+  }
+
+  public BigInteger getMaxValue() {
+    return maxValue;
   }
 
   @Override

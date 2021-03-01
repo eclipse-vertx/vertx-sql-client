@@ -28,12 +28,21 @@ public class UInt64Column extends ClickhouseColumn {
   protected Object getElementInternal(int rowIdx) {
     long element = ((long[])this.itemsArray)[rowIdx];
     if (columnDescriptor.isUnsigned()) {
-      BigInteger ret = BigInteger.valueOf(element);
-      if (element < 0) {
-        ret = ret.negate();
-      }
-      return ret;
+      return unsignedBi(element);
     }
     return element;
+  }
+
+  private static BigInteger unsignedBi(long l) {
+    return new BigInteger(1, new byte[] {
+      (byte) (l >>> 56 & 0xFF),
+      (byte) (l >>> 48 & 0xFF),
+      (byte) (l >>> 40 & 0xFF),
+      (byte) (l >>> 32 & 0xFF),
+      (byte) (l >>> 24 & 0xFF),
+      (byte) (l >>> 16 & 0xFF),
+      (byte) (l >>> 8 & 0xFF),
+      (byte) (l & 0xFF)
+    });
   }
 }

@@ -2,8 +2,8 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 
+import java.math.BigInteger;
 import java.sql.JDBCType;
-import java.util.Map;
 
 public class ClickhouseColumns {
   public static final String NULLABLE_PREFIX = "Nullable(";
@@ -42,20 +42,27 @@ public class ClickhouseColumns {
 
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String spec, String name,
                                                                          boolean nullable, boolean isArray, boolean isLowCardinality) {
+    boolean unsigned = spec.startsWith("U");
     if (spec.equals("UInt8") || spec.equals("Int8")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, 1, JDBCType.TINYINT, nullable, spec.startsWith("U"), isLowCardinality);
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, 1, JDBCType.TINYINT, nullable, unsigned, isLowCardinality,
+        unsigned ? 0 : -128, unsigned ? 255 : 127);
     } else if (spec.equals("UInt16") || spec.equals("Int16")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, 2, JDBCType.SMALLINT, nullable, spec.startsWith("U"), isLowCardinality);
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, 2, JDBCType.SMALLINT, nullable, unsigned, isLowCardinality,
+        unsigned ? 0 : -32768, unsigned ? 65535 : 32767);
     } if (spec.equals("UInt32") || spec.equals("Int32")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, 4, JDBCType.INTEGER, nullable, spec.startsWith("U"), isLowCardinality);
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, 4, JDBCType.INTEGER, nullable, unsigned, isLowCardinality,
+        unsigned ? 0 : -2147483648L, unsigned ? 4294967295L : 2147483647L);
     } if (spec.equals("UInt64") || spec.equals("Int64")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, 8, JDBCType.BIGINT, nullable, spec.startsWith("U"), isLowCardinality);
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, 8, JDBCType.BIGINT, nullable, unsigned, isLowCardinality,
+        unsigned ? BigInteger.ZERO : new BigInteger("-9223372036854775808"), unsigned ? new BigInteger("18446744073709551615") : new BigInteger("9223372036854775807"));
     } else if (spec.equals("String")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, ClickhouseNativeColumnDescriptor.NOSIZE, JDBCType.VARCHAR, nullable, false, isLowCardinality);
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, ClickhouseNativeColumnDescriptor.NOSIZE, JDBCType.VARCHAR,
+        nullable, false, isLowCardinality, null, null);
     } else if (spec.startsWith(FIXED_STRING_PREFIX)) {
       String lengthStr = spec.substring(FIXED_STRING_PREFIX_LENGTH, spec.length() - 1);
       int bytesLength = Integer.parseInt(lengthStr);
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, bytesLength, JDBCType.VARCHAR, nullable, false, isLowCardinality);
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, bytesLength, JDBCType.VARCHAR,
+        nullable, false, isLowCardinality, null, null);
     }
     throw new IllegalArgumentException("unknown spec: '" + spec + "'");
   }
@@ -85,10 +92,5 @@ public class ClickhouseColumns {
       }
     }
     throw new IllegalArgumentException("no column type for jdbc type " + jdbcType + " (raw type: '" + descr.getUnparsedNativeType() + "')");
-  }
-
-  public static void main(String[] args) {
-    ClickhouseNativeColumnDescriptor descr = columnDescriptorForSpec("Array(Nullable(UInt32))", "col1");
-    System.err.println(descr);
   }
 }
