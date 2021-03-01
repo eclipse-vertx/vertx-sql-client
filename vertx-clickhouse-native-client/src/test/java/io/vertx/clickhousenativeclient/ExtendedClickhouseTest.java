@@ -55,7 +55,7 @@ public class ExtendedClickhouseTest {
         .prepare(String.format("SELECT name, value from vertx_cl_test_table limit %s", limit), ctx.asyncAssertSuccess(ps -> {
           RowStream<Row> stream = ps.createStream(50, ArrayTuple.EMPTY);
           stream.exceptionHandler(err -> {
-            LOG.error(err.getMessage());
+            LOG.error("exceptionHandler: ", err);
           });
           stream.endHandler(v -> {
             LOG.info("got End of stream");

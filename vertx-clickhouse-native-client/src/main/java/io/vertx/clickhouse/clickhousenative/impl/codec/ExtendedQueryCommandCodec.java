@@ -15,7 +15,7 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
 
   public ExtendedQueryCommandCodec(ExtendedQueryCommand<T> cmd, ClickhouseNativeSocketConnection conn) {
-    super(cmd, conn);
+    super(cmd, conn, true);
   }
 
   @Override
