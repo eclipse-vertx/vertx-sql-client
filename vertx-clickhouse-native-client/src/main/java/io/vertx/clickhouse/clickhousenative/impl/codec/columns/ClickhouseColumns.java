@@ -54,7 +54,11 @@ public class ClickhouseColumns {
         unsigned ? 0 : -2147483648L, unsigned ? 4294967295L : 2147483647L);
     } if (spec.equals("UInt64") || spec.equals("Int64")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, 8, JDBCType.BIGINT, nullable, unsigned, isLowCardinality,
-        unsigned ? BigInteger.ZERO : new BigInteger("-9223372036854775808"), unsigned ? new BigInteger("18446744073709551615") : new BigInteger("9223372036854775807"));
+        unsigned ? BigInteger.ZERO : new BigInteger("-9223372036854775808"),
+        unsigned ? new BigInteger("18446744073709551615") : new BigInteger("9223372036854775807"));
+    } if (spec.equals("Int128")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, 16, JDBCType.BIGINT, nullable, false, isLowCardinality,
+        new BigInteger("-170141183460469231731687303715884105728"), new BigInteger( "170141183460469231731687303715884105727"));
     } else if (spec.equals("String")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, ClickhouseNativeColumnDescriptor.NOSIZE, JDBCType.VARCHAR,
         nullable, false, isLowCardinality, null, null);
@@ -81,8 +85,12 @@ public class ClickhouseColumns {
         return new UInt16Column(nRows, descr);
       } else if (jdbcType == JDBCType.INTEGER) {
         return new UInt32Column(nRows, descr);
-      } else if (jdbcType == JDBCType.BIGINT && descr.getElementSize() == 8) {
-        return new UInt64Column(nRows, descr);
+      } else if (jdbcType == JDBCType.BIGINT) {
+        if (descr.getElementSize() == 8) {
+          return new UInt64Column(nRows, descr);
+        } else if (descr.getElementSize() == 16) {
+          return new UInt128Column(nRows, descr);
+        }
       } else if (jdbcType == JDBCType.VARCHAR) {
         if (descr.getElementSize() == ClickhouseNativeColumnDescriptor.NOSIZE) {
           return new StringColumn(nRows, descr);
