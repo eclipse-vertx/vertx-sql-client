@@ -1,17 +1,18 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec;
 
-import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.BlockInfo;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.ColumnOrientedBlock;
-import io.vertx.clickhouse.clickhousenative.impl.Pair;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumn;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumns;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ColumnOrientedBlockReader {
   private static final Logger LOG = LoggerFactory.getLogger(ColumnOrientedBlockReader.class);
@@ -37,16 +38,8 @@ public class ColumnOrientedBlockReader {
     this.serverRevision = md.getRevision();
   }
 
-  public ColumnOrientedBlock readFrom(ByteBuf in) {
-    if (serverRevision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_TEMPORARY_TABLES) {
-      if (tempTableInfo == null) {
-        tempTableInfo = ByteBufUtils.readPascalString(in);
-        LOG.info("tempTableInfo: " + tempTableInfo);
-        if (tempTableInfo == null) {
-          return null;
-        }
-      }
-    }
+  public ColumnOrientedBlock readFrom(ClickhouseStreamDataSource in) {
+
 
     //BlockInputStream.read
     if (blockInfo == null) {
@@ -61,14 +54,14 @@ public class ColumnOrientedBlockReader {
       }
     }
     if (nColumns == null) {
-      nColumns = ByteBufUtils.readULeb128(in);
+      nColumns = in.readULeb128();
       if (nColumns == null) {
         return null;
       }
       colWithTypes = new LinkedHashMap<>();
     }
     if (nRows == null) {
-      nRows = ByteBufUtils.readULeb128(in);
+      nRows = in.readULeb128();
       if (nRows == null) {
         return null;
       }
@@ -76,13 +69,13 @@ public class ColumnOrientedBlockReader {
 
     while (colWithTypes.size() < nColumns) {
       if (colName == null) {
-        colName = ByteBufUtils.readPascalString(in);
+        colName = in.readPascalString();
         if (colName == null) {
           return null;
         }
       }
       if (colType == null) {
-        colType = ByteBufUtils.readPascalString(in);
+        colType = in.readPascalString();
         if (colType == null) {
           return null;
         }

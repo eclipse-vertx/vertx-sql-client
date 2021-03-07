@@ -1,7 +1,7 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
-import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
+import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
 import java.math.BigInteger;
 
@@ -13,7 +13,7 @@ public class UInt128Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object readItems(ByteBuf in) {
+  protected Object readItems(ClickhouseStreamDataSource in) {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       BigInteger[] data = new BigInteger[nRows];
       for (int i = 0; i < nRows; ++i) {

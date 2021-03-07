@@ -35,7 +35,6 @@ public class ClientInfo {
     //interface: TCP
     buf.writeByte(1);
     ByteBufUtils.writePascalString(properties.getOrDefault(OPTION_INITIAL_USER, System.getProperty("user.name")), buf);
-    //TODO smagellan: fix client_hostname resolution
     ByteBufUtils.writePascalString(properties.getOrDefault(OPTION_INITIAL_HOSTNAME, "unknown-hostname"), buf);
     ByteBufUtils.writePascalString(meta.getFullClientName(), buf);
     ByteBufUtils.writeULeb128(CLIENT_VERSION_MAJOR, buf);

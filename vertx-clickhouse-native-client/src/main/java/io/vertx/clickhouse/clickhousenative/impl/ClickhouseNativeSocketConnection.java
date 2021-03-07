@@ -8,6 +8,7 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.command.InitCommand;
+import net.jpountz.lz4.LZ4Factory;
 
 import java.util.Map;
 import java.util.Objects;
@@ -17,14 +18,18 @@ public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
   private ClickhouseNativeCodec codec;
   private ClickhouseNativeDatabaseMetadata md;
   private String pendingCursorId;
+  private final LZ4Factory lz4Factory;
+
 
   public ClickhouseNativeSocketConnection(NetSocketInternal socket,
-                            boolean cachePreparedStatements,
-                            int preparedStatementCacheSize,
-                            Predicate<String> preparedStatementCacheSqlFilter,
-                            int pipeliningLimit,
-                            EventLoopContext context) {
+                                          boolean cachePreparedStatements,
+                                          int preparedStatementCacheSize,
+                                          Predicate<String> preparedStatementCacheSqlFilter,
+                                          int pipeliningLimit,
+                                          EventLoopContext context,
+                                          LZ4Factory lz4Factory) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    this.lz4Factory = lz4Factory;
   }
 
   @Override
@@ -70,5 +75,9 @@ public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
   @Override
   public ClickhouseNativeDatabaseMetadata getDatabaseMetaData() {
     return md;
+  }
+
+  public LZ4Factory lz4Factory() {
+    return lz4Factory;
   }
 }

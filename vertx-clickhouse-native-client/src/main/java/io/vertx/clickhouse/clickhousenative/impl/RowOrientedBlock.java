@@ -1,9 +1,8 @@
 package io.vertx.clickhouse.clickhousenative.impl;
 
-import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ByteBufUtils;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
+import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSink;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumn;
 
 import java.util.List;
@@ -16,14 +15,14 @@ public class RowOrientedBlock extends BaseBlock {
     super(columnsWithTypes, data, blockInfo, md);
   }
 
-  public void serializeTo(ByteBuf buf) {
+  public void serializeTo(ClickhouseStreamDataSink sink) {
     if (getMd().getRevision() >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_BLOCK_INFO) {
-      getBlockInfo().serializeTo(buf);
+      getBlockInfo().serializeTo(sink);
     }
     //n_columns
-    ByteBufUtils.writeULeb128(0, buf);
+    sink.writeULeb128(0);
     //n_rows
-    ByteBufUtils.writeULeb128(0, buf);
+    sink.writeULeb128(0);
     //TODO smagellan
   }
 }

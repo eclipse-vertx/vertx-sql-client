@@ -59,7 +59,19 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     if (encoder.getConn().getDatabaseMetaData().getRevision() >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_TEMPORARY_TABLES) {
       ByteBufUtils.writePascalString(tableName, buf);
     }
-    block.serializeTo(buf);
+    ClickhouseStreamDataSink sink = null;
+    try {
+      sink = dataSink(buf);
+      block.serializeTo(sink);
+    } finally {
+      if (sink != null) {
+        sink.finish();
+      }
+    }
+  }
+
+  private ClickhouseStreamDataSink dataSink(ByteBuf buf) {
+    return conn.lz4Factory() == null ? new RawClickhouseStreamDataSink(buf) : new Lz4ClickhouseStreamDataSink(buf, conn.lz4Factory(), encoder.chctx());
   }
 
   private void sendQuery(String query, ByteBuf buf) {
@@ -78,7 +90,8 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
       ByteBufUtils.writePascalString("", buf);
     }
     ByteBufUtils.writeULeb128(QueryProcessingStage.COMPLETE, buf);
-    ByteBufUtils.writeULeb128(Compression.DISABLED, buf);
+    int compressionEnabled = conn.lz4Factory() == null ? Compression.DISABLED : Compression.ENABLED;
+    ByteBufUtils.writeULeb128(compressionEnabled, buf);
     ByteBufUtils.writePascalString(query, buf);
   }
 
@@ -116,9 +129,9 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   void decode(ChannelHandlerContext ctx, ByteBuf in) {
     LOG.info("decode, readable bytes: " + in.readableBytes());
     if (packetReader == null) {
-      packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), null, null);
+      packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), null, null, encoder.getConn().lz4Factory());
     }
-    Object packet = packetReader.receivePacket(ctx, in);
+    Object packet = packetReader.receivePacket(ctx.alloc(), in);
     if (packet != null) {
       if (packet.getClass() == ColumnOrientedBlock.class) {
         ColumnOrientedBlock block = (ColumnOrientedBlock)packet;
@@ -136,6 +149,9 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
       } else {
         String msg = "unknown packet type: " + packet.getClass();
         LOG.error(msg);
+        if (packet instanceof Throwable) {
+          LOG.error("unknown packet type", (Throwable) packet);
+        }
         //completionHandler.handle(CommandResponse.failure(new RuntimeException(msg)));
       }
     } else if (packetReader.isEndOfStream()) {
