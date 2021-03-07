@@ -87,6 +87,10 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     return maxValue;
   }
 
+  public String getNativeType() {
+    return nativeType;
+  }
+
   @Override
   public String toString() {
     return "ClickhouseNativeColumnDescriptor{" +

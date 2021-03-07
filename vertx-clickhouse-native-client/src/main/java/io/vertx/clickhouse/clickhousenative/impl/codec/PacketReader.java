@@ -56,85 +56,119 @@ public class PacketReader {
     }
 
     if (packetType == ServerPacketType.HELLO) {
-      if (metadataReader == null) {
-        metadataReader = new DatabaseMetadataReader(fullClientName, properties);
-      }
-      ClickhouseNativeDatabaseMetadata md = metadataReader.readFrom(in);
-      if (md != null) {
-        LOG.info("decoded: HELLO/ClickhouseNativeDatabaseMetadata");
-        metadataReader = null;
-        packetType = null;
-        return md;
-      }
+      return readServerHelloBlock(in);
     } else if (packetType == ServerPacketType.DATA) {
-      if (md.getRevision() >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_TEMPORARY_TABLES) {
-        if (tempTableInfo == null) {
-          tempTableInfo = ByteBufUtils.readPascalString(in);
-          LOG.info("tempTableInfo: " + tempTableInfo);
-          if (tempTableInfo == null) {
-            return null;
-          }
-        }
-      }
-      if (columnBlockReader == null) {
-        ds = dataSource(alloc);
-        columnBlockReader = new ColumnOrientedBlockReader(md);
-      }
-      ds.moreData(in, alloc);
-      ColumnOrientedBlock block = columnBlockReader.readFrom(ds);
-      if (block != null) {
-        LOG.info("decoded: DATA/ColumnOrientedBlock [" + block.numColumns() + "; " + block.numRows() + "]");
-        columnBlockReader = null;
-        packetType = null;
-        ds = null;
-        tempTableInfo = null;
-      }
-      return block;
+      return readDataBlock(alloc, in);
     } else if (packetType == ServerPacketType.EXCEPTION) {
-      if (exceptionReader == null) {
-        exceptionReader = new ClickhouseExceptionReader();
-      }
-      ClickhouseServerException exc = exceptionReader.readFrom(in);
-      if (exc != null) {
-        LOG.info("decoded: EXCEPTION/ClickhouseServerException");
-        exceptionReader = null;
-        packetType = null;
-      }
-      return exc;
+      return readExceptionBlock(in);
     } else if (packetType == ServerPacketType.PROGRESS) {
-      if (queryProgressInfoReader == null) {
-        queryProgressInfoReader = new QueryProgressInfoReader(md);
-      }
-      QueryProgressInfo queryProgressInfo = queryProgressInfoReader.readFrom(in);
-      if (queryProgressInfo != null) {
-        LOG.info("decoded: PROGRESS/QueryProgressInfo: " + queryProgressInfo);
-        queryProgressInfoReader = null;
-        packetType = null;
-      }
-      return queryProgressInfo;
+      return readProgressBlock(in);
     } else if (packetType == ServerPacketType.END_OF_STREAM) {
       LOG.info("decoded: END_OF_STREAM");
       packetType = null;
       endOfStream = true;
     } else if (packetType == ServerPacketType.PROFILE_INFO) {
-      if (blockStreamProfileReader == null) {
-        blockStreamProfileReader = new BlockStreamProfileInfoReader();
+      return readProfileInfoBlock(in);
+    } else if (packetType == ServerPacketType.LOG) {
+      ColumnOrientedBlock block = readDataBlock(alloc, in, false);
+      if (block != null) {
+        traceServerLogs(block);
       }
-      BlockStreamProfileInfo profileInfo = blockStreamProfileReader.readFrom(in);
-      if (profileInfo != null) {
-        LOG.info("decoded: PROFILE_INFO/BlockStreamProfileInfo " + profileInfo);
-        blockStreamProfileReader = null;
-        packetType = null;
-      }
-      return profileInfo;
+      return null;
     } else {
       throw new IllegalStateException("unknown packet type: " + packetType);
     }
     return null;
   }
 
-  private ClickhouseStreamDataSource dataSource(ByteBufAllocator alloc) {
-    if (lz4Factory == null) {
+  private void traceServerLogs(ColumnOrientedBlock block) {
+    LOG.info("server log: [" + block.numColumns() + "; " + block.numRows() + "]");
+  }
+
+  private ClickhouseNativeDatabaseMetadata readServerHelloBlock(ByteBuf in) {
+    if (metadataReader == null) {
+      metadataReader = new DatabaseMetadataReader(fullClientName, properties);
+    }
+    ClickhouseNativeDatabaseMetadata md = metadataReader.readFrom(in);
+    if (md != null) {
+      LOG.info("decoded: HELLO/ClickhouseNativeDatabaseMetadata");
+      metadataReader = null;
+      packetType = null;
+    }
+    return md;
+  }
+
+  private BlockStreamProfileInfo readProfileInfoBlock(ByteBuf in) {
+    if (blockStreamProfileReader == null) {
+      blockStreamProfileReader = new BlockStreamProfileInfoReader();
+    }
+    BlockStreamProfileInfo profileInfo = blockStreamProfileReader.readFrom(in);
+    if (profileInfo != null) {
+      LOG.info("decoded: PROFILE_INFO/BlockStreamProfileInfo " + profileInfo);
+      blockStreamProfileReader = null;
+      packetType = null;
+    }
+    return profileInfo;
+  }
+
+  private QueryProgressInfo readProgressBlock(ByteBuf in) {
+    if (queryProgressInfoReader == null) {
+      queryProgressInfoReader = new QueryProgressInfoReader(md);
+    }
+    QueryProgressInfo queryProgressInfo = queryProgressInfoReader.readFrom(in);
+    if (queryProgressInfo != null) {
+      LOG.info("decoded: PROGRESS/QueryProgressInfo: " + queryProgressInfo);
+      queryProgressInfoReader = null;
+      packetType = null;
+    }
+    return queryProgressInfo;
+  }
+
+  private ClickhouseServerException readExceptionBlock(ByteBuf in) {
+    if (exceptionReader == null) {
+      exceptionReader = new ClickhouseExceptionReader();
+    }
+    ClickhouseServerException exc = exceptionReader.readFrom(in);
+    if (exc != null) {
+      LOG.info("decoded: EXCEPTION/ClickhouseServerException");
+      exceptionReader = null;
+      packetType = null;
+    }
+    return exc;
+  }
+
+  private ColumnOrientedBlock readDataBlock(ByteBufAllocator alloc, ByteBuf in) {
+    return readDataBlock(alloc, in, true);
+  }
+
+  private ColumnOrientedBlock readDataBlock(ByteBufAllocator alloc, ByteBuf in, boolean preferCompressionIfEnabled) {
+    if (md.getRevision() >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_TEMPORARY_TABLES) {
+      if (tempTableInfo == null) {
+        tempTableInfo = ByteBufUtils.readPascalString(in);
+        LOG.info("tempTableInfo: " + tempTableInfo);
+        if (tempTableInfo == null) {
+          return null;
+        }
+      }
+    }
+    if (columnBlockReader == null) {
+      ds = dataSource(alloc, preferCompressionIfEnabled);
+      columnBlockReader = new ColumnOrientedBlockReader(md);
+    }
+    ds.moreData(in, alloc);
+    ColumnOrientedBlock block = columnBlockReader.readFrom(ds);
+    if (block != null) {
+      LOG.info("decoded: DATA/ColumnOrientedBlock [" + block.numColumns() + "; " + block.numRows() + "]");
+      columnBlockReader = null;
+      packetType = null;
+      ds = null;
+      tempTableInfo = null;
+    }
+    return block;
+  }
+
+  private ClickhouseStreamDataSource dataSource(ByteBufAllocator alloc, boolean preferCompressionIfEnabled) {
+    if (lz4Factory == null || !preferCompressionIfEnabled) {
       return new RawClickhouseStreamDataSource();
     } else {
       return new Lz4ClickhouseStreamDataSource(lz4Factory, alloc);

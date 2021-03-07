@@ -62,13 +62,14 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
       LOG.info(String.format("compressed size: %d(0x%X), sizeWithHeader: %d(0x%X), uncompressed size: %d(0x%X)",
         compressedSize, compressedSize, sizeWithHeader, sizeWithHeader, uncompressedSize, uncompressedSize));
     }
-    if (compressedSize == null) {
+    if (uncompressedSize == null) {
       return;
     }
     if (buf.readableBytes() < compressedSize) {
       return;
     }
     long[] oursCityHash;
+    //TODO: maybe skip allocation if buf.hasArray() == true
     ByteBuf arrayBb = alloc.heapBuffer(sizeWithHeader.intValue());
     buf.readerIndex(checkSummedReaderIndex);
     buf.readBytes(arrayBb);
@@ -91,6 +92,7 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
     LOG.info("decompressed " + uncompressedBytes.length + " bytes of data");
     //LOG.info("decompressed data: " + ByteBufUtil.hexDump(uncompressedBytes) + "; asStr: " + new String(uncompressedBytes, StandardCharsets.UTF_8));
     decompressedData.writeBytes(uncompressedBytes);
+    arrayBb.release();
     serverCityHash = null;
     sizeWithHeader = null;
     compressedSize = null;
