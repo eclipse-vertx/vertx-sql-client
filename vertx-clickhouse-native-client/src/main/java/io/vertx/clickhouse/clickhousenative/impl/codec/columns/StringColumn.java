@@ -1,8 +1,8 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
-import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ByteBufUtils;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
+import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +17,10 @@ public class StringColumn extends ClickhouseColumn {
   }
 
   @Override
-  protected Object[] readItems(ByteBuf in) {
+  protected Object[] readItems(ClickhouseStreamDataSource in) {
     while (elements.size() < nRows) {
       if (curStrLength == null) {
-        curStrLength = ByteBufUtils.readULeb128(in);
+        curStrLength = in.readULeb128();
         if (curStrLength == null) {
           return null;
         }

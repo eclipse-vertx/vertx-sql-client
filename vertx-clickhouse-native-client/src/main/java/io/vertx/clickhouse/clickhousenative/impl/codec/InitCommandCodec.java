@@ -43,9 +43,9 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
   @Override
   void decode(ChannelHandlerContext ctx, ByteBuf in) {
     if (packetReader == null) {
-      packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), fullClientName, cmd.properties());
+      packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), fullClientName, cmd.properties(), encoder.getConn().lz4Factory());
     }
-    Object packet = packetReader.receivePacket(ctx, in);
+    Object packet = packetReader.receivePacket(ctx.alloc(), in);
     if (packet != null) {
       if (packet.getClass() == ClickhouseNativeDatabaseMetadata.class) {
         ClickhouseNativeDatabaseMetadata md = (ClickhouseNativeDatabaseMetadata)packet;

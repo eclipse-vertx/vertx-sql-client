@@ -25,7 +25,6 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   @Override
   protected Row decodeRow(int len, ByteBuf in) {
-    LOG.info("generating row " + (rowNo + 1));
     ClickhouseNativeRow row = new ClickhouseNativeRow(rowNo, rowDesc, block);
     ++rowNo;
     return row;

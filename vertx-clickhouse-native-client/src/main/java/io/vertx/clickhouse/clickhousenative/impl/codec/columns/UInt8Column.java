@@ -1,7 +1,7 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
-import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
+import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
 public class UInt8Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 1;
@@ -11,7 +11,7 @@ public class UInt8Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object readItems(ByteBuf in) {
+  protected Object readItems(ClickhouseStreamDataSource in) {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       byte[] data = new byte[nRows];
       for (int i = 0; i < nRows; ++i) {

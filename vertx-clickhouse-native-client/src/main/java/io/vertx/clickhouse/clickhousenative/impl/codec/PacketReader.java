@@ -1,13 +1,15 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.ChannelHandlerContext;
+import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseServerException;
 import io.vertx.clickhouse.clickhousenative.impl.ColumnOrientedBlock;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import net.jpountz.lz4.LZ4Factory;
 
 import java.util.Map;
 
@@ -17,11 +19,14 @@ public class PacketReader {
   private final ClickhouseNativeDatabaseMetadata md;
   private final String fullClientName;
   private final Map<String, String> properties;
+  private final LZ4Factory lz4Factory;
 
+  private ClickhouseStreamDataSource ds;
   private ServerPacketType packetType;
   private DatabaseMetadataReader metadataReader;
   private ClickhouseExceptionReader exceptionReader;
 
+  private String tempTableInfo;
   private ColumnOrientedBlockReader columnBlockReader;
 
   private BlockStreamProfileInfoReader blockStreamProfileReader;
@@ -29,13 +34,14 @@ public class PacketReader {
 
   private boolean endOfStream;
 
-  public PacketReader(ClickhouseNativeDatabaseMetadata md, String fullClientName, Map<String, String> properties) {
+  public PacketReader(ClickhouseNativeDatabaseMetadata md, String fullClientName, Map<String, String> properties, LZ4Factory lz4Factory) {
     this.md = md;
     this.fullClientName = fullClientName;
     this.properties = properties;
+    this.lz4Factory = lz4Factory;
   }
 
-  public Object receivePacket(ChannelHandlerContext ctx, ByteBuf in) {
+  public Object receivePacket(ByteBufAllocator alloc, ByteBuf in) {
     if (packetType == null) {
       Integer packetTypeCode = ByteBufUtils.readULeb128(in);
       if (packetTypeCode == null) {
@@ -61,14 +67,27 @@ public class PacketReader {
         return md;
       }
     } else if (packetType == ServerPacketType.DATA) {
+      if (md.getRevision() >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_TEMPORARY_TABLES) {
+        if (tempTableInfo == null) {
+          tempTableInfo = ByteBufUtils.readPascalString(in);
+          LOG.info("tempTableInfo: " + tempTableInfo);
+          if (tempTableInfo == null) {
+            return null;
+          }
+        }
+      }
       if (columnBlockReader == null) {
+        ds = dataSource(alloc);
         columnBlockReader = new ColumnOrientedBlockReader(md);
       }
-      ColumnOrientedBlock block = columnBlockReader.readFrom(in);
+      ds.moreData(in, alloc);
+      ColumnOrientedBlock block = columnBlockReader.readFrom(ds);
       if (block != null) {
         LOG.info("decoded: DATA/ColumnOrientedBlock [" + block.numColumns() + "; " + block.numRows() + "]");
         columnBlockReader = null;
         packetType = null;
+        ds = null;
+        tempTableInfo = null;
       }
       return block;
     } else if (packetType == ServerPacketType.EXCEPTION) {
@@ -112,6 +131,14 @@ public class PacketReader {
       throw new IllegalStateException("unknown packet type: " + packetType);
     }
     return null;
+  }
+
+  private ClickhouseStreamDataSource dataSource(ByteBufAllocator alloc) {
+    if (lz4Factory == null) {
+      return new RawClickhouseStreamDataSource();
+    } else {
+      return new Lz4ClickhouseStreamDataSource(lz4Factory, alloc);
+    }
   }
 
   public boolean isEndOfStream() {

@@ -28,16 +28,19 @@ public class ExtendedClickhouseTest {
 
   private ClickhouseNativeConnectOptions options;
   private Vertx vertx;
+  private String query;
 
   @Before
   public void setup(TestContext ctx) {
     options = rule.options();
     vertx = Vertx.vertx();
+    /*
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
         .query("CREATE TABLE IF NOT EXISTS vertx_cl_test_table (name String, value UInt32) ENGINE = GenerateRandom(1, 5, 3)")
         .execute(ctx.asyncAssertSuccess());
     }));
+     */
   }
 
   @After
@@ -51,8 +54,9 @@ public class ExtendedClickhouseTest {
     LongAdder adder = new LongAdder();
     final long limit = 55;
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      query = String.format("select name, value from (SELECT name, value from vertx_cl_test_table limit %s) t1 order by name desc", limit);
       conn
-        .prepare(String.format("SELECT name, value from vertx_cl_test_table limit %s", limit), ctx.asyncAssertSuccess(ps -> {
+        .prepare(query, ctx.asyncAssertSuccess(ps -> {
           RowStream<Row> stream = ps.createStream(50, ArrayTuple.EMPTY);
           stream.exceptionHandler(err -> {
             LOG.error("exceptionHandler: ", err);
@@ -64,7 +68,7 @@ public class ExtendedClickhouseTest {
           });
           stream.handler(row -> {
             adder.increment();
-            LOG.info("name: " + row.getString("name") + "; value: " + row.getInteger("value"));
+            //LOG.info("name: " + row.getString("name") + "; value: " + row.getLong("value"));
           });
         }));
     }));

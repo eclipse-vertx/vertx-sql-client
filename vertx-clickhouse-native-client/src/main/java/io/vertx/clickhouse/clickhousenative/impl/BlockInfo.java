@@ -1,7 +1,7 @@
 package io.vertx.clickhouse.clickhousenative.impl;
 
-import io.netty.buffer.ByteBuf;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ByteBufUtils;
+import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSink;
+import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 
@@ -23,12 +23,12 @@ public class BlockInfo {
     this.bucketNum = bucketNum;
   }
 
-  public void serializeTo(ByteBuf buf) {
-    ByteBufUtils.writeULeb128(1, buf);
-    buf.writeByte(isOverflows ? 1 : 0);
-    ByteBufUtils.writeULeb128(2, buf);
-    buf.writeIntLE(bucketNum);
-    ByteBufUtils.writeULeb128(0, buf);
+  public void serializeTo(ClickhouseStreamDataSink sink) {
+    sink.writeULeb128(1);
+    sink.writeByte(isOverflows ? 1 : 0);
+    sink.writeULeb128(2);
+    sink.writeIntLE(bucketNum);
+    sink.writeULeb128(0);
   }
 
   public boolean isComplete() {
@@ -39,10 +39,10 @@ public class BlockInfo {
     return !complete;
   }
 
-  public void readFrom(ByteBuf buf) {
+  public void readFrom(ClickhouseStreamDataSource in) {
     while (isPartial()) {
       if (fieldNum == null) {
-        fieldNum = ByteBufUtils.readULeb128(buf);
+        fieldNum = in.readULeb128();
         if (fieldNum == null) {
           return;
         }
@@ -54,17 +54,17 @@ public class BlockInfo {
         return;
       }
       if (fieldNum == 1) {
-        if (buf.readableBytes() >= 1) {
-          isOverflows = buf.readBoolean();
+        if (in.readableBytes() >= 1) {
+          isOverflows = in.readBoolean();
           fieldNum = null;
           LOG.info("isOverflows: " + isOverflows);
         } else {
           return;
         }
       } else if (fieldNum == 2) {
-        int readable = buf.readableBytes();
+        int readable = in.readableBytes();
         if (readable >= 4) {
-          bucketNum = buf.readIntLE();
+          bucketNum = in.readIntLE();
           fieldNum = null;
           LOG.info("bucketNum: " + bucketNum);
         } else {
