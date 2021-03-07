@@ -2,16 +2,13 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 
 import java.math.BigInteger;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 public class DateTime64Column extends ClickhouseColumn {
-  private static final Logger LOG = LoggerFactory.getLogger(DateTime64Column.class);
 
   public static final int ELEMENT_SIZE = 8;
 
@@ -27,14 +24,13 @@ public class DateTime64Column extends ClickhouseColumn {
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      ZonedDateTime[] data = new ZonedDateTime[nRows];
+      OffsetDateTime[] data = new OffsetDateTime[nRows];
       for (int i = 0; i < nRows; ++i) {
         BigInteger bi = UInt64Column.unsignedBi(in.readLongLE());
         long seconds = bi.divide(invTickSize).longValueExact();
         long nanos = bi.remainder(invTickSize).longValueExact();
-        LOG.info("seconds: " + seconds + "; nanos: " + nanos);
         if (nullsMap == null || !nullsMap.get(i)) {
-          ZonedDateTime dt = Instant.ofEpochSecond(seconds, nanos).atZone(zoneId);
+          OffsetDateTime dt = Instant.ofEpochSecond(seconds, nanos).atZone(zoneId).toOffsetDateTime();
           data[i] = dt;
         }
       }
