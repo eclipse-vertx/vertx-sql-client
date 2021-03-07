@@ -26,7 +26,7 @@ public class UInt128Column extends ClickhouseColumn {
     return null;
   }
 
-  private byte[] reverse(byte[] src) {
+  static byte[] reverse(byte[] src) {
     for (int i = 0, j = src.length - 1; i < j; ++i, --j) {
       byte tmp = src[i];
       src[i] = src[j];

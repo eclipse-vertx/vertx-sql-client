@@ -4,8 +4,8 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 public class DateTimeColumn extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 4;
@@ -20,11 +20,11 @@ public class DateTimeColumn extends ClickhouseColumn {
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      ZonedDateTime[] data = new ZonedDateTime[nRows];
+      OffsetDateTime[] data = new OffsetDateTime[nRows];
       for (int i = 0; i < nRows; ++i) {
         long unixSeconds = Integer.toUnsignedLong(in.readIntLE());
         if (nullsMap == null || !nullsMap.get(i)) {
-          ZonedDateTime dt = Instant.ofEpochSecond(unixSeconds).atZone(zoneId);
+          OffsetDateTime dt = Instant.ofEpochSecond(unixSeconds).atZone(zoneId).toOffsetDateTime();
           data[i] = dt;
         }
       }

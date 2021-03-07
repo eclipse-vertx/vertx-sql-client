@@ -78,6 +78,9 @@ public class ClickhouseColumns {
     } else if (spec.equals("DateTime64") || spec.startsWith("DateTime64(")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DATETIME64_COLUMN_WIDTH,
         spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
+    } else if (spec.equals("UUID")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, 16,
+        JDBCType.OTHER, nullable, false, isLowCardinality, null, null);
     }
     throw new IllegalArgumentException("unknown spec: '" + spec + "'");
   }
@@ -128,6 +131,8 @@ public class ClickhouseColumns {
           zoneId = ZoneId.systemDefault();
         }
         return precision == null ? new DateTimeColumn(nRows, descr, zoneId) : new DateTime64Column(nRows, descr, precision, zoneId);
+      } else if (jdbcType == JDBCType.OTHER && descr.getNativeType().equals("UUID")) {
+        return new UUIDColumn(nRows, descr);
       }
     }
     throw new IllegalArgumentException("no column type for jdbc type " + jdbcType + " (raw type: '" + descr.getUnparsedNativeType() + "')");
