@@ -4,6 +4,7 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 
 import java.math.BigInteger;
 import java.sql.JDBCType;
+import java.time.ZoneId;
 
 public class ClickhouseColumns {
   public static final String NULLABLE_PREFIX = "Nullable(";
@@ -17,6 +18,9 @@ public class ClickhouseColumns {
 
   public static final String FIXED_STRING_PREFIX = "FixedString(";
   public static final int FIXED_STRING_PREFIX_LENGTH = FIXED_STRING_PREFIX.length();
+
+  private static final int DATETIME_COLUMN_WIDTH = DateTimeColumn.ELEMENT_SIZE;
+  private static final int DATETIME64_COLUMN_WIDTH = DateTime64Column.ELEMENT_SIZE;
 
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String name) {
     String spec = unparsedSpec;
@@ -41,7 +45,8 @@ public class ClickhouseColumns {
   }
 
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String spec, String name,
-                                                                         boolean nullable, boolean isArray, boolean isLowCardinality) {
+                                                                         boolean nullable, boolean isArray,
+                                                                         boolean isLowCardinality) {
     boolean unsigned = spec.startsWith("U");
     if (spec.equals("UInt8") || spec.equals("Int8")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, 1, JDBCType.TINYINT, nullable, unsigned, isLowCardinality,
@@ -67,6 +72,12 @@ public class ClickhouseColumns {
       int bytesLength = Integer.parseInt(lengthStr);
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, bytesLength, JDBCType.VARCHAR,
         nullable, false, isLowCardinality, null, null);
+    } else if (spec.equals("DateTime") || spec.startsWith("DateTime(")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DATETIME_COLUMN_WIDTH,
+        spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
+    } else if (spec.equals("DateTime64") || spec.startsWith("DateTime64(")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DATETIME64_COLUMN_WIDTH,
+        spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
     }
     throw new IllegalArgumentException("unknown spec: '" + spec + "'");
   }
@@ -77,7 +88,7 @@ public class ClickhouseColumns {
     }
     JDBCType jdbcType = descr.jdbcType();
     if (descr.isArray()) {
-
+      throw new IllegalStateException("arrays are not supported");
     } else {
       if (jdbcType == JDBCType.TINYINT) {
         return new UInt8Column(nRows, descr);
@@ -97,6 +108,26 @@ public class ClickhouseColumns {
         } else {
           return new FixedStringColumn(nRows, descr);
         }
+      } else if (jdbcType == JDBCType.TIMESTAMP || jdbcType == JDBCType.TIMESTAMP_WITH_TIMEZONE) {
+        ZoneId zoneId;
+        Integer precision = null;
+        String nativeType = descr.getNativeType();
+        if (nativeType.endsWith(")")) {
+          int openBracePos = nativeType.indexOf("(");
+          String dateModifiers = nativeType.substring(openBracePos + 1, nativeType.length() - 1);
+          if (descr.getElementSize() == DATETIME64_COLUMN_WIDTH) {
+            String[] modifiers = dateModifiers.split(",");
+            precision = Integer.parseInt(modifiers[0]);
+            zoneId = modifiers.length == 2
+              ? ZoneId.of(modifiers[1])
+              : ZoneId.systemDefault();
+          } else {
+            zoneId = ZoneId.of(dateModifiers);
+          }
+        } else {
+          zoneId = ZoneId.systemDefault();
+        }
+        return precision == null ? new DateTimeColumn(nRows, descr, zoneId) : new DateTime64Column(nRows, descr, precision, zoneId);
       }
     }
     throw new IllegalArgumentException("no column type for jdbc type " + jdbcType + " (raw type: '" + descr.getUnparsedNativeType() + "')");
