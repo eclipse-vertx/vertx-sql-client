@@ -4,32 +4,33 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 import io.vertx.clickhouse.clickhousenative.impl.codec.Utils;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
-//experimental support at the moment
-public class UInt128Column extends ClickhouseColumn {
+public class Decimal128Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 16;
+  public static final int MAX_PRECISION = 38;
+  public static final MathContext MATH_CONTEXT = new MathContext(MAX_PRECISION, RoundingMode.HALF_EVEN);
 
-  protected UInt128Column(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
+  protected Decimal128Column(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
     super(nRows, columnDescriptor);
   }
 
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      BigInteger[] data = new BigInteger[nRows];
+      BigDecimal[] data = new BigDecimal[nRows];
+      int scale = columnDescriptor.getScale();
       byte[] readBuffer = new byte[ELEMENT_SIZE];
       for (int i = 0; i < nRows; ++i) {
         in.readBytes(readBuffer);
-        data[i] = new BigInteger(Utils.reverse(readBuffer));
+        BigInteger bi = new BigInteger(Utils.reverse(readBuffer));
+        data[i] = new BigDecimal(bi, scale, MATH_CONTEXT);
       }
       return data;
     }
     return null;
-  }
-
-  @Override
-  protected Object getElementInternal(int rowIdx) {
-    return ((BigInteger[]) this.itemsArray)[rowIdx];
   }
 }

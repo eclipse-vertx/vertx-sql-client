@@ -9,7 +9,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
 public class DateTime64Column extends ClickhouseColumn {
-
   public static final int ELEMENT_SIZE = 8;
 
   private final ZoneId zoneId;

@@ -20,10 +20,21 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
   private final BigInteger minValue;
   private final BigInteger maxValue;
 
+  private final Integer precision;
+  private final Integer scale;
+
   public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nativeType,
                                           boolean isArray, int elementSize, JDBCType jdbcType,
                                           boolean nullable, boolean unsigned,
                                           boolean lowCardinality, Number minValue, Number maxValue) {
+    this(name, unparsedNativeType, nativeType, isArray, elementSize, jdbcType, nullable, unsigned, lowCardinality, minValue, maxValue, null, null);
+  }
+
+  public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nativeType,
+                                          boolean isArray, int elementSize, JDBCType jdbcType,
+                                          boolean nullable, boolean unsigned,
+                                          boolean lowCardinality, Number minValue, Number maxValue,
+                                          Integer precision, Integer scale) {
     this.name = name;
     this.unparsedNativeType = unparsedNativeType;
     this.nativeType = nativeType;
@@ -35,6 +46,8 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     this.lowCardinality = lowCardinality;
     this.minValue = bi(minValue);
     this.maxValue = bi(maxValue);
+    this.precision = precision;
+    this.scale = scale;
   }
 
   private BigInteger bi(Number src) {
@@ -89,6 +102,14 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
 
   public String getNativeType() {
     return nativeType;
+  }
+
+  public Integer getPrecision() {
+    return precision;
+  }
+
+  public Integer getScale() {
+    return scale;
   }
 
   @Override
