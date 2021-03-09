@@ -65,7 +65,7 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
     if (uncompressedSize == null) {
       return;
     }
-    if (buf.readableBytes() < compressedSize) {
+    if (buf.readableBytes() < compressedSize - 4) {
       return;
     }
     long[] oursCityHash;
@@ -157,5 +157,10 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   @Override
   public short readShortLE() {
     return decompressedData.readShortLE();
+  }
+
+  @Override
+  public String hexdump() {
+    return ByteBufUtil.hexDump(decompressedData);
   }
 }

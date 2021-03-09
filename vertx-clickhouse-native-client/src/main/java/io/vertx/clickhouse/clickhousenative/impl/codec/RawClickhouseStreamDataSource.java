@@ -2,6 +2,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufUtil;
 
 public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource {
   private ByteBuf source;
@@ -62,5 +63,12 @@ public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource
   @Override
   public short readShortLE() {
     return source.readShortLE();
+  }
+
+  @Override
+  public String hexdump() {
+    return source != null
+      ? "[" + ByteBufUtil.hexDump(source, 0, source.writerIndex()) + "][" + ByteBufUtil.hexDump(source) + "]"
+      : null;
   }
 }

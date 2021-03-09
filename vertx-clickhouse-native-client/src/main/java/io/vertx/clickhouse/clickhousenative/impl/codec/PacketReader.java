@@ -11,6 +11,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import net.jpountz.lz4.LZ4Factory;
 
+import java.util.List;
 import java.util.Map;
 
 public class PacketReader {
@@ -31,6 +32,9 @@ public class PacketReader {
 
   private BlockStreamProfileInfoReader blockStreamProfileReader;
   private QueryProgressInfoReader queryProgressInfoReader;
+  private MultistringMessageReader multistringReader;
+  private List<String> multistringMessage;
+  private PacketReader tableColumnsPacketReader;
 
   private boolean endOfStream;
 
@@ -75,6 +79,8 @@ public class PacketReader {
         traceServerLogs(block);
       }
       return null;
+    } else if (packetType == ServerPacketType.TABLE_COLUMNS) {
+      return receiveMultistringMessage(alloc, in, packetType);
     } else {
       throw new IllegalStateException("unknown packet type: " + packetType);
     }
@@ -83,6 +89,30 @@ public class PacketReader {
 
   private void traceServerLogs(ColumnOrientedBlock block) {
     LOG.info("server log: [" + block.numColumns() + "; " + block.numRows() + "]");
+  }
+
+  private List<String> receiveMultistringMessage(ByteBufAllocator alloc, ByteBuf in, ServerPacketType type) {
+    if (multistringMessage == null) {
+      if (multistringReader == null) {
+        multistringReader = new MultistringMessageReader();
+      }
+      multistringMessage = multistringReader.readFrom(in, type);
+    }
+    if (multistringMessage == null) {
+      return null;
+    }
+    if (tableColumnsPacketReader == null) {
+      tableColumnsPacketReader = new PacketReader(md, fullClientName, properties, lz4Factory);
+    }
+    ColumnOrientedBlock block = tableColumnsPacketReader.readDataBlock(alloc, in, true);
+    if (block != null) {
+      LOG.info("decoded: MultistringMessage: " + multistringMessage + "; block: [" + block.numColumns() + "; " + block.numRows() + "]");
+      multistringReader = null;
+      packetType = null;
+      tableColumnsPacketReader = null;
+      multistringMessage = null;
+    }
+    return multistringMessage;
   }
 
   private ClickhouseNativeDatabaseMetadata readServerHelloBlock(ByteBuf in) {

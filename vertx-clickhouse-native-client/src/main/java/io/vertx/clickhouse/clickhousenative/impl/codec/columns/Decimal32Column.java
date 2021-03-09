@@ -8,7 +8,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-//TODO smagellan: maybe introduce separate universal column reader/column
 public class Decimal32Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 4;
   public static final int MAX_PRECISION = 9;
