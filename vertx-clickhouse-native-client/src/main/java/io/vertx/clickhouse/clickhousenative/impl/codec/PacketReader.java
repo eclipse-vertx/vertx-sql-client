@@ -80,7 +80,7 @@ public class PacketReader {
       }
       return null;
     } else if (packetType == ServerPacketType.TABLE_COLUMNS) {
-      return receiveMultistringMessage(alloc, in, packetType);
+      return receiveTableColumns(alloc, in, packetType);
     } else {
       throw new IllegalStateException("unknown packet type: " + packetType);
     }
@@ -91,7 +91,7 @@ public class PacketReader {
     LOG.info("server log: [" + block.numColumns() + "; " + block.numRows() + "]");
   }
 
-  private List<String> receiveMultistringMessage(ByteBufAllocator alloc, ByteBuf in, ServerPacketType type) {
+  private List<String> receiveTableColumns(ByteBufAllocator alloc, ByteBuf in, ServerPacketType type) {
     if (multistringMessage == null) {
       if (multistringReader == null) {
         multistringReader = new MultistringMessageReader();
@@ -191,6 +191,7 @@ public class PacketReader {
       LOG.info("decoded: DATA/ColumnOrientedBlock [" + block.numColumns() + "; " + block.numRows() + "]");
       columnBlockReader = null;
       packetType = null;
+      ds.finish();
       ds = null;
       tempTableInfo = null;
     }

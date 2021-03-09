@@ -22,7 +22,7 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   private final ByteBuf decompressedData;
   private long[] serverCityHash;
   private Long sizeWithHeader;
-  private Long compressedSize;
+  private Long compressedAndSizeSize;
   private Long uncompressedSize;
   private Integer checkSummedReaderIndex;
 
@@ -54,18 +54,20 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
       if (sizeWithHeader > Integer.MAX_VALUE) {
         throw new IllegalStateException("block is too big: " + sizeWithHeader + "; limit " + Integer.MAX_VALUE);
       }
-      compressedSize = sizeWithHeader - 1 - 4;
+      compressedAndSizeSize = sizeWithHeader - 1 - 4;
       uncompressedSize = buf.readUnsignedIntLE();
       if (uncompressedSize > Integer.MAX_VALUE) {
         throw new IllegalStateException("uncompressedSize is too big: " + uncompressedSize + "; limit " + Integer.MAX_VALUE);
       }
       LOG.info(String.format("compressed size: %d(0x%X), sizeWithHeader: %d(0x%X), uncompressed size: %d(0x%X)",
-        compressedSize, compressedSize, sizeWithHeader, sizeWithHeader, uncompressedSize, uncompressedSize));
+        compressedAndSizeSize, compressedAndSizeSize, sizeWithHeader, sizeWithHeader, uncompressedSize, uncompressedSize));
     }
     if (uncompressedSize == null) {
       return;
     }
-    if (buf.readableBytes() < compressedSize - 4) {
+    //TODO smagellan: eliminate this var (make compressedAndSizeSize = sizeWithHeader - 1 - 4 - 4 and rename to compressedDataSize)
+    int compressedDataSize = compressedAndSizeSize.intValue() - 4;
+    if (buf.readableBytes() < compressedDataSize) {
       return;
     }
     long[] oursCityHash;
@@ -78,8 +80,8 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
     arrayBb.readerIndex(1 + 4 + 4);
 
 
-    LOG.info("compressed bytes: " + ByteBufUtil.hexDump(arrayBb, arrayBb.readerIndex(), compressedSize.intValue() - 4));
-    LOG.info("readableBytes: " + arrayBb.readableBytes() + "; comprDataLen: " + (compressedSize.intValue() - 4));
+    LOG.info("compressed bytes: " + ByteBufUtil.hexDump(arrayBb, arrayBb.readerIndex(), compressedDataSize));
+    LOG.info("readableBytes: " + arrayBb.readableBytes() + "; comprDataLen: " + compressedDataSize);
     if (!Arrays.equals(serverCityHash, oursCityHash)) {
       throw new IllegalStateException("CityHash mismatch; server's: " +
         Arrays.toString(Utils.hex(serverCityHash)) + "; ours: " +
@@ -95,7 +97,7 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
     arrayBb.release();
     serverCityHash = null;
     sizeWithHeader = null;
-    compressedSize = null;
+    compressedAndSizeSize = null;
     uncompressedSize = null;
     checkSummedReaderIndex = null;
   }
@@ -162,5 +164,10 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   @Override
   public String hexdump() {
     return ByteBufUtil.hexDump(decompressedData);
+  }
+
+  @Override
+  public void finish() {
+    decompressedData.release();
   }
 }
