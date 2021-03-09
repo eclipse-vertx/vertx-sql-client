@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
+//TODO smagellan: maybe introduce separate universal reader/column for Decimal128 and Decimal256
 public class Decimal128Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 16;
   public static final int MAX_PRECISION = 38;

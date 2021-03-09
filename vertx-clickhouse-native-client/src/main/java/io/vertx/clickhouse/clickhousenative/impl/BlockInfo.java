@@ -48,7 +48,7 @@ public class BlockInfo {
         }
       }
 
-      LOG.info("fieldNum: " + fieldNum);
+      LOG.info("fieldNum: " + fieldNum + "(" + Integer.toHexString(fieldNum) + ")");
       if (fieldNum == 0) {
         complete = true;
         return;

@@ -15,4 +15,5 @@ public interface ClickhouseStreamDataSource {
   byte readByte();
   long readLongLE();
   short readShortLE();
+  String hexdump();
 }
