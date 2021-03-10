@@ -1,0 +1,51 @@
+package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+
+@RunWith(Parameterized.class)
+public class ClickhouseColumnsTest<T extends Number> {
+  private final String enumDefinition;
+  private final java.util.function.Function<Integer, T> converter;
+
+  public ClickhouseColumnsTest(String enumType, String enumDefinition, Function<Integer, T> converter) {
+    this.enumDefinition = enumDefinition;
+    this.converter = converter;
+  }
+
+  @Parameterized.Parameters(name = "{0}")
+  public static Iterable<Object[]> dataForTest() {
+    java.util.function.Function<Integer, Byte> byteConverter = Integer::byteValue;
+    java.util.function.Function<Integer, Short> shortConverter = Integer::shortValue;
+    return Arrays.asList(new Object[][]{
+      {"Enum8", "Enum8('aa4' = 1, '1b3b2' = 22, '1b3b3' = 24,'1b3b4' = 25,'1b3b5'= 26,'1b3b6' =27,'1b3b7'=28)", byteConverter},
+      {"Enum16", "Enum16('aa4' = 1, '1b3b2' = 22, '1b3b3' = 24,'1b3b4' = 25,'1b3b5'= 26,'1b3b6' =27,'1b3b7'=28)", shortConverter}
+    });
+  }
+
+  private T key(Integer k) {
+    return converter.apply(k);
+  }
+
+  @Test
+  public void testParseEnumVals() {
+    Map<? extends Number, String> vals = ClickhouseColumns.parseEnumVals(enumDefinition);
+    Map<T, String> expected = new HashMap<>();
+    expected.put(key(1), "aa4");
+    expected.put(key(22), "1b3b2");
+    expected.put(key(24), "1b3b3");
+    expected.put(key(25), "1b3b4");
+    expected.put(key(26), "1b3b5");
+    expected.put(key(27), "1b3b6");
+    expected.put(key(28), "1b3b7");
+    Assert.assertEquals(expected, vals);
+  }
+}
