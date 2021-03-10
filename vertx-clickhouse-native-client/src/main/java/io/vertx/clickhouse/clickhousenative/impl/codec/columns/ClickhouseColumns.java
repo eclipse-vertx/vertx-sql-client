@@ -5,6 +5,8 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 import java.math.BigInteger;
 import java.sql.JDBCType;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ClickhouseColumns {
   public static final String NULLABLE_PREFIX = "Nullable(";
@@ -21,6 +23,9 @@ public class ClickhouseColumns {
 
   public static final String DECIMAL_PREFIX = "Decimal(";
   public static final int DECIMAL_PREFIX_LENGTH = DECIMAL_PREFIX.length();
+
+  public static final String ENUM_PREFIX = "Enum";
+  public static final int ENUM_PREFIX_LENGTH = ENUM_PREFIX.length();
 
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String name) {
     String spec = unparsedSpec;
@@ -88,6 +93,11 @@ public class ClickhouseColumns {
       int scale = Integer.parseInt(modifiersTokens[1].trim());
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, decimalSize(precision),
         JDBCType.DECIMAL, nullable, false, isLowCardinality, null, null, precision, scale);
+    } else if (spec.startsWith(ENUM_PREFIX)) {
+      int openBracketPos = spec.indexOf('(', ENUM_PREFIX_LENGTH);
+      int enumBitsSize = Integer.parseInt(spec.substring(ENUM_PREFIX_LENGTH, openBracketPos));
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, enumBitsSize / 8,
+        JDBCType.OTHER, nullable, false, isLowCardinality, null, null, null, null);
     }
     throw new IllegalArgumentException("unknown spec: '" + spec + "'");
   }
@@ -161,10 +171,70 @@ public class ClickhouseColumns {
         } else if (descr.getElementSize() == Decimal256Column.ELEMENT_SIZE) {
           return new Decimal256Column(nRows, descr);
         }
-      } else if (jdbcType == JDBCType.OTHER && descr.getNativeType().equals("UUID")) {
-        return new UUIDColumn(nRows, descr);
+      } else if (jdbcType == JDBCType.OTHER) {
+        if (descr.getNativeType().equals("UUID")) {
+          return new UUIDColumn(nRows, descr);
+        } else if (descr.getNativeType().startsWith(ENUM_PREFIX)) {
+          Map<? extends Number, String> enumVals = parseEnumVals(descr.getNativeType());
+          if (descr.getElementSize() == Enum8Column.ELEMENT_SIZE) {
+            return new Enum8Column(nRows, descr, enumVals);
+          } else if (descr.getElementSize() == Enum16Column.ELEMENT_SIZE) {
+            return new Enum16Column(nRows, descr, enumVals);
+          }
+        }
       }
     }
     throw new IllegalArgumentException("no column type for jdbc type " + jdbcType + " (raw type: '" + descr.getUnparsedNativeType() + "')");
+  }
+
+  static Map<? extends Number, String> parseEnumVals(String nativeType) {
+    boolean isByte = nativeType.startsWith("Enum8(");
+    int openBracketPos = nativeType.indexOf('(');
+    Map<Number, String> result = new HashMap<>();
+    int lastQuotePos = -1;
+    boolean gotEq = false;
+    String enumElementName = null;
+    int startEnumValPos = -1;
+    for (int i = openBracketPos; i < nativeType.length(); ++i) {
+      char ch = nativeType.charAt(i);
+      if (ch == '\'') {
+        if (lastQuotePos == -1) {
+          lastQuotePos = i;
+        } else {
+          enumElementName = nativeType.substring(lastQuotePos + 1, i);
+          lastQuotePos = -1;
+        }
+      } else if (ch == '=') {
+        gotEq = true;
+      } else if (gotEq) {
+        if (Character.isDigit(ch)) {
+          if (startEnumValPos == -1) {
+            startEnumValPos = i;
+          } else if (!Character.isDigit(nativeType.charAt(i + 1))) {
+            int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i + 1));
+            Number key = byteOrShort(enumValue, isByte);
+            result.put(key, enumElementName);
+            startEnumValPos = -1;
+            enumElementName = null;
+            gotEq = false;
+          }
+        } else if (startEnumValPos != -1) {
+          int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i));
+          Number key = byteOrShort(enumValue, isByte);
+          result.put(key, enumElementName);
+          startEnumValPos = -1;
+          enumElementName = null;
+          gotEq = false;
+        }
+      }
+    }
+    return result;
+  }
+
+  private static Number byteOrShort(int number, boolean isByte) {
+    if (isByte) {
+      return (byte) number;
+    }
+    return (short) number;
   }
 }
