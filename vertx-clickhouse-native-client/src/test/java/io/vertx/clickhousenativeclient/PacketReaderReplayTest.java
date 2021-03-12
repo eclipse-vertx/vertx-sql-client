@@ -21,13 +21,14 @@ import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 public class PacketReaderReplayTest {
-  private static final Map<String, String> PROPS = Collections.unmodifiableMap(buildProperties());
-  private static final LZ4Factory LZ4_FACTORY = LZ4Factory.safeInstance();
-
+  private final Map<String, String> props;
   private final ByteBuf buf;
+  private final LZ4Factory lz4Factory;
 
-  public PacketReaderReplayTest(String replayFile, String fragmented, ByteBuf buf) {
+  public PacketReaderReplayTest(String replayFile, String fragmented, ByteBuf buf, Map<String, String> props, LZ4Factory lz4Factory) {
     this.buf = buf;
+    this.props = props;
+    this.lz4Factory = lz4Factory;
   }
 
   @Parameterized.Parameters(name = "{0}({1})")
@@ -37,7 +38,12 @@ public class PacketReaderReplayTest {
     List<Object[]> result = new ArrayList<>();
 
     int continuousOffset = 8;
-    for (String replayFile : Arrays.asList("/insert_prepare.yaml", "/with_max_block_size_and_2_datablocks.yaml")) {
+    for (String replayFile : Arrays.asList("/insert_prepare_with_compression.yaml",
+                                           "/with_max_block_size_and_2_datablocks_with_compression.yaml",
+                                           "/nullable_low_cardinality_with_compression.yaml",
+                                           "/nullable_low_cardinality_without_compression.yaml"
+         )) {
+      boolean compression = replayFile.contains("with_compression");
       try (InputStream is = PacketReaderReplayTest.class.getResourceAsStream(replayFile)) {
         Map<String, byte[]> map = mapper.readValue(is, Map.class);
 
@@ -59,9 +65,11 @@ public class PacketReaderReplayTest {
         fragmentedByteBuf.readerIndex(0);
 
 
-        result.add(new Object[]{replayFile, "fragmented", fragmentedByteBuf});
-        result.add(new Object[]{replayFile, "continuous", continuousBuf});
-        result.add(new Object[]{replayFile, "continuousWithOffset", continuousWithOffsetBuf});
+        Map<String, String> p = buildProperties(compression);
+        LZ4Factory f = compression ? LZ4Factory.safeInstance() : null;
+        result.add(new Object[]{replayFile, "fragmented", fragmentedByteBuf, p, f});
+        result.add(new Object[]{replayFile, "continuous", continuousBuf, p, f});
+        result.add(new Object[]{replayFile, "continuousWithOffset", continuousWithOffsetBuf, p, f});
       }
     }
     return result;
@@ -78,19 +86,22 @@ public class PacketReaderReplayTest {
     String fullName = "Clickhouse jython-driver";
 
     //1st packet: server hello
-    PacketReader rdr = new PacketReader(null, fullName, PROPS, LZ4_FACTORY);
+    PacketReader rdr = new PacketReader(null, fullName, props, lz4Factory);
     ClickhouseNativeDatabaseMetadata md = (ClickhouseNativeDatabaseMetadata)rdr.receivePacket(allocator, buf);
 
     do {
-      rdr = new PacketReader(md, fullName, PROPS, LZ4_FACTORY);
+      rdr = new PacketReader(md, fullName, props, lz4Factory);
       Object packet = rdr.receivePacket(allocator, buf);
+      System.err.println("packet: " + packet);
     } while (!rdr.isEndOfStream() && buf.readableBytes() > 0);
   }
 
-  private static Map<String, String> buildProperties() {
+  private static Map<String, String> buildProperties(boolean withCompression) {
     Map<String, String> props = new HashMap<>();
     props.put(ClickhouseConstants.OPTION_CLIENT_NAME, "jython-driver");
-    props.put(ClickhouseConstants.OPTION_COMPRESSOR, "lz4_safe");
+    if (withCompression) {
+      props.put(ClickhouseConstants.OPTION_COMPRESSOR, "lz4_safe");
+    }
     props.put(ClickhouseConstants.OPTION_INITIAL_HOSTNAME, "bhorse");
     return props;
   }
