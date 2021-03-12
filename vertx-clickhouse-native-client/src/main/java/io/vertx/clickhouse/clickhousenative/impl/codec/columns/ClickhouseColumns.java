@@ -15,7 +15,7 @@ public class ClickhouseColumns {
   public static final String ARRAY_PREFIX = "Array(";
   public static final int ARRAY_PREFIX_LENGTH = ARRAY_PREFIX.length();
 
-  public static final String LOW_CARDINALITY_PREFIX = "LowCardinality";
+  public static final String LOW_CARDINALITY_PREFIX = "LowCardinality(";
   public static final int LOW_CARDINALITY_PREFIX_LENGTH = LOW_CARDINALITY_PREFIX.length();
 
   public static final String FIXED_STRING_PREFIX = "FixedString(";
@@ -40,7 +40,6 @@ public class ClickhouseColumns {
     if (spec.startsWith(LOW_CARDINALITY_PREFIX)) {
       spec = spec.substring(LOW_CARDINALITY_PREFIX_LENGTH, spec.length() - 1);
       isLowCardinality = true;
-      throw new IllegalStateException("low cardinality columns are not supported");
     }
     if (spec.startsWith(NULLABLE_PREFIX)) {
       spec = spec.substring(NULLABLE_PREFIX_LENGTH, spec.length() - 1);
@@ -118,6 +117,10 @@ public class ClickhouseColumns {
     if (descr == null) {
       throw new IllegalArgumentException("no parsed spec for column name: " + name);
     }
+    if (descr.isLowCardinality()) {
+      ClickhouseNativeColumnDescriptor nestedDescr = descr.copyWithModifiers(false, false);
+      return new LowCardinalityColumn(nRows, descr, nestedDescr);
+    }
     JDBCType jdbcType = descr.jdbcType();
     if (descr.isArray()) {
       throw new IllegalStateException("arrays are not supported");
@@ -187,8 +190,10 @@ public class ClickhouseColumns {
     throw new IllegalArgumentException("no column type for jdbc type " + jdbcType + " (raw type: '" + descr.getUnparsedNativeType() + "')");
   }
 
+
+  //TODO: maybe switch to antl4
   static Map<? extends Number, String> parseEnumVals(String nativeType) {
-    boolean isByte = nativeType.startsWith("Enum8(");
+    final boolean isByte = nativeType.startsWith("Enum8(");
     int openBracketPos = nativeType.indexOf('(');
     Map<Number, String> result = new HashMap<>();
     int lastQuotePos = -1;

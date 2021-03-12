@@ -83,8 +83,4 @@ public abstract class ClickhouseColumn {
     Object[] data = (Object[]) itemsArray;
     return data[rowIdx];
   }
-
-  public ClickhouseNativeColumnDescriptor getColumnDescriptor() {
-    return columnDescriptor;
-  }
 }

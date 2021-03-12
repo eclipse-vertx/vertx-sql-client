@@ -112,6 +112,11 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     return scale;
   }
 
+  public ClickhouseNativeColumnDescriptor copyWithModifiers(boolean newLowCardinality, boolean newNullable) {
+    return new ClickhouseNativeColumnDescriptor(name, unparsedNativeType, nativeType, isArray, elementSize, jdbcType,
+      newNullable, unsigned, newLowCardinality, minValue, maxValue, precision, scale);
+  }
+
   @Override
   public String toString() {
     return "ClickhouseNativeColumnDescriptor{" +
