@@ -37,12 +37,16 @@ public class PacketReaderReplayTest {
     mapper.findAndRegisterModules();
     List<Object[]> result = new ArrayList<>();
 
-    int continuousOffset = 8;
-    for (String replayFile : Arrays.asList("/insert_prepare_with_compression.yaml",
-                                           "/with_max_block_size_and_2_datablocks_with_compression.yaml",
-                                           "/nullable_low_cardinality_with_compression.yaml",
-                                           "/nullable_low_cardinality_without_compression.yaml"
-         )) {
+    final int continuousOffset = 8;
+    List<String> replayFiles = Arrays.asList(
+      "/insert_prepare_with_compression.yaml",
+      "/with_max_block_size_and_2_datablocks_with_compression.yaml",
+      "/nullable_low_cardinality_with_compression.yaml",
+      "/nullable_low_cardinality_without_compression.yaml",
+      "/select_array_of_nullable_string_without_compression.yaml",
+      "/select_empty_array_without_compression.yaml"
+    );
+    for (String replayFile : replayFiles) {
       boolean compression = replayFile.contains("with_compression");
       try (InputStream is = PacketReaderReplayTest.class.getResourceAsStream(replayFile)) {
         Map<String, byte[]> map = mapper.readValue(is, Map.class);
