@@ -14,14 +14,13 @@ public class LowCardinalityColumn extends ClickhouseColumn {
 
   private ClickhouseColumn keysColumn;
 
-  public LowCardinalityColumn(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeColumnDescriptor indexDescr) {
+  public LowCardinalityColumn(int nRows, ClickhouseNativeColumnDescriptor descr) {
     super(nRows, descr);
-    this.indexDescr = indexDescr;
+    this.indexDescr = descr.copyWithModifiers(false, false);
   }
 
   @Override
   protected void readStatePrefix(ClickhouseStreamDataSource in) {
-    //KeysSerializationVersion
     if (keysSerializationVersion == null) {
       if (in.readableBytes() >= 4) {
         keysSerializationVersion = in.readLongLE();
@@ -37,10 +36,10 @@ public class LowCardinalityColumn extends ClickhouseColumn {
     if (keysSerializationVersion == null) {
       return;
     }
-    if (in.readableBytes() < 8 + 8) {
-      return;
-    }
     if (indexSize == null) {
+      if (in.readableBytes() < 8 + 8) {
+        return;
+      }
       serType = in.readLongLE();
       indexSize = in.readLongLE();
     }
@@ -48,7 +47,7 @@ public class LowCardinalityColumn extends ClickhouseColumn {
       throw new IllegalArgumentException("low cardinality index is too big (" + indexSize + "), max " + Integer.MAX_VALUE);
     }
     if (indexColumn == null) {
-      indexColumn = ClickhouseColumns.columnForSpec(indexDescr.name(), indexDescr, indexSize.intValue());
+      indexColumn = ClickhouseColumns.columnForSpec(indexDescr, indexSize.intValue());
     }
     if (indexColumn.isPartial()) {
       indexColumn.readColumn(in);
@@ -103,6 +102,6 @@ public class LowCardinalityColumn extends ClickhouseColumn {
     } else {
       throw new IllegalArgumentException("unknown low-cardinality key-column code " + code);
     }
-    return ClickhouseColumns.columnForSpec(name, tmp, nRows);
+    return ClickhouseColumns.columnForSpec(tmp, nRows);
   }
 }

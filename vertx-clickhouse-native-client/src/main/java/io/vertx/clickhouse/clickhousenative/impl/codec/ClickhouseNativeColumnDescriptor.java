@@ -10,7 +10,7 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
 
   private final String name;
   private final String unparsedNativeType;
-  private final String nativeType;
+  private final String nestedType;
   private final JDBCType jdbcType;
   private final int elementSize;
   private final boolean isArray;
@@ -23,21 +23,42 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
   private final Integer precision;
   private final Integer scale;
 
-  public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nativeType,
+  private final ClickhouseNativeColumnDescriptor nested;
+
+  public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nestedType,
                                           boolean isArray, int elementSize, JDBCType jdbcType,
                                           boolean nullable, boolean unsigned,
                                           boolean lowCardinality, Number minValue, Number maxValue) {
-    this(name, unparsedNativeType, nativeType, isArray, elementSize, jdbcType, nullable, unsigned, lowCardinality, minValue, maxValue, null, null);
+    this(name, unparsedNativeType, nestedType, isArray, elementSize, jdbcType, nullable, unsigned, lowCardinality,
+      minValue, maxValue, null, null, null);
   }
 
-  public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nativeType,
+  public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nestedType,
+                                          boolean isArray, int elementSize, JDBCType jdbcType,
+                                          boolean nullable, boolean unsigned,
+                                          boolean lowCardinality, Number minValue, Number maxValue,
+                                          ClickhouseNativeColumnDescriptor nested) {
+    this(name, unparsedNativeType, nestedType, isArray, elementSize, jdbcType, nullable, unsigned, lowCardinality,
+      minValue, maxValue, null, null, nested);
+  }
+
+  public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nestedType,
                                           boolean isArray, int elementSize, JDBCType jdbcType,
                                           boolean nullable, boolean unsigned,
                                           boolean lowCardinality, Number minValue, Number maxValue,
                                           Integer precision, Integer scale) {
+    this(name, unparsedNativeType, nestedType, isArray, elementSize, jdbcType, nullable, unsigned, lowCardinality,
+      minValue, maxValue, precision, scale, null);
+  }
+
+  public ClickhouseNativeColumnDescriptor(String name, String unparsedNativeType, String nestedType,
+                                          boolean isArray, int elementSize, JDBCType jdbcType,
+                                          boolean nullable, boolean unsigned,
+                                          boolean lowCardinality, Number minValue, Number maxValue,
+                                          Integer precision, Integer scale, ClickhouseNativeColumnDescriptor nested) {
     this.name = name;
     this.unparsedNativeType = unparsedNativeType;
-    this.nativeType = nativeType;
+    this.nestedType = nestedType;
     this.isArray = isArray;
     this.elementSize = elementSize;
     this.jdbcType = jdbcType;
@@ -48,6 +69,7 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     this.maxValue = bi(maxValue);
     this.precision = precision;
     this.scale = scale;
+    this.nested = nested;
   }
 
   private BigInteger bi(Number src) {
@@ -100,8 +122,12 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     return maxValue;
   }
 
-  public String getNativeType() {
-    return nativeType;
+  public String getNestedType() {
+    return nestedType;
+  }
+
+  public ClickhouseNativeColumnDescriptor getNestedDescr() {
+    return nested;
   }
 
   public Integer getPrecision() {
@@ -112,9 +138,22 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     return scale;
   }
 
+  public ClickhouseNativeColumnDescriptor copyAsNestedArray() {
+    return new ClickhouseNativeColumnDescriptor(name, "Array(" + unparsedNativeType + ")", unparsedNativeType, true, ClickhouseNativeColumnDescriptor.NOSIZE,
+      JDBCType.ARRAY, false, false, false, null, null, this);
+  }
+
+  public ClickhouseNativeColumnDescriptor copyAsNonArray() {
+    return copyWithModifiers(false, lowCardinality, nullable);
+  }
+
+  public ClickhouseNativeColumnDescriptor copyWithModifiers(boolean newArray, boolean newLowCardinality, boolean newNullable) {
+    return new ClickhouseNativeColumnDescriptor(name, unparsedNativeType, nestedType, newArray, elementSize, jdbcType,
+      newNullable, unsigned, newLowCardinality, minValue, maxValue, precision, scale, nested);
+  }
+
   public ClickhouseNativeColumnDescriptor copyWithModifiers(boolean newLowCardinality, boolean newNullable) {
-    return new ClickhouseNativeColumnDescriptor(name, unparsedNativeType, nativeType, isArray, elementSize, jdbcType,
-      newNullable, unsigned, newLowCardinality, minValue, maxValue, precision, scale);
+    return copyWithModifiers(isArray, newLowCardinality, newNullable);
   }
 
   @Override
@@ -122,7 +161,7 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     return "ClickhouseNativeColumnDescriptor{" +
       "name='" + name + '\'' +
       ", unparsedNativeType='" + unparsedNativeType + '\'' +
-      ", nativeType='" + nativeType + '\'' +
+      ", nativeType='" + nestedType + '\'' +
       ", isArray=" + isArray +
       ", jdbcType=" + jdbcType +
       ", elementSize=" + elementSize +

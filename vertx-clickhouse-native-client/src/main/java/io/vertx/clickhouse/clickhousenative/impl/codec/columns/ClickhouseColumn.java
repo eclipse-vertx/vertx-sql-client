@@ -48,14 +48,24 @@ public abstract class ClickhouseColumn {
     afterReadItems(in);
   }
 
+  protected Object[] readItemsObjects(ClickhouseStreamDataSource in) {
+    return (Object[]) readItems(in);
+  }
+
   protected abstract Object readItems(ClickhouseStreamDataSource in);
   protected void afterReadItems(ClickhouseStreamDataSource in) {
   }
 
   protected BitSet readNullsMap(ClickhouseStreamDataSource in) {
-    int nBytes = nRows / 8 + (nRows % 8 == 0 ? 0 : 1);
-    if (in.readableBytes() >= nBytes) {
-      return BitSet.valueOf(in.readSlice(nBytes).nioBuffer());
+    if (in.readableBytes() >= nRows) {
+      BitSet bSet = new BitSet(nRows);
+      for (int i = 0; i < nRows; ++i) {
+        byte b = in.readByte();
+        if (b != 0) {
+          bSet.set(i);
+        }
+      }
+      return bSet;
     }
     return null;
   }
