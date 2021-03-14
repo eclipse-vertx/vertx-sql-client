@@ -17,9 +17,13 @@ public class UUIDColumn extends ClickhouseColumn {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       UUID[] data = new UUID[nRows];
       for (int i = 0; i < nRows; ++i) {
-        long mostSigBits = in.readLongLE();
-        long leastSigBits = in.readLongLE();
-        data[i] = new UUID(mostSigBits, leastSigBits);
+        if (nullsMap == null || !nullsMap.get(i)) {
+          long mostSigBits = in.readLongLE();
+          long leastSigBits = in.readLongLE();
+          data[i] = new UUID(mostSigBits, leastSigBits);
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
+        }
       }
       return data;
     }

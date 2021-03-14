@@ -17,7 +17,11 @@ public class UInt64Column extends ClickhouseColumn {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       long[] data = new long[nRows];
       for (int i = 0; i < nRows; ++i) {
-        data[i] = in.readLongLE();
+        if (nullsMap == null || !nullsMap.get(i)) {
+          data[i] = in.readLongLE();
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
+        }
       }
       return data;
     }

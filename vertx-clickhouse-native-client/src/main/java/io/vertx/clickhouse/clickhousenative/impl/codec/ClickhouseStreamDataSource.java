@@ -6,6 +6,7 @@ import io.netty.buffer.ByteBufAllocator;
 public interface ClickhouseStreamDataSource {
   void moreData(ByteBuf buf, ByteBufAllocator ctx);
   int readableBytes();
+  void skipBytes(int length);
   String readPascalString();
   Integer readULeb128();
   Boolean readBoolean();

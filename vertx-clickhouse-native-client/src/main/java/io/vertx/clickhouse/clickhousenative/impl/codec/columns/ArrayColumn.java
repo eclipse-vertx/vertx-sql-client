@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ArrayColumn extends ClickhouseColumn {
-  public static final Object[] EMPTY_ARRAY = new Object[0];
+  private static final Object[] EMPTY_ARRAY = new Object[0];
 
   private Deque<Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer>> graphLevelDeque;
   private List<List<Integer>> slicesSeries;
@@ -37,10 +37,7 @@ public class ArrayColumn extends ClickhouseColumn {
       curNestedColumnDescr = columnDescriptor.getNestedDescr();
       nItems = 0;
     }
-
-    if (!graphLevelDeque.isEmpty()) {
-      readSlices(in);
-    }
+    readSlices(in);
     Object[] data;
     if (nItems != 0 && nItems > 0) {
       if (curNestedColumn == null) {
@@ -48,11 +45,11 @@ public class ArrayColumn extends ClickhouseColumn {
       } else {
         assert nItems == curNestedColumn.nRows;
       }
-      data = curNestedColumn.readItemsObjects(in);
+      curNestedColumn.itemsArray = curNestedColumn.readItemsObjects(in);
     } else {
       data = EMPTY_ARRAY;
     }
-    return resliceIntoArray(data);
+    return resliceIntoArray((Object[]) curNestedColumn.itemsArray);
   }
 
   private Object[] resliceIntoArray(Object[] data) {
@@ -64,9 +61,9 @@ public class ArrayColumn extends ClickhouseColumn {
       int tmpSliceIdx = 0;
       while (paired.hasNext()) {
         Map.Entry<Integer, Integer> slice = paired.next();
-        int newSliseSz = slice.getValue() - slice.getKey();
-        Object[] resliced = new Object[newSliseSz];
-        System.arraycopy(intermData, slice.getKey(), resliced, 0, newSliseSz);
+        int newSliceSz = slice.getValue() - slice.getKey();
+        Object[] resliced = new Object[newSliceSz];
+        System.arraycopy(intermData, slice.getKey(), resliced, 0, newSliceSz);
         newDataList[tmpSliceIdx] = resliced;
         ++tmpSliceIdx;
       }
@@ -76,11 +73,13 @@ public class ArrayColumn extends ClickhouseColumn {
   }
 
   private void readSlices(ClickhouseStreamDataSource in) {
+    //TODO smagellan: simplify the loop
     while (!graphLevelDeque.isEmpty()) {
       Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer> sliceState = graphLevelDeque.remove();
       curNestedColumnDescr = sliceState.left().getNestedDescr();
-      if (curDepth != sliceState.right().intValue()) {
-        curDepth = sliceState.right();
+      Integer newDepth = sliceState.right();
+      if (curDepth != newDepth.intValue()) {
+        curDepth = newDepth;
         slicesSeries.add(slices);
 
         //The last element in slice is index(number) of the last
@@ -106,7 +105,7 @@ public class ArrayColumn extends ClickhouseColumn {
             if (sz > Integer.MAX_VALUE) {
               throw new IllegalStateException("nested size is too big (" + sz + ") max " + Integer.MAX_VALUE);
             }
-            nestedSizes.add((int)sz);
+            nestedSizes.add((int) sz);
           }
           slices.addAll(nestedSizes);
           prev = size;

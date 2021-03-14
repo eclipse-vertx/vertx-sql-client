@@ -117,6 +117,11 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
+  public void skipBytes(int length) {
+    decompressedData.skipBytes(length);
+  }
+
+  @Override
   public String readPascalString() {
     return ByteBufUtils.readPascalString(decompressedData);
   }

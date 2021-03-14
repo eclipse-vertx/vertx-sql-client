@@ -1,6 +1,5 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
-import io.vertx.clickhouse.clickhousenative.impl.codec.ByteBufUtils;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
@@ -28,8 +27,14 @@ public class StringColumn extends ClickhouseColumn {
       if (in.readableBytes() < curStrLength) {
         return null;
       }
-      byte[] stringBytes = new byte[curStrLength];
-      in.readBytes(stringBytes);
+      byte[] stringBytes;
+      if (nullsMap == null || !nullsMap.get(elements.size())) {
+        stringBytes = new byte[curStrLength];
+        in.readBytes(stringBytes);
+      } else {
+        stringBytes = null;
+        in.skipBytes(curStrLength);
+      }
       elements.add(stringBytes);
       curStrLength = null;
     }

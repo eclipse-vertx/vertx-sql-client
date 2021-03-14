@@ -15,7 +15,11 @@ public class UInt8Column extends ClickhouseColumn {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       byte[] data = new byte[nRows];
       for (int i = 0; i < nRows; ++i) {
-        data[i] = in.readByte();
+        if (nullsMap == null || !nullsMap.get(i)) {
+          data[i] = in.readByte();
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
+        }
       }
       return data;
     }

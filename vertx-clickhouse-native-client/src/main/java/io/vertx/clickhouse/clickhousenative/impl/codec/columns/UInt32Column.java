@@ -15,7 +15,11 @@ public class UInt32Column extends ClickhouseColumn {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       int[] data = new int[nRows];
       for (int i = 0; i < nRows; ++i) {
-        data[i] = in.readIntLE();
+        if (nullsMap == null || !nullsMap.get(i)) {
+          data[i] = in.readIntLE();
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
+        }
       }
       return data;
     }

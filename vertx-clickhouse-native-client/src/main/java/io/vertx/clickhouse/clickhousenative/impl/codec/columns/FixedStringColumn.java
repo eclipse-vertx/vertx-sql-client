@@ -16,12 +16,19 @@ public class FixedStringColumn extends ClickhouseColumn {
 
   @Override
   protected Object[] readItems(ClickhouseStreamDataSource in) {
+    int elementSize = columnDescriptor.getElementSize();
     while (elements.size() < nRows) {
-      if (in.readableBytes() < columnDescriptor.getElementSize()) {
+      if (in.readableBytes() < elementSize) {
         return null;
       }
-      byte[] stringBytes = new byte[columnDescriptor.getElementSize()];
-      in.readBytes(stringBytes);
+      byte[] stringBytes;
+      if (nullsMap == null || !nullsMap.get(elements.size())) {
+        stringBytes = new byte[elementSize];
+        in.readBytes(stringBytes);
+      } else {
+        in.skipBytes(elementSize);
+        stringBytes = null;
+      }
       elements.add(stringBytes);
     }
     Object[] ret = elements.toArray();

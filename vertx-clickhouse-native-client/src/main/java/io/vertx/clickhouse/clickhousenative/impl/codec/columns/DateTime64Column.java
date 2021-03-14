@@ -25,12 +25,14 @@ public class DateTime64Column extends ClickhouseColumn {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       OffsetDateTime[] data = new OffsetDateTime[nRows];
       for (int i = 0; i < nRows; ++i) {
-        BigInteger bi = UInt64Column.unsignedBi(in.readLongLE());
-        long seconds = bi.divide(invTickSize).longValueExact();
-        long nanos = bi.remainder(invTickSize).longValueExact();
         if (nullsMap == null || !nullsMap.get(i)) {
+          BigInteger bi = UInt64Column.unsignedBi(in.readLongLE());
+          long seconds = bi.divide(invTickSize).longValueExact();
+          long nanos = bi.remainder(invTickSize).longValueExact();
           OffsetDateTime dt = Instant.ofEpochSecond(seconds, nanos).atZone(zoneId).toOffsetDateTime();
           data[i] = dt;
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
         }
       }
       return data;
