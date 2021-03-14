@@ -22,10 +22,12 @@ public class DateTimeColumn extends ClickhouseColumn {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       OffsetDateTime[] data = new OffsetDateTime[nRows];
       for (int i = 0; i < nRows; ++i) {
-        long unixSeconds = Integer.toUnsignedLong(in.readIntLE());
         if (nullsMap == null || !nullsMap.get(i)) {
+          long unixSeconds = Integer.toUnsignedLong(in.readIntLE());
           OffsetDateTime dt = Instant.ofEpochSecond(unixSeconds).atZone(zoneId).toOffsetDateTime();
           data[i] = dt;
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
         }
       }
       return data;

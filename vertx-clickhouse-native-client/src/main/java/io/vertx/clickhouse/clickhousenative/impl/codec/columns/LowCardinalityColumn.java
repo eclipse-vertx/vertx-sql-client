@@ -3,6 +3,8 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
+import java.util.BitSet;
+
 
 public class LowCardinalityColumn extends ClickhouseColumn {
   private final ClickhouseNativeColumnDescriptor indexDescr;
@@ -29,6 +31,11 @@ public class LowCardinalityColumn extends ClickhouseColumn {
         }
       }
     }
+  }
+
+  @Override
+  protected BitSet readNullsMap(ClickhouseStreamDataSource in) {
+    return null;
   }
 
   @Override
@@ -90,7 +97,7 @@ public class LowCardinalityColumn extends ClickhouseColumn {
   private ClickhouseColumn uintColumn(int code) {
     ClickhouseNativeColumnDescriptor tmp;
     String name = columnDescriptor.name();
-    //TODO smagellan: introduce immutable column readers, reuse cached instances
+    //TODO smagellan: introduce immutable column descriptors for (U)Ints, reuse cached instances
     if (code == 0) {
       tmp = ClickhouseColumns.columnDescriptorForSpec("UInt8", name);
     } else if (code == 1) {

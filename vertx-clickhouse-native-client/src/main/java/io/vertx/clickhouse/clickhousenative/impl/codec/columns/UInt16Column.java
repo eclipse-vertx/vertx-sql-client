@@ -15,7 +15,11 @@ public class UInt16Column extends ClickhouseColumn {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       short[] data = new short[nRows];
       for (int i = 0; i < nRows; ++i) {
-        data[i] = in.readShortLE();
+        if (nullsMap == null || !nullsMap.get(i)) {
+          data[i] = in.readShortLE();
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
+        }
       }
       return data;
     }

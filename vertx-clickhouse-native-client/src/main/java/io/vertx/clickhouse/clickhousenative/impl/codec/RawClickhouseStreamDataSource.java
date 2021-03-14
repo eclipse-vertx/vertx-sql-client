@@ -21,6 +21,11 @@ public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
+  public void skipBytes(int length) {
+    source.skipBytes(length);
+  }
+
+  @Override
   public String readPascalString() {
     return ByteBufUtils.readPascalString(source);
   }

@@ -23,8 +23,12 @@ public class Decimal64Column extends ClickhouseColumn {
       BigDecimal[] data = new BigDecimal[nRows];
       int scale = columnDescriptor.getScale();
       for (int i = 0; i < nRows; ++i) {
-        long item = in.readLongLE();
-        data[i] = new BigDecimal(BigInteger.valueOf(item), scale, MATH_CONTEXT);
+        if (nullsMap == null || !nullsMap.get(i)) {
+          long item = in.readLongLE();
+          data[i] = new BigDecimal(BigInteger.valueOf(item), scale, MATH_CONTEXT);
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
+        }
       }
       return data;
     }

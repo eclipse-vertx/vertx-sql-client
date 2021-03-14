@@ -26,9 +26,13 @@ public class Decimal128Column extends ClickhouseColumn {
       int scale = columnDescriptor.getScale();
       byte[] readBuffer = new byte[ELEMENT_SIZE];
       for (int i = 0; i < nRows; ++i) {
-        in.readBytes(readBuffer);
-        BigInteger bi = new BigInteger(Utils.reverse(readBuffer));
-        data[i] = new BigDecimal(bi, scale, MATH_CONTEXT);
+        if (nullsMap == null || !nullsMap.get(i)) {
+          in.readBytes(readBuffer);
+          BigInteger bi = new BigInteger(Utils.reverse(readBuffer));
+          data[i] = new BigDecimal(bi, scale, MATH_CONTEXT);
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
+        }
       }
       return data;
     }

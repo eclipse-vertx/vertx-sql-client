@@ -20,8 +20,12 @@ public class UInt128Column extends ClickhouseColumn {
       BigInteger[] data = new BigInteger[nRows];
       byte[] readBuffer = new byte[ELEMENT_SIZE];
       for (int i = 0; i < nRows; ++i) {
-        in.readBytes(readBuffer);
-        data[i] = new BigInteger(Utils.reverse(readBuffer));
+        if (nullsMap == null || !nullsMap.get(i)) {
+          in.readBytes(readBuffer);
+          data[i] = new BigInteger(Utils.reverse(readBuffer));
+        } else {
+          in.skipBytes(ELEMENT_SIZE);
+        }
       }
       return data;
     }
