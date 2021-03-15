@@ -36,12 +36,12 @@ public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
-  public Boolean readBoolean() {
+  public boolean readBoolean() {
     return source.readBoolean();
   }
 
   @Override
-  public Integer readIntLE() {
+  public int readIntLE() {
     return source.readIntLE();
   }
 
@@ -68,6 +68,16 @@ public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource
   @Override
   public short readShortLE() {
     return source.readShortLE();
+  }
+
+  @Override
+  public float readFloatLE() {
+    return source.readFloatLE();
+  }
+
+  @Override
+  public double readDoubleLE() {
+    return source.readDoubleLE();
   }
 
   @Override

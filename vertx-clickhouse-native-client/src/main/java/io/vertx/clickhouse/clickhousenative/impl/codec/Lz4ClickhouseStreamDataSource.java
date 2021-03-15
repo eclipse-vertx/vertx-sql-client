@@ -132,12 +132,12 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
-  public Boolean readBoolean() {
+  public boolean readBoolean() {
     return decompressedData.readBoolean();
   }
 
   @Override
-  public Integer readIntLE() {
+  public int readIntLE() {
     return decompressedData.readIntLE();
   }
 
@@ -164,6 +164,16 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   @Override
   public short readShortLE() {
     return decompressedData.readShortLE();
+  }
+
+  @Override
+  public float readFloatLE() {
+    return decompressedData.readFloatLE();
+  }
+
+  @Override
+  public double readDoubleLE() {
+    return decompressedData.readDoubleLE();
   }
 
   @Override

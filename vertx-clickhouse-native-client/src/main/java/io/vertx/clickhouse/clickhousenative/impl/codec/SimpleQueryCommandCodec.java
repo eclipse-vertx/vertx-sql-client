@@ -75,6 +75,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   }
 
   private void sendQuery(String query, ByteBuf buf) {
+    LOG.info("running query: " + query);
     ByteBufUtils.writeULeb128(ClientPacketTypes.QUERY, buf);
     //query id
     ByteBufUtils.writePascalString("", buf);
@@ -148,6 +149,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         }
         ++dataPacketNo;
       } else {
+        //TODO smagellan: handle connection errors (e.g. table does not exist, wrong password, no column with given name, etc)
         String msg = "unknown packet type: " + packet.getClass();
         LOG.error(msg);
         if (packet instanceof Throwable) {

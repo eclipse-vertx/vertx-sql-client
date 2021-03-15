@@ -37,6 +37,11 @@ public class UInt64Column extends ClickhouseColumn {
     return element;
   }
 
+  @Override
+  protected Object[] asObjectsArray() {
+    return asObjectsArrayWithGetElement();
+  }
+
   static BigInteger unsignedBi(long l) {
     return new BigInteger(1, new byte[] {
       (byte) (l >>> 56 & 0xFF),

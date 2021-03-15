@@ -15,7 +15,7 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
 
   public ExtendedQueryCommandCodec(ExtendedQueryCommand<T> cmd, ClickhouseNativeSocketConnection conn) {
-    super(cmd, conn, true);
+    super(cmd, conn, cmd.fetch() > 0);
   }
 
   @Override
@@ -34,12 +34,14 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
     String fetchSize = Integer.toString(ecmd().fetch());
     Map<String, String> defaultSettings = super.settings();
     String defaultFetchSize = defaultSettings.get(OPTION_MAX_BLOCK_SIZE);
-    if (!Objects.equals(defaultFetchSize, fetchSize)) {
-      if (LOG.isWarnEnabled() && defaultFetchSize != null) {
-        LOG.warn("overriding " + OPTION_MAX_BLOCK_SIZE + " option with new value " + fetchSize + ", was " + defaultSettings.get(OPTION_MAX_BLOCK_SIZE));
+    if (!"0".equals(fetchSize)) {
+      if (!Objects.equals(defaultFetchSize, fetchSize)) {
+        if (LOG.isWarnEnabled() && defaultFetchSize != null) {
+          LOG.warn("overriding " + OPTION_MAX_BLOCK_SIZE + " option with new value " + fetchSize + ", was " + defaultSettings.get(OPTION_MAX_BLOCK_SIZE));
+        }
+        defaultSettings = new HashMap<>(defaultSettings);
+        defaultSettings.put(OPTION_MAX_BLOCK_SIZE, fetchSize);
       }
-      defaultSettings = new HashMap<>(defaultSettings);
-      defaultSettings.put(OPTION_MAX_BLOCK_SIZE, fetchSize);
     }
     return defaultSettings;
   }

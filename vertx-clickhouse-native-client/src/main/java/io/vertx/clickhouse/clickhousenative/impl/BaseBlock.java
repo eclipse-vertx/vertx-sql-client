@@ -2,9 +2,7 @@ package io.vertx.clickhouse.clickhousenative.impl;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumn;
-import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ColumnSpec;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 

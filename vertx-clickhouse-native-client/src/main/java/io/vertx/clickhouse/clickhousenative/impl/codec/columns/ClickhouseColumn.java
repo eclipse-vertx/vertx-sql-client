@@ -16,6 +16,10 @@ public abstract class ClickhouseColumn {
     this.nRows = nRows;
   }
 
+  public ClickhouseNativeColumnDescriptor columnDescriptor() {
+    return columnDescriptor;
+  }
+
   public void readColumn(ClickhouseStreamDataSource in){
     readStatePrefix(in);
     readData(in);
@@ -48,8 +52,21 @@ public abstract class ClickhouseColumn {
     afterReadItems(in);
   }
 
-  protected Object[] readItemsObjects(ClickhouseStreamDataSource in) {
-    return (Object[]) readItems(in);
+  protected Object[] readItemsAsObjects(ClickhouseStreamDataSource in) {
+    itemsArray = readItems(in);
+    return asObjectsArray();
+  }
+
+  protected Object[] asObjectsArray() {
+    return (Object[]) itemsArray;
+  }
+
+  protected Object[] asObjectsArrayWithGetElement() {
+    Object[] ret = new Object[nRows];
+    for (int i = 0; i < nRows; ++i) {
+      ret[i] = getElement(i);
+    }
+    return ret;
   }
 
   protected abstract Object readItems(ClickhouseStreamDataSource in);

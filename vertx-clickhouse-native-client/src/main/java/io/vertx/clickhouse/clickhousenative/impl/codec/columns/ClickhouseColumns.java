@@ -100,6 +100,15 @@ public class ClickhouseColumns {
     } else if ("Nothing".equals(spec)) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt8Column.ELEMENT_SIZE,
         JDBCType.NULL, nullable, false, isLowCardinality, null, null, null, null);
+    } else if ("Float32".equals(spec)) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, Float32Column.ELEMENT_SIZE,
+        JDBCType.REAL, nullable, false, isLowCardinality, null, null, null, null);
+    } else if ("Float64".equals(spec)) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, Float64Column.ELEMENT_SIZE,
+        JDBCType.DOUBLE, nullable, false, isLowCardinality, null, null, null, null);
+    } else if ("Date".equals(spec)) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16Column.ELEMENT_SIZE,
+        JDBCType.DATE, nullable, true, isLowCardinality, null, null, null, null);
     }
     throw new IllegalArgumentException("unknown spec: '" + spec + "'");
   }
@@ -173,6 +182,12 @@ public class ClickhouseColumns {
       } else if (descr.getElementSize() == Decimal256Column.ELEMENT_SIZE) {
         return new Decimal256Column(nRows, descr);
       }
+    } else if (jdbcType == JDBCType.REAL) {
+      return new Float32Column(nRows, descr);
+    } else if (jdbcType == JDBCType.DOUBLE) {
+      return new Float64Column(nRows, descr);
+    } else if (jdbcType == JDBCType.DATE) {
+      return new DateColumn(nRows, descr);
     } else if (jdbcType == JDBCType.OTHER) {
       if (descr.getNestedType().equals("UUID")) {
         return new UUIDColumn(nRows, descr);
