@@ -6,6 +6,7 @@ import io.vertx.sqlclient.Tuple;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.sql.JDBCType;
 import java.util.List;
 
 public class ClickhouseNativeRow implements Row {
@@ -34,7 +35,13 @@ public class ClickhouseNativeRow implements Row {
   @Override
   public Object getValue(int columnIndex) {
     List<ClickhouseColumn> data = block.getData();
-    return data.get(columnIndex).getElement(rowNo);
+    ClickhouseColumn column = data.get(columnIndex);
+    Object columnData = column.getElement(rowNo);
+    if (columnData != null && column.columnDescriptor().jdbcType() == JDBCType.VARCHAR) {
+      return new String((byte[]) columnData, stringCharset);
+    } else {
+      return columnData;
+    }
   }
 
   @Override
@@ -60,7 +67,7 @@ public class ClickhouseNativeRow implements Row {
 
   @Override
   public int size() {
-    return block.numRows();
+    return block.numColumns();
   }
 
   @Override

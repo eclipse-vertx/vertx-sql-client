@@ -38,18 +38,16 @@ public class ArrayColumn extends ClickhouseColumn {
       nItems = 0;
     }
     readSlices(in);
-    Object[] data;
-    if (nItems != 0 && nItems > 0) {
+    if (nItems > 0) {
       if (curNestedColumn == null) {
         curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, nItems);
       } else {
         assert nItems == curNestedColumn.nRows;
       }
-      curNestedColumn.itemsArray = curNestedColumn.readItemsObjects(in);
-    } else {
-      data = EMPTY_ARRAY;
+      curNestedColumn.itemsArray = curNestedColumn.readItemsAsObjects(in);
+      return resliceIntoArray((Object[]) curNestedColumn.itemsArray);
     }
-    return resliceIntoArray((Object[]) curNestedColumn.itemsArray);
+    return resliceIntoArray(EMPTY_ARRAY);
   }
 
   private Object[] resliceIntoArray(Object[] data) {
@@ -74,6 +72,7 @@ public class ArrayColumn extends ClickhouseColumn {
 
   private void readSlices(ClickhouseStreamDataSource in) {
     //TODO smagellan: simplify the loop
+    //TODO smagellan: handle fragmented reads
     while (!graphLevelDeque.isEmpty()) {
       Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer> sliceState = graphLevelDeque.remove();
       curNestedColumnDescr = sliceState.left().getNestedDescr();

@@ -34,4 +34,9 @@ public class UInt32Column extends ClickhouseColumn {
     }
     return element;
   }
+
+  @Override
+  protected Object[] asObjectsArray() {
+    return asObjectsArrayWithGetElement();
+  }
 }

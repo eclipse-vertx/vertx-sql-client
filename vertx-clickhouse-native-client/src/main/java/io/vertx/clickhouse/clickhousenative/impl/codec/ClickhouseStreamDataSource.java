@@ -9,13 +9,15 @@ public interface ClickhouseStreamDataSource {
   void skipBytes(int length);
   String readPascalString();
   Integer readULeb128();
-  Boolean readBoolean();
-  Integer readIntLE();
+  boolean readBoolean();
+  int readIntLE();
+  long readLongLE();
+  short readShortLE();
+  float readFloatLE();
+  double readDoubleLE();
   ByteBuf readSlice(int nBytes);
   void readBytes(byte[] dst);
   byte readByte();
-  long readLongLE();
-  short readShortLE();
   String hexdump();
   default void finish(){
   }

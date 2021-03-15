@@ -3,6 +3,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 import io.vertx.clickhouse.clickhousenative.impl.codec.Utils;
+import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -22,14 +23,14 @@ public class Decimal128Column extends ClickhouseColumn {
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      BigDecimal[] data = new BigDecimal[nRows];
+      Numeric[] data = new Numeric[nRows];
       int scale = columnDescriptor.getScale();
       byte[] readBuffer = new byte[ELEMENT_SIZE];
       for (int i = 0; i < nRows; ++i) {
         if (nullsMap == null || !nullsMap.get(i)) {
           in.readBytes(readBuffer);
           BigInteger bi = new BigInteger(Utils.reverse(readBuffer));
-          data[i] = new BigDecimal(bi, scale, MATH_CONTEXT);
+          data[i] = Numeric.create(new BigDecimal(bi, scale, MATH_CONTEXT));
         } else {
           in.skipBytes(ELEMENT_SIZE);
         }
