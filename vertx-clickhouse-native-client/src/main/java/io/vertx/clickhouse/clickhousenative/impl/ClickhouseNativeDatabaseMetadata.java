@@ -34,22 +34,22 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
 
   @Override
   public String productName() {
-    return null;
+    return productName;
   }
 
   @Override
   public String fullVersion() {
-    return null;
+    return fullVersion;
   }
 
   @Override
   public int majorVersion() {
-    return 0;
+    return major;
   }
 
   @Override
   public int minorVersion() {
-    return 0;
+    return minor;
   }
 
   public int getRevision() {

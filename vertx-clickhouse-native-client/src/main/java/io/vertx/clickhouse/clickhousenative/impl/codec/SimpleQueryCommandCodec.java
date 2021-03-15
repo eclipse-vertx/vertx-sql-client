@@ -145,7 +145,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         packetReader = null;
         rowResultDecoder.generateRows(block);
         if (requireUpdates && block.numRows() > 0) {
-          notifyOperationUpdate(true);
+          notifyOperationUpdate(true, null);
         }
         ++dataPacketNo;
       } else {
@@ -153,12 +153,14 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         String msg = "unknown packet type: " + packet.getClass();
         LOG.error(msg);
         if (packet instanceof Throwable) {
-          LOG.error("unknown packet type", (Throwable) packet);
+          Throwable t = (Throwable) packet;
+          LOG.error("unknown packet type", t);
+          notifyOperationUpdate(false, t);
         }
         //completionHandler.handle(CommandResponse.failure(new RuntimeException(msg)));
       }
     } else if (packetReader.isEndOfStream()) {
-      notifyOperationUpdate(false);
+      notifyOperationUpdate(false, null);
       packetReader = null;
     }
   }
@@ -170,7 +172,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     return new ClickhouseNativeRowDesc(columnNames, columnTypes);
   }
 
-  private void notifyOperationUpdate(boolean hasMoreResults) {
+  private void notifyOperationUpdate(boolean hasMoreResults, Throwable t) {
     Throwable failure = null;
     if (rowResultDecoder != null) {
       LOG.info("notifying operation update; has more result = " + hasMoreResults + "; query: ");
@@ -179,6 +181,14 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
       int size = rowResultDecoder.size();
       rowResultDecoder.reset();
       cmd.resultHandler().handleResult(0, size, rowResultDecoder.getRowDesc(), result, failure);
+    }
+    if (t != null) {
+      if (failure == null) {
+        failure = t;
+      } else {
+        failure = new RuntimeException(failure);
+        failure.addSuppressed(t);
+      }
     }
 
     CommandResponse<Boolean> response;
