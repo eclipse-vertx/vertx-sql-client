@@ -175,13 +175,9 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     if (rowResultDecoder != null) {
       LOG.info("notifying operation update; has more result = " + hasMoreResults + "; query: ");
       failure = rowResultDecoder.complete();
-      if (failure != null) {
-        failure = new RuntimeException(failure);
-      }
       T result = rowResultDecoder.result();
       int size = rowResultDecoder.size();
       rowResultDecoder.reset();
-
       cmd.resultHandler().handleResult(0, size, rowResultDecoder.getRowDesc(), result, failure);
     }
 
