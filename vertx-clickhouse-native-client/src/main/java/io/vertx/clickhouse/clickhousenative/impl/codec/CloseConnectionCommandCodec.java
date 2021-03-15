@@ -1,7 +1,9 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.socket.SocketChannel;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
@@ -21,6 +23,9 @@ public class CloseConnectionCommandCodec extends ClickhouseNativeCommandCodec<Vo
   public void encode(ClickhouseNativeEncoder encoder) {
     super.encode(encoder);
     LOG.info("closing channel");
-    encoder.chctx().channel().close();
+    //encoder.chctx().channel().close();
+    ChannelHandlerContext ctx = encoder.chctx();
+    SocketChannel channel = (SocketChannel) ctx.channel();
+    ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(v -> channel.shutdownOutput());
   }
 }

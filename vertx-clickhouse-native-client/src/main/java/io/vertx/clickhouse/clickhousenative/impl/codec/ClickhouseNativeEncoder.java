@@ -4,11 +4,14 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeSocketConnection;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 
 public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
+  private static final Logger LOG = LoggerFactory.getLogger(ClickhouseNativeEncoder.class);
 
   private final ArrayDeque<ClickhouseNativeCommandCodec<?, ?>> inflight;
   private final ClickhouseNativeSocketConnection conn;
@@ -44,6 +47,7 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   void write(CommandBase<?> cmd) {
+    LOG.info("got command: " + cmd.getClass());
     ClickhouseNativeCommandCodec<?, ?> codec = wrap(cmd);
     codec.completionHandler = resp -> {
       ClickhouseNativeCommandCodec<?, ?> c = inflight.poll();
