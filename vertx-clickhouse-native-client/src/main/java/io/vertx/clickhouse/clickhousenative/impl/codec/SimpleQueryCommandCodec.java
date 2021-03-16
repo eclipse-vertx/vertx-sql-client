@@ -39,10 +39,14 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     super.encode(encoder);
     if (!isSuspended()) {
       ByteBuf buf = allocateBuffer();
-      sendQuery(cmd.sql(), buf);
+      sendQuery(sql(), buf);
       sendExternalTables(buf, Collections.emptyList());
       encoder.chctx().writeAndFlush(buf, encoder.chctx().voidPromise());
     }
+  }
+
+  protected String sql() {
+    return cmd.sql();
   }
 
   private void sendExternalTables(ByteBuf buf, Collection<RowOrientedBlock> blocks) {
