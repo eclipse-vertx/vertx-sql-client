@@ -35,7 +35,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
     MySQLPoolImpl pool = new MySQLPoolImpl(eventLoopContext, new MySQLConnectionFactory(eventLoopContext, connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
-      closeFuture.onComplete(ar -> context.owner().close());
+      closeFuture.future().onComplete(ar -> context.owner().close());
     } else {
       context.addCloseHook(closeFuture);
     }

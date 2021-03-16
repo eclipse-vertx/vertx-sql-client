@@ -37,7 +37,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
     MSSQLPoolImpl pool = new MSSQLPoolImpl(eventLoopContext, new MSSQLConnectionFactory(eventLoopContext, connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
-      closeFuture.onComplete(ar -> context.owner().close());
+      closeFuture.future().onComplete(ar -> context.owner().close());
     } else {
       context.addCloseHook(closeFuture);
     }

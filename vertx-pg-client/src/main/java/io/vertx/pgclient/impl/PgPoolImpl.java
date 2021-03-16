@@ -49,7 +49,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     PgPoolImpl pool = new PgPoolImpl(eventLoopContext, new PgConnectionFactory(eventLoopContext, connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
-      closeFuture.onComplete(ar -> context.owner().close());
+      closeFuture.future().onComplete(ar -> context.owner().close());
     } else {
       context.addCloseHook(closeFuture);
     }

@@ -42,7 +42,7 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
     DB2PoolImpl pool = new DB2PoolImpl(eventLoopContext, poolOptions, new DB2ConnectionFactory(eventLoopContext, connectOptions), tracer, metrics);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
-      closeFuture.onComplete(ar -> context.owner().close());
+      closeFuture.future().onComplete(ar -> context.owner().close());
     } else {
       context.addCloseHook(closeFuture);
     }

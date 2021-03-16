@@ -47,12 +47,16 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   public PoolBase(EventLoopContext context, ConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
     super(tracer, metrics);
+
+    CloseFuture closeFuture = new CloseFuture();
+    closeFuture.add(this);
+
     this.context = context;
     this.vertx = context.owner();
     this.factory = factory;
     long idleTimeOut = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.pool = new ConnectionPool(factory, context, poolOptions.getMaxSize(), poolOptions.getMaxWaitQueueSize(), idleTimeOut);
-    this.closeFuture = new CloseFuture(this);
+    this.closeFuture = closeFuture;
   }
 
   public CloseFuture closeFuture() {
