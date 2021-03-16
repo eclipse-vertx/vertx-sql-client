@@ -3,10 +3,14 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeSocketConnection;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 
 public class ClickhouseNativeCodec extends CombinedChannelDuplexHandler<ClickhouseNativeDecoder, ClickhouseNativeEncoder> {
   private static final Logger LOG = LoggerFactory.getLogger(ClickhouseNativeCodec.class);
@@ -22,8 +26,23 @@ public class ClickhouseNativeCodec extends CombinedChannelDuplexHandler<Clickhou
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    //TODO smagellan: maybe remove method
-    LOG.error("caught exception", cause);
+    fail(ctx, cause);
     super.exceptionCaught(ctx, cause);
+  }
+
+  private void fail(ChannelHandlerContext ctx, Throwable cause) {
+    for  (Iterator<ClickhouseNativeCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext();) {
+      ClickhouseNativeCommandCodec<?, ?> codec = it.next();
+      it.remove();
+      CommandResponse<Object> failure = CommandResponse.failure(cause);
+      failure.cmd = (CommandBase) codec.cmd;
+      ctx.fireChannelRead(failure);
+    }
+  }
+
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    fail(ctx, new NoStackTraceThrowable("Fail to read any response from the server, the underlying connection might get lost unexpectedly."));
+    super.channelInactive(ctx);
   }
 }
