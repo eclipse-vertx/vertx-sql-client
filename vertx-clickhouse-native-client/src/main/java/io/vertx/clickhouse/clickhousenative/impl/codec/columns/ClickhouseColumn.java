@@ -91,7 +91,7 @@ public abstract class ClickhouseColumn {
   }
 
   public boolean isPartial() {
-    return itemsArray == null;
+    return itemsArray == null || (columnDescriptor.isNullable() && nullsMap == null);
   }
 
   public Object getItemsArray() {

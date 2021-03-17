@@ -22,13 +22,17 @@ public class ArrayColumn extends ClickhouseColumn {
 
   private Deque<Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer>> graphLevelDeque;
   private List<List<Integer>> slicesSeries;
-  private List<Integer> slices;
+  private List<Integer> curSlice;
   private Integer curDepth;
   private ClickhouseNativeColumnDescriptor curNestedColumnDescr;
   private ClickhouseColumn curNestedColumn;
   private Integer nItems;
   private boolean resliced;
   private Object statePrefix;
+  private boolean hasFirstSlice;
+  private int sliceIdxAtCurrentDepth;
+  private int prevSliceSizeAtCurrentDepth = 0;
+  private Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer> slicesAtCurrentDepth;
 
   public ArrayColumn(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descr.copyAsNestedArray());
@@ -59,7 +63,7 @@ public class ArrayColumn extends ClickhouseColumn {
       graphLevelDeque = new ArrayDeque<>();
       graphLevelDeque.add(new Triplet<>(columnDescriptor, Collections.singletonList(nRows), 0));
       slicesSeries = new ArrayList<>();
-      slices = new ArrayList<>();
+      curSlice = new ArrayList<>();
       curDepth = 0;
       curNestedColumnDescr = columnDescriptor.getNestedDescr();
       nItems = 0;
@@ -68,16 +72,23 @@ public class ArrayColumn extends ClickhouseColumn {
       return null;
     }
     readSlices(in);
+    if (curNestedColumn == null) {
+      curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, nItems, md);
+    }
+    if (curNestedColumnDescr.isNullable()) {
+      curNestedColumn.nullsMap = curNestedColumn.readNullsMap(in);
+    }
     if (nItems > 0) {
-      if (curNestedColumn == null) {
-        curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, nItems, md);
-      } else {
-        assert nItems == curNestedColumn.nRows;
-      }
+      assert nItems == curNestedColumn.nRows;
       if (curNestedColumn.getClass() == LowCardinalityColumn.class) {
         ((LowCardinalityColumn)curNestedColumn).keysSerializationVersion = LowCardinalityColumn.SUPPORTED_SERIALIZATION_VERSION;
       }
-      curNestedColumn.itemsArray = curNestedColumn.readItemsAsObjects(in, null);
+      if (curNestedColumn.isPartial()) {
+        curNestedColumn.itemsArray = curNestedColumn.readItemsAsObjects(in, null);
+        if (curNestedColumn.isPartial()) {
+          return null;
+        }
+      }
       if (elementaryDescr.jdbcType() == JDBCType.VARCHAR
        || curNestedColumn.getClass() == Enum8Column.class
        || curNestedColumn.getClass() == Enum16Column.class) {
@@ -136,46 +147,56 @@ public class ArrayColumn extends ClickhouseColumn {
   }
 
   private void readSlices(ClickhouseStreamDataSource in) {
-    //TODO smagellan: simplify the loop
-    //TODO smagellan: handle fragmented reads
-    while (!graphLevelDeque.isEmpty()) {
-      Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer> sliceState = graphLevelDeque.remove();
-      curNestedColumnDescr = sliceState.left().getNestedDescr();
-      Integer newDepth = sliceState.right();
-      if (curDepth != newDepth.intValue()) {
-        curDepth = newDepth;
-        slicesSeries.add(slices);
+    if (!hasFirstSlice) {
+      slicesAtCurrentDepth = graphLevelDeque.remove();
+      curNestedColumnDescr = slicesAtCurrentDepth.left().getNestedDescr();
+      hasFirstSlice = readSlice(in, slicesAtCurrentDepth);
+    }
+
+    while (!graphLevelDeque.isEmpty() || sliceIdxAtCurrentDepth != 0) {
+      if (sliceIdxAtCurrentDepth == 0) {
+        slicesAtCurrentDepth = graphLevelDeque.remove();
+        curNestedColumnDescr = slicesAtCurrentDepth.left().getNestedDescr();
+
+        curDepth = slicesAtCurrentDepth.right();
+        slicesSeries.add(curSlice);
 
         //The last element in slice is index(number) of the last
         //element in current level. On the last iteration this
         //represents number of elements in fully flattened array.
-        nItems = slices.get(slices.size() - 1);
-        if (curNestedColumnDescr.isNullable()) {
-          if (curNestedColumn == null) {
-            curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, nItems, md);
-          }
-          curNestedColumn.nullsMap = curNestedColumn.readNullsMap(in);
-        }
-        slices = new ArrayList<>();
+        nItems = curSlice.get(curSlice.size() - 1);
+        curSlice = new ArrayList<>();
       }
       if (curNestedColumnDescr.isArray()) {
-        slices.add(0);
-        int prev = 0;
-        for (int size : sliceState.middle()) {
-          int nestedSizeCount = size - prev;
-          ArrayList<Integer> nestedSizes = new ArrayList<>(nestedSizeCount);
-          for (int i = 0; i < nestedSizeCount; ++i) {
-            long sz = in.readLongLE();
-            if (sz > Integer.MAX_VALUE) {
-              throw new IllegalStateException("nested size is too big (" + sz + ") max " + Integer.MAX_VALUE);
-            }
-            nestedSizes.add((int) sz);
-          }
-          slices.addAll(nestedSizes);
-          prev = size;
-          graphLevelDeque.add(new Triplet<>(curNestedColumnDescr, nestedSizes, curDepth + 1));
-        }
+        readSlice(in, slicesAtCurrentDepth);
       }
     }
+  }
+
+  private boolean readSlice(ClickhouseStreamDataSource in, Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer> sliceState) {
+    if (sliceIdxAtCurrentDepth == 0) {
+      curSlice.add(0);
+    }
+    for (; sliceIdxAtCurrentDepth < sliceState.middle().size(); ++sliceIdxAtCurrentDepth) {
+      int size = sliceState.middle().get(sliceIdxAtCurrentDepth);
+      int nestedSizeCount = size - prevSliceSizeAtCurrentDepth;
+      if (in.readableBytes() < nestedSizeCount * 8) {
+        return false;
+      }
+      ArrayList<Integer> nestedSizes = new ArrayList<>(nestedSizeCount);
+      for (int i = 0; i < nestedSizeCount; ++i) {
+        long sz = in.readLongLE();
+        if (sz > Integer.MAX_VALUE) {
+          throw new IllegalStateException("nested size is too big (" + sz + ") max " + Integer.MAX_VALUE);
+        }
+        nestedSizes.add((int) sz);
+      }
+      curSlice.addAll(nestedSizes);
+      prevSliceSizeAtCurrentDepth = size;
+      graphLevelDeque.add(new Triplet<>(curNestedColumnDescr, nestedSizes, curDepth + 1));
+    }
+    sliceIdxAtCurrentDepth = 0;
+    prevSliceSizeAtCurrentDepth = 0;
+    return true;
   }
 }
