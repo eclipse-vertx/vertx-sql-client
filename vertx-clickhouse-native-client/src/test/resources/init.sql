@@ -90,3 +90,11 @@ CREATE TABLE collector_test
           ORDER BY (id);
 INSERT INTO collector_test VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
 INSERT INTO collector_test VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
+
+DROP TABLE IF EXISTS vertx_cl_test_table;
+CREATE TABLE vertx_cl_test_table
+(
+    `name` String,
+    `value` UInt32
+)
+ENGINE = GenerateRandom(1, 5, 3);

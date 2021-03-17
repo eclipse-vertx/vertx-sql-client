@@ -1,6 +1,7 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeRow;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeRowDesc;
 import io.vertx.clickhouse.clickhousenative.impl.ColumnOrientedBlock;
@@ -15,17 +16,19 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   private static final Logger LOG = LoggerFactory.getLogger(RowResultDecoder.class);
 
   private final ClickhouseNativeRowDesc rowDesc;
+  private final ClickhouseNativeDatabaseMetadata md;
   private ColumnOrientedBlock block;
   private int rowNo;
 
-  protected RowResultDecoder(Collector<Row, C, R> collector, ClickhouseNativeRowDesc rowDesc) {
+  protected RowResultDecoder(Collector<Row, C, R> collector, ClickhouseNativeRowDesc rowDesc, ClickhouseNativeDatabaseMetadata md) {
     super(collector);
     this.rowDesc = rowDesc;
+    this.md = md;
   }
 
   @Override
   protected Row decodeRow(int len, ByteBuf in) {
-    ClickhouseNativeRow row = new ClickhouseNativeRow(rowNo, rowDesc, block);
+    ClickhouseNativeRow row = new ClickhouseNativeRow(rowNo, rowDesc, block, md);
     ++rowNo;
     return row;
   }

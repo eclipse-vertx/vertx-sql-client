@@ -34,13 +34,6 @@ public class ExtendedClickhouseTest {
   public void setup(TestContext ctx) {
     options = rule.options();
     vertx = Vertx.vertx();
-    /*
-    ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("CREATE TABLE IF NOT EXISTS vertx_cl_test_table (name String, value UInt32) ENGINE = GenerateRandom(1, 5, 3)")
-        .execute(ctx.asyncAssertSuccess());
-    }));
-     */
   }
 
   @After

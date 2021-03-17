@@ -6,7 +6,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
-import java.time.temporal.TemporalAccessor;
+import java.time.temporal.Temporal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -26,6 +26,7 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
     return insertParamValuesIntoQuery(ecmd.sql(), ecmd.params());
   }
 
+  //TODO: maybe switch to antlr4
   private static String insertParamValuesIntoQuery(String parametrizedSql, Tuple paramsList) {
     StringBuilder bldr = new StringBuilder();
     if (paramsList.size() == 0) {
@@ -48,13 +49,13 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
         bldr.append(parametrizedSql, prevIdx, newIdx);
         Class<?> paramClass = paramValue == null ? null : paramValue.getClass();
         if (paramClass != null) {
-          if (CharSequence.class.isAssignableFrom(paramClass) || paramClass == Character.class || TemporalAccessor.class.isAssignableFrom(paramClass)) {
+          if (CharSequence.class.isAssignableFrom(paramClass) || paramClass == Character.class || Temporal.class.isAssignableFrom(paramClass)) {
             bldr.append('\'').append(paramValue).append('\'');
           } else if (paramClass == Double.class) {
             //DB parser gets mad at 4.9e-322 or smaller. Using cast to cure
-            bldr.append(String.format("CAST('%s', 'Float64')", ((Double)paramValue).toString()));
+            bldr.append(String.format("CAST('%s', 'Float64')", paramValue.toString()));
           } else if (paramClass == Float.class) {
-            bldr.append(String.format("CAST('%s', 'Float32')", ((Float)paramValue).toString()));
+            bldr.append(String.format("CAST('%s', 'Float32')", paramValue.toString()));
           } else {
             bldr.append(paramValue);
           }

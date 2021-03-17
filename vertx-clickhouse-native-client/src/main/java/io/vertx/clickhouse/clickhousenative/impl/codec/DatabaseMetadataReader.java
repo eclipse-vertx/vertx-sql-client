@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 
+import java.nio.charset.Charset;
 import java.time.ZoneId;
 import java.util.Map;
 
@@ -76,6 +77,15 @@ public class DatabaseMetadataReader {
     }
     return new ClickhouseNativeDatabaseMetadata(productName,
       String.format("%d.%d.%d", major, minor, revision),
-      major, minor, revision, patchVersion, displayName, timezone == null ? null : ZoneId.of(timezone), fullClientName, properties);
+      major, minor, revision, patchVersion, displayName, timezone == null ? null : ZoneId.of(timezone), fullClientName, properties, charset());
+  }
+
+  private Charset charset() {
+    String desiredCharset = properties.get(ClickhouseConstants.OPTION_STRING_CHARSET);
+    if (desiredCharset == null || "system_default".equals(desiredCharset)) {
+      return Charset.defaultCharset();
+    } else {
+      return Charset.forName(desiredCharset);
+    }
   }
 }

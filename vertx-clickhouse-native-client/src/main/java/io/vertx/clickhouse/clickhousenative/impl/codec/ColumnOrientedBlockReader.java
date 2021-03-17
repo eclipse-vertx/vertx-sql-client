@@ -88,7 +88,7 @@ public class ColumnOrientedBlockReader {
           data = new ArrayList<>(nColumns);
         }
         if (columnData == null) {
-          columnData = ClickhouseColumns.columnForSpec(columnDescriptor, nRows);
+          columnData = ClickhouseColumns.columnForSpec(columnDescriptor, nRows, md);
         }
         if (columnData.isPartial()) {
           LOG.info("reading column " + colName + " of type " + colType);

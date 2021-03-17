@@ -12,8 +12,8 @@ public class DateColumn extends UInt16Column {
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx) {
-    Integer offset = (Integer) super.getElementInternal(rowIdx);
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
+    Integer offset = (Integer) super.getElementInternal(rowIdx, desired);
     return MIN_DATE.plusDays(offset);
   }
 }

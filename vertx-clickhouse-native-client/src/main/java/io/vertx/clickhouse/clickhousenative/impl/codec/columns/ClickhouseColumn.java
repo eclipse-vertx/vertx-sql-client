@@ -6,6 +6,8 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSourc
 import java.util.BitSet;
 
 public abstract class ClickhouseColumn {
+  private static final Object NOP_STATE = new Object();
+
   protected final int nRows;
   protected final ClickhouseNativeColumnDescriptor columnDescriptor;
   protected BitSet nullsMap;
@@ -29,7 +31,8 @@ public abstract class ClickhouseColumn {
     return nRows;
   }
 
-  protected void readStatePrefix(ClickhouseStreamDataSource in) {
+  protected Object readStatePrefix(ClickhouseStreamDataSource in) {
+    return NOP_STATE;
   }
 
   protected void readData(ClickhouseStreamDataSource in) {
@@ -52,19 +55,19 @@ public abstract class ClickhouseColumn {
     afterReadItems(in);
   }
 
-  protected Object[] readItemsAsObjects(ClickhouseStreamDataSource in) {
+  protected Object[] readItemsAsObjects(ClickhouseStreamDataSource in, Class<?> desired) {
     itemsArray = readItems(in);
-    return asObjectsArray();
+    return asObjectsArray(desired);
   }
 
-  protected Object[] asObjectsArray() {
+  protected Object[] asObjectsArray(Class<?> desired) {
     return (Object[]) itemsArray;
   }
 
-  protected Object[] asObjectsArrayWithGetElement() {
+  protected Object[] asObjectsArrayWithGetElement(Class<?> desired) {
     Object[] ret = new Object[nRows];
     for (int i = 0; i < nRows; ++i) {
-      ret[i] = getElement(i);
+      ret[i] = getElement(i, desired);
     }
     return ret;
   }
@@ -95,14 +98,14 @@ public abstract class ClickhouseColumn {
     return itemsArray;
   }
 
-  public Object getElement(int rowIdx) {
+  public Object getElement(int rowIdx, Class<?> desired) {
     if (nullsMap != null && nullsMap.get(rowIdx)) {
       return null;
     }
-    return getElementInternal(rowIdx);
+    return getElementInternal(rowIdx, desired);
   }
 
-  protected Object getElementInternal(int rowIdx) {
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
     return java.lang.reflect.Array.get(itemsArray, rowIdx);
   }
 
