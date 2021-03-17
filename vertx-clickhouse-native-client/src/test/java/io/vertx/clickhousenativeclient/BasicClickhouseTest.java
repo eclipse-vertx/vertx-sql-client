@@ -18,6 +18,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -99,11 +101,51 @@ public class BasicClickhouseTest {
   }
 
   @Test
+  public void arraysTest(TestContext ctx) {
+    ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("select array() as empty_array, array(array(), array(NULL), array(1, NULL, 2), array(321)) as non_empty_array," +
+                     "CAST(array(array(), array(NULL), array('a', NULL, 'b'), array('c')), 'Array(Array(LowCardinality(Nullable(String))))') as low_cardinality_array").execute(
+        ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          Object[] expected = new Object[0];
+          Object[] actual = (Object[])row.getValue(0);
+          ctx.assertEquals(true, Arrays.deepEquals(expected, actual));
+
+          expected = new Object[][]{{}, {null}, {1, null, 2}, {321}};
+          actual = (Object[])row.getValue(1);
+          ctx.assertEquals(true, Arrays.deepEquals(expected, actual));
+
+          expected = new Object[][]{{}, {null}, {"a", null, "b"}, {"c"}};
+          actual = (Object[])row.getValue(2);
+          ctx.assertEquals(true, Arrays.deepEquals(expected, actual));
+          conn.close();
+        })
+      );
+    }));
+  }
+
+  @Test
   public void baseQueryTest(TestContext ctx) {
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("select 4 as resource, 'aa' as str_col1, CAST('abcdef', 'FixedString(6)') as str_col2").execute(
         ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
+          conn.close();
+        })
+      );
+    }));
+  }
+
+  @Test
+  public void blobTest(TestContext ctx) {
+    ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("select 'abcd'").execute(
+        ctx.asyncAssertSuccess(res1 -> {
+          ctx.assertEquals(1, res1.size());
+          Row row = res1.iterator().next();
+          byte[] bytes = row.get(byte[].class, 0);
+          ctx.assertEquals("abcd", new String(bytes, StandardCharsets.UTF_8));
           conn.close();
         })
       );

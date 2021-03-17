@@ -14,8 +14,8 @@ public class Enum8Column extends UInt8Column {
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx) {
-    Byte key = (Byte) super.getElementInternal(rowIdx);
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
+    Byte key = (Byte) super.getElementInternal(rowIdx, desired);
     return enumVals.get(key);
   }
 }

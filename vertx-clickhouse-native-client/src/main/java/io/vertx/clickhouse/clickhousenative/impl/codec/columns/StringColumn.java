@@ -1,18 +1,22 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class StringColumn extends ClickhouseColumn {
   private Integer curStrLength;
   private List<Object> elements;
+  private final Charset charset;
 
-  protected StringColumn(int nRows, ClickhouseNativeColumnDescriptor descriptor) {
+  protected StringColumn(int nRows, ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descriptor);
     this.elements = new ArrayList<>(nRows);
+    this.charset = md.getStringCharset();
   }
 
   @Override
@@ -44,7 +48,11 @@ public class StringColumn extends ClickhouseColumn {
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx) {
-    return getObjectsArrayElement(rowIdx);
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
+    Object tmp = getObjectsArrayElement(rowIdx);
+    if (desired == String.class && tmp != null) {
+      return new String((byte[])tmp, charset);
+    }
+    return tmp;
   }
 }

@@ -1,8 +1,11 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
+import java.nio.charset.Charset;
+import java.sql.JDBCType;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,6 +17,9 @@ import java.util.Map;
 public class ArrayColumn extends ClickhouseColumn {
   private static final Object[] EMPTY_ARRAY = new Object[0];
 
+  private final ClickhouseNativeDatabaseMetadata md;
+  private final ClickhouseNativeColumnDescriptor elementaryDescr;
+
   private Deque<Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer>> graphLevelDeque;
   private List<List<Integer>> slicesSeries;
   private List<Integer> slices;
@@ -21,9 +27,30 @@ public class ArrayColumn extends ClickhouseColumn {
   private ClickhouseNativeColumnDescriptor curNestedColumnDescr;
   private ClickhouseColumn curNestedColumn;
   private Integer nItems;
+  private boolean resliced;
+  private Object statePrefix;
 
-  public ArrayColumn(int nRows, ClickhouseNativeColumnDescriptor descr) {
+  public ArrayColumn(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descr.copyAsNestedArray());
+    this.md = md;
+    this.elementaryDescr = elementaryDescr(columnDescriptor);
+  }
+
+  private ClickhouseNativeColumnDescriptor elementaryDescr(ClickhouseNativeColumnDescriptor descr) {
+    ClickhouseNativeColumnDescriptor tmp = descr;
+    while (tmp.isArray()) {
+      tmp = tmp.getNestedDescr();
+    }
+    return tmp;
+  }
+
+  @Override
+  protected Object readStatePrefix(ClickhouseStreamDataSource in) {
+    ClickhouseColumn statePrefixColumn = ClickhouseColumns.columnForSpec(elementaryDescr, 0, md);
+    if (statePrefix == null) {
+      statePrefix = statePrefixColumn.readStatePrefix(in);
+    }
+    return statePrefix;
   }
 
   @Override
@@ -37,17 +64,55 @@ public class ArrayColumn extends ClickhouseColumn {
       curNestedColumnDescr = columnDescriptor.getNestedDescr();
       nItems = 0;
     }
+    if (statePrefix == null) {
+      return null;
+    }
     readSlices(in);
     if (nItems > 0) {
       if (curNestedColumn == null) {
-        curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, nItems);
+        curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, nItems, md);
       } else {
         assert nItems == curNestedColumn.nRows;
       }
-      curNestedColumn.itemsArray = curNestedColumn.readItemsAsObjects(in);
+      if (curNestedColumn.getClass() == LowCardinalityColumn.class) {
+        ((LowCardinalityColumn)curNestedColumn).keysSerializationVersion = LowCardinalityColumn.SUPPORTED_SERIALIZATION_VERSION;
+      }
+      curNestedColumn.itemsArray = curNestedColumn.readItemsAsObjects(in, null);
+      if (elementaryDescr.jdbcType() == JDBCType.VARCHAR
+       || curNestedColumn.getClass() == Enum8Column.class
+       || curNestedColumn.getClass() == Enum16Column.class) {
+        return curNestedColumn.itemsArray;
+      }
+      resliced = true;
       return resliceIntoArray((Object[]) curNestedColumn.itemsArray);
     }
+    resliced = true;
     return resliceIntoArray(EMPTY_ARRAY);
+  }
+
+  @Override
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
+    Object[] objectsArray = (Object[]) this.itemsArray;
+    Object[] reslicedRet = resliced ? objectsArray : resliceIntoArray(asDesiredType(objectsArray, desired));
+    return reslicedRet[rowIdx];
+  }
+
+  private Object[] asDesiredType(Object[] src, Class<?> desired) {
+    if (desired == String.class && elementaryDescr.jdbcType() == JDBCType.VARCHAR) {
+      return stringifyByteArrays(src, md.getStringCharset());
+    }
+    return src;
+  }
+
+  private Object[] stringifyByteArrays(Object[] src, Charset charset) {
+    Object[] ret = new Object[src.length];
+    for (int i = 0; i < src.length; ++i) {
+      Object element = src[i];
+      if (element != null) {
+        ret[i] = new String((byte[]) element, charset);
+      }
+    }
+    return ret;
   }
 
   private Object[] resliceIntoArray(Object[] data) {
@@ -87,7 +152,7 @@ public class ArrayColumn extends ClickhouseColumn {
         nItems = slices.get(slices.size() - 1);
         if (curNestedColumnDescr.isNullable()) {
           if (curNestedColumn == null) {
-            curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, nItems);
+            curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, nItems, md);
           }
           curNestedColumn.nullsMap = curNestedColumn.readNullsMap(in);
         }

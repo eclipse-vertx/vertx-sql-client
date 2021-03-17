@@ -29,7 +29,7 @@ public class UInt64Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx) {
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
     long element = ((long[])this.itemsArray)[rowIdx];
     if (columnDescriptor.isUnsigned()) {
       return unsignedBi(element);
@@ -38,8 +38,8 @@ public class UInt64Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object[] asObjectsArray() {
-    return asObjectsArrayWithGetElement();
+  protected Object[] asObjectsArray(Class<?> desired) {
+    return asObjectsArrayWithGetElement(desired);
   }
 
   static BigInteger unsignedBi(long l) {

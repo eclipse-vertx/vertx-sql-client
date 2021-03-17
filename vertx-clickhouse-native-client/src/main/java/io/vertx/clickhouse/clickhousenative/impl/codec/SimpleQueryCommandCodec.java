@@ -144,7 +144,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         LOG.info("decoded packet " + dataPacketNo + ": " + block + " row count " + block.numRows());
         if (dataPacketNo == 0) {
           ClickhouseNativeRowDesc rowDesc = buildRowDescriptor(block);
-          rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
+          rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc, conn.getDatabaseMetaData());
         }
         packetReader = null;
         rowResultDecoder.generateRows(block);

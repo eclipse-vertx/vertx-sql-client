@@ -27,7 +27,7 @@ public class UInt8Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx) {
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
     byte element = ((byte[])this.itemsArray)[rowIdx];
     if (columnDescriptor.isUnsigned()) {
       return (short)Byte.toUnsignedInt(element);
@@ -36,7 +36,7 @@ public class UInt8Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object[] asObjectsArray() {
-    return asObjectsArrayWithGetElement();
+  protected Object[] asObjectsArray(Class<?> desired) {
+    return asObjectsArrayWithGetElement(desired);
   }
 }

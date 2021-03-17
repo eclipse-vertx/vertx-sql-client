@@ -14,8 +14,8 @@ public class Enum16Column extends UInt16Column {
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx) {
-    Short key = (Short) super.getElementInternal(rowIdx);
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
+    Short key = (Short) super.getElementInternal(rowIdx, desired);
     return enumVals.get(key);
   }
 }

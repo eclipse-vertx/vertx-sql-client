@@ -1,5 +1,6 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 
 import java.math.BigInteger;
@@ -125,12 +126,12 @@ public class ClickhouseColumns {
     }
   }
 
-  public static ClickhouseColumn columnForSpec(ClickhouseNativeColumnDescriptor descr, int nRows) {
+  public static ClickhouseColumn columnForSpec(ClickhouseNativeColumnDescriptor descr, int nRows, ClickhouseNativeDatabaseMetadata md) {
     if (descr.isArray()) {
-      return new ArrayColumn(nRows, descr);
+      return new ArrayColumn(nRows, descr, md);
     }
     if (descr.isLowCardinality()) {
-      return new LowCardinalityColumn(nRows, descr);
+      return new LowCardinalityColumn(nRows, descr, md);
     }
     JDBCType jdbcType = descr.jdbcType();
     if (jdbcType == JDBCType.TINYINT || jdbcType == JDBCType.NULL) {
@@ -147,9 +148,9 @@ public class ClickhouseColumns {
       }
     } else if (jdbcType == JDBCType.VARCHAR) {
       if (descr.getElementSize() == ClickhouseNativeColumnDescriptor.NOSIZE) {
-        return new StringColumn(nRows, descr);
+        return new StringColumn(nRows, descr, md);
       } else {
-        return new FixedStringColumn(nRows, descr);
+        return new FixedStringColumn(nRows, descr, md);
       }
     } else if (jdbcType == JDBCType.TIMESTAMP || jdbcType == JDBCType.TIMESTAMP_WITH_TIMEZONE) {
       ZoneId zoneId;
@@ -204,7 +205,7 @@ public class ClickhouseColumns {
   }
 
 
-  //TODO: maybe switch to antl4
+  //TODO: maybe switch to antlr4
   static Map<? extends Number, String> parseEnumVals(String nativeType) {
     final boolean isByte = nativeType.startsWith("Enum8(");
     int openBracketPos = nativeType.indexOf('(');

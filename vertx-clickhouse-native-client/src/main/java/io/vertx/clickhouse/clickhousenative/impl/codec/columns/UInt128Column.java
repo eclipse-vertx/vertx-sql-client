@@ -33,7 +33,7 @@ public class UInt128Column extends ClickhouseColumn {
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx) {
+  protected Object getElementInternal(int rowIdx, Class<?> desired) {
     return ((BigInteger[]) this.itemsArray)[rowIdx];
   }
 }

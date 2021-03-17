@@ -2,6 +2,7 @@ package io.vertx.clickhouse.clickhousenative.impl;
 
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
+import java.nio.charset.Charset;
 import java.time.ZoneId;
 import java.util.Map;
 
@@ -15,11 +16,12 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   private final String displayName;
   private final ZoneId timezone;
   private final String fullClientName;
+  private final Charset stringCharset;
   private final Map<String, String> properties;
 
   public ClickhouseNativeDatabaseMetadata(String productName, String fullVersion, int major, int minor, int revision,
                                           int patchVersion, String displayName, ZoneId timezone, String fullClientName,
-                                          Map<String, String> properties) {
+                                          Map<String, String> properties, Charset stringCharset) {
     this.productName = productName;
     this.fullVersion = fullVersion;
     this.major = major;
@@ -30,6 +32,7 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
     this.timezone = timezone;
     this.fullClientName = fullClientName;
     this.properties = properties;
+    this.stringCharset = stringCharset;
   }
 
   @Override
@@ -74,6 +77,10 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
 
   public Map<String, String> getProperties() {
     return properties;
+  }
+
+  public Charset getStringCharset() {
+    return stringCharset;
   }
 
   @Override
