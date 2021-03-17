@@ -53,17 +53,17 @@ class DB2Decoder extends ByteToMessageDecoder {
   }
 
   private int computeLength(ByteBuf in) {
-    int ridx = in.readerIndex();
+    final int ridx = in.readerIndex();
     int index = 0;
     final int readableBytes = in.readableBytes();
     boolean dssContinues = true;
     while (dssContinues && index < readableBytes) {
-      if (readableBytes >= index + 3)
+      if (readableBytes > index + 3)
         dssContinues &= (in.getByte(ridx + index + 3) & 0x40) == 0x40;
       else
         dssContinues = false;
       short dssLen = 11; // minimum length of DRDA message
-      if (readableBytes >= index + 2)
+      if (readableBytes >= index + 2) // julien: is this correct ? thtis checks more space than necessary
         dssLen = in.getShort(ridx + index);
       index += dssLen;
     }
@@ -80,7 +80,7 @@ class DB2Decoder extends ByteToMessageDecoder {
     } catch (Throwable t) {
       if (LOG.isDebugEnabled()) {
         if (!(t instanceof DB2Exception) ||
-            (t.getMessage() != null && 
+            (t.getMessage() != null &&
              t.getMessage().startsWith("An error occurred with a DB2 operation."))) {
           int i = payload.readerIndex();
           payload.readerIndex(startIndex);
