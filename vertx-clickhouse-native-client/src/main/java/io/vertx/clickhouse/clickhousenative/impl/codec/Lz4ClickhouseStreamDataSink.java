@@ -43,6 +43,21 @@ class Lz4ClickhouseStreamDataSink implements ClickhouseStreamDataSink {
   }
 
   @Override
+  public void writeBytes(byte[] value) {
+    tmpStorage.writeBytes(value);
+  }
+
+  @Override
+  public void writeBoolean(boolean value) {
+    tmpStorage.writeBoolean(value);
+  }
+
+  @Override
+  public void writePascalString(String str) {
+    ByteBufUtils.writePascalString(str, tmpStorage);
+  }
+
+  @Override
   public void finish() {
     ByteBuf compressed = null;
     try {

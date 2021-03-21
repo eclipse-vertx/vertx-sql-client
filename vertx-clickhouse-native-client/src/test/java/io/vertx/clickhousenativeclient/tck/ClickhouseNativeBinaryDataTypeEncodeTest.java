@@ -1,8 +1,6 @@
 package io.vertx.clickhousenativeclient.tck;
 
 import io.vertx.clickhousenativeclient.ClickhouseResource;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
@@ -17,10 +15,6 @@ import java.util.function.BiFunction;
 
 @RunWith(VertxUnitRunner.class)
 public class ClickhouseNativeBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
-  private static final Logger LOG = LoggerFactory.getLogger(ClickhouseNativeBinaryDataTypeEncodeTest.class);
-
-  //updates may be async even for non-replicated tables;
-  public static final int SLEEP_TIME = 100;
 
   @ClassRule
   public static ClickhouseResource rule = new ClickhouseResource();
@@ -89,11 +83,7 @@ public class ClickhouseNativeBinaryDataTypeEncodeTest extends BinaryDataTypeEnco
             .addValue(null)
             .addValue(null),
           ctx.asyncAssertSuccess(updateResult -> {
-            try {
-              Thread.sleep(SLEEP_TIME);
-            } catch (InterruptedException e) {
-              LOG.error(e);
-            }
+            Sleep.sleepOrThrow();
             conn
               .preparedQuery("SELECT * FROM basicdatatype WHERE id = 2")
               .execute(ctx.asyncAssertSuccess(result -> {
@@ -120,11 +110,7 @@ public class ClickhouseNativeBinaryDataTypeEncodeTest extends BinaryDataTypeEnco
       conn
         .preparedQuery(statement("ALTER TABLE basicdatatype UPDATE " + columnName + " = ", " WHERE id = 2"))
         .execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
-          try {
-            Thread.sleep(SLEEP_TIME);
-          } catch (InterruptedException e) {
-            LOG.error(e);
-          }
+          Sleep.sleepOrThrow();
           conn
             .preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 2")
             .execute(ctx.asyncAssertSuccess(result -> {

@@ -66,12 +66,38 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
     } else if (cmd instanceof CloseConnectionCommand) {
       return new CloseConnectionCommandCodec((CloseConnectionCommand)cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+      PrepareStatementCommand ps = (PrepareStatementCommand) cmd;
+      QueryParsers.QueryType queryType = QueryParsers.queryType(ps.sql());
+      return new PrepareStatementCodec(ps, queryType);
     } else if (cmd instanceof ExtendedQueryCommand) {
-      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>)cmd, conn);
+      ExtendedQueryCommand<?> ecmd = (ExtendedQueryCommand<?>) cmd;
+      QueryParsers.QueryType queryType;
+      if (ecmd.preparedStatement() != null) {
+        queryType = ((ClickhouseNativePreparedStatement) ecmd.preparedStatement()).queryType();
+      } else {
+        queryType = QueryParsers.queryType(ecmd.sql());
+      }
+      if (queryType != null && queryType != QueryParsers.QueryType.INSERT && ecmd.isBatch() && ecmd.paramsList() != null && ecmd.paramsList().size() > 1) {
+        RuntimeException ex = new UnsupportedOperationException("batch queries are supported for INSERTs only");
+        deliverError(cmd, ex);
+        throw ex;
+      }
+      return new ExtendedQueryCommandCodec<>(queryType, ecmd, conn);
     } else if (cmd instanceof CloseCursorCommand) {
       return new CloseCursorCommandCodec((CloseCursorCommand)cmd, conn);
     }
-    throw new UnsupportedOperationException(cmd.getClass().getName());
+    RuntimeException ex = new UnsupportedOperationException(cmd.getClass().getName());
+    deliverError(cmd, ex);
+    throw ex;
+  }
+
+  private void deliverError(CommandBase cmd, RuntimeException ex) {
+    if (cmd instanceof QueryCommandBase) {
+      QueryCommandBase ecmd = (QueryCommandBase)cmd;
+      ecmd.resultHandler().handleResult(0, 0, null, null, ex);
+    }
+    CommandResponse<Object> resp = CommandResponse.failure(ex);
+    resp.cmd = cmd;
+    chctx.fireChannelRead(resp);
   }
 }

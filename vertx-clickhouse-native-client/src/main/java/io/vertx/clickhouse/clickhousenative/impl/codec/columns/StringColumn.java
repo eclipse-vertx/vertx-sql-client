@@ -2,6 +2,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
+import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSink;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
 import java.nio.charset.Charset;
@@ -54,5 +55,17 @@ public class StringColumn extends ClickhouseColumn {
       return new String((byte[])tmp, charset);
     }
     return tmp;
+  }
+
+  @Override
+  protected void serializeDataElement(ClickhouseStreamDataSink sink, Object val) {
+    byte[] bytes = val.getClass() == byte[].class ? (byte[])val : ((String)val).getBytes(charset);
+    sink.writeULeb128(bytes.length);
+    sink.writeBytes(bytes);
+  }
+
+  @Override
+  protected void serializeDataNull(ClickhouseStreamDataSink sink) {
+    sink.writeULeb128(0);
   }
 }
