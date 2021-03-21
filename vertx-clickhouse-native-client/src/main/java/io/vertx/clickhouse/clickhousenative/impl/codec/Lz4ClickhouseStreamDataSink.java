@@ -38,6 +38,26 @@ class Lz4ClickhouseStreamDataSink implements ClickhouseStreamDataSink {
   }
 
   @Override
+  public void writeShortLE(int value) {
+    tmpStorage.writeShortLE(value);
+  }
+
+  @Override
+  public void writeLongLE(long value) {
+    tmpStorage.writeLongLE(value);
+  }
+
+  @Override
+  public void writeFloatLE(float value) {
+    tmpStorage.writeFloatLE(value);
+  }
+
+  @Override
+  public void writeDoubleLE(double value) {
+    tmpStorage.writeDoubleLE(value);
+  }
+
+  @Override
   public void writeIntLE(int value) {
     tmpStorage.writeIntLE(value);
   }
@@ -53,8 +73,18 @@ class Lz4ClickhouseStreamDataSink implements ClickhouseStreamDataSink {
   }
 
   @Override
+  public void writeZero(int length) {
+    tmpStorage.writeZero(length);
+  }
+
+  @Override
   public void writePascalString(String str) {
     ByteBufUtils.writePascalString(str, tmpStorage);
+  }
+
+  @Override
+  public void ensureWritable(int size) {
+    tmpStorage.ensureWritable(size);
   }
 
   @Override

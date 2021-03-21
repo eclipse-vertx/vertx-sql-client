@@ -11,8 +11,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.function.BiFunction;
-
 @RunWith(VertxUnitRunner.class)
 public class ClickhouseNativeBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
 
@@ -39,7 +37,7 @@ public class ClickhouseNativeBinaryDataTypeEncodeTest extends BinaryDataTypeEnco
   @Ignore
   @Test
   public void testTime(TestContext ctx) {
-    //time is not supported
+    //no time support
   }
 
   @Test
@@ -53,6 +51,7 @@ public class ClickhouseNativeBinaryDataTypeEncodeTest extends BinaryDataTypeEnco
     testEncodeGeneric(ctx, "test_float_8", Double.class, Row::getDouble, (double) 4.9e-322);
   }
 
+  //no time support, copied and modified test from parent
   @Test
   public void testNullValues(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
@@ -101,35 +100,12 @@ public class ClickhouseNativeBinaryDataTypeEncodeTest extends BinaryDataTypeEnco
   }
 
   @Override
-  protected <T> void testEncodeGeneric(TestContext ctx,
-                                       String columnName,
-                                       Class<T> clazz,
-                                       BiFunction<Row,String,T> getter,
-                                       T expected) {
-    connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .preparedQuery(statement("ALTER TABLE basicdatatype UPDATE " + columnName + " = ", " WHERE id = 2"))
-        .execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
-          Sleep.sleepOrThrow();
-          conn
-            .preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 2")
-            .execute(ctx.asyncAssertSuccess(result -> {
-              ctx.assertEquals(1, result.size());
-              Row row = result.iterator().next();
-              ctx.assertEquals(1, row.size());
-              ctx.assertEquals(expected, row.getValue(0));
-              ctx.assertEquals(expected, row.getValue(columnName));
-              if (getter != null) {
-                ctx.assertEquals(expected, getter.apply(row, columnName));
-              }
-//        ctx.assertEquals(expected, row.get(clazz, 0));
-//        ColumnChecker.checkColumn(0, columnName)
-//          .returns(Tuple::getValue, Row::getValue, expected)
-//          .returns(byIndexGetter, byNameGetter, expected)
-//          .forRow(row);
-              conn.close();
-            }));
-        }));
-    }));
+  protected void maybeSleep() {
+    Sleep.sleepOrThrow();
+  }
+
+  @Override
+  protected String encodeGenericUpdateStatement(String columnName, int id) {
+    return statement("ALTER TABLE basicdatatype UPDATE " + columnName + " = ", " WHERE id = " + id);
   }
 }

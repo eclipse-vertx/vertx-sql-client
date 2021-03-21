@@ -1,29 +1,22 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.sqlclient.Tuple;
 
+import java.util.List;
 
 public class Float64Column extends ClickhouseColumn {
-  public static final int ELEMENT_SIZE = 8;
-
-  protected Float64Column(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
-    super(nRows, columnDescriptor);
+  public Float64Column(ClickhouseNativeColumnDescriptor descriptor) {
+    super(descriptor);
   }
 
   @Override
-  protected Object readItems(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      double[] data = new double[nRows];
-      for (int i = 0; i < nRows; ++i) {
-        if (nullsMap == null || !nullsMap.get(i)) {
-          data[i] = in.readDoubleLE();
-        } else {
-          in.skipBytes(ELEMENT_SIZE);
-        }
-      }
-      return data;
-    }
-    return null;
+  public ClickhouseColumnReader reader(int nRows) {
+    return new Float64ColumnReader(nRows, descriptor);
+  }
+
+  @Override
+  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
+    return new Float64ColumnWriter(data, descriptor, columnIndex);
   }
 }
