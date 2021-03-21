@@ -1,37 +1,26 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.sqlclient.Tuple;
 
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
 public class DateTimeColumn extends ClickhouseColumn {
-  public static final int ELEMENT_SIZE = 4;
-
   private final ZoneId zoneId;
 
-  public DateTimeColumn(int nRows, ClickhouseNativeColumnDescriptor descr, ZoneId zoneId) {
-    super(nRows, descr);
+  public DateTimeColumn(ClickhouseNativeColumnDescriptor descriptor, ZoneId zoneId) {
+    super(descriptor);
     this.zoneId = zoneId;
   }
 
   @Override
-  protected Object readItems(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      OffsetDateTime[] data = new OffsetDateTime[nRows];
-      for (int i = 0; i < nRows; ++i) {
-        if (nullsMap == null || !nullsMap.get(i)) {
-          long unixSeconds = Integer.toUnsignedLong(in.readIntLE());
-          OffsetDateTime dt = Instant.ofEpochSecond(unixSeconds).atZone(zoneId).toOffsetDateTime();
-          data[i] = dt;
-        } else {
-          in.skipBytes(ELEMENT_SIZE);
-        }
-      }
-      return data;
-    }
-    return null;
+  public ClickhouseColumnReader reader(int nRows) {
+    return new DateTimeColumnReader(nRows, descriptor, zoneId);
+  }
+
+  @Override
+  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
+    throw new IllegalStateException("not implemented");
   }
 }

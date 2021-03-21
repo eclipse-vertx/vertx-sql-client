@@ -1,42 +1,28 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.sqlclient.Tuple;
 
-import java.math.BigInteger;
-import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
 public class DateTime64Column extends ClickhouseColumn {
-  public static final int ELEMENT_SIZE = 8;
-
+  private final Integer precision;
   private final ZoneId zoneId;
-  private final BigInteger invTickSize;
 
-  public DateTime64Column(int nRows, ClickhouseNativeColumnDescriptor descr, Integer precision, ZoneId zoneId) {
-    super(nRows, descr);
+  public DateTime64Column(ClickhouseNativeColumnDescriptor descriptor, Integer precision, ZoneId zoneId) {
+    super(descriptor);
+    this.precision = precision;
     this.zoneId = zoneId;
-    this.invTickSize = BigInteger.TEN.pow(precision);
   }
 
   @Override
-  protected Object readItems(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      OffsetDateTime[] data = new OffsetDateTime[nRows];
-      for (int i = 0; i < nRows; ++i) {
-        if (nullsMap == null || !nullsMap.get(i)) {
-          BigInteger bi = UInt64Column.unsignedBi(in.readLongLE());
-          long seconds = bi.divide(invTickSize).longValueExact();
-          long nanos = bi.remainder(invTickSize).longValueExact();
-          OffsetDateTime dt = Instant.ofEpochSecond(seconds, nanos).atZone(zoneId).toOffsetDateTime();
-          data[i] = dt;
-        } else {
-          in.skipBytes(ELEMENT_SIZE);
-        }
-      }
-      return data;
-    }
-    return null;
+  public ClickhouseColumnReader reader(int nRows) {
+    return new DateTime64ColumnReader(nRows, descriptor, precision, zoneId);
+  }
+
+  @Override
+  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
+    throw new IllegalStateException("not implemented");
   }
 }

@@ -1,57 +1,22 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.sqlclient.Tuple;
 
-import java.math.BigInteger;
+import java.util.List;
 
 public class UInt64Column extends ClickhouseColumn {
-  public static final int ELEMENT_SIZE = 8;
-
-  public UInt64Column(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
-    super(nRows, columnDescriptor);
+  public UInt64Column(ClickhouseNativeColumnDescriptor descriptor) {
+    super(descriptor);
   }
 
   @Override
-  protected Object readItems(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      long[] data = new long[nRows];
-      for (int i = 0; i < nRows; ++i) {
-        if (nullsMap == null || !nullsMap.get(i)) {
-          data[i] = in.readLongLE();
-        } else {
-          in.skipBytes(ELEMENT_SIZE);
-        }
-      }
-      return data;
-    }
-    return null;
+  public ClickhouseColumnReader reader(int nRows) {
+    return new UInt64ColumnReader(nRows, descriptor);
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    long element = ((long[])this.itemsArray)[rowIdx];
-    if (columnDescriptor.isUnsigned()) {
-      return unsignedBi(element);
-    }
-    return element;
-  }
-
-  @Override
-  protected Object[] asObjectsArray(Class<?> desired) {
-    return asObjectsArrayWithGetElement(desired);
-  }
-
-  static BigInteger unsignedBi(long l) {
-    return new BigInteger(1, new byte[] {
-      (byte) (l >>> 56 & 0xFF),
-      (byte) (l >>> 48 & 0xFF),
-      (byte) (l >>> 40 & 0xFF),
-      (byte) (l >>> 32 & 0xFF),
-      (byte) (l >>> 24 & 0xFF),
-      (byte) (l >>> 16 & 0xFF),
-      (byte) (l >>> 8 & 0xFF),
-      (byte) (l & 0xFF)
-    });
+  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
+    return new UInt64ColumnWriter(data, descriptor, columnIndex);
   }
 }

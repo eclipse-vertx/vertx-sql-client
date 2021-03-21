@@ -12,11 +12,11 @@ import java.util.function.Function;
 
 
 @RunWith(Parameterized.class)
-public class ClickhouseColumnsTest<T extends Number> {
+public class ClickhouseColumnsTestReader<T extends Number> {
   private final String enumDefinition;
   private final java.util.function.Function<Integer, T> converter;
 
-  public ClickhouseColumnsTest(String enumType, String enumDefinition, Function<Integer, T> converter) {
+  public ClickhouseColumnsTestReader(String enumType, String enumDefinition, Function<Integer, T> converter) {
     this.enumDefinition = enumDefinition;
     this.converter = converter;
   }

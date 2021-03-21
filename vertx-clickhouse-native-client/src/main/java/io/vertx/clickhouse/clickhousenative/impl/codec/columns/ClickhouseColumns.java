@@ -54,20 +54,20 @@ public class ClickhouseColumns {
                                                                          boolean isLowCardinality) {
     boolean unsigned = spec.startsWith("U");
     if (spec.equals("UInt8") || spec.equals("Int8")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt8Column.ELEMENT_SIZE, JDBCType.TINYINT, nullable, unsigned, isLowCardinality,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt8ColumnReader.ELEMENT_SIZE, JDBCType.TINYINT, nullable, unsigned, isLowCardinality,
         unsigned ? 0 : -128, unsigned ? 255 : 127);
     } else if (spec.equals("UInt16") || spec.equals("Int16")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16Column.ELEMENT_SIZE, JDBCType.SMALLINT, nullable, unsigned, isLowCardinality,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16ColumnReader.ELEMENT_SIZE, JDBCType.SMALLINT, nullable, unsigned, isLowCardinality,
         unsigned ? 0 : -32768, unsigned ? 65535 : 32767);
     } if (spec.equals("UInt32") || spec.equals("Int32")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, UInt32Column.ELEMENT_SIZE, JDBCType.INTEGER, nullable, unsigned, isLowCardinality,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, UInt32ColumnReader.ELEMENT_SIZE, JDBCType.INTEGER, nullable, unsigned, isLowCardinality,
         unsigned ? 0 : -2147483648L, unsigned ? 4294967295L : 2147483647L);
     } if (spec.equals("UInt64") || spec.equals("Int64")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, UInt64Column.ELEMENT_SIZE, JDBCType.BIGINT, nullable, unsigned, isLowCardinality,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, UInt64ColumnReader.ELEMENT_SIZE, JDBCType.BIGINT, nullable, unsigned, isLowCardinality,
         unsigned ? BigInteger.ZERO : new BigInteger("-9223372036854775808"),
         unsigned ? new BigInteger("18446744073709551615") : new BigInteger("9223372036854775807"));
     } if (spec.equals("Int128")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, UInt128Column.ELEMENT_SIZE, JDBCType.BIGINT, nullable, false, isLowCardinality,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec,  isArray, UInt128ColumnReader.ELEMENT_SIZE, JDBCType.BIGINT, nullable, false, isLowCardinality,
         new BigInteger("-170141183460469231731687303715884105728"), new BigInteger( "170141183460469231731687303715884105727"));
     } else if (spec.equals("String")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, ClickhouseNativeColumnDescriptor.NOSIZE, JDBCType.VARCHAR,
@@ -78,13 +78,13 @@ public class ClickhouseColumns {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, bytesLength, JDBCType.VARCHAR,
         nullable, false, isLowCardinality, null, null);
     } else if (spec.equals("DateTime") || spec.startsWith("DateTime(")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTimeColumn.ELEMENT_SIZE,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTimeColumnReader.ELEMENT_SIZE,
         spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
     } else if (spec.equals("DateTime64") || spec.startsWith("DateTime64(")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTime64Column.ELEMENT_SIZE,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTime64ColumnReader.ELEMENT_SIZE,
         spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
     } else if (spec.equals("UUID")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UUIDColumn.ELEMENT_SIZE,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UUIDColumnReader.ELEMENT_SIZE,
         JDBCType.OTHER, nullable, false, isLowCardinality, null, null);
     } else if (spec.startsWith(DECIMAL_PREFIX)) {
       String decimalModifiers = spec.substring(DECIMAL_PREFIX_LENGTH, spec.length() - 1);
@@ -99,58 +99,58 @@ public class ClickhouseColumns {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, enumBitsSize / 8,
         JDBCType.OTHER, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("Nothing".equals(spec)) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt8Column.ELEMENT_SIZE,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt8ColumnReader.ELEMENT_SIZE,
         JDBCType.NULL, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("Float32".equals(spec)) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, Float32Column.ELEMENT_SIZE,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, Float32ColumnReader.ELEMENT_SIZE,
         JDBCType.REAL, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("Float64".equals(spec)) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, Float64Column.ELEMENT_SIZE,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, Float64ColumnReader.ELEMENT_SIZE,
         JDBCType.DOUBLE, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("Date".equals(spec)) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16Column.ELEMENT_SIZE,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16ColumnReader.ELEMENT_SIZE,
         JDBCType.DATE, nullable, true, isLowCardinality, null, null, null, null);
     }
     throw new IllegalArgumentException("unknown spec: '" + spec + "'");
   }
 
   private static int decimalSize(int precision) {
-    if (precision <= Decimal32Column.MAX_PRECISION) {
-      return Decimal32Column.ELEMENT_SIZE;
-    } else if (precision <= Decimal64Column.MAX_PRECISION) {
-      return Decimal64Column.ELEMENT_SIZE;
-    } else if (precision <= Decimal128Column.MAX_PRECISION) {
-      return Decimal128Column.ELEMENT_SIZE;
+    if (precision <= Decimal32ColumnReader.MAX_PRECISION) {
+      return Decimal32ColumnReader.ELEMENT_SIZE;
+    } else if (precision <= Decimal64ColumnReader.MAX_PRECISION) {
+      return Decimal64ColumnReader.ELEMENT_SIZE;
+    } else if (precision <= Decimal128ColumnReader.MAX_PRECISION) {
+      return Decimal128ColumnReader.ELEMENT_SIZE;
     } else {
-      return Decimal256Column.ELEMENT_SIZE;
+      return Decimal256ColumnReader.ELEMENT_SIZE;
     }
   }
 
-  public static ClickhouseColumn columnForSpec(ClickhouseNativeColumnDescriptor descr, int nRows, ClickhouseNativeDatabaseMetadata md) {
+  public static ClickhouseColumn columnForSpec(ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     if (descr.isArray()) {
-      return new ArrayColumn(nRows, descr, md);
+      return new ArrayColumn(descr, md);
     }
     if (descr.isLowCardinality()) {
-      return new LowCardinalityColumn(nRows, descr, md);
+      return new LowCardinalityColumn(descr, md);
     }
     JDBCType jdbcType = descr.jdbcType();
     if (jdbcType == JDBCType.TINYINT || jdbcType == JDBCType.NULL) {
-      return new UInt8Column(nRows, descr);
+      return new UInt8Column(descr);
     } else if (jdbcType == JDBCType.SMALLINT) {
-      return new UInt16Column(nRows, descr);
+      return new UInt16Column(descr);
     } else if (jdbcType == JDBCType.INTEGER) {
-      return new UInt32Column(nRows, descr);
+      return new UInt32Column(descr);
     } else if (jdbcType == JDBCType.BIGINT) {
-      if (descr.getElementSize() == UInt64Column.ELEMENT_SIZE) {
-        return new UInt64Column(nRows, descr);
-      } else if (descr.getElementSize() == UInt128Column.ELEMENT_SIZE) {
-        return new UInt128Column(nRows, descr);
+      if (descr.getElementSize() == UInt64ColumnReader.ELEMENT_SIZE) {
+        return new UInt64Column(descr);
+      } else if (descr.getElementSize() == UInt128ColumnReader.ELEMENT_SIZE) {
+        return new UInt128Column(descr);
       }
     } else if (jdbcType == JDBCType.VARCHAR) {
       if (descr.getElementSize() == ClickhouseNativeColumnDescriptor.NOSIZE) {
-        return new StringColumn(nRows, descr, md);
+        return new StringColumn(descr, md);
       } else {
-        return new FixedStringColumn(nRows, descr, md);
+        return new FixedStringColumn(descr, md);
       }
     } else if (jdbcType == JDBCType.TIMESTAMP || jdbcType == JDBCType.TIMESTAMP_WITH_TIMEZONE) {
       ZoneId zoneId;
@@ -159,7 +159,7 @@ public class ClickhouseColumns {
       if (nativeType.endsWith(")")) {
         int openBracePos = nativeType.indexOf("(");
         String dateModifiers = nativeType.substring(openBracePos + 1, nativeType.length() - 1);
-        if (descr.getElementSize() == DateTime64Column.ELEMENT_SIZE) {
+        if (descr.getElementSize() == DateTime64ColumnReader.ELEMENT_SIZE) {
           String[] modifiers = dateModifiers.split(",");
           precision = Integer.parseInt(modifiers[0].trim());
           zoneId = modifiers.length == 2
@@ -171,33 +171,33 @@ public class ClickhouseColumns {
       } else {
         zoneId = ZoneId.systemDefault();
       }
-      return precision == null ? new DateTimeColumn(nRows, descr, zoneId) : new DateTime64Column(nRows, descr, precision, zoneId);
+      return precision == null ? new DateTimeColumn(descr, zoneId) : new DateTime64Column(descr, precision, zoneId);
     } else if (jdbcType == JDBCType.DECIMAL) {
       //TODO smagellan: merge into one statement after introducing column readers
-      if (descr.getElementSize() == Decimal32Column.ELEMENT_SIZE) {
-        return new Decimal32Column(nRows, descr);
-      } else if (descr.getElementSize() == Decimal64Column.ELEMENT_SIZE) {
-        return new Decimal64Column(nRows, descr);
-      } else if (descr.getElementSize() == Decimal128Column.ELEMENT_SIZE) {
-        return new Decimal128Column(nRows, descr);
-      } else if (descr.getElementSize() == Decimal256Column.ELEMENT_SIZE) {
-        return new Decimal256Column(nRows, descr);
+      if (descr.getElementSize() == Decimal32ColumnReader.ELEMENT_SIZE) {
+        return new Decimal32Column(descr);
+      } else if (descr.getElementSize() == Decimal64ColumnReader.ELEMENT_SIZE) {
+        return new Decimal64Column(descr);
+      } else if (descr.getElementSize() == Decimal128ColumnReader.ELEMENT_SIZE) {
+        return new Decimal128Column(descr);
+      } else if (descr.getElementSize() == Decimal256ColumnReader.ELEMENT_SIZE) {
+        return new Decimal256Column(descr);
       }
     } else if (jdbcType == JDBCType.REAL) {
-      return new Float32Column(nRows, descr);
+      return new Float32Column(descr);
     } else if (jdbcType == JDBCType.DOUBLE) {
-      return new Float64Column(nRows, descr);
+      return new Float64Column(descr);
     } else if (jdbcType == JDBCType.DATE) {
-      return new DateColumn(nRows, descr);
+      return new DateColumn(descr);
     } else if (jdbcType == JDBCType.OTHER) {
       if (descr.getNestedType().equals("UUID")) {
-        return new UUIDColumn(nRows, descr);
+        return new UUIDColumn(descr);
       } else if (descr.getNestedType().startsWith(ENUM_PREFIX)) {
         Map<? extends Number, String> enumVals = parseEnumVals(descr.getNestedType());
-        if (descr.getElementSize() == Enum8Column.ELEMENT_SIZE) {
-          return new Enum8Column(nRows, descr, enumVals);
-        } else if (descr.getElementSize() == Enum16Column.ELEMENT_SIZE) {
-          return new Enum16Column(nRows, descr, enumVals);
+        if (descr.getElementSize() == Enum8ColumnReader.ELEMENT_SIZE) {
+          return new Enum8Column(descr, enumVals);
+        } else if (descr.getElementSize() == Enum16ColumnReader.ELEMENT_SIZE) {
+          return new Enum16Column(descr, enumVals);
         }
       }
     }

@@ -4,7 +4,7 @@ import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.BlockInfo;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.ColumnOrientedBlock;
-import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumn;
+import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumnReader;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumns;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -25,11 +25,11 @@ public class ColumnOrientedBlockReader {
   private Integer nColumns;
   private Integer nRows;
   private Map<String, ClickhouseNativeColumnDescriptor> colWithTypes;
-  private List<ClickhouseColumn> data;
+  private List<ClickhouseColumnReader> data;
 
   private String colName;
   private String colType;
-  private ClickhouseColumn columnData;
+  private ClickhouseColumnReader columnData;
   private ClickhouseNativeColumnDescriptor columnDescriptor;
 
   public ColumnOrientedBlockReader(ClickhouseNativeDatabaseMetadata md) {
@@ -88,7 +88,7 @@ public class ColumnOrientedBlockReader {
           data = new ArrayList<>(nColumns);
         }
         if (columnData == null) {
-          columnData = ClickhouseColumns.columnForSpec(columnDescriptor, nRows, md);
+          columnData = ClickhouseColumns.columnForSpec(columnDescriptor, md).reader(nRows);
         }
         if (columnData.isPartial()) {
           LOG.info("reading column " + colName + " of type " + colType);

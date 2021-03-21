@@ -28,7 +28,7 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
 
   public Lz4ClickhouseStreamDataSource(LZ4Factory lz4Factory, ByteBufAllocator alloc) {
     this.lz4Factory = lz4Factory;
-    this.decompressedData = alloc.buffer();
+    this.decompressedData = alloc.heapBuffer();
   }
 
   @Override

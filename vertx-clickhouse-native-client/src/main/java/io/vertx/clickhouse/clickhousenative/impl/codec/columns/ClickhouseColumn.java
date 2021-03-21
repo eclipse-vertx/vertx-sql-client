@@ -1,160 +1,18 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSink;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 import io.vertx.sqlclient.Tuple;
 
-import java.util.BitSet;
 import java.util.List;
 
 public abstract class ClickhouseColumn {
-  private static final Object NOP_STATE = new Object();
+  protected ClickhouseNativeColumnDescriptor descriptor;
 
-  protected final int nRows;
-  protected final ClickhouseNativeColumnDescriptor columnDescriptor;
-  protected BitSet nullsMap;
-  protected Object itemsArray;
-
-  protected ClickhouseColumn(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
-    this.columnDescriptor = columnDescriptor;
-    this.nRows = nRows;
+  public ClickhouseColumn(ClickhouseNativeColumnDescriptor descriptor) {
+    this.descriptor = descriptor;
   }
 
-  public ClickhouseNativeColumnDescriptor columnDescriptor() {
-    return columnDescriptor;
-  }
+  public abstract ClickhouseColumnReader reader(int nRows);
 
-  public void readColumn(ClickhouseStreamDataSource in){
-    readStatePrefix(in);
-    readData(in);
-  }
-
-  public int nRows() {
-    return nRows;
-  }
-
-  protected Object readStatePrefix(ClickhouseStreamDataSource in) {
-    return NOP_STATE;
-  }
-
-  protected void readData(ClickhouseStreamDataSource in) {
-    if (columnDescriptor.isNullable() && nullsMap == null) {
-      nullsMap = readNullsMap(in);
-      if (nullsMap == null) {
-        return;
-      }
-    }
-    readDataInternal(in);
-  }
-
-  protected void readDataInternal(ClickhouseStreamDataSource in) {
-    if (itemsArray == null) {
-      itemsArray = readItems(in);
-      if (itemsArray == null) {
-        return;
-      }
-    }
-    afterReadItems(in);
-  }
-
-  protected Object[] readItemsAsObjects(ClickhouseStreamDataSource in, Class<?> desired) {
-    itemsArray = readItems(in);
-    return asObjectsArray(desired);
-  }
-
-  protected Object[] asObjectsArray(Class<?> desired) {
-    return (Object[]) itemsArray;
-  }
-
-  protected Object[] asObjectsArrayWithGetElement(Class<?> desired) {
-    Object[] ret = new Object[nRows];
-    for (int i = 0; i < nRows; ++i) {
-      ret[i] = getElement(i, desired);
-    }
-    return ret;
-  }
-
-  protected abstract Object readItems(ClickhouseStreamDataSource in);
-  protected void afterReadItems(ClickhouseStreamDataSource in) {
-  }
-
-  protected BitSet readNullsMap(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= nRows) {
-      BitSet bSet = new BitSet(nRows);
-      for (int i = 0; i < nRows; ++i) {
-        byte b = in.readByte();
-        if (b != 0) {
-          bSet.set(i);
-        }
-      }
-      return bSet;
-    }
-    return null;
-  }
-
-  public boolean isPartial() {
-    return itemsArray == null || (columnDescriptor.isNullable() && nullsMap == null);
-  }
-
-  public Object getItemsArray() {
-    return itemsArray;
-  }
-
-  public Object getElement(int rowIdx, Class<?> desired) {
-    if (nullsMap != null && nullsMap.get(rowIdx)) {
-      return null;
-    }
-    return getElementInternal(rowIdx, desired);
-  }
-
-  protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    return java.lang.reflect.Array.get(itemsArray, rowIdx);
-  }
-
-  protected Object getObjectsArrayElement(int rowIdx) {
-    Object[] data = (Object[]) itemsArray;
-    return data[rowIdx];
-  }
-
-  public void serializeColumn(ClickhouseStreamDataSink sink, int columnIndex, List<Tuple> data, int fromRow, int toRow) {
-    serializeStatePrefix(sink, columnIndex, data, fromRow, toRow);
-    serializeData(sink, columnIndex, data, fromRow, toRow);
-  }
-
-  protected void serializeStatePrefix(ClickhouseStreamDataSink sink, int columnIndex, List<Tuple> data, int fromRow, int toRow) {
-  }
-
-  protected void serializeData(ClickhouseStreamDataSink sink, int columnIndex, List<Tuple> data, int fromRow, int toRow) {
-    if (columnDescriptor.isNullable()) {
-      serializeNullsMap(sink, columnIndex, data, fromRow, toRow);
-    }
-    serializeDataInternal(sink, columnIndex, data, fromRow, toRow);
-  }
-
-  protected void serializeNullsMap(ClickhouseStreamDataSink sink, int columnIndex, List<Tuple> data, int fromRow, int toRow) {
-    for (int rowNo = fromRow; rowNo < toRow; ++rowNo) {
-      Object val = data.get(rowNo).getValue(columnIndex);
-      sink.writeBoolean(val == null);
-    }
-  }
-
-  protected void serializeDataInternal(ClickhouseStreamDataSink sink, int columnIndex, List<Tuple> data, int fromRow, int toRow) {
-    for (int rowNo = fromRow; rowNo < toRow; ++rowNo) {
-      Object val = data.get(rowNo).getValue(columnIndex);
-      if (val == null) {
-        serializeDataNull(sink);
-      } else {
-        serializeDataElement(sink, val);
-      }
-    }
-  }
-
-  protected void serializeDataElement(ClickhouseStreamDataSink sink, Object val) {
-    throw new IllegalStateException("not implemented");
-  }
-
-  protected void serializeDataNull(ClickhouseStreamDataSink sink) {
-    throw new IllegalStateException("not implemented");
-  }
+  public abstract ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex);
 }

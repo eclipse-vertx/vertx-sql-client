@@ -3,7 +3,7 @@ package io.vertx.clickhouse.clickhousenative.impl;
 import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSink;
-import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumn;
+import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumnWriter;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumns;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -15,6 +15,7 @@ public class RowOrientedBlock {
   private final List<Tuple> data;
   private final BlockInfo blockInfo;
   private final ClickhouseNativeDatabaseMetadata md;
+  private final ClickhouseColumnWriter[] writers;
 
   public RowOrientedBlock(RowDesc rowDesc,
                           List<Tuple> data, ClickhouseNativeDatabaseMetadata md) {
@@ -22,6 +23,17 @@ public class RowOrientedBlock {
     this.data = data;
     this.blockInfo = new BlockInfo();
     this.md = md;
+    this.writers = buildWriters();
+  }
+
+  private ClickhouseColumnWriter[] buildWriters() {
+    ClickhouseColumnWriter[] ret = new ClickhouseColumnWriter[nColumns()];
+    for (int columnIndex = 0; columnIndex < nColumns(); ++columnIndex) {
+      ClickhouseNativeColumnDescriptor descr = (ClickhouseNativeColumnDescriptor) rowDesc.columnDescriptor().get(columnIndex);
+      ClickhouseColumnWriter writer = ClickhouseColumns.columnForSpec(descr, md).writer(data, columnIndex);
+      ret[columnIndex] = writer;
+    }
+    return ret;
   }
 
   public void serializeAsBlock(ClickhouseStreamDataSink sink, int fromRow, int toRow) {
@@ -36,10 +48,9 @@ public class RowOrientedBlock {
     //TODO smagellan
     for (int columnIndex = 0; columnIndex < nColumns(); ++columnIndex) {
       ClickhouseNativeColumnDescriptor descr = (ClickhouseNativeColumnDescriptor) rowDesc.columnDescriptor().get(columnIndex);
-      ClickhouseColumn column = ClickhouseColumns.columnForSpec(descr, nRows, md);
       sink.writePascalString(descr.name());
       sink.writePascalString(descr.getUnparsedNativeType());
-      column.serializeColumn(sink, columnIndex, data, fromRow, toRow);
+      writers[columnIndex].serializeColumn(sink, fromRow, toRow);
     }
   }
 

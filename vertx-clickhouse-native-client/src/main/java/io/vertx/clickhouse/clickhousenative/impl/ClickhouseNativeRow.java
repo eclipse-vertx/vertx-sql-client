@@ -1,11 +1,10 @@
 package io.vertx.clickhouse.clickhousenative.impl;
 
-import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumn;
+import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumnReader;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
 import java.nio.charset.Charset;
-import java.sql.JDBCType;
 import java.util.List;
 
 public class ClickhouseNativeRow implements Row {
@@ -37,8 +36,8 @@ public class ClickhouseNativeRow implements Row {
   }
 
   private Object getValue(int columnIndex, Class<?> desired) {
-    List<ClickhouseColumn> data = block.getData();
-    ClickhouseColumn column = data.get(columnIndex);
+    List<ClickhouseColumnReader> data = block.getData();
+    ClickhouseColumnReader column = data.get(columnIndex);
     Object columnData = column.getElement(rowNo, desired);
     return columnData;
     //if (encodeStrings && columnData != null && column.columnDescriptor().jdbcType() == JDBCType.VARCHAR) {

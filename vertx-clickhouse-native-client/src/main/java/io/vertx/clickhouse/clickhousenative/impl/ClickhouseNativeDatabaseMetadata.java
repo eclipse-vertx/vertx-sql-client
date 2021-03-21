@@ -67,7 +67,7 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
     return displayName;
   }
 
-  public ZoneId getTimezone() {
+  public ZoneId getZoneId() {
     return timezone;
   }
 

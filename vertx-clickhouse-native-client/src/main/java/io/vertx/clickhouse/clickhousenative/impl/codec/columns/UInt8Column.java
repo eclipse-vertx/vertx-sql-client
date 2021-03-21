@@ -1,56 +1,22 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSink;
-import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.sqlclient.Tuple;
 
+import java.util.List;
 
 public class UInt8Column extends ClickhouseColumn {
-  public static final int ELEMENT_SIZE = 1;
-
-  public UInt8Column(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
-    super(nRows, columnDescriptor);
+  public UInt8Column(ClickhouseNativeColumnDescriptor descriptor) {
+    super(descriptor);
   }
 
   @Override
-  protected Object readItems(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      byte[] data = new byte[nRows];
-      for (int i = 0; i < nRows; ++i) {
-        if (nullsMap == null || !nullsMap.get(i)) {
-          data[i] = in.readByte();
-        } else {
-          in.skipBytes(ELEMENT_SIZE);
-        }
-      }
-      return data;
-    }
-    return null;
+  public ClickhouseColumnReader reader(int nRows) {
+    return new UInt8ColumnReader(nRows, descriptor);
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    byte element = ((byte[])this.itemsArray)[rowIdx];
-    if (columnDescriptor.isUnsigned()) {
-      return (short)Byte.toUnsignedInt(element);
-    }
-    return element;
-  }
-
-  @Override
-  protected Object[] asObjectsArray(Class<?> desired) {
-    return asObjectsArrayWithGetElement(desired);
-  }
-
-  @Override
-  protected void serializeDataElement(ClickhouseStreamDataSink sink, Object val) {
-    Number number = (Number)val;
-    byte b = number == null ? 0 : number.byteValue();
-    sink.writeByte(b);
-  }
-
-  @Override
-  protected void serializeDataNull(ClickhouseStreamDataSink sink) {
-    sink.writeByte(0);
+  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
+    return new UInt8ColumnWriter(data, descriptor, columnIndex);
   }
 }

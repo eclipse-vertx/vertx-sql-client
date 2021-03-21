@@ -1,21 +1,26 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
+import io.vertx.sqlclient.Tuple;
 
+import java.util.List;
 import java.util.Map;
 
-public class Enum8Column extends UInt8Column {
-  public static final int ELEMENT_SIZE = 1;
-  private final Map<Byte, String> enumVals;
+public class Enum8Column extends ClickhouseColumn {
+  private final Map<? extends Number, String> enumVals;
 
-  public Enum8Column(int nRows, ClickhouseNativeColumnDescriptor descr, Map<? extends Number, String> enumVals) {
-    super(nRows, descr);
-    this.enumVals = (Map<Byte, String>) enumVals;
+  public Enum8Column(ClickhouseNativeColumnDescriptor descriptor, Map<? extends Number, String> enumVals) {
+    super(descriptor);
+    this.enumVals = enumVals;
   }
 
   @Override
-  protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    Byte key = (Byte) super.getElementInternal(rowIdx, desired);
-    return enumVals.get(key);
+  public ClickhouseColumnReader reader(int nRows) {
+    return new Enum8ColumnReader(nRows, descriptor, enumVals);
+  }
+
+  @Override
+  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
+    throw new IllegalArgumentException("not implemented");
   }
 }
