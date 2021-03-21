@@ -10,21 +10,26 @@ public class ClickhouseNativePreparedStatement implements PreparedStatement {
   private final String sql;
   private final ClickhouseNativeParamDesc paramDesc;
   private final ClickhouseNativeRowDesc rowDesc;
+  private final QueryParsers.QueryType queryType;
+  private final boolean sentQuery;
 
-  public ClickhouseNativePreparedStatement(String sql, ClickhouseNativeParamDesc paramDesc, ClickhouseNativeRowDesc rowDesc) {
+  public ClickhouseNativePreparedStatement(String sql, ClickhouseNativeParamDesc paramDesc, ClickhouseNativeRowDesc rowDesc,
+                                           QueryParsers.QueryType queryType, boolean sentQuery) {
     this.sql = sql;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
+    this.queryType = queryType;
+    this.sentQuery = sentQuery;
   }
 
   @Override
   public ParamDesc paramDesc() {
-    return null;
+    return paramDesc;
   }
 
   @Override
   public RowDesc rowDesc() {
-    return null;
+    return rowDesc;
   }
 
   @Override
@@ -35,5 +40,13 @@ public class ClickhouseNativePreparedStatement implements PreparedStatement {
   @Override
   public String prepare(TupleInternal values) {
     return null;
+  }
+
+  public QueryParsers.QueryType queryType() {
+    return queryType;
+  }
+
+  public boolean isSentQuery() {
+    return sentQuery;
   }
 }

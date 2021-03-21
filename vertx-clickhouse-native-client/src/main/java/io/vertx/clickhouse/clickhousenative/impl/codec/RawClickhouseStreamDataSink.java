@@ -23,4 +23,19 @@ class RawClickhouseStreamDataSink implements ClickhouseStreamDataSink {
   public void writeIntLE(int value) {
     sink.writeIntLE(value);
   }
+
+  @Override
+  public void writeBytes(byte[] value) {
+    sink.writeBytes(value);
+  }
+
+  @Override
+  public void writeBoolean(boolean value) {
+    sink.writeBoolean(value);
+  }
+
+  @Override
+  public void writePascalString(String str) {
+    ByteBufUtils.writePascalString(str, sink);
+  }
 }

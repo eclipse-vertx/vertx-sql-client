@@ -11,6 +11,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import net.jpountz.lz4.LZ4Factory;
 
+import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 
@@ -91,7 +92,7 @@ public class PacketReader {
     LOG.info("server log: [" + block.numColumns() + "; " + block.numRows() + "]");
   }
 
-  private List<String> receiveTableColumns(ByteBufAllocator alloc, ByteBuf in, ServerPacketType type) {
+  private TableColumns receiveTableColumns(ByteBufAllocator alloc, ByteBuf in, ServerPacketType type) {
     if (multistringMessage == null) {
       if (multistringReader == null) {
         multistringReader = new MultistringMessageReader();
@@ -105,14 +106,16 @@ public class PacketReader {
       tableColumnsPacketReader = new PacketReader(md, fullClientName, properties, lz4Factory);
     }
     ColumnOrientedBlock block = tableColumnsPacketReader.readDataBlock(alloc, in, true);
+    TableColumns ret = null;
     if (block != null) {
+      ret = new TableColumns(multistringMessage, block);
       LOG.info("decoded: MultistringMessage: " + multistringMessage + "; block: [" + block.numColumns() + "; " + block.numRows() + "]");
       multistringReader = null;
       packetType = null;
       tableColumnsPacketReader = null;
       multistringMessage = null;
     }
-    return multistringMessage;
+    return ret;
   }
 
   private ClickhouseNativeDatabaseMetadata readServerHelloBlock(ByteBuf in) {

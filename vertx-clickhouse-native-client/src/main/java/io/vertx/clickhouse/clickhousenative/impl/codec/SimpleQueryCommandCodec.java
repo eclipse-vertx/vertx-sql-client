@@ -2,7 +2,6 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.*;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -11,26 +10,30 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, QueryCommandBase<T>>{
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
-  private final boolean requireUpdates;
+  private final boolean commandRequiresUpdatesDelivery;
+  protected final QueryParsers.QueryType queryType;
+  protected final int batchSize;
+
   private RowResultDecoder<?, T> rowResultDecoder;
   private PacketReader packetReader;
   private int dataPacketNo;
   protected final ClickhouseNativeSocketConnection conn;
 
   protected SimpleQueryCommandCodec(QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn) {
-    this(cmd, conn, false);
+    this(null, 0, cmd, conn, false);
   }
-  protected SimpleQueryCommandCodec(QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn, boolean requireUpdates) {
+  protected SimpleQueryCommandCodec(QueryParsers.QueryType queryType, int batchSize, QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn, boolean requireUpdatesDelivery) {
     super(cmd);
+    this.queryType = queryType;
+    this.batchSize = batchSize;
     this.conn = conn;
-    this.requireUpdates = requireUpdates;
+    this.commandRequiresUpdatesDelivery = requireUpdatesDelivery;
    }
 
   @Override
@@ -39,65 +42,20 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     super.encode(encoder);
     if (!isSuspended()) {
       ByteBuf buf = allocateBuffer();
-      sendQuery(sql(), buf);
-      sendExternalTables(buf, Collections.emptyList());
-      encoder.chctx().writeAndFlush(buf, encoder.chctx().voidPromise());
+      try {
+        PacketForge forge = new PacketForge(conn, encoder.chctx());
+        forge.sendQuery(sql(), buf);
+        forge.sendExternalTables(buf, Collections.emptyList());
+        encoder.chctx().writeAndFlush(buf, encoder.chctx().voidPromise());
+      } catch (Throwable t) {
+        buf.release();
+        throw t;
+      }
     }
   }
 
   protected String sql() {
     return cmd.sql();
-  }
-
-  private void sendExternalTables(ByteBuf buf, Collection<RowOrientedBlock> blocks) {
-    ClickhouseNativeDatabaseMetadata md = encoder.getConn().getDatabaseMetaData();
-    for (RowOrientedBlock block : blocks) {
-      //TODO smagellan
-      sendData(buf, block, null);
-    }
-    sendData(buf, new RowOrientedBlock(null, null, new BlockInfo(), md), "");
-  }
-
-  private void sendData(ByteBuf buf, RowOrientedBlock block, String tableName) {
-    ByteBufUtils.writeULeb128(ClientPacketTypes.DATA, buf);
-    if (encoder.getConn().getDatabaseMetaData().getRevision() >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_TEMPORARY_TABLES) {
-      ByteBufUtils.writePascalString(tableName, buf);
-    }
-    ClickhouseStreamDataSink sink = null;
-    try {
-      sink = dataSink(buf);
-      block.serializeTo(sink);
-    } finally {
-      if (sink != null) {
-        sink.finish();
-      }
-    }
-  }
-
-  private ClickhouseStreamDataSink dataSink(ByteBuf buf) {
-    return conn.lz4Factory() == null ? new RawClickhouseStreamDataSink(buf) : new Lz4ClickhouseStreamDataSink(buf, conn.lz4Factory(), encoder.chctx());
-  }
-
-  private void sendQuery(String query, ByteBuf buf) {
-    LOG.info("running query: " + query);
-    ByteBufUtils.writeULeb128(ClientPacketTypes.QUERY, buf);
-    //query id
-    ByteBufUtils.writePascalString("", buf);
-    ClickhouseNativeDatabaseMetadata meta = encoder.getConn().getDatabaseMetaData();
-    int serverRevision = meta.getRevision();
-    if (serverRevision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_CLIENT_INFO) {
-      ClientInfo clInfo = new ClientInfo(meta);
-      clInfo.serializeTo(buf);
-    }
-    boolean settingsAsStrings = serverRevision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_SETTINGS_SERIALIZED_AS_STRINGS;
-    writeSettings(settings(), settingsAsStrings, true, buf);
-    if (serverRevision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_INTERSERVER_SECRET) {
-      ByteBufUtils.writePascalString("", buf);
-    }
-    ByteBufUtils.writeULeb128(QueryProcessingStage.COMPLETE, buf);
-    int compressionEnabled = conn.lz4Factory() == null ? Compression.DISABLED : Compression.ENABLED;
-    ByteBufUtils.writeULeb128(compressionEnabled, buf);
-    ByteBufUtils.writePascalString(query, buf);
   }
 
   protected Map<String, String> settings() {
@@ -110,24 +68,6 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
 
   protected void checkIfBusy() {
     conn.throwExceptionIfBusy(null);
-  }
-
-  private void writeSettings(Map<String, String> settings, boolean settingsAsStrings, boolean settingsAreImportant, ByteBuf buf) {
-    if (settingsAsStrings) {
-      for (Map.Entry<String, String> entry : settings.entrySet()) {
-          if (!ClickhouseConstants.NON_QUERY_OPTIONS.contains(entry.getKey())) {
-            LOG.info("writing query setting: " + entry);
-            ByteBufUtils.writePascalString(entry.getKey(), buf);
-            buf.writeBoolean(settingsAreImportant);
-            ByteBufUtils.writePascalString(entry.getValue(), buf);
-          }
-      }
-    } else {
-      //TODO smagellan
-      throw new IllegalArgumentException("not implemented for settingsAsStrings=false");
-    }
-    //end of settings
-    ByteBufUtils.writePascalString("", buf);
   }
 
   @Override
@@ -148,7 +88,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         }
         packetReader = null;
         rowResultDecoder.generateRows(block);
-        if (requireUpdates && block.numRows() > 0) {
+        if (commandRequiresUpdatesDelivery && block.numRows() > 0) {
           notifyOperationUpdate(true, null);
         }
         ++dataPacketNo;
@@ -177,6 +117,10 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   }
 
   private void notifyOperationUpdate(boolean hasMoreResults, Throwable t) {
+    notifyOperationUpdate(0, hasMoreResults, t);
+  }
+
+  private void notifyOperationUpdate(int updateCount, boolean hasMoreResults, Throwable t) {
     Throwable failure = null;
     if (rowResultDecoder != null) {
       LOG.info("notifying operation update; has more result = " + hasMoreResults + "; query: ");
@@ -184,7 +128,13 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
       T result = rowResultDecoder.result();
       int size = rowResultDecoder.size();
       rowResultDecoder.reset();
-      cmd.resultHandler().handleResult(0, size, rowResultDecoder.getRowDesc(), result, failure);
+      cmd.resultHandler().handleResult(updateCount, size, rowResultDecoder.getRowDesc(), result, failure);
+    } else {
+      if (queryType == QueryParsers.QueryType.INSERT) {
+        rowResultDecoder = new RowResultDecoder<>(cmd.collector(), ClickhouseNativeRowDesc.EMPTY, conn.getDatabaseMetaData());
+        failure = rowResultDecoder.complete();
+        cmd.resultHandler().handleResult(batchSize, 0, ClickhouseNativeRowDesc.EMPTY, rowResultDecoder.result(), failure);
+      }
     }
     if (t != null) {
       if (failure == null) {
