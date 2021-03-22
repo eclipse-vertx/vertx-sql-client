@@ -17,11 +17,11 @@ import java.util.Map;
 
 public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<PreparedStatement, PrepareStatementCommand>{
   private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementCodec.class);
-  private final QueryParsers.QueryType queryType;
+  private final Map.Entry<String, Integer> queryType;
 
   private PacketReader packetReader;
 
-  protected PrepareStatementCodec(PrepareStatementCommand cmd, QueryParsers.QueryType queryType) {
+  protected PrepareStatementCodec(PrepareStatementCommand cmd, Map.Entry<String, Integer> queryType) {
     super(cmd);
     this.queryType = queryType;
   }
@@ -31,8 +31,10 @@ public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<Prepared
     super.encode(encoder);
     LOG.info("handle ready for query");
     String sql = cmd.sql();
-    if (queryType == QueryParsers.QueryType.INSERT) {
-      int valuesIndex = sql.toLowerCase().lastIndexOf("values");
+    boolean isInsert = queryType != null && "insert".equalsIgnoreCase(queryType.getKey());
+    int valuesIndex = 0;
+    boolean realInsertBatch = isInsert && (valuesIndex = valuesPos(sql, queryType.getValue())) != -1;
+    if (realInsertBatch) {
       String truncatedSql = sql.substring(0, valuesIndex + "values".length());
       ByteBuf buf = allocateBuffer();
       try {
@@ -48,6 +50,19 @@ public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<Prepared
       completionHandler.handle(CommandResponse.success(new ClickhouseNativePreparedStatement(sql, new ClickhouseNativeParamDesc(Collections.emptyList()),
         new ClickhouseNativeRowDesc(Collections.emptyList()), queryType, false)));
     }
+  }
+
+  //TODO smagellan: move to parsers, introduce "InsertQueryInfo"
+  private static int valuesPos(String sql, int fromPos) {
+    String sqlLoCase = sql.toLowerCase();
+    if (sqlLoCase.endsWith("values")) {
+      return sql.length() - "values".length();
+    }
+    Map.Entry<String, Integer> pos = QueryParsers.findKeyWord(sql, fromPos, Collections.singleton("$"));
+    if (pos == null) {
+      return -1;
+    }
+    return sqlLoCase.lastIndexOf("values", pos.getValue());
   }
 
   @Override

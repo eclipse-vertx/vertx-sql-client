@@ -40,6 +40,6 @@ public class ClickhouseNativeConnectionImpl extends SqlConnectionImpl<Clickhouse
 
   @Override
   public Future<Transaction> begin() {
-    throw new UnsupportedOperationException();
+    return Future.failedFuture(new UnsupportedOperationException());
   }
 }

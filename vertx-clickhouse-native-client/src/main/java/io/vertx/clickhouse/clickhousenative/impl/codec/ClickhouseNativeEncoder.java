@@ -9,6 +9,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
+import java.util.Map;
 
 public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
   private static final Logger LOG = LoggerFactory.getLogger(ClickhouseNativeEncoder.class);
@@ -38,11 +39,17 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandBase<?>) {
-      CommandBase<?> cmd = (CommandBase<?>) msg;
-      write(cmd);
-    } else {
-      super.write(ctx, msg, promise);
+    CommandBase<?> cmd = null;
+    try {
+      if (msg instanceof CommandBase<?>) {
+        cmd = (CommandBase<?>) msg;
+        write(cmd);
+      } else {
+        super.write(ctx, msg, promise);
+      }
+    } catch (Throwable t) {
+      deliverError(cmd, t);
+      throw t;
     }
   }
 
@@ -67,17 +74,17 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
       return new CloseConnectionCommandCodec((CloseConnectionCommand)cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
       PrepareStatementCommand ps = (PrepareStatementCommand) cmd;
-      QueryParsers.QueryType queryType = QueryParsers.queryType(ps.sql());
+      Map.Entry<String, Integer> queryType = QueryParsers.findKeyWord(ps.sql(), QueryParsers.SELECT_AND_MUTATE_KEYWORDS);
       return new PrepareStatementCodec(ps, queryType);
     } else if (cmd instanceof ExtendedQueryCommand) {
       ExtendedQueryCommand<?> ecmd = (ExtendedQueryCommand<?>) cmd;
-      QueryParsers.QueryType queryType;
+      Map.Entry<String, Integer> queryType;
       if (ecmd.preparedStatement() != null) {
         queryType = ((ClickhouseNativePreparedStatement) ecmd.preparedStatement()).queryType();
       } else {
-        queryType = QueryParsers.queryType(ecmd.sql());
+        queryType = QueryParsers.findKeyWord(ecmd.sql(), QueryParsers.SELECT_AND_MUTATE_KEYWORDS);
       }
-      if (queryType != null && queryType != QueryParsers.QueryType.INSERT && ecmd.isBatch() && ecmd.paramsList() != null && ecmd.paramsList().size() > 1) {
+      if (queryType != null && !"insert".equalsIgnoreCase(queryType.getKey()) && ecmd.isBatch() && ecmd.paramsList() != null && ecmd.paramsList().size() > 1) {
         RuntimeException ex = new UnsupportedOperationException("batch queries are supported for INSERTs only");
         deliverError(cmd, ex);
         throw ex;
@@ -85,13 +92,15 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
       return new ExtendedQueryCommandCodec<>(queryType, ecmd, conn);
     } else if (cmd instanceof CloseCursorCommand) {
       return new CloseCursorCommandCodec((CloseCursorCommand)cmd, conn);
+    } else if (cmd instanceof CloseStatementCommand) {
+      return new CloseStatementCommandCodec((CloseStatementCommand) cmd, conn);
     }
     RuntimeException ex = new UnsupportedOperationException(cmd.getClass().getName());
     deliverError(cmd, ex);
     throw ex;
   }
 
-  private void deliverError(CommandBase cmd, RuntimeException ex) {
+  private void deliverError(CommandBase cmd, Throwable ex) {
     if (cmd instanceof QueryCommandBase) {
       QueryCommandBase ecmd = (QueryCommandBase)cmd;
       ecmd.resultHandler().handleResult(0, 0, null, null, ex);
