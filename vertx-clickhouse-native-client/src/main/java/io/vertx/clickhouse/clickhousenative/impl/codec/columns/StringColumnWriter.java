@@ -25,4 +25,23 @@ public class StringColumnWriter extends ClickhouseColumnWriter {
   protected void serializeDataNull(ClickhouseStreamDataSink sink) {
     sink.writeULeb128(0);
   }
+
+  protected int elementsSize(int fromRow, int toRow) {
+    //max value, usually less
+    int sz = (toRow - fromRow) * 4;
+    for (int i = fromRow; i < toRow; ++i) {
+      Object el = data.get(i).getValue(columnIndex);
+      if (el != null) {
+        if (el.getClass() == byte[].class) {
+          sz += ((byte[])el).length;
+        } else {
+          if (el.getClass() == String.class) {
+            //min value, more for non-ascii chars
+            sz += ((String)el).length();
+          }
+        }
+      }
+    }
+    return sz;
+  }
 }

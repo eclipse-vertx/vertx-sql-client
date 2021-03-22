@@ -23,17 +23,16 @@ import static io.vertx.clickhouse.clickhousenative.ClickhouseConstants.OPTION_MA
 public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
 
-  public ExtendedQueryCommandCodec(QueryParsers.QueryType queryType, ExtendedQueryCommand<T> cmd, ClickhouseNativeSocketConnection conn) {
+  public ExtendedQueryCommandCodec(Map.Entry<String, Integer> queryType, ExtendedQueryCommand<T> cmd, ClickhouseNativeSocketConnection conn) {
     super(queryType, cmd.paramsList() == null ? 0 : cmd.paramsList().size(), cmd, conn, cmd.fetch() > 0);
   }
 
   @Override
   protected String sql() {
     ExtendedQueryCommand<T> ecmd = ecmd();
-    if (queryType != QueryParsers.QueryType.INSERT || !ecmd.isBatch()) {
+    if ((queryType != null && !"insert".equalsIgnoreCase(queryType.getKey())) || !ecmd.isBatch()) {
       return QueryParsers.insertParamValuesIntoQuery(ecmd.sql(), ecmd.params() == null ? ecmd.paramsList().get(0) : ecmd.params());
     }
-    //TODO smagellan: handle insert at query prepare stage (PrepareStatementCodec)
     return ecmd.sql();
   }
 

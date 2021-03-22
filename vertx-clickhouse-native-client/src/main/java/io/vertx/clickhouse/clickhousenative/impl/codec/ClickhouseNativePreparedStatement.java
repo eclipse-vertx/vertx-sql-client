@@ -6,15 +6,17 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.TupleInternal;
 
+import java.util.Map;
+
 public class ClickhouseNativePreparedStatement implements PreparedStatement {
   private final String sql;
   private final ClickhouseNativeParamDesc paramDesc;
   private final ClickhouseNativeRowDesc rowDesc;
-  private final QueryParsers.QueryType queryType;
+  private final Map.Entry<String, Integer> queryType;
   private final boolean sentQuery;
 
   public ClickhouseNativePreparedStatement(String sql, ClickhouseNativeParamDesc paramDesc, ClickhouseNativeRowDesc rowDesc,
-                                           QueryParsers.QueryType queryType, boolean sentQuery) {
+                                           Map.Entry<String, Integer> queryType, boolean sentQuery) {
     this.sql = sql;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
@@ -42,7 +44,7 @@ public class ClickhouseNativePreparedStatement implements PreparedStatement {
     return null;
   }
 
-  public QueryParsers.QueryType queryType() {
+  public Map.Entry<String, Integer> queryType() {
     return queryType;
   }
 

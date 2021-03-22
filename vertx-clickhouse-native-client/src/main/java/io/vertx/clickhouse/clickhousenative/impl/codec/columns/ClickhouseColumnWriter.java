@@ -33,15 +33,24 @@ public abstract class ClickhouseColumnWriter {
     serializeDataInternal(sink, fromRow, toRow);
   }
 
-  protected void ensureCapacity(ClickhouseStreamDataSink sink, int fromRow, int toRow) {
-    int nRows = toRow - fromRow;
-    int requiredSize = 0;
+  protected int nullsMapSize(int nRows) {
     if (columnDescriptor.isNullable() && !columnDescriptor.isLowCardinality()) {
-      requiredSize += nRows;
+      return nRows;
     }
+    return 0;
+  }
+
+  protected int elementsSize(int fromRow, int toRow) {
     if (columnDescriptor.getElementSize() > 0) {
-      requiredSize += nRows * columnDescriptor.getElementSize();
+      return  (toRow - fromRow) * columnDescriptor.getElementSize();
     }
+    return 0;
+  }
+
+  protected void ensureCapacity(ClickhouseStreamDataSink sink, int fromRow, int toRow) {
+    int requiredSize = 0;
+    requiredSize += nullsMapSize(toRow - fromRow);
+    requiredSize += elementsSize(fromRow, toRow);
     sink.ensureWritable(requiredSize);
   }
 

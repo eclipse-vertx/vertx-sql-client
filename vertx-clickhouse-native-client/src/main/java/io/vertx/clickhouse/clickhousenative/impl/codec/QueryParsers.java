@@ -3,16 +3,18 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 import io.vertx.sqlclient.Tuple;
 
 import java.time.temporal.Temporal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class QueryParsers {
-  private static final String[] selectKeywords = new String[]{"SELECT", "WITH", "SHOW", "DESC", "EXISTS", "EXPLAIN"};
   private static final String INSERT_KEYWORD = "INSERT";
-  private static final int INSERT_KEYWORD_LENGTH = INSERT_KEYWORD.length();
-
   private static final String UPDATE_KEYWORD = "UPDATE";
-  private static final int UPDATE_KEYWORD_LENGTH = UPDATE_KEYWORD.length();
+
+  public static final Set<String> SELECT_KEYWORDS =
+    Collections.unmodifiableSet(new HashSet<>(Arrays.asList("SELECT", "WITH", "SHOW", "DESC", "EXISTS", "EXPLAIN")));
+  public static final Set<String> SELECT_AND_MUTATE_KEYWORDS =
+    Collections.unmodifiableSet(new HashSet<>(Arrays.asList("SELECT", "WITH", "SHOW", "DESC", "EXISTS", "EXPLAIN",
+    INSERT_KEYWORD, UPDATE_KEYWORD)));
+
 
   //TODO: maybe switch to antlr4
   public static String insertParamValuesIntoQuery(String parametrizedSql, Tuple paramsList) {
@@ -58,40 +60,58 @@ public class QueryParsers {
       prevIdx = newIdx;
     }
     if (usedArgs.size() != paramsList.size()) {
-      throw new IllegalArgumentException("param count mismatch: query consumed " + + usedArgs.size() + ", but provided count is " + paramsList.size());
+      String msg = String.format("The number of parameters to execute should be consistent with the expected number of parameters = [%d] but the actual number is [%d].",
+        usedArgs.size(), paramsList.size());
+      throw new IllegalArgumentException(msg);
     }
     bldr.append(parametrizedSql, prevIdx, parametrizedSql.length());
     return bldr.toString();
   }
 
-
-  public static QueryType queryType(String sql) {
-      for (int i = 0; i < sql.length(); i++) {
-        String nextTwo = sql.substring(i, Math.min(i + 2, sql.length()));
-        if ("--".equals(nextTwo)) {
-          i = Math.max(i, sql.indexOf("\n", i));
-        } else if ("/*".equals(nextTwo)) {
-          i = Math.max(i, sql.indexOf("*/", i));
-        } else if (Character.isLetter(sql.charAt(i))) {
-          String trimmed = sql.substring(i, Math.min(sql.length(), Math.max(i, sql.indexOf(" ", i))));
-          for (String keyword : selectKeywords){
-            if (trimmed.regionMatches(true, 0, keyword, 0, keyword.length())) {
-              return QueryType.SELECT;
-            }
-          }
-          if (trimmed.regionMatches(true, 0, INSERT_KEYWORD, 0, INSERT_KEYWORD_LENGTH)) {
-            return QueryType.INSERT;
-          }
-          if (trimmed.regionMatches(true, 0, UPDATE_KEYWORD, 0, UPDATE_KEYWORD_LENGTH)) {
-            return QueryType.UPDATE;
-          }
-          return null;
-        }
-      }
-      return null;
+  public static boolean isSelect(String sql) {
+    Map.Entry<String, Integer> tmp = findKeyWord(sql, 0, SELECT_KEYWORDS);
+    return tmp != null;
   }
 
-  enum QueryType {
-    SELECT, INSERT, UPDATE;
+  public static Map.Entry<String, Integer> findKeyWord(String sql, Collection<String> keywords) {
+    return findKeyWord(sql, 0, keywords);
+  }
+
+  public static Map.Entry<String, Integer> findKeyWord(String sql, int startPos, Collection<String> keywords) {
+    Character requiredChar = null;
+    //special case to find placeholder
+    if (keywords.size() == 1) {
+      String str = keywords.iterator().next();
+      if (str.length() == 1) {
+        requiredChar = str.charAt(0);
+      }
+    }
+    for (int i = startPos; i < sql.length(); i++) {
+      String nextTwo = sql.substring(i, Math.min(i + 2, sql.length()));
+      if ("--".equals(nextTwo)) {
+        i = Math.max(i, sql.indexOf("\n", i));
+      } else if ("/*".equals(nextTwo)) {
+        i = Math.max(i, sql.indexOf("*/", i));
+      } else if (requiredChar != null && requiredChar == sql.charAt(i)) {
+        return new AbstractMap.SimpleEntry<>(keywords.iterator().next(), i);
+      } else if (sql.charAt(i) == '\'' && (i == 0 || sql.charAt(i - 1) != '\\')) {
+        while (i < sql.length() && !(sql.charAt(i) == '\'' && (i == 0 || sql.charAt(i - 1) != '\\'))) {
+          ++i;
+        }
+      } else {
+        if (Character.isLetter(sql.charAt(i))) {
+          String trimmed = sql.substring(i, Math.min(sql.length(), Math.max(i, sql.indexOf(" ", i))));
+          for (String keyword : keywords){
+            if (trimmed.regionMatches(true, 0, keyword, 0, keyword.length())) {
+              return new AbstractMap.SimpleEntry<>(keyword, i);
+            }
+          }
+          if (requiredChar == null) {
+            return null;
+          }
+        }
+      }
+    }
+    return null;
   }
 }

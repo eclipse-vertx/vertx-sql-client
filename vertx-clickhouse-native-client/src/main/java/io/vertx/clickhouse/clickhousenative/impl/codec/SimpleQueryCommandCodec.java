@@ -17,7 +17,7 @@ import java.util.Map;
 public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, QueryCommandBase<T>>{
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
   private final boolean commandRequiresUpdatesDelivery;
-  protected final QueryParsers.QueryType queryType;
+  protected final Map.Entry<String, Integer> queryType;
   protected final int batchSize;
 
   private RowResultDecoder<?, T> rowResultDecoder;
@@ -28,7 +28,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   protected SimpleQueryCommandCodec(QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn) {
     this(null, 0, cmd, conn, false);
   }
-  protected SimpleQueryCommandCodec(QueryParsers.QueryType queryType, int batchSize, QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn, boolean requireUpdatesDelivery) {
+  protected SimpleQueryCommandCodec(Map.Entry<String, Integer> queryType, int batchSize, QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn, boolean requireUpdatesDelivery) {
     super(cmd);
     this.queryType = queryType;
     this.batchSize = batchSize;
@@ -123,14 +123,14 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   private void notifyOperationUpdate(int updateCount, boolean hasMoreResults, Throwable t) {
     Throwable failure = null;
     if (rowResultDecoder != null) {
-      LOG.info("notifying operation update; has more result = " + hasMoreResults + "; query: ");
       failure = rowResultDecoder.complete();
       T result = rowResultDecoder.result();
       int size = rowResultDecoder.size();
       rowResultDecoder.reset();
+      LOG.info("notifying operation update; has more result = " + hasMoreResults + "; size: " + size);
       cmd.resultHandler().handleResult(updateCount, size, rowResultDecoder.getRowDesc(), result, failure);
     } else {
-      if (queryType == QueryParsers.QueryType.INSERT) {
+      if (queryType != null && "insert".equalsIgnoreCase(queryType.getKey())) {
         rowResultDecoder = new RowResultDecoder<>(cmd.collector(), ClickhouseNativeRowDesc.EMPTY, conn.getDatabaseMetaData());
         failure = rowResultDecoder.complete();
         cmd.resultHandler().handleResult(batchSize, 0, ClickhouseNativeRowDesc.EMPTY, rowResultDecoder.result(), failure);
