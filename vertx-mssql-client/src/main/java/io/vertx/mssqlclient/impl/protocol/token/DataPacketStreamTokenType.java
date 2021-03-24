@@ -11,11 +11,8 @@
 
 package io.vertx.mssqlclient.impl.protocol.token;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.function.Function;
-
-import static java.util.stream.Collectors.toMap;
+import io.netty.util.collection.IntObjectHashMap;
+import io.netty.util.collection.IntObjectMap;
 
 public enum DataPacketStreamTokenType {
 
@@ -44,10 +41,16 @@ public enum DataPacketStreamTokenType {
 
   private final int value;
 
-  private static final Map<Integer, DataPacketStreamTokenType> lookup;
+  private static final IntObjectMap<DataPacketStreamTokenType> lookup;
 
   static {
-    lookup = Arrays.stream(DataPacketStreamTokenType.values()).collect(toMap(DataPacketStreamTokenType::value, Function.identity()));
+    IntObjectMap<DataPacketStreamTokenType> map = new IntObjectHashMap<>();
+    for (DataPacketStreamTokenType dataPacketStreamTokenType : DataPacketStreamTokenType.values()) {
+      if (map.put(dataPacketStreamTokenType.value(), dataPacketStreamTokenType) != null) {
+        throw new IllegalStateException("Duplicate key");
+      }
+    }
+    lookup = map;
   }
 
   DataPacketStreamTokenType(int value) {

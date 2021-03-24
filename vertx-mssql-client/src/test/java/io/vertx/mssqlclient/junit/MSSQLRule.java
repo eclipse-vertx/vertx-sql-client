@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -66,7 +66,7 @@ public class MSSQLRule extends ExternalResource {
   private static class MSSQLServer extends MSSQLServerContainer {
     @Override
     protected void configure() {
-      addFixedExposedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT, MSSQLServerContainer.MS_SQL_SERVER_PORT);
+      this.addExposedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
       this.addEnv("ACCEPT_EULA", "Y");
       this.addEnv("SA_PASSWORD", this.getPassword());
     }
