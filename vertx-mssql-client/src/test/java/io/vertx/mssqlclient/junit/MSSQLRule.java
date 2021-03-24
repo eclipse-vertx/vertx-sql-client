@@ -38,7 +38,7 @@ public class MSSQLRule extends ExternalResource {
   private MSSQLConnectOptions startMSSQL() {
     String containerVersion = System.getProperty("mssql-container.version");
     if (containerVersion == null || containerVersion.isEmpty()) {
-      containerVersion = "2017-CU12";
+      containerVersion = "2017-CU23";
     }
     server = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
       .acceptLicense()
