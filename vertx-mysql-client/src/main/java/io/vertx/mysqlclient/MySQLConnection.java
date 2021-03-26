@@ -64,7 +64,7 @@ public interface MySQLConnection extends SqlConnection {
   }
 
   /**
-   * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} with options build from {@code connectionUri}.
+   * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} with options built from {@code connectionUri}.
    */
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MySQLConnection>> handler) {
     connect(vertx, fromUri(connectionUri), handler);
