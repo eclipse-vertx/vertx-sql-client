@@ -126,9 +126,9 @@ Currently, the client supports the following parameter keywords in connection ur
 
 include::tracing.adoc[]
 
-== DATATYPE support
+== Data types supported
 
-Currently the client supports the following SQL Server types
+Currently, the client supports the following SQL Server types:
 
 * TINYINT(`java.lang.Short`)
 * SMALLINT(`java.lang.Short`)
@@ -137,10 +137,12 @@ Currently the client supports the following SQL Server types
 * BIT(`java.lang.Boolean`)
 * REAL(`java.lang.Float`)
 * DOUBLE(`java.lang.Double`)
-* CHAR(`java.lang.String`)
-* VARCHAR(`java.lang.String`)
+* NUMERIC/DECIMAL(`{@link io.vertx.sqlclient.data.Numeric}`)
+* CHAR/VARCHAR(`java.lang.String`)
+* NCHAR/NVARCHAR(`java.lang.String`)
 * DATE(`java.time.LocalDate`)
 * TIME(`java.time.LocalTime`)
+* DATETIME2(`java.time.LocalDateTime`)
 
 Tuple decoding uses the above types when storing values
 
