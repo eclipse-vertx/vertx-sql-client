@@ -18,16 +18,15 @@ import io.vertx.sqlclient.data.Numeric;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
 class MSSQLDataTypeCodec {
   static LocalDate START_DATE = LocalDate.of(1, 1, 1);
-  private static Map<Class, String> parameterDefinitionsMapping = new HashMap<>();
+
+  private static final Map<Class<?>, String> parameterDefinitionsMapping = new HashMap<>();
 
   static {
     parameterDefinitionsMapping.put(Byte.class, "tinyint");
@@ -41,6 +40,7 @@ class MSSQLDataTypeCodec {
     parameterDefinitionsMapping.put(LocalDate.class, "date");
     parameterDefinitionsMapping.put(LocalTime.class, "time");
     parameterDefinitionsMapping.put(LocalDateTime.class, "datetime2");
+    parameterDefinitionsMapping.put(OffsetDateTime.class, "datetimeoffset");
   }
 
   static String inferenceParamDefinitionByValueType(Object value) {
@@ -92,6 +92,8 @@ class MSSQLDataTypeCodec {
         return decodeTimeN((TimeNDataType) dataType, in);
       case MSSQLDataTypeId.DATETIME2NTYPE_ID:
         return decodeDateTime2N((DateTime2NDataType) dataType, in);
+      case MSSQLDataTypeId.DATETIMEOFFSETNTYPE_ID:
+        return decodeDateTimeOffsetN((DateTimeOffsetNDataType) dataType, in);
       case MSSQLDataTypeId.BIGVARCHRTYPE_ID:
       case MSSQLDataTypeId.BIGCHARTYPE_ID:
         return decodeVarchar(in);
@@ -104,29 +106,24 @@ class MSSQLDataTypeCodec {
   }
 
   private static LocalTime decodeTimeN(TimeNDataType dataType, ByteBuf in) {
-    int scale = dataType.scale();
-    byte timeLength = in.readByte();
-    long timeValue;
-    switch (timeLength) {
-      case 0:
-        return null;
-      case 3:
-        timeValue = in.readUnsignedMediumLE();
-        break;
-      case 4:
-        timeValue = in.readUnsignedIntLE();
-        break;
-      case 5:
-        timeValue = readUnsignedInt40LE(in);
-        break;
-      default:
-        throw new IllegalStateException("Unexpected timeLength of [" + timeLength + "]");
+    byte length = in.readByte();
+    if (length == 0) {
+      return null;
     }
-    return getLocalTime(scale, timeValue);
+    return decodeLocalTime(in, length, dataType.scale());
   }
 
-  private static LocalTime getLocalTime(int scale, long timeValue) {
-    long hundredNanos = timeValue;
+  private static LocalTime decodeLocalTime(ByteBuf in, int length, int scale) {
+    long hundredNanos;
+    if (length == 3) {
+      hundredNanos = in.readUnsignedMediumLE();
+    } else if (length == 4) {
+      hundredNanos = in.readUnsignedIntLE();
+    } else if (length == 5) {
+      hundredNanos = readUnsignedInt40LE(in);
+    } else {
+      throw new IllegalArgumentException("Unexpected timeLength of [" + length + "]");
+    }
     for (int i = scale; i < 7; i++) {
       hundredNanos *= 10;
     }
@@ -134,31 +131,24 @@ class MSSQLDataTypeCodec {
   }
 
   private static LocalDateTime decodeDateTime2N(DateTime2NDataType dataType, ByteBuf in) {
-    int scale = dataType.scale();
-    byte dataLength = in.readByte();
-    if (dataLength == 0) {
+    byte length = in.readByte();
+    if (length == 0) {
       return null;
     }
-    long timeValue;
-    switch (dataLength - 3) {
-      case 3:
-        timeValue = in.readUnsignedMediumLE();
-        break;
-      case 4:
-        timeValue = in.readUnsignedIntLE();
-        break;
-      case 5:
-        timeValue = readUnsignedInt40LE(in);
-        break;
-      default:
-        throw new IllegalStateException("Unexpected dataLength of [" + dataLength + "]");
-    }
-    LocalTime localTime = getLocalTime(scale, timeValue);
-
-    int days = in.readUnsignedMediumLE();
-    LocalDate localDate = getLocalDate(days);
-
+    LocalTime localTime = decodeLocalTime(in, length - 3, dataType.scale());
+    LocalDate localDate = decodeLocalDate(in, 3);
     return LocalDateTime.of(localDate, localTime);
+  }
+
+  private static OffsetDateTime decodeDateTimeOffsetN(DateTimeOffsetNDataType dataType, ByteBuf in) {
+    byte length = in.readByte();
+    if (length == 0) {
+      return null;
+    }
+    LocalTime localTime = decodeLocalTime(in, length - 3, dataType.scale());
+    LocalDate localDate = decodeLocalDate(in, 3);
+    short minutes = in.readShortLE();
+    return OffsetDateTime.of(LocalDateTime.of(localDate, localTime), ZoneOffset.ofTotalSeconds(60 * minutes));
   }
 
   private static CharSequence decodeNVarchar(ByteBuf in) {
@@ -180,18 +170,20 @@ class MSSQLDataTypeCodec {
   }
 
   private static LocalDate decodeDateN(ByteBuf in) {
-    byte dateLength = in.readByte();
-    if (dateLength == 0) {
+    byte length = in.readByte();
+    if (length == 0) {
       return null;
-    } else if (dateLength == 3) {
-      int days = in.readUnsignedMediumLE();
-      return getLocalDate(days);
-    } else {
-      throw new IllegalStateException("Unexpected dateLength of [" + dateLength + "]");
     }
+    return decodeLocalDate(in, length);
   }
 
-  private static LocalDate getLocalDate(int days) {
+  private static LocalDate decodeLocalDate(ByteBuf in, int length) {
+    int days;
+    if (length == 3) {
+      days = in.readUnsignedMediumLE();
+    } else {
+      throw new IllegalArgumentException("Unexpected dateLength of [" + length + "]");
+    }
     return START_DATE.plus(days, ChronoUnit.DAYS);
   }
 

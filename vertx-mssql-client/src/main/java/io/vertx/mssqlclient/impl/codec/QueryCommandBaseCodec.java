@@ -133,6 +133,9 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       case DATETIME2NTYPE_ID:
         scale = payload.readByte();
         return new DateTime2NDataType(scale);
+      case DATETIMEOFFSETNTYPE_ID:
+        scale = payload.readByte();
+        return new DateTimeOffsetNDataType(scale);
       case BIGCHARTYPE_ID:
       case BIGVARCHRTYPE_ID:
       case NCHARTYPE_ID:

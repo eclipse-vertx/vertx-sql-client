@@ -143,6 +143,7 @@ Currently, the client supports the following SQL Server types:
 * DATE(`java.time.LocalDate`)
 * TIME(`java.time.LocalTime`)
 * DATETIME2(`java.time.LocalDateTime`)
+* DATETIMEOFFSET(`java.time.OffsetDateTime`)
 
 Tuple decoding uses the above types when storing values
 
