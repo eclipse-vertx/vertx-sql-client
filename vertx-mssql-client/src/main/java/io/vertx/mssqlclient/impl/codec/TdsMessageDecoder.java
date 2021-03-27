@@ -51,7 +51,7 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
       if (message == null) {
         // first packet of this message and there will be more packets
         CompositeByteBuf messageData = channelHandlerContext.alloc().compositeDirectBuffer();
-        messageData.addComponent(true, tdsPacket.content().slice());
+        messageData.addComponent(true, tdsPacket.content());
         message = TdsMessage.newTdsMessage(tdsPacket.type(), tdsPacket.status(), tdsPacket.processId(), messageData);
       } else {
         CompositeByteBuf messageData = (CompositeByteBuf) message.content();
