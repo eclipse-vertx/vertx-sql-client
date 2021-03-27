@@ -126,33 +126,32 @@ class MSSQLDataTypeCodec {
   }
 
   private static LocalTime getLocalTime(int scale, long timeValue) {
-    for (int i = 0; i < 7 - scale; i++) {
-      timeValue *= 10;
+    long hundredNanos = timeValue;
+    for (int i = scale; i < 7; i++) {
+      hundredNanos *= 10;
     }
-    timeValue = (long) (timeValue * Math.pow(10, 7 - scale));
-    long secondsValue = timeValue / 100000000;
-    long nanosValue = timeValue % 100000000;
-    return LocalTime.ofSecondOfDay(secondsValue).plusNanos(nanosValue);
+    return LocalTime.ofNanoOfDay(100 * hundredNanos);
   }
 
   private static LocalDateTime decodeDateTime2N(DateTime2NDataType dataType, ByteBuf in) {
     int scale = dataType.scale();
-    byte timeLength = in.readByte();
+    byte dataLength = in.readByte();
+    if (dataLength == 0) {
+      return null;
+    }
     long timeValue;
-    switch (timeLength) {
-      case 0:
-        return null;
-      case 3 + 3:
+    switch (dataLength - 3) {
+      case 3:
         timeValue = in.readUnsignedMediumLE();
         break;
-      case 4 + 3:
+      case 4:
         timeValue = in.readUnsignedIntLE();
         break;
-      case 5 + 3:
+      case 5:
         timeValue = readUnsignedInt40LE(in);
         break;
       default:
-        throw new IllegalStateException("Unexpected timeLength of [" + timeLength + "]");
+        throw new IllegalStateException("Unexpected dataLength of [" + dataLength + "]");
     }
     LocalTime localTime = getLocalTime(scale, timeValue);
 
@@ -251,12 +250,9 @@ class MSSQLDataTypeCodec {
   }
 
   private static long readUnsignedInt40LE(ByteBuf buffer) {
-    //TODO optimize
-    return (long) buffer.readUnsignedByte() |
-      ((long) buffer.readUnsignedByte()) << 8 |
-      ((long) buffer.readUnsignedByte()) << 16 |
-      ((long) buffer.readUnsignedByte()) << 24 |
-      ((long) buffer.readUnsignedByte()) << 32;
+    long low = buffer.readUnsignedIntLE();
+    short high = buffer.readUnsignedByte();
+    return (0x100000000L * high) + low;
   }
 
   private static BigInteger readUnsignedInt96LE(ByteBuf buffer) {

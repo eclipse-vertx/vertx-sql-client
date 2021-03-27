@@ -60,7 +60,7 @@ CREATE TABLE basicdatatype
     test_char    CHAR(8),
     test_varchar VARCHAR(20),
     test_date    DATE,
-    test_time    TIME(6)
+    test_time    TIME(2)
 );
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
@@ -92,8 +92,8 @@ CREATE TABLE nullable_datatype
     test_char      CHAR(8),
     test_varchar   VARCHAR(20),
     test_date      DATE,
-    test_time      TIME(6),
-    test_datetime2 DATETIME2(6)
+    test_time      TIME(5),
+    test_datetime2 DATETIME2(4)
 );
 
 INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
@@ -130,7 +130,7 @@ CREATE TABLE not_nullable_datatype
     test_varchar   VARCHAR(20)      NOT NULL,
     test_date      DATE             NOT NULL,
     test_time      TIME(6)          NOT NULL,
-    test_datetime2 DATETIME2(6)     NOT NULL,
+    test_datetime2 DATETIME2(7)     NOT NULL,
 );
 
 INSERT INTO not_nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
