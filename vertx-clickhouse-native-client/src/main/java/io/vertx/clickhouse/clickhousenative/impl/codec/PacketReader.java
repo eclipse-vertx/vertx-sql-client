@@ -4,16 +4,17 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
-import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
-import io.vertx.clickhouse.clickhousenative.impl.ClickhouseServerException;
-import io.vertx.clickhouse.clickhousenative.impl.ColumnOrientedBlock;
+import io.vertx.clickhouse.clickhousenative.impl.*;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.impl.RowDesc;
 import net.jpountz.lz4.LZ4Factory;
 
-import java.util.AbstractMap;
+import java.sql.JDBCType;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class PacketReader {
   private static final Logger LOG = LoggerFactory.getLogger(PacketReader.class);
@@ -90,6 +91,25 @@ public class PacketReader {
 
   private void traceServerLogs(ColumnOrientedBlock block) {
     LOG.info("server log: [" + block.numColumns() + "; " + block.numRows() + "]");
+    List<ClickhouseNativeRowImpl> rows = block.rows();
+    LOG.info("rows: ");
+    StringBuilder bldr = new StringBuilder();
+    for (ClickhouseNativeRowImpl row : rows) {
+      bldr.append(rowAsString(row, block.rowDesc())).append("\n");
+    }
+    LOG.info(bldr);
+  }
+
+  private String rowAsString(Row row, RowDesc rowDesc) {
+    String[] vals = new String[row.size()];
+    for (int i = 0; i < vals.length; ++i) {
+      Object value = row.getValue(i);
+      if (rowDesc.columnDescriptor().get(i).jdbcType() == JDBCType.VARCHAR) {
+        value = "'" + value + "'";
+      }
+      vals[i] = Objects.toString(value);
+    }
+    return String.join(", ", vals);
   }
 
   private TableColumns receiveTableColumns(ByteBufAllocator alloc, ByteBuf in, ServerPacketType type) {
@@ -178,7 +198,6 @@ public class PacketReader {
     if (md.getRevision() >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_TEMPORARY_TABLES) {
       if (tempTableInfo == null) {
         tempTableInfo = ByteBufUtils.readPascalString(in);
-        LOG.info("tempTableInfo: " + tempTableInfo);
         if (tempTableInfo == null) {
           return null;
         }

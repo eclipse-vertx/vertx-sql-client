@@ -20,6 +20,6 @@ public class ArrayColumn extends ClickhouseColumn {
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    throw new IllegalStateException("not implemented");
+    return new ArrayColumnWriter(data, descriptor, md, columnIndex);
   }
 }

@@ -74,7 +74,7 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
     }
     int keyType = (int)(serType & 0xf);
     if (keysColumn == null) {
-      keysColumn = uintColumn(keyType);
+      keysColumn = uintColumn(columnDescriptor.name(), keyType).reader(nRows);
     }
     keysColumn.readColumn(in);
   }
@@ -107,9 +107,8 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
     return indexColumn.getElementInternal(key, desired);
   }
 
-  private ClickhouseColumnReader uintColumn(int code) {
+  static ClickhouseColumn uintColumn(String name, int code) {
     ClickhouseNativeColumnDescriptor tmp;
-    String name = columnDescriptor.name();
     //TODO smagellan: introduce immutable column descriptors for (U)Ints, reuse cached instances
     if (code == 0) {
       tmp = ClickhouseColumns.columnDescriptorForSpec("UInt8", name);
@@ -122,6 +121,6 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
     } else {
       throw new IllegalArgumentException("unknown low-cardinality key-column code " + code);
     }
-    return ClickhouseColumns.columnForSpec(tmp, md).reader(nRows);
+    return ClickhouseColumns.columnForSpec(tmp, null);
   }
 }

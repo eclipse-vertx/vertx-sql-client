@@ -101,23 +101,29 @@ public class BasicClickhouseTest {
   }
 
   @Test
-  public void arraysTest(TestContext ctx) {
+  public void emptyArrayTest(TestContext ctx) {
+    arrayTest(ctx, "select array() as empty_array", new Object[0]);
+  }
+
+  @Test
+  public void nonEmptyArrayTest(TestContext ctx) {
+    arrayTest(ctx, "select array(array(), array(NULL), array(1, NULL, 2), array(321)) as non_empty_array",
+      new Object[][]{{}, {null}, {1, null, 2}, {321}});
+  }
+
+  @Test
+  public void nonEmptyLowCardinalityArrayTest(TestContext ctx) {
+    arrayTest(ctx, "select CAST(array(array(), array(NULL), array('a', NULL, 'b'), array('c')), 'Array(Array(LowCardinality(Nullable(String))))')",
+      new Object[][]{{}, {null}, {"a", null, "b"}, {"c"}});
+  }
+
+  private void arrayTest(TestContext ctx, String query, Object[] expected) {
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("select array() as empty_array, array(array(), array(NULL), array(1, NULL, 2), array(321)) as non_empty_array," +
-                     "CAST(array(array(), array(NULL), array('a', NULL, 'b'), array('c')), 'Array(Array(LowCardinality(Nullable(String))))') as low_cardinality_array").execute(
+      conn.query(query).execute(
         ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(1, res1.size());
+          ctx.assertEquals(res1.size(), 1);
           Row row = res1.iterator().next();
-          Object[] expected = new Object[0];
           Object[] actual = (Object[])row.getValue(0);
-          ctx.assertEquals(true, Arrays.deepEquals(expected, actual));
-
-          expected = new Object[][]{{}, {null}, {1, null, 2}, {321}};
-          actual = (Object[])row.getValue(1);
-          ctx.assertEquals(true, Arrays.deepEquals(expected, actual));
-
-          expected = new Object[][]{{}, {null}, {"a", null, "b"}, {"c"}};
-          actual = (Object[])row.getValue(2);
           ctx.assertEquals(true, Arrays.deepEquals(expected, actual));
           conn.close();
         })

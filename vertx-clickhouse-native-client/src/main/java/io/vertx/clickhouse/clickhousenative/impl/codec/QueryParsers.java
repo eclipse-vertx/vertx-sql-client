@@ -3,8 +3,16 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 import io.vertx.sqlclient.Tuple;
 
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+//TODO: maybe switch to antlr4 or JavaCC + .jj file (see ClickHouseSqlParser.jj in regular ClickHouse jdbc driver)
 public class QueryParsers {
   private static final String INSERT_KEYWORD = "INSERT";
   private static final String UPDATE_KEYWORD = "UPDATE";
@@ -16,7 +24,6 @@ public class QueryParsers {
     INSERT_KEYWORD, UPDATE_KEYWORD)));
 
 
-  //TODO: maybe switch to antlr4
   public static String insertParamValuesIntoQuery(String parametrizedSql, Tuple paramsList) {
     int prevIdx = 0;
     int newIdx;
@@ -79,7 +86,7 @@ public class QueryParsers {
 
   public static Map.Entry<String, Integer> findKeyWord(String sql, int startPos, Collection<String> keywords) {
     Character requiredChar = null;
-    //special case to find placeholder
+    //special case to find special chars, e.g. argument index $
     if (keywords.size() == 1) {
       String str = keywords.iterator().next();
       if (str.length() == 1) {
@@ -87,31 +94,84 @@ public class QueryParsers {
       }
     }
     for (int i = startPos; i < sql.length(); i++) {
+      char ch = sql.charAt(i);
       String nextTwo = sql.substring(i, Math.min(i + 2, sql.length()));
       if ("--".equals(nextTwo)) {
         i = Math.max(i, sql.indexOf("\n", i));
       } else if ("/*".equals(nextTwo)) {
         i = Math.max(i, sql.indexOf("*/", i));
-      } else if (requiredChar != null && requiredChar == sql.charAt(i)) {
-        return new AbstractMap.SimpleEntry<>(keywords.iterator().next(), i);
-      } else if (sql.charAt(i) == '\'' && (i == 0 || sql.charAt(i - 1) != '\\')) {
+      } else if (ch == '\'' && (i == 0 || sql.charAt(i - 1) != '\\')) {
         while (i < sql.length() && !(sql.charAt(i) == '\'' && (i == 0 || sql.charAt(i - 1) != '\\'))) {
           ++i;
         }
       } else {
-        if (Character.isLetter(sql.charAt(i))) {
-          String trimmed = sql.substring(i, Math.min(sql.length(), Math.max(i, sql.indexOf(" ", i))));
-          for (String keyword : keywords){
-            if (trimmed.regionMatches(true, 0, keyword, 0, keyword.length())) {
-              return new AbstractMap.SimpleEntry<>(keyword, i);
+        if (requiredChar == null) {
+          if (Character.isLetter(ch)) {
+            String trimmed = sql.substring(i, Math.min(sql.length(), Math.max(i, sql.indexOf(" ", i))));
+            for (String keyword : keywords) {
+              if (trimmed.regionMatches(true, 0, keyword, 0, keyword.length())) {
+                return new AbstractMap.SimpleEntry<>(keyword, i);
+              }
             }
           }
-          if (requiredChar == null) {
-            return null;
+        } else {
+          if (requiredChar == ch) {
+            return new AbstractMap.SimpleEntry<>(keywords.iterator().next(), i);
           }
         }
       }
     }
     return null;
+  }
+
+  public static Map<? extends Number, String> parseEnumValues(String nativeType) {
+    final boolean isByte = nativeType.startsWith("Enum8(");
+    int openBracketPos = nativeType.indexOf('(');
+    Map<Number, String> result = new HashMap<>();
+    int lastQuotePos = -1;
+    boolean gotEq = false;
+    String enumElementName = null;
+    int startEnumValPos = -1;
+    for (int i = openBracketPos; i < nativeType.length(); ++i) {
+      char ch = nativeType.charAt(i);
+      if (ch == '\'') {
+        if (lastQuotePos == -1) {
+          lastQuotePos = i;
+        } else {
+          enumElementName = nativeType.substring(lastQuotePos + 1, i);
+          lastQuotePos = -1;
+        }
+      } else if (ch == '=') {
+        gotEq = true;
+      } else if (gotEq) {
+        if (Character.isDigit(ch)) {
+          if (startEnumValPos == -1) {
+            startEnumValPos = i;
+          } else if (!Character.isDigit(nativeType.charAt(i + 1))) {
+            int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i + 1));
+            Number key = byteOrShort(enumValue, isByte);
+            result.put(key, enumElementName);
+            startEnumValPos = -1;
+            enumElementName = null;
+            gotEq = false;
+          }
+        } else if (startEnumValPos != -1) {
+          int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i));
+          Number key = byteOrShort(enumValue, isByte);
+          result.put(key, enumElementName);
+          startEnumValPos = -1;
+          enumElementName = null;
+          gotEq = false;
+        }
+      }
+    }
+    return result;
+  }
+
+  private static Number byteOrShort(int number, boolean isByte) {
+    if (isByte) {
+      return (byte) number;
+    }
+    return (short) number;
   }
 }

@@ -1,6 +1,7 @@
 package io.vertx.clickhousenativeclient.tck;
 
 import io.vertx.clickhousenativeclient.ClickhouseResource;
+import io.vertx.clickhousenativeclient.Sleep;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.tck.SimpleQueryTestBase;

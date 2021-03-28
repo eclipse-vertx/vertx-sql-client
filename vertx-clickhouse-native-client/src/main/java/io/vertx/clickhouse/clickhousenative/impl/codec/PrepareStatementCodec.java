@@ -10,32 +10,33 @@ import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<PreparedStatement, PrepareStatementCommand>{
   private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementCodec.class);
   private final Map.Entry<String, Integer> queryType;
-
+  private final UUID psId;
   private PacketReader packetReader;
 
   protected PrepareStatementCodec(PrepareStatementCommand cmd, Map.Entry<String, Integer> queryType) {
     super(cmd);
     this.queryType = queryType;
+    this.psId = UUID.randomUUID();
   }
 
   @Override
   void encode(ClickhouseNativeEncoder encoder) {
     super.encode(encoder);
-    LOG.info("handle ready for query");
     String sql = cmd.sql();
+    //TODO smagellan: check if query ends with 'values', maybe move to QueryParser
     boolean isInsert = queryType != null && "insert".equalsIgnoreCase(queryType.getKey());
     int valuesIndex = 0;
-    boolean realInsertBatch = isInsert && (valuesIndex = valuesPos(sql, queryType.getValue())) != -1;
+    boolean endsWithValues = sql.toLowerCase().endsWith("values");
+    boolean realInsertBatch = isInsert && (endsWithValues || (valuesIndex = valuesPos(sql, queryType.getValue())) != -1);
     if (realInsertBatch) {
-      String truncatedSql = sql.substring(0, valuesIndex + "values".length());
+      //TODO smagellan: lock connection with prepared statement id
+      encoder.getConn().lockPsOrThrow(psId);
+      String truncatedSql = endsWithValues ? sql : sql.substring(0, valuesIndex + "values".length());
       ByteBuf buf = allocateBuffer();
       try {
         PacketForge forge = new PacketForge(encoder.getConn(), encoder.chctx());
@@ -48,7 +49,7 @@ public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<Prepared
       }
     } else {
       completionHandler.handle(CommandResponse.success(new ClickhouseNativePreparedStatement(sql, new ClickhouseNativeParamDesc(Collections.emptyList()),
-        new ClickhouseNativeRowDesc(Collections.emptyList()), queryType, false)));
+        new ClickhouseNativeRowDesc(Collections.emptyList()), queryType, false, psId)));
     }
   }
 
@@ -81,7 +82,7 @@ public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<Prepared
         List<ColumnDescriptor> columnTypes = new ArrayList<>(data.values());
         ClickhouseNativeRowDesc rowDesc = new ClickhouseNativeRowDesc(columnNames, columnTypes);
         completionHandler.handle(CommandResponse.success(new ClickhouseNativePreparedStatement(cmd.sql(),
-          new ClickhouseNativeParamDesc(Collections.emptyList()), rowDesc, queryType, true)));
+          new ClickhouseNativeParamDesc(Collections.emptyList()), rowDesc, queryType, true, psId)));
       } else if (packet instanceof Throwable) {
         cmd.fail((Throwable) packet);
       }

@@ -2,7 +2,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 
-class RawClickhouseStreamDataSink implements ClickhouseStreamDataSink {
+public class RawClickhouseStreamDataSink implements ClickhouseStreamDataSink {
   private final ByteBuf sink;
 
   public RawClickhouseStreamDataSink(ByteBuf sink) {

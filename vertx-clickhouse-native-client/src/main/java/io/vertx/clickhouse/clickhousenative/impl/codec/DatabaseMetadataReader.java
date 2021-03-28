@@ -5,8 +5,11 @@ import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 
 import java.nio.charset.Charset;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Map;
+
+import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 
 public class DatabaseMetadataReader {
   private final String fullClientName;
@@ -75,9 +78,13 @@ public class DatabaseMetadataReader {
     } else {
       patchVersion = revision;
     }
+    int daysInYear = Integer.parseInt(properties.getOrDefault(ClickhouseConstants.OPTION_YEAR_DURATION, "365"));
+    int daysInQuarter = Integer.parseInt(properties.getOrDefault(ClickhouseConstants.OPTION_QUARTER_DURATION, "120"));
+    int daysInMonth = Integer.parseInt(properties.getOrDefault(ClickhouseConstants.OPTION_MONTH_DURATION, "30"));
     return new ClickhouseNativeDatabaseMetadata(productName,
       String.format("%d.%d.%d", major, minor, revision),
-      major, minor, revision, patchVersion, displayName, timezone == null ? null : ZoneId.of(timezone), fullClientName, properties, charset());
+      major, minor, revision, patchVersion, displayName, timezone == null ? null : ZoneId.of(timezone), fullClientName, properties, charset(),
+      Duration.ofDays(daysInYear), Duration.ofDays(daysInQuarter), Duration.ofDays(daysInMonth));
   }
 
   private Charset charset() {

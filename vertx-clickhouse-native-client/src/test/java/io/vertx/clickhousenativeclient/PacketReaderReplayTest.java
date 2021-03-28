@@ -3,11 +3,14 @@ package io.vertx.clickhousenativeclient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.PacketReader;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import net.jpountz.lz4.LZ4Factory;
 import org.junit.After;
 import org.junit.Test;
@@ -21,6 +24,8 @@ import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 public class PacketReaderReplayTest {
+  private static final Logger LOG = LoggerFactory.getLogger(PacketReaderReplayTest.class);
+
   private final Map<String, String> props;
   private final ByteBuf buf;
   private final LZ4Factory lz4Factory;
@@ -44,7 +49,8 @@ public class PacketReaderReplayTest {
       "/nullable_low_cardinality_with_compression.yaml",
       "/nullable_low_cardinality_without_compression.yaml",
       "/select_array_of_nullable_string_without_compression.yaml",
-      "/select_empty_array_without_compression.yaml"
+      "/select_empty_array_without_compression.yaml",
+      "/ClickhouseNativePreparedQueryCachedTest_testConcurrentClose_with_compression.yaml"
     );
     for (String replayFile : replayFiles) {
       boolean compression = replayFile.contains("with_compression");
@@ -88,7 +94,13 @@ public class PacketReaderReplayTest {
   public void doReplayTest() {
     PooledByteBufAllocator allocator = new PooledByteBufAllocator();
     String fullName = "Clickhouse jython-driver";
+    LOG.info("all bytes: " + ByteBufUtil.hexDump(buf));
+    while (buf.readableBytes() > 0) {
+      readConnIteraction(allocator, fullName);
+    }
+  }
 
+  private void readConnIteraction(PooledByteBufAllocator allocator, String fullName) {
     //1st packet: server hello
     PacketReader rdr = new PacketReader(null, fullName, props, lz4Factory);
     ClickhouseNativeDatabaseMetadata md = (ClickhouseNativeDatabaseMetadata)rdr.receivePacket(allocator, buf);
@@ -96,7 +108,7 @@ public class PacketReaderReplayTest {
     do {
       rdr = new PacketReader(md, fullName, props, lz4Factory);
       Object packet = rdr.receivePacket(allocator, buf);
-      System.err.println("packet: " + packet);
+      LOG.info("packet: " + packet);
     } while (!rdr.isEndOfStream() && buf.readableBytes() > 0);
   }
 

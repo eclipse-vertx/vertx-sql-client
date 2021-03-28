@@ -6,21 +6,18 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
 
-public class FixedStringColumn extends ClickhouseColumn {
-  protected final ClickhouseNativeDatabaseMetadata md;
-
-  public FixedStringColumn(ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md) {
-    super(descriptor);
-    this.md = md;
+public class IPv6Column extends FixedStringColumn {
+  public IPv6Column(ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
+    super(descr, md);
   }
 
   @Override
   public ClickhouseColumnReader reader(int nRows) {
-    return new FixedStringColumnReader(nRows, descriptor, md);
+    return new IPv6ColumnReader(nRows, descriptor, md);
   }
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    return new FixedStringColumnWriter(data, descriptor, md.getStringCharset(), columnIndex);
+    throw new IllegalStateException("not implemented");
   }
 }

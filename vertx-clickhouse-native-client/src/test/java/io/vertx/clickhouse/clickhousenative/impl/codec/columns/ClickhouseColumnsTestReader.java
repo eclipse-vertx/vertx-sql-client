@@ -1,5 +1,6 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
+import io.vertx.clickhouse.clickhousenative.impl.codec.QueryParsers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -37,7 +38,7 @@ public class ClickhouseColumnsTestReader<T extends Number> {
 
   @Test
   public void testParseEnumVals() {
-    Map<? extends Number, String> vals = ClickhouseColumns.parseEnumVals(enumDefinition);
+    Map<? extends Number, String> vals = QueryParsers.parseEnumValues(enumDefinition);
     Map<T, String> expected = new HashMap<>();
     expected.put(key(1), "aa4");
     expected.put(key(22), "1b3b2");

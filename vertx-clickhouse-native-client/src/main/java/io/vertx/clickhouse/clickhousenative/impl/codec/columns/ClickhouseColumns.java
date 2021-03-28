@@ -2,10 +2,14 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
+import io.vertx.clickhouse.clickhousenative.impl.codec.QueryParsers;
 
 import java.math.BigInteger;
 import java.sql.JDBCType;
+import java.time.Duration;
 import java.time.ZoneId;
+import java.util.AbstractMap;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,10 +32,27 @@ public class ClickhouseColumns {
   public static final String ENUM_PREFIX = "Enum";
   public static final int ENUM_PREFIX_LENGTH = ENUM_PREFIX.length();
 
+  public static final String INTERVAL_PREFIX = "Interval";
+
+  private static final Map<String, Duration> CONST_DURATION_MULTIPLIERS = Collections.unmodifiableMap(buildConstDurationMultipliers());
+
+  private static Map<String, Duration> buildConstDurationMultipliers() {
+    HashMap<String, Duration> result = new HashMap<>();
+    result.put("Second", Duration.ofSeconds(1));
+    result.put("Day", Duration.ofDays(1));
+    result.put("Hour", Duration.ofHours(1));
+    result.put("Minute", Duration.ofMinutes(1));
+    result.put("Week", Duration.ofDays(7));
+    return result;
+  }
+
+
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String name) {
     String spec = unparsedSpec;
     if (spec.startsWith(ARRAY_PREFIX)) {
       spec = spec.substring(ARRAY_PREFIX_LENGTH, spec.length() - 1);
+      //TODO smagellan: get rid of recursion
+      //TODO smagellan: introduce arrays dimensions size
       ClickhouseNativeColumnDescriptor nested = columnDescriptorForSpec(spec, name);
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, true, ClickhouseNativeColumnDescriptor.NOSIZE,
         JDBCType.ARRAY, false, false, false, null, null, nested);
@@ -47,6 +68,15 @@ public class ClickhouseColumns {
       nullable = true;
     }
     return columnDescriptorForSpec(unparsedSpec, spec, name, nullable, false, isLowCardinality);
+  }
+
+  private static Map.Entry<Integer, String> unwrapArrayModifiers(String spec) {
+    int arrayDepth = 0;
+    while (spec.startsWith(ARRAY_PREFIX)) {
+      spec = spec.substring(ARRAY_PREFIX_LENGTH, spec.length() - 1);
+      ++arrayDepth;
+    }
+    return new AbstractMap.SimpleEntry<>(arrayDepth, spec);
   }
 
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String spec, String name,
@@ -110,8 +140,17 @@ public class ClickhouseColumns {
     } else if ("Date".equals(spec)) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16ColumnReader.ELEMENT_SIZE,
         JDBCType.DATE, nullable, true, isLowCardinality, null, null, null, null);
+    } else if (spec.startsWith(INTERVAL_PREFIX)) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt64ColumnReader.ELEMENT_SIZE,
+        JDBCType.OTHER, nullable, false, isLowCardinality, null, null, null, null);
+    } else if ("IPv4".equals(spec)) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, IPv4ColumnReader.ELEMENT_SIZE,
+        JDBCType.OTHER, nullable, true, isLowCardinality, null, null, null, null);
+    } else if ("IPv6".equals(spec)) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, IPv6ColumnReader.ELEMENT_SIZE,
+        JDBCType.OTHER, nullable, true, isLowCardinality, null, null, null, null);
     }
-    throw new IllegalArgumentException("unknown spec: '" + spec + "'");
+    throw new IllegalArgumentException("unknown column spec: '" + spec + "'");
   }
 
   private static int decimalSize(int precision) {
@@ -190,75 +229,44 @@ public class ClickhouseColumns {
     } else if (jdbcType == JDBCType.DATE) {
       return new DateColumn(descr);
     } else if (jdbcType == JDBCType.OTHER) {
-      if (descr.getNestedType().equals("UUID")) {
+      String nativeType = descr.getNestedType();
+      if (nativeType.equals("UUID")) {
         return new UUIDColumn(descr);
-      } else if (descr.getNestedType().startsWith(ENUM_PREFIX)) {
-        Map<? extends Number, String> enumVals = parseEnumVals(descr.getNestedType());
+      } else if (nativeType.startsWith(ENUM_PREFIX)) {
+        Map<? extends Number, String> enumVals = QueryParsers.parseEnumValues(nativeType);
         if (descr.getElementSize() == Enum8ColumnReader.ELEMENT_SIZE) {
           return new Enum8Column(descr, enumVals);
         } else if (descr.getElementSize() == Enum16ColumnReader.ELEMENT_SIZE) {
           return new Enum16Column(descr, enumVals);
         }
+      } else if (nativeType.startsWith(INTERVAL_PREFIX)) {
+        Duration multiplier = getDurationMultiplier(descr, md);
+        if (multiplier == null) {
+          throw new IllegalArgumentException("unknown duration specifier in spec: " + descr.getUnparsedNativeType());
+        }
+        return new IntervalColumn(descr, multiplier);
+      } else if (nativeType.equals("IPv4")) {
+        return new IPv4Column(descr);
+      } else if (nativeType.equals("IPv6")) {
+        return new IPv6Column(descr, md);
       }
     }
     throw new IllegalArgumentException("no column type for jdbc type " + jdbcType + " (raw type: '" + descr.getUnparsedNativeType() + "')");
   }
 
-
-  //TODO: maybe switch to antlr4
-  static Map<? extends Number, String> parseEnumVals(String nativeType) {
-    final boolean isByte = nativeType.startsWith("Enum8(");
-    int openBracketPos = nativeType.indexOf('(');
-    Map<Number, String> result = new HashMap<>();
-    int lastQuotePos = -1;
-    boolean gotEq = false;
-    String enumElementName = null;
-    int startEnumValPos = -1;
-    for (int i = openBracketPos; i < nativeType.length(); ++i) {
-      char ch = nativeType.charAt(i);
-      if (ch == '\'') {
-        if (lastQuotePos == -1) {
-          lastQuotePos = i;
-        } else {
-          enumElementName = nativeType.substring(lastQuotePos + 1, i);
-          lastQuotePos = -1;
-        }
-      } else if (ch == '=') {
-        gotEq = true;
-      } else if (gotEq) {
-        if (Character.isDigit(ch)) {
-          if (startEnumValPos == -1) {
-            startEnumValPos = i;
-          } else if (!Character.isDigit(nativeType.charAt(i + 1))) {
-            int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i + 1));
-            Number key = byteOrShort(enumValue, isByte);
-            result.put(key, enumElementName);
-            startEnumValPos = -1;
-            enumElementName = null;
-            gotEq = false;
-          }
-        } else if (startEnumValPos != -1) {
-          int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i));
-          Number key = byteOrShort(enumValue, isByte);
-          result.put(key, enumElementName);
-          startEnumValPos = -1;
-          enumElementName = null;
-          gotEq = false;
-        }
+  private static Duration getDurationMultiplier(ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
+    String durationStr = descr.getNestedType().substring(INTERVAL_PREFIX.length());
+    Duration multiplier = CONST_DURATION_MULTIPLIERS.get(durationStr);
+    if (multiplier == null) {
+      switch (durationStr) {
+        case "Year":
+          return md.yearDuration();
+        case "Quarter":
+          return md.quarterDuration();
+        case "Month":
+          return md.monthDuration();
       }
     }
-    return result;
-  }
-
-  private static Number byteOrShort(int number, boolean isByte) {
-    if (isByte) {
-      return (byte) number;
-    }
-    return (short) number;
-  }
-
-  public static void main(String[] args) {
-    ClickhouseNativeColumnDescriptor t = columnDescriptorForSpec("Array(Array(LowCardinality(Nullable(String))))", "fake");
-    System.err.println(t);
+    return multiplier;
   }
 }

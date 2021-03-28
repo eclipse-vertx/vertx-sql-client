@@ -5,13 +5,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.vertx.clickhouse.clickhousenative.impl.*;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
-import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, QueryCommandBase<T>>{
@@ -67,7 +64,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   }
 
   protected void checkIfBusy() {
-    conn.throwExceptionIfBusy(null);
+    conn.throwExceptionIfCursorIsBusy(null);
   }
 
   @Override
@@ -83,7 +80,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         ColumnOrientedBlock block = (ColumnOrientedBlock)packet;
         LOG.info("decoded packet " + dataPacketNo + ": " + block + " row count " + block.numRows());
         if (dataPacketNo == 0) {
-          ClickhouseNativeRowDesc rowDesc = buildRowDescriptor(block);
+          ClickhouseNativeRowDesc rowDesc = block.rowDesc();
           rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc, conn.getDatabaseMetaData());
         }
         packetReader = null;
@@ -107,13 +104,6 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
       notifyOperationUpdate(false, null);
       packetReader = null;
     }
-  }
-
-  private ClickhouseNativeRowDesc buildRowDescriptor(ColumnOrientedBlock block) {
-    Map<String, ClickhouseNativeColumnDescriptor> data = block.getColumnsWithTypes();
-    List<String> columnNames = new ArrayList<>(data.keySet());
-    List<ColumnDescriptor> columnTypes = new ArrayList<>(data.values());
-    return new ClickhouseNativeRowDesc(columnNames, columnTypes);
   }
 
   private void notifyOperationUpdate(boolean hasMoreResults, Throwable t) {

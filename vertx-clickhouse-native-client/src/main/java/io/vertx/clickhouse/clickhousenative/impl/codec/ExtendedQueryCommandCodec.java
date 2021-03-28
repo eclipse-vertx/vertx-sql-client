@@ -41,10 +41,8 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
     ExtendedQueryCommand<T> ecmd = ecmd();
     String ourCursorId = ecmd.cursorId();
     //TODO smagellan: introduce lock() method
-    if (conn.getPendingCursorId() == null) {
-      conn.setPendingCursorId(ourCursorId);
-    } else {
-      conn.throwExceptionIfBusy(ourCursorId);
+    if (ourCursorId != null) {
+      conn.lockCursorOrThrow(((ClickhouseNativePreparedStatement)ecmd.preparedStatement()).getPsId(), ourCursorId);
     }
     PreparedStatement ps = ecmd.preparedStatement();
     if (ps != null && ((ClickhouseNativePreparedStatement)ps).isSentQuery()) {
@@ -90,7 +88,7 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
 
   @Override
   protected void checkIfBusy() {
-    conn.throwExceptionIfBusy(ecmd().cursorId());
+    conn.throwExceptionIfCursorIsBusy(ecmd().cursorId());
   }
 
   @Override

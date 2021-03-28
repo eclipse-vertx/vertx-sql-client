@@ -65,7 +65,11 @@ public abstract class ClickhouseColumnWriter {
     for (int rowNo = fromRow; rowNo < toRow; ++rowNo) {
       Object val = data.get(rowNo).getValue(columnIndex);
       if (val == null) {
-        serializeDataNull(sink);
+        if (columnDescriptor.isNullable()) {
+          serializeDataNull(sink);
+        } else {
+          throw new IllegalArgumentException("can't serialize null for non-nullable column " + columnDescriptor.name() + " at row " + rowNo);
+        }
       } else {
         serializeDataElement(sink, val);
       }
@@ -74,6 +78,6 @@ public abstract class ClickhouseColumnWriter {
 
   protected abstract void serializeDataElement(ClickhouseStreamDataSink sink, Object val);
 
-  //TODO: maybe perform ByteBuf.writerIndex(writerIndex() + elemSize) (is allocated memory is zero-filled ?)
+  //TODO: maybe skip bytes instead (perform ByteBuf.writerIndex(writerIndex() + elemSize)) (is allocated memory zero-filled ?)
   protected abstract void serializeDataNull(ClickhouseStreamDataSink sink);
 }

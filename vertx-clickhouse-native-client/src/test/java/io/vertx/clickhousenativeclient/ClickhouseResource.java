@@ -31,7 +31,9 @@ public class ClickhouseResource extends ExternalResource {
       .setUser(server.getUsername())
       .setPassword(server.getPassword())
       .setDatabase("default")
-      .addProperty(ClickhouseConstants.OPTION_CLIENT_NAME, "java-driver");
+      .addProperty(ClickhouseConstants.OPTION_CLIENT_NAME, "java-driver")
+      .addProperty(ClickhouseConstants.OPTION_COMPRESSOR, "lz4_safe");
+      //.addProperty(ClickhouseConstants.OPTION_SEND_LOGS_LEVEL, "debug");
   }
 
   @Override
