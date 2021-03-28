@@ -8,6 +8,8 @@ import java.util.List;
 
 public class LowCardinalityColumn extends ClickhouseColumn {
   private final ClickhouseNativeDatabaseMetadata md;
+  private Object nullValue;
+
   public LowCardinalityColumn(ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md) {
     super(descriptor);
     this.md = md;
@@ -21,5 +23,14 @@ public class LowCardinalityColumn extends ClickhouseColumn {
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
     return new LowCardinalityColumnWriter(data, descriptor, md, columnIndex);
+  }
+
+  @Override
+  public Object nullValue() {
+    if (nullValue == null) {
+      ClickhouseNativeColumnDescriptor nested = ClickhouseColumns.columnDescriptorForSpec(descriptor.getNestedType(), descriptor.name());
+      nullValue = ClickhouseColumns.columnForSpec(nested, md).nullValue();
+    }
+    return nullValue;
   }
 }

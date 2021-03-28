@@ -44,6 +44,14 @@ public class UInt8ColumnReader extends ClickhouseColumnReader {
   }
 
   @Override
+  protected Object[] allocateArray(Class<?> desired, int length) {
+    if (columnDescriptor.isUnsigned()) {
+      return new Short[length];
+    }
+    return new Byte[length];
+  }
+
+  @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
     return new UInt8ColumnWriter(data, columnDescriptor, columnIndex);
   }

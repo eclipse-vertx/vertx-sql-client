@@ -66,8 +66,15 @@ public abstract class ClickhouseColumnReader {
     return (Object[]) itemsArray;
   }
 
+  protected Object[] allocateArray(Class<?> desired, int length) {
+    if (desired == null) {
+      return new Object[length];
+    }
+    return (Object[]) java.lang.reflect.Array.newInstance(desired, length);
+  }
+
   protected Object[] asObjectsArrayWithGetElement(Class<?> desired) {
-    Object[] ret = new Object[nRows];
+    Object[] ret = allocateArray(desired, nRows);
     for (int i = 0; i < nRows; ++i) {
       ret[i] = getElement(i, desired);
     }
