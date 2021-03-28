@@ -60,11 +60,10 @@ public class BasicClickhouseTest {
 
   @Test
   public void testIntegerRanges(TestContext ctx) {
-    //TODO: LowCardinality
     List<ClickhouseNativeColumnDescriptor> types = Stream.of("Int8", "Int16", "Int32", "Int64", "Int128")
       .flatMap(el -> "Int128".equals(el)
         ? Stream.of(el, "Nullable(" + el + ")")
-        : Stream.of(el, "U" + el, "Nullable(" + el + ")", "Nullable(U" + el + ")"))
+        : Stream.of(el, "U" + el, "LowCardinality(Nullable(" + el + "))", "Nullable(U" + el + ")", "LowCardinality(Nullable(U" + el + "))"))
       .map(spec -> ClickhouseColumns.columnDescriptorForSpec(spec, "fake_name"))
       .collect(Collectors.toList());
     List<String> typeNames = types.stream()
@@ -102,29 +101,47 @@ public class BasicClickhouseTest {
 
   @Test
   public void emptyArrayTest(TestContext ctx) {
-    arrayTest(ctx, "select array() as empty_array", new Object[0]);
+    arrayTest(ctx,
+  "select arr from (" +
+          "select 1 as id, array() as arr UNION ALL " +
+          "select 2 as id, array('a') as arr UNION ALL " +
+          "select 3 as id, array() as arr" +
+        ") t1 order by id",
+      Arrays.asList(new Object[0], new Object[]{"a"}, new Object[0]));
   }
 
   @Test
   public void nonEmptyArrayTest(TestContext ctx) {
-    arrayTest(ctx, "select array(array(), array(NULL), array(1, NULL, 2), array(321)) as non_empty_array",
-      new Object[][]{{}, {null}, {1, null, 2}, {321}});
+    arrayTest(ctx,
+  "select arr from (" +
+          "select 1 as id, array(array(), array(NULL), array(1, NULL, 2), array(321)) as arr UNION ALL " +
+          "select 1 as id, array(array(34), array(), array(5, 6, NULL), array(14, NULL)) as arr " +
+        ") t1 order by id",
+      Arrays.asList(new Object[][]{{}, {null}, {1, null, 2}, {321}}, new Object[][]{{34}, {}, {5, 6, null}, {14, null}}));
   }
 
   @Test
   public void nonEmptyLowCardinalityArrayTest(TestContext ctx) {
-    arrayTest(ctx, "select CAST(array(array(), array(NULL), array('a', NULL, 'b'), array('c')), 'Array(Array(LowCardinality(Nullable(String))))')",
-      new Object[][]{{}, {null}, {"a", null, "b"}, {"c"}});
+    arrayTest(ctx,
+  "select arr from (" +
+          "select 1 as id, CAST(array(array(), array(NULL), array('a', NULL, 'b'), array('c')), 'Array(Array(LowCardinality(Nullable(String))))') as arr UNION ALL " +
+          "select 2 as id, CAST(array(array(NULL), array(), array('d', 'e', NULL), array('f', NULL)), 'Array(Array(LowCardinality(Nullable(String))))') as arr" +
+        ") t1 order by id",
+      Arrays.asList(new Object[][]{{}, {null}, {"a", null, "b"}, {"c"}}, new Object[][]{{null}, {}, {"d", "e", null}, {"f", null}}));
   }
 
-  private void arrayTest(TestContext ctx, String query, Object[] expected) {
+  private void arrayTest(TestContext ctx, String query, List<Object[]> expected) {
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query(query).execute(
         ctx.asyncAssertSuccess(res1 -> {
-          ctx.assertEquals(res1.size(), 1);
-          Row row = res1.iterator().next();
-          Object[] actual = (Object[])row.getValue(0);
-          ctx.assertEquals(true, Arrays.deepEquals(expected, actual));
+          ctx.assertEquals(res1.size(), expected.size());
+          int i = 0;
+          for (Row row : res1) {
+            Object[] expectedVal = expected.get(i);
+            Object[] actualVal = (Object[]) row.getValue(0);
+            ctx.assertEquals(true, Arrays.deepEquals(expectedVal, actualVal));
+            ++i;
+          }
           conn.close();
         })
       );

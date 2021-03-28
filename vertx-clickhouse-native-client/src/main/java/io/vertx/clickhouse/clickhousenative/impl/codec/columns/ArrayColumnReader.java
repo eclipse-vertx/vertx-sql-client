@@ -15,17 +15,18 @@ import java.util.List;
 import java.util.Map;
 
 public class ArrayColumnReader extends ClickhouseColumnReader {
-  private static final Object[] EMPTY_ARRAY = new Object[0];
 
   private final ClickhouseNativeDatabaseMetadata md;
-  private final ClickhouseNativeColumnDescriptor elementaryDescr;
+  private final ClickhouseNativeColumnDescriptor elementTypeDescr;
 
   private Deque<Triplet<ClickhouseNativeColumnDescriptor, List<Integer>, Integer>> graphLevelDeque;
   private List<List<Integer>> slicesSeries;
   private List<Integer> curSlice;
   private Integer curDepth;
   private ClickhouseNativeColumnDescriptor curNestedColumnDescr;
-  private ClickhouseColumnReader curNestedColumn;
+  private ClickhouseColumnReader nestedColumnReader;
+  private ClickhouseColumn nestedColumn;
+  private Class<?> elementClass;
   private Integer nItems;
   private boolean resliced;
   private Object statePrefix;
@@ -37,10 +38,10 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   public ArrayColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descr.copyAsNestedArray());
     this.md = md;
-    this.elementaryDescr = elementaryDescr(columnDescriptor);
+    this.elementTypeDescr = elementaryDescr(descr);
   }
 
-  private ClickhouseNativeColumnDescriptor elementaryDescr(ClickhouseNativeColumnDescriptor descr) {
+  static ClickhouseNativeColumnDescriptor elementaryDescr(ClickhouseNativeColumnDescriptor descr) {
     ClickhouseNativeColumnDescriptor tmp = descr;
     while (tmp.isArray()) {
       tmp = tmp.getNestedDescr();
@@ -50,7 +51,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object readStatePrefix(ClickhouseStreamDataSource in) {
-    ClickhouseColumnReader statePrefixColumn = ClickhouseColumns.columnForSpec(elementaryDescr, md).reader(0);
+    ClickhouseColumnReader statePrefixColumn = ClickhouseColumns.columnForSpec(elementTypeDescr, md).reader(0);
     if (statePrefix == null) {
       statePrefix = statePrefixColumn.readStatePrefix(in);
     }
@@ -72,47 +73,63 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       return null;
     }
     readSlices(in);
-    if (curNestedColumn == null) {
-      curNestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, md).reader(nItems);
+    if (nestedColumnReader == null) {
+      nestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, md);
+      nestedColumnReader = nestedColumn.reader(nItems);
+      elementClass = nestedColumn.nullValue().getClass();
     }
     if (curNestedColumnDescr.isNullable()) {
-      curNestedColumn.nullsMap = curNestedColumn.readNullsMap(in);
+      nestedColumnReader.nullsMap = nestedColumnReader.readNullsMap(in);
     }
     if (nItems > 0) {
-      assert nItems == curNestedColumn.nRows;
-      if (curNestedColumn.getClass() == LowCardinalityColumnReader.class) {
-        ((LowCardinalityColumnReader)curNestedColumn).keysSerializationVersion = LowCardinalityColumnReader.SUPPORTED_SERIALIZATION_VERSION;
+      assert nItems == nestedColumnReader.nRows;
+      if (nestedColumnReader.getClass() == LowCardinalityColumnReader.class) {
+        ((LowCardinalityColumnReader) nestedColumnReader).keysSerializationVersion = LowCardinalityColumnReader.SUPPORTED_SERIALIZATION_VERSION;
       }
-      if (curNestedColumn.isPartial()) {
-        curNestedColumn.itemsArray = curNestedColumn.readItemsAsObjects(in, null);
-        if (curNestedColumn.isPartial()) {
+      if (nestedColumnReader.isPartial()) {
+        nestedColumnReader.itemsArray = nestedColumnReader.readItemsAsObjects(in, null);
+        if (nestedColumnReader.isPartial()) {
           return null;
         }
       }
-      if (elementaryDescr.jdbcType() == JDBCType.VARCHAR
-       || curNestedColumn.getClass() == Enum8ColumnReader.class
-       || curNestedColumn.getClass() == Enum16ColumnReader.class) {
-        return curNestedColumn.itemsArray;
+      if (elementTypeDescr.jdbcType() == JDBCType.VARCHAR
+       || nestedColumnReader.getClass() == Enum8ColumnReader.class
+       || nestedColumnReader.getClass() == Enum16ColumnReader.class) {
+        return nestedColumnReader.itemsArray;
       }
       resliced = true;
-      return resliceIntoArray((Object[]) curNestedColumn.itemsArray);
+      return resliceIntoArray((Object[]) nestedColumnReader.itemsArray, elementClass);
     }
     resliced = true;
-    return resliceIntoArray(EMPTY_ARRAY);
+    return resliceIntoArray((Object[])java.lang.reflect.Array.newInstance(elementClass, 0), elementClass);
   }
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
     Object[] objectsArray = (Object[]) this.itemsArray;
-    Object[] reslicedRet = resliced ? objectsArray : resliceIntoArray(asDesiredType(objectsArray, desired));
+    Object[] reslicedRet;
+    if (resliced) {
+      reslicedRet = objectsArray;
+    } else {
+      Triplet<Boolean, Object[], Class<?>> maybeRecoded = asDesiredType(objectsArray, desired);
+      if (maybeRecoded.left()) {
+        desired = maybeRecoded.right();
+      } else {
+        desired = elementClass;
+      }
+      reslicedRet = resliceIntoArray(maybeRecoded.middle(), desired);
+    }
     return reslicedRet[rowIdx];
   }
 
-  private Object[] asDesiredType(Object[] src, Class<?> desired) {
-    if (desired == String.class && elementaryDescr.jdbcType() == JDBCType.VARCHAR) {
-      return stringifyByteArrays(src, md.getStringCharset());
+  private Triplet<Boolean, Object[], Class<?>> asDesiredType(Object[] src, Class<?> desired) {
+    if (desired != null && desired.isArray()) {
+      desired = desired.getComponentType();
     }
-    return src;
+    if (desired == String.class && elementTypeDescr.jdbcType() == JDBCType.VARCHAR) {
+      return new Triplet<>(true, stringifyByteArrays(src, md.getStringCharset()), desired);
+    }
+    return new Triplet<>(false, src, desired);
   }
 
   private Object[] stringifyByteArrays(Object[] src, Charset charset) {
@@ -126,19 +143,21 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     return ret;
   }
 
-  private Object[] resliceIntoArray(Object[] data) {
+  private Object[] resliceIntoArray(Object[] data, Class<?> elementClass) {
     Object[] intermData = data;
     for (int i = slicesSeries.size() - 1; i >= 0; --i) {
       List<Integer> slices = slicesSeries.get(i);
       Iterator<Map.Entry<Integer, Integer>> paired = PairedIterator.of(slices);
-      Object[] newDataList = new Object[slices.size() - 1];
+      Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(data.getClass(), slices.size() - 1);
+      //Object[] newDataList = new Object[slices.size() - 1];
       int tmpSliceIdx = 0;
       while (paired.hasNext()) {
         Map.Entry<Integer, Integer> slice = paired.next();
         int newSliceSz = slice.getValue() - slice.getKey();
-        Object[] resliced = new Object[newSliceSz];
-        System.arraycopy(intermData, slice.getKey(), resliced, 0, newSliceSz);
-        newDataList[tmpSliceIdx] = resliced;
+        //Object[] reslicedArray = new Object[newSliceSz];
+        Object[] reslicedArray = (Object[]) java.lang.reflect.Array.newInstance(elementClass, newSliceSz);
+        System.arraycopy(intermData, slice.getKey(), reslicedArray, 0, newSliceSz);
+        newDataList[tmpSliceIdx] = reslicedArray;
         ++tmpSliceIdx;
       }
       intermData = newDataList;
