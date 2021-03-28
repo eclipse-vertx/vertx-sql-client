@@ -19,4 +19,9 @@ public class UInt8Column extends ClickhouseColumn {
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
     return new UInt8ColumnWriter(data, descriptor, columnIndex);
   }
+
+  @Override
+  public Object nullValue() {
+    return descriptor.isUnsigned() ? Short.valueOf((short) 0) : Byte.valueOf((byte) 0);
+  }
 }

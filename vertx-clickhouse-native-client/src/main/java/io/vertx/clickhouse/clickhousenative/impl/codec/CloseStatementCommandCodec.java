@@ -13,6 +13,10 @@ public class CloseStatementCommandCodec extends ClickhouseNativeCommandCodec<Voi
 
   void encode(ClickhouseNativeEncoder encoder) {
     super.encode(encoder);
+    ClickhouseNativePreparedStatement stmt = (ClickhouseNativePreparedStatement) cmd.statement();
+    if (stmt.isSentQuery()) {
+      encoder.getConn().releasePs(stmt.getPsId());
+    }
     completionHandler.handle(CommandResponse.success(null));
   }
 

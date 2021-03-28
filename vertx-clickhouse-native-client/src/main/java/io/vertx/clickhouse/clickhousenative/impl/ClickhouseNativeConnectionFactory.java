@@ -5,6 +5,8 @@ import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnectOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.impl.NetSocketInternal;
@@ -15,6 +17,8 @@ import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
 import net.jpountz.lz4.LZ4Factory;
 
 public class ClickhouseNativeConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(ClickhouseNativeConnectionFactory.class);
+
   private int pipeliningLimit;
   private final LZ4Factory lz4Factory;
 
@@ -34,6 +38,9 @@ public class ClickhouseNativeConnectionFactory extends SqlConnectionFactoryBase 
       return LZ4Factory.safeInstance();
     } else if ("lz4_unsafe".equals(name)) {
       return LZ4Factory.unsafeInstance();
+    }
+    if (!"none".equals(name)) {
+      LOG.warn("unknown compressor name '" + name + "', ignored");
     }
     return null;
   }

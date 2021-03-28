@@ -12,12 +12,14 @@ import net.jpountz.lz4.LZ4Factory;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
   private ClickhouseNativeCodec codec;
   private ClickhouseNativeDatabaseMetadata md;
-  private String pendingCursorId;
+  private UUID psId;
+  private String ourCursorId;
   private final LZ4Factory lz4Factory;
 
 
@@ -49,25 +51,49 @@ public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
     this.md = md;
   }
 
-  public void setPendingCursorId(String cursorId) {
-    this.pendingCursorId = cursorId;
-  }
-
-  public String getPendingCursorId() {
-    return pendingCursorId;
-  }
-
-  public void releasePendingCursor(String cursorId) {
-    if (!Objects.equals(this.pendingCursorId, cursorId)) {
-      throw new IllegalArgumentException("can't release pending cursor: pending = " + pendingCursorId + "; provided: " + cursorId);
+  public void lockPsOrThrow(UUID newPsId) {
+    if (psId == null) {
+      psId = newPsId;
+    } else {
+      if (newPsId != null) {
+        if (!Objects.equals(psId, newPsId)) {
+          throw new IllegalStateException("attempt to block blocked (" + psId + ") connection by ps" + newPsId);
+        }
+      }
     }
-    this.pendingCursorId = null;
   }
 
-  public void throwExceptionIfBusy(String callerCursorId) {
-    if (pendingCursorId != null) {
-      if (!Objects.equals(pendingCursorId, callerCursorId)) {
-        throw new IllegalArgumentException("connection is busy with cursor " + pendingCursorId);
+  public void lockCursorOrThrow(UUID psId, String newCursorId) {
+    lockPsOrThrow(psId);
+    if (ourCursorId == null) {
+      ourCursorId = newCursorId;
+    } else {
+      if (newCursorId != null) {
+        if (!Objects.equals(ourCursorId, newCursorId)) {
+          throw new IllegalStateException("attempt to block blocked (" + ourCursorId + ") connection by cursor " + newCursorId);
+        }
+      }
+    }
+  }
+
+  public void releaseCursor(UUID psId, String newCursorId) {
+    if (!Objects.equals(this.ourCursorId, newCursorId)) {
+      throw new IllegalStateException("can't release: pending cursor = " + ourCursorId + "; provided: " + newCursorId);
+    }
+    this.ourCursorId = null;
+  }
+
+  public void releasePs(UUID newPs) {
+    if (!Objects.equals(this.psId, newPs)) {
+      throw new IllegalStateException("can't release: pending cursor = " + psId + "; provided: " + newPs);
+    }
+    this.psId = null;
+  }
+
+  public void throwExceptionIfCursorIsBusy(String callerId) {
+    if (ourCursorId != null) {
+      if (!Objects.equals(ourCursorId, callerId)) {
+        throw new IllegalStateException("connection is busy with " + ourCursorId);
       }
     }
   }

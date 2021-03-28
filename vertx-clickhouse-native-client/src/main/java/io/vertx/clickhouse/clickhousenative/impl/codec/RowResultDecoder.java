@@ -2,7 +2,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
-import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeRow;
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeRowImpl;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeRowDesc;
 import io.vertx.clickhouse.clickhousenative.impl.ColumnOrientedBlock;
 import io.vertx.core.impl.logging.Logger;
@@ -28,7 +28,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   @Override
   protected Row decodeRow(int len, ByteBuf in) {
-    ClickhouseNativeRow row = new ClickhouseNativeRow(rowNo, rowDesc, block, md);
+    ClickhouseNativeRowImpl row = block.row(rowNo);
     ++rowNo;
     return row;
   }

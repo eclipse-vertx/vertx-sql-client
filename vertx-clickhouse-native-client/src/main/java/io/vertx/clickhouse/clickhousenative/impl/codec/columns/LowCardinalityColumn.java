@@ -20,6 +20,6 @@ public class LowCardinalityColumn extends ClickhouseColumn {
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    throw new IllegalArgumentException("not implemented");
+    return new LowCardinalityColumnWriter(data, descriptor, md, columnIndex);
   }
 }

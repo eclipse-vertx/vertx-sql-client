@@ -1,22 +1,32 @@
 package io.vertx.clickhousenativeclient.tck;
 
+import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
+import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnectOptions;
 import io.vertx.clickhousenativeclient.ClickhouseResource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.tck.PreparedQueryCachedTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class ClickhouseNativePreparedQueryCachedTest extends PreparedQueryCachedTestBase {
+
+  @Rule
+  public TestName name = new TestName();
+
   @ClassRule
   public static ClickhouseResource rule = new ClickhouseResource();
 
   @Override
   protected void initConnector() {
-    options = rule.options();
+    options = new ClickhouseNativeConnectOptions(rule.options());
+    options.addProperty(ClickhouseConstants.OPTION_CLIENT_NAME,
+      ClickhouseNativePreparedQueryCachedTest.class.getSimpleName() + "." + name.getMethodName());
     connector = ClientConfig.CONNECT.connect(vertx, options);
   }
 

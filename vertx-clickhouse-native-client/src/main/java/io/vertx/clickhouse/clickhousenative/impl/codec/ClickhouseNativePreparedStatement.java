@@ -7,6 +7,7 @@ import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class ClickhouseNativePreparedStatement implements PreparedStatement {
   private final String sql;
@@ -14,14 +15,16 @@ public class ClickhouseNativePreparedStatement implements PreparedStatement {
   private final ClickhouseNativeRowDesc rowDesc;
   private final Map.Entry<String, Integer> queryType;
   private final boolean sentQuery;
+  private final UUID psId;
 
   public ClickhouseNativePreparedStatement(String sql, ClickhouseNativeParamDesc paramDesc, ClickhouseNativeRowDesc rowDesc,
-                                           Map.Entry<String, Integer> queryType, boolean sentQuery) {
+                                           Map.Entry<String, Integer> queryType, boolean sentQuery, UUID psId) {
     this.sql = sql;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.queryType = queryType;
     this.sentQuery = sentQuery;
+    this.psId = psId;
   }
 
   @Override
@@ -50,5 +53,9 @@ public class ClickhouseNativePreparedStatement implements PreparedStatement {
 
   public boolean isSentQuery() {
     return sentQuery;
+  }
+
+  public UUID getPsId() {
+    return psId;
   }
 }

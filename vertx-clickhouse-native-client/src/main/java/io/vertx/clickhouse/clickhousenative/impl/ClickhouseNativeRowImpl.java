@@ -5,15 +5,17 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
 import java.nio.charset.Charset;
+import java.sql.JDBCType;
 import java.util.List;
+import java.util.Objects;
 
-public class ClickhouseNativeRow implements Row {
+public class ClickhouseNativeRowImpl implements Row {
   private final int rowNo;
   private final Charset stringCharset;
   private final ClickhouseNativeRowDesc rowDesc;
   private final ColumnOrientedBlock block;
 
-  public ClickhouseNativeRow(int rowNo, ClickhouseNativeRowDesc rowDesc, ColumnOrientedBlock block, ClickhouseNativeDatabaseMetadata md) {
+  public ClickhouseNativeRowImpl(int rowNo, ClickhouseNativeRowDesc rowDesc, ColumnOrientedBlock block, ClickhouseNativeDatabaseMetadata md) {
     this.rowNo = rowNo;
     this.rowDesc = rowDesc;
     this.block = block;
@@ -40,11 +42,6 @@ public class ClickhouseNativeRow implements Row {
     ClickhouseColumnReader column = data.get(columnIndex);
     Object columnData = column.getElement(rowNo, desired);
     return columnData;
-    //if (encodeStrings && columnData != null && column.columnDescriptor().jdbcType() == JDBCType.VARCHAR) {
-    //  return new String((byte[]) columnData, stringCharset);
-    //} else {
-    //  return columnData;
-    //}
   }
 
   @Override

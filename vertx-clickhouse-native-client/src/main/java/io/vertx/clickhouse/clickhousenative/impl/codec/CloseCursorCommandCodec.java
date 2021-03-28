@@ -15,7 +15,7 @@ public class CloseCursorCommandCodec extends ClickhouseNativeCommandCodec<Void, 
   }
 
   void encode(ClickhouseNativeEncoder encoder) {
-    conn.releasePendingCursor(cmd.id());
+    conn.releaseCursor(((ClickhouseNativePreparedStatement)cmd.statement()).getPsId(), cmd.id());
     super.encode(encoder);
     completionHandler.handle(CommandResponse.success(null));
   }
