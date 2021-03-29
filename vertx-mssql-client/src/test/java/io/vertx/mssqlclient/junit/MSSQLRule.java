@@ -23,14 +23,22 @@ public class MSSQLRule extends ExternalResource {
 
   @Override
   protected void before() {
-    if (this.server == null) {
-      this.options = startMSSQL();
+    String connectionUri = System.getProperty("connection.uri");
+    if (!isNullOrEmpty(connectionUri)) {
+      // use an external database for testing
+      options = MSSQLConnectOptions.fromUri(connectionUri);
+    } else if (this.server == null) {
+      options = startMSSQL();
     }
+  }
+
+  private boolean isNullOrEmpty(String connectionUri) {
+    return connectionUri == null || connectionUri.isEmpty();
   }
 
   @Override
   protected void after() {
-    if (this != SHARED_INSTANCE) {
+    if (isNullOrEmpty(System.getProperty("connection.uri")) || this != SHARED_INSTANCE) {
       stopMSSQL();
     }
   }
