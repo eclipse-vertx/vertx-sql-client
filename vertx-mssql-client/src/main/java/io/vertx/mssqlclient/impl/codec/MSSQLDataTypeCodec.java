@@ -145,10 +145,10 @@ class MSSQLDataTypeCodec {
     if (length == 0) {
       return null;
     }
-    LocalTime localTime = decodeLocalTime(in, length - 3, dataType.scale());
+    LocalTime localTime = decodeLocalTime(in, length - 5, dataType.scale());
     LocalDate localDate = decodeLocalDate(in, 3);
     short minutes = in.readShortLE();
-    return OffsetDateTime.of(LocalDateTime.of(localDate, localTime), ZoneOffset.ofTotalSeconds(60 * minutes));
+    return LocalDateTime.of(localDate, localTime).plusMinutes(minutes).atOffset(ZoneOffset.ofTotalSeconds(60 * minutes));
   }
 
   private static CharSequence decodeNVarchar(ByteBuf in) {

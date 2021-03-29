@@ -17,7 +17,10 @@ import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowDesc;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.UUID;
@@ -70,6 +73,8 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getLocalTime(position));
     } else if (type == LocalDateTime.class) {
       return type.cast(getLocalDateTime(position));
+    } else if (type == OffsetDateTime.class) {
+      return type.cast(getOffsetDateTime(position));
     } else if (type == Object.class) {
       return type.cast(getValue(position));
     } else if (type.isEnum()) {
@@ -90,16 +95,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public OffsetTime getOffsetTime(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public OffsetDateTime getOffsetDateTime(int pos) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public UUID getUUID(int pos) {
     throw new UnsupportedOperationException();
   }
@@ -109,6 +104,7 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public OffsetDateTime[] getArrayOfOffsetDateTimes(int pos) {
     throw new UnsupportedOperationException();
   }

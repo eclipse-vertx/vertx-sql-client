@@ -27,6 +27,7 @@ import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 
 import static io.vertx.mssqlclient.impl.codec.MSSQLDataTypeCodec.inferenceParamDefinitionByValueType;
@@ -285,6 +286,8 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
       encodeTimeNParameter(payload, (LocalTime) value, (byte) 6);
     } else if (value instanceof LocalDateTime) {
       encodeDateTimeNParameter(payload, (LocalDateTime) value, (byte) 6);
+    } else if (value instanceof OffsetDateTime) {
+      encodeOffsetDateTimeNParameter(payload, (OffsetDateTime) value, (byte) 6);
     } else if (value instanceof Numeric) {
       encodeNumericParameter(payload, (Numeric) value);
     } else {
@@ -417,13 +420,42 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     }
   }
 
+  private void encodeOffsetDateTimeNParameter(ByteBuf payload, OffsetDateTime offsetDateTime, byte scale) {
+    payload.writeByte(0x00);
+    payload.writeByte(0x00);
+    payload.writeByte(MSSQLDataTypeId.DATETIMEOFFSETNTYPE_ID);
+
+    payload.writeByte(scale); //FIXME scale?
+    if (offsetDateTime == null) {
+      payload.writeByte(0);
+    } else {
+      int length;
+      if (scale <= 2) {
+        length = 3;
+      } else if (scale <= 4) {
+        length = 4;
+      } else {
+        length = 5;
+      }
+      length += 5;
+      payload.writeByte(length);
+      int minutes = offsetDateTime.getOffset().getTotalSeconds() / 60;
+      LocalDateTime localDateTime = offsetDateTime.toLocalDateTime().minusMinutes(minutes);
+      LocalTime localTime = localDateTime.toLocalTime();
+      long nanos = localTime.getNano();
+      int seconds = localTime.toSecondOfDay();
+      long value = (long) ((long) seconds * Math.pow(10, scale) + nanos);
+      encodeInt40(payload, value);
+      long days = ChronoUnit.DAYS.between(MSSQLDataTypeCodec.START_DATE, localDateTime.toLocalDate());
+      payload.writeMediumLE((int) days);
+      payload.writeShortLE(minutes);
+    }
+  }
+
   private void encodeInt40(ByteBuf buffer, long value) {
     int index = buffer.writerIndex();
-    buffer.setByte(index, (byte) value);
-    buffer.setByte(index + 1, (byte) (value >>> 8));
-    buffer.setByte(index + 2, (byte) (value >>> 16));
-    buffer.setByte(index + 3, (byte) (value >>> 24));
-    buffer.setByte(index + 4, (byte) (value >>> 32));
+    buffer.writeIntLE((int) (value % 0x100000000L));
+    buffer.writeByte((int) (value / 0x100000000L));
     buffer.writerIndex(index + 5);
   }
 

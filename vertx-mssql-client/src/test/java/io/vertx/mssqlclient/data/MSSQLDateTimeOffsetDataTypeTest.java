@@ -28,17 +28,14 @@ public class MSSQLDateTimeOffsetDataTypeTest extends MSSQLDataTypeTestBase {
 
   @Test
   public void testQueryTime(TestContext ctx) {
-    LocalDateTime localDateTime = LocalDateTime.of(2021, 3, 26, 8, 33, 21, HUNDRED_NANOS[7]);
-    OffsetDateTime offsetDateTime = OffsetDateTime.of(localDateTime, ZoneOffset.MAX);
-    String value = String.format("'%s'", offsetDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss.nnnnnnnxxx")));
-    //String value = String.format("'%s'", offsetDateTime).replace('T', ' ');
-    System.out.println("value = " + value);
-    value = "'2007-05-08 12:35:29.1234567+12:15'";
-    System.out.println("value = " + value);
+    LocalDateTime localDateTime = LocalDateTime.of(2021, 3, 26, 8, 33, 21, 100 * HUNDRED_NANOS[7]);
     for (int i = 0; i <= 7; i++) {
       String columnName = String.format("test_datetimeoffset_%d", i);
       String type = String.format("DATETIMEOFFSET(%d)", i);
-      OffsetDateTime expected = localDateTime.withNano(100 * HUNDRED_NANOS[i]).atOffset(ZoneOffset.MAX);
+      ZoneOffset offset = ZoneOffset.ofTotalSeconds(-2 * 3600 + i * 1800);
+      OffsetDateTime offsetDateTime = localDateTime.atOffset(offset);
+      String value = String.format("'%s'", offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+      OffsetDateTime expected = localDateTime.withNano(100 * HUNDRED_NANOS[i]).atOffset(offset);
       testQueryDecodeGenericWithoutTable(ctx, columnName, type, value, expected);
     }
   }
@@ -46,11 +43,13 @@ public class MSSQLDateTimeOffsetDataTypeTest extends MSSQLDataTypeTestBase {
   @Test
   public void testPreparedQueryTime(TestContext ctx) {
     LocalDateTime localDateTime = LocalDateTime.of(2021, 3, 26, 8, 33, 21, 100 * HUNDRED_NANOS[7]);
-    String value = String.format("'%s'", localDateTime);
     for (int i = 0; i <= 7; i++) {
-      String columnName = String.format("test_datetime2_%d", i);
-      String type = String.format("DATETIME2(%d)", i);
-      LocalDateTime expected = localDateTime.withNano(100 * HUNDRED_NANOS[i]);
+      String columnName = String.format("test_datetimeoffset_%d", i);
+      String type = String.format("DATETIMEOFFSET(%d)", i);
+      ZoneOffset offset = ZoneOffset.ofTotalSeconds(-2 * 3600 + i * 1800);
+      OffsetDateTime offsetDateTime = localDateTime.atOffset(offset);
+      String value = String.format("'%s'", offsetDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME));
+      OffsetDateTime expected = localDateTime.withNano(100 * HUNDRED_NANOS[i]).atOffset(offset);
       testPreparedQueryDecodeGenericWithoutTable(ctx, columnName, type, value, expected);
     }
   }
