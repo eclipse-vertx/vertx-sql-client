@@ -453,10 +453,8 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
   }
 
   private void encodeInt40(ByteBuf buffer, long value) {
-    int index = buffer.writerIndex();
     buffer.writeIntLE((int) (value % 0x100000000L));
     buffer.writeByte((int) (value / 0x100000000L));
-    buffer.writerIndex(index + 5);
   }
 
   private void encodeNumericParameter(ByteBuf buffer, Numeric value) {
