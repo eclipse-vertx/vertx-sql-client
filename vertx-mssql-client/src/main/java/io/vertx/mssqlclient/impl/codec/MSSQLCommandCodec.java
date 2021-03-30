@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,12 +11,12 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
+import io.netty.buffer.ByteBuf;
+import io.vertx.core.Handler;
 import io.vertx.mssqlclient.MSSQLException;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
-import io.netty.buffer.ByteBuf;
-import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -60,7 +60,7 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
     failure = new MSSQLException(number, state, severity, message, serverName, procedureName, lineNumber);
   }
 
-  void handleDoneToken() {
+  void complete() {
     CommandResponse<R> resp;
     if (failure != null) {
       resp = CommandResponse.failure(failure);

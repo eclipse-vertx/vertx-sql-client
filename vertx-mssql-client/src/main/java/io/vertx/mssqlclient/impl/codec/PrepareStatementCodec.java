@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -25,13 +25,11 @@ class PrepareStatementCodec extends MSSQLCommandCodec<PreparedStatement, Prepare
   void encode(TdsMessageEncoder encoder) {
     super.encode(encoder);
     // we use sp_prepexec instead of sp_prepare + sp_exec
-    PreparedStatement preparedStatement = new MSSQLPreparedStatement(cmd.sql(), null);
+    PreparedStatement preparedStatement = new MSSQLPreparedStatement(cmd.sql());
     completionHandler.handle(CommandResponse.success(preparedStatement));
-
   }
 
   @Override
   void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
-
   }
 }

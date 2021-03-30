@@ -16,20 +16,27 @@ import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
+import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
+import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
 import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.impl.command.CloseStatementCommand;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import java.nio.charset.StandardCharsets;
+class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementCommand> {
 
-class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
-  SQLBatchCommandCodec(SimpleQueryCommand cmd) {
+  CloseStatementCommandCodec(CloseStatementCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encode(TdsMessageEncoder encoder) {
     super.encode(encoder);
-    sendBatchClientRequest();
+    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.statement();
+    if (ps.handle > 0) {
+      sendUnprepareRequest();
+    } else {
+      completionHandler.handle(CommandResponse.success(null));
+    }
   }
 
   @Override
@@ -41,33 +48,14 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
         throw new UnsupportedOperationException("Unsupported token: " + tokenType);
       }
       switch (tokenType) {
-        case COLMETADATA_TOKEN:
-          MSSQLRowDesc rowDesc = decodeColmetadataToken(messageBody);
-          rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
-          break;
-        case ROW_TOKEN:
-          handleRow(messageBody);
-          break;
-        case NBCROW_TOKEN:
-          handleNbcRow(messageBody);
-          break;
-        case DONE_TOKEN:
-        case DONEPROC_TOKEN:
-          short status = messageBody.readShortLE();
-          short curCmd = messageBody.readShortLE();
-          long doneRowCount = messageBody.readLongLE();
-          handleResultSetDone((int) doneRowCount);
-          break;
-        case INFO_TOKEN:
-          int infoTokenLength = messageBody.readUnsignedShortLE();
-          //TODO not used for now
-          messageBody.skipBytes(infoTokenLength);
-          break;
         case ERROR_TOKEN:
           handleErrorToken(messageBody);
           break;
-        case ENVCHANGE_TOKEN:
-          handleEnvChangeToken(messageBody);
+        case DONEPROC_TOKEN:
+          messageBody.skipBytes(12);
+          break;
+        case RETURNSTATUS_TOKEN:
+          messageBody.skipBytes(4);
           break;
         default:
           throw new UnsupportedOperationException("Unsupported token: " + tokenType);
@@ -76,13 +64,13 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
     complete();
   }
 
-  private void sendBatchClientRequest() {
+  private void sendUnprepareRequest() {
     ChannelHandlerContext chctx = encoder.chctx;
 
     ByteBuf packet = chctx.alloc().ioBuffer();
 
     // packet header
-    packet.writeByte(MessageType.SQL_BATCH.value());
+    packet.writeByte(MessageType.RPC.value());
     packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later
@@ -92,16 +80,40 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
 
     int start = packet.writerIndex();
     packet.writeIntLE(0x00); // TotalLength for ALL_HEADERS
-    encodeTransactionDescriptor(packet);
+    encodeTransactionDescriptor(packet, 0, 1);
     // set TotalLength for ALL_HEADERS
     packet.setIntLE(start, packet.writerIndex() - start);
 
-    // SQLText
-    packet.writeCharSequence(cmd.sql(), StandardCharsets.UTF_16LE);
+    /*
+      RPCReqBatch
+     */
+    packet.writeShortLE(0xFFFF);
+    packet.writeShortLE(ProcId.Sp_Unprepare);
+
+    // Option flags
+    packet.writeShortLE(0x0000);
+
+    encodeIntNParameter(packet, ((MSSQLPreparedStatement) cmd.statement()).handle);
 
     int packetLen = packet.writerIndex() - packetLenIdx + 2;
     packet.setShort(packetLenIdx, packetLen);
 
-    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
+    chctx.writeAndFlush(packet);
+  }
+
+  protected void encodeTransactionDescriptor(ByteBuf payload, long transactionDescriptor, int outstandingRequestCount) {
+    payload.writeIntLE(18); // HeaderLength is always 18
+    payload.writeShortLE(0x0002); // HeaderType
+    payload.writeLongLE(transactionDescriptor);
+    payload.writeIntLE(outstandingRequestCount);
+  }
+
+  private void encodeIntNParameter(ByteBuf payload, Object value) {
+    payload.writeByte(0x00);
+    payload.writeByte(0x00);
+    payload.writeByte(MSSQLDataTypeId.INTNTYPE_ID);
+    payload.writeByte(4);
+    payload.writeByte(4);
+    payload.writeIntLE((Integer) value);
   }
 }
