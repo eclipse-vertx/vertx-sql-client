@@ -114,7 +114,7 @@ public class PacketReaderReplayTest {
 
   private static Map<String, String> buildProperties(boolean withCompression) {
     Map<String, String> props = new HashMap<>();
-    props.put(ClickhouseConstants.OPTION_CLIENT_NAME, "jython-driver");
+    props.put(ClickhouseConstants.OPTION_APPLICATION_NAME, "jython-driver");
     if (withCompression) {
       props.put(ClickhouseConstants.OPTION_COMPRESSOR, "lz4_safe");
     }

@@ -28,7 +28,7 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
     ByteBuf buf = allocateBuffer();
     ByteBufUtils.writeULeb128(ClientPacketTypes.HELLO, buf);
     fullClientName = "ClickHouse " + cmd.properties()
-      .getOrDefault(ClickhouseConstants.OPTION_CLIENT_NAME, "vertx-sql");
+      .getOrDefault(ClickhouseConstants.OPTION_APPLICATION_NAME, "vertx-sql");
     ByteBufUtils.writePascalString(fullClientName, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MAJOR, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MINOR, buf);

@@ -26,7 +26,7 @@ public class ClickhouseConstants {
   public static final int CLIENT_VERSION_PATCH = 2;
   public static final int CLIENT_REVISION = 54441;
 
-  public static final String OPTION_CLIENT_NAME = "application_name";
+  public static final String OPTION_APPLICATION_NAME = "application_name";
   public static final String OPTION_INITIAL_USER = "initial_user";
   public static final String OPTION_INITIAL_QUERY_ID = "initial_query_id";
   public static final String OPTION_INITIAL_ADDRESS = "initial_address";
@@ -34,6 +34,7 @@ public class ClickhouseConstants {
   public static final String OPTION_INITIAL_HOSTNAME = "initial_hostname";
   public static final String OPTION_COMPRESSOR = "compressor";
   public static final String OPTION_STRING_CHARSET = "string_charset";
+  public static final String OPTION_DEFAULT_ZONE_ID = "default_zone_id";
   public static final String OPTION_YEAR_DURATION = "days_in_year";
   public static final String OPTION_QUARTER_DURATION = "days_in_quarter";
   public static final String OPTION_MONTH_DURATION = "days_in_month";
@@ -45,7 +46,7 @@ public class ClickhouseConstants {
   public static final short COMPRESSION_METHOD_ZSTD = 0x90;
 
   public static final Set<String> NON_QUERY_OPTIONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-    OPTION_CLIENT_NAME, OPTION_INITIAL_USER, OPTION_INITIAL_QUERY_ID, OPTION_INITIAL_ADDRESS, OPTION_INITIAL_USERNAME,
-    OPTION_INITIAL_HOSTNAME, OPTION_COMPRESSOR, OPTION_STRING_CHARSET, OPTION_YEAR_DURATION, OPTION_QUARTER_DURATION,
+    OPTION_APPLICATION_NAME, OPTION_INITIAL_USER, OPTION_INITIAL_QUERY_ID, OPTION_INITIAL_ADDRESS, OPTION_INITIAL_USERNAME,
+    OPTION_INITIAL_HOSTNAME, OPTION_COMPRESSOR, OPTION_STRING_CHARSET, OPTION_DEFAULT_ZONE_ID, OPTION_YEAR_DURATION, OPTION_QUARTER_DURATION,
     OPTION_MONTH_DURATION)));
 }

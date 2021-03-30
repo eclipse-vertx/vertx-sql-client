@@ -8,6 +8,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
 public class DateTimeColumnReader extends ClickhouseColumnReader {
+  public static final long MAX_EPOCH_SECOND = 4294967295L;
+
   public static final int ELEMENT_SIZE = 4;
 
   private final ZoneId zoneId;

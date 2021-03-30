@@ -9,8 +9,6 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Map;
 
-import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
-
 public class DatabaseMetadataReader {
   private final String fullClientName;
   private final Map<String, String> properties;
@@ -19,7 +17,7 @@ public class DatabaseMetadataReader {
   private Integer major;
   private Integer minor;
   private Integer revision;
-  private String timezone;
+  private String serverZoneIdName;
   private String displayName;
   private Integer patchVersion;
 
@@ -55,9 +53,9 @@ public class DatabaseMetadataReader {
         return null;
       }
     }
-    if (timezone == null && revision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_SERVER_TIMEZONE) {
-      timezone = ByteBufUtils.readPascalString(in);
-      if (timezone == null) {
+    if (serverZoneIdName == null && revision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_SERVER_TIMEZONE) {
+      serverZoneIdName = ByteBufUtils.readPascalString(in);
+      if (serverZoneIdName == null) {
         return null;
       }
     }
@@ -81,10 +79,23 @@ public class DatabaseMetadataReader {
     int daysInYear = Integer.parseInt(properties.getOrDefault(ClickhouseConstants.OPTION_YEAR_DURATION, "365"));
     int daysInQuarter = Integer.parseInt(properties.getOrDefault(ClickhouseConstants.OPTION_QUARTER_DURATION, "120"));
     int daysInMonth = Integer.parseInt(properties.getOrDefault(ClickhouseConstants.OPTION_MONTH_DURATION, "30"));
+    ZoneId serverZoneId = serverZoneIdName == null ? null : ZoneId.of(serverZoneIdName);
+    ZoneId defaultZoneId = getDefaultZoneId(serverZoneId);
     return new ClickhouseNativeDatabaseMetadata(productName,
       String.format("%d.%d.%d", major, minor, revision),
-      major, minor, revision, patchVersion, displayName, timezone == null ? null : ZoneId.of(timezone), fullClientName, properties, charset(),
+      major, minor, revision, patchVersion, displayName, serverZoneId, defaultZoneId, fullClientName, properties, charset(),
       Duration.ofDays(daysInYear), Duration.ofDays(daysInQuarter), Duration.ofDays(daysInMonth));
+  }
+
+  private ZoneId getDefaultZoneId(ZoneId serverZoneId) {
+    String defaultZoneId = properties.get(ClickhouseConstants.OPTION_DEFAULT_ZONE_ID);
+    if (defaultZoneId == null || "from_server".equals(defaultZoneId)) {
+      return serverZoneId;
+    } else if ("system_default".equals(defaultZoneId)) {
+      return ZoneId.systemDefault();
+    } else {
+      return ZoneId.of(defaultZoneId);
+    }
   }
 
   private Charset charset() {

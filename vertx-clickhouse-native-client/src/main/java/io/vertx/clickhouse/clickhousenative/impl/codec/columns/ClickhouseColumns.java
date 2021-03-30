@@ -139,7 +139,7 @@ public class ClickhouseColumns {
         JDBCType.DOUBLE, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("Date".equals(spec)) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16ColumnReader.ELEMENT_SIZE,
-        JDBCType.DATE, nullable, true, isLowCardinality, null, null, null, null);
+        JDBCType.DATE, nullable, true, isLowCardinality, 0, 65535, null, null);
     } else if (spec.startsWith(INTERVAL_PREFIX)) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UInt64ColumnReader.ELEMENT_SIZE,
         JDBCType.OTHER, nullable, false, isLowCardinality, null, null, null, null);
@@ -203,12 +203,12 @@ public class ClickhouseColumns {
           precision = Integer.parseInt(modifiers[0].trim());
           zoneId = modifiers.length == 2
             ? ZoneId.of(modifiers[1].trim())
-            : ZoneId.systemDefault();
+            : md.getDefaultZoneId();
         } else {
           zoneId = ZoneId.of(dateModifiers);
         }
       } else {
-        zoneId = ZoneId.systemDefault();
+        zoneId = md.getDefaultZoneId();
       }
       return precision == null ? new DateTimeColumn(descr, zoneId) : new DateTime64Column(descr, precision, zoneId);
     } else if (jdbcType == JDBCType.DECIMAL) {

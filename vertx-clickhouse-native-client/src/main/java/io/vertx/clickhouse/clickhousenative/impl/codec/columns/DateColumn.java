@@ -5,7 +5,7 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
 
-public class DateColumn extends ClickhouseColumn {
+public class DateColumn extends UInt16Column {
   public DateColumn(ClickhouseNativeColumnDescriptor descriptor) {
     super(descriptor);
   }
@@ -17,6 +17,11 @@ public class DateColumn extends ClickhouseColumn {
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    throw new IllegalArgumentException("not implemented");
+    return new DateColumnWriter(data, descriptor, columnIndex);
+  }
+
+  @Override
+  public Object nullValue() {
+    return DateColumnReader.MIN_VALUE;
   }
 }

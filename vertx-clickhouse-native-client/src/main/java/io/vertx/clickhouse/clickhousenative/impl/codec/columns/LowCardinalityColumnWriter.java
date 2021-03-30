@@ -137,7 +137,7 @@ public class LowCardinalityColumnWriter extends ClickhouseColumnWriter {
     List<Tuple> data = Arrays.asList(Tuple.of("str1"), Tuple.of("str2"), Tuple.of("str1"), Tuple.of(null));
 
     ClickhouseNativeDatabaseMetadata md = new ClickhouseNativeDatabaseMetadata("a", "b",
-      0, 0,0, 0, "dname", ZoneId.systemDefault(), "client",
+      0, 0,0, 0, "dname", ZoneId.systemDefault(), ZoneId.systemDefault(), "client",
       Collections.emptyMap(), StandardCharsets.UTF_8, null, null, null);
     LowCardinalityColumnWriter writer = new LowCardinalityColumnWriter(data, descr, md, 0);
 

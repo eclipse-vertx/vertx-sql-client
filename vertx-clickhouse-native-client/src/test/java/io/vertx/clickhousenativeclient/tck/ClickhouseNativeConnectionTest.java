@@ -24,7 +24,7 @@ public class ClickhouseNativeConnectionTest extends ConnectionTestBase {
   public void setUp() throws Exception {
     super.setUp();
     options = new ClickhouseNativeConnectOptions(rule.options());
-    options.addProperty(ClickhouseConstants.OPTION_CLIENT_NAME,
+    options.addProperty(ClickhouseConstants.OPTION_APPLICATION_NAME,
       ClickhouseNativePreparedQueryCachedTest.class.getSimpleName() + "." + name.getMethodName());
     connector = ClientConfig.CONNECT.connect(vertx, options);
   }
