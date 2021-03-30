@@ -31,8 +31,11 @@ public class ClickhouseResource extends ExternalResource {
       .setUser(server.getUsername())
       .setPassword(server.getPassword())
       .setDatabase("default")
-      .addProperty(ClickhouseConstants.OPTION_CLIENT_NAME, "java-driver")
-      .addProperty(ClickhouseConstants.OPTION_COMPRESSOR, "lz4_safe");
+      .addProperty(ClickhouseConstants.OPTION_APPLICATION_NAME, "java-driver")
+      .addProperty(ClickhouseConstants.OPTION_COMPRESSOR, "lz4_safe")
+      .addProperty(ClickhouseConstants.OPTION_STRING_CHARSET, "utf-8")
+      .addProperty(ClickhouseConstants.OPTION_DEFAULT_ZONE_ID, "Europe/Oslo");
+      //.addProperty(ClickhouseConstants.OPTION_DEFAULT_ZONE_ID, "Europe%2FOslo");
       //.addProperty(ClickhouseConstants.OPTION_SEND_LOGS_LEVEL, "debug");
   }
 

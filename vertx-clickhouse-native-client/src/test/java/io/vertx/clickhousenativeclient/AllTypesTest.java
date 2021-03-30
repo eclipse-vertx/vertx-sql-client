@@ -2,13 +2,14 @@ package io.vertx.clickhousenativeclient;
 
 import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnectOptions;
 import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnection;
+import io.vertx.clickhouse.clickhousenative.impl.codec.columns.DateColumnReader;
+import io.vertx.clickhouse.clickhousenative.impl.codec.columns.DateTimeColumnReader;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +17,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.nio.charset.StandardCharsets;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,29 +46,120 @@ public class AllTypesTest {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
+  private List<String> columnsList(boolean hasLowCardinality) {
+    List<String> columns = new ArrayList<>(Arrays.asList("id", "simple_t", "nullable_t", "array_t", "nullable_array_t"));
+    if (hasLowCardinality) {
+      columns.addAll(Arrays.asList("simple_lc_t", "nullable_lc_t", "array_lc_t", "nullable_array_lc_t"));
+    }
+    return columns;
+  }
+
   @Test
   public void testUInt8(TestContext ctx) {
-    doTest(ctx, "uint8", Short.class, true, (short) 0, Arrays.asList((short)0, null, (short)255, (short)0),
-      Arrays.asList(new Short[]{}, new Short[]{0, 2, null, 3, 255}, new Short[]{255, 0, null}, new Short[]{0, null, 0}));
+    List<Tuple> batch = Arrays.asList(
+      Tuple.of((byte)1, (short)0,       (short)0,   new Short[]{},                new Short[]{},                   (short)0,   (short)0,   new Short[]{},                new Short[]{}   ),
+      Tuple.of((byte)2, (short)0,  null,      new Short[]{0, 2, 0, 3, 255}, new Short[]{0, 2, null, 3, 255},  (short)0,   null,      new Short[]{0, 2, 0, 3, 255}, new Short[]{0, 2, null, 3, 255}      ),
+      Tuple.of((byte)3, (short)255,     (short)255, new Short[]{255, 0, 0},       new Short[]{255, 0, null},       (short)255, (short)255, new Short[]{255, 0, 0},       new Short[]{255, 0, null} ),
+      Tuple.of((byte)4, (short)0,       (short)0,   new Short[]{0, 0, 0},         new Short[]{0, null, 0},         (short)0  , (short)0,   new Short[]{0, 0, 0},         new Short[]{0, null, 0}   )
+    );
+    doTest(ctx, "uint8", Short.class, true, batch);
   }
 
   @Test
   public void testInt8(TestContext ctx) {
-    doTest(ctx, "int8", Byte.class, true, (byte) 0, Arrays.asList((byte)-128, (byte)0, null, (byte)127, (byte)0),
-      Arrays.asList(new Byte[]{}, new Byte[]{0, 2, null, 3, Byte.MAX_VALUE}, new Byte[]{Byte.MIN_VALUE, 0, null}, new Byte[]{0, null, 0}, new Byte[]{Byte.MAX_VALUE, Byte.MIN_VALUE}));
+    List<Tuple> batch = Arrays.asList(
+      Tuple.of((byte)1, (byte)-128,   (byte)-128, new Byte[]{},                   new Byte[]{},                      (byte)0,   (byte)0,   new Byte[]{},                new Byte[]{}   ),
+      Tuple.of((byte)2, (byte)0, null,      new Byte[]{-128, 2, 0, 3, 127}, new Byte[]{-128, 2, null, 3, 127}, (byte)0,   null,      new Byte[]{0, 2, 0, 3, 127}, new Byte[]{0, 2, null, 3, -128}      ),
+      Tuple.of((byte)3, (byte)127,    (byte)127,  new Byte[]{127, 0, 0},          new Byte[]{127, 0, null},          (byte)255, (byte)255, new Byte[]{-128, 0, 0},      new Byte[]{127, 0, null} ),
+      Tuple.of((byte)4, (byte)0,      (byte)0,    new Byte[]{0, 0, 0},            new Byte[]{0, null, 0},            (byte)0,   (byte)0,   new Byte[]{0, 0, 0},         new Byte[]{0, null, 0}   )
+    );
+    doTest(ctx, "int8", Byte.class, true, batch);
   }
 
   @Test
   public void testString(TestContext ctx) {
-    doTest(ctx, "string", String.class, true, "", Arrays.asList("val1", null, "val2", "0"),
-      Arrays.asList(new String[]{}, new String[]{"val1", "", null, "val2"}, new String[]{null, "", null}, new String[]{null}));
+    String v2 = "val2";
+    String v_1 = "val_1";
+    String v4 = "val_4";
+    String v5 = "val5";
+    String v3 = "val3";
+    String v1 = "val1";
+    List<Tuple> batch = Arrays.asList(
+      Tuple.of((byte)1, v2,  v3,   new String[]{},                    new String[]{},                          "",   "",   new String[]{},                   new String[]{} ),
+      Tuple.of((byte)2, "",  null, new String[]{v3, v1, "", "z", v5}, new String[]{v3, v1, null, "", "z", v3}, "", null,   new String[]{"", v1, "", v2, v2}, new String[]{"", v2, null, v3, v2} ),
+      Tuple.of((byte)3, v_1, v4,   new String[]{v5, "", ""},          new String[]{v3, "", null},              v5,   v5,   new String[]{v1, "", ""},         new String[]{v2, "", null} ),
+      Tuple.of((byte)4, "",  "",   new String[]{"", "", ""},          new String[]{"", null, v5},              "",   "",   new String[]{"", "", ""},         new String[]{"", null, ""} ),
+      Tuple.of((byte)5, v_1, v4,   new String[]{v5, "", ""},          new String[]{v3, "", null},              v5,   v5,   new String[]{v1, "", ""},         new String[]{v2, "", null} )
+    );
+    doTest(ctx, "string", String.class, true, batch);
+  }
+
+  @Test
+  public void testBlob(TestContext ctx) {
+    byte[] v2 = b("val2");
+    byte[] em = b("");
+    byte[] v3 = b("val3");
+    byte[] v_4 = b("val_4");
+    byte[] v1 = b("val1");
+    byte[] v4 = b("val4");
+    byte[] v_1 = b("val_1");
+    byte[] z = b("z");
+    List<Tuple> batch = Arrays.asList(
+      Tuple.of((byte)1, v2,   v3, new byte[][]{},                  new byte[][]{},                        em, em,   new byte[][]{},                   new byte[][]{} ),
+      Tuple.of((byte)2, em, null, new byte[][]{v3, v1, em, z, v4}, new byte[][]{v3, v1, null, em, z, v3}, em, null, new byte[][]{em, v1, em, v2, v2}, new byte[][]{em, v2, null, v3, v2} ),
+      Tuple.of((byte)3, v_1, v_4, new byte[][]{v4, em, em},        new byte[][]{v3, em, null},            v4, v4,   new byte[][]{v1, em, em},         new byte[][]{v2, em, null} ),
+      Tuple.of((byte)4, em,   em, new byte[][]{em, em, em},        new byte[][]{em, null, v4},            em, em,   new byte[][]{em, em, em},         new byte[][]{em, null, em} ),
+      Tuple.of((byte)5,       v_1, v_4, new byte[][]{v4, em, em},        new byte[][]{v3, em, null},            v4, v4,   new byte[][]{v1, em, em},         new byte[][]{v2, em, null} )
+    );
+    doTest(ctx, "string", byte[].class, true, batch);
+  }
+
+  @Test
+  public void testDate(TestContext ctx) {
+    LocalDate dt = LocalDate.of(2020, 3, 29);
+    LocalDate d2 = dt.plusDays(2);
+    LocalDate d3 = dt.plusDays(3);
+    LocalDate mn = DateColumnReader.MIN_VALUE;
+    LocalDate mx = DateColumnReader.MAX_VALUE;
+    List<Tuple> batch = Arrays.asList(
+      Tuple.of((byte)1,       d2,   d2, new LocalDate[]{},                   new LocalDate[]{},                         mn, mn,   new LocalDate[]{},                   new LocalDate[]{} ),
+      Tuple.of((byte)2, mn, null, new LocalDate[]{d2, mn, mn, mx, d3}, new LocalDate[]{d2, d3, null, mn, mn, d3}, mn, null, new LocalDate[]{mn, d2, mn, d3, d3}, new LocalDate[]{mn, d2, null, d3, d2} ),
+      Tuple.of((byte)3,       dt,   dt, new LocalDate[]{d2, mn, mn},         new LocalDate[]{d3, mn, null},             d2, d3,   new LocalDate[]{d2, mn, mn},         new LocalDate[]{d2, mn, null} ),
+      Tuple.of((byte)4,       dt,   dt, new LocalDate[]{mn, mn, mn},         new LocalDate[]{mn, null, d3},             mn, mn,   new LocalDate[]{mn, mn, mn},         new LocalDate[]{mn, null, mn} ),
+      Tuple.of((byte)5,       mn,   mn, new LocalDate[]{d2, mn, mn},         new LocalDate[]{d3, mn, null},             d2, d3,   new LocalDate[]{d2, mn, mn},         new LocalDate[]{d2, mn, null} ),
+      Tuple.of((byte)6,       mx,   mx, new LocalDate[]{d2, mn, mn},         new LocalDate[]{d3, mn, null},             d2, d3,   new LocalDate[]{d2, mn, mn},         new LocalDate[]{d2, mn, null} ),
+      Tuple.of((byte)6,       mx,   mx, new LocalDate[]{d2, mn, mn},         new LocalDate[]{d3, mn, null},             d2, d3,   new LocalDate[]{d2, mn, mn},         new LocalDate[]{d2, mn, null} )
+    );
+    doTest(ctx, "date", LocalDate.class, true, batch);
+  }
+
+  @Test
+  public void testDateTime(TestContext ctx) {
+    ZoneId zoneId = ZoneId.of("Europe/Oslo");
+    OffsetDateTime dt = Instant.ofEpochSecond(1617120094L).atZone(zoneId).toOffsetDateTime();
+    OffsetDateTime d2 = Instant.ofEpochSecond(1617120094L).atZone(zoneId).toOffsetDateTime();
+    OffsetDateTime d3 = Instant.ofEpochSecond(1617120094L).atZone(zoneId).toOffsetDateTime();
+    OffsetDateTime mn = Instant.ofEpochSecond(0).atZone(zoneId).toOffsetDateTime();
+    OffsetDateTime mx = Instant.ofEpochSecond(DateTimeColumnReader.MAX_EPOCH_SECOND).atZone(zoneId).toOffsetDateTime();
+
+    List<Tuple> batch = Arrays.asList(
+      Tuple.of((byte)1,       d2,   d2, new OffsetDateTime[]{},                   new OffsetDateTime[]{},                         mn, mn,   new OffsetDateTime[]{},                   new OffsetDateTime[]{} ),
+      Tuple.of((byte)2, mn, null, new OffsetDateTime[]{d2, mn, mn, mx, d3}, new OffsetDateTime[]{d2, d3, null, mn, mn, d3}, mn, null, new OffsetDateTime[]{mn, d2, mn, d3, d3}, new OffsetDateTime[]{mn, d2, null, d3, d2} ),
+      Tuple.of((byte)3,       dt,   dt, new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d3, mn, null},             d2, d3,   new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d2, mn, null} ),
+      Tuple.of((byte)4,       dt,   dt, new OffsetDateTime[]{mn, mn, mn},         new OffsetDateTime[]{mn, null, d3},             mn, mn,   new OffsetDateTime[]{mn, mn, mn},         new OffsetDateTime[]{mn, null, mn} ),
+      Tuple.of((byte)5,       mn,   mn, new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d3, mn, null},             d2, d3,   new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d2, mn, null} ),
+      Tuple.of((byte)6,       mx,   mx, new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d3, mn, null},             d2, d3,   new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d2, mn, null} ),
+      Tuple.of((byte)6,       mx,   mx, new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d3, mn, null},             d2, d3,   new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d2, mn, null} )
+    );
+    doTest(ctx, "datetime", OffsetDateTime.class, true, batch);
+  }
+
+  private static byte[] b(String s) {
+    return s.getBytes(StandardCharsets.UTF_8);
   }
 
   private void doTest(TestContext ctx, String tableSuffix, Class<?> desiredType, boolean hasLowCardinality,
-                      Object nullValue,
-                      List<Object> regularValues,
-                      List<Object> nullableArrayValues) {
-    ctx.assertEquals(regularValues.size(), nullableArrayValues.size());
+                      List<Tuple> batch) {
     String tableName = TABLE_PREFIX + tableSuffix;
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("TRUNCATE TABLE " + tableName).execute(
@@ -74,93 +168,48 @@ public class AllTypesTest {
           List<String> columnsList = columnsList(hasLowCardinality);
           String columnsStr = String.join(", ", columnsList);
           String query = "INSERT INTO " + tableName + " (" + columnsStr + ") VALUES";
-          List<Tuple> batch = buildBatch(columnsList, nullValue, regularValues, nullableArrayValues);
           conn.preparedQuery(query)
             .executeBatch(batch, ctx.asyncAssertSuccess(
               res2 -> {
                 Sleep.sleepOrThrow();
                 conn.query("SELECT " + columnsStr + " FROM " + tableName + " ORDER BY id").execute(ctx.asyncAssertSuccess(
                   res3 -> {
-                    ctx.assertEquals(res3.size(), regularValues.size(), "row count mismatch");
-                    RowIterator<Row> rows = res3.iterator();
-                    int rowNo = 0;
-                    while (rows.hasNext()) {
-                      Row row = rows.next();
-                      for (String columnName : columnsList) {
-                        Object expectedValue = regularValues.get(rowNo);
-                        Object expectedNullArrayValue = nullableArrayValues.get(rowNo);
-                        expectedValue = buildColumnValue(rowNo, columnName, nullValue, expectedValue, expectedNullArrayValue);
-                        if (columnName.equalsIgnoreCase("id")) {
-                          compare(ctx, row, rowNo, columnName, Byte.class, ((Number) expectedValue).byteValue());
+                    ctx.assertEquals(res3.size(), batch.size(), "row count mismatch");
+                    int batchIdx = 0;
+                    for (Row row : res3) {
+                      Tuple batchRow = batch.get(batchIdx);
+                      Object id = row.getValue("id");
+                      for (int colIdx = 0; colIdx < batchRow.size(); ++colIdx) {
+                        String colName = columnsList.get(colIdx);
+                        Object expectedValue = batchRow.getValue(colIdx);
+                        Class<?> colType = expectedValue == null ? desiredType : expectedValue.getClass();
+                        Object actualValue;
+                        if ("id".equals(colName)) {
+                          actualValue = row.getValue(colName);
                         } else {
-                          compare(ctx, row, rowNo, columnName, desiredType, expectedValue);
+                          actualValue = row.get(colType, colName);
                         }
+                        compareValues(ctx, id, colName, colType, expectedValue, actualValue);
                       }
-                      ++rowNo;
+                      ++batchIdx;
                     }
-                    conn.close();
-                  }
-                ));
-              }
-            ));
+                  }));
+              }));
         }));
     }));
   }
 
-  private List<String> columnsList(boolean hasLowCardinality) {
-    List<String> columns = new ArrayList<>(Arrays.asList("id", "simple_t", "nullable_t", "nullable_array_t"));
-    if (hasLowCardinality) {
-      columns.addAll(Arrays.asList("simple_lc_t", "nullable_lc_t", "nullable_array_lc_t"));
-    }
-    return columns;
-  }
-
-  private List<Tuple> buildBatch(List<String> columnsList, Object nullValue, List<Object> regularValues, List<Object> nullableArrayValues) {
-    List<Tuple> batch = new ArrayList<>(regularValues.size());
-    for (int rowNo = 0; rowNo < regularValues.size(); ++rowNo) {
-      Object regularValue = regularValues.get(rowNo);
-      Object nullableArrayValue = nullableArrayValues.get(rowNo);
-      List<Object> vals = new ArrayList<>(columnsList.size());
-      for (String columnName : columnsList) {
-        Object val = buildColumnValue(rowNo, columnName, nullValue, regularValue, nullableArrayValue);
-        vals.add(val);
-      }
-      batch.add(Tuple.tuple(vals));
-    }
-    return batch;
-  }
-
-  private Object buildColumnValue(int rowNo, String columnName, Object nullValue, Object regularValue, Object nullableArrayValue) {
-    Object val;
-    if (columnName.equalsIgnoreCase("id")) {
-      val = rowNo;
-    } else if (columnName.startsWith("nullable_array_")) {
-      val = nullableArrayValue;
-    } else if (columnName.equals("simple_t") || columnName.equals("simple_lc_t")) {
-      if (regularValue == null) {
-        val = nullValue;
+  private void compareValues(TestContext ctx, Object id, String colName, Class<?> colType, Object expectedValue, Object actualValue) {
+    if (colType.isArray()) {
+      boolean equals;
+      if (colType == byte[].class) {
+        equals = Arrays.equals((byte[]) expectedValue, (byte[]) actualValue);
       } else {
-        val = regularValue;
+        equals = Arrays.deepEquals((Object[]) expectedValue, (Object[]) actualValue);
       }
-    } else if (columnName.equals("nullable_t") || columnName.equals("nullable_lc_t")) {
-      val = regularValue;
+      ctx.assertTrue(equals, colName + " byte row mismatch; id = " + id);
     } else {
-      throw new IllegalStateException("not implemented for " + columnName);
-    }
-    return val;
-  }
-
-  private void compare(TestContext ctx, Row row, int rowNo, String colName, Class<?> desiredType, Object expected) {
-    boolean isArray = expected != null && expected.getClass().isArray();
-    if (isArray) {
-      desiredType = expected.getClass();
-    }
-    Object val = row.get(desiredType, colName);
-    if (isArray) {
-      boolean equals = Arrays.deepEquals((Object[]) val, (Object[]) expected);
-      ctx.assertTrue(equals, colName + " row " + " mismatch; rowNo: " + rowNo);
-    } else {
-      ctx.assertEquals(val, expected, colName + "row " + " mismatch; rowNo: " + rowNo);
+      ctx.assertEquals(expectedValue, actualValue, colName + " row mismatch; id = " + id);
     }
   }
 }

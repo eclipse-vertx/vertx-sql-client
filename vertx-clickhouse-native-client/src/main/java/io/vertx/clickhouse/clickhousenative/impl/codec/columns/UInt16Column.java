@@ -19,4 +19,13 @@ public class UInt16Column extends ClickhouseColumn {
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
     return new UInt16ColumnWriter(data, descriptor, columnIndex);
   }
+
+  @Override
+  public Object nullValue() {
+    if (descriptor.isUnsigned()) {
+      return (int) 0;
+    } else {
+      return (short) 0;
+    }
+  }
 }

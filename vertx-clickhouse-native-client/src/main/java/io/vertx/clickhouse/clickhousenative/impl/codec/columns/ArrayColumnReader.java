@@ -87,7 +87,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
         ((LowCardinalityColumnReader) nestedColumnReader).keysSerializationVersion = LowCardinalityColumnReader.SUPPORTED_SERIALIZATION_VERSION;
       }
       if (nestedColumnReader.isPartial()) {
-        nestedColumnReader.itemsArray = nestedColumnReader.readItemsAsObjects(in, null);
+        nestedColumnReader.itemsArray = nestedColumnReader.readItemsAsObjects(in, elementClass);
         if (nestedColumnReader.isPartial()) {
           return null;
         }
@@ -111,6 +111,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     if (resliced) {
       reslicedRet = objectsArray;
     } else {
+      desired = maybeUnwrapArrayElementType(desired);
       Triplet<Boolean, Object[], Class<?>> maybeRecoded = asDesiredType(objectsArray, desired);
       if (maybeRecoded.left()) {
         desired = maybeRecoded.right();
@@ -122,10 +123,16 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     return reslicedRet[rowIdx];
   }
 
-  private Triplet<Boolean, Object[], Class<?>> asDesiredType(Object[] src, Class<?> desired) {
-    if (desired != null && desired.isArray()) {
-      desired = desired.getComponentType();
+  private Class<?> maybeUnwrapArrayElementType(Class<?> desired) {
+    if (desired != null) {
+      while (desired.isArray() && desired != byte[].class) {
+        desired = desired.getComponentType();
+      }
     }
+    return desired;
+  }
+
+  private Triplet<Boolean, Object[], Class<?>> asDesiredType(Object[] src, Class<?> desired) {
     if (desired == String.class && elementTypeDescr.jdbcType() == JDBCType.VARCHAR) {
       return new Triplet<>(true, stringifyByteArrays(src, md.getStringCharset()), desired);
     }
@@ -133,7 +140,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   }
 
   private Object[] stringifyByteArrays(Object[] src, Charset charset) {
-    Object[] ret = new Object[src.length];
+    String[] ret = new String[src.length];
     for (int i = 0; i < src.length; ++i) {
       Object element = src[i];
       if (element != null) {
@@ -148,14 +155,12 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     for (int i = slicesSeries.size() - 1; i >= 0; --i) {
       List<Integer> slices = slicesSeries.get(i);
       Iterator<Map.Entry<Integer, Integer>> paired = PairedIterator.of(slices);
-      Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(data.getClass(), slices.size() - 1);
-      //Object[] newDataList = new Object[slices.size() - 1];
+      Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(intermData.getClass(), slices.size() - 1);
       int tmpSliceIdx = 0;
       while (paired.hasNext()) {
         Map.Entry<Integer, Integer> slice = paired.next();
         int newSliceSz = slice.getValue() - slice.getKey();
-        //Object[] reslicedArray = new Object[newSliceSz];
-        Object[] reslicedArray = (Object[]) java.lang.reflect.Array.newInstance(elementClass, newSliceSz);
+        Object[] reslicedArray = (Object[]) java.lang.reflect.Array.newInstance(intermData.getClass().getComponentType(), newSliceSz);
         System.arraycopy(intermData, slice.getKey(), reslicedArray, 0, newSliceSz);
         newDataList[tmpSliceIdx] = reslicedArray;
         ++tmpSliceIdx;
@@ -217,5 +222,11 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     sliceIdxAtCurrentDepth = 0;
     prevSliceSizeAtCurrentDepth = 0;
     return true;
+  }
+
+  public static void main(String[] args) {
+    String[][][] el = new String[0][][];
+    Class elType = el.getClass().getComponentType();
+    System.err.println(elType.getSimpleName());
   }
 }

@@ -15,7 +15,8 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   private final int revision;
   private final int patchVersion;
   private final String displayName;
-  private final ZoneId timezone;
+  private final ZoneId serverZoneId;
+  private final ZoneId defaultZoneId;
   private final String fullClientName;
   private final Charset stringCharset;
   private final Map<String, String> properties;
@@ -24,9 +25,9 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   private final Duration monthDuration;
 
   public ClickhouseNativeDatabaseMetadata(String productName, String fullVersion, int major, int minor, int revision,
-                                          int patchVersion, String displayName, ZoneId timezone, String fullClientName,
-                                          Map<String, String> properties, Charset stringCharset, Duration yearDuration,
-                                          Duration quarterDuration, Duration monthDuration) {
+                                          int patchVersion, String displayName, ZoneId serverZoneId, ZoneId defaultZoneId,
+                                          String fullClientName, Map<String, String> properties, Charset stringCharset,
+                                          Duration yearDuration, Duration quarterDuration, Duration monthDuration) {
     this.productName = productName;
     this.fullVersion = fullVersion;
     this.major = major;
@@ -34,7 +35,8 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
     this.revision = revision;
     this.patchVersion = patchVersion;
     this.displayName = displayName;
-    this.timezone = timezone;
+    this.serverZoneId = serverZoneId;
+    this.defaultZoneId = defaultZoneId;
     this.fullClientName = fullClientName;
     this.properties = properties;
     this.stringCharset = stringCharset;
@@ -75,8 +77,12 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
     return displayName;
   }
 
-  public ZoneId getZoneId() {
-    return timezone;
+  public ZoneId getServerZoneId() {
+    return serverZoneId;
+  }
+
+  public ZoneId getDefaultZoneId() {
+    return defaultZoneId;
   }
 
   public String getFullClientName() {
@@ -113,7 +119,7 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
       ", revision=" + revision +
       ", patchVersion=" + patchVersion +
       ", displayName='" + displayName + '\'' +
-      ", timezone='" + timezone + '\'' +
+      ", timezone='" + serverZoneId + '\'' +
       '}';
   }
 }
