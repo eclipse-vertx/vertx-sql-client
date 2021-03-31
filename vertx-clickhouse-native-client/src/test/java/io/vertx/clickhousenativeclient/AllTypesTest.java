@@ -9,12 +9,10 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 
 import java.nio.charset.StandardCharsets;
@@ -22,6 +20,7 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
 public class AllTypesTest {
@@ -62,7 +61,7 @@ public class AllTypesTest {
       Tuple.of((byte)3, (short)255,     (short)255, new Short[]{255, 0, 0},       new Short[]{255, 0, null},       (short)255, (short)255, new Short[]{255, 0, 0},       new Short[]{255, 0, null} ),
       Tuple.of((byte)4, (short)0,       (short)0,   new Short[]{0, 0, 0},         new Short[]{0, null, 0},         (short)0  , (short)0,   new Short[]{0, 0, 0},         new Short[]{0, null, 0}   )
     );
-    doTest(ctx, "uint8", Short.class, true, batch);
+    doTest(ctx, "uint8",  true, new MyColumnChecker<>(Short.class, Tuple::getShort, Row::getShort, Tuple::getArrayOfShorts, Row::getArrayOfShorts), batch);
   }
 
   @Test
@@ -73,7 +72,7 @@ public class AllTypesTest {
       Tuple.of((byte)3, (byte)127,    (byte)127,  new Byte[]{127, 0, 0},          new Byte[]{127, 0, null},          (byte)255, (byte)255, new Byte[]{-128, 0, 0},      new Byte[]{127, 0, null} ),
       Tuple.of((byte)4, (byte)0,      (byte)0,    new Byte[]{0, 0, 0},            new Byte[]{0, null, 0},            (byte)0,   (byte)0,   new Byte[]{0, 0, 0},         new Byte[]{0, null, 0}   )
     );
-    doTest(ctx, "int8", Byte.class, true, batch);
+    doTest(ctx, "int8", true, new MyColumnChecker<>(Byte.class, null, null, null, null), batch);
   }
 
   @Test
@@ -91,27 +90,49 @@ public class AllTypesTest {
       Tuple.of((byte)4, "",  "",   new String[]{"", "", ""},          new String[]{"", null, v5},              "",   "",   new String[]{"", "", ""},         new String[]{"", null, ""} ),
       Tuple.of((byte)5, v_1, v4,   new String[]{v5, "", ""},          new String[]{v3, "", null},              v5,   v5,   new String[]{v1, "", ""},         new String[]{v2, "", null} )
     );
-    doTest(ctx, "string", String.class, true, batch);
+    doTest(ctx, "string", true, new MyColumnChecker<>(String.class, Tuple::getString, Row::getString, Tuple::getArrayOfStrings, Row::getArrayOfStrings), batch);
   }
 
   @Test
   public void testBlob(TestContext ctx) {
-    byte[] v2 = b("val2");
-    byte[] em = b("");
-    byte[] v3 = b("val3");
-    byte[] v_4 = b("val_4");
     byte[] v1 = b("val1");
+    byte[] v2 = b("val2");
+    byte[] v3 = b("val3");
     byte[] v4 = b("val4");
-    byte[] v_1 = b("val_1");
-    byte[] z = b("z");
+    byte[] v5 = b("value5");
+    byte[] v6 = b("value_value_6");
+    byte[] nv = b("");
+    byte[] mn = b("");
+    byte[] mx = b("not so looooooooooooooooooooooooooooooooooooooong value");
+
     List<Tuple> batch = Arrays.asList(
-      Tuple.of((byte)1, v2,   v3, new byte[][]{},                  new byte[][]{},                        em, em,   new byte[][]{},                   new byte[][]{} ),
-      Tuple.of((byte)2, em, null, new byte[][]{v3, v1, em, z, v4}, new byte[][]{v3, v1, null, em, z, v3}, em, null, new byte[][]{em, v1, em, v2, v2}, new byte[][]{em, v2, null, v3, v2} ),
-      Tuple.of((byte)3, v_1, v_4, new byte[][]{v4, em, em},        new byte[][]{v3, em, null},            v4, v4,   new byte[][]{v1, em, em},         new byte[][]{v2, em, null} ),
-      Tuple.of((byte)4, em,   em, new byte[][]{em, em, em},        new byte[][]{em, null, v4},            em, em,   new byte[][]{em, em, em},         new byte[][]{em, null, em} ),
-      Tuple.of((byte)5,       v_1, v_4, new byte[][]{v4, em, em},        new byte[][]{v3, em, null},            v4, v4,   new byte[][]{v1, em, em},         new byte[][]{v2, em, null} )
+      Tuple.of((byte)1,        mn,   mn, new byte[][]{mn, mn},                             new byte[][]{mn, mn},                                   mn, mn,   new byte[][]{mn, mn},                             new byte[][]{mn, mn} ),
+      Tuple.of((byte)2,        mn,   mn, new byte[][]{mn, mn},                             new byte[][]{mn, mn},                                   mn, mn,   new byte[][]{mn, mn},                             new byte[][]{mn, mn} ),
+      Tuple.of((byte)3,        mn,   mn, new byte[][]{mn, mn},                             new byte[][]{mn, null, mn},                             mn, mn,   new byte[][]{mn, mn},                             new byte[][]{mn, null, mn} ),
+      Tuple.of((byte)4,        mn,   mn, new byte[][]{mn, mn},                             new byte[][]{mn, null, mn},                             mn, mn,   new byte[][]{mn, mn},                             new byte[][]{mn, null, mn} ),
+      Tuple.of((byte)5,        mx,   mx, new byte[][]{mx, mx},                             new byte[][]{mx, mx},                                   mx, mx,   new byte[][]{mx, mx},                             new byte[][]{mx, null, mx} ),
+      Tuple.of((byte)6,        mn,   mn, new byte[][]{mx, mx},                             new byte[][]{mx, mx},                                   mx, mx,   new byte[][]{mx, mx},                             new byte[][]{mx, null, mx} ),
+      Tuple.of((byte)7,        mx,   mx, new byte[][]{mx, mx},                             new byte[][]{mx, null, mx},                             mx, mx,   new byte[][]{mx, mx},                             new byte[][]{mx, null, mx} ),
+      Tuple.of((byte)8,        mn,   mn, new byte[][]{mx, mx},                             new byte[][]{mx, null, mx},                             mx, mx,   new byte[][]{mx, mx},                             new byte[][]{mx, null, mx} ),
+      Tuple.of((byte)9,        mx,   mx, new byte[][]{mn, mx},                             new byte[][]{mn, null, mx},                             mx, mx,   new byte[][]{mn, mx},                             new byte[][]{mn, null, mx} ),
+      Tuple.of((byte)10,       mn,   mn, new byte[][]{mn, mx},                             new byte[][]{mn, null, mx},                             mx, mx,   new byte[][]{mn, mx},                             new byte[][]{mn, null, mx} ),
+      Tuple.of((byte)11, v2,   v3, new byte[][]{},                                   new byte[][]{},                                         nv, nv,   new byte[][]{},                                   new byte[][]{} ),
+      Tuple.of((byte)12,       v2,   v3, new byte[][]{},                                   new byte[][]{},                                         nv, nv,   new byte[][]{},                                   new byte[][]{} ),
+      Tuple.of((byte)13,       v2,   v3, new byte[][]{nv},                                 new byte[][]{nv},                                       nv, nv,   new byte[][]{nv},                                 new byte[][]{nv} ),
+      Tuple.of((byte)14,       v2,   v3, new byte[][]{nv},                                 new byte[][]{nv},                                       nv, nv,   new byte[][]{nv},                                 new byte[][]{nv} ),
+      Tuple.of((byte)15,       v2,   v3, new byte[][]{nv, mn, mx},                         new byte[][]{nv, mn, null, mx},                         nv, nv,   new byte[][]{nv},                                 new byte[][]{nv} ),
+      Tuple.of((byte)16,       v2,   v3, new byte[][]{nv, mn, mx},                         new byte[][]{nv, mn, null, mx},                         nv, nv,   new byte[][]{nv},                                 new byte[][]{nv} ),
+      Tuple.of((byte)17,       v2,   v3, new byte[][]{nv, mn, mx},                         new byte[][]{nv, mn, null, mx},                         nv, nv,   new byte[][]{nv, mn, mx},                         new byte[][]{nv, mn, null, mx} ),
+      Tuple.of((byte)18,       v2,   v3, new byte[][]{nv, mn, mx},                         new byte[][]{nv, mn, null, mx},                         nv, nv,   new byte[][]{nv, mn, mx},                         new byte[][]{nv, mn, null, mx} ),
+      Tuple.of((byte)19, nv, null, new byte[][]{v3, v1, nv, mx, v4},                 new byte[][]{v3, v1, null, nv, mx, v3},                 nv, null, new byte[][]{nv, v1, nv, v2, v2},                 new byte[][]{nv, v2, null, v3, v2} ),
+      Tuple.of((byte)20, nv, null, new byte[][]{v3, v1, nv, mx, v4},                 new byte[][]{v3, v1, null, nv, mx, v3},                 nv, null, new byte[][]{nv, v1, nv, v2, v2},                 new byte[][]{nv, v2, null, v3, v2} ),
+      Tuple.of((byte)21,       v1,   v1, new byte[][]{v1, nv, nv},                         new byte[][]{v3, nv, null},                             v4, v4,   new byte[][]{v1, nv, nv},                         new byte[][]{v2, nv, null} ),
+      Tuple.of((byte)22, nv,   nv, new byte[][]{nv, nv, nv},                         new byte[][]{nv, null, v4},                             nv, nv,   new byte[][]{nv, nv, nv},                         new byte[][]{nv, null, nv} ),
+      Tuple.of((byte)23,       v6,  v5,  new byte[][]{v4, nv, nv},                         new byte[][]{v3, nv, null},                             v4, v4,   new byte[][]{v1, nv, nv},                         new byte[][]{v2, nv, null} ),
+      Tuple.of((byte)24,       v6,  v5,  new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, v4, v4,   new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null} ),
+      Tuple.of((byte)25,       v6,  v5,  new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, v4, v4,   new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null} )
     );
-    doTest(ctx, "string", byte[].class, true, batch);
+    doTest(ctx, "string", true, new MyColumnChecker<>(byte[].class, null, null, null, null), batch);
   }
 
   @Test
@@ -130,7 +151,7 @@ public class AllTypesTest {
       Tuple.of((byte)6,       mx,   mx, new LocalDate[]{d2, mn, mn},         new LocalDate[]{d3, mn, null},             d2, d3,   new LocalDate[]{d2, mn, mn},         new LocalDate[]{d2, mn, null} ),
       Tuple.of((byte)6,       mx,   mx, new LocalDate[]{d2, mn, mn},         new LocalDate[]{d3, mn, null},             d2, d3,   new LocalDate[]{d2, mn, mn},         new LocalDate[]{d2, mn, null} )
     );
-    doTest(ctx, "date", LocalDate.class, true, batch);
+    doTest(ctx, "date", true, new MyColumnChecker<>(LocalDate.class, Tuple::getLocalDate, Row::getLocalDate, Tuple::getArrayOfLocalDates, Row::getArrayOfLocalDates), batch);
   }
 
   @Test
@@ -151,15 +172,15 @@ public class AllTypesTest {
       Tuple.of((byte)6,       mx,   mx, new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d3, mn, null},             d2, d3,   new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d2, mn, null} ),
       Tuple.of((byte)6,       mx,   mx, new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d3, mn, null},             d2, d3,   new OffsetDateTime[]{d2, mn, mn},         new OffsetDateTime[]{d2, mn, null} )
     );
-    doTest(ctx, "datetime", OffsetDateTime.class, true, batch);
+    doTest(ctx, "datetime", true, new MyColumnChecker<>(OffsetDateTime.class, Tuple::getOffsetDateTime, Row::getOffsetDateTime, Tuple::getArrayOfOffsetDateTimes, Row::getArrayOfOffsetDateTimes), batch);
   }
 
   private static byte[] b(String s) {
     return s.getBytes(StandardCharsets.UTF_8);
   }
 
-  private void doTest(TestContext ctx, String tableSuffix, Class<?> desiredType, boolean hasLowCardinality,
-                      List<Tuple> batch) {
+  private <R> void doTest(TestContext ctx, String tableSuffix, boolean hasLowCardinality,
+                      MyColumnChecker<R> columnChecker, List<Tuple> batch) {
     String tableName = TABLE_PREFIX + tableSuffix;
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("TRUNCATE TABLE " + tableName).execute(
@@ -177,19 +198,11 @@ public class AllTypesTest {
                     ctx.assertEquals(res3.size(), batch.size(), "row count mismatch");
                     int batchIdx = 0;
                     for (Row row : res3) {
-                      Tuple batchRow = batch.get(batchIdx);
-                      Object id = row.getValue("id");
-                      for (int colIdx = 0; colIdx < batchRow.size(); ++colIdx) {
+                      Tuple expectedRow = batch.get(batchIdx);
+                      for (int colIdx = 0; colIdx < expectedRow.size(); ++colIdx) {
                         String colName = columnsList.get(colIdx);
-                        Object expectedValue = batchRow.getValue(colIdx);
-                        Class<?> colType = expectedValue == null ? desiredType : expectedValue.getClass();
-                        Object actualValue;
-                        if ("id".equals(colName)) {
-                          actualValue = row.getValue(colName);
-                        } else {
-                          actualValue = row.get(colType, colName);
-                        }
-                        compareValues(ctx, id, colName, colType, expectedValue, actualValue);
+                        Object expectedColumnValue = expectedRow.getValue(colIdx);
+                        columnChecker.checkColumn(row, colIdx, colName, (R) expectedColumnValue);
                       }
                       ++batchIdx;
                     }
@@ -198,18 +211,62 @@ public class AllTypesTest {
         }));
     }));
   }
+}
 
-  private void compareValues(TestContext ctx, Object id, String colName, Class<?> colType, Object expectedValue, Object actualValue) {
-    if (colType.isArray()) {
-      boolean equals;
-      if (colType == byte[].class) {
-        equals = Arrays.equals((byte[]) expectedValue, (byte[]) actualValue);
-      } else {
-        equals = Arrays.deepEquals((Object[]) expectedValue, (Object[]) actualValue);
-      }
-      ctx.assertTrue(equals, colName + " byte row mismatch; id = " + id);
-    } else {
-      ctx.assertEquals(expectedValue, actualValue, colName + " row mismatch; id = " + id);
+class MyColumnChecker<R> {
+  private final Class<R> componentType;
+  private final ColumnChecker.SerializableBiFunction<Tuple, Integer, R> byIndexGetter;
+  private final ColumnChecker.SerializableBiFunction<Row, String, R> byNameGetter;
+  private final ColumnChecker.SerializableBiFunction<Tuple, Integer, Object> arrayByIndexGetter;
+  private final ColumnChecker.SerializableBiFunction<Row, String, Object> arrayByNameGetter;
+
+  public MyColumnChecker(Class<R> componentType,
+                         ColumnChecker.SerializableBiFunction<Tuple, Integer, R> byIndexGetter,
+                         ColumnChecker.SerializableBiFunction<Row, String, R> byNameGetter,
+                         ColumnChecker.SerializableBiFunction<Tuple, Integer, Object> arrayByIndexGetter,
+                         ColumnChecker.SerializableBiFunction<Row, String, Object> arrayByNameGetter) {
+    this.componentType = componentType;
+    this.byIndexGetter = byIndexGetter;
+    this.byNameGetter = byNameGetter;
+    this.arrayByNameGetter = arrayByNameGetter;
+    this.arrayByIndexGetter = arrayByIndexGetter;
+  }
+
+  public void checkColumn(Row row, int index, String name, R expected) {
+    ColumnChecker checker = ColumnChecker.checkColumn(index, name);
+    if ("id".equals(name)) {
+      checker.returns((Class<R>)expected.getClass(), expected)
+        .forRow(row);
+      return;
     }
+    if (componentType == byte[].class && (expected == null || expected.getClass() == byte[].class)) {
+      //ask driver to turn off String encoding
+      checker = checker
+        .returns((tuple, idx) -> tuple.get(byte[].class, idx),
+                 (ColumnChecker.SerializableBiFunction<Row, String, byte[]>) (r, colName) -> r.get(byte[].class, colName),
+                 (Consumer<byte[]>) actual -> Assert.assertArrayEquals((byte[])actual, (byte[])expected));
+    } else {
+      //arrays are non-nullable
+      if (expected != null && expected.getClass().isArray()) {
+        boolean multidimensional = expected.getClass().getComponentType().isArray() && expected.getClass().getComponentType() != byte[].class;
+        if (componentType == byte[].class) {
+          //ask driver to turn off String encoding
+          checker = checker.returns((tuple, idx) -> tuple.get(expected.getClass(), idx), (r, colName) -> r.get(expected.getClass(), colName), (Object[]) expected);
+        } else {
+          checker = checker.returns(Tuple::getValue, Row::getValue, (Object[]) expected);
+        }
+        if (!multidimensional && arrayByIndexGetter != null) {
+          //API does not provided dedicated methods to get multi-dimensional arrays
+          checker = checker.returns(arrayByIndexGetter, arrayByNameGetter, (Object[]) expected);
+        }
+      } else {
+        //regular non-array elements
+        checker = checker.returns(Tuple::getValue, Row::getValue, expected);
+        if (byIndexGetter != null) {
+          checker = checker.returns(byIndexGetter, byNameGetter, expected);
+        }
+      }
+    }
+    checker.forRow(row);
   }
 }
