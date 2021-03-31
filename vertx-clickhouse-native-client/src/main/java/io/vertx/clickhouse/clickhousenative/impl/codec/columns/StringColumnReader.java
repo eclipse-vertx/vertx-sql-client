@@ -32,6 +32,7 @@ public class StringColumnReader extends ClickhouseColumnReader {
       if (in.readableBytes() < curStrLength) {
         return null;
       }
+      //no dedicated BLOB type support; will encode into String if user did not request byte[].class
       byte[] stringBytes;
       if (nullsMap == null || !nullsMap.get(elements.size())) {
         stringBytes = new byte[curStrLength];
