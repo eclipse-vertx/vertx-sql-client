@@ -2,9 +2,6 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
-import io.vertx.sqlclient.Tuple;
-
-import java.util.List;
 
 public class UInt32ColumnReader extends ClickhouseColumnReader {
   public static final int ELEMENT_SIZE = 4;
@@ -41,10 +38,5 @@ public class UInt32ColumnReader extends ClickhouseColumnReader {
   @Override
   protected Object[] asObjectsArray(Class<?> desired) {
     return asObjectsArrayWithGetElement(desired);
-  }
-
-  @Override
-  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    return new UInt32ColumnWriter(data, columnDescriptor, columnIndex);
   }
 }

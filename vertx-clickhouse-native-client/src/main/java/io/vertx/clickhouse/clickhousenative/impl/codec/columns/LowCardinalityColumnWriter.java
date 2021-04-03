@@ -1,16 +1,10 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSink;
-import io.vertx.clickhouse.clickhousenative.impl.codec.RawClickhouseStreamDataSink;
 import io.vertx.sqlclient.Tuple;
 
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -130,23 +124,5 @@ public class LowCardinalityColumnWriter extends ClickhouseColumnWriter {
     public int hashCode() {
       return hash;
     }
-  }
-
-  public static void main(String[] args) {
-    ClickhouseNativeColumnDescriptor descr = ClickhouseColumns.columnDescriptorForSpec("LowCardinality(Nullable(String))", "name");
-    List<Tuple> data = Arrays.asList(Tuple.of("str1"), Tuple.of("str2"), Tuple.of("str1"), Tuple.of(null));
-
-    ClickhouseNativeDatabaseMetadata md = new ClickhouseNativeDatabaseMetadata("a", "b",
-      0, 0,0, 0, "dname", ZoneId.systemDefault(), ZoneId.systemDefault(), "client",
-      Collections.emptyMap(), StandardCharsets.UTF_8, null, null, null);
-    LowCardinalityColumnWriter writer = new LowCardinalityColumnWriter(data, descr, md, 0);
-
-    ByteBuf buffer = Unpooled.buffer(100);
-    RawClickhouseStreamDataSink sink = new RawClickhouseStreamDataSink(buffer);
-    writer.serializeData(sink, 0, data.size());
-    System.err.println(writer.dictionaryIndex);
-    System.err.println(writer.keys);
-    System.err.println(buffer.readableBytes());
-    System.err.print(ByteBufUtil.hexDump(buffer));
   }
 }

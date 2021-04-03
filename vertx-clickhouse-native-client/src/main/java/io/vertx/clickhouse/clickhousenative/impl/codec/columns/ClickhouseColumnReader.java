@@ -2,10 +2,8 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
-import io.vertx.sqlclient.Tuple;
 
 import java.util.BitSet;
-import java.util.List;
 
 public abstract class ClickhouseColumnReader {
   private static final Object NOP_STATE = new Object();
@@ -121,9 +119,5 @@ public abstract class ClickhouseColumnReader {
   protected Object getObjectsArrayElement(int rowIdx) {
     Object[] data = (Object[]) itemsArray;
     return data[rowIdx];
-  }
-
-  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    throw new IllegalStateException("not implemented");
   }
 }
