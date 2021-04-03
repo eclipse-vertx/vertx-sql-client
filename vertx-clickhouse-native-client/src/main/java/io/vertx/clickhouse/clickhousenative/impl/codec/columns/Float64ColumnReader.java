@@ -26,4 +26,9 @@ public class Float64ColumnReader extends ClickhouseColumnReader {
     }
     return null;
   }
+
+  @Override
+  protected Object[] asObjectsArray(Class<?> desired) {
+    return asObjectsArrayWithGetElement(desired);
+  }
 }

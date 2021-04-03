@@ -7,7 +7,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class IPv4ColumnReader extends UInt32ColumnReader {
-  public static final int ELEMENT_SIZE = 4;
 
   public IPv4ColumnReader(int nRows, ClickhouseNativeColumnDescriptor descriptor) {
     super(nRows, descriptor);
@@ -15,7 +14,7 @@ public class IPv4ColumnReader extends UInt32ColumnReader {
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    if (desired == InetAddress.class || desired == Inet4Address.class || desired == null) {
+    if (desired == InetAddress.class || desired == Inet4Address.class || desired == String.class || desired == null) {
       Long addr = (Long) super.getElementInternal(rowIdx, byte[].class);
       try {
         return Inet4Address.getByAddress(intBytes(addr));

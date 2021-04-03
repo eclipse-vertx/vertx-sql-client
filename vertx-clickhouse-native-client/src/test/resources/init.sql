@@ -274,6 +274,23 @@ CREATE TABLE vertx_test_uint64 (
                                    nullable_array3_lc_t Array(Array(Array(LowCardinality(Nullable(UInt64)))))
 ) engine = MergeTree()
       ORDER BY (id);
+DROP TABLE IF EXISTS vertx_test_int128;
+CREATE TABLE vertx_test_int128 (
+    id Int8,
+    simple_t Int128,
+    nullable_t Nullable(Int128),
+    array_t Array(Int128),
+    array3_t Array(Array(Array(Int128))),
+    nullable_array_t Array(Nullable(Int128)),
+    nullable_array3_t Array(Array(Array(Nullable(Int128)))),
+    simple_lc_t LowCardinality(Int128),
+    nullable_lc_t LowCardinality(Nullable(Int128)),
+    array_lc_t Array(LowCardinality(Int128)),
+    array3_lc_t Array(Array(Array(LowCardinality(Int128)))),
+    nullable_array_lc_t Array(LowCardinality(Nullable(Int128))),
+    nullable_array3_lc_t Array(Array(Array(LowCardinality(Nullable(Int128)))))
+) engine = MergeTree()
+        ORDER BY (id);
 DROP TABLE IF EXISTS vertx_test_string;
 CREATE TABLE vertx_test_string (
                                    id Int8,

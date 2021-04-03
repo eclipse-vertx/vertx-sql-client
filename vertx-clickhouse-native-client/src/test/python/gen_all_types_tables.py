@@ -1,6 +1,6 @@
 #! /usr/bin/python3
 
-ELEMENTARY_TYPES = ['Int8', 'UInt8', 'Int16', 'UInt16', 'Int32', 'UInt32', 'Int64', 'UInt64', 'String',
+ELEMENTARY_TYPES = ['Int8', 'UInt8', 'Int16', 'UInt16', 'Int32', 'UInt32', 'Int64', 'UInt64', 'Int128', 'String',
                     {'table': 'FixedString', 'type': 'FixedString(12)'},
                     'DateTime', 'DateTime64', 'Date', 'UUID',
                     {'table': 'Decimal32', 'type': 'Decimal32(4)'},
@@ -12,6 +12,8 @@ ELEMENTARY_TYPES = ['Int8', 'UInt8', 'Int16', 'UInt16', 'Int32', 'UInt32', 'Int6
                     'Float32', 'Float64', 'IPv6', 'IPv4'];
 
 print('set allow_suspicious_low_cardinality_types=true;');
+print('set allow_experimental_bigint_types=true');
+
 for elem_spec in ELEMENTARY_TYPES:
     table_name = elem_spec['table'] if isinstance(elem_spec, dict) else elem_spec;
     table_name = "vertx_test_{0}".format(table_name.lower());

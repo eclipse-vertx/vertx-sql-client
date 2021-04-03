@@ -1,25 +1,21 @@
 package io.vertx.clickhousenativeclient.alltypes;
 
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class UInt8Test extends AllTypesBase<Short> {
-  @Test
-  public void testEmptyData(TestContext ctx) {
-    doTest(ctx, tableSuffix(),  true, new MyColumnChecker<>(elementType(), Tuple::getShort, Row::getShort, Tuple::getArrayOfShorts, Row::getArrayOfShorts), Collections.emptyList());
+  public UInt8Test() {
+    super("uint8", new MyColumnChecker<>(Short.class, Tuple::getShort, Row::getShort, Tuple::getArrayOfShorts, Row::getArrayOfShorts));
   }
 
-  @Test
-  public void testData(TestContext ctx) {
+  @Override
+  public List<Tuple> createBatch() {
     Short v1 = 10;
     Short v2 = 20;
     Short v3 = 30;
@@ -30,7 +26,7 @@ public class UInt8Test extends AllTypesBase<Short> {
     Short mn = 0;
     Short mx = 255;
 
-    List<Tuple> batch = Arrays.asList(
+    return Arrays.asList(
       //            id    simple_t    nullable_t   array_t                                           array3_t                                                                                                                nullable_array_t                                        nullable_array3_t                                                                                        simple_lc_t  nullable_lc_t   array_lc_t                                        array3_lc_t                                                                                                      nullable_array_lc_t                                      nullable_array3_lc_t
       Tuple.of((byte)1,        mn,      mn,        new Short[]{mn, mn},                             new Short[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new Short[]{mn, mn},                                   new Short[][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},           mn,        mn,      new Short[]{mn, mn},                             new Short[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new Short[]{mn, mn},                                    new Short[][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}            ),
       Tuple.of((byte)2,        mn,      mn,        new Short[]{mn, mn},                             new Short[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new Short[]{mn, mn},                                   new Short[][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},     mn,        mn,      new Short[]{mn, mn},                             new Short[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new Short[]{mn, mn},                                    new Short[][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}      ),
@@ -62,16 +58,5 @@ public class UInt8Test extends AllTypesBase<Short> {
       Tuple.of((byte)28,       v6,      v5,        new Short[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new Short[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new Short[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new Short[][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new Short[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new Short[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new Short[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new Short[][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  ),
       Tuple.of((byte)29,       v6,      v5,        new Short[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new Short[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new Short[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new Short[][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new Short[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new Short[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new Short[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new Short[][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  )
     );
-    doTest(ctx, tableSuffix(),  true, new MyColumnChecker<>(elementType(), Tuple::getShort, Row::getShort, Tuple::getArrayOfShorts, Row::getArrayOfShorts), batch);
-  }
-
-  @Override
-  protected String tableSuffix() {
-    return "uint8";
-  }
-
-  @Override
-  protected Class<Short> elementType() {
-    return Short.class;
   }
 }

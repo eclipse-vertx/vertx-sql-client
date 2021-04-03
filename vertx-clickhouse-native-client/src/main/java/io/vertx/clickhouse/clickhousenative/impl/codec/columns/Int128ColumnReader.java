@@ -7,24 +7,22 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.Utils;
 import java.math.BigInteger;
 
 //experimental support at the moment
-public class UInt128ColumnReader extends ClickhouseColumnReader {
-  public static final int ELEMENT_SIZE = 16;
-
-  protected UInt128ColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
+public class Int128ColumnReader extends ClickhouseColumnReader {
+  protected Int128ColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
     super(nRows, columnDescriptor);
   }
 
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
+    if (in.readableBytes() >= Int128Column.ELEMENT_SIZE * nRows) {
       BigInteger[] data = new BigInteger[nRows];
-      byte[] readBuffer = new byte[ELEMENT_SIZE];
+      byte[] readBuffer = new byte[Int128Column.ELEMENT_SIZE];
       for (int i = 0; i < nRows; ++i) {
         if (nullsMap == null || !nullsMap.get(i)) {
           in.readBytes(readBuffer);
           data[i] = new BigInteger(Utils.reverse(readBuffer));
         } else {
-          in.skipBytes(ELEMENT_SIZE);
+          in.skipBytes(Int128Column.ELEMENT_SIZE);
         }
       }
       return data;

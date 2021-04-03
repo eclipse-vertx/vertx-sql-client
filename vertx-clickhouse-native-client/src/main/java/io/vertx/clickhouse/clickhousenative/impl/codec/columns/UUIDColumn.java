@@ -4,8 +4,12 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
+import java.util.UUID;
 
 public class UUIDColumn extends ClickhouseColumn {
+  public static final UUID ZERO_UUID = new UUID(0, 0);
+  public static final int ELEMENT_SIZE = 16;
+
   public UUIDColumn(ClickhouseNativeColumnDescriptor descriptor) {
     super(descriptor);
   }
@@ -17,6 +21,10 @@ public class UUIDColumn extends ClickhouseColumn {
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    throw new IllegalArgumentException("not implemented");
+    return new UUIDColumnWriter(data, descriptor, columnIndex);
+  }
+
+  public Object nullValue() {
+    return ZERO_UUID;
   }
 }
