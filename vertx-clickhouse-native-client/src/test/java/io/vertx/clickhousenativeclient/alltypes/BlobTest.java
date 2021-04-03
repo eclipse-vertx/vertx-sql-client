@@ -1,29 +1,25 @@
 package io.vertx.clickhousenativeclient.alltypes;
 
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Tuple;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class BlobTest extends AllTypesBase<byte[]> {
+  public BlobTest() {
+    super("string", new MyColumnChecker<>(byte[].class, null, null, null, null));
+  }
+
   protected static byte[] b(String s) {
     return s.getBytes(StandardCharsets.UTF_8);
   }
 
-  @Test
-  public void testEmptyData(TestContext ctx) {
-    doTest(ctx, tableSuffix(), true, new MyColumnChecker<>(elementType(), null, null, null, null), Collections.emptyList());
-  }
-
-  @Test
-  public void testData(TestContext ctx) {
+  @Override
+  public List<Tuple> createBatch() {
     byte[] v1 = b("val1");
     byte[] v2 = b("val2");
     byte[] v3 = b("val3");
@@ -34,7 +30,7 @@ public class BlobTest extends AllTypesBase<byte[]> {
     byte[] mn = b("");
     byte[] mx = b("not so looooooooooooooooooooooooooooooooooooooong value");
 
-    List<Tuple> batch = Arrays.asList(
+    return Arrays.asList(
       //            id    simple_t    nullable_t   array_t                                           array3_t                                                                                                                nullable_array_t                                        nullable_array3_t                                                                                        simple_lc_t  nullable_lc_t   array_lc_t                                        array3_lc_t                                                                                                      nullable_array_lc_t                                      nullable_array3_lc_t
       Tuple.of((byte)1,        mn,      mn,        new byte[][]{mn, mn},                             new byte[][][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new byte[][]{mn, mn},                                   new byte[][][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},           mn,        mn,      new byte[][]{mn, mn},                             new byte[][][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new byte[][]{mn, mn},                                    new byte[][][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}            ),
       Tuple.of((byte)2,        mn,      mn,        new byte[][]{mn, mn},                             new byte[][][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new byte[][]{mn, mn},                                   new byte[][][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},     mn,        mn,      new byte[][]{mn, mn},                             new byte[][][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new byte[][]{mn, mn},                                    new byte[][][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}      ),
@@ -66,16 +62,5 @@ public class BlobTest extends AllTypesBase<byte[]> {
       Tuple.of((byte)28,       v6,      v5,        new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new byte[][][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new byte[][][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new byte[][][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new byte[][][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  ),
       Tuple.of((byte)29,       v6,      v5,        new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new byte[][][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new byte[][][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new byte[][][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new byte[][]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new byte[][][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  )
     );
-    doTest(ctx, tableSuffix(), true, new MyColumnChecker<>(elementType(), null, null, null, null), batch);
-  }
-
-  @Override
-  protected String tableSuffix() {
-    return "string";
-  }
-
-  @Override
-  protected Class<byte[]> elementType() {
-    return byte[].class;
   }
 }

@@ -6,7 +6,6 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSourc
 import java.util.UUID;
 
 public class UUIDColumnReader extends ClickhouseColumnReader {
-  public static final int ELEMENT_SIZE = 16;
 
   protected UUIDColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
     super(nRows, columnDescriptor);
@@ -14,7 +13,7 @@ public class UUIDColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
+    if (in.readableBytes() >= UUIDColumn.ELEMENT_SIZE * nRows) {
       UUID[] data = new UUID[nRows];
       for (int i = 0; i < nRows; ++i) {
         if (nullsMap == null || !nullsMap.get(i)) {
@@ -22,7 +21,7 @@ public class UUIDColumnReader extends ClickhouseColumnReader {
           long leastSigBits = in.readLongLE();
           data[i] = new UUID(mostSigBits, leastSigBits);
         } else {
-          in.skipBytes(ELEMENT_SIZE);
+          in.skipBytes(UUIDColumn.ELEMENT_SIZE);
         }
       }
       return data;

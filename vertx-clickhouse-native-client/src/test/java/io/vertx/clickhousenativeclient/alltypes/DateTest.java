@@ -1,27 +1,23 @@
 package io.vertx.clickhousenativeclient.alltypes;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.DateColumnReader;
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class DateTest extends AllTypesBase<LocalDate> {
-  @Test
-  public void testEmptyData(TestContext ctx) {
-    doTest(ctx, tableSuffix(), true, new MyColumnChecker<>(elementType(), Tuple::getLocalDate, Row::getLocalDate, Tuple::getArrayOfLocalDates, Row::getArrayOfLocalDates), Collections.emptyList());
+  public DateTest() {
+    super("date", new MyColumnChecker<>(LocalDate.class, Tuple::getLocalDate, Row::getLocalDate, Tuple::getArrayOfLocalDates, Row::getArrayOfLocalDates));
   }
 
-  @Test
-  public void testData(TestContext ctx) {
+  @Override
+  public List<Tuple> createBatch() {
     LocalDate v1 = LocalDate.of(2020, 3, 29);
     LocalDate v2 = v1.plusDays(2);
     LocalDate v3 = v2.plusDays(3);
@@ -32,7 +28,7 @@ public class DateTest extends AllTypesBase<LocalDate> {
     LocalDate mn = DateColumnReader.MIN_VALUE;
     LocalDate mx = DateColumnReader.MAX_VALUE;
 
-    List<Tuple> batch = Arrays.asList(
+    return Arrays.asList(
       //            id    simple_t    nullable_t   array_t                                              array3_t                                                                                                                nullable_array_t                                        nullable_array3_t                                                                                        simple_lc_t  nullable_lc_t   array_lc_t                                        array3_lc_t                                                                                                      nullable_array_lc_t                                      nullable_array3_lc_t
       Tuple.of((byte)1,        mn,      mn,        new LocalDate[]{mn, mn},                             new LocalDate[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new LocalDate[]{mn, mn},                                   new LocalDate[][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},           mn,        mn,      new LocalDate[]{mn, mn},                             new LocalDate[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new LocalDate[]{mn, mn},                                    new LocalDate[][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}            ),
       Tuple.of((byte)2,        mn,      mn,        new LocalDate[]{mn, mn},                             new LocalDate[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new LocalDate[]{mn, mn},                                   new LocalDate[][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},     mn,        mn,      new LocalDate[]{mn, mn},                             new LocalDate[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new LocalDate[]{mn, mn},                                    new LocalDate[][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}      ),
@@ -64,16 +60,5 @@ public class DateTest extends AllTypesBase<LocalDate> {
       Tuple.of((byte)28,       v6,      v5,        new LocalDate[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new LocalDate[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new LocalDate[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new LocalDate[][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new LocalDate[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new LocalDate[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new LocalDate[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new LocalDate[][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  ),
       Tuple.of((byte)29,       v6,      v5,        new LocalDate[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new LocalDate[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new LocalDate[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new LocalDate[][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new LocalDate[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new LocalDate[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new LocalDate[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new LocalDate[][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  )
     );
-    doTest(ctx, tableSuffix(), true, new MyColumnChecker<>(elementType(), Tuple::getLocalDate, Row::getLocalDate, Tuple::getArrayOfLocalDates, Row::getArrayOfLocalDates), batch);
-  }
-
-  @Override
-  protected String tableSuffix() {
-    return "date";
-  }
-
-  @Override
-  protected Class<LocalDate> elementType() {
-    return LocalDate.class;
   }
 }

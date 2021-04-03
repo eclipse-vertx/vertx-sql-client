@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 public class IPv6ColumnReader extends FixedStringColumnReader {
-  public static final int ELEMENT_SIZE = 16;
 
   protected IPv6ColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, columnDescriptor, md);

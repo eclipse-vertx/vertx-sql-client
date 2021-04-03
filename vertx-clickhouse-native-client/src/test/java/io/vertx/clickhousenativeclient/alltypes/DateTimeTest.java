@@ -1,31 +1,26 @@
 package io.vertx.clickhousenativeclient.alltypes;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.DateTimeColumnReader;
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import org.junit.Test;
 import org.junit.runner.RunWith;
-
 
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class DateTimeTest extends AllTypesBase<OffsetDateTime> {
 
-  @Test
-  public void testEmptyData(TestContext ctx) {
-    doTest(ctx, tableSuffix(), true, new MyColumnChecker<>(elementType(), Tuple::getOffsetDateTime, Row::getOffsetDateTime, Tuple::getArrayOfOffsetDateTimes, Row::getArrayOfOffsetDateTimes), Collections.emptyList());
+  public DateTimeTest() {
+    super("datetime", new MyColumnChecker<>(OffsetDateTime.class, Tuple::getOffsetDateTime, Row::getOffsetDateTime, Tuple::getArrayOfOffsetDateTimes, Row::getArrayOfOffsetDateTimes));
   }
 
-  @Test
-  public void testData(TestContext ctx) {
+  @Override
+  public List<Tuple> createBatch() {
     ZoneId zoneId = ZoneId.of("Europe/Oslo");
     OffsetDateTime v1 = Instant.ofEpochSecond(1617120094L).atZone(zoneId).toOffsetDateTime();
     OffsetDateTime v2 = Instant.ofEpochSecond(1617120094L + 10L).atZone(zoneId).toOffsetDateTime();
@@ -37,7 +32,7 @@ public class DateTimeTest extends AllTypesBase<OffsetDateTime> {
     OffsetDateTime mn = Instant.ofEpochSecond(0).atZone(zoneId).toOffsetDateTime();
     OffsetDateTime mx = Instant.ofEpochSecond(DateTimeColumnReader.MAX_EPOCH_SECOND).atZone(zoneId).toOffsetDateTime();
 
-    List<Tuple> batch = Arrays.asList(
+    return Arrays.asList(
       //            id    simple_t    nullable_t   array_t                                              array3_t                                                                                                                nullable_array_t                                        nullable_array3_t                                                                                        simple_lc_t  nullable_lc_t   array_lc_t                                        array3_lc_t                                                                                                      nullable_array_lc_t                                      nullable_array3_lc_t
       Tuple.of((byte)1,        mn,      mn,        new OffsetDateTime[]{mn, mn},                             new OffsetDateTime[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new OffsetDateTime[]{mn, mn},                                   new OffsetDateTime[][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},           mn,        mn,      new OffsetDateTime[]{mn, mn},                             new OffsetDateTime[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new OffsetDateTime[]{mn, mn},                                    new OffsetDateTime[][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}            ),
       Tuple.of((byte)2,        mn,      mn,        new OffsetDateTime[]{mn, mn},                             new OffsetDateTime[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new OffsetDateTime[]{mn, mn},                                   new OffsetDateTime[][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},     mn,        mn,      new OffsetDateTime[]{mn, mn},                             new OffsetDateTime[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new OffsetDateTime[]{mn, mn},                                    new OffsetDateTime[][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}      ),
@@ -69,16 +64,5 @@ public class DateTimeTest extends AllTypesBase<OffsetDateTime> {
       Tuple.of((byte)28,       v6,      v5,        new OffsetDateTime[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new OffsetDateTime[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new OffsetDateTime[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new OffsetDateTime[][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new OffsetDateTime[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new OffsetDateTime[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new OffsetDateTime[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new OffsetDateTime[][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  ),
       Tuple.of((byte)29,       v6,      v5,        new OffsetDateTime[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new OffsetDateTime[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new OffsetDateTime[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new OffsetDateTime[][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new OffsetDateTime[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new OffsetDateTime[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new OffsetDateTime[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new OffsetDateTime[][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  )
     );
-    doTest(ctx, tableSuffix(), true, new MyColumnChecker<>(elementType(), Tuple::getOffsetDateTime, Row::getOffsetDateTime, Tuple::getArrayOfOffsetDateTimes, Row::getArrayOfOffsetDateTimes), batch);
-  }
-
-  @Override
-  protected String tableSuffix() {
-    return "datetime";
-  }
-
-  @Override
-  protected Class<OffsetDateTime> elementType() {
-    return OffsetDateTime.class;
   }
 }

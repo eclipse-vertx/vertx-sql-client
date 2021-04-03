@@ -1,25 +1,20 @@
 package io.vertx.clickhousenativeclient.alltypes;
 
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Tuple;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class Int8Test extends AllTypesBase<Byte> {
-
-  @Test
-  public void testEmptyData(TestContext ctx) {
-    doTest(ctx, tableSuffix(), true, new MyColumnChecker<>(elementType(), null, null, null, null), Collections.emptyList());
+  public Int8Test() {
+    super("int8", new MyColumnChecker<>(Byte.class, null, null, null, null));
   }
 
-  @Test
-  public void testData(TestContext ctx) {
+  @Override
+  public List<Tuple> createBatch() {
     Byte v1 = 10;
     Byte v2 = -20;
     Byte v3 = 30;
@@ -30,7 +25,7 @@ public class Int8Test extends AllTypesBase<Byte> {
     Byte mn = -128;
     Byte mx = 127;
 
-    List<Tuple> batch = Arrays.asList(
+    return Arrays.asList(
       //            id    simple_t    nullable_t   array_t                                           array3_t                                                                                                                nullable_array_t                                        nullable_array3_t                                                                                        simple_lc_t  nullable_lc_t   array_lc_t                                        array3_lc_t                                                                                                      nullable_array_lc_t                                      nullable_array3_lc_t
       Tuple.of((byte)1,        mn,      mn,        new Byte[]{mn, mn},                             new Byte[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new Byte[]{mn, mn},                                   new Byte[][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},           mn,        mn,      new Byte[]{mn, mn},                             new Byte[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new Byte[]{mn, mn},                                    new Byte[][][]{{{mn, null, mn}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}            ),
       Tuple.of((byte)2,        mn,      mn,        new Byte[]{mn, mn},                             new Byte[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                                     new Byte[]{mn, mn},                                   new Byte[][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}},     mn,        mn,      new Byte[]{mn, mn},                             new Byte[][][]{{{mn, mn}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},                              new Byte[]{mn, mn},                                    new Byte[][][]{{{mn, null, mn, null}, {mn, mn, null}, {null}}, {{mn, mn}, {mn, mn}, {}}, {{}, {null}, {}}}      ),
@@ -62,17 +57,5 @@ public class Int8Test extends AllTypesBase<Byte> {
       Tuple.of((byte)28,       v6,      v5,        new Byte[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new Byte[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new Byte[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new Byte[][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new Byte[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new Byte[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new Byte[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new Byte[][][]{{{nv, mn, mx, v1, null, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  ),
       Tuple.of((byte)29,       v6,      v5,        new Byte[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new Byte[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},             new Byte[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null}, new Byte[][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}, v6,        v5,      new Byte[]{v1, nv, mn, mx, v2, v3, v4, v5, v6}, new Byte[][][]{{{nv, mn, mx, v1, v2, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}},      new Byte[]{v1, nv, mn, mx, v2, v3, v4, v5, v6, null},  new Byte[][][]{{{nv, mn, mx, v1, v2, null, v3, v4, v5}, {mn, mn}, {}}, {{mn, mn}, {mn, mn}, {}}, {{}, {}, {}}}  )
     );
-    doTest(ctx, tableSuffix(), true, new MyColumnChecker<>(elementType(), null, null, null, null), batch);
-  }
-
-
-  @Override
-  protected String tableSuffix() {
-    return "int8";
-  }
-
-  @Override
-  protected Class<Byte> elementType() {
-    return Byte.class;
   }
 }

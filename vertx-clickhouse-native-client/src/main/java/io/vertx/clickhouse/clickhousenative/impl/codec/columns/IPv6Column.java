@@ -7,6 +7,8 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 
 public class IPv6Column extends FixedStringColumn {
+  public static final int ELEMENT_SIZE = 16;
+
   public IPv6Column(ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     super(descr, md);
   }
@@ -18,6 +20,6 @@ public class IPv6Column extends FixedStringColumn {
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    throw new IllegalStateException("not implemented");
+    return new IPv6ColumnWriter(data, descriptor, md.getStringCharset(), columnIndex);
   }
 }

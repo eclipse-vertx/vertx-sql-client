@@ -12,14 +12,12 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.ClassRule;
+import org.junit.*;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -28,12 +26,25 @@ public abstract class AllTypesBase<T> {
   private static final Logger LOG = LoggerFactory.getLogger(AllTypesBase.class);
 
   public static final String TABLE_PREFIX = "vertx_test_";
+  protected final String tableSuffix;
+  protected final MyColumnChecker<T> checker;
+  protected final boolean hasLowCardinality;
 
   @ClassRule
   public static ClickhouseResource rule = new ClickhouseResource();
 
   private ClickhouseNativeConnectOptions options;
   private Vertx vertx;
+
+  public AllTypesBase(String tableSuffix, MyColumnChecker<T> checker) {
+    this(tableSuffix, checker, true);
+  }
+
+  public AllTypesBase(String tableSuffix, MyColumnChecker<T> checker, boolean hasLowCardinality) {
+    this.tableSuffix = tableSuffix;
+    this.checker = checker;
+    this.hasLowCardinality = hasLowCardinality;
+  }
 
   @Before
   public void setup(TestContext ctx) {
@@ -46,8 +57,17 @@ public abstract class AllTypesBase<T> {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
-  protected abstract String tableSuffix();
-  protected abstract Class<T> elementType();
+  @Test
+  public void testEmptyData(TestContext ctx) {
+    doTest(ctx, Collections.emptyList());
+  }
+
+  @Test
+  public void testData(TestContext ctx) {
+    doTest(ctx, createBatch());
+  }
+
+  public abstract List<Tuple> createBatch();
 
   private List<String> columnsList(boolean hasLowCardinality) {
     List<String> columns = new ArrayList<>(Arrays.asList("id", "simple_t", "nullable_t", "array_t", "array3_t", "nullable_array_t", "nullable_array3_t"));
@@ -57,8 +77,7 @@ public abstract class AllTypesBase<T> {
     return columns;
   }
 
-  protected  <R> void doTest(TestContext ctx, String tableSuffix, boolean hasLowCardinality,
-                      MyColumnChecker<R> columnChecker, List<Tuple> batch) {
+  protected  void doTest(TestContext ctx, List<Tuple> batch) {
     String tableName = TABLE_PREFIX + tableSuffix;
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("TRUNCATE TABLE " + tableName).execute(
@@ -82,7 +101,7 @@ public abstract class AllTypesBase<T> {
                       for (int colIdx = 0; colIdx < expectedRow.size(); ++colIdx) {
                         String colName = columnsList.get(colIdx);
                         Object expectedColumnValue = expectedRow.getValue(colIdx);
-                        columnChecker.checkColumn(row, colIdx, colName, (R) expectedColumnValue);
+                        checker.checkColumn(row, colIdx, colName, (T) expectedColumnValue);
                       }
                       ++batchIdx;
                     }

@@ -18,6 +18,6 @@ public class IPv4ColumnWriter extends UInt32ColumnWriter {
   }
 
   private static int intFromBytes(byte[] b) {
-    return b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3];
+    return (0xFF000000 & (b[0] << 24)) | (0xFF0000 & (b[1] << 16)) | (0xFF00 & (b[2] << 8)) | (0xFF & (b[3]));
   }
 }
