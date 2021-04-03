@@ -19,4 +19,8 @@ public class UInt64Column extends ClickhouseColumn {
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
     return new UInt64ColumnWriter(data, descriptor, columnIndex);
   }
+
+  public Object nullValue() {
+    return 0L;
+  }
 }

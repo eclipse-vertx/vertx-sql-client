@@ -16,14 +16,14 @@ public class Int8Test extends AllTypesBase<Byte> {
   @Override
   public List<Tuple> createBatch() {
     Byte v1 = 10;
-    Byte v2 = -20;
-    Byte v3 = 30;
-    Byte v4 = -40;
-    Byte v5 = 60;
+    Byte v2 = Byte.MIN_VALUE / 3;
+    Byte v3 = Byte.MAX_VALUE / 3;
+    Byte v4 = Byte.MIN_VALUE / 2;
+    Byte v5 = Byte.MAX_VALUE / 2;
     Byte v6 = -70;
     Byte nv = 0;
-    Byte mn = -128;
-    Byte mx = 127;
+    Byte mn = Byte.MIN_VALUE;
+    Byte mx = Byte.MAX_VALUE;
 
     return Arrays.asList(
       //            id    simple_t    nullable_t   array_t                                           array3_t                                                                                                                nullable_array_t                                        nullable_array3_t                                                                                        simple_lc_t  nullable_lc_t   array_lc_t                                        array3_lc_t                                                                                                      nullable_array_lc_t                                      nullable_array3_lc_t
