@@ -11,7 +11,7 @@ import java.util.List;
 public class FixedStringColumnReader extends ClickhouseColumnReader {
   private final Charset charset;
 
-  private List<Object> elements;
+  private List<byte[]> elements;
 
   protected FixedStringColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, columnDescriptor);
@@ -36,7 +36,7 @@ public class FixedStringColumnReader extends ClickhouseColumnReader {
       }
       elements.add(stringBytes);
     }
-    Object[] ret = elements.toArray();
+    Object[] ret = elements.toArray(new byte[elements.size()][]);
     elements = null;
     return ret;
   }
