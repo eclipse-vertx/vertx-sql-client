@@ -3,7 +3,6 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
-import io.vertx.sqlclient.Tuple;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ public class StringColumnReader extends ClickhouseColumnReader {
       if (in.readableBytes() < curStrLength) {
         return null;
       }
-      //no dedicated BLOB type support; will encode into String if user did not request byte[].class
+      //no dedicated BLOB type support; will encode(later) into String if user asked for String explicitly
       byte[] stringBytes;
       if (nullsMap == null || !nullsMap.get(elements.size())) {
         stringBytes = new byte[curStrLength];
@@ -56,10 +55,5 @@ public class StringColumnReader extends ClickhouseColumnReader {
       return new String((byte[])tmp, charset);
     }
     return tmp;
-  }
-
-  @Override
-  public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    return new StringColumnWriter(data, columnDescriptor, charset, columnIndex);
   }
 }
