@@ -132,6 +132,7 @@ public class QueryParsers {
     boolean gotEq = false;
     String enumElementName = null;
     int startEnumValPos = -1;
+    int signum = 1;
     for (int i = openBracketPos; i < nativeType.length(); ++i) {
       char ch = nativeType.charAt(i);
       if (ch == '\'') {
@@ -144,21 +145,25 @@ public class QueryParsers {
       } else if (ch == '=') {
         gotEq = true;
       } else if (gotEq) {
-        if (Character.isDigit(ch)) {
+        if (ch == '-') {
+          signum = -1;
+        } if (Character.isDigit(ch)) {
           if (startEnumValPos == -1) {
             startEnumValPos = i;
           } else if (!Character.isDigit(nativeType.charAt(i + 1))) {
-            int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i + 1));
+            int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i + 1)) * signum;
             Number key = byteOrShort(enumValue, isByte);
             result.put(key, enumElementName);
+            signum = 1;
             startEnumValPos = -1;
             enumElementName = null;
             gotEq = false;
           }
         } else if (startEnumValPos != -1) {
-          int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i));
+          int enumValue = Integer.parseInt(nativeType.substring(startEnumValPos, i)) * signum;
           Number key = byteOrShort(enumValue, isByte);
           result.put(key, enumElementName);
+          signum = 1;
           startEnumValPos = -1;
           enumElementName = null;
           gotEq = false;

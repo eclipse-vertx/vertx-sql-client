@@ -74,6 +74,7 @@ public class PacketReader {
       packetType = null;
       endOfStream = true;
     } else if (packetType == ServerPacketType.PROFILE_INFO) {
+      //TODO: find a way to expose profile block to the calling app
       return readProfileInfoBlock(in);
     } else if (packetType == ServerPacketType.LOG) {
       ColumnOrientedBlock block = readDataBlock(alloc, in, false);
@@ -90,14 +91,17 @@ public class PacketReader {
   }
 
   private void traceServerLogs(ColumnOrientedBlock block) {
-    LOG.info("server log: [" + block.numColumns() + "; " + block.numRows() + "]");
-    List<ClickhouseNativeRowImpl> rows = block.rows();
-    LOG.info("rows: ");
-    StringBuilder bldr = new StringBuilder();
-    for (ClickhouseNativeRowImpl row : rows) {
-      bldr.append(rowAsString(row, block.rowDesc())).append("\n");
+    //TODO: find a way to expose logs to the calling app
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("server log: [" + block.numColumns() + "; " + block.numRows() + "]");
+      List<ClickhouseNativeRowImpl> rows = block.rows();
+      LOG.debug("rows: ");
+      StringBuilder bldr = new StringBuilder();
+      for (ClickhouseNativeRowImpl row : rows) {
+        bldr.append(rowAsString(row, block.rowDesc())).append("\n");
+      }
+      LOG.debug(bldr);
     }
-    LOG.info(bldr);
   }
 
   private String rowAsString(Row row, RowDesc rowDesc) {

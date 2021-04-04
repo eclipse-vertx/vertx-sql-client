@@ -148,8 +148,8 @@ class MyColumnChecker<R> {
       //arrays are non-nullable
       if (expected != null && expected.getClass().isArray()) {
         boolean multidimensional = expected.getClass().getComponentType().isArray() && expected.getClass().getComponentType() != byte[].class;
-        if (componentType == byte[].class) {
-          //ask driver to turn off String encoding
+        if (componentType == byte[].class || componentType.isEnum()) {
+          //ask driver to turn off String encoding for BLOBs or force encoding for Enums
           checker = checker.returns((tuple, idx) -> tuple.get(expected.getClass(), idx), (r, colName) -> r.get(expected.getClass(), colName), (Object[]) expected);
         } else {
           checker = checker.returns(Tuple::getValue, Row::getValue, (Object[]) expected);
@@ -160,7 +160,11 @@ class MyColumnChecker<R> {
         }
       } else {
         //regular non-array elements
-        checker = checker.returns(Tuple::getValue, Row::getValue, expected);
+        Object v = expected;
+        if (componentType.isEnum()) {
+          v = expected == null ? null : (R) ((Enum)expected).name();
+        }
+        checker = checker.returns(Tuple::getValue, Row::getValue, v);
         if (byIndexGetter != null) {
           checker = checker.returns(byIndexGetter, byNameGetter, expected);
         }

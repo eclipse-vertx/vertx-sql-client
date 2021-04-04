@@ -15,7 +15,7 @@ public class IPv6ColumnReader extends FixedStringColumnReader {
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    if (desired == InetAddress.class || desired == Inet6Address.class || desired == String.class || desired == null) {
+    if (desired == InetAddress.class || desired == Inet6Address.class || desired == Object.class || desired == null) {
       byte[] addr = (byte[]) super.getElementInternal(rowIdx, byte[].class);
       try {
         return Inet6Address.getByAddress(addr);

@@ -14,7 +14,7 @@ public class IPv4ColumnReader extends UInt32ColumnReader {
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    if (desired == InetAddress.class || desired == Inet4Address.class || desired == String.class || desired == null) {
+    if (desired == InetAddress.class || desired == Inet4Address.class || desired == Object.class || desired == null) {
       Long addr = (Long) super.getElementInternal(rowIdx, byte[].class);
       try {
         return Inet4Address.getByAddress(intBytes(addr));

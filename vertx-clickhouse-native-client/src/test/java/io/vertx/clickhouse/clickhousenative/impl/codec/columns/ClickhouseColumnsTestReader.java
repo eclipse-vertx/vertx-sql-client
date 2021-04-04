@@ -27,8 +27,8 @@ public class ClickhouseColumnsTestReader<T extends Number> {
     java.util.function.Function<Integer, Byte> byteConverter = Integer::byteValue;
     java.util.function.Function<Integer, Short> shortConverter = Integer::shortValue;
     return Arrays.asList(new Object[][]{
-      {"Enum8", "Enum8('aa4' = 1, '1b3b2' = 22, '1b3b3' = 24,'1b3b4' = 25,'1b3b5'= 26,'1b3b6' =27,'1b3b7'=28)", byteConverter},
-      {"Enum16", "Enum16('aa4' = 1, '1b3b2' = 22, '1b3b3' = 24,'1b3b4' = 25,'1b3b5'= 26,'1b3b6' =27,'1b3b7'=28)", shortConverter}
+      {"Enum8", "Enum8('aa4' = 1, '1b3b2' = 22, '1b3b3' = 24,'1b3b4' = 25,'1b3b5'= 26,'1b3b6' =27,'1b3b7'=28,'neg1'=-1, 'neg2' = -22)", byteConverter},
+      {"Enum16", "Enum16('aa4' = 1, '1b3b2' = 22, '1b3b3' = 24,'1b3b4' = 25,'1b3b5'= 26,'1b3b6' =27,'1b3b7'=28,'neg1'=-1, 'neg2' = -22)", shortConverter}
     });
   }
 
@@ -47,6 +47,8 @@ public class ClickhouseColumnsTestReader<T extends Number> {
     expected.put(key(26), "1b3b5");
     expected.put(key(27), "1b3b6");
     expected.put(key(28), "1b3b7");
+    expected.put(key(-1), "neg1");
+    expected.put(key(-22), "neg2");
     Assert.assertEquals(expected, vals);
   }
 }
