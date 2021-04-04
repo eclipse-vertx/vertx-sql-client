@@ -2,7 +2,6 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSink;
-import io.vertx.clickhouse.clickhousenative.impl.codec.Utils;
 import io.vertx.sqlclient.Tuple;
 
 import java.math.BigInteger;
@@ -16,7 +15,7 @@ public class Int128ColumnWriter extends ClickhouseColumnWriter {
   @Override
   protected void serializeDataElement(ClickhouseStreamDataSink sink, Object val) {
     BigInteger bi = (BigInteger) val;
-    byte[] bytes = Utils.reverse(bi.toByteArray());
+    byte[] bytes = ColumnUtils.reverse(bi.toByteArray());
     sink.writeBytes(bytes);
   }
 

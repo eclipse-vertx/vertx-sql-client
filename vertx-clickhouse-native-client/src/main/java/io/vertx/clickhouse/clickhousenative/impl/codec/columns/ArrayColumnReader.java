@@ -130,11 +130,9 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
         return new Triplet<>(true, stringifyByteArrays(src, md.getStringCharset()), desired);
       }
       return new Triplet<>(false, src, desired);
-    } else if (nestedColumn.getClass() == Enum8Column.class) {
-      Object[] recoded = ((Enum8ColumnReader)nestedColumnReader).recodeValues(src, desired);
+    } else if (nestedColumnReader instanceof EnumColumnReader) {
+      Object[] recoded = ((EnumColumnReader)nestedColumnReader).recodeValues(src, desired);
       return new Triplet<>(true, recoded, desired);
-    } else if (nestedColumn.getClass() == Enum16Column.class) {
-      //((Enum16ColumnReader)nestedColumnReader).recodeValues(src, desired);
     }
     return new Triplet<>(false, src, desired);
   }

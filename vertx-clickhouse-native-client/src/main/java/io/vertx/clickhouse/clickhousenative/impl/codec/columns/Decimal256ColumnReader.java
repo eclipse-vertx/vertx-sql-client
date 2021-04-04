@@ -2,7 +2,6 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
-import io.vertx.clickhouse.clickhousenative.impl.codec.Utils;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
@@ -29,7 +28,7 @@ public class Decimal256ColumnReader extends ClickhouseColumnReader {
       for (int i = 0; i < nRows; ++i) {
         if (nullsMap == null || !nullsMap.get(i)) {
           in.readBytes(readBuffer);
-          BigInteger bi = new BigInteger(Utils.reverse(readBuffer));
+          BigInteger bi = new BigInteger(ColumnUtils.reverse(readBuffer));
           data[i] = Numeric.create(new BigDecimal(bi, scale, MATH_CONTEXT));
         } else {
           in.skipBytes(ELEMENT_SIZE);

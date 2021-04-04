@@ -7,11 +7,11 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 import java.util.Map;
 
-public class Enum8ColumnWriter extends UInt8ColumnWriter {
+public class Enum16ColumnWriter extends UInt16ColumnWriter {
   private final EnumColumnEncoder columnEncoder;
 
-  public Enum8ColumnWriter(List<Tuple> data, ClickhouseNativeColumnDescriptor columnDescriptor, int columnIndex,
-                           Map<? extends Number, String> enumVals, boolean enumsByName) {
+  public Enum16ColumnWriter(List<Tuple> data, ClickhouseNativeColumnDescriptor columnDescriptor, int columnIndex,
+                            Map<? extends Number, String> enumVals, boolean enumsByName) {
     super(data, columnDescriptor, columnIndex);
     this.columnEncoder = new EnumColumnEncoder(enumVals, enumsByName);
   }

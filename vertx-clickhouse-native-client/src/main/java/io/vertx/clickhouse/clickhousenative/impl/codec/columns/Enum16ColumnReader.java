@@ -4,18 +4,23 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 
 import java.util.Map;
 
-public class Enum16ColumnReader extends UInt16ColumnReader {
+public class Enum16ColumnReader extends UInt16ColumnReader implements EnumColumnReader {
   public static final int ELEMENT_SIZE = 2;
-  private final Map<Short, String> enumVals;
+  private final EnumColumnDecoder columnRecoder;
 
-  public Enum16ColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, Map<? extends Number, String> enumVals) {
+  public Enum16ColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, Map<? extends Number, String> enumVals, boolean enumsByName) {
     super(nRows, descr);
-    this.enumVals = (Map<Short, String>) enumVals;
+    this.columnRecoder = new EnumColumnDecoder(enumVals, enumsByName);
   }
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
     Short key = (Short) super.getElementInternal(rowIdx, desired);
-    return enumVals.get(key);
+    return columnRecoder.recodeElement(key, desired);
+  }
+
+  @Override
+  public Object[] recodeValues(Object[] src, Class desired) {
+    return columnRecoder.recodeValues(src, desired);
   }
 }
