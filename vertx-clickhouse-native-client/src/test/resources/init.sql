@@ -136,8 +136,9 @@ VALUES (12, 'フレームワークのベンチマーク');
 
 
 
---almost all possible supported types
+--almost all possible supported types tables(maybe except experimental ones)
 set allow_suspicious_low_cardinality_types=true;
+set allow_experimental_bigint_types=true;
 DROP TABLE IF EXISTS vertx_test_int8;
 CREATE TABLE vertx_test_int8 (
                                  id Int8,

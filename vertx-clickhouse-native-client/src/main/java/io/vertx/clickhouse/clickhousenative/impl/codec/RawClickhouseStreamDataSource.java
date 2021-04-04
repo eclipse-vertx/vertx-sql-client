@@ -81,6 +81,10 @@ public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
+  public void finish() {
+  }
+
+  @Override
   public String hexdump() {
     return source != null
       ? "[" + ByteBufUtil.hexDump(source, 0, source.writerIndex()) + "][" + ByteBufUtil.hexDump(source) + "]"
