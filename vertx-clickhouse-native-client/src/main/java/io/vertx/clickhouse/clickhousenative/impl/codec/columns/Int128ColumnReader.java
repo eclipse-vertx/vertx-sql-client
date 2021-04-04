@@ -2,7 +2,6 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
-import io.vertx.clickhouse.clickhousenative.impl.codec.Utils;
 
 import java.math.BigInteger;
 
@@ -20,7 +19,7 @@ public class Int128ColumnReader extends ClickhouseColumnReader {
       for (int i = 0; i < nRows; ++i) {
         if (nullsMap == null || !nullsMap.get(i)) {
           in.readBytes(readBuffer);
-          data[i] = new BigInteger(Utils.reverse(readBuffer));
+          data[i] = new BigInteger(ColumnUtils.reverse(readBuffer));
         } else {
           in.skipBytes(Int128Column.ELEMENT_SIZE);
         }

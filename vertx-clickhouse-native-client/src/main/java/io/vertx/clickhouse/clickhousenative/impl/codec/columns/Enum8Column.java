@@ -23,6 +23,6 @@ public class Enum8Column extends UInt8Column {
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    return new Enum8ColumnWriter(data, descriptor, enumVals, columnIndex, enumsByName);
+    return new Enum8ColumnWriter(data, descriptor, columnIndex, enumVals, enumsByName);
   }
 }

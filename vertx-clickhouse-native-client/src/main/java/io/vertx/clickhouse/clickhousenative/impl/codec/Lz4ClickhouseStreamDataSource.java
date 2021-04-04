@@ -89,8 +89,8 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
       LOG.error("compressed block bytes w/header: " + ByteBufUtil.hexDump(arrayBb, arrayBb.readerIndex() - (1 + 4 + 4), sizeWithHeader.intValue()));
       LOG.error("readableBytes: " + arrayBb.readableBytes() + "; comprDataLen: " + compressedDataSize);
       throw new IllegalStateException("CityHash mismatch; server's: " +
-        Arrays.toString(Utils.hex(serverCityHash)) + "; ours: " +
-        Arrays.toString(Utils.hex(oursCityHash)));
+        Arrays.toString(hex(serverCityHash)) + "; ours: " +
+        Arrays.toString(hex(oursCityHash)));
     }
     byte[] uncompressedBytes = new byte[uncompressedSize.intValue()];
     LZ4FastDecompressor decompressor = lz4Factory.fastDecompressor();
@@ -188,5 +188,13 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   @Override
   public void finish() {
     decompressedData.release();
+  }
+
+  private static String[] hex(long[] src) {
+    String[] result = new String[src.length];
+    for (int i = 0; i < src.length; ++i) {
+      result[i] = "0x" + Long.toHexString(src[i]);
+    }
+    return result;
   }
 }
