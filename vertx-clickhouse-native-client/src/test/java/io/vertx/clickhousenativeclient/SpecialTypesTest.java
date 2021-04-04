@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Optional;
 
 @RunWith(VertxUnitRunner.class)
@@ -60,9 +61,21 @@ public class SpecialTypesTest {
   }
 
   @Test
+  public void testIntervalWeekArray(TestContext ctx) {
+    runQuery(ctx, "SELECT array(toIntervalWeek(4), toIntervalWeek(1), toIntervalWeek(0))", Duration[].class,
+      Optional.of(new Duration[]{Duration.ofDays(4 * 7), Duration.ofDays(7), Duration.ofDays(0)}));
+  }
+
+  @Test
   //TODO smagellan: all other types from query "select * from system.data_type_families where name like 'Interval%';"
   public void testIntervalDay(TestContext ctx) {
     runQuery(ctx, "SELECT INTERVAL 4 DAY", Duration.class, Optional.of(Duration.ofDays(4)));
+  }
+
+  @Test
+  public void testIntervalDayArray(TestContext ctx) {
+    runQuery(ctx, "SELECT array(toIntervalDay(4), toIntervalDay(1), toIntervalDay(0))", Duration[].class,
+      Optional.of(new Duration[]{Duration.ofDays(4), Duration.ofDays(1), Duration.ofDays(0)}));
   }
 
   @Test
@@ -71,13 +84,31 @@ public class SpecialTypesTest {
   }
 
   @Test
+  public void testIntervalHourArray(TestContext ctx) {
+    runQuery(ctx, "SELECT array(toIntervalHour(4), toIntervalHour(1), toIntervalHour(0))", Duration[].class,
+      Optional.of(new Duration[]{Duration.ofHours(4), Duration.ofHours(1), Duration.ofHours(0)}));
+  }
+
+  @Test
   public void testIntervalMinute(TestContext ctx) {
     runQuery(ctx, "SELECT INTERVAL 4 MINUTE", Duration.class, Optional.of(Duration.ofMinutes(4)));
   }
 
   @Test
+  public void testIntervalMinuteArray(TestContext ctx) {
+    runQuery(ctx, "SELECT array(toIntervalMinute(4), toIntervalMinute(1), toIntervalMinute(0))", Duration[].class,
+      Optional.of(new Duration[]{Duration.ofMinutes(4), Duration.ofMinutes(1), Duration.ofMinutes(0)}));
+  }
+
+  @Test
   public void testIntervalSecond(TestContext ctx) {
     runQuery(ctx, "SELECT INTERVAL 4 SECOND", Duration.class, Optional.of(Duration.ofSeconds(4)));
+  }
+
+  @Test
+  public void testIntervalSecondArray(TestContext ctx) {
+    runQuery(ctx, "SELECT array(toIntervalSecond(4), toIntervalSecond(1), toIntervalSecond(0))", Duration[].class,
+      Optional.of(new Duration[]{Duration.ofSeconds(4), Duration.ofSeconds(1), Duration.ofSeconds(0)}));
   }
 
   private void runQuery(TestContext ctx, String query, Class<?> desiredCls, Optional<Object> expected) {
@@ -88,7 +119,11 @@ public class SpecialTypesTest {
           if (expected != null && expected.isPresent()) {
             Row row = res.iterator().next();
             Object val = desiredCls == null ? row.getValue(0) : row.get(desiredCls, 0);
-            ctx.assertEquals(expected.get(), val);
+            if (desiredCls.isArray()) {
+              ctx.assertTrue(Arrays.deepEquals((Object[])expected.get(), (Object[])val));
+            } else {
+              ctx.assertEquals(expected.get(), val);
+            }
           }
         }));
     }));

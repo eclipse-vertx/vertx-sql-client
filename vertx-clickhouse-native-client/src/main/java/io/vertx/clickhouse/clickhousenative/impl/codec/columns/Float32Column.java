@@ -19,4 +19,9 @@ public class Float32Column extends ClickhouseColumn {
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
     return new Float32ColumnWriter(data, descriptor, columnIndex);
   }
+
+  @Override
+  public Object nullValue() {
+    return (float) 0;
+  }
 }
