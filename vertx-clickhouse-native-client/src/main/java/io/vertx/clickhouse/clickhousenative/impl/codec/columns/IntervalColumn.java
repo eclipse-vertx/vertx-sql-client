@@ -24,4 +24,9 @@ public class IntervalColumn extends ClickhouseColumn {
     //return new IntervalColumnReader(data, descriptor, multiplier, columnIndex);
     throw new IllegalStateException("not implemented");
   }
+
+  @Override
+  public Object nullValue() {
+    return multiplier.multipliedBy(0);
+  }
 }
