@@ -51,7 +51,7 @@ public class StringColumnReader extends ClickhouseColumnReader {
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
     Object tmp = getObjectsArrayElement(rowIdx);
-    if (desired == String.class && tmp != null) {
+    if ((desired == String.class || desired == Object.class) && tmp != null) {
       return new String((byte[])tmp, charset);
     }
     return tmp;

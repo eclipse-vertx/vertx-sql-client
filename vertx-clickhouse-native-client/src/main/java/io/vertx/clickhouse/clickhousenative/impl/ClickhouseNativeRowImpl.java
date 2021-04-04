@@ -34,7 +34,7 @@ public class ClickhouseNativeRowImpl implements Row {
 
   @Override
   public Object getValue(int columnIndex) {
-    return getValue(columnIndex, String.class);
+    return getValue(columnIndex, Object.class);
   }
 
   private Object getValue(int columnIndex, Class<?> desired) {

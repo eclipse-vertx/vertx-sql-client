@@ -1,5 +1,6 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
+import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.QueryParsers;
@@ -238,10 +239,12 @@ public class ClickhouseColumns {
         return new UUIDColumn(descr);
       } else if (nativeType.startsWith(ENUM_PREFIX)) {
         Map<? extends Number, String> enumVals = QueryParsers.parseEnumValues(nativeType);
+        String enumResolutionStr = md.getProperties().getOrDefault(ClickhouseConstants.OPTION_ENUM_RESOLUTION, "by_name");
+        boolean enumsByName = "by_name".equals(enumResolutionStr);
         if (descr.getElementSize() == Enum8ColumnReader.ELEMENT_SIZE) {
-          return new Enum8Column(descr, enumVals);
+          return new Enum8Column(descr, enumVals, enumsByName);
         } else if (descr.getElementSize() == Enum16ColumnReader.ELEMENT_SIZE) {
-          return new Enum16Column(descr, enumVals);
+          return new Enum16Column(descr, enumVals, enumsByName);
         }
       } else if (nativeType.startsWith(INTERVAL_PREFIX)) {
         Duration multiplier = getDurationMultiplier(descr, md);

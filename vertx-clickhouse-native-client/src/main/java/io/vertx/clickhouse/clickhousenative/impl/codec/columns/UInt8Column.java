@@ -22,7 +22,7 @@ public class UInt8Column extends ClickhouseColumn {
 
   @Override
   public Object nullValue() {
-    if  (descriptor.isUnsigned()) {
+    if (descriptor.isUnsigned()) {
       return (short) 0;
     } else {
       return (byte) 0;

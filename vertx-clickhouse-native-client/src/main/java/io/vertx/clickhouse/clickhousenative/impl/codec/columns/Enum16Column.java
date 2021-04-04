@@ -8,10 +8,12 @@ import java.util.Map;
 
 public class Enum16Column extends ClickhouseColumn {
   private final Map<? extends Number, String> enumVals;
+  private final boolean enumsByName;
 
-  public Enum16Column(ClickhouseNativeColumnDescriptor descriptor, Map<? extends Number, String> enumVals) {
+  public Enum16Column(ClickhouseNativeColumnDescriptor descriptor, Map<? extends Number, String> enumVals, boolean enumsByName) {
     super(descriptor);
     this.enumVals = enumVals;
+    this.enumsByName = enumsByName;
   }
 
   @Override
