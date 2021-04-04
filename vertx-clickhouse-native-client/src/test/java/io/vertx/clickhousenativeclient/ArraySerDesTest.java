@@ -36,7 +36,7 @@ public class ArraySerDesTest {
     ClickhouseNativeColumnDescriptor descr = ClickhouseColumns.columnDescriptorForSpec("Array(Array(Array(LowCardinality(Nullable(String)))))", "name");
     ClickhouseNativeDatabaseMetadata md = new ClickhouseNativeDatabaseMetadata("a", "b",
       0, 0,0, 0, "dname", ZoneId.systemDefault(), ZoneId.systemDefault(), "client",
-      Collections.emptyMap(), StandardCharsets.UTF_8, null, null, null);
+      Collections.emptyMap(), StandardCharsets.UTF_8, null, null, null, true);
     ClickhouseColumn col = ClickhouseColumns.columnForSpec(descr, md);
     List<Tuple> data = Arrays.asList(Tuple.of(new String[][][]{ {{}, {"1"}, {"2", "3"}} }),
       Tuple.of(new String[][][]{ {{}, {"1"}, {"2", "3"}} }),

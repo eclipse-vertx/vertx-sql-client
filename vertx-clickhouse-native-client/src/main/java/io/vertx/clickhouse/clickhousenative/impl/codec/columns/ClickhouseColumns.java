@@ -111,7 +111,7 @@ public class ClickhouseColumns {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTimeColumnReader.ELEMENT_SIZE,
         spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
     } else if (spec.equals("DateTime64") || spec.startsWith("DateTime64(")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTime64ColumnReader.ELEMENT_SIZE,
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTime64Column.ELEMENT_SIZE,
         spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
     } else if (spec.equals("UUID")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UUIDColumn.ELEMENT_SIZE,
@@ -198,19 +198,23 @@ public class ClickhouseColumns {
       if (nativeType.endsWith(")")) {
         int openBracePos = nativeType.indexOf("(");
         String dateModifiers = nativeType.substring(openBracePos + 1, nativeType.length() - 1);
-        if (descr.getElementSize() == DateTime64ColumnReader.ELEMENT_SIZE) {
+        if (descr.getElementSize() == DateTime64Column.ELEMENT_SIZE) {
           String[] modifiers = dateModifiers.split(",");
           precision = Integer.parseInt(modifiers[0].trim());
-          zoneId = modifiers.length == 2
-            ? ZoneId.of(modifiers[1].trim())
-            : md.getDefaultZoneId();
+          if (modifiers.length == 2) {
+            String id = modifiers[1].trim();
+            id = id.substring(1, id.length() - 1);
+            zoneId = ZoneId.of(id);
+          } else {
+            zoneId = md.getDefaultZoneId();
+          }
         } else {
           zoneId = ZoneId.of(dateModifiers);
         }
       } else {
         zoneId = md.getDefaultZoneId();
       }
-      return precision == null ? new DateTimeColumn(descr, zoneId) : new DateTime64Column(descr, precision, zoneId);
+      return precision == null ? new DateTimeColumn(descr, zoneId) : new DateTime64Column(descr, precision, md.isSaturateExtraNanos(), zoneId);
     } else if (jdbcType == JDBCType.DECIMAL) {
       //TODO smagellan: merge into one statement after introducing column readers
       if (descr.getElementSize() == Decimal32ColumnReader.ELEMENT_SIZE) {

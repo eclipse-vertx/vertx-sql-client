@@ -34,9 +34,9 @@ public class ClickhouseResource extends ExternalResource {
       .addProperty(ClickhouseConstants.OPTION_APPLICATION_NAME, "java-driver")
       .addProperty(ClickhouseConstants.OPTION_COMPRESSOR, "lz4_safe")
       .addProperty(ClickhouseConstants.OPTION_STRING_CHARSET, "utf-8")
-      .addProperty(ClickhouseConstants.OPTION_DEFAULT_ZONE_ID, "Europe/Oslo");
-      //.addProperty(ClickhouseConstants.OPTION_DEFAULT_ZONE_ID, "Europe%2FOslo");
-      //.addProperty(ClickhouseConstants.OPTION_SEND_LOGS_LEVEL, "debug");
+      .addProperty(ClickhouseConstants.OPTION_DEFAULT_ZONE_ID, "Europe/Oslo")
+      .addProperty(ClickhouseConstants.OPTION_DATETIME64_EXTRA_NANOS_MODE, "saturate")
+      .addProperty(ClickhouseConstants.OPTION_SEND_LOGS_LEVEL, "debug");
   }
 
   @Override

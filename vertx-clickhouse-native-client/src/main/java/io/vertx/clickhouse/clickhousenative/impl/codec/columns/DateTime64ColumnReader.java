@@ -9,7 +9,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 
 public class DateTime64ColumnReader extends ClickhouseColumnReader {
-  public static final int ELEMENT_SIZE = 8;
 
   private final ZoneId zoneId;
   private final BigInteger invTickSize;
@@ -22,7 +21,7 @@ public class DateTime64ColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
+    if (in.readableBytes() >= DateTime64Column.ELEMENT_SIZE * nRows) {
       OffsetDateTime[] data = new OffsetDateTime[nRows];
       for (int i = 0; i < nRows; ++i) {
         if (nullsMap == null || !nullsMap.get(i)) {
@@ -32,7 +31,7 @@ public class DateTime64ColumnReader extends ClickhouseColumnReader {
           OffsetDateTime dt = Instant.ofEpochSecond(seconds, nanos).atZone(zoneId).toOffsetDateTime();
           data[i] = dt;
         } else {
-          in.skipBytes(ELEMENT_SIZE);
+          in.skipBytes(DateTime64Column.ELEMENT_SIZE);
         }
       }
       return data;

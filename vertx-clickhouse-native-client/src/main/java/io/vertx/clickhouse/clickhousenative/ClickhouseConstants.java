@@ -39,7 +39,7 @@ public class ClickhouseConstants {
   public static final String OPTION_QUARTER_DURATION = "days_in_quarter";
   public static final String OPTION_MONTH_DURATION = "days_in_month";
   public static final String OPTION_SEND_LOGS_LEVEL = "send_logs_level";
-
+  public static final String OPTION_DATETIME64_EXTRA_NANOS_MODE = "dt64_extra_nanos";
   public static final String OPTION_MAX_BLOCK_SIZE = "max_block_size";
 
   public static final short COMPRESSION_METHOD_LZ4 = 0x82;
@@ -48,5 +48,5 @@ public class ClickhouseConstants {
   public static final Set<String> NON_QUERY_OPTIONS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
     OPTION_APPLICATION_NAME, OPTION_INITIAL_USER, OPTION_INITIAL_QUERY_ID, OPTION_INITIAL_ADDRESS, OPTION_INITIAL_USERNAME,
     OPTION_INITIAL_HOSTNAME, OPTION_COMPRESSOR, OPTION_STRING_CHARSET, OPTION_DEFAULT_ZONE_ID, OPTION_YEAR_DURATION, OPTION_QUARTER_DURATION,
-    OPTION_MONTH_DURATION)));
+    OPTION_MONTH_DURATION, OPTION_DATETIME64_EXTRA_NANOS_MODE)));
 }
