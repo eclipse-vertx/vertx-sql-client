@@ -16,10 +16,10 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
   private final ClickhouseNativeColumnDescriptor elementTypeDescr;
   private final ClickhouseColumn elementTypeColumn;
 
-  public ArrayColumnWriter(List<Tuple> data, ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md, int columnIndex) {
+  public ArrayColumnWriter(List<Tuple> data, ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeColumnDescriptor elementTypeDescr, ClickhouseNativeDatabaseMetadata md, int columnIndex) {
     super(data, descriptor.copyAsNestedArray(), columnIndex);
     this.md = md;
-    this.elementTypeDescr = ArrayColumnReader.elementaryDescr(descriptor);
+    this.elementTypeDescr = elementTypeDescr;
     this.elementTypeColumn = ClickhouseColumns.columnForSpec(elementTypeDescr, md);
   }
 

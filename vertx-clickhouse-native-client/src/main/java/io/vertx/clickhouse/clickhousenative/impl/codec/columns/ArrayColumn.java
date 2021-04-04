@@ -8,18 +8,29 @@ import java.util.List;
 
 public class ArrayColumn extends ClickhouseColumn {
   private final ClickhouseNativeDatabaseMetadata md;
+  private final ClickhouseNativeColumnDescriptor elementaryDescr;
+
   public ArrayColumn(ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md) {
     super(descriptor);
     this.md = md;
+    this.elementaryDescr = elementaryDescr(descriptor);
   }
 
-  @Override
+  private static ClickhouseNativeColumnDescriptor elementaryDescr(ClickhouseNativeColumnDescriptor descr) {
+    ClickhouseNativeColumnDescriptor tmp = descr;
+    while (tmp.isArray()) {
+      tmp = tmp.getNestedDescr();
+    }
+    return tmp;
+  }
+
+    @Override
   public ClickhouseColumnReader reader(int nRows) {
-    return new ArrayColumnReader(nRows, descriptor, md);
+    return new ArrayColumnReader(nRows, descriptor, elementaryDescr, md);
   }
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    return new ArrayColumnWriter(data, descriptor, md, columnIndex);
+    return new ArrayColumnWriter(data, descriptor, elementaryDescr, md, columnIndex);
   }
 }

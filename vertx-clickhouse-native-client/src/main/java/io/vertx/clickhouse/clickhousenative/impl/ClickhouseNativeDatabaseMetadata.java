@@ -23,11 +23,13 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
   private final Duration yearDuration;
   private final Duration quarterDuration;
   private final Duration monthDuration;
+  private final boolean saturateExtraNanos;
 
   public ClickhouseNativeDatabaseMetadata(String productName, String fullVersion, int major, int minor, int revision,
                                           int patchVersion, String displayName, ZoneId serverZoneId, ZoneId defaultZoneId,
                                           String fullClientName, Map<String, String> properties, Charset stringCharset,
-                                          Duration yearDuration, Duration quarterDuration, Duration monthDuration) {
+                                          Duration yearDuration, Duration quarterDuration, Duration monthDuration,
+                                          boolean saturateExtraNanos) {
     this.productName = productName;
     this.fullVersion = fullVersion;
     this.major = major;
@@ -43,6 +45,7 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
     this.yearDuration = yearDuration;
     this.quarterDuration = quarterDuration;
     this.monthDuration = monthDuration;
+    this.saturateExtraNanos = saturateExtraNanos;
   }
 
   @Override
@@ -107,6 +110,10 @@ public class ClickhouseNativeDatabaseMetadata implements DatabaseMetadata {
 
   public Duration monthDuration() {
     return monthDuration;
+  }
+
+  public boolean isSaturateExtraNanos() {
+    return saturateExtraNanos;
   }
 
   @Override

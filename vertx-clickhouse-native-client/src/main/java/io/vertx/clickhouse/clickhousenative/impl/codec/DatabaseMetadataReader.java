@@ -81,10 +81,12 @@ public class DatabaseMetadataReader {
     int daysInMonth = Integer.parseInt(properties.getOrDefault(ClickhouseConstants.OPTION_MONTH_DURATION, "30"));
     ZoneId serverZoneId = serverZoneIdName == null ? null : ZoneId.of(serverZoneIdName);
     ZoneId defaultZoneId = getDefaultZoneId(serverZoneId);
+    String extraNanos = properties.getOrDefault(ClickhouseConstants.OPTION_DATETIME64_EXTRA_NANOS_MODE, "throw");
+    boolean saturateExtraNanos = "saturate".equals(extraNanos);
     return new ClickhouseNativeDatabaseMetadata(productName,
       String.format("%d.%d.%d", major, minor, revision),
       major, minor, revision, patchVersion, displayName, serverZoneId, defaultZoneId, fullClientName, properties, charset(),
-      Duration.ofDays(daysInYear), Duration.ofDays(daysInQuarter), Duration.ofDays(daysInMonth));
+      Duration.ofDays(daysInYear), Duration.ofDays(daysInQuarter), Duration.ofDays(daysInMonth), saturateExtraNanos);
   }
 
   private ZoneId getDefaultZoneId(ZoneId serverZoneId) {

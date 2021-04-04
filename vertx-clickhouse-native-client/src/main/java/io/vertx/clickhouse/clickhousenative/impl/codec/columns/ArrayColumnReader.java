@@ -30,18 +30,10 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   private Integer curLevelSliceSize;
   private List<Integer> curLevelSlice;
 
-  public ArrayColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
+  public ArrayColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeColumnDescriptor elementTypeDescr, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descr.copyAsNestedArray());
     this.md = md;
-    this.elementTypeDescr = elementaryDescr(descr);
-  }
-
-  static ClickhouseNativeColumnDescriptor elementaryDescr(ClickhouseNativeColumnDescriptor descr) {
-    ClickhouseNativeColumnDescriptor tmp = descr;
-    while (tmp.isArray()) {
-      tmp = tmp.getNestedDescr();
-    }
-    return tmp;
+    this.elementTypeDescr = elementTypeDescr;
   }
 
   @Override
