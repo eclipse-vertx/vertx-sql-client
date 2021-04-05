@@ -4,14 +4,24 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EnumColumnEncoder {
-  private final Map<? extends Number, String> enumKeyToName;
+  private final Number[] enumOrdinalToKey;
   private final Map<String, ? extends Number> enumNameToKey;
-  private final boolean enumsByName;
+  private final EnumResolutionMethod resolutionMethod;
 
-  public EnumColumnEncoder(Map<? extends Number, String> enumKeyToName, boolean enumsByName) {
-    this.enumKeyToName = enumKeyToName;
-    this.enumNameToKey = buildReverseIndex(enumKeyToName);
-    this.enumsByName = enumsByName;
+  public EnumColumnEncoder(Map<? extends Number, String> enumKeyToName, EnumResolutionMethod resolutionMethod) {
+    this.resolutionMethod = resolutionMethod;
+    this.enumNameToKey = resolutionMethod == EnumResolutionMethod.NAME ? buildReverseIndex(enumKeyToName) : null;
+    this.enumOrdinalToKey = resolutionMethod == EnumResolutionMethod.NAME ? null : enumOrdinalToKey(enumKeyToName);
+  }
+
+  private <R extends Number> Number[] enumOrdinalToKey(Map<R, String> enumVals) {
+    Number[] ret = new Number[enumVals.size()];
+    int idx = 0;
+    for (Map.Entry<R, String> entry:enumVals.entrySet()) {
+      ret[idx] = entry.getKey();
+      ++idx;
+    }
+    return ret;
   }
 
   private <R extends Number> Map<String, R> buildReverseIndex(Map<R, String> enumVals) {
@@ -23,29 +33,29 @@ public class EnumColumnEncoder {
   }
 
   public Number encode(Object val) {
-    Number idx;
+    Number key;
     if (val.getClass() == String.class) {
-      idx = enumNameToKey.get(val);
+      key = enumNameToKey.get(val);
     } else if (val.getClass().isEnum()) {
       Enum enumVal = (Enum) val;
-      if (enumsByName) {
-        idx = enumNameToKey.get(enumVal.name());
+      if (resolutionMethod == EnumResolutionMethod.NAME) {
+        key = enumNameToKey.get(enumVal.name());
       } else {
-        Byte tmp = (byte) enumVal.ordinal();
-        if (enumKeyToName.containsKey(tmp)) {
-          idx = tmp;
+        int ordinal = enumVal.ordinal();
+        if (ordinal < enumOrdinalToKey.length) {
+          key = enumOrdinalToKey[ordinal];
         } else {
-          idx = null;
+          throw new IllegalArgumentException("ordinal " + ordinal + " for enum val " + enumVal + " is too big, max " + (enumOrdinalToKey.length - 1));
         }
       }
     } else if (val instanceof Number) {
-      idx = (Number) val;
+      key = (Number) val;
     } else {
       throw new IllegalArgumentException("don't know how to serialize " + val + " of class " + val.getClass());
     }
-    if (idx == null) {
+    if (key == null) {
       throw new IllegalArgumentException(val + " is not in dictionary; possible values: " + enumNameToKey.keySet());
     }
-    return idx;
+    return key;
   }
 }

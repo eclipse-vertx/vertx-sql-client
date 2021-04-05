@@ -8,9 +8,9 @@ public class Enum16ColumnReader extends UInt16ColumnReader implements EnumColumn
   public static final int ELEMENT_SIZE = 2;
   private final EnumColumnDecoder columnRecoder;
 
-  public Enum16ColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, Map<? extends Number, String> enumVals, boolean enumsByName) {
+  public Enum16ColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, Map<? extends Number, String> enumVals, EnumResolutionMethod resolutionMethod) {
     super(nRows, descr);
-    this.columnRecoder = new EnumColumnDecoder(enumVals, enumsByName);
+    this.columnRecoder = new EnumColumnDecoder(enumVals, resolutionMethod);
   }
 
   @Override
