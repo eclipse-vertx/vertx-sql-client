@@ -21,7 +21,6 @@ public class IntervalColumn extends ClickhouseColumn {
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    //return new IntervalColumnReader(data, descriptor, multiplier, columnIndex);
     throw new IllegalStateException("not implemented");
   }
 

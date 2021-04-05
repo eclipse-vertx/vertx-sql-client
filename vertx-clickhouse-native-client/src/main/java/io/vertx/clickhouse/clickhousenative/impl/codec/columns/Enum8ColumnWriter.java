@@ -11,9 +11,9 @@ public class Enum8ColumnWriter extends UInt8ColumnWriter {
   private final EnumColumnEncoder columnEncoder;
 
   public Enum8ColumnWriter(List<Tuple> data, ClickhouseNativeColumnDescriptor columnDescriptor, int columnIndex,
-                           Map<? extends Number, String> enumVals, boolean enumsByName) {
+                           Map<? extends Number, String> enumVals, EnumResolutionMethod resolutionMethod) {
     super(data, columnDescriptor, columnIndex);
-    this.columnEncoder = new EnumColumnEncoder(enumVals, enumsByName);
+    this.columnEncoder = new EnumColumnEncoder(enumVals, resolutionMethod);
   }
 
   @Override

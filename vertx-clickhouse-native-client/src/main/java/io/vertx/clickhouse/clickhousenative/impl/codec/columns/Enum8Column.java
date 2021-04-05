@@ -8,21 +8,21 @@ import java.util.Map;
 
 public class Enum8Column extends UInt8Column {
   private final Map<? extends Number, String> enumVals;
-  private final boolean enumsByName;
+  private final EnumResolutionMethod resolutionMethod;
 
-  public Enum8Column(ClickhouseNativeColumnDescriptor descriptor, Map<? extends Number, String> enumVals, boolean enumsByName) {
+  public Enum8Column(ClickhouseNativeColumnDescriptor descriptor, Map<? extends Number, String> enumVals, EnumResolutionMethod resolutionMethod) {
     super(descriptor);
     this.enumVals = enumVals;
-    this.enumsByName = enumsByName;
+    this.resolutionMethod = resolutionMethod;
   }
 
   @Override
   public ClickhouseColumnReader reader(int nRows) {
-    return new Enum8ColumnReader(nRows, descriptor, enumVals, enumsByName);
+    return new Enum8ColumnReader(nRows, descriptor, enumVals, resolutionMethod);
   }
 
   @Override
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
-    return new Enum8ColumnWriter(data, descriptor, columnIndex, enumVals, enumsByName);
+    return new Enum8ColumnWriter(data, descriptor, columnIndex, enumVals, resolutionMethod);
   }
 }

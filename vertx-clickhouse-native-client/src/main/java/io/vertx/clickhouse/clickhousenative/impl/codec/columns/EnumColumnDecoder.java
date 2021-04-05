@@ -1,14 +1,27 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
+import java.util.HashMap;
 import java.util.Map;
 
 class EnumColumnDecoder {
   private final Map<? extends Number, String> enumKeyToName;
-  private final boolean enumsByName;
+  private final Map<Number, Integer> enumKeyToOrdinal;
+  private final EnumResolutionMethod resolutionMethod;
 
-  EnumColumnDecoder(Map<? extends Number, String> enumVals, boolean enumsByName) {
+  EnumColumnDecoder(Map<? extends Number, String> enumVals, EnumResolutionMethod resolutionMethod) {
     this.enumKeyToName = enumVals;
-    this.enumsByName = enumsByName;
+    this.resolutionMethod = resolutionMethod;
+    this.enumKeyToOrdinal = resolutionMethod == EnumResolutionMethod.ORDINAL ? buildEnumKeyToOrdinal(enumVals) : null;
+  }
+
+  static Map<Number, Integer> buildEnumKeyToOrdinal(Map<? extends Number, String> enumVals) {
+    Map<Number, Integer> ret = new HashMap<>();
+    int idx = 0;
+    for (Map.Entry<? extends Number, String> entry : enumVals.entrySet()) {
+      ret.put(entry.getKey(), idx);
+      ++idx;
+    }
+    return ret;
   }
 
   public Object recodeElement(Number key, Class desired) {
@@ -17,10 +30,12 @@ class EnumColumnDecoder {
     }
     String str = enumKeyToName.get(key);
     if (desired.isEnum()) {
-      if (enumsByName) {
+      if (resolutionMethod == EnumResolutionMethod.NAME) {
         return Enum.valueOf(desired, str);
-      } else {
+      } else if (resolutionMethod == EnumResolutionMethod.KEY) {
         return desired.getEnumConstants()[key.intValue()];
+      } else {
+        return desired.getEnumConstants()[enumKeyToOrdinal.get(key)];
       }
     }
     return str;

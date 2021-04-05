@@ -3,14 +3,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 import io.vertx.sqlclient.Tuple;
 
 import java.time.temporal.Temporal;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 //TODO: maybe switch to antlr4 or JavaCC + .jj file (see ClickHouseSqlParser.jj in regular ClickHouse jdbc driver)
 public class QueryParsers {
@@ -127,7 +120,7 @@ public class QueryParsers {
   public static Map<? extends Number, String> parseEnumValues(String nativeType) {
     final boolean isByte = nativeType.startsWith("Enum8(");
     int openBracketPos = nativeType.indexOf('(');
-    Map<Number, String> result = new HashMap<>();
+    Map<Number, String> result = new LinkedHashMap<>();
     int lastQuotePos = -1;
     boolean gotEq = false;
     String enumElementName = null;
