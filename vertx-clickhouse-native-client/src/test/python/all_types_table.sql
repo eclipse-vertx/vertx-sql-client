@@ -258,6 +258,16 @@ CREATE TABLE vertx_test_decimal128 (
     nullable_array_t Array(Nullable(Decimal128(4))),
     nullable_array3_t Array(Array(Array(Nullable(Decimal128(4)))))
 ) engine = Memory();
+DROP TABLE IF EXISTS vertx_test_decimal256;
+CREATE TABLE vertx_test_decimal256 (
+    id Int8,
+    simple_t Decimal256(4),
+    nullable_t Nullable(Decimal256(4)),
+    array_t Array(Decimal256(4)),
+    array3_t Array(Array(Array(Decimal256(4)))),
+    nullable_array_t Array(Nullable(Decimal256(4))),
+    nullable_array3_t Array(Array(Array(Nullable(Decimal256(4)))))
+) engine = Memory();
 DROP TABLE IF EXISTS vertx_test_enum8;
 CREATE TABLE vertx_test_enum8 (
     id Int8,

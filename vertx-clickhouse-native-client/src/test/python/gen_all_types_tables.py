@@ -6,7 +6,7 @@ ELEMENTARY_TYPES = ['Int8', 'UInt8', 'Int16', 'UInt16', 'Int32', 'UInt32', 'Int6
                     {'table': 'Decimal32', 'type': 'Decimal32(4)'},
                     {'table': 'Decimal64', 'type': 'Decimal64(4)'},
                     {'table': 'Decimal128', 'type': 'Decimal128(4)'},
-                    #{'table': 'Decimal256', 'type': 'Decimal256(4)'},
+                    {'table': 'Decimal256', 'type': 'Decimal256(4)'},
                     {'table': 'Enum8', 'type': 'Enum8(\'v0\' = -128, \'v1\' = -2,\'v2\' = -1, \'v3\' = 0,\'v4\' = 1, \'v5\' = 2, \'v6\' = 127)'},
                     {'table': 'Enum16', 'type': 'Enum16(\'v0\' = -32768, \'v1\' = -2,\'v2\' = -1, \'v3\' = 0,\'v4\' = 1, \'v5\' = 2, \'v6\' = 32767)'},
                     'Float32', 'Float64', 'IPv6', 'IPv4'];

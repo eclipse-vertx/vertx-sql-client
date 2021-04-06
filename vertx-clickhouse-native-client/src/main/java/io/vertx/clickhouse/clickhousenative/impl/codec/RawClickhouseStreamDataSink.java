@@ -50,6 +50,11 @@ public class RawClickhouseStreamDataSink implements ClickhouseStreamDataSink {
   }
 
   @Override
+  public void writeBytes(byte[] value, int index, int length) {
+    sink.writeBytes(value, index, length);
+  }
+
+  @Override
   public void writeBoolean(boolean value) {
     sink.writeBoolean(value);
   }

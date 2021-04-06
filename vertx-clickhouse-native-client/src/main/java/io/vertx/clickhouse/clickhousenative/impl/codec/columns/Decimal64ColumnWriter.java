@@ -21,9 +21,7 @@ public class Decimal64ColumnWriter extends ClickhouseColumnWriter {
       serializeDataNull(sink);
       return;
     }
-    if (columnDescriptor.getScale() < bd.scale()) {
-      throw new IllegalArgumentException("possible loss of precision: max " + columnDescriptor.getScale() + ", got " + bd.scale());
-    }
+    ColumnUtils.bigDecimalFitsOrThrow(bd, columnDescriptor);
     BigInteger bi = bd.unscaledValue();
     sink.writeLongLE(bi.longValueExact());
   }

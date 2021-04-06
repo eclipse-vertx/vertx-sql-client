@@ -68,6 +68,11 @@ class Lz4ClickhouseStreamDataSink implements ClickhouseStreamDataSink {
   }
 
   @Override
+  public void writeBytes(byte[] value, int index, int length) {
+    tmpStorage.writeBytes(value, index, length);
+  }
+
+  @Override
   public void writeBoolean(boolean value) {
     tmpStorage.writeBoolean(value);
   }

@@ -9,6 +9,7 @@ public interface ClickhouseStreamDataSink {
   void writeFloatLE(float value);
   void writeDoubleLE(double value);
   void writeBytes(byte[] value);
+  void writeBytes(byte[] value, int index, int length);
   void writeBoolean(boolean value);
   void writeZero(int length);
   void writePascalString(String value);
