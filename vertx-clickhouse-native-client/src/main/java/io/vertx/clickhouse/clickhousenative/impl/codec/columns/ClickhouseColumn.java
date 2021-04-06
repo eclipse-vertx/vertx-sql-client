@@ -16,7 +16,5 @@ public abstract class ClickhouseColumn {
 
   public abstract ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex);
 
-  public Object nullValue() {
-    throw new IllegalStateException("not implemented for " + this.getClass());
-  }
+  public abstract Object nullValue();
 }

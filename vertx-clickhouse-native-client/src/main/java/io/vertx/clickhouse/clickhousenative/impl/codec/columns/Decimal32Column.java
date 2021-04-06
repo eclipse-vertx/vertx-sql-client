@@ -15,7 +15,7 @@ public class Decimal32Column extends ClickhouseColumn {
   public static final int MAX_PRECISION = 9;
   public final static MathContext MATH_CONTEXT = new MathContext(MAX_PRECISION, RoundingMode.HALF_EVEN);
 
-  public final Numeric zeroValue;
+  private final Numeric zeroValue;
 
   public Decimal32Column(ClickhouseNativeColumnDescriptor descriptor) {
     super(descriptor);

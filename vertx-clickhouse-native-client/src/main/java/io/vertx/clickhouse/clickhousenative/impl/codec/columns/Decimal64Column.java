@@ -14,9 +14,7 @@ public class Decimal64Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 8;
   public static final int MAX_PRECISION = 18;
   public static final MathContext MATH_CONTEXT = new MathContext(MAX_PRECISION, RoundingMode.HALF_EVEN);
-
-
-  public final Numeric zeroValue;
+  private final Numeric zeroValue;
 
   public Decimal64Column(ClickhouseNativeColumnDescriptor descriptor) {
     super(descriptor);

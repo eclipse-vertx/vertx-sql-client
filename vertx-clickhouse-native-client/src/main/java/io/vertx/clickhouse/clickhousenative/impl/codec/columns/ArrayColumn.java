@@ -33,4 +33,9 @@ public class ArrayColumn extends ClickhouseColumn {
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
     return new ArrayColumnWriter(data, descriptor, elementaryDescr, md, columnIndex);
   }
+
+  @Override
+  public Object nullValue() {
+    throw new IllegalArgumentException("arrays are not nullable");
+  }
 }
