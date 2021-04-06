@@ -2,7 +2,7 @@
 
 ELEMENTARY_TYPES = ['Int8', 'UInt8', 'Int16', 'UInt16', 'Int32', 'UInt32', 'Int64', 'UInt64', 'Int128', 'String',
                     {'table': 'FixedString', 'type': 'FixedString(12)'},
-                    'DateTime', 'DateTime64', 'Date', 'UUID',
+                    'DateTime', {'table': 'datetime64', 'type': 'DateTime64(3)'}, 'Date', 'UUID',
                     {'table': 'Decimal32', 'type': 'Decimal32(4)'},
                     {'table': 'Decimal64', 'type': 'Decimal64(4)'},
                     {'table': 'Decimal128', 'type': 'Decimal128(4)'},
@@ -21,7 +21,7 @@ for elem_spec in ELEMENTARY_TYPES:
     print('DROP TABLE IF EXISTS {0};'.format(table_name));
     print('CREATE TABLE {0} ('.format(table_name));
     columns = ['id Int8'];
-    low_cardinality = type_name != 'UUID' and type_name != 'DateTime64' \
+    low_cardinality = type_name != 'UUID' and not type_name.startswith('DateTime64') \
                       and not type_name.startswith('Decimal32(') and not type_name.startswith('Decimal64(') \
                       and not type_name.startswith('Decimal128(') \
                       and not type_name.startswith('Decimal256(') \
@@ -41,5 +41,4 @@ for elem_spec in ELEMENTARY_TYPES:
         columns.append('nullable_array_lc_t Array(LowCardinality(Nullable({0})))'.format(type_name));
         columns.append('nullable_array3_lc_t Array(Array(Array(LowCardinality(Nullable({0})))))'.format(type_name));
     print('   ', ',\n    '.join(columns));
-    print(') engine = MergeTree()');
-    print("        ORDER BY (id);");
+    print(') engine = Memory();');

@@ -18,10 +18,10 @@ public class Float64Test extends AllTypesBase<Double> {
   public List<Tuple> createBatch() {
     Double v1 = Double.MAX_VALUE / 2;
     Double v2 = Double.MIN_VALUE / 2;
-    Double v3 = 30.0;
-    Double v4 = -40.0;
-    Double v5 = 60.0;
-    Double v6 = -70.0;
+    Double v3 = Double.MAX_VALUE / 3;
+    Double v4 = Double.NaN;
+    Double v5 = Double.NEGATIVE_INFINITY;
+    Double v6 = Double.POSITIVE_INFINITY;
     Double nv = 0.0;
     Double mn = Double.MIN_VALUE;
     Double mx = Double.MAX_VALUE;

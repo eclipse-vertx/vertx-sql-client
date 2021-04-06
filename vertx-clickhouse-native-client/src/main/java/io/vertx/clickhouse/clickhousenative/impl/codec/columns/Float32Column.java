@@ -22,6 +22,6 @@ public class Float32Column extends ClickhouseColumn {
 
   @Override
   public Object nullValue() {
-    return (float) 0;
+    return 0.0f;
   }
 }
