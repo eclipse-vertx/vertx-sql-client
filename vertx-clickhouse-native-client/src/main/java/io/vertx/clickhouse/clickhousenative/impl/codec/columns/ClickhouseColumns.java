@@ -155,14 +155,14 @@ public class ClickhouseColumns {
   }
 
   private static int decimalSize(int precision) {
-    if (precision <= Decimal32ColumnReader.MAX_PRECISION) {
-      return Decimal32ColumnReader.ELEMENT_SIZE;
-    } else if (precision <= Decimal64ColumnReader.MAX_PRECISION) {
-      return Decimal64ColumnReader.ELEMENT_SIZE;
-    } else if (precision <= Decimal128ColumnReader.MAX_PRECISION) {
-      return Decimal128ColumnReader.ELEMENT_SIZE;
+    if (precision <= Decimal32Column.MAX_PRECISION) {
+      return Decimal32Column.ELEMENT_SIZE;
+    } else if (precision <= Decimal64Column.MAX_PRECISION) {
+      return Decimal64Column.ELEMENT_SIZE;
+    } else if (precision <= Decimal128Column.MAX_PRECISION) {
+      return Decimal128Column.ELEMENT_SIZE;
     } else {
-      return Decimal256ColumnReader.ELEMENT_SIZE;
+      return Decimal256Column.ELEMENT_SIZE;
     }
   }
 
@@ -218,13 +218,13 @@ public class ClickhouseColumns {
       return precision == null ? new DateTimeColumn(descr, zoneId) : new DateTime64Column(descr, precision, md.isSaturateExtraNanos(), zoneId);
     } else if (jdbcType == JDBCType.DECIMAL) {
       //TODO smagellan: merge into one statement after introducing column readers
-      if (descr.getElementSize() == Decimal32ColumnReader.ELEMENT_SIZE) {
+      if (descr.getElementSize() == Decimal32Column.ELEMENT_SIZE) {
         return new Decimal32Column(descr);
-      } else if (descr.getElementSize() == Decimal64ColumnReader.ELEMENT_SIZE) {
+      } else if (descr.getElementSize() == Decimal64Column.ELEMENT_SIZE) {
         return new Decimal64Column(descr);
-      } else if (descr.getElementSize() == Decimal128ColumnReader.ELEMENT_SIZE) {
+      } else if (descr.getElementSize() == Decimal128Column.ELEMENT_SIZE) {
         return new Decimal128Column(descr);
-      } else if (descr.getElementSize() == Decimal256ColumnReader.ELEMENT_SIZE) {
+      } else if (descr.getElementSize() == Decimal256Column.ELEMENT_SIZE) {
         return new Decimal256Column(descr);
       }
     } else if (jdbcType == JDBCType.REAL) {

@@ -82,7 +82,6 @@ public abstract class AllTypesBase<T> {
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("TRUNCATE TABLE " + tableName).execute(
         ctx.asyncAssertSuccess(res1 -> {
-          Sleep.sleepOrThrow();
           List<String> columnsList = columnsList(hasLowCardinality);
           String columnsStr = String.join(", ", columnsList);
           String query = "INSERT INTO " + tableName + " (" + columnsStr + ") VALUES";
