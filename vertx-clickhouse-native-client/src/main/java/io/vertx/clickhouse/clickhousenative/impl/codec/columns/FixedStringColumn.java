@@ -23,4 +23,9 @@ public class FixedStringColumn extends ClickhouseColumn {
   public ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex) {
     return new FixedStringColumnWriter(data, descriptor, md.getStringCharset(), columnIndex);
   }
+
+  @Override
+  public Object nullValue() {
+    return StringColumn.EMPTY;
+  }
 }

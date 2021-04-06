@@ -37,6 +37,7 @@ public class ClickhouseResource extends ExternalResource {
       .addProperty(ClickhouseConstants.OPTION_DEFAULT_ZONE_ID, "Europe/Oslo")
       .addProperty(ClickhouseConstants.OPTION_DATETIME64_EXTRA_NANOS_MODE, "saturate")
       .addProperty(ClickhouseConstants.OPTION_ENUM_RESOLUTION, "by_name")
+      .addProperty(ClickhouseConstants.OPTION_REMOVE_TRAILING_ZEROS_WHEN_ENCODE_FIXED_STRINGS, "true")
       .addProperty(ClickhouseConstants.OPTION_SEND_LOGS_LEVEL, "debug");
   }
 

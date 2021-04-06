@@ -10,6 +10,7 @@ import java.util.List;
 
 public class FixedStringColumnReader extends ClickhouseColumnReader {
   private final Charset charset;
+  private final boolean removeTrailingZerosInStrings;
 
   private List<byte[]> elements;
 
@@ -17,6 +18,7 @@ public class FixedStringColumnReader extends ClickhouseColumnReader {
     super(nRows, columnDescriptor);
     this.elements = new ArrayList<>(nRows);
     this.charset = md.getStringCharset();
+    this.removeTrailingZerosInStrings = md.isRemoveTrailingZerosInFixedStrings();
   }
 
   @Override
@@ -45,7 +47,9 @@ public class FixedStringColumnReader extends ClickhouseColumnReader {
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
     Object tmp = getObjectsArrayElement(rowIdx);
     if ((desired == String.class || desired == Object.class) && tmp != null) {
-      return new String((byte[])tmp, charset);
+      byte[] bytes = (byte[]) tmp;
+      int lastNonZeroIdx = removeTrailingZerosInStrings ? ColumnUtils.getLastNonZeroPos(bytes) : bytes.length - 1;
+      return new String(bytes, 0, lastNonZeroIdx + 1, charset);
     }
     return tmp;
   }
