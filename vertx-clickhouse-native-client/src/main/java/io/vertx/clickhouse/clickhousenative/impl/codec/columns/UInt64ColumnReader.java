@@ -2,6 +2,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigInteger;
 
@@ -32,7 +33,7 @@ public class UInt64ColumnReader extends ClickhouseColumnReader {
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
     long element = ((long[])this.itemsArray)[rowIdx];
     if (columnDescriptor.isUnsigned()) {
-      return unsignedBi(element);
+      return Numeric.create(unsignedBi(element));
     }
     return element;
   }
