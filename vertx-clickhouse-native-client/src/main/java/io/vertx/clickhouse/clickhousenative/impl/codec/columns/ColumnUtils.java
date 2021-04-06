@@ -9,4 +9,11 @@ public class ColumnUtils {
     }
     return src;
   }
+
+  public static int getLastNonZeroPos(byte[] bytes) {
+    int lastNonZeroPos = bytes.length - 1;
+    for (; lastNonZeroPos >= 0 && bytes[lastNonZeroPos] == 0; --lastNonZeroPos) {
+    }
+    return lastNonZeroPos;
+  }
 }

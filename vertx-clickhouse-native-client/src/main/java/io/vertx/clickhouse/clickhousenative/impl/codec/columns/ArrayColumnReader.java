@@ -142,7 +142,14 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     for (int i = 0; i < src.length; ++i) {
       Object element = src[i];
       if (element != null) {
-        ret[i] = new String((byte[]) element, charset);
+        int lastNonZeroIdx;
+        byte[] bytes = (byte[]) element;
+        if (md.isRemoveTrailingZerosInFixedStrings() && elementTypeDescr.getNestedType().startsWith("FixedString")) {
+          lastNonZeroIdx = ColumnUtils.getLastNonZeroPos(bytes);
+        } else {
+          lastNonZeroIdx = bytes.length - 1;
+        }
+        ret[i] = new String(bytes, 0, lastNonZeroIdx + 1, charset);
       }
     }
     return ret;

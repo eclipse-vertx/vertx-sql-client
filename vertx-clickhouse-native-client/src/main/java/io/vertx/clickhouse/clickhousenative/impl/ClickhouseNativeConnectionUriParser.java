@@ -1,6 +1,5 @@
 package io.vertx.clickhouse.clickhousenative.impl;
 
-import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
@@ -18,7 +17,7 @@ public class ClickhouseNativeConnectionUriParser {
       URI location = URI.create(connectionUri);
       String userInfo = location.getUserInfo();
       String user = userInfo;
-      String password = null;
+      String password = "";
       if (userInfo.contains(":")) {
         String[] tokens = userInfo.split(":");
         user = tokens[0];

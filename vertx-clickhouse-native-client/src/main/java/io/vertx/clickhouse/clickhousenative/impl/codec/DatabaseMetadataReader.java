@@ -83,10 +83,11 @@ public class DatabaseMetadataReader {
     ZoneId defaultZoneId = getDefaultZoneId(serverZoneId);
     String extraNanos = properties.getOrDefault(ClickhouseConstants.OPTION_DATETIME64_EXTRA_NANOS_MODE, "throw");
     boolean saturateExtraNanos = "saturate".equals(extraNanos);
+    boolean removeTrailingZerosInFixedStringsStr = Boolean.parseBoolean(properties.getOrDefault(ClickhouseConstants.OPTION_REMOVE_TRAILING_ZEROS_WHEN_ENCODE_FIXED_STRINGS, "true"));
     return new ClickhouseNativeDatabaseMetadata(productName,
       String.format("%d.%d.%d", major, minor, revision),
       major, minor, revision, patchVersion, displayName, serverZoneId, defaultZoneId, fullClientName, properties, charset(),
-      Duration.ofDays(daysInYear), Duration.ofDays(daysInQuarter), Duration.ofDays(daysInMonth), saturateExtraNanos);
+      Duration.ofDays(daysInYear), Duration.ofDays(daysInQuarter), Duration.ofDays(daysInMonth), saturateExtraNanos, removeTrailingZerosInFixedStringsStr);
   }
 
   private ZoneId getDefaultZoneId(ZoneId serverZoneId) {

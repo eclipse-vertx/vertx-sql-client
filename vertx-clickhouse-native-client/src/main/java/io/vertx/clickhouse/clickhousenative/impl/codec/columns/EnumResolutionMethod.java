@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public enum EnumResolutionMethod {
-  NAME("by_name"), ORDINAL("by_ordinal"), KEY("by_key");
+  NAME("by_name"), ORDINAL("by_ordinal"), KEY("by_key_as_ordinal");
   private static final Map<String, EnumResolutionMethod> index = Arrays
     .stream(EnumResolutionMethod.values())
     .collect(Collectors.toMap(el -> el.optVal, el -> el));
