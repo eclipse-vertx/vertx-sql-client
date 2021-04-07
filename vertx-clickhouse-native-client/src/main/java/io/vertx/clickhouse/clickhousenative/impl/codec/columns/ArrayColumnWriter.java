@@ -16,51 +16,51 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
   private final ClickhouseNativeColumnDescriptor elementTypeDescr;
   private final ClickhouseColumn elementTypeColumn;
 
-  public ArrayColumnWriter(List<Tuple> data, ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeColumnDescriptor elementTypeDescr, ClickhouseNativeDatabaseMetadata md, int columnIndex) {
+  public ArrayColumnWriter(List<Tuple> data, ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md, int columnIndex) {
     super(data, descriptor.copyAsNestedArray(), columnIndex);
     this.md = md;
-    this.elementTypeDescr = elementTypeDescr;
+    this.elementTypeDescr = descriptor.getNestedDescr();
     this.elementTypeColumn = ClickhouseColumns.columnForSpec(elementTypeDescr, md);
   }
 
   @Override
   protected void serializeDataInternal(ClickhouseStreamDataSink sink, int fromRow, int toRow) {
     writeSizes(sink, false, fromRow, toRow);
-    writeNullsInfo(sink, 0, columnDescriptor, data, fromRow, toRow, columnIndex);
-    writeElementData(sink, 0, columnDescriptor, data, fromRow, toRow, columnIndex);
+    writeNullsInfo(sink, 1, columnDescriptor, data, fromRow, toRow, columnIndex);
+    writeElementData(sink, 1, columnDescriptor, data, fromRow, toRow, columnIndex);
   }
 
   private void writeElementData(ClickhouseStreamDataSink sink, int localDepth, ClickhouseNativeColumnDescriptor descr, List<Tuple> localData, int fromRow, int toRow, int colIndex) {
-    if (localDepth != 0 && descr.isArray() && elementTypeDescr.isNullable() && localData == null) {
+    if (localDepth != 1 && descr.isArray() && elementTypeDescr.isNullable() && localData == null) {
       localData = Collections.emptyList();
     }
-    ClickhouseNativeColumnDescriptor localNested = descr.getNestedDescr();
-    if (localNested.isArray()) {
+
+    if (localDepth < descr.arrayDepth()) {
       localData = flattenArrays(localData, fromRow, toRow, colIndex);
       colIndex = 0;
       fromRow = 0;
       toRow = localData.size();
     }
-    ClickhouseColumn localNestedColumn = ClickhouseColumns.columnForSpec(localNested, md);
-    ClickhouseColumnWriter localWriter = localNestedColumn.writer(localData, colIndex);
-    if (localWriter.getClass() == ArrayColumnWriter.class) {
-      ArrayColumnWriter localArrayWriter = (ArrayColumnWriter)localWriter;
-      localArrayWriter.writeElementData(sink, localDepth + 1, localNested, localData, fromRow, toRow, colIndex);
+
+    if (localDepth < descr.arrayDepth()) {
+      this.writeElementData(sink, localDepth + 1, descr, localData, fromRow, toRow, colIndex);
     } else {
+      ClickhouseColumn localNestedColumn = ClickhouseColumns.columnForSpec(elementTypeDescr, md);
+      ClickhouseColumnWriter localWriter = localNestedColumn.writer(localData, colIndex);
       localWriter.serializeDataInternal(sink, fromRow, toRow);
     }
   }
 
   private void writeNullsInfo(ClickhouseStreamDataSink sink, int localDepth, ClickhouseNativeColumnDescriptor descr, List<Tuple> localData, int fromRow, int toRow, int colIndex) {
-    if (localDepth != 0 && descr.isArray() && elementTypeDescr.isNullable() && localData == null) {
+    if (localDepth != 1 && descr.isArray() && elementTypeDescr.isNullable() && localData == null) {
       localData = Collections.emptyList();
     }
-    ClickhouseNativeColumnDescriptor localNested = descr.getNestedDescr();
-    if (localNested.isArray()) {
+
+    if (localDepth < descr.arrayDepth()) {
       List<Tuple> flattened = flattenArrays(localData, fromRow, toRow, colIndex);
-      writeNullsInfo(sink, localDepth + 1, localNested, flattened, 0, flattened.size(), 0);
+      writeNullsInfo(sink, localDepth + 1, descr, flattened, 0, flattened.size(), 0);
     } else {
-      if (localNested.isNullable()) {
+      if (elementTypeDescr.isNullable()) {
         elementTypeColumn.writer(localData, colIndex).serializeNullsMap(sink, fromRow, toRow);
       }
     }
@@ -85,7 +85,6 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
 
   private void writeSizes(ClickhouseStreamDataSink sink, boolean writeTotalSize, int fromRow, int toRow) {
     int nRows = toRow - fromRow;
-    ClickhouseNativeColumnDescriptor column = columnDescriptor;
     List<Integer> sizes = new ArrayList<>();
     if (writeTotalSize) {
       sizes.add(nRows);
@@ -93,20 +92,21 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
 
     List<?> values = data;
     int localColumnIndex = columnIndex;
-    ClickhouseNativeColumnDescriptor nestedColumn;
-    while ((nestedColumn = column.getNestedDescr()).isArray()) {
+    int localDepth = 1;
+    while (localDepth < columnDescriptor.arrayDepth()) {
       int offset = 0;
       List<Object> newValue = new ArrayList<>();
       for (int i = fromRow; i < toRow; ++i) {
         Object valObj = values.get(i);
-        Object[] val = (Object[]) maybeUnwrapTuple(valObj, localColumnIndex);
+        Object tmp = maybeUnwrapTuple(valObj, localColumnIndex);
+        Object[] val = (Object[]) tmp;
         offset += val.length;
         sizes.add(offset);
         List<Object> newTuples = Arrays.asList(val);
         newValue.addAll(newTuples);
       }
       values = newValue;
-      column = nestedColumn;
+      ++localDepth;
       localColumnIndex = 0;
       fromRow = 0;
       toRow = newValue.size();

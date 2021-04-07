@@ -51,13 +51,10 @@ public class ClickhouseColumns {
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String name) {
     String spec = unparsedSpec;
     if (spec.startsWith(ARRAY_PREFIX)) {
-      spec = spec.substring(ARRAY_PREFIX_LENGTH, spec.length() - 1);
-      //TODO smagellan: get rid of recursion
-      //TODO smagellan: introduce arrays depth size into ClickhouseNativeColumnDescriptor
-
-      ClickhouseNativeColumnDescriptor nested = columnDescriptorForSpec(spec, name);
+      Map.Entry<Integer, String> arrayDepthInfo = unwrapArrayModifiers(spec);
+      ClickhouseNativeColumnDescriptor nested = columnDescriptorForSpec(arrayDepthInfo.getValue(), name);
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, true, ClickhouseNativeColumnDescriptor.NOSIZE,
-        JDBCType.ARRAY, false, false, false, null, null, nested);
+        JDBCType.ARRAY, false, false, false, null, null, arrayDepthInfo.getKey(), nested);
     }
     boolean isLowCardinality = false;
     if (spec.startsWith(LOW_CARDINALITY_PREFIX)) {
