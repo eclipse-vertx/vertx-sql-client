@@ -19,7 +19,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   private final ClickhouseNativeColumnDescriptor elementTypeDescr;
 
   private List<List<Integer>> slicesSeries;
-  private Integer curNestedColumnDepth;
+  private Integer curDimension;
   private ClickhouseColumnReader nestedColumnReader;
   private ClickhouseColumn nestedColumn;
   private Class<?> elementClass;
@@ -49,13 +49,13 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (nItems == null) {
       slicesSeries = new ArrayList<>();
-      curNestedColumnDepth = 0;
+      curDimension = 0;
       nItems = 0;
     }
     if (statePrefix == null) {
       return null;
     }
-    if (curNestedColumnDepth < columnDescriptor.arrayDepth()) {
+    if (curDimension < columnDescriptor.arrayDimensionsCount()) {
       readSlices(in);
     }
     if (nestedColumnReader == null) {
@@ -183,12 +183,12 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       curLevelSliceSize = nRows;
     }
     if (nRows == 0) {
-      curNestedColumnDepth = columnDescriptor.arrayDepth();
+      curDimension = columnDescriptor.arrayDimensionsCount();
       return;
     }
 
     long lastSliceSize = 0;
-    while (curNestedColumnDepth < columnDescriptor.arrayDepth()) {
+    while (curDimension < columnDescriptor.arrayDimensionsCount()) {
       if (curLevelSlice == null) {
         curLevelSlice = new ArrayList<>(curLevelSliceSize + 1);
         curLevelSlice.add(0);
@@ -206,7 +206,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       slicesSeries.add(curLevelSlice);
       curLevelSlice = null;
       curLevelSliceSize = (int) lastSliceSize;
-      curNestedColumnDepth += 1;
+      curDimension += 1;
     }
     nItems = (int)lastSliceSize;
   }
