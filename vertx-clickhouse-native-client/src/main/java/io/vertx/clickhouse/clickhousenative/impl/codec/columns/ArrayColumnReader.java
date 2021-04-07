@@ -31,7 +31,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   private List<Integer> curLevelSlice;
 
   public ArrayColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
-    super(nRows, descr.copyAsNestedArray());
+    super(nRows, descr);
     this.md = md;
     this.elementTypeDescr = descr.getNestedDescr();
   }
@@ -49,7 +49,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (nItems == null) {
       slicesSeries = new ArrayList<>();
-      curNestedColumnDepth = 1;
+      curNestedColumnDepth = 0;
       nItems = 0;
     }
     if (statePrefix == null) {
@@ -109,9 +109,8 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       } else {
         desired = elementClass;
       }
-      //TODO smagellan:
-      //reslicing for every row with master-slice can be slow (for BLOBS and Enums if recoding requested), maybe
-      // 1) store resliced array into Phantom/Weak reference or
+      //TODO smagellan: reslicing for every row with master-slice can be slow (for BLOBS and Enums if recoding requested), maybe
+      // 1) store resliced master-array into Phantom/Weak reference or
       // 2) split master-splice into nRows splices (1 per row)
       reslicedRet = resliceIntoArray(maybeRecoded.middle(), desired);
     }

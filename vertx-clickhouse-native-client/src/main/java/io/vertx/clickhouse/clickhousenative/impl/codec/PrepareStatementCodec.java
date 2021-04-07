@@ -34,7 +34,6 @@ public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<Prepared
     boolean endsWithValues = sql.toLowerCase().endsWith("values");
     boolean realInsertBatch = isInsert && (endsWithValues || (valuesIndex = valuesPos(sql, queryType.getValue())) != -1);
     if (realInsertBatch) {
-      //TODO smagellan: lock connection with prepared statement id
       encoder.getConn().lockPsOrThrow(psId);
       String truncatedSql = endsWithValues ? sql : sql.substring(0, valuesIndex + "values".length());
       ByteBuf buf = allocateBuffer();
