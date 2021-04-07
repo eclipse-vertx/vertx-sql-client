@@ -7,9 +7,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 
 @DataObject(generateConverter = true)
 public class ClickhouseNativeConnectOptions extends SqlConnectOptions {
-  public static final int DEFAULT_PIPELINING_LIMIT = 256;
-
-  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
   public static ClickhouseNativeConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
     JsonObject parsedConfiguration = ClickhouseNativeConnectionUriParser.parse(connectionUri);
@@ -33,7 +30,4 @@ public class ClickhouseNativeConnectOptions extends SqlConnectOptions {
     super(other);
   }
 
-  public int getPipeliningLimit() {
-    return pipeliningLimit;
-  }
 }

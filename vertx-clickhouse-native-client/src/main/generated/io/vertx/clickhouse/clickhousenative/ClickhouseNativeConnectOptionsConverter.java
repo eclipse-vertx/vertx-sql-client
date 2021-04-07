@@ -16,8 +16,6 @@ public class ClickhouseNativeConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, ClickhouseNativeConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "pipeliningLimit":
-          break;
       }
     }
   }
@@ -27,6 +25,5 @@ public class ClickhouseNativeConnectOptionsConverter {
   }
 
   public static void toJson(ClickhouseNativeConnectOptions obj, java.util.Map<String, Object> json) {
-    json.put("pipeliningLimit", obj.getPipeliningLimit());
   }
 }

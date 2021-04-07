@@ -74,7 +74,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- TODO smagellan: required for replay test only, remove after testing-->
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-yaml</artifactId>

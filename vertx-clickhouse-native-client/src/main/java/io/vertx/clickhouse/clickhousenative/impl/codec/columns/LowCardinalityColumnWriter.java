@@ -48,7 +48,7 @@ public class LowCardinalityColumnWriter extends ClickhouseColumnWriter {
       return;
     }
     int intType = (int) (log2(dictionarySize) / 8);
-    ClickhouseColumn valuesColumn = LowCardinalityColumnReader.uintColumn(columnDescriptor.name(), intType);
+    ClickhouseColumn valuesColumn = LowCardinalityColumnReader.uintColumn(intType);
 
     int serializationType = SERIALIZATION_TYPE | intType;
     sink.writeLongLE(serializationType);

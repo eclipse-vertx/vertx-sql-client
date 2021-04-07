@@ -8,6 +8,11 @@ import java.util.BitSet;
 
 public class LowCardinalityColumnReader extends ClickhouseColumnReader {
   public static final long SUPPORTED_SERIALIZATION_VERSION = 1;
+  public static final ClickhouseColumn UINT8_KEY_COLUMN = ClickhouseColumns.columnForSpec("UInt8", "lcKeyColumn", null);
+  public static final ClickhouseColumn UINT16_KEY_COLUMN = ClickhouseColumns.columnForSpec("UInt16", "lcKeyColumn", null);
+  public static final ClickhouseColumn UINT32_KEY_COLUMN = ClickhouseColumns.columnForSpec("UInt32", "lcKeyColumn", null);
+  public static final ClickhouseColumn UINT64_KEY_COLUMN = ClickhouseColumns.columnForSpec("UInt64", "lcKeyColumn", null);
+
   private final ClickhouseNativeColumnDescriptor indexDescr;
   private final ClickhouseNativeDatabaseMetadata md;
   private ClickhouseColumnReader indexColumn;
@@ -74,7 +79,7 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
     }
     int keyType = (int)(serType & 0xf);
     if (keysColumn == null) {
-      keysColumn = uintColumn(columnDescriptor.name(), keyType).reader(nRows);
+      keysColumn = uintColumn(keyType).reader(nRows);
     }
     keysColumn.readColumn(in);
   }
@@ -107,20 +112,19 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
     return indexColumn.getElementInternal(key, desired);
   }
 
-  static ClickhouseColumn uintColumn(String name, int code) {
-    ClickhouseNativeColumnDescriptor tmp;
-    //TODO smagellan: introduce immutable column descriptors for (U)Ints, reuse cached instances
+  static ClickhouseColumn uintColumn(int code) {
+    ClickhouseColumn tmp;
     if (code == 0) {
-      tmp = ClickhouseColumns.columnDescriptorForSpec("UInt8", name);
+      tmp = UINT8_KEY_COLUMN;
     } else if (code == 1) {
-       tmp = ClickhouseColumns.columnDescriptorForSpec("UInt16", name);
+       tmp = UINT16_KEY_COLUMN;
     } else if (code == 2) {
-       tmp = ClickhouseColumns.columnDescriptorForSpec("UInt32", name);
+       tmp = UINT32_KEY_COLUMN;
     } else if (code == 3) {
-       tmp = ClickhouseColumns.columnDescriptorForSpec("UInt64", name);
+       tmp = UINT64_KEY_COLUMN;
     } else {
       throw new IllegalArgumentException("unknown low-cardinality key-column code " + code);
     }
-    return ClickhouseColumns.columnForSpec(tmp, null);
+    return tmp;
   }
 }

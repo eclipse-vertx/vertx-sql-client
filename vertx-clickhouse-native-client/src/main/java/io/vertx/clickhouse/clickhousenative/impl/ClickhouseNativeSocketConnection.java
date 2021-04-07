@@ -27,10 +27,9 @@ public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
                                           boolean cachePreparedStatements,
                                           int preparedStatementCacheSize,
                                           Predicate<String> preparedStatementCacheSqlFilter,
-                                          int pipeliningLimit,
                                           EventLoopContext context,
                                           LZ4Factory lz4Factory) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, 1, context);
     this.lz4Factory = lz4Factory;
   }
 
