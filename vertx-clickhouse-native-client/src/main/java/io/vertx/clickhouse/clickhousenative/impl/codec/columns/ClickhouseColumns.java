@@ -50,11 +50,11 @@ public class ClickhouseColumns {
 
   public static ClickhouseNativeColumnDescriptor columnDescriptorForSpec(String unparsedSpec, String name) {
     String spec = unparsedSpec;
-    if (spec.startsWith(ARRAY_PREFIX)) {
-      Map.Entry<Integer, String> arrayDepthInfo = unwrapArrayModifiers(spec);
-      ClickhouseNativeColumnDescriptor nested = columnDescriptorForSpec(arrayDepthInfo.getValue(), name);
+    Map.Entry<Integer, String> arrayDimensionsInfo = maybeUnwrapArrayDimensions(spec);
+    if (arrayDimensionsInfo.getKey() > 0) {
+      ClickhouseNativeColumnDescriptor nested = columnDescriptorForSpec(arrayDimensionsInfo.getValue(), name);
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, true, ClickhouseNativeColumnDescriptor.NOSIZE,
-        JDBCType.ARRAY, false, false, false, null, null, arrayDepthInfo.getKey(), nested);
+        JDBCType.ARRAY, false, false, false, null, null, arrayDimensionsInfo.getKey(), nested);
     }
     boolean isLowCardinality = false;
     if (spec.startsWith(LOW_CARDINALITY_PREFIX)) {
@@ -69,7 +69,7 @@ public class ClickhouseColumns {
     return columnDescriptorForSpec(unparsedSpec, spec, name, nullable, false, isLowCardinality);
   }
 
-  private static Map.Entry<Integer, String> unwrapArrayModifiers(String spec) {
+  private static Map.Entry<Integer, String> maybeUnwrapArrayDimensions(String spec) {
     int arrayDepth = 0;
     while (spec.startsWith(ARRAY_PREFIX)) {
       spec = spec.substring(ARRAY_PREFIX_LENGTH, spec.length() - 1);
