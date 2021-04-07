@@ -19,7 +19,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   private final ClickhouseNativeColumnDescriptor elementTypeDescr;
 
   private List<List<Integer>> slicesSeries;
-  private ClickhouseNativeColumnDescriptor curNestedColumnDescr;
+  private Integer curNestedColumnDepth;
   private ClickhouseColumnReader nestedColumnReader;
   private ClickhouseColumn nestedColumn;
   private Class<?> elementClass;
@@ -30,10 +30,10 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   private Integer curLevelSliceSize;
   private List<Integer> curLevelSlice;
 
-  public ArrayColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeColumnDescriptor elementTypeDescr, ClickhouseNativeDatabaseMetadata md) {
+  public ArrayColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descr.copyAsNestedArray());
     this.md = md;
-    this.elementTypeDescr = elementTypeDescr;
+    this.elementTypeDescr = descr.getNestedDescr();
   }
 
   @Override
@@ -49,21 +49,21 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (nItems == null) {
       slicesSeries = new ArrayList<>();
-      curNestedColumnDescr = columnDescriptor.getNestedDescr();
+      curNestedColumnDepth = 1;
       nItems = 0;
     }
     if (statePrefix == null) {
       return null;
     }
-    if (curNestedColumnDescr.isArray()) {
+    if (curNestedColumnDepth < columnDescriptor.arrayDepth()) {
       readSlices(in);
     }
     if (nestedColumnReader == null) {
-      nestedColumn = ClickhouseColumns.columnForSpec(curNestedColumnDescr, md);
+      nestedColumn = ClickhouseColumns.columnForSpec(elementTypeDescr, md);
       nestedColumnReader = nestedColumn.reader(nItems);
       elementClass = nestedColumn.nullValue().getClass();
     }
-    if (curNestedColumnDescr.isNullable()) {
+    if (elementTypeDescr.isNullable()) {
       nestedColumnReader.nullsMap = nestedColumnReader.readNullsMap(in);
     }
     if (nItems > 0) {
@@ -184,12 +184,12 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       curLevelSliceSize = nRows;
     }
     if (nRows == 0) {
-      curNestedColumnDescr = elementTypeDescr;
+      curNestedColumnDepth = columnDescriptor.arrayDepth();
       return;
     }
 
     long lastSliceSize = 0;
-    while (curNestedColumnDescr.isArray()) {
+    while (curNestedColumnDepth < columnDescriptor.arrayDepth()) {
       if (curLevelSlice == null) {
         curLevelSlice = new ArrayList<>(curLevelSliceSize + 1);
         curLevelSlice.add(0);
@@ -207,7 +207,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       slicesSeries.add(curLevelSlice);
       curLevelSlice = null;
       curLevelSliceSize = (int) lastSliceSize;
-      curNestedColumnDescr = curNestedColumnDescr.getNestedDescr();
+      curNestedColumnDepth += 1;
     }
     nItems = (int)lastSliceSize;
   }
