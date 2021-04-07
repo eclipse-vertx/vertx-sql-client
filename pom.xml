@@ -195,7 +195,20 @@
       </modules>
     </profile>
     <profile>
-      <id>MSSQL-2017-CU12</id>
+      <id>MSSQL-2017-latest</id>
+      <properties>
+        <mssql-container.version>2017-latest</mssql-container.version>
+      </properties>
+      <modules>
+        <module>vertx-sql-client</module>
+        <module>vertx-mssql-client</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>MSSQL-2019-latest</id>
+      <properties>
+        <mssql-container.version>2019-latest</mssql-container.version>
+      </properties>
       <modules>
         <module>vertx-sql-client</module>
         <module>vertx-mssql-client</module>

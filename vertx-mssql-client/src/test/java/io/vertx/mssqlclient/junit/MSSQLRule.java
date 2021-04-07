@@ -16,37 +16,49 @@ import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MSSQLRule extends ExternalResource {
-  private MSSQLServer server;
+  private MSSQLServerContainer<?> server;
   private MSSQLConnectOptions options;
 
   public static final MSSQLRule SHARED_INSTANCE = new MSSQLRule();
 
   @Override
   protected void before() {
-    if (this.server == null) {
-      this.options = startMSSQL();
+    String connectionUri = System.getProperty("connection.uri");
+    if (!isNullOrEmpty(connectionUri)) {
+      // use an external database for testing
+      options = MSSQLConnectOptions.fromUri(connectionUri);
+    } else if (this.server == null) {
+      options = startMSSQL();
     }
+  }
+
+  private boolean isNullOrEmpty(String connectionUri) {
+    return connectionUri == null || connectionUri.isEmpty();
   }
 
   @Override
   protected void after() {
-    if (this != SHARED_INSTANCE) {
+    if (isNullOrEmpty(System.getProperty("connection.uri")) || this != SHARED_INSTANCE) {
       stopMSSQL();
     }
   }
 
   private MSSQLConnectOptions startMSSQL() {
-    server = new MSSQLServer();
-    server.withInitScript("init.sql");
+    String containerVersion = System.getProperty("mssql-container.version");
+    if (containerVersion == null || containerVersion.isEmpty()) {
+      containerVersion = "2017-latest";
+    }
+    server = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
+      .acceptLicense()
+      .withInitScript("init.sql")
+      .withExposedPorts(MSSQLServerContainer.MS_SQL_SERVER_PORT);
     server.start();
 
-    MSSQLConnectOptions options = new MSSQLConnectOptions()
+    return new MSSQLConnectOptions()
       .setHost(server.getContainerIpAddress())
       .setPort(server.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT))
       .setUser(server.getUsername())
       .setPassword(server.getPassword());
-//      .setDatabase(server.getDatabaseName()); // unsupported by Testcontainers
-    return options;
   }
 
   private void stopMSSQL() {
@@ -61,14 +73,5 @@ public class MSSQLRule extends ExternalResource {
 
   public MSSQLConnectOptions options() {
     return new MSSQLConnectOptions(options);
-  }
-
-  private static class MSSQLServer extends MSSQLServerContainer {
-    @Override
-    protected void configure() {
-      this.addExposedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
-      this.addEnv("ACCEPT_EULA", "Y");
-      this.addEnv("SA_PASSWORD", this.getPassword());
-    }
   }
 }

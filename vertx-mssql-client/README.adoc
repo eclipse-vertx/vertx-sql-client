@@ -1,11 +1,22 @@
 = The Reactive MSSQL Client
 
-TODO
+Documentation:
 
-== Features TODO
+- https://vertx.io/docs/vertx-mssql-client/java/[Website documentation]
 
-* Cursor support
-* Row streaming
-* RxJava 1 and RxJava 2
-* Polyglot support
-* TLS support
+== Developers
+
+=== Testing
+
+By default, the test suite runs SQL Server in a container using https://www.testcontainers.org/[TestContainers].
+
+==== Testing with an external database
+
+You can run tests with an external database:
+
+[source]
+----
+> mvn test -Dconnection.uri=sqlserver://my_user:my_password@my_host:1433/my_db
+----
+
+* `connection.uri`: configure the client to connect to the specified database
