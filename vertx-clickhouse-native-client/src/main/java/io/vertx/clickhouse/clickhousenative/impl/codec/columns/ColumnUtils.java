@@ -21,7 +21,7 @@ public class ColumnUtils {
     return lastNonZeroPos;
   }
 
-  //TODO: rework checks
+  //TODO: maybe rework checks
   public static void bigDecimalFitsOrThrow(BigDecimal bd, ClickhouseNativeColumnDescriptor columnDescriptor) {
     if (columnDescriptor.getScale() < bd.scale()) {
       throw new IllegalArgumentException("possible loss of scale: max " + columnDescriptor.getScale() + ", got " + bd.scale());

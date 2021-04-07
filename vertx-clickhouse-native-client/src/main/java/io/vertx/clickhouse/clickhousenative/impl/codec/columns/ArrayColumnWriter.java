@@ -17,7 +17,7 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
   private final ClickhouseColumn elementTypeColumn;
 
   public ArrayColumnWriter(List<Tuple> data, ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md, int columnIndex) {
-    super(data, descriptor.copyAsNestedArray(), columnIndex);
+    super(data, descriptor, columnIndex);
     this.md = md;
     this.elementTypeDescr = descriptor.getNestedDescr();
     this.elementTypeColumn = ClickhouseColumns.columnForSpec(elementTypeDescr, md);
@@ -26,12 +26,12 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
   @Override
   protected void serializeDataInternal(ClickhouseStreamDataSink sink, int fromRow, int toRow) {
     writeSizes(sink, false, fromRow, toRow);
-    writeNullsInfo(sink, 1, columnDescriptor, data, fromRow, toRow, columnIndex);
-    writeElementData(sink, 1, columnDescriptor, data, fromRow, toRow, columnIndex);
+    writeNullsInfo(sink, 0, columnDescriptor, data, fromRow, toRow, columnIndex);
+    writeElementData(sink, 0, columnDescriptor, data, fromRow, toRow, columnIndex);
   }
 
   private void writeElementData(ClickhouseStreamDataSink sink, int localDepth, ClickhouseNativeColumnDescriptor descr, List<Tuple> localData, int fromRow, int toRow, int colIndex) {
-    if (localDepth != 1 && descr.isArray() && elementTypeDescr.isNullable() && localData == null) {
+    if (localDepth != 0 && descr.isArray() && elementTypeDescr.isNullable() && localData == null) {
       localData = Collections.emptyList();
     }
 
@@ -43,6 +43,7 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
     }
 
     if (localDepth < descr.arrayDepth()) {
+      //TODO: maybe get rid of recursion
       this.writeElementData(sink, localDepth + 1, descr, localData, fromRow, toRow, colIndex);
     } else {
       ClickhouseColumn localNestedColumn = ClickhouseColumns.columnForSpec(elementTypeDescr, md);
@@ -52,12 +53,13 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
   }
 
   private void writeNullsInfo(ClickhouseStreamDataSink sink, int localDepth, ClickhouseNativeColumnDescriptor descr, List<Tuple> localData, int fromRow, int toRow, int colIndex) {
-    if (localDepth != 1 && descr.isArray() && elementTypeDescr.isNullable() && localData == null) {
+    if (localDepth != 0 && descr.isArray() && elementTypeDescr.isNullable() && localData == null) {
       localData = Collections.emptyList();
     }
 
     if (localDepth < descr.arrayDepth()) {
       List<Tuple> flattened = flattenArrays(localData, fromRow, toRow, colIndex);
+      //TODO: maybe get rid of recursion
       writeNullsInfo(sink, localDepth + 1, descr, flattened, 0, flattened.size(), 0);
     } else {
       if (elementTypeDescr.isNullable()) {
@@ -92,7 +94,7 @@ public class ArrayColumnWriter extends ClickhouseColumnWriter {
 
     List<?> values = data;
     int localColumnIndex = columnIndex;
-    int localDepth = 1;
+    int localDepth = 0;
     while (localDepth < columnDescriptor.arrayDepth()) {
       int offset = 0;
       List<Object> newValue = new ArrayList<>();

@@ -145,15 +145,6 @@ public class ClickhouseNativeColumnDescriptor implements ColumnDescriptor {
     return scale;
   }
 
-  public ClickhouseNativeColumnDescriptor copyAsNestedArray() {
-    return new ClickhouseNativeColumnDescriptor(name, "Array(" + unparsedNativeType + ")", unparsedNativeType, true, ClickhouseNativeColumnDescriptor.NOSIZE,
-      JDBCType.ARRAY, false, false, false, null, null, arrayDepth + 1, nested);
-  }
-
-  public ClickhouseNativeColumnDescriptor copyAsNonArray() {
-    return copyWithModifiers(false, lowCardinality, nullable);
-  }
-
   public ClickhouseNativeColumnDescriptor copyWithModifiers(boolean newArray, boolean newLowCardinality, boolean newNullable) {
     return new ClickhouseNativeColumnDescriptor(name, unparsedNativeType, nestedType, newArray, elementSize, jdbcType,
       newNullable, unsigned, newLowCardinality, minValue, maxValue, precision, scale, arrayDepth, nested);
