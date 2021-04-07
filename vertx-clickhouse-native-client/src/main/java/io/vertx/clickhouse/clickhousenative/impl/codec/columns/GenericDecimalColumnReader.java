@@ -8,7 +8,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 
-//TODO smagellan: maybe introduce separate universal reader/column for Decimal128 and Decimal256
 public class GenericDecimalColumnReader extends ClickhouseColumnReader {
   private final MathContext mc;
 

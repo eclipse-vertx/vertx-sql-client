@@ -40,7 +40,6 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
   void encode(ClickhouseNativeEncoder encoder) {
     ExtendedQueryCommand<T> ecmd = ecmd();
     String ourCursorId = ecmd.cursorId();
-    //TODO smagellan: introduce lock() method
     if (ourCursorId != null) {
       conn.lockCursorOrThrow(((ClickhouseNativePreparedStatement)ecmd.preparedStatement()).getPsId(), ourCursorId);
     }

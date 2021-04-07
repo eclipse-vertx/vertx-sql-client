@@ -53,7 +53,8 @@ public class ClickhouseColumns {
     if (spec.startsWith(ARRAY_PREFIX)) {
       spec = spec.substring(ARRAY_PREFIX_LENGTH, spec.length() - 1);
       //TODO smagellan: get rid of recursion
-      //TODO smagellan: introduce arrays dimensions size
+      //TODO smagellan: introduce arrays depth size into ClickhouseNativeColumnDescriptor
+
       ClickhouseNativeColumnDescriptor nested = columnDescriptorForSpec(spec, name);
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, true, ClickhouseNativeColumnDescriptor.NOSIZE,
         JDBCType.ARRAY, false, false, false, null, null, nested);
@@ -166,6 +167,11 @@ public class ClickhouseColumns {
     }
   }
 
+  public static ClickhouseColumn columnForSpec(String spec, String name, ClickhouseNativeDatabaseMetadata md) {
+    ClickhouseNativeColumnDescriptor descr = ClickhouseColumns.columnDescriptorForSpec(spec, name);
+    return columnForSpec(descr, md);
+  }
+
   public static ClickhouseColumn columnForSpec(ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     if (descr.isArray()) {
       return new ArrayColumn(descr, md);
@@ -217,7 +223,6 @@ public class ClickhouseColumns {
       }
       return precision == null ? new DateTimeColumn(descr, zoneId) : new DateTime64Column(descr, precision, md.isSaturateExtraNanos(), zoneId);
     } else if (jdbcType == JDBCType.DECIMAL) {
-      //TODO smagellan: merge into one statement after introducing column readers
       if (descr.getElementSize() == Decimal32Column.ELEMENT_SIZE) {
         return new Decimal32Column(descr);
       } else if (descr.getElementSize() == Decimal64Column.ELEMENT_SIZE) {

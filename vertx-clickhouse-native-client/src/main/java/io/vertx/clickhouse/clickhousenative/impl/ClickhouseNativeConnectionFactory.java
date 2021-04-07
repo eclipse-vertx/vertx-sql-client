@@ -19,7 +19,6 @@ import net.jpountz.lz4.LZ4Factory;
 public class ClickhouseNativeConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
   private static final Logger LOG = LoggerFactory.getLogger(ClickhouseNativeConnectionFactory.class);
 
-  private int pipeliningLimit;
   private final LZ4Factory lz4Factory;
 
   ClickhouseNativeConnectionFactory(EventLoopContext context, ClickhouseNativeConnectOptions options) {
@@ -47,8 +46,6 @@ public class ClickhouseNativeConnectionFactory extends SqlConnectionFactoryBase 
 
   @Override
   protected void initializeConfiguration(SqlConnectOptions connectOptions) {
-    ClickhouseNativeConnectOptions options = (ClickhouseNativeConnectOptions) connectOptions;
-    this.pipeliningLimit = options.getPipeliningLimit();
   }
 
   @Override
@@ -74,12 +71,11 @@ public class ClickhouseNativeConnectionFactory extends SqlConnectionFactoryBase 
       // Client is closed
       return context.failedFuture(e);
     }
-    Future<Connection> connFut = soFut.map(so -> newSocketConnection((NetSocketInternal) so));
-    return connFut;
+    return soFut.map(so -> newSocketConnection((NetSocketInternal) so));
   }
 
   private ClickhouseNativeSocketConnection newSocketConnection(NetSocketInternal socket) {
     return new ClickhouseNativeSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize,
-      preparedStatementCacheSqlFilter, pipeliningLimit, context, lz4Factory);
+      preparedStatementCacheSqlFilter, context, lz4Factory);
   }
 }

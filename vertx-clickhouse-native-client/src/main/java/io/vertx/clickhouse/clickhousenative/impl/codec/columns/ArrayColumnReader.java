@@ -109,7 +109,10 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       } else {
         desired = elementClass;
       }
-      //reslicing for every row can be slow (for BLOBS and Enums if recoding requested), maybe store resliced array into Phantom/Weak reference
+      //TODO smagellan:
+      //reslicing for every row with master-slice can be slow (for BLOBS and Enums if recoding requested), maybe
+      // 1) store resliced array into Phantom/Weak reference or
+      // 2) split master-splice into nRows splices (1 per row)
       reslicedRet = resliceIntoArray(maybeRecoded.middle(), desired);
     }
     return reslicedRet[rowIdx];
