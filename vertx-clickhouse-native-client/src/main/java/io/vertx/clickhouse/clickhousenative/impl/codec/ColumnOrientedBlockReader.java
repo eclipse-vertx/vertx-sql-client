@@ -91,7 +91,7 @@ public class ColumnOrientedBlockReader {
           columnData = ClickhouseColumns.columnForSpec(columnDescriptor, md).reader(nRows);
         }
         if (columnData.isPartial()) {
-          LOG.info("reading column " + colName + " of type " + colType);
+          LOG.info("reading column " + colName + "[" + nRows + "] of type " + colType);
 
           columnData.readColumn(in);
           if (columnData.isPartial()) {

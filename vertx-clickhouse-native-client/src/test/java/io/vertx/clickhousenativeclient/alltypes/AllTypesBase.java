@@ -33,8 +33,8 @@ public abstract class AllTypesBase<T> {
   @ClassRule
   public static ClickhouseResource rule = new ClickhouseResource();
 
-  private ClickhouseNativeConnectOptions options;
-  private Vertx vertx;
+  protected ClickhouseNativeConnectOptions options;
+  protected Vertx vertx;
 
   public AllTypesBase(String tableSuffix, MyColumnChecker<T> checker) {
     this(tableSuffix, checker, true);
@@ -78,7 +78,7 @@ public abstract class AllTypesBase<T> {
   }
 
   protected  void doTest(TestContext ctx, List<Tuple> batch) {
-    String tableName = TABLE_PREFIX + tableSuffix;
+    String tableName = tableName();
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("TRUNCATE TABLE " + tableName).execute(
         ctx.asyncAssertSuccess(res1 -> {
@@ -108,6 +108,10 @@ public abstract class AllTypesBase<T> {
               }));
         }));
     }));
+  }
+
+  protected String tableName() {
+    return TABLE_PREFIX + tableSuffix;
   }
 }
 

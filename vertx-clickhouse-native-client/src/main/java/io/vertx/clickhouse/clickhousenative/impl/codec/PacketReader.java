@@ -12,6 +12,7 @@ import io.vertx.sqlclient.impl.RowDesc;
 import net.jpountz.lz4.LZ4Factory;
 
 import java.sql.JDBCType;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -214,7 +215,8 @@ public class PacketReader {
     ds.moreData(in, alloc);
     ColumnOrientedBlock block = columnBlockReader.readFrom(ds);
     if (block != null) {
-      LOG.info("decoded: DATA/ColumnOrientedBlock [" + block.numColumns() + "; " + block.numRows() + "]");
+      List<String> colNames = new ArrayList<>(block.getColumnsWithTypes().keySet());
+      LOG.info("decoded: DATA/ColumnOrientedBlock [" + block.numColumns() + "; " + block.numRows() + "][" + colNames + "]");
       columnBlockReader = null;
       packetType = null;
       ds.finish();
