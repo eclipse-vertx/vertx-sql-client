@@ -11,14 +11,18 @@ import java.util.List;
 public class FixedStringColumnReader extends ClickhouseColumnReader {
   private final Charset charset;
   private final boolean removeTrailingZerosInStrings;
+  private final boolean enableStringCache;
+  private final StringCache cache;
 
   private List<byte[]> elements;
 
-  protected FixedStringColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor, ClickhouseNativeDatabaseMetadata md) {
+  protected FixedStringColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor, boolean enableStringCache, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, columnDescriptor);
     this.elements = new ArrayList<>(nRows);
     this.charset = md.getStringCharset();
     this.removeTrailingZerosInStrings = md.isRemoveTrailingZerosInFixedStrings();
+    this.enableStringCache = enableStringCache;
+    this.cache = enableStringCache ? new StringCache(nRows) : null;
   }
 
   @Override
@@ -47,10 +51,13 @@ public class FixedStringColumnReader extends ClickhouseColumnReader {
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
     Object tmp = getObjectsArrayElement(rowIdx);
     if ((desired == String.class || desired == Object.class) && tmp != null) {
-      byte[] bytes = (byte[]) tmp;
-      int lastNonZeroIdx = removeTrailingZerosInStrings ? ColumnUtils.getLastNonZeroPos(bytes) : bytes.length - 1;
-      return new String(bytes, 0, lastNonZeroIdx + 1, charset);
+      return enableStringCache ? cache.get(rowIdx, () -> buildStringFromElement((byte[]) tmp)) : buildStringFromElement((byte[]) tmp);
     }
     return tmp;
+  }
+
+  private String buildStringFromElement(byte[] tmp) {
+    int lastNonZeroIdx = removeTrailingZerosInStrings ? ColumnUtils.getLastNonZeroPos(tmp) : tmp.length - 1;
+    return new String(tmp, 0, lastNonZeroIdx + 1, charset);
   }
 }

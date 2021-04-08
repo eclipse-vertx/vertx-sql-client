@@ -66,7 +66,8 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
       throw new IllegalArgumentException("low cardinality index is too big (" + indexSize + "), max " + Integer.MAX_VALUE);
     }
     if (indexColumn == null) {
-      indexColumn = ClickhouseColumns.columnForSpec(indexDescr, md).reader(indexSize.intValue());
+      int sz = indexSize.intValue();
+      indexColumn = ClickhouseColumns.columnForSpec(indexDescr, md, true).reader(sz);
     }
     if (indexColumn.isPartial()) {
       indexColumn.readColumn(in);
@@ -112,7 +113,7 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
     if (columnDescriptor.isNullable() && key == 0) {
       return null;
     }
-    //TODO: maybe introduce cache here if String encoding was requested (for VARCHAR where desired == String.class || desired == Object.class)
+    //caveat: caller may change index contents for byte[] elements
     return indexColumn.getElementInternal(key, desired);
   }
 

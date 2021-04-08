@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 public class IPv6ColumnReader extends FixedStringColumnReader {
 
   protected IPv6ColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor, ClickhouseNativeDatabaseMetadata md) {
-    super(nRows, columnDescriptor, md);
+    super(nRows, columnDescriptor, false, md);
   }
 
   @Override

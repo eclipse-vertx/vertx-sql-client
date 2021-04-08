@@ -8,16 +8,18 @@ import java.util.List;
 
 public class StringColumn extends ClickhouseColumn {
   public static final byte[] EMPTY = new byte[0];
+  private final boolean enableStringCache;
 
   private final ClickhouseNativeDatabaseMetadata md;
-  public StringColumn(ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md) {
+  public StringColumn(ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md, boolean enableStringCache) {
     super(descriptor);
     this.md = md;
+    this.enableStringCache = enableStringCache;
   }
 
   @Override
   public ClickhouseColumnReader reader(int nRows) {
-    return new StringColumnReader(nRows, descriptor, md);
+    return new StringColumnReader(nRows, descriptor, enableStringCache, md);
   }
 
   @Override

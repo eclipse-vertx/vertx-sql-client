@@ -33,7 +33,7 @@ public class IPv6Column extends FixedStringColumn {
   }
 
   public IPv6Column(ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
-    super(descr, md);
+    super(descr, md, false);
   }
 
   @Override
