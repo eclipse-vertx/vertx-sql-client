@@ -8,10 +8,13 @@ import java.util.BitSet;
 
 public class LowCardinalityColumnReader extends ClickhouseColumnReader {
   public static final long SUPPORTED_SERIALIZATION_VERSION = 1;
-  public static final ClickhouseColumn UINT8_KEY_COLUMN = ClickhouseColumns.columnForSpec("UInt8", "lcKeyColumn", null);
-  public static final ClickhouseColumn UINT16_KEY_COLUMN = ClickhouseColumns.columnForSpec("UInt16", "lcKeyColumn", null);
-  public static final ClickhouseColumn UINT32_KEY_COLUMN = ClickhouseColumns.columnForSpec("UInt32", "lcKeyColumn", null);
-  public static final ClickhouseColumn UINT64_KEY_COLUMN = ClickhouseColumns.columnForSpec("UInt64", "lcKeyColumn", null);
+
+  private static final ClickhouseColumn[] KEY_COLUMNS = new ClickhouseColumn[] {
+    ClickhouseColumns.columnForSpec("UInt8", "lcKeyColumn", null),
+    ClickhouseColumns.columnForSpec("UInt16", "lcKeyColumn", null),
+    ClickhouseColumns.columnForSpec("UInt32", "lcKeyColumn", null),
+    ClickhouseColumns.columnForSpec("UInt64", "lcKeyColumn", null)
+  };
 
   private final ClickhouseNativeColumnDescriptor indexDescr;
   private final ClickhouseNativeDatabaseMetadata md;
@@ -105,26 +108,18 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
 
   @Override
   public Object getElement(int rowIdx, Class<?> desired) {
-    int key = ((Number)keysColumn.getElement(rowIdx, desired)).intValue();
+    int key = ((Number)keysColumn.getElement(rowIdx, Number.class)).intValue();
     if (columnDescriptor.isNullable() && key == 0) {
       return null;
     }
+    //TODO: maybe introduce cache here if String encoding was requested (for VARCHAR where desired == String.class || desired == Object.class)
     return indexColumn.getElementInternal(key, desired);
   }
 
   static ClickhouseColumn uintColumn(int code) {
-    ClickhouseColumn tmp;
-    if (code == 0) {
-      tmp = UINT8_KEY_COLUMN;
-    } else if (code == 1) {
-       tmp = UINT16_KEY_COLUMN;
-    } else if (code == 2) {
-       tmp = UINT32_KEY_COLUMN;
-    } else if (code == 3) {
-       tmp = UINT64_KEY_COLUMN;
-    } else {
+    if (code < 0 || code >= KEY_COLUMNS.length) {
       throw new IllegalArgumentException("unknown low-cardinality key-column code " + code);
     }
-    return tmp;
+    return KEY_COLUMNS[code];
   }
 }
