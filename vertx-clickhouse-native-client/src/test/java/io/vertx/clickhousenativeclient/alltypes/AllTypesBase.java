@@ -50,6 +50,9 @@ public abstract class AllTypesBase<T> {
   public void setup(TestContext ctx) {
     options = rule.options();
     vertx = Vertx.vertx();
+    ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("TRUNCATE TABLE " + tableName()).execute(ctx.asyncAssertSuccess());
+    }));
   }
 
   @After
@@ -80,32 +83,28 @@ public abstract class AllTypesBase<T> {
   protected  void doTest(TestContext ctx, List<Tuple> batch) {
     String tableName = tableName();
     ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("TRUNCATE TABLE " + tableName).execute(
-        ctx.asyncAssertSuccess(res1 -> {
-          List<String> columnsList = columnsList(hasLowCardinality);
-          String columnsStr = String.join(", ", columnsList);
-          String query = "INSERT INTO " + tableName + " (" + columnsStr + ") VALUES";
-          conn.preparedQuery(query)
-            .executeBatch(batch, ctx.asyncAssertSuccess(
-              res2 -> {
-                Sleep.sleepOrThrow();
-                conn.query("SELECT " + columnsStr + " FROM " + tableName + " ORDER BY id").execute(ctx.asyncAssertSuccess(
-                  res3 -> {
-                    ctx.assertEquals(res3.size(), batch.size(), "row count mismatch");
-                    int batchIdx = 0;
-                    for (Row row : res3) {
-                      Number id = row.get(Number.class, "id");
-                      Tuple expectedRow = batch.get(batchIdx);
-                      LOG.info("checking row " + tableSuffix + ":" + id);
-                      for (int colIdx = 0; colIdx < expectedRow.size(); ++colIdx) {
-                        String colName = columnsList.get(colIdx);
-                        Object expectedColumnValue = expectedRow.getValue(colIdx);
-                        checker.checkColumn(row, colIdx, colName, (T) expectedColumnValue);
-                      }
-                      ++batchIdx;
-                    }
-                  }));
-              }));
+      List<String> columnsList = columnsList(hasLowCardinality);
+      String columnsStr = String.join(", ", columnsList);
+      String query = "INSERT INTO " + tableName + " (" + columnsStr + ") VALUES";
+      conn.preparedQuery(query)
+        .executeBatch(batch, ctx.asyncAssertSuccess(res2 -> {
+          Sleep.sleepOrThrow();
+          conn.query("SELECT " + columnsStr + " FROM " + tableName + " ORDER BY id").execute(ctx.asyncAssertSuccess(
+            res3 -> {
+              ctx.assertEquals(res3.size(), batch.size(), "row count mismatch");
+              int batchIdx = 0;
+              for (Row row : res3) {
+                Number id = row.get(Number.class, "id");
+                Tuple expectedRow = batch.get(batchIdx);
+                LOG.info("checking row " + tableSuffix + ":" + id);
+                for (int colIdx = 0; colIdx < expectedRow.size(); ++colIdx) {
+                  String colName = columnsList.get(colIdx);
+                  Object expectedColumnValue = expectedRow.getValue(colIdx);
+                  checker.checkColumn(row, colIdx, colName, (T) expectedColumnValue);
+                }
+                ++batchIdx;
+              }
+          }));
         }));
     }));
   }

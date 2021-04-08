@@ -1,8 +1,10 @@
 package io.vertx.clickhousenativeclient.alltypes;
 
+import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
@@ -12,6 +14,11 @@ import java.util.List;
 public class FixedStringTest extends AllTypesBase<String> {
   public FixedStringTest() {
     super("fixedstring", new MyColumnChecker<>(String.class, Tuple::getString, Row::getString, Tuple::getArrayOfStrings, Row::getArrayOfStrings));
+  }
+
+  @Test
+  public void testArrayDeduplication(TestContext ctx) {
+    new StringArrayDeduplicationTester(tableName(), vertx, options).test(ctx);
   }
 
   @Override
