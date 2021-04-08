@@ -165,11 +165,19 @@ public class ClickhouseColumns {
   }
 
   public static ClickhouseColumn columnForSpec(String spec, String name, ClickhouseNativeDatabaseMetadata md) {
+    return columnForSpec(spec, name, md, false);
+  }
+
+  public static ClickhouseColumn columnForSpec(String spec, String name, ClickhouseNativeDatabaseMetadata md, boolean enableStringCache) {
     ClickhouseNativeColumnDescriptor descr = ClickhouseColumns.columnDescriptorForSpec(spec, name);
-    return columnForSpec(descr, md);
+    return columnForSpec(descr, md, enableStringCache);
   }
 
   public static ClickhouseColumn columnForSpec(ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
+    return columnForSpec(descr, md, false);
+  }
+
+  public static ClickhouseColumn columnForSpec(ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md, boolean enableStringCache) {
     if (descr.isArray()) {
       return new ArrayColumn(descr, md);
     }
@@ -191,9 +199,9 @@ public class ClickhouseColumns {
       }
     } else if (jdbcType == JDBCType.VARCHAR) {
       if (descr.getElementSize() == ClickhouseNativeColumnDescriptor.NOSIZE) {
-        return new StringColumn(descr, md);
+        return new StringColumn(descr, md, enableStringCache);
       } else {
-        return new FixedStringColumn(descr, md);
+        return new FixedStringColumn(descr, md, enableStringCache);
       }
     } else if (jdbcType == JDBCType.TIMESTAMP || jdbcType == JDBCType.TIMESTAMP_WITH_TIMEZONE) {
       ZoneId zoneId;

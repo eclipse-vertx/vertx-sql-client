@@ -12,11 +12,15 @@ public class StringColumnReader extends ClickhouseColumnReader {
   private Integer curStrLength;
   private List<byte[]> elements;
   private final Charset charset;
+  private final boolean enableStringCache;
+  private final StringCache cache;
 
-  protected StringColumnReader(int nRows, ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md) {
+  protected StringColumnReader(int nRows, ClickhouseNativeColumnDescriptor descriptor, boolean enableStringCache, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descriptor);
     this.elements = new ArrayList<>(nRows);
     this.charset = md.getStringCharset();
+    this.enableStringCache = enableStringCache;
+    this.cache = enableStringCache ? new StringCache(nRows) : null;
   }
 
   @Override
@@ -52,7 +56,7 @@ public class StringColumnReader extends ClickhouseColumnReader {
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
     Object tmp = getObjectsArrayElement(rowIdx);
     if ((desired == String.class || desired == Object.class) && tmp != null) {
-      return new String((byte[])tmp, charset);
+      return enableStringCache ? cache.get(rowIdx, () -> new String((byte[])tmp, charset)) : new String((byte[])tmp, charset);
     }
     return tmp;
   }

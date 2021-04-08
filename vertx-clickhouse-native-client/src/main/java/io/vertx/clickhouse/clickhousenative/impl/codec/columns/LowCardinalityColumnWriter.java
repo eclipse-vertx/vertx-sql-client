@@ -78,6 +78,7 @@ public class LowCardinalityColumnWriter extends ClickhouseColumnWriter {
     if (val.getClass() == byte[].class) {
       val = new ArrayWrapper((byte[]) val);
     } else if (val.getClass() == String.class) {
+      //TODO: maybe introduce cache with already observed Strings to skip getBytes() or mimic String.hashCode for byte[]
       val = new ArrayWrapper(((String) val).getBytes(md.getStringCharset()));
     }
     return val;
