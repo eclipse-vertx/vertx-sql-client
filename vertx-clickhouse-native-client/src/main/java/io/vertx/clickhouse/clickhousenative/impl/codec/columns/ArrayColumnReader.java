@@ -3,22 +3,28 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 
 import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 public class ArrayColumnReader extends ClickhouseColumnReader {
+  private static final Logger LOG = LoggerFactory.getLogger(ArrayColumnReader.class);
 
   private final ClickhouseNativeDatabaseMetadata md;
   private final ClickhouseNativeColumnDescriptor elementTypeDescr;
 
-  private List<List<Integer>> slicesSeries;
+  private List<List<Integer>> masterSlice;
+  private List<List<List<Integer>>> perRowsSlice;
+
   private Integer curDimension;
   private ClickhouseColumnReader nestedColumnReader;
   private ClickhouseColumn nestedColumn;
@@ -48,15 +54,26 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (nItems == null) {
-      slicesSeries = new ArrayList<>();
+      masterSlice = new ArrayList<>();
       curDimension = 0;
       nItems = 0;
     }
     if (statePrefix == null) {
       return null;
     }
+    boolean maybeRequiresExtraEncoding = elementTypeDescr.jdbcType() == JDBCType.VARCHAR
+      || elementTypeDescr.getNestedType().startsWith("Enum");
     if (curDimension < columnDescriptor.arrayDimensionsCount()) {
-      readSlices(in);
+      if (maybeRequiresExtraEncoding) {
+        readAsPerRowSlices(in);
+        LOG.info("per row slices: " + perRowsSlice);
+      } else {
+        readAsMasterSlice(in);
+        LOG.info("master slice: " + masterSlice);
+      }
+      if (curDimension < columnDescriptor.arrayDimensionsCount()) {
+        return null;
+      }
     }
     if (nestedColumnReader == null) {
       nestedColumn = ClickhouseColumns.columnForSpec(elementTypeDescr, md);
@@ -69,7 +86,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     if (nItems > 0) {
       assert nItems == nestedColumnReader.nRows;
       if (nestedColumnReader.getClass() == LowCardinalityColumnReader.class) {
-        ((LowCardinalityColumnReader) nestedColumnReader).keysSerializationVersion = LowCardinalityColumnReader.SUPPORTED_SERIALIZATION_VERSION;
+        ((LowCardinalityColumnReader) nestedColumnReader).keysSerializationVersion = (Long) statePrefix;
       }
       if (nestedColumnReader.isPartial()) {
         nestedColumnReader.itemsArray = nestedColumnReader.readItemsAsObjects(in, elementClass);
@@ -77,22 +94,19 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
           return null;
         }
       }
-      if (elementTypeDescr.jdbcType() == JDBCType.VARCHAR
-       || nestedColumnReader.getClass() == Enum8ColumnReader.class
-       || nestedColumnReader.getClass() == Enum16ColumnReader.class) {
+      if (maybeRequiresExtraEncoding) {
         return nestedColumnReader.itemsArray;
       }
       resliced = true;
-      return resliceIntoArray((Object[]) nestedColumnReader.itemsArray, elementClass);
+      return resliceIntoArray((Object[]) nestedColumnReader.itemsArray, masterSlice, elementClass);
     }
+
     Object[] emptyData = (Object[]) Array.newInstance(elementClass, 0);
-    if (elementTypeDescr.jdbcType() == JDBCType.VARCHAR
-      || nestedColumnReader.getClass() == Enum8ColumnReader.class
-      || nestedColumnReader.getClass() == Enum16ColumnReader.class) {
+    if (maybeRequiresExtraEncoding) {
       return emptyData;
     }
     resliced = true;
-    return resliceIntoArray(emptyData, elementClass);
+    return resliceIntoArray(emptyData, masterSlice, elementClass);
   }
 
   @Override
@@ -101,6 +115,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     Object[] reslicedRet;
     if (resliced) {
       reslicedRet = objectsArray;
+      return reslicedRet[rowIdx];
     } else {
       desired = maybeUnwrapArrayElementType(desired);
       Triplet<Boolean, Object[], Class<?>> maybeRecoded = asDesiredType(objectsArray, desired);
@@ -109,12 +124,9 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       } else {
         desired = elementClass;
       }
-      //TODO smagellan: reslicing for every row with master-slice can be slow (for BLOBS and Enums if recoding requested), maybe
-      // 1) store resliced master-array into Phantom/Weak reference or
-      // 2) split master-splice into nRows splices (1 per row)
-      reslicedRet = resliceIntoArray(maybeRecoded.middle(), desired);
+      reslicedRet = resliceIntoArray(maybeRecoded.middle(), perRowsSlice.get(rowIdx), desired);
+      return reslicedRet;
     }
-    return reslicedRet[rowIdx];
   }
 
   private Class<?> maybeUnwrapArrayElementType(Class<?> desired) {
@@ -157,10 +169,10 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     return ret;
   }
 
-  private Object[] resliceIntoArray(Object[] data, Class<?> elementClass) {
+  private Object[] resliceIntoArray(Object[] data, List<List<Integer>> sliceToUse, Class<?> elementClass) {
     Object[] intermData = data;
-    for (int i = slicesSeries.size() - 1; i >= 0; --i) {
-      List<Integer> slices = slicesSeries.get(i);
+    for (int i = sliceToUse.size() - 1; i >= 0; --i) {
+      List<Integer> slices = sliceToUse.get(i);
       Iterator<Map.Entry<Integer, Integer>> paired = PairedIterator.of(slices);
       Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(intermData.getClass(), slices.size() - 1);
       int tmpSliceIdx = 0;
@@ -177,12 +189,59 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     return (Object[]) intermData[0];
   }
 
-  private void readSlices(ClickhouseStreamDataSource in) {
-    if (slicesSeries.isEmpty()) {
-      slicesSeries.add(Arrays.asList(0, nRows));
+  private void readAsPerRowSlices(ClickhouseStreamDataSource in) {
+    if (nRows == 0) {
+      masterSlice = Collections.emptyList();
+      perRowsSlice = Collections.emptyList();
+      curDimension = columnDescriptor.arrayDimensionsCount();
+      return;
+    }
+
+    perRowsSlice = new ArrayList<>(nRows);
+    for (int i = 0; i < nRows; ++i) {
+      perRowsSlice.add(new ArrayList<>());
+    }
+    curLevelSliceSize = nRows;
+    while (curDimension < columnDescriptor.arrayDimensionsCount()) {
+      if (in.readableBytes() < curLevelSliceSize * Long.BYTES) {
+        return;
+      }
+      long prevSliceElement = 0;
+      for (int rowIdx = 0; rowIdx < nRows; ++rowIdx) {
+        int rowSliceElementsToReadAtDimension;
+        if (curDimension == 0) {
+          rowSliceElementsToReadAtDimension = 1;
+        } else {
+          List<Integer> rowSliceAtPrevDimension = perRowsSlice.get(rowIdx).get(curDimension - 1);
+          rowSliceElementsToReadAtDimension = rowSliceAtPrevDimension.get(rowSliceAtPrevDimension.size() - 1) - rowSliceAtPrevDimension.get(0);
+        }
+        List<Integer> rowSliceAtDimension = new ArrayList<>(rowSliceElementsToReadAtDimension + 1);
+        //offsets at last dimension are absolute
+        boolean lastDimension = curDimension == columnDescriptor.arrayDimensionsCount() - 1;
+        int firstElementInSlice = (int) prevSliceElement;
+        rowSliceAtDimension.add(firstElementInSlice - (int)(lastDimension ? 0L : firstElementInSlice));
+        for (int i = 0; i < rowSliceElementsToReadAtDimension; ++i) {
+          prevSliceElement = in.readLongLE();
+          if (prevSliceElement > Integer.MAX_VALUE) {
+            throw new IllegalStateException("nested size is too big (" + prevSliceElement + "), max " + Integer.MAX_VALUE);
+          }
+          rowSliceAtDimension.add((int)(prevSliceElement - (lastDimension ? 0L : firstElementInSlice)));
+        }
+        perRowsSlice.get(rowIdx).add(rowSliceAtDimension);
+      }
+      ++curDimension;
+      curLevelSliceSize = (int)prevSliceElement;
+    }
+    nItems = curLevelSliceSize;
+  }
+
+  private void readAsMasterSlice(ClickhouseStreamDataSource in) {
+    if (masterSlice.isEmpty()) {
+      masterSlice.add(Arrays.asList(0, nRows));
       curLevelSliceSize = nRows;
     }
     if (nRows == 0) {
+      perRowsSlice = Collections.emptyList();
       curDimension = columnDescriptor.arrayDimensionsCount();
       return;
     }
@@ -203,7 +262,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
         }
         curLevelSlice.add((int) lastSliceSize);
       }
-      slicesSeries.add(curLevelSlice);
+      masterSlice.add(curLevelSlice);
       curLevelSlice = null;
       curLevelSliceSize = (int) lastSliceSize;
       curDimension += 1;

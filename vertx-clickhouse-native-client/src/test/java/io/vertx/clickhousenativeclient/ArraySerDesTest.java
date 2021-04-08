@@ -9,6 +9,8 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumn;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumnReader;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumnWriter;
 import io.vertx.clickhouse.clickhousenative.impl.codec.columns.ClickhouseColumns;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Assert;
 import org.junit.Test;
@@ -23,6 +25,8 @@ import java.util.List;
 
 @RunWith(Parameterized.class)
 public class ArraySerDesTest {
+  private static final Logger LOG = LoggerFactory.getLogger(ArraySerDesTest.class);
+
   private final ClickhouseColumn col;
   private final List<Tuple> data;
 
@@ -38,12 +42,22 @@ public class ArraySerDesTest {
       0, 0,0, 0, "dname", ZoneId.systemDefault(), ZoneId.systemDefault(), "client",
       Collections.emptyMap(), StandardCharsets.UTF_8, null, null, null, true, true);
     ClickhouseColumn col = ClickhouseColumns.columnForSpec(descr, md);
-    List<Tuple> data = Arrays.asList(Tuple.of(new String[][][]{ {{}, {"1"}, {"2", "3"}} }),
+    List<Tuple> data = Arrays.asList(
+      //row slice: [[0, 2], [0, 1, 2], [0, 0, 0]] (master slice for 2 similar rows: [0,2],[0,2,4],[0,1,2,3,4],[0,0,0,0,0])
+      Tuple.of(new String[][][]{ {{}}, {{}} } ),
+      //row slice: [[0, 1], [0, 3], [0, 0, 1, 3]]
+      Tuple.of(new String[][][]{ {{}, {"1"}, {"2", "3"}} }),
       Tuple.of(new String[][][]{ {{}, {"1"}, {"2", "3"}} }),
       Tuple.of(new String[][][]{ {{}}, {{}} } ),
       Tuple.of(new String[][][]{ {{}}, {{}} } ),
       Tuple.of( new String[][][]{ {{"str1_1", "str1_2", null}, {null}}, {{}} } ),
-      Tuple.of( new String[][][]{ {{"str1_1", "str1_2", null}, {null}}, {{"str1_3", "str1_4", null}, {null}}} )
+      Tuple.of( new String[][][]{ {{"str1_1", "str1_2", null}, {null}}, {{"str1_3", "str1_4", null}, {null}}} ),
+      //master slice for 2 rows: [[0, 2], [0, 1, 3], [0, 3, 5, 6], [0, 0, 1, 3, 6, 7, 7]]
+      //per row slices: [[[0, 1], [0, 3], [0, 0, 1, 3]], [[0, 2], [0, 2, 3], [0, 3, 4, 4]]]
+      //[0, 1], [0, 3], [0, 0, 1, 3]
+      Tuple.of(new String[][][]{ {{}, {"1"}, {"2", "3"}} }),
+      //[0, 2], [0, 2, 3], [0, 3, 4, 4]
+      Tuple.of( new String[][][]{ {{"str1_1", "str1_2", null}, {null}}, {{}} } )
     );
 
     return Arrays.asList(new Object[][]{
@@ -65,6 +79,7 @@ public class ArraySerDesTest {
     ds.moreData(buf, UnpooledByteBufAllocator.DEFAULT);
     reader.readColumn(ds);
     for (int rowIdx = 0; rowIdx < data.size(); ++rowIdx) {
+      LOG.info("rowIdx: " + rowIdx);
       Object actual = reader.getElement(rowIdx, String.class);
       Object expected = data.get(rowIdx).getValue(0);
       Assert.assertArrayEquals((Object[])expected, (Object[])actual);
