@@ -1,8 +1,13 @@
 package io.vertx.clickhousenativeclient.alltypes;
 
+import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnection;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.Tuple;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
@@ -12,6 +17,24 @@ import java.util.List;
 public class StringTest extends AllTypesBase<String> {
   public StringTest() {
     super("string", new MyColumnChecker<>(String.class, Tuple::getString, Row::getString, Tuple::getArrayOfStrings, Row::getArrayOfStrings));
+  }
+
+  @Test
+  public void testArrayDeduplication(TestContext ctx) {
+    String tp = "Array(Array(LowCardinality(Nullable(String))))";
+    //String query = String.format("select CAST(array(array('str3'), array(NULL), array('str1', NULL, 'str2'), array('str3')), '%s') as arr", tp);
+    String query = String.format("select arr1 from ( " +
+                                   "select 1 as id, CAST(array(array('str3'), array(NULL), array('str1', NULL, 'str2'), array('str3')), '%s') as arr1 UNION ALL " +
+                                   "select 1 as id, CAST(array(array('str3'), array(NULL), array('str1', NULL, 'str2'), array('str3', 'arrqq')), '%s') as arr1" +
+                                 ") t1 order by id", tp, tp);
+    ClickhouseNativeConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query(query).execute(
+        ctx.asyncAssertSuccess(res1 -> {
+          RowIterator<Row> rows = res1.iterator();
+          String[][] a1 = rows.next().get(String[][].class, 0);
+          ctx.assertTrue(a1[0][0] == a1[3][0]);
+        }));
+    }));
   }
 
   @Override

@@ -141,7 +141,11 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   private Triplet<Boolean, Object[], Class<?>> asDesiredType(Object[] src, Class<?> desired) {
     if (elementTypeDescr.jdbcType() == JDBCType.VARCHAR) {
       if (desired == String.class || desired == Object.class) {
-        return new Triplet<>(true, stringifyByteArrays(src, md.getStringCharset()), desired);
+        //TODO smagellan: rewrite asObjectsArray in String, FixedString and EnumX columns
+        Object[] dt = nestedColumnReader.getClass() == LowCardinalityColumnReader.class
+          ? nestedColumnReader.asObjectsArray(desired)
+          : stringifyByteArrays(src, md.getStringCharset());
+        return new Triplet<>(true, dt, desired);
       }
       return new Triplet<>(false, src, desired);
     } else if (nestedColumnReader instanceof EnumColumnReader) {

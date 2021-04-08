@@ -1,9 +1,14 @@
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
+
 import java.lang.ref.SoftReference;
 import java.util.function.Supplier;
 
 public class StringCache {
+  private static final Logger LOG = LoggerFactory.getLogger(StringCache.class);
+
   private final int nElements;
   private SoftReference<String[]> stringCache;
 
@@ -20,11 +25,15 @@ public class StringCache {
       stringCache = new SoftReference<>(cache);
       ret = supplier.get();
       cache[rowIdx] = ret;
+      LOG.info(this.hashCode() + ": MISS: " + ret + "/" + rowIdx);
     } else {
       ret = cache[rowIdx];
       if (ret == null) {
         ret = supplier.get();
         cache[rowIdx] = ret;
+        LOG.info(this.hashCode() + ": MISS: " + ret + "/" + rowIdx);
+      } else {
+        LOG.info(this.hashCode() + ": MISS: " + ret + "/" + rowIdx);
       }
     }
     return ret;
