@@ -73,7 +73,6 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     if (packetReader == null) {
       packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), null, null, encoder.getConn().lz4Factory());
     }
-    //TODO smagellan: handle parse Exceptions, if any
     Object packet = packetReader.receivePacket(ctx.alloc(), in);
     if (packet != null) {
       if (packet.getClass() == ColumnOrientedBlock.class) {

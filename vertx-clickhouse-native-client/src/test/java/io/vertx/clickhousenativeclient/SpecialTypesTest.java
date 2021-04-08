@@ -46,13 +46,31 @@ public class SpecialTypesTest {
   }
 
   @Test
+  public void testIntervalYearArray(TestContext ctx) {
+    runQuery(ctx, "SELECT array(toIntervalYear(4), toIntervalYear(1), toIntervalYear(0))", Duration[].class,
+      Optional.of(new Duration[]{Duration.ofDays(4 * 365), Duration.ofDays(365), Duration.ofDays(0)}));
+  }
+
+  @Test
   public void testIntervalQuarter(TestContext ctx) {
     runQuery(ctx, "SELECT INTERVAL 4 QUARTER", Duration.class, Optional.of(Duration.ofDays(120 * 4)));
   }
 
   @Test
+  public void testIntervalQuarterArray(TestContext ctx) {
+    runQuery(ctx, "SELECT array(toIntervalQuarter(4), toIntervalQuarter(1), toIntervalQuarter(0))", Duration[].class,
+      Optional.of(new Duration[]{Duration.ofDays(4 * 120), Duration.ofDays(120), Duration.ofDays(0)}));
+  }
+
+  @Test
   public void testIntervalMonth(TestContext ctx) {
     runQuery(ctx, "SELECT INTERVAL 4 MONTH", Duration.class, Optional.of(Duration.ofDays(30 * 4)));
+  }
+
+  @Test
+  public void testIntervalMonthArray(TestContext ctx) {
+    runQuery(ctx, "SELECT array(toIntervalMonth(4), toIntervalMonth(1), toIntervalMonth(0))", Duration[].class,
+      Optional.of(new Duration[]{Duration.ofDays(4 * 30), Duration.ofDays(30), Duration.ofDays(0)}));
   }
 
   @Test
@@ -66,8 +84,6 @@ public class SpecialTypesTest {
       Optional.of(new Duration[]{Duration.ofDays(4 * 7), Duration.ofDays(7), Duration.ofDays(0)}));
   }
 
-  @Test
-  //TODO smagellan: all other types from query "select * from system.data_type_families where name like 'Interval%';"
   public void testIntervalDay(TestContext ctx) {
     runQuery(ctx, "SELECT INTERVAL 4 DAY", Duration.class, Optional.of(Duration.ofDays(4)));
   }
