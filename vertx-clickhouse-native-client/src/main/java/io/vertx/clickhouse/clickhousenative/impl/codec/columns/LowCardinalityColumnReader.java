@@ -15,6 +15,7 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
     ClickhouseColumns.columnForSpec("UInt32", "lcKeyColumn", null),
     ClickhouseColumns.columnForSpec("UInt64", "lcKeyColumn", null)
   };
+  public static final Object[] EMPTY_ARRAY = new Object[0];
 
   private final ClickhouseNativeColumnDescriptor indexDescr;
   private final ClickhouseNativeDatabaseMetadata md;
@@ -86,6 +87,7 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
       keysColumn = uintColumn(keyType).reader(nRows);
     }
     keysColumn.readColumn(in);
+    itemsArray = EMPTY_ARRAY;
   }
 
   //called by Array column
@@ -93,8 +95,11 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (isPartial()) {
       readData(in);
+      if (isPartial()) {
+        return null;
+      }
     }
-    return null;
+    return itemsArray;
   }
 
   @Override

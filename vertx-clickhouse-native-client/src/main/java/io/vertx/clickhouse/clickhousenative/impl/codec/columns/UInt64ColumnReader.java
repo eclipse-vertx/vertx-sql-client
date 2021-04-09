@@ -15,6 +15,7 @@ public class UInt64ColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
+    //TODO: maybe read elements if we have enough data (> ELEMENT_SIZE)
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       long[] data = new long[nRows];
       for (int i = 0; i < nRows; ++i) {

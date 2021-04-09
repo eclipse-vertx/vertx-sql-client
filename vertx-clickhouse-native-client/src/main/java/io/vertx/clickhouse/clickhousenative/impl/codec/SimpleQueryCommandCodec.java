@@ -89,7 +89,6 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         }
         ++dataPacketNo;
       } else {
-        //TODO smagellan: handle connection errors (e.g. table does not exist, wrong password, no column with given name, etc)
         String msg = "unknown packet type: " + packet.getClass();
         LOG.error(msg);
         if (packet instanceof Throwable) {
@@ -97,7 +96,6 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
           LOG.error("unknown packet type", t);
           notifyOperationUpdate(false, t);
         }
-        //completionHandler.handle(CommandResponse.failure(new RuntimeException(msg)));
       }
     } else if (packetReader.isEndOfStream()) {
       notifyOperationUpdate(false, null);
