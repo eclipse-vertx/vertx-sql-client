@@ -9,7 +9,6 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
-import java.util.Map;
 
 public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
   private static final Logger LOG = LoggerFactory.getLogger(ClickhouseNativeEncoder.class);
@@ -74,22 +73,21 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
       return new CloseConnectionCommandCodec((CloseConnectionCommand)cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
       PrepareStatementCommand ps = (PrepareStatementCommand) cmd;
-      Map.Entry<String, Integer> queryType = QueryParsers.findKeyWord(ps.sql(), QueryParsers.SELECT_AND_MUTATE_KEYWORDS);
-      return new PrepareStatementCodec(ps, queryType);
+      QueryInfo queryInfo = QueryInfo.parse(ps.sql());
+      return new PrepareStatementCodec(ps, queryInfo);
     } else if (cmd instanceof ExtendedQueryCommand) {
       ExtendedQueryCommand<?> ecmd = (ExtendedQueryCommand<?>) cmd;
-      Map.Entry<String, Integer> queryType;
+      QueryInfo queryInfo;
       if (ecmd.preparedStatement() != null) {
-        queryType = ((ClickhouseNativePreparedStatement) ecmd.preparedStatement()).queryType();
+        queryInfo = ((ClickhouseNativePreparedStatement) ecmd.preparedStatement()).queryInfo();
       } else {
-        queryType = QueryParsers.findKeyWord(ecmd.sql(), QueryParsers.SELECT_AND_MUTATE_KEYWORDS);
+        queryInfo = QueryInfo.parse(ecmd.sql());
       }
-      if (queryType != null && !"insert".equalsIgnoreCase(queryType.getKey()) && ecmd.isBatch() && ecmd.paramsList() != null && ecmd.paramsList().size() > 1) {
+      if (queryInfo != null && !queryInfo.isInsert() && ecmd.isBatch() && ecmd.paramsList() != null && ecmd.paramsList().size() > 1) {
         RuntimeException ex = new UnsupportedOperationException("batch queries are supported for INSERTs only");
         deliverError(cmd, ex);
-        throw ex;
       }
-      return new ExtendedQueryCommandCodec<>(queryType, ecmd, conn);
+      return new ExtendedQueryCommandCodec<>(queryInfo, ecmd, conn);
     } else if (cmd instanceof CloseCursorCommand) {
       return new CloseCursorCommandCodec((CloseCursorCommand)cmd, conn);
     } else if (cmd instanceof CloseStatementCommand) {

@@ -13,16 +13,16 @@ public class ClickhouseNativePreparedStatement implements PreparedStatement {
   private final String sql;
   private final ClickhouseNativeParamDesc paramDesc;
   private final ClickhouseNativeRowDesc rowDesc;
-  private final Map.Entry<String, Integer> queryType;
+  private final QueryInfo queryInfo;
   private final boolean sentQuery;
   private final UUID psId;
 
   public ClickhouseNativePreparedStatement(String sql, ClickhouseNativeParamDesc paramDesc, ClickhouseNativeRowDesc rowDesc,
-                                           Map.Entry<String, Integer> queryType, boolean sentQuery, UUID psId) {
+                                           QueryInfo queryInfo, boolean sentQuery, UUID psId) {
     this.sql = sql;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
-    this.queryType = queryType;
+    this.queryInfo = queryInfo;
     this.sentQuery = sentQuery;
     this.psId = psId;
   }
@@ -47,8 +47,8 @@ public class ClickhouseNativePreparedStatement implements PreparedStatement {
     return null;
   }
 
-  public Map.Entry<String, Integer> queryType() {
-    return queryType;
+  public QueryInfo queryInfo() {
+    return queryInfo;
   }
 
   public boolean isSentQuery() {

@@ -172,4 +172,15 @@ public class QueryParsers {
     }
     return (short) number;
   }
+
+  static int valuesPosForLoCaseSql(String sqlLoCase, int fromPos) {
+    if (sqlLoCase.endsWith("values")) {
+      return sqlLoCase.length() - "values".length();
+    }
+    Map.Entry<String, Integer> pos = findKeyWord(sqlLoCase, fromPos, Collections.singleton("$"));
+    if (pos == null) {
+      return -1;
+    }
+    return sqlLoCase.lastIndexOf("values", pos.getValue());
+  }
 }

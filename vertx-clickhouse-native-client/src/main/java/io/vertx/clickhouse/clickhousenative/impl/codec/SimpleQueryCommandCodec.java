@@ -14,7 +14,7 @@ import java.util.Map;
 public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBaseCodec<T, QueryCommandBase<T>>{
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
   private final boolean commandRequiresUpdatesDelivery;
-  protected final Map.Entry<String, Integer> queryType;
+  protected final QueryInfo queryInfo;
   protected final int batchSize;
 
   private RowResultDecoder<?, T> rowResultDecoder;
@@ -25,9 +25,9 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
   protected SimpleQueryCommandCodec(QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn) {
     this(null, 0, cmd, conn, false);
   }
-  protected SimpleQueryCommandCodec(Map.Entry<String, Integer> queryType, int batchSize, QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn, boolean requireUpdatesDelivery) {
+  protected SimpleQueryCommandCodec(QueryInfo queryInfo, int batchSize, QueryCommandBase<T> cmd, ClickhouseNativeSocketConnection conn, boolean requireUpdatesDelivery) {
     super(cmd);
-    this.queryType = queryType;
+    this.queryInfo = queryInfo;
     this.batchSize = batchSize;
     this.conn = conn;
     this.commandRequiresUpdatesDelivery = requireUpdatesDelivery;
@@ -117,7 +117,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
       LOG.info("notifying operation update; has more result = " + hasMoreResults + "; size: " + size);
       cmd.resultHandler().handleResult(updateCount, size, rowResultDecoder.getRowDesc(), result, failure);
     } else {
-      if (queryType != null && "insert".equalsIgnoreCase(queryType.getKey())) {
+      if (queryInfo != null && queryInfo.isInsert()) {
         rowResultDecoder = new RowResultDecoder<>(cmd.collector(), ClickhouseNativeRowDesc.EMPTY, conn.getDatabaseMetaData());
         failure = rowResultDecoder.complete();
         cmd.resultHandler().handleResult(batchSize, 0, ClickhouseNativeRowDesc.EMPTY, rowResultDecoder.result(), failure);
