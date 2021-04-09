@@ -6,6 +6,8 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 
 public class UInt8Column extends ClickhouseColumn {
+  public static final Byte[] EMPTY_BYTE_ARRAY = new Byte[0];
+
   public UInt8Column(ClickhouseNativeColumnDescriptor descriptor) {
     super(descriptor);
   }
@@ -26,6 +28,15 @@ public class UInt8Column extends ClickhouseColumn {
       return (short) 0;
     } else {
       return (byte) 0;
+    }
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    if (descriptor.isUnsigned()) {
+      return UInt16Column.EMPTY_SHORT_ARRAY;
+    } else {
+      return EMPTY_BYTE_ARRAY;
     }
   }
 }

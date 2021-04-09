@@ -8,6 +8,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 public class UInt64Column extends ClickhouseColumn {
+  public static final Numeric[] EMPTY_NUMERIC_ARRAY = new Numeric[0];
   public static final Numeric UINT64_MIN = Numeric.create(BigInteger.ZERO);
 
   public UInt64Column(ClickhouseNativeColumnDescriptor descriptor) {
@@ -24,10 +25,19 @@ public class UInt64Column extends ClickhouseColumn {
     return new UInt64ColumnWriter(data, descriptor, columnIndex);
   }
 
+  @Override
   public Object nullValue() {
     if (descriptor.isUnsigned()) {
       return UINT64_MIN;
     }
     return 0L;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    if (descriptor.isUnsigned()) {
+      return EMPTY_NUMERIC_ARRAY;
+    }
+    return UInt32Column.EMPTY_LONG_ARRAY;
   }
 }

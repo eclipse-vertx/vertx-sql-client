@@ -6,6 +6,8 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 
 public class UInt32Column extends ClickhouseColumn {
+  public static final Long[] EMPTY_LONG_ARRAY = new Long[0];
+
   public UInt32Column(ClickhouseNativeColumnDescriptor descriptor) {
     super(descriptor);
   }
@@ -26,5 +28,13 @@ public class UInt32Column extends ClickhouseColumn {
       return 0L;
     }
     return 0;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    if (descriptor.isUnsigned()) {
+      return EMPTY_LONG_ARRAY;
+    }
+    return UInt16Column.EMPTY_INT_ARRAY;
   }
 }

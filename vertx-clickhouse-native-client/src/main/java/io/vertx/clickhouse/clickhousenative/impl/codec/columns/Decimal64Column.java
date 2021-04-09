@@ -35,4 +35,9 @@ public class Decimal64Column extends ClickhouseColumn {
   public Object nullValue() {
     return zeroValue;
   }
+
+  @Override
+  public Object[] emptyArray() {
+    return Decimal128Column.EMPTY_ARRAY;
+  }
 }

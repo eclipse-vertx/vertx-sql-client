@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.UUID;
 
 public class UUIDColumn extends ClickhouseColumn {
+  public static final UUID[] EMPTY_UUID_ARRAY = new UUID[0];
+
   public static final UUID ZERO_UUID = new UUID(0, 0);
   public static final int ELEMENT_SIZE = 16;
 
@@ -24,7 +26,13 @@ public class UUIDColumn extends ClickhouseColumn {
     return new UUIDColumnWriter(data, descriptor, columnIndex);
   }
 
+  @Override
   public Object nullValue() {
     return ZERO_UUID;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_UUID_ARRAY;
   }
 }

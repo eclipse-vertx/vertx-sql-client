@@ -14,15 +14,7 @@ public class ArrayColumn extends ClickhouseColumn {
     this.md = md;
   }
 
-  private static ClickhouseNativeColumnDescriptor elementaryDescr(ClickhouseNativeColumnDescriptor descr) {
-    ClickhouseNativeColumnDescriptor tmp = descr;
-    while (tmp.isArray()) {
-      tmp = tmp.getNestedDescr();
-    }
-    return tmp;
-  }
-
-    @Override
+  @Override
   public ClickhouseColumnReader reader(int nRows) {
     return new ArrayColumnReader(nRows, descriptor, md);
   }
@@ -35,5 +27,10 @@ public class ArrayColumn extends ClickhouseColumn {
   @Override
   public Object nullValue() {
     throw new IllegalArgumentException("arrays are not nullable");
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    throw new IllegalArgumentException("not implemented");
   }
 }

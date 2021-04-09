@@ -17,4 +17,5 @@ public abstract class ClickhouseColumn {
   public abstract ClickhouseColumnWriter writer(List<Tuple> data, int columnIndex);
 
   public abstract Object nullValue();
+  public abstract Object[] emptyArray();
 }

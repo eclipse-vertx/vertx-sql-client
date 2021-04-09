@@ -5,6 +5,8 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDes
 import java.time.LocalDate;
 
 public class DateColumnReader extends UInt16ColumnReader {
+  public static final LocalDate[] EMPTY_ARRAY = new LocalDate[0];
+
   public static final LocalDate MIN_VALUE = LocalDate.of(1970, 1, 1);
   public static final LocalDate MAX_VALUE = MIN_VALUE.plusDays(65535);
 

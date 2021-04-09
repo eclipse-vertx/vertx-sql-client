@@ -28,6 +28,11 @@ public class FixedStringColumn extends ClickhouseColumn {
 
   @Override
   public Object nullValue() {
-    return StringColumn.EMPTY;
+    return StringColumn.ZERO_VALUE;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return StringColumn.EMPTY_ARRAY;
   }
 }

@@ -8,6 +8,8 @@ import java.util.List;
 
 public class Int128Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 16;
+  public static final BigInteger[] EMPTY_ARRAY = new BigInteger[0];
+
   public static final BigInteger ZERO_VALUE = new BigInteger(new byte[ELEMENT_SIZE]);
   public static final BigInteger INT128_MIN_VALUE = new BigInteger("-170141183460469231731687303715884105728");
   public static final BigInteger INT128_MAX_VALUE = new BigInteger( "170141183460469231731687303715884105727");
@@ -26,7 +28,13 @@ public class Int128Column extends ClickhouseColumn {
     return new Int128ColumnWriter(data, descriptor, columnIndex);
   }
 
+  @Override
   public Object nullValue() {
     return ZERO_VALUE;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_ARRAY;
   }
 }

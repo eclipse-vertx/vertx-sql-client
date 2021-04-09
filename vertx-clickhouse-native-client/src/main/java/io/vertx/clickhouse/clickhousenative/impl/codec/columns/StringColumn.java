@@ -7,7 +7,8 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 
 public class StringColumn extends ClickhouseColumn {
-  public static final byte[] EMPTY = new byte[0];
+  public static final byte[][] EMPTY_ARRAY = new byte[0][];
+  public static final byte[] ZERO_VALUE = new byte[0];
   private final boolean enableStringCache;
 
   private final ClickhouseNativeDatabaseMetadata md;
@@ -29,6 +30,11 @@ public class StringColumn extends ClickhouseColumn {
 
   @Override
   public Object nullValue() {
-    return EMPTY;
+    return ZERO_VALUE;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_ARRAY;
   }
 }

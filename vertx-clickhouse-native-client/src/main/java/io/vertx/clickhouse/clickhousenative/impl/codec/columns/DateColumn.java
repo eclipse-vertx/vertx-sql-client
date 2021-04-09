@@ -24,4 +24,9 @@ public class DateColumn extends UInt16Column {
   public Object nullValue() {
     return DateColumnReader.MIN_VALUE;
   }
+
+  @Override
+  public Object[] emptyArray() {
+    return DateColumnReader.EMPTY_ARRAY;
+  }
 }
