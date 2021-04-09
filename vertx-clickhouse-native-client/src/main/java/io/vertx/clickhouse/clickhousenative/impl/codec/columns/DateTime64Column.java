@@ -9,6 +9,8 @@ import java.util.List;
 
 public class DateTime64Column extends ClickhouseColumn {
   public static final int ELEMENT_SIZE = 8;
+  public static final Instant ZERO_INSTANT = Instant.EPOCH;
+  public static final Instant[] EMPTY_ARRAY = new Instant[0];
 
   private final Integer precision;
   private final ZoneId zoneId;
@@ -33,6 +35,11 @@ public class DateTime64Column extends ClickhouseColumn {
 
   @Override
   public Object nullValue() {
-    return Instant.ofEpochSecond(0, 0).atZone(zoneId).toOffsetDateTime();
+    return ZERO_INSTANT.atZone(zoneId).toOffsetDateTime();
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_ARRAY;
   }
 }

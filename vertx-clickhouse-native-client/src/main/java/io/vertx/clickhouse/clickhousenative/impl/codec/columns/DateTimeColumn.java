@@ -9,13 +9,15 @@ import java.time.ZoneId;
 import java.util.List;
 
 public class DateTimeColumn extends ClickhouseColumn {
+  public static final OffsetDateTime[] EMPTY_ARRAY = new OffsetDateTime[0];
+
   private final ZoneId zoneId;
   private final OffsetDateTime nullValue;
 
   public DateTimeColumn(ClickhouseNativeColumnDescriptor descriptor, ZoneId zoneId) {
     super(descriptor);
     this.zoneId = zoneId;
-    this.nullValue = Instant.ofEpochSecond(0).atZone(zoneId).toOffsetDateTime();
+    this.nullValue = Instant.EPOCH.atZone(zoneId).toOffsetDateTime();
   }
 
   @Override
@@ -31,5 +33,10 @@ public class DateTimeColumn extends ClickhouseColumn {
   @Override
   public Object nullValue() {
     return nullValue;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_ARRAY;
   }
 }

@@ -7,6 +7,9 @@ import java.time.Duration;
 import java.util.List;
 
 public class IntervalColumn extends ClickhouseColumn {
+  public static final Duration[] EMPTY_ARRAY = new Duration[0];
+
+  public static final Duration ZERO_VALUE = Duration.ZERO;
   private final Duration multiplier;
 
   public IntervalColumn(ClickhouseNativeColumnDescriptor descriptor, Duration multiplier) {
@@ -26,6 +29,11 @@ public class IntervalColumn extends ClickhouseColumn {
 
   @Override
   public Object nullValue() {
-    return multiplier.multipliedBy(0);
+    return ZERO_VALUE;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_ARRAY;
   }
 }

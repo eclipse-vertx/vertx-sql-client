@@ -6,6 +6,9 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 
 public class Float32Column extends ClickhouseColumn {
+  public static final Float[] EMPTY_FLOAT_ARRAY = new Float[0];
+  public static final Float ZERO_VALUE = 0.0f;
+
   public Float32Column(ClickhouseNativeColumnDescriptor descriptor) {
     super(descriptor);
   }
@@ -22,6 +25,11 @@ public class Float32Column extends ClickhouseColumn {
 
   @Override
   public Object nullValue() {
-    return 0.0f;
+    return ZERO_VALUE;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_FLOAT_ARRAY;
   }
 }

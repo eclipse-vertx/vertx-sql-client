@@ -10,6 +10,8 @@ import java.util.List;
 
 public class IPv4Column extends UInt32Column {
   public static final int ELEMENT_SIZE = 4;
+  public static final Inet4Address[] EMPTY_ARRAY = new Inet4Address[0];
+
   public static final Inet4Address ZERO_VALUE = ipv4(new byte[]{0, 0, 0, 0});
   public static final Inet4Address MAX_VALUE = ipv4(new byte[]{Byte.MAX_VALUE, Byte.MAX_VALUE, Byte.MAX_VALUE, Byte.MAX_VALUE});
   public static final Inet4Address MIN_VALUE = ipv4(new byte[]{Byte.MIN_VALUE, Byte.MIN_VALUE, Byte.MIN_VALUE, Byte.MIN_VALUE});
@@ -39,5 +41,10 @@ public class IPv4Column extends UInt32Column {
   @Override
   public Object nullValue() {
     return ZERO_VALUE;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_ARRAY;
   }
 }

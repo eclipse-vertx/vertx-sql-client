@@ -96,7 +96,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       return resliceIntoArray(tmp, masterSlice, elementClass);
     }
 
-    Object[] emptyData = (Object[]) Array.newInstance(elementClass, 0);
+    Object[] emptyData = nestedColumn.emptyArray();
     if (maybeRequiresExtraEncoding) {
       return emptyData;
     }

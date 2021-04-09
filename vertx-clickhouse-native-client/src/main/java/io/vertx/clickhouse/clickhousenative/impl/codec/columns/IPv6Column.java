@@ -10,6 +10,8 @@ import java.util.List;
 
 public class IPv6Column extends FixedStringColumn {
   public static final int ELEMENT_SIZE = 16;
+  public static final Inet6Address EMPTY_ARRAY[] = new Inet6Address[0];
+
   public static final Inet6Address ZERO_VALUE = ipv6(new byte[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0});
   public static final Inet6Address MIN_VALUE = ipv6(new byte[]{
     Byte.MIN_VALUE, Byte.MIN_VALUE, Byte.MIN_VALUE, Byte.MIN_VALUE,
@@ -46,7 +48,13 @@ public class IPv6Column extends FixedStringColumn {
     return new IPv6ColumnWriter(data, descriptor, md.getStringCharset(), columnIndex);
   }
 
+  @Override
   public Object nullValue() {
     return ZERO_VALUE;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_ARRAY;
   }
 }

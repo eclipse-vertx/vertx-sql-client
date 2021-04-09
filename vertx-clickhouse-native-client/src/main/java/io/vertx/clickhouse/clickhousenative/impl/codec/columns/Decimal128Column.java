@@ -11,6 +11,8 @@ import java.math.RoundingMode;
 import java.util.List;
 
 public class Decimal128Column extends ClickhouseColumn {
+  public static final Numeric[] EMPTY_ARRAY = new Numeric[0];
+
   public static final int ELEMENT_SIZE = 16;
   public static final int MAX_PRECISION = 38;
   public static final MathContext MATH_CONTEXT = new MathContext(MAX_PRECISION, RoundingMode.HALF_EVEN);
@@ -34,5 +36,10 @@ public class Decimal128Column extends ClickhouseColumn {
   @Override
   public Object nullValue() {
     return zeroValue;
+  }
+
+  @Override
+  public Object[] emptyArray() {
+    return EMPTY_ARRAY;
   }
 }
