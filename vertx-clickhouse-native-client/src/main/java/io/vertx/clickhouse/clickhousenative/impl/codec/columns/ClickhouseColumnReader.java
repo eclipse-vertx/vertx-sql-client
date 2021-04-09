@@ -57,6 +57,9 @@ public abstract class ClickhouseColumnReader {
 
   protected Object[] readItemsAsObjects(ClickhouseStreamDataSource in, Class<?> desired) {
     itemsArray = readItems(in);
+    if (itemsArray == null) {
+      return null;
+    }
     return asObjectsArray(desired);
   }
 
