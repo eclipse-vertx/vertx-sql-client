@@ -7,19 +7,20 @@ import io.vertx.sqlclient.Tuple;
 import java.util.List;
 
 public class LowCardinalityColumn extends ClickhouseColumn {
-  private final ClickhouseColumn nested;
+  private final ClickhouseNativeColumnDescriptor indexDescriptor;
+  private final ClickhouseColumn indexColumn;
   private final ClickhouseNativeDatabaseMetadata md;
 
   public LowCardinalityColumn(ClickhouseNativeColumnDescriptor descriptor, ClickhouseNativeDatabaseMetadata md) {
     super(descriptor);
     this.md = md;
-    ClickhouseNativeColumnDescriptor tmp = ClickhouseColumns.columnDescriptorForSpec(descriptor.getNestedType(), descriptor.name());
-    nested = ClickhouseColumns.columnForSpec(tmp, md);
+    this.indexDescriptor = descriptor.copyWithModifiers(false, false);
+    this.indexColumn = ClickhouseColumns.columnForSpec(indexDescriptor, md);
   }
 
   @Override
   public ClickhouseColumnReader reader(int nRows) {
-    return new LowCardinalityColumnReader(nRows, descriptor, md);
+    return new LowCardinalityColumnReader(nRows, descriptor, indexDescriptor, md);
   }
 
   @Override
@@ -29,11 +30,11 @@ public class LowCardinalityColumn extends ClickhouseColumn {
 
   @Override
   public Object nullValue() {
-    return nested.nullValue();
+    return indexColumn.nullValue();
   }
 
   @Override
   public Object[] emptyArray() {
-    return nested.emptyArray();
+    return indexColumn.emptyArray();
   }
 }

@@ -45,7 +45,7 @@ public class RowOrientedBlock {
     //n_rows
     int nRows = toRow - fromRow;
     sink.writeULeb128(nRows);
-    //TODO smagellan: maybe serialize into tiny sinks/blocks here, then return to caller
+    //TODO: maybe serialize into tiny sinks/blocks here, then return to caller
     for (int columnIndex = 0; columnIndex < nColumns(); ++columnIndex) {
       ClickhouseNativeColumnDescriptor descr = (ClickhouseNativeColumnDescriptor) rowDesc.columnDescriptor().get(columnIndex);
       sink.writePascalString(descr.name());
