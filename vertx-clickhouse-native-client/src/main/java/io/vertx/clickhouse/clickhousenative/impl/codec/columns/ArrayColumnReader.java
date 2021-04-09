@@ -4,7 +4,6 @@ import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadat
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
 
-import java.lang.reflect.Array;
 import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,6 +92,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       }
       resliced = true;
       Object[] tmp = nestedColumnReader.asObjectsArrayWithGetElement(elementClass);
+      nestedColumnReader.itemsArray = null;
       return resliceIntoArray(tmp, masterSlice, elementClass);
     }
 

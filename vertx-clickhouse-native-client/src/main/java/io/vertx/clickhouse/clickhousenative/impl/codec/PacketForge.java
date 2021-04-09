@@ -54,7 +54,7 @@ public class PacketForge {
         }
       }
     } else {
-      //TODO smagellan
+      //TODO: implement (required for old clickhouse versions)
       throw new IllegalArgumentException("not implemented for settingsAsStrings=false");
     }
     //end of settings
@@ -64,7 +64,7 @@ public class PacketForge {
   public void sendExternalTables(ByteBuf buf, Collection<RowOrientedBlock> blocks) {
     ClickhouseNativeDatabaseMetadata md = conn.getDatabaseMetaData();
     for (RowOrientedBlock block : blocks) {
-      //TODO smagellan
+      //TODO implement external tables support
       sendData(buf, block, null);
     }
     sendData(buf, new RowOrientedBlock(ClickhouseNativeRowDesc.EMPTY, Collections.emptyList(), md), "");

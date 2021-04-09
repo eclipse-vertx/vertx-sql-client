@@ -106,11 +106,11 @@ public class ClickhouseColumns {
       int bytesLength = Integer.parseInt(lengthStr);
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, bytesLength, JDBCType.VARCHAR,
         nullable, false, isLowCardinality, null, null);
-    } else if (spec.equals("DateTime") || spec.startsWith("DateTime(")) {
-      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTimeColumnReader.ELEMENT_SIZE,
-        spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
-    } else if (spec.equals("DateTime64") || spec.startsWith("DateTime64(")) {
+    } else if (spec.startsWith("DateTime64")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTime64Column.ELEMENT_SIZE,
+        spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
+    } else if (spec.startsWith("DateTime")) {
+      return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, DateTimeColumnReader.ELEMENT_SIZE,
         spec.endsWith(")") ? JDBCType.TIMESTAMP_WITH_TIMEZONE : JDBCType.TIMESTAMP, nullable, false, isLowCardinality, null, null);
     } else if (spec.equals("UUID")) {
       return new ClickhouseNativeColumnDescriptor(name, unparsedSpec, spec, isArray, UUIDColumn.ELEMENT_SIZE,
@@ -159,8 +159,10 @@ public class ClickhouseColumns {
       return Decimal64Column.ELEMENT_SIZE;
     } else if (precision <= Decimal128Column.MAX_PRECISION) {
       return Decimal128Column.ELEMENT_SIZE;
-    } else {
+    } else if (precision <= Decimal256Column.MAX_PRECISION ){
       return Decimal256Column.ELEMENT_SIZE;
+    } else {
+      throw new IllegalArgumentException("precision is too large: " + precision);
     }
   }
 

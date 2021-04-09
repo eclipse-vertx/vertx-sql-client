@@ -27,9 +27,9 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
 
   private ClickhouseColumnReader keysColumn;
 
-  public LowCardinalityColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
+  public LowCardinalityColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeColumnDescriptor indexColumn, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descr);
-    this.indexDescr = descr.copyWithModifiers(false, false);
+    this.indexDescr = indexColumn;
     this.md = md;
   }
 
