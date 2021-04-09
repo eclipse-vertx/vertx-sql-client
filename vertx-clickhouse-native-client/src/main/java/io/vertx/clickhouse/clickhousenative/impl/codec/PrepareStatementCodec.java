@@ -3,24 +3,25 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeRowDesc;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
-public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<PreparedStatement, PrepareStatementCommand>{
-  private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementCodec.class);
-  private final Map.Entry<String, Integer> queryType;
+public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<PreparedStatement, PrepareStatementCommand> {
+  private final QueryInfo queryInfo;
   private final UUID psId;
   private PacketReader packetReader;
 
-  protected PrepareStatementCodec(PrepareStatementCommand cmd, Map.Entry<String, Integer> queryType) {
+  protected PrepareStatementCodec(PrepareStatementCommand cmd, QueryInfo queryInfo) {
     super(cmd);
-    this.queryType = queryType;
+    this.queryInfo = queryInfo;
     this.psId = UUID.randomUUID();
   }
 
@@ -28,14 +29,10 @@ public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<Prepared
   void encode(ClickhouseNativeEncoder encoder) {
     super.encode(encoder);
     String sql = cmd.sql();
-    //TODO smagellan: check if query ends with 'values', maybe move to QueryParser
-    boolean isInsert = queryType != null && "insert".equalsIgnoreCase(queryType.getKey());
-    int valuesIndex = 0;
-    boolean endsWithValues = sql.toLowerCase().endsWith("values");
-    boolean realInsertBatch = isInsert && (endsWithValues || (valuesIndex = valuesPos(sql, queryType.getValue())) != -1);
+    boolean realInsertBatch = queryInfo.isInsert() && queryInfo.hasValues();
     if (realInsertBatch) {
       encoder.getConn().lockPsOrThrow(psId);
-      String truncatedSql = endsWithValues ? sql : sql.substring(0, valuesIndex + "values".length());
+      String truncatedSql = queryInfo.queryEndingWithValues();
       ByteBuf buf = allocateBuffer();
       try {
         PacketForge forge = new PacketForge(encoder.getConn(), encoder.chctx());
@@ -48,21 +45,8 @@ public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<Prepared
       }
     } else {
       completionHandler.handle(CommandResponse.success(new ClickhouseNativePreparedStatement(sql, new ClickhouseNativeParamDesc(Collections.emptyList()),
-        new ClickhouseNativeRowDesc(Collections.emptyList()), queryType, false, psId)));
+        new ClickhouseNativeRowDesc(Collections.emptyList()), queryInfo, false, psId)));
     }
-  }
-
-  //TODO smagellan: move to parsers, introduce "InsertQueryInfo"
-  private static int valuesPos(String sql, int fromPos) {
-    String sqlLoCase = sql.toLowerCase();
-    if (sqlLoCase.endsWith("values")) {
-      return sql.length() - "values".length();
-    }
-    Map.Entry<String, Integer> pos = QueryParsers.findKeyWord(sql, fromPos, Collections.singleton("$"));
-    if (pos == null) {
-      return -1;
-    }
-    return sqlLoCase.lastIndexOf("values", pos.getValue());
   }
 
   @Override
@@ -81,7 +65,7 @@ public class PrepareStatementCodec extends ClickhouseNativeCommandCodec<Prepared
         List<ColumnDescriptor> columnTypes = new ArrayList<>(data.values());
         ClickhouseNativeRowDesc rowDesc = new ClickhouseNativeRowDesc(columnNames, columnTypes);
         completionHandler.handle(CommandResponse.success(new ClickhouseNativePreparedStatement(cmd.sql(),
-          new ClickhouseNativeParamDesc(Collections.emptyList()), rowDesc, queryType, true, psId)));
+          new ClickhouseNativeParamDesc(Collections.emptyList()), rowDesc, queryInfo, true, psId)));
       } else if (packet instanceof Throwable) {
         cmd.fail((Throwable) packet);
       }

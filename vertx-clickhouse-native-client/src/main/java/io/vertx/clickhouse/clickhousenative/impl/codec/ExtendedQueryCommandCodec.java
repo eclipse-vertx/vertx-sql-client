@@ -23,14 +23,14 @@ import static io.vertx.clickhouse.clickhousenative.ClickhouseConstants.OPTION_MA
 public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
   private static final Logger LOG = LoggerFactory.getLogger(SimpleQueryCommandCodec.class);
 
-  public ExtendedQueryCommandCodec(Map.Entry<String, Integer> queryType, ExtendedQueryCommand<T> cmd, ClickhouseNativeSocketConnection conn) {
-    super(queryType, cmd.paramsList() == null ? 0 : cmd.paramsList().size(), cmd, conn, cmd.fetch() > 0);
+  public ExtendedQueryCommandCodec(QueryInfo queryInfo, ExtendedQueryCommand<T> cmd, ClickhouseNativeSocketConnection conn) {
+    super(queryInfo, cmd.paramsList() == null ? 0 : cmd.paramsList().size(), cmd, conn, cmd.fetch() > 0);
   }
 
   @Override
   protected String sql() {
     ExtendedQueryCommand<T> ecmd = ecmd();
-    if ((queryType != null && !"insert".equalsIgnoreCase(queryType.getKey())) || !ecmd.isBatch()) {
+    if ((queryInfo != null && !queryInfo.isInsert()) || !ecmd.isBatch()) {
       return QueryParsers.insertParamValuesIntoQuery(ecmd.sql(), ecmd.params() == null ? ecmd.paramsList().get(0) : ecmd.params());
     }
     return ecmd.sql();
