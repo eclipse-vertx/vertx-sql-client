@@ -58,7 +58,9 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
         }
         forge.sendData(buf, new RowOrientedBlock(ClickhouseNativeRowDesc.EMPTY, Collections.emptyList(), md),"");
         chctx.writeAndFlush(buf, chctx.voidPromise());
-        LOG.info("sent columns");
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("sent columns");
+        }
       } catch (Throwable t) {
         buf.release();
         throw t;

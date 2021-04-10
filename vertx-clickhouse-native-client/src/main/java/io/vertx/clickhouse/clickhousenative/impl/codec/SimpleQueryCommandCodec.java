@@ -69,7 +69,9 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
 
   @Override
   void decode(ChannelHandlerContext ctx, ByteBuf in) {
-    LOG.info("decode, readable bytes: " + in.readableBytes());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("decode, readable bytes: " + in.readableBytes());
+    }
     if (packetReader == null) {
       packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), null, null, encoder.getConn().lz4Factory());
     }
@@ -77,7 +79,9 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
     if (packet != null) {
       if (packet.getClass() == ColumnOrientedBlock.class) {
         ColumnOrientedBlock block = (ColumnOrientedBlock)packet;
-        LOG.info("decoded packet " + dataPacketNo + ": " + block + " row count " + block.numRows());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("decoded packet " + dataPacketNo + ": " + block + " row count " + block.numRows());
+        }
         if (dataPacketNo == 0) {
           ClickhouseNativeRowDesc rowDesc = block.rowDesc();
           rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc, conn.getDatabaseMetaData());
@@ -89,11 +93,12 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
         }
         ++dataPacketNo;
       } else {
-        String msg = "unknown packet type: " + packet.getClass();
-        LOG.error(msg);
+        if (LOG.isDebugEnabled()) {
+          LOG.error("non-data packet type: " + packet.getClass());
+        }
         if (packet instanceof Throwable) {
           Throwable t = (Throwable) packet;
-          LOG.error("unknown packet type", t);
+          LOG.error("unknown packet type or server exception", t);
           notifyOperationUpdate(false, t);
         }
       }
@@ -114,7 +119,9 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseNativeQueryCommandBase
       T result = rowResultDecoder.result();
       int size = rowResultDecoder.size();
       rowResultDecoder.reset();
-      LOG.info("notifying operation update; has more result = " + hasMoreResults + "; size: " + size);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("notifying operation update; has more result = " + hasMoreResults + "; size: " + size);
+      }
       cmd.resultHandler().handleResult(updateCount, size, rowResultDecoder.getRowDesc(), result, failure);
     } else {
       if (queryInfo != null && queryInfo.isInsert()) {

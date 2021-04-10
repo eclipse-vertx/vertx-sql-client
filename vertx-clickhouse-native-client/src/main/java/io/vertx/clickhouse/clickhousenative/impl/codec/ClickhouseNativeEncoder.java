@@ -53,7 +53,9 @@ public class ClickhouseNativeEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   void write(CommandBase<?> cmd) {
-    LOG.info("got command: " + cmd.getClass());
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("got command: " + cmd.getClass());
+    }
     ClickhouseNativeCommandCodec<?, ?> codec = wrap(cmd);
     codec.completionHandler = resp -> {
       ClickhouseNativeCommandCodec<?, ?> c = inflight.poll();

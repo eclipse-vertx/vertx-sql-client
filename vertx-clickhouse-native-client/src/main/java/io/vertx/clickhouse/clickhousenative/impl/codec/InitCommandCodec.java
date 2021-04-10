@@ -37,7 +37,9 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
     ByteBufUtils.writePascalString(cmd.username(), buf);
     ByteBufUtils.writePascalString(cmd.password(), buf);
     encoder.chctx().writeAndFlush(buf, encoder.chctx().voidPromise());
-    LOG.info("sent hello packet ");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("sent hello packet ");
+    }
   }
 
   @Override
@@ -50,7 +52,9 @@ public class InitCommandCodec extends ClickhouseNativeCommandCodec<Connection, I
       if (packet.getClass() == ClickhouseNativeDatabaseMetadata.class) {
         ClickhouseNativeDatabaseMetadata md = (ClickhouseNativeDatabaseMetadata)packet;
         encoder.getConn().setDatabaseMetadata(md);
-        LOG.info("connected to server: " + md);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("connected to server: " + md);
+        }
         completionHandler.handle(CommandResponse.success(null));
       } else if (packet.getClass() == ClickhouseServerException.class) {
         ClickhouseServerException exc = (ClickhouseServerException)packet;
