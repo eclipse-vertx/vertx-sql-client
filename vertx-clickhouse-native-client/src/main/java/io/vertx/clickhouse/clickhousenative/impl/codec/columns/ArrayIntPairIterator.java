@@ -13,6 +13,33 @@
 
 package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
-public interface EnumColumnReader {
-  Object[] recodeValues(Object[] src, Class desired);
+public class ArrayIntPairIterator implements IntPairIterator {
+  private final int[] src;
+  private int pos;
+
+  public ArrayIntPairIterator(int[] src) {
+    this.src = src;
+    this.pos = -1;
+  }
+
+
+  @Override
+  public boolean hasNext() {
+    return pos < src.length - 2;
+  }
+
+  @Override
+  public void next() {
+    ++pos;
+  }
+
+  @Override
+  public int getKey() {
+    return src[pos];
+  }
+
+  @Override
+  public int getValue() {
+    return src[pos + 1];
+  }
 }
