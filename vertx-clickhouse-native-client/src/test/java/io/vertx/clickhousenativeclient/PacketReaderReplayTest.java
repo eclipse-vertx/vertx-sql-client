@@ -20,7 +20,6 @@ import org.junit.runners.Parameterized;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RunWith(Parameterized.class)
 public class PacketReaderReplayTest {
@@ -57,12 +56,8 @@ public class PacketReaderReplayTest {
       try (InputStream is = PacketReaderReplayTest.class.getResourceAsStream(replayFile)) {
         Map<String, byte[]> map = mapper.readValue(is, Map.class);
 
-        List<byte[]> queryAnswers = map.entrySet()
-          .stream()
-          .filter(packet -> !packet.getKey().startsWith("peer0_"))
-          .map(Map.Entry::getValue)
-          .collect(Collectors.toList());
-        byte[][] arrays = asPrimitiveByteArray(queryAnswers);
+        List<byte[]> queryAnswers = PacketUtil.filterServerBlocks(map);
+        byte[][] arrays = PacketUtil.asPrimitiveByteArray(queryAnswers);
         ByteBuf fragmentedByteBuf = Unpooled.wrappedBuffer(arrays);
         ByteBuf continuousBuf = Unpooled.wrappedBuffer(new byte[fragmentedByteBuf.readableBytes()])
           .writerIndex(0);
@@ -96,11 +91,11 @@ public class PacketReaderReplayTest {
     String fullName = "Clickhouse jython-driver";
     LOG.info("all bytes: " + ByteBufUtil.hexDump(buf));
     while (buf.readableBytes() > 0) {
-      readConnIteraction(allocator, fullName);
+      readConnInteraction(allocator, fullName);
     }
   }
 
-  private void readConnIteraction(PooledByteBufAllocator allocator, String fullName) {
+  private void readConnInteraction(PooledByteBufAllocator allocator, String fullName) {
     //1st packet: server hello
     PacketReader rdr = new PacketReader(null, fullName, props, lz4Factory);
     ClickhouseNativeDatabaseMetadata md = (ClickhouseNativeDatabaseMetadata)rdr.receivePacket(allocator, buf);
@@ -120,13 +115,5 @@ public class PacketReaderReplayTest {
     }
     props.put(ClickhouseConstants.OPTION_INITIAL_HOSTNAME, "bhorse");
     return props;
-  }
-
-  private static byte[][] asPrimitiveByteArray(List<byte[]> src) {
-    byte[][] ret = new byte[src.size()][];
-    for (int i = 0; i < src.size(); ++i) {
-      ret[i] = src.get(i);
-    }
-    return ret;
   }
 }
