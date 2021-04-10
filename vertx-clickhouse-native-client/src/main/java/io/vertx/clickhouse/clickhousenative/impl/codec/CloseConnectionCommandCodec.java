@@ -22,8 +22,9 @@ public class CloseConnectionCommandCodec extends ClickhouseNativeCommandCodec<Vo
   @Override
   public void encode(ClickhouseNativeEncoder encoder) {
     super.encode(encoder);
-    LOG.info("closing channel");
-    //encoder.chctx().channel().close();
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("closing channel");
+    }
     ChannelHandlerContext ctx = encoder.chctx();
     SocketChannel channel = (SocketChannel) ctx.channel();
     ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(v -> channel.shutdownOutput());

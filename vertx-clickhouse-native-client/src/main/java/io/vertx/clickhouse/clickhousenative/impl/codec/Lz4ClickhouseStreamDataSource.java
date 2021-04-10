@@ -38,11 +38,13 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
     if (serverCityHash == null) {
       if (buf.readableBytes() >= HEADER_LENGTH) {
         serverCityHash = new long[2];
-        dumpHeader(buf);
-        LOG.info(this.hashCode() + ": lz4 header dump: " + ByteBufUtil.hexDump(buf, buf.readerIndex(), HEADER_LENGTH) +
-          "; buf hash: " + buf.hashCode() + "; identityHash:" + System.identityHashCode(buf) +
-          "; readerIndex: " + buf.readerIndex() + "; writerIndex: " + buf.writerIndex() + "; readableBytes: " + buf.readableBytes());
-        LOG.info("full dump: " + ByteBufUtil.hexDump(buf));
+        if (LOG.isDebugEnabled()) {
+          dumpHeader(buf);
+          LOG.debug(this.hashCode() + ": lz4 header dump: " + ByteBufUtil.hexDump(buf, buf.readerIndex(), HEADER_LENGTH) +
+            "; buf hash: " + buf.hashCode() + "; identityHash:" + System.identityHashCode(buf) +
+            "; readerIndex: " + buf.readerIndex() + "; writerIndex: " + buf.writerIndex() + "; readableBytes: " + buf.readableBytes());
+          LOG.debug("full dump: " + ByteBufUtil.hexDump(buf));
+        }
         serverCityHash[0] = buf.readLongLE();
         serverCityHash[1] = buf.readLongLE();
         int checkSummedReaderIndex = buf.readerIndex();
@@ -62,8 +64,10 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
         if (uncompressedSize > Integer.MAX_VALUE) {
           throw new IllegalStateException("uncompressedSize is too big: " + uncompressedSize + "; limit " + Integer.MAX_VALUE);
         }
-        LOG.info(String.format("compressed size: %d(0x%X), sizeWithHeader: %d(0x%X), uncompressed size: %d(0x%X)",
-          compressedAndSizeSize, compressedAndSizeSize, sizeWithHeader, sizeWithHeader, uncompressedSize, uncompressedSize));
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(String.format("compressed size: %d(0x%X), sizeWithHeader: %d(0x%X), uncompressed size: %d(0x%X)",
+            compressedAndSizeSize, compressedAndSizeSize, sizeWithHeader, sizeWithHeader, uncompressedSize, uncompressedSize));
+        }
         arrayBb = alloc.buffer(sizeWithHeader.intValue());
         buf.readerIndex(checkSummedReaderIndex);
         buf.readBytes(arrayBb, CHECKSUMED_HEADER_LENGTH);
@@ -98,7 +102,9 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
     LZ4FastDecompressor decompressor = lz4Factory.fastDecompressor();
     //LOG.info("compressed bytes: " + ByteBufUtil.hexDump(arrayBb));
     decompressor.decompress(arrayBb.array(), arrayBb.arrayOffset() + arrayBb.readerIndex(), uncompressedBytes, 0, uncompressedBytes.length);
-    LOG.info("decompressed " + uncompressedBytes.length + " bytes of data");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("decompressed " + uncompressedBytes.length + " bytes of data");
+    }
     //LOG.info("decompressed data: " + ByteBufUtil.hexDump(uncompressedBytes) + "; asStr: " + new String(uncompressedBytes, StandardCharsets.UTF_8));
     decompressedData.writeBytes(uncompressedBytes);
     arrayBb.release();
@@ -113,7 +119,9 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
     String method = ByteBufUtil.hexDump(buf, buf.readerIndex() + 16, 1);
     String sizeWithHeader = ByteBufUtil.hexDump(buf, buf.readerIndex() + 17, 4);
     String uncompressedSize = ByteBufUtil.hexDump(buf, buf.readerIndex() + 21, 4);
-    LOG.info(String.format("header: [%s:%s]:%s:%s:%s", h1, h2, method, sizeWithHeader, uncompressedSize));
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(String.format("header: [%s:%s]:%s:%s:%s", h1, h2, method, sizeWithHeader, uncompressedSize));
+    }
   }
 
   @Override

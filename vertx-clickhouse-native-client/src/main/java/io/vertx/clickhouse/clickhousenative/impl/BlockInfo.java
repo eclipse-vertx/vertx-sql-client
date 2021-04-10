@@ -47,8 +47,9 @@ public class BlockInfo {
           return;
         }
       }
-
-      LOG.info("fieldNum: " + fieldNum + "(" + Integer.toHexString(fieldNum) + ")");
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("fieldNum: " + fieldNum + "(" + Integer.toHexString(fieldNum) + ")");
+      }
       if (fieldNum == 0) {
         complete = true;
         return;
@@ -57,7 +58,9 @@ public class BlockInfo {
         if (in.readableBytes() >= 1) {
           isOverflows = in.readBoolean();
           fieldNum = null;
-          LOG.info("isOverflows: " + isOverflows);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("isOverflows: " + isOverflows);
+          }
         } else {
           return;
         }
@@ -66,7 +69,9 @@ public class BlockInfo {
         if (readable >= 4) {
           bucketNum = in.readIntLE();
           fieldNum = null;
-          LOG.info("bucketNum: " + bucketNum);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("bucketNum: " + bucketNum);
+          }
         } else {
           return;
         }

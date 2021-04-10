@@ -22,7 +22,9 @@ public class PacketForge {
   }
 
   public void sendQuery(String query, ByteBuf buf) {
-    LOG.info("running query: " + query);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("running query: " + query);
+    }
     ByteBufUtils.writeULeb128(ClientPacketTypes.QUERY, buf);
     //query id
     ByteBufUtils.writePascalString("", buf);
@@ -47,7 +49,9 @@ public class PacketForge {
     if (settingsAsStrings) {
       for (Map.Entry<String, String> entry : settings.entrySet()) {
         if (!ClickhouseConstants.NON_QUERY_OPTIONS.contains(entry.getKey())) {
-          LOG.info("writing query setting: " + entry);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("writing query setting: " + entry);
+          }
           ByteBufUtils.writePascalString(entry.getKey(), buf);
           buf.writeBoolean(settingsAreImportant);
           ByteBufUtils.writePascalString(entry.getValue(), buf);
