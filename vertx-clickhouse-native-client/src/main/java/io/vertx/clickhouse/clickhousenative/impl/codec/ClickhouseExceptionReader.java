@@ -3,47 +3,90 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseServerException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ClickhouseExceptionReader {
+  private final List<ExceptionBlock> exceptionBlocks = new ArrayList<>();
+
   private Integer code;
   private String name;
   private String message;
   private String stacktrace;
   private Boolean hasNested;
 
+
   public ClickhouseServerException readFrom(ByteBuf in) {
-    if (code == null) {
-      if (in.readableBytes() >= 4) {
-        code = in.readIntLE();
-      } else {
-        return null;
+    boolean hadNested;
+    do {
+      if (code == null) {
+        if (in.readableBytes() >= 4) {
+          code = in.readIntLE();
+        } else {
+          return null;
+        }
       }
-    }
-    if (name == null) {
-      name = ByteBufUtils.readPascalString(in);
       if (name == null) {
-        return null;
+        name = ByteBufUtils.readPascalString(in);
+        if (name == null) {
+          return null;
+        }
       }
-    }
-    if (message == null) {
-      message = ByteBufUtils.readPascalString(in);
       if (message == null) {
-        return null;
+        message = ByteBufUtils.readPascalString(in);
+        if (message == null) {
+          return null;
+        }
       }
-    }
-    if (stacktrace == null) {
-      stacktrace = ByteBufUtils.readPascalString(in);
       if (stacktrace == null) {
-        return null;
+        stacktrace = ByteBufUtils.readPascalString(in);
+        if (stacktrace == null) {
+          return null;
+        }
+      }
+      if (hasNested == null) {
+        if (in.readableBytes() >= 1) {
+          hasNested = in.readBoolean();
+        } else {
+          return null;
+        }
+      }
+      hadNested = hasNested;
+      ExceptionBlock tmp = new ExceptionBlock(code, name, message, stacktrace, hasNested);
+      code = null;
+      name = null;
+      message = null;
+      stacktrace = null;
+      hasNested = null;
+      exceptionBlocks.add(tmp);
+    } while (hadNested);
+
+    boolean isFirst = exceptionBlocks.size() == 1;
+    ClickhouseServerException prevException = exceptionBlocks.get(exceptionBlocks.size() - 1).toException(null, isFirst);
+    if (!isFirst) {
+      for (int idx = exceptionBlocks.size() - 2; idx >= 0; --idx) {
+        isFirst = idx == 0;
+        prevException = exceptionBlocks.get(idx).toException(prevException, isFirst);
       }
     }
-    if (hasNested == null) {
-      if (in.readableBytes() >= 1) {
-        hasNested = in.readByte() != 0;
-      } else {
-        return null;
-      }
+    return prevException;
+  }
+
+  private static class ExceptionBlock {
+    private final Integer code;
+    private final String name;
+    private final String message;
+    private final String stacktrace;
+
+    private ExceptionBlock(Integer code, String name, String message, String stacktrace, Boolean hasNested) {
+      this.code = code;
+      this.name = name;
+      this.message = message;
+      this.stacktrace = stacktrace;
     }
-    //TODO smagellan: read nested exception
-    return new ClickhouseServerException(code, name, message, stacktrace, hasNested);
+
+    public ClickhouseServerException toException(ClickhouseServerException cause, boolean first) {
+      return ClickhouseServerException.build(code, name, message, stacktrace, cause, first);
+    }
   }
 }
