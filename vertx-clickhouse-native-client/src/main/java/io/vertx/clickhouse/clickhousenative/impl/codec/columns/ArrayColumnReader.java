@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (c) 2021 Vladimir Vishnevsky
+ *  Copyright (c) 2021 Vladimir Vishnevskii
  *
  *  This program and the accompanying materials are made available under the
  *  terms of the Eclipse Public License 2.0 which is available at
@@ -16,23 +16,20 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 
 import java.sql.JDBCType;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 public class ArrayColumnReader extends ClickhouseColumnReader {
+  private static final Logger LOG = LoggerFactory.getLogger(ArrayColumnReader.class);
+
   private final ClickhouseNativeDatabaseMetadata md;
   private final ClickhouseNativeColumnDescriptor elementTypeDescr;
 
-  //TODO: use int[][] and int[][][] as masterSlice and perRowsSlice
-  private List<List<Integer>> masterSlice;
-  private List<List<List<Integer>>> perRowsSlice;
+  private int[][] masterSlice;
+  private int[][][] perRowsSlice;
 
   private Integer curDimension;
   private ClickhouseColumnReader nestedColumnReader;
@@ -43,7 +40,9 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   private Object statePrefix;
 
   private Integer curLevelSliceSize;
-  private List<Integer> curLevelSlice;
+  private int[] curLevelSlice;
+
+  private long sliceElementCount;
 
   public ArrayColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descr);
@@ -63,7 +62,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (nItems == null) {
-      masterSlice = new ArrayList<>();
+      masterSlice = new int[columnDescriptor.arrayDimensionsCount() + 1][];
       curDimension = 0;
       nItems = 0;
     }
@@ -128,7 +127,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       desired = maybeUnwrapArrayElementType(desired);
       Class forRecode = desired;
       Function<Integer, Object> dataElementAccessor = (idx) -> nestedColumnReader.getElement(idx, forRecode);
-      reslicedRet = resliceIntoArray(dataElementAccessor, perRowsSlice.get(rowIdx), desired);
+      reslicedRet = resliceIntoArray(dataElementAccessor, perRowsSlice[rowIdx], desired);
       return reslicedRet;
     }
   }
@@ -142,37 +141,37 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     return desired;
   }
 
-  private Object[] resliceIntoArray(Object[] data, List<List<Integer>> sliceToUse, Class<?> elementClass) {
+  private Object[] resliceIntoArray(Object[] data, int[][] sliceToUse, Class<?> elementClass) {
     Object[] intermData = data;
-    for (int i = sliceToUse.size() - 1; i >= 0; --i) {
-      List<Integer> slices = sliceToUse.get(i);
+    for (int i = sliceToUse.length - 1; i >= 0; --i) {
+      int[] slices = sliceToUse[i];
       intermData = resliceArray(intermData, slices, intermData.getClass());
     }
     return (Object[]) intermData[0];
   }
 
 
-  private Object[] resliceIntoArray(Function<Integer, Object> dataAccessor, List<List<Integer>> sliceToUse, Class<?> elementClass) {
-    int i = sliceToUse.size() - 1;
-    List<Integer> slices = sliceToUse.get(i);
+  private Object[] resliceIntoArray(Function<Integer, Object> dataAccessor, int[][] sliceToUse, Class<?> elementClass) {
+    int i = sliceToUse.length - 1;
+    int[] slices = sliceToUse[i];
     Object[] intermData = resliceArray(dataAccessor, slices, java.lang.reflect.Array.newInstance(elementClass, 0).getClass());
 
-    for (i = sliceToUse.size() - 2; i >= 0; --i) {
-      slices = sliceToUse.get(i);
+    for (i = sliceToUse.length - 2; i >= 0; --i) {
+      slices = sliceToUse[i];
       intermData = resliceArray(intermData, slices, intermData.getClass());
     }
     return (Object[]) intermData[0];
   }
 
-  private Object[] resliceArray(Function<Integer, Object> dataAccessor, List<Integer> slices, Class upperClass) {
-    Iterator<Map.Entry<Integer, Integer>> paired = PairedIterator.of(slices);
-    Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(upperClass, slices.size() - 1);
+  private Object[] resliceArray(Function<Integer, Object> dataAccessor, int[] slices, Class upperClass) {
+    IntPairIterator paired = PairedIterator.of(slices);
+    Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(upperClass, slices.length - 1);
     int tmpSliceIdx = 0;
     while (paired.hasNext()) {
-      Map.Entry<Integer, Integer> slice = paired.next();
-      int newSliceSz = slice.getValue() - slice.getKey();
+      paired.next();
+      int newSliceSz = paired.getValue() - paired.getKey();
       Object[] reslicedArray = (Object[]) java.lang.reflect.Array.newInstance(upperClass.getComponentType(), newSliceSz);
-      copyWithAccessor(dataAccessor, slice.getKey(), reslicedArray, 0, newSliceSz);
+      copyWithAccessor(dataAccessor, paired.getKey(), reslicedArray, 0, newSliceSz);
 
       newDataList[tmpSliceIdx] = reslicedArray;
       ++tmpSliceIdx;
@@ -188,15 +187,15 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     }
   }
 
-  private Object[] resliceArray(Object[] dataElements, List<Integer> slices, Class upperClass) {
-    Iterator<Map.Entry<Integer, Integer>> paired = PairedIterator.of(slices);
-    Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(upperClass, slices.size() - 1);
+  private Object[] resliceArray(Object[] dataElements, int[] slices, Class upperClass) {
+    IntPairIterator paired = PairedIterator.of(slices);
+    Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(upperClass, slices.length - 1);
     int tmpSliceIdx = 0;
     while (paired.hasNext()) {
-      Map.Entry<Integer, Integer> slice = paired.next();
-      int newSliceSz = slice.getValue() - slice.getKey();
+      paired.next();
+      int newSliceSz = paired.getValue() - paired.getKey();
       Object[] reslicedArray = (Object[]) java.lang.reflect.Array.newInstance(upperClass.getComponentType(), newSliceSz);
-      System.arraycopy(dataElements, slice.getKey(), reslicedArray, 0, newSliceSz);
+      System.arraycopy(dataElements, paired.getKey(), reslicedArray, 0, newSliceSz);
       newDataList[tmpSliceIdx] = reslicedArray;
       ++tmpSliceIdx;
     }
@@ -205,15 +204,15 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
 
   private void readAsPerRowSlices(ClickhouseStreamDataSource in) {
     if (nRows == 0) {
-      masterSlice = Collections.emptyList();
-      perRowsSlice = Collections.emptyList();
+      masterSlice = new int[0][];
+      perRowsSlice = new int[0][][];
       curDimension = columnDescriptor.arrayDimensionsCount();
       return;
     }
 
-    perRowsSlice = new ArrayList<>(nRows);
+    perRowsSlice = new int[nRows][][];
     for (int i = 0; i < nRows; ++i) {
-      perRowsSlice.add(new ArrayList<>());
+      perRowsSlice[i] = new int[columnDescriptor.arrayDimensionsCount()][];
     }
     curLevelSliceSize = nRows;
     while (curDimension < columnDescriptor.arrayDimensionsCount()) {
@@ -226,22 +225,22 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
         if (curDimension == 0) {
           rowSliceElementsToReadAtDimension = 1;
         } else {
-          List<Integer> rowSliceAtPrevDimension = perRowsSlice.get(rowIdx).get(curDimension - 1);
-          rowSliceElementsToReadAtDimension = rowSliceAtPrevDimension.get(rowSliceAtPrevDimension.size() - 1) - rowSliceAtPrevDimension.get(0);
+          int[] rowSliceAtPrevDimension = perRowsSlice[rowIdx][curDimension - 1];
+          rowSliceElementsToReadAtDimension = rowSliceAtPrevDimension[rowSliceAtPrevDimension.length - 1] - rowSliceAtPrevDimension[0];
         }
-        List<Integer> rowSliceAtDimension = new ArrayList<>(rowSliceElementsToReadAtDimension + 1);
+        int[] rowSliceAtDimension = new int[rowSliceElementsToReadAtDimension + 1];
         //offsets at last dimension are absolute
         boolean lastDimension = curDimension == columnDescriptor.arrayDimensionsCount() - 1;
         int firstElementInSlice = (int) prevSliceElement;
-        rowSliceAtDimension.add(firstElementInSlice - (int)(lastDimension ? 0L : firstElementInSlice));
+        rowSliceAtDimension[0] = (firstElementInSlice - (int)(lastDimension ? 0L : firstElementInSlice));
         for (int i = 0; i < rowSliceElementsToReadAtDimension; ++i) {
           prevSliceElement = in.readLongLE();
           if (prevSliceElement > Integer.MAX_VALUE) {
             throw new IllegalStateException("nested size is too big (" + prevSliceElement + "), max " + Integer.MAX_VALUE);
           }
-          rowSliceAtDimension.add((int)(prevSliceElement - (lastDimension ? 0L : firstElementInSlice)));
+          rowSliceAtDimension[i + 1] = ((int)(prevSliceElement - (lastDimension ? 0L : firstElementInSlice)));
         }
-        perRowsSlice.get(rowIdx).add(rowSliceAtDimension);
+        perRowsSlice[rowIdx][curDimension] = (rowSliceAtDimension);
       }
       ++curDimension;
       curLevelSliceSize = (int)prevSliceElement;
@@ -250,12 +249,13 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   }
 
   private void readAsMasterSlice(ClickhouseStreamDataSource in) {
-    if (masterSlice.isEmpty()) {
-      masterSlice.add(Arrays.asList(0, nRows));
+    if (curDimension == 0) {
+      //masterSlice.add(Arrays.asList(0, nRows));
+      masterSlice[curDimension] = new int[]{0, nRows};
       curLevelSliceSize = nRows;
     }
     if (nRows == 0) {
-      perRowsSlice = Collections.emptyList();
+      perRowsSlice = new int[0][][];
       curDimension = columnDescriptor.arrayDimensionsCount();
       return;
     }
@@ -263,8 +263,8 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     long lastSliceSize = 0;
     while (curDimension < columnDescriptor.arrayDimensionsCount()) {
       if (curLevelSlice == null) {
-        curLevelSlice = new ArrayList<>(curLevelSliceSize + 1);
-        curLevelSlice.add(0);
+        curLevelSlice = new int[curLevelSliceSize + 1];
+        curLevelSlice[0] = 0;
       }
       if (in.readableBytes() < curLevelSliceSize * Long.BYTES) {
         return;
@@ -274,12 +274,13 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
         if (lastSliceSize > Integer.MAX_VALUE) {
           throw new IllegalStateException("nested size is too big (" + lastSliceSize + "), max " + Integer.MAX_VALUE);
         }
-        curLevelSlice.add((int) lastSliceSize);
+        ++sliceElementCount;
+        curLevelSlice[curLevelSliceIndex + 1] = (int) lastSliceSize;
       }
-      masterSlice.add(curLevelSlice);
+      curDimension += 1;
+      masterSlice[curDimension] = curLevelSlice;
       curLevelSlice = null;
       curLevelSliceSize = (int) lastSliceSize;
-      curDimension += 1;
     }
     nItems = (int)lastSliceSize;
   }
