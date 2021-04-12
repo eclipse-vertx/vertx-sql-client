@@ -36,7 +36,8 @@
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
     <!-- Set to a value for testing with a specific database -->
-    <embedded.postgres.version />
+    <embedded.clickhouse.version />
+    <log4j.version>2.14.1</log4j.version>
   </properties>
 
   <dependencies>
@@ -94,6 +95,48 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>1.7.30</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-web</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-jul</artifactId>
+      <version>${log4j.version}</version>
+      <scope>test</scope>
+    </dependency>
+
 
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
@@ -109,7 +152,6 @@
     </dependency>
   </dependencies>
 
-  <!-- TODO smagellan: customize plugins -->
   <build>
     <pluginManagement>
       <plugins>
@@ -119,15 +161,11 @@
             <argLine>-Xmx1024M</argLine>
             <systemPropertyVariables>
               <target.dir>${project.build.directory}</target.dir>
-              <embedded.postgres.version>${embedded.postgres.version}</embedded.postgres.version>
+              <embedded.clickhouse.version>${embedded.clickhouse.version}</embedded.clickhouse.version>
               <connection.uri>${connection.uri}</connection.uri>
+              <!-- TODO: implement encryption -->
               <tls.connection.uri>${tls.connection.uri}</tls.connection.uri>
-              <unix.socket.directory>${unix.socket.directory}</unix.socket.directory>
-              <unix.socket.port>${unix.socket.port}</unix.socket.port>
             </systemPropertyVariables>
-            <excludes>
-              <exclude>io/vertx/pgclient/it/**</exclude>
-            </excludes>
           </configuration>
         </plugin>
       </plugins>
@@ -161,32 +199,6 @@
                 <descriptorRef>none</descriptorRef>
               </descriptorRefs>
               <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.21.0</version>
-        <executions>
-          <execution>
-            <id>env-test</id>
-            <goals>
-              <goal>integration-test</goal>
-            </goals>
-            <phase>integration-test</phase>
-            <configuration>
-              <includes>
-                <include>io/vertx/pgclient/it/EnvTest.java</include>
-              </includes>
-              <environmentVariables>
-                <PGHOSTADDR>test_host</PGHOSTADDR>
-                <PGDATABASE>test_database</PGDATABASE>
-                <PGPORT>1234</PGPORT>
-                <PGUSER>test_user</PGUSER>
-                <PGPASSWORD>test_password</PGPASSWORD>
-                <PGSSLMODE>require</PGSSLMODE>
-              </environmentVariables>
             </configuration>
           </execution>
         </executions>
