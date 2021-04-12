@@ -35,7 +35,7 @@ public class ClickhouseResource extends ExternalResource {
     if (this.server != null) {
       return;
     }
-    DockerImageName imageName = DockerImageName.parse("yandex/clickhouse-server").withTag("20.10.2");
+    DockerImageName imageName = DockerImageName.parse("yandex/clickhouse-server").withTag(clickhouseVersion());
     server = new ClickHouseContainer(imageName);
     server.start();
     this.options = (ClickhouseNativeConnectOptions) new ClickhouseNativeConnectOptions()
@@ -54,6 +54,11 @@ public class ClickhouseResource extends ExternalResource {
       .addProperty(ClickhouseConstants.OPTION_SEND_LOGS_LEVEL, "debug");
   }
 
+  private static String clickhouseVersion() {
+    String version = System.getProperty("embedded.clickhouse.version");
+    return version == null ? "20.10.2" : version;
+  }
+
   @Override
   protected void after() {
     if (server != null) {
@@ -66,7 +71,8 @@ public class ClickhouseResource extends ExternalResource {
   }
 
   public static boolean isTestingWithExternalDatabase() {
-    return isSystemPropertyValid(connectionUri) || isSystemPropertyValid(tlsConnectionUri);
+    return isSystemPropertyValid(connectionUri);
+    //|| isSystemPropertyValid(tlsConnectionUri);
   }
 
   private static boolean isSystemPropertyValid(String systemProperty) {

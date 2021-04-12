@@ -24,7 +24,6 @@ import java.util.Arrays;
 import java.util.List;
 
 @Source
-//TODO smagellan: inspect examples
 public class SqlClientExamples {
   public void queries01(SqlClient client) {
     client
