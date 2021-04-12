@@ -41,7 +41,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
     } else {
       PgConnectionFactory client;
       try {
-        client = new PgConnectionFactory(ConnectionFactory.asEventLoopContext(context), options);
+        client = new PgConnectionFactory(context.owner(), options);
       } catch (Exception e) {
         return context.failedFuture(e);
       }

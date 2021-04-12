@@ -14,7 +14,6 @@ package io.vertx.mysqlclient;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.Pool;
@@ -72,14 +71,14 @@ public interface MySQLPool extends Pool {
       vertxOptions.setPreferNativeTransport(true);
     }
     VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return MySQLPoolImpl.create(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return MySQLPoolImpl.create(vertx, true, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return MySQLPoolImpl.create((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return MySQLPoolImpl.create((VertxInternal) vertx, false, connectOptions, poolOptions);
   }
 
 }

@@ -23,7 +23,7 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import io.vertx.sqlclient.SqlClient;
 
 /**
  * A {@link Pool pool} of {@link PgConnection PostgreSQL connections}.
@@ -89,22 +89,79 @@ public interface PgPool extends Pool {
    * @return the connection pool
    */
   static PgPool pool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgConnectOptions, PoolOptions) instead");
-    }
-    VertxOptions vertxOptions = new VertxOptions();
-    if (connectOptions.isUsingDomainSocket()) {
-      vertxOptions.setPreferNativeTransport(true);
-    }
-    VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return PgPoolImpl.create(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return PgPoolImpl.create(false, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return PgPoolImpl.create(((VertxInternal)vertx).getOrCreateContext(), false, connectOptions, poolOptions);
+    return PgPoolImpl.create(((VertxInternal)vertx), false, false, connectOptions, poolOptions);
   }
 
+  /**
+   * Like {@link #client(PoolOptions)} with a default {@code poolOptions}.
+   */
+  static SqlClient client() {
+    return client(PgConnectOptions.fromEnv(), new PoolOptions());
+  }
+
+  /**
+   * Like {@link #client(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
+   */
+  static SqlClient client(PoolOptions poolOptions) {
+    return client(PgConnectOptions.fromEnv(), poolOptions);
+  }
+
+  /**
+   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
+   */
+  static SqlClient client(String connectionUri) {
+    return client(connectionUri, new PoolOptions());
+  }
+
+  /**
+   * Like {@link #client(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   */
+  static SqlClient client(String connectionUri, PoolOptions poolOptions) {
+    return client(PgConnectOptions.fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Like {@link #client(Vertx, String,PoolOptions)} with a default {@code poolOptions}.
+   */
+  static SqlClient client(Vertx vertx, String connectionUri) {
+    return client(vertx, PgConnectOptions.fromUri(connectionUri), new PoolOptions());
+  }
+
+  /**
+   * Like {@link #client(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
+   */
+  static SqlClient client(Vertx vertx, PoolOptions poolOptions) {
+    return client(vertx, PgConnectOptions.fromEnv(), poolOptions);
+  }
+
+  /**
+   * Like {@link #client(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   */
+  static SqlClient client(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
+    return client(vertx, PgConnectOptions.fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Create a client backed by a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   *
+   * @param poolOptions the options for creating the backing pool
+   * @return the client
+   */
+  static SqlClient client(PgConnectOptions connectOptions, PoolOptions poolOptions) {
+    return PgPoolImpl.create(true, connectOptions, poolOptions);
+  }
+
+  /**
+   * Like {@link #client(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  static SqlClient client(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
+    return PgPoolImpl.create(((VertxInternal)vertx), false, true, connectOptions, poolOptions);
+  }
 }

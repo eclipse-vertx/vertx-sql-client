@@ -22,6 +22,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,6 +31,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -205,6 +207,143 @@ public class PgPoolTest extends PgPoolTestBase {
     }
   }
 
+  @Test
+  public void testPipelining(TestContext ctx) {
+    AtomicLong latency = new AtomicLong(0L);
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    proxy.proxyHandler(conn -> {
+      conn.clientHandler(buff -> {
+        long delay = latency.get();
+        if (delay == 0L) {
+          conn.serverSocket().write(buff);
+        } else {
+          vertx.setTimer(delay, id -> {
+            conn.serverSocket().write(buff);
+          });
+        }
+      });
+      conn.connect();
+    });
+    Async latch = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(res -> latch.complete()));
+    latch.awaitSuccess(20_000);
+    options.setPort(8080);
+    options.setHost("localhost");
+
+    int num = 3;
+    Async async = ctx.async(num);
+    SqlClient pool = PgPool.client(options, new PoolOptions().setMaxSize(1));
+    AtomicLong start = new AtomicLong();
+    // Connect to the database
+    pool.query("select 1").execute(ctx.asyncAssertSuccess(res1 -> {
+      // We have a connection in the pool
+      start.set(System.currentTimeMillis());
+      latency.set(1000);
+      for (int i = 0; i < num; i++) {
+        pool.query("select 1").execute(ctx.asyncAssertSuccess(res2 -> async.countDown()));
+      }
+    }));
+
+    async.awaitSuccess(20_000);
+    long elapsed = System.currentTimeMillis() - start.get();
+    ctx.assertTrue(elapsed < 2000, "Was expecting pipelined latency " + elapsed + " < 2000");
+  }
+
+/*  @Test
+  public void testPipeliningDistribution(TestContext ctx) {
+    int num = 10;
+    SqlClient pool = PgPool.client(options.setPipeliningLimit(512), new PoolOptions().setMaxSize(num));
+    Async async = ctx.async(num);
+    for (int i = 0;i < num;i++) {
+      pool.query("select 1").execute(ctx.asyncAssertSuccess(res1 -> {
+        async.countDown();
+      }));
+    }
+    async.awaitSuccess(20_000);
+    int s = ((PoolBase)pool).size();
+    System.out.println("s = " + s);
+    int count = 1000;
+    Async async2 = ctx.async(num * count);
+    for (int i = 0;i < count * num;i++) {
+      pool.query("select 1").execute(ctx.asyncAssertSuccess(res1 -> {
+        async2.countDown();
+      }));
+    }
+    async2.awaitSuccess(20_000);
+    ((PoolBase)pool).check(ctx.asyncAssertSuccess(list -> {
+      System.out.println("list = " + list);
+    }));
+  }*/
+
+  @Test
+  public void testPoolIdleTimeout(TestContext ctx) {
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
+    int pooleCleanerPeriod = 100;
+    int idleTimeout = 3000;
+    Async latch = ctx.async();
+    proxy.proxyHandler(conn -> {
+      proxyConn.set(conn);
+      long now = System.currentTimeMillis();
+      conn.clientCloseHandler(v -> {
+        long lifetime = System.currentTimeMillis() - now;
+        int delta = 500;
+        int lowerBound = idleTimeout - pooleCleanerPeriod - delta;
+        int upperBound = idleTimeout + pooleCleanerPeriod + delta;
+        ctx.assertTrue(lifetime >= lowerBound, "Was expecting connection to be closed in more than " + lowerBound + ": " + lifetime);
+        ctx.assertTrue(lifetime <= upperBound, "Was expecting connection to be closed in less than " + upperBound + ": "+ lifetime);
+        latch.complete();
+      });
+      conn.connect();
+    });
+
+    // Start proxy
+    Async listenLatch = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(res -> listenLatch.complete()));
+    listenLatch.awaitSuccess(20_000);
+
+    poolOptions
+      .setPoolCleanerPeriod(pooleCleanerPeriod)
+      .setIdleTimeout(idleTimeout)
+      .setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+    options.setPort(8080);
+    options.setHost("localhost");
+    PgPool pool = createPool(options, poolOptions);
+
+    // Create a connection that remains in the pool
+    pool
+      .getConnection()
+      .flatMap(SqlClient::close)
+      .onComplete(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testPoolConnectTimeout(TestContext ctx) {
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    proxy.proxyHandler(conn -> {
+      // Ignore connection
+    });
+
+    // Start proxy
+    Async listenLatch = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(res -> listenLatch.complete()));
+    listenLatch.awaitSuccess(20_000);
+
+    poolOptions
+      .setConnectionTimeout(1)
+      .setConnectionTimeoutUnit(TimeUnit.SECONDS);
+    options.setPort(8080);
+    options.setHost("localhost");
+    PgPool pool = createPool(options, poolOptions);
+
+    // Create a connection that remains in the pool
+    long now = System.currentTimeMillis();
+    pool
+      .getConnection(ctx.asyncAssertFailure(err -> {
+        ctx.assertTrue(System.currentTimeMillis() - now > 900);
+      }));
+  }
+
   @Repeat(50)
   @Test
   public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
@@ -212,7 +351,6 @@ public class PgPoolTest extends PgPoolTestBase {
     int idle = 1000;
     int poolSize = 5;
 
-    options.setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
     poolOptions.setMaxSize(poolSize).setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
     PgPool pool = createPool(options, poolOptions);
 

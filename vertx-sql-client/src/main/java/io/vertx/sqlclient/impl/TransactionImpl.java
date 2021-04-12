@@ -59,7 +59,8 @@ class TransactionImpl implements Transaction {
   }
 
   private <R> void execute(CommandBase<R> cmd) {
-    connection.schedule(cmd, context.promise(cmd.handler));
+    Handler<AsyncResult<R>> handler = cmd.handler; // CAPTURE
+    connection.schedule(context, cmd).onComplete(handler);
   }
 
   private <T> Handler<AsyncResult<T>> wrap(Promise<T> handler) {

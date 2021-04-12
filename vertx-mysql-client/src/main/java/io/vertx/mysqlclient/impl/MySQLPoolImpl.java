@@ -13,39 +13,43 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
 
-  public static MySQLPoolImpl create(ContextInternal context, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
-    VertxMetrics vertxMetrics = context.owner().metricsSPI();
+  public static MySQLPoolImpl create(VertxInternal vertx, boolean closeVertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), connectOptions);
+    VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    EventLoopContext eventLoopContext = ConnectionFactory.asEventLoopContext(context);
-    MySQLPoolImpl pool = new MySQLPoolImpl(eventLoopContext, new MySQLConnectionFactory(eventLoopContext, connectOptions), tracer, metrics, poolOptions);
+    MySQLPoolImpl pool = new MySQLPoolImpl(vertx, new MySQLConnectionFactory(vertx, connectOptions), tracer, metrics, poolOptions);
+    pool.init();
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
-      closeFuture.future().onComplete(ar -> context.owner().close());
+      closeFuture.future().onComplete(ar -> vertx.close());
     } else {
-      context.addCloseHook(closeFuture);
+      ContextInternal ctx = vertx.getContext();
+      if (ctx != null) {
+        ctx.addCloseHook(closeFuture);
+      } else {
+        vertx.addCloseHook(closeFuture);
+      }
     }
     return pool;
   }
 
   private final MySQLConnectionFactory factory;
 
-  private MySQLPoolImpl(EventLoopContext context, MySQLConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
-    super(context, factory, tracer, metrics, poolOptions);
+  private MySQLPoolImpl(VertxInternal vertx, MySQLConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
+    super(vertx, factory, tracer, metrics, 1, poolOptions);
     this.factory = factory;
   }
 

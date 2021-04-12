@@ -42,12 +42,16 @@ class ProxyServer {
 
     private final NetSocket clientSocket;
     private final NetSocket serverSocket;
-    private Function<Buffer, Buffer> serverSocketFilter = Function.identity();
-    private Function<Buffer, Buffer> clientSocketFilter = Function.identity();
+    private Handler<Buffer> clientHandler;
+    private Handler<Buffer> serverHandler;
+    private Handler<Void> clientCloseHandler;
+    private Handler<Void> serverCloseHandler;
 
     public Connection(NetSocket clientSo, NetSocket serverSo) {
       this.clientSocket = clientSo;
       this.serverSocket = serverSo;
+      this.clientHandler = serverSocket::write;
+      this.serverHandler = clientSocket::write;
     }
 
     NetSocket clientSocket() {
@@ -58,23 +62,43 @@ class ProxyServer {
       return serverSocket;
     }
 
-    Connection serverSocketFilter(Function<Buffer, Buffer> filter) {
-      serverSocketFilter = filter;
+    Connection clientHandler(Handler<Buffer> handler) {
+      clientHandler = handler;
       return this;
     }
 
-    Connection clientSocketFilter(Function<Buffer, Buffer> filter) {
-      clientSocketFilter = filter;
+    Connection serverHandler(Handler<Buffer> handler) {
+      serverHandler = handler;
       return this;
     }
 
     void connect() {
-      clientSocket.handler(buff -> serverSocket.write(serverSocketFilter.apply(buff)));
-      serverSocket.handler(buff -> clientSocket.write(clientSocketFilter.apply(buff)));
-      clientSocket.closeHandler(v -> serverSocket.close());
-      serverSocket.closeHandler(v -> clientSocket.close());
+      clientSocket.handler(clientHandler);
+      serverSocket.handler(serverHandler);
+      clientSocket.closeHandler(v -> {
+        serverSocket.close();
+        if (clientCloseHandler != null) {
+          clientCloseHandler.handle(null);
+        }
+      });
+      serverSocket.closeHandler(v -> {
+        clientSocket.close();
+        if (serverCloseHandler != null) {
+          serverCloseHandler.handle(null);
+        }
+      });
       serverSocket.resume();
       clientSocket.resume();
+    }
+
+    Connection clientCloseHandler(Handler<Void> handler) {
+      clientCloseHandler = handler;
+      return this;
+    }
+
+    Connection serverCloseHandler(Handler<Void> handler) {
+      serverCloseHandler = handler;
+      return this;
     }
 
     void close() {

@@ -12,9 +12,12 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
@@ -29,8 +32,8 @@ import java.util.function.Predicate;
  */
 public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
 
+  protected final VertxInternal vertx;
   protected final NetClient netClient;
-  protected final EventLoopContext context;
   protected final SocketAddress socketAddress;
   protected final String username;
   protected final String password;
@@ -49,8 +52,8 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   private final int reconnectAttempts;
   private final long reconnectInterval;
 
-  protected SqlConnectionFactoryBase(EventLoopContext context, SqlConnectOptions options) {
-    this.context = context;
+  protected SqlConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
+    this.vertx = vertx;
     this.socketAddress = options.getSocketAddress();
     this.username = options.getUser();
     this.password = options.getPassword();
@@ -69,12 +72,14 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
     NetClientOptions netClientOptions = new NetClientOptions(options);
     configureNetClientOptions(netClientOptions);
     netClientOptions.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
-    this.netClient = context.owner().createNetClient(netClientOptions, clientCloseFuture);
+    this.netClient = vertx.createNetClient(netClientOptions, clientCloseFuture);
   }
 
   @Override
   public void connect(Promise<Connection> promise) {
-    context.emit(promise, p -> doConnectWithRetry(promise, reconnectAttempts));
+    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
+    ContextInternal context = promiseInternal.context();
+    context.emit(promise, p -> doConnectWithRetry(promiseInternal, reconnectAttempts));
   }
 
   @Override
@@ -82,7 +87,8 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
     clientCloseFuture.close(promise);
   }
 
-  private void doConnectWithRetry(Promise<Connection> promise, int remainingAttempts) {
+  private void doConnectWithRetry(PromiseInternal<Connection> promise, int remainingAttempts) {
+    ContextInternal context = promise.context();
     Promise<Connection> promise0 = context.promise();
     promise0.future().onComplete(ar -> {
       if (ar.succeeded()) {

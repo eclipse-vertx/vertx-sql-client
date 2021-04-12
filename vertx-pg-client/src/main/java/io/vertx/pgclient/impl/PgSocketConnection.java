@@ -62,9 +62,10 @@ public class PgSocketConnection extends SocketConnectionBase {
     super.init();
   }
 
+  // TODO RETURN FUTURE ???
   void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Promise<Connection> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    schedule(cmd, completionHandler);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   void sendCancelRequestMessage(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {

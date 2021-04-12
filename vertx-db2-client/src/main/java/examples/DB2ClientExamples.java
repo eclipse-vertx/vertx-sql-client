@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
@@ -119,7 +120,7 @@ public class DB2ClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    DB2Pool client = DB2Pool.pool(connectOptions, poolOptions);
+    SqlClient client = DB2Pool.client(connectOptions, poolOptions);
   }
 
   public void connecting02(Vertx vertx) {
@@ -136,13 +137,13 @@ public class DB2ClientExamples {
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
     // Create the pooled client
-    DB2Pool client = DB2Pool.pool(vertx, connectOptions, poolOptions);
+    SqlClient client = DB2Pool.client(vertx, connectOptions, poolOptions);
   }
 
-  public void connecting03(DB2Pool pool) {
+  public void connecting03(SqlClient client) {
 
     // Close the pool and all the associated resources
-    pool.close();
+    client.close();
   }
 
   public void connecting04(Vertx vertx) {
@@ -185,6 +186,21 @@ public class DB2ClientExamples {
         System.out.println("Something went wrong " + ar.cause().getMessage());
       }
     });
+  }
+
+  public void poolVersusPooledClient(Vertx vertx, String sql, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
+
+    // Pooled client
+    SqlClient pooledClient = DB2Pool.client(vertx, connectOptions, poolOptions);
+
+    // Pipelined
+    Future<RowSet<Row>> res1 = pooledClient.query(sql).execute();
+
+    // Connection pool
+    DB2Pool pool = DB2Pool.pool(vertx, connectOptions, poolOptions);
+
+    // Not pipelined
+    Future<RowSet<Row>> res2 = pool.query(sql).execute();
   }
 
   public void reconnectAttempts(DB2ConnectOptions options) {

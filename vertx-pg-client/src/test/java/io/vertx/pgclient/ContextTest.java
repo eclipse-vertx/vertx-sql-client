@@ -11,6 +11,7 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ContextTest extends PgTestBase {
@@ -85,6 +86,7 @@ public class ContextTest extends PgTestBase {
     }));
   }
 
+  @Ignore
   @Test
   public void testPoolWithWorkerContext(TestContext testCtx) {
     vertx.deployVerticle(() -> new AbstractVerticle() {

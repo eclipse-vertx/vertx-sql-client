@@ -42,6 +42,11 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   @Override
+  protected ContextInternal context() {
+    return context;
+  }
+
+  @Override
   protected <T> PromiseInternal<T> promise() {
     return context.promise();
   }
@@ -60,11 +65,14 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
+  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
     if (tx != null) {
+      // TODO
+      Promise<R> promise = context.promise();
       tx.schedule(cmd, promise);
+      return promise.future();
     } else {
-      conn.schedule(cmd, promise);
+      return conn.schedule(context, cmd);
     }
   }
 

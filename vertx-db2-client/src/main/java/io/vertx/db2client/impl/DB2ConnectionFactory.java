@@ -19,6 +19,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.impl.NetSocketInternal;
@@ -32,8 +34,8 @@ public class DB2ConnectionFactory extends SqlConnectionFactoryBase implements Co
 
   private int pipeliningLimit;
 
-  public DB2ConnectionFactory(EventLoopContext context, DB2ConnectOptions options) {
-    super(context, options);
+  public DB2ConnectionFactory(VertxInternal vertx, DB2ConnectOptions options) {
+    super(vertx, options);
   }
 
   @Override
@@ -49,6 +51,8 @@ public class DB2ConnectionFactory extends SqlConnectionFactoryBase implements Co
 
   @Override
   protected void doConnectInternal(Promise<Connection> promise) {
+    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
+    EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
     Future<NetSocket> fut = netClient.connect(socketAddress);
     fut.onComplete(ar -> {
       if (ar.succeeded()) {

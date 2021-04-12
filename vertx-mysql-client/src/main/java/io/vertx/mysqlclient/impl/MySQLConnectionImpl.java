@@ -25,7 +25,6 @@ import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
@@ -37,7 +36,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     }
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(ConnectionFactory.asEventLoopContext(ctx), options);
+      client = new MySQLConnectionFactory(ctx.owner(), options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
@@ -71,9 +70,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> ping() {
-    Promise<Void> promise = promise();
-    schedule(new PingCommand(), promise);
-    return promise.future();
+    return schedule(context, new PingCommand());
   }
 
   @Override
@@ -87,9 +84,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> specifySchema(String schemaName) {
-    Promise<Void> promise = promise();
-    schedule(new InitDbCommand(schemaName), promise);
-    return promise.future();
+    return schedule(context, new InitDbCommand(schemaName));
   }
 
   @Override
@@ -103,9 +98,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<String> getInternalStatistics() {
-    Promise<String> promise = promise();
-    schedule(new StatisticsCommand(), promise);
-    return promise.future();
+    return schedule(context, new StatisticsCommand());
   }
 
   @Override
@@ -119,9 +112,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> setOption(MySQLSetOption option) {
-    Promise<Void> promise = promise();
-    schedule(new SetOptionCommand(option), promise);
-    return promise.future();
+    return schedule(context, new SetOptionCommand(option));
   }
 
   @Override
@@ -135,9 +126,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> resetConnection() {
-    Promise<Void> promise = promise();
-    schedule(new ResetConnectionCommand(), promise);
-    return promise.future();
+    return schedule(context, new ResetConnectionCommand());
   }
 
   @Override
@@ -151,9 +140,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> debug() {
-    Promise<Void> promise = promise();
-    schedule(new DebugCommand(), promise);
-    return promise.future();
+    return schedule(context, new DebugCommand());
   }
 
   @Override
@@ -188,8 +175,6 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
       }
     }
     ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, serverRsaPublicKey, options.getProperties());
-    Promise<Void> promise = promise();
-    schedule(cmd, promise);
-    return promise.future();
+    return schedule(context, cmd);
   }
 }
