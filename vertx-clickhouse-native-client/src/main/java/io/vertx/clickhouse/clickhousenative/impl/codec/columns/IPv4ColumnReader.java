@@ -38,6 +38,22 @@ public class IPv4ColumnReader extends UInt32ColumnReader {
     return super.getElementInternal(rowIdx, desired);
   }
 
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    if (desired == InetAddress.class || desired == Inet4Address.class || desired == Object.class || desired == null) {
+      return new Inet4Address[dim1][dim2];
+    }
+    return super.allocateTwoDimArray(desired, dim1, dim2);
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    if (desired == InetAddress.class || desired == Inet4Address.class || desired == Object.class || desired == null) {
+      return new Inet4Address[length];
+    }
+    return super.allocateOneDimArray(desired, length);
+  }
+
   private static byte[] intBytes(Long l) {
     return new byte[] {
       (byte) (l >>> 24 & 0xFF),

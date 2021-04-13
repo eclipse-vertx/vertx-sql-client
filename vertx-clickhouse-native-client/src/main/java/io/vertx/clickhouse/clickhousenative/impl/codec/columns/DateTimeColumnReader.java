@@ -49,4 +49,14 @@ public class DateTimeColumnReader extends ClickhouseColumnReader {
     }
     return null;
   }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    return new OffsetDateTime[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    return new OffsetDateTime[length];
+  }
 }

@@ -33,4 +33,20 @@ public class IntervalColumnReader extends UInt64ColumnReader {
     }
     return multiplier.multipliedBy(obj);
   }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    if (desired == Duration.class) {
+      return new Duration[dim1][dim2];
+    }
+    return super.allocateTwoDimArray(desired, dim1, dim2);
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    if (desired == Duration.class) {
+      return new Duration[length];
+    }
+    return super.allocateOneDimArray(desired, length);
+  }
 }

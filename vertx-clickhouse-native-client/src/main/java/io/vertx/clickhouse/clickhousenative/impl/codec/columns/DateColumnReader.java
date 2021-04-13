@@ -32,4 +32,14 @@ public class DateColumnReader extends UInt16ColumnReader {
     Integer offset = (Integer) super.getElementInternal(rowIdx, desired);
     return MIN_VALUE.plusDays(offset);
   }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    return new LocalDate[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    return new LocalDate[length];
+  }
 }

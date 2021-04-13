@@ -73,4 +73,20 @@ public class StringColumnReader extends ClickhouseColumnReader {
     }
     return tmp;
   }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    if (desired == byte[].class) {
+      return new byte[dim1][dim2][];
+    }
+    return new String[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    if (desired == byte[].class) {
+      return new byte[length][];
+    }
+    return new String[length];
+  }
 }

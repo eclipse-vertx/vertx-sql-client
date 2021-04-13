@@ -36,4 +36,20 @@ public class Enum8ColumnReader extends UInt8ColumnReader implements EnumColumnRe
   public Object[] recodeValues(Object[] src, Class desired) {
     return columnRecoder.recodeValues(src, desired);
   }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    if (desired != null && desired.isEnum()) {
+      return (Object[]) java.lang.reflect.Array.newInstance(desired, dim1, dim2);
+    }
+    return super.allocateTwoDimArray(desired, dim1, dim2);
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    if (desired != null && desired.isEnum()) {
+      return java.lang.reflect.Array.newInstance(desired, length);
+    }
+    return super.allocateOneDimArray(desired, length);
+  }
 }

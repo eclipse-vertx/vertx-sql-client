@@ -116,11 +116,6 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
   }
 
   @Override
-  protected Object[] asObjectsArray(Class<?> desired) {
-    return super.asObjectsArrayWithGetElement(desired);
-  }
-
-  @Override
   public boolean isPartial() {
     return indexSize == null || indexColumn.isPartial() || nKeys == null || keysColumn.isPartial();
   }
@@ -133,6 +128,16 @@ public class LowCardinalityColumnReader extends ClickhouseColumnReader {
     }
     //caveat: caller may change index contents for byte[] elements
     return indexColumn.getElementInternal(key, desired);
+  }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    return indexColumn.allocateTwoDimArray(desired, dim1, dim2);
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    return indexColumn.allocateOneDimArray(desired, length);
   }
 
   static ClickhouseColumn uintColumn(int code) {

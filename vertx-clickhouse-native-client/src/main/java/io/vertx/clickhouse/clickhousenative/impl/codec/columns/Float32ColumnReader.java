@@ -40,7 +40,12 @@ public class Float32ColumnReader extends ClickhouseColumnReader {
   }
 
   @Override
-  protected Object[] asObjectsArray(Class<?> desired) {
-    return asObjectsArrayWithGetElement(desired);
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    return new Float[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    return new Float[length];
   }
 }

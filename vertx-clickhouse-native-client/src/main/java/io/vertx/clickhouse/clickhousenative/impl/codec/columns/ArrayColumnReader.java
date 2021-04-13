@@ -19,16 +19,12 @@ import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSourc
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 
-import java.sql.JDBCType;
-import java.util.function.Function;
-
 public class ArrayColumnReader extends ClickhouseColumnReader {
   private static final Logger LOG = LoggerFactory.getLogger(ArrayColumnReader.class);
 
   private final ClickhouseNativeDatabaseMetadata md;
   private final ClickhouseNativeColumnDescriptor elementTypeDescr;
 
-  private int[][] masterSlice;
   private int[][][] perRowsSlice;
 
   private Integer curDimension;
@@ -36,13 +32,9 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   private ClickhouseColumn nestedColumn;
   private Class<?> elementClass;
   private Integer nItems;
-  private boolean resliced;
   private Object statePrefix;
 
   private Integer curLevelSliceSize;
-  private int[] curLevelSlice;
-
-  private long sliceElementCount;
 
   public ArrayColumnReader(int nRows, ClickhouseNativeColumnDescriptor descr, ClickhouseNativeDatabaseMetadata md) {
     super(nRows, descr);
@@ -62,21 +54,14 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
     if (nItems == null) {
-      masterSlice = new int[columnDescriptor.arrayDimensionsCount() + 1][];
       curDimension = 0;
       nItems = 0;
     }
     if (statePrefix == null) {
       return null;
     }
-    boolean maybeRequiresExtraEncoding = elementTypeDescr.jdbcType() == JDBCType.VARCHAR
-      || elementTypeDescr.getNestedType().startsWith("Enum");
     if (curDimension < columnDescriptor.arrayDimensionsCount()) {
-      if (maybeRequiresExtraEncoding) {
-        readAsPerRowSlices(in);
-      } else {
-        readAsMasterSlice(in);
-      }
+      readAsPerRowSlices(in);
       if (curDimension < columnDescriptor.arrayDimensionsCount()) {
         return null;
       }
@@ -100,36 +85,25 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
           return null;
         }
       }
-      if (maybeRequiresExtraEncoding) {
-        return nestedColumnReader.itemsArray;
-      }
-      resliced = true;
-      Object[] tmp = nestedColumnReader.asObjectsArrayWithGetElement(elementClass);
-      nestedColumnReader.itemsArray = null;
-      return resliceIntoArray(tmp, masterSlice, elementClass);
+      return nestedColumnReader.itemsArray;
     }
-
-    Object[] emptyData = nestedColumn.emptyArray();
-    if (maybeRequiresExtraEncoding) {
-      return emptyData;
-    }
-    resliced = true;
-    return resliceIntoArray(emptyData, masterSlice, elementClass);
+    return nestedColumn.emptyArray();
   }
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    Object[] reslicedRet;
-    if (resliced) {
-      reslicedRet = (Object[]) this.itemsArray;
-      return reslicedRet[rowIdx];
-    } else {
-      desired = maybeUnwrapArrayElementType(desired);
-      Class forRecode = desired;
-      Function<Integer, Object> dataElementAccessor = (idx) -> nestedColumnReader.getElement(idx, forRecode);
-      reslicedRet = resliceIntoArray(dataElementAccessor, perRowsSlice[rowIdx], desired);
-      return reslicedRet;
-    }
+    desired = maybeUnwrapArrayElementType(desired);
+    return resliceIntoArray(nestedColumnReader, perRowsSlice[rowIdx], desired);
+  }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    throw new IllegalArgumentException("not implemented");
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    throw new IllegalArgumentException("not implemented");
   }
 
   private Class<?> maybeUnwrapArrayElementType(Class<?> desired) {
@@ -141,50 +115,17 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
     return desired;
   }
 
-  private Object[] resliceIntoArray(Object[] data, int[][] sliceToUse, Class<?> elementClass) {
-    Object[] intermData = data;
-    for (int i = sliceToUse.length - 1; i >= 0; --i) {
-      int[] slices = sliceToUse[i];
-      intermData = resliceArray(intermData, slices, intermData.getClass());
-    }
-    return (Object[]) intermData[0];
-  }
 
-
-  private Object[] resliceIntoArray(Function<Integer, Object> dataAccessor, int[][] sliceToUse, Class<?> elementClass) {
+  private Object resliceIntoArray(ClickhouseColumnReader reader, int[][] sliceToUse, Class<?> elementClass) {
     int i = sliceToUse.length - 1;
     int[] slices = sliceToUse[i];
-    Object[] intermData = resliceArray(dataAccessor, slices, java.lang.reflect.Array.newInstance(elementClass, 0).getClass());
+    Object[] intermData = reader.slices(slices, elementClass); //resliceArray(dataAccessor, slices, java.lang.reflect.Array.newInstance(elementClass, 0).getClass());
 
     for (i = sliceToUse.length - 2; i >= 0; --i) {
       slices = sliceToUse[i];
       intermData = resliceArray(intermData, slices, intermData.getClass());
     }
-    return (Object[]) intermData[0];
-  }
-
-  private Object[] resliceArray(Function<Integer, Object> dataAccessor, int[] slices, Class upperClass) {
-    IntPairIterator paired = PairedIterator.of(slices);
-    Object[] newDataList = (Object[]) java.lang.reflect.Array.newInstance(upperClass, slices.length - 1);
-    int tmpSliceIdx = 0;
-    while (paired.hasNext()) {
-      paired.next();
-      int newSliceSz = paired.getValue() - paired.getKey();
-      Object[] reslicedArray = (Object[]) java.lang.reflect.Array.newInstance(upperClass.getComponentType(), newSliceSz);
-      copyWithAccessor(dataAccessor, paired.getKey(), reslicedArray, 0, newSliceSz);
-
-      newDataList[tmpSliceIdx] = reslicedArray;
-      ++tmpSliceIdx;
-    }
-    return newDataList;
-  }
-
-  private void copyWithAccessor(Function<Integer, Object> srcAccessor, int srcPos, Object[] dest, int destPos, int length) {
-    for (int remaining = length; remaining > 0; --remaining) {
-      dest[destPos] = srcAccessor.apply(srcPos);
-      ++destPos;
-      ++srcPos;
-    }
+    return intermData[0];
   }
 
   private Object[] resliceArray(Object[] dataElements, int[] slices, Class upperClass) {
@@ -204,7 +145,6 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
 
   private void readAsPerRowSlices(ClickhouseStreamDataSource in) {
     if (nRows == 0) {
-      masterSlice = new int[0][];
       perRowsSlice = new int[0][][];
       curDimension = columnDescriptor.arrayDimensionsCount();
       return;
@@ -246,42 +186,5 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       curLevelSliceSize = (int)prevSliceElement;
     }
     nItems = curLevelSliceSize;
-  }
-
-  private void readAsMasterSlice(ClickhouseStreamDataSource in) {
-    if (curDimension == 0) {
-      //masterSlice.add(Arrays.asList(0, nRows));
-      masterSlice[curDimension] = new int[]{0, nRows};
-      curLevelSliceSize = nRows;
-    }
-    if (nRows == 0) {
-      perRowsSlice = new int[0][][];
-      curDimension = columnDescriptor.arrayDimensionsCount();
-      return;
-    }
-
-    long lastSliceSize = 0;
-    while (curDimension < columnDescriptor.arrayDimensionsCount()) {
-      if (curLevelSlice == null) {
-        curLevelSlice = new int[curLevelSliceSize + 1];
-        curLevelSlice[0] = 0;
-      }
-      if (in.readableBytes() < curLevelSliceSize * Long.BYTES) {
-        return;
-      }
-      for (int curLevelSliceIndex = 0; curLevelSliceIndex < curLevelSliceSize; ++curLevelSliceIndex) {
-        lastSliceSize = in.readLongLE();
-        if (lastSliceSize > Integer.MAX_VALUE) {
-          throw new IllegalStateException("nested size is too big (" + lastSliceSize + "), max " + Integer.MAX_VALUE);
-        }
-        ++sliceElementCount;
-        curLevelSlice[curLevelSliceIndex + 1] = (int) lastSliceSize;
-      }
-      curDimension += 1;
-      masterSlice[curDimension] = curLevelSlice;
-      curLevelSlice = null;
-      curLevelSliceSize = (int) lastSliceSize;
-    }
-    nItems = (int)lastSliceSize;
   }
 }
