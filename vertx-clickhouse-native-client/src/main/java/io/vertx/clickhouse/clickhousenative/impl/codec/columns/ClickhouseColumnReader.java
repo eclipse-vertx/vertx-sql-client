@@ -15,10 +15,10 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
-
 import java.util.BitSet;
 
 public abstract class ClickhouseColumnReader {
+
   private static final Object NOP_STATE = new Object();
 
   protected final int nRows;
@@ -68,31 +68,18 @@ public abstract class ClickhouseColumnReader {
     afterReadItems(in);
   }
 
-  protected Object[] readItemsAsObjects(ClickhouseStreamDataSource in, Class<?> desired) {
-    itemsArray = readItems(in);
-    if (itemsArray == null) {
-      return null;
+  protected Object[] asObjectsArrayWithGetElement(int startIncluding, int endExcluding, Class<?> desired) {
+    Object[] ret = (Object[]) allocateOneDimArray(desired, endExcluding - startIncluding);
+    int arrayIdx = 0;
+    for (int i = startIncluding; i < endExcluding; ++i) {
+      ret[arrayIdx] = getElement(i, desired);
+      ++arrayIdx;
     }
-    return asObjectsArray(desired);
-  }
-
-  protected Object[] asObjectsArray(Class<?> desired) {
-    return (Object[]) itemsArray;
-  }
-
-  protected Object[] allocateArray(Class<?> desired, int length) {
-    if (desired == null) {
-      return new Object[length];
-    }
-    return (Object[]) java.lang.reflect.Array.newInstance(desired, length);
+    return ret;
   }
 
   protected Object[] asObjectsArrayWithGetElement(Class<?> desired) {
-    Object[] ret = allocateArray(desired, nRows);
-    for (int i = 0; i < nRows; ++i) {
-      ret[i] = getElement(i, desired);
-    }
-    return ret;
+    return asObjectsArrayWithGetElement(0, nRows, desired);
   }
 
   protected abstract Object readItems(ClickhouseStreamDataSource in);
@@ -117,10 +104,6 @@ public abstract class ClickhouseColumnReader {
     return itemsArray == null || (columnDescriptor.isNullable() && nullsMap == null);
   }
 
-  public Object getItemsArray() {
-    return itemsArray;
-  }
-
   public Object getElement(int rowIdx, Class<?> desired) {
     if (nullsMap != null && nullsMap.get(rowIdx)) {
       return null;
@@ -136,4 +119,31 @@ public abstract class ClickhouseColumnReader {
     Object[] data = (Object[]) itemsArray;
     return data[rowIdx];
   }
+
+  public Object[] slices(int[] slices, Class<?> desired) {
+    IntPairIterator slice = PairedIterator.of(slices);
+    int sliceCount = slices.length - 1;
+    Object[] ret = allocateTwoDimArray(desired, sliceCount, 0);
+    if (desired.isPrimitive()) {
+      if (columnDescriptor.isNullable()) {
+        throw new IllegalArgumentException("primitive arrays are not supported for nullable columns");
+      }
+      for (int sliceIdx = 0; sliceIdx < sliceCount; ++sliceIdx) {
+        slice.next();
+        int len = slice.getValue() - slice.getKey();
+        Object tmp = allocateOneDimArray(desired, len);
+        System.arraycopy(itemsArray, slice.getKey(), tmp, 0, len);
+        ret[sliceIdx] = tmp;
+      }
+    } else {
+      for (int sliceIdx = 0; sliceIdx < sliceCount; ++sliceIdx) {
+        slice.next();
+        ret[sliceIdx] = asObjectsArrayWithGetElement(slice.getKey(), slice.getValue(), ret.getClass().getComponentType().getComponentType());
+      }
+    }
+    return ret;
+  }
+
+  protected abstract Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2);
+  protected abstract Object allocateOneDimArray(Class<?> desired, int length);
 }

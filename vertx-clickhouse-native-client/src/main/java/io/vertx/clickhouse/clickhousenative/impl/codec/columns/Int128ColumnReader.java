@@ -46,4 +46,14 @@ public class Int128ColumnReader extends ClickhouseColumnReader {
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
     return ((BigInteger[]) this.itemsArray)[rowIdx];
   }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    return new BigInteger[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    return new BigInteger[length];
+  }
 }

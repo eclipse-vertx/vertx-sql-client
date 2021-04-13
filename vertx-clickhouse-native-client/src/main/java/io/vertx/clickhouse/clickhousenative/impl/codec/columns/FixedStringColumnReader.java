@@ -69,6 +69,22 @@ public class FixedStringColumnReader extends ClickhouseColumnReader {
     return tmp;
   }
 
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    if (desired == byte[].class) {
+      return new byte[dim1][dim2][];
+    }
+    return new String[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    if (desired == byte[].class) {
+      return new byte[length][];
+    }
+    return new String[length];
+  }
+
   private String buildStringFromElement(byte[] tmp) {
     int lastNonZeroIdx = removeTrailingZerosInStrings ? ColumnUtils.getLastNonZeroPos(tmp) : tmp.length - 1;
     return new String(tmp, 0, lastNonZeroIdx + 1, charset);

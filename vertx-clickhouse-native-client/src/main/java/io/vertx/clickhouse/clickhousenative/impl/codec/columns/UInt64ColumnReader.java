@@ -15,11 +15,15 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigInteger;
 
 public class UInt64ColumnReader extends ClickhouseColumnReader {
+  private static final Logger LOG = LoggerFactory.getLogger(UInt64ColumnReader.class);
+
   public static final int ELEMENT_SIZE = 8;
 
   public UInt64ColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
@@ -53,8 +57,25 @@ public class UInt64ColumnReader extends ClickhouseColumnReader {
   }
 
   @Override
-  protected Object[] asObjectsArray(Class<?> desired) {
-    return asObjectsArrayWithGetElement(desired);
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    if (columnDescriptor.isUnsigned()) {
+      return new Numeric[dim1][dim2];
+    }
+    if (desired == long.class) {
+      return new long[dim1][dim2];
+    }
+    return new Long[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    if (columnDescriptor.isUnsigned()) {
+      return new Numeric[length];
+    }
+    if (desired == long.class) {
+      return new long[length];
+    }
+    return new Long[length];
   }
 
   static BigInteger unsignedBi(long l) {

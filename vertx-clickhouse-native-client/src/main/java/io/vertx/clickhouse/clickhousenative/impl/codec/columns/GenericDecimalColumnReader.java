@@ -49,4 +49,14 @@ public class GenericDecimalColumnReader extends ClickhouseColumnReader {
     }
     return null;
   }
+
+  @Override
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    return new Numeric[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    return new Numeric[length];
+  }
 }

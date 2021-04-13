@@ -49,7 +49,30 @@ public class UInt32ColumnReader extends ClickhouseColumnReader {
   }
 
   @Override
-  protected Object[] asObjectsArray(Class<?> desired) {
-    return asObjectsArrayWithGetElement(desired);
+  protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
+    if (columnDescriptor.isUnsigned()) {
+      if (desired == long.class) {
+        return new long[dim1][dim2];
+      }
+      return new Long[dim1][dim2];
+    }
+    if (desired == int.class) {
+      return new int[dim1][dim2];
+    }
+    return new Integer[dim1][dim2];
+  }
+
+  @Override
+  protected Object allocateOneDimArray(Class<?> desired, int length) {
+    if (columnDescriptor.isUnsigned()) {
+      if (desired == long.class) {
+        return new long[length];
+      }
+      return new Long[length];
+    }
+    if (desired == int.class) {
+      return new int[length];
+    }
+    return new Integer[length];
   }
 }
