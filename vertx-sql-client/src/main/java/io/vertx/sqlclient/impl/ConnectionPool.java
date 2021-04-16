@@ -17,15 +17,12 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -173,7 +170,7 @@ public class ConnectionPool {
 
     public void idleStart(){
       if(idleTimeout > 0) {
-        timerId = context.owner().setTimer(idleTimeout, v -> handleClosed());
+        timerId = context.owner().setTimer(idleTimeout, v -> conn.close(this));
       }
     }
 
