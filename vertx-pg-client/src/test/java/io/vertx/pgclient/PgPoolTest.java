@@ -21,13 +21,18 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.*;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collector;
+
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -172,26 +177,47 @@ public class PgPoolTest extends PgPoolTestBase {
   }
 
   @Test
-  public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
-    int concurrentRequestAmount = 100;
-    int idle = 1000;
-    int poolSize = 5;
+  @Repeat(50)
+  public void testNoConnectionLeaks(TestContext ctx) {
+    Async killConnections = ctx.async();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      Collector<Row, ?, List<Integer>> collector = mapping(row -> row.getInteger(0), toList());
+      String sql = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = $1";
+      PreparedQuery<SqlResult<List<Integer>>> preparedQuery = conn.preparedQuery(sql).collecting(collector);
+      Tuple params = Tuple.of(options.getDatabase());
+      preparedQuery.execute(params, ctx.asyncAssertSuccess(v -> {
+        conn.close();
+        killConnections.complete();
+      }));
+    }));
+    killConnections.awaitSuccess();
 
-    options.setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
-    poolOptions.setMaxSize(poolSize).setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+    String sql = "SELECT pg_backend_pid() AS pid, (SELECT count(*) FROM pg_stat_activity WHERE application_name LIKE '%vertx%') AS cnt";
+
+    int idleTimeout = 50;
+    poolOptions
+      .setMaxSize(1)
+      .setIdleTimeout(idleTimeout)
+      .setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
     PgPool pool = createPool(options, poolOptions);
 
-    Async async = ctx.async(concurrentRequestAmount);
-    for (int i = 0; i < concurrentRequestAmount; i++) {
-      CompletableFuture.runAsync(() -> {
-        pool.query("SELECT CURRENT_TIMESTAMP;").execute(ctx.asyncAssertSuccess(rowSet -> {
-          pool.query("select count(*) as cnt from pg_stat_activity where application_name like '%vertx%' and state = 'active'").execute(ctx.asyncAssertSuccess(rows -> {
-            Integer count = rows.iterator().next().getInteger("cnt");
-            ctx.assertInRange(count, 1, poolSize, "Oops!...Connections exceed poolSize. Are you leaked connections?.");
-            async.countDown();
+    Async async = ctx.async();
+    AtomicInteger pid = new AtomicInteger();
+    vertx.getOrCreateContext().runOnContext(v -> {
+      pool.query(sql).execute(ctx.asyncAssertSuccess(rs1 -> {
+        Row row1 = rs1.iterator().next();
+        pid.set(row1.getInteger("pid"));
+        ctx.assertEquals(1, row1.getInteger("cnt"));
+        vertx.setTimer(2 * idleTimeout, l -> {
+          pool.query(sql).execute(ctx.asyncAssertSuccess(rs2 -> {
+            Row row2 = rs2.iterator().next();
+            ctx.assertEquals(1, row2.getInteger("cnt"));
+            ctx.assertNotEquals(pid.get(), row2.getInteger("pid"));
+            async.complete();
           }));
-        }));
-      });
-    }
+        });
+      }));
+    });
+    async.awaitSuccess();
   }
 }
