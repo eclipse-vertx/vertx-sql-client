@@ -11,8 +11,8 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.mssqlclient.impl.MSSQLRowImpl;
 import io.netty.buffer.ByteBuf;
+import io.vertx.mssqlclient.impl.MSSQLRowImpl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
 
@@ -65,7 +65,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   private Row decodeMssqlNbcRow(int len, ByteBuf in) {
     Row row = new MSSQLRowImpl(desc);
-    int nullBitmapByteCount = (len >> 3) + 1;
+    int nullBitmapByteCount = ((len - 1) >> 3) + 1;
     int nullBitMapStartIdx = in.readerIndex();
     in.skipBytes(nullBitmapByteCount);
 

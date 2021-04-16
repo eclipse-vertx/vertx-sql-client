@@ -22,9 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -135,6 +133,20 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
         .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(1999, 12, 31))
         .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(23, 10, 45))
         .returns(LocalDateTime.class, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeOffsetDateTime(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetimeoffset", LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row -> {
+      ColumnChecker.checkColumn(0, "test_datetimeoffset")
+        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
+        .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
+        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(1999, 12, 31))
+        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(23, 10, 45))
+        .returns(OffsetDateTime.class, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
         .forRow(row);
     });
   }
