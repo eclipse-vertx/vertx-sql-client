@@ -115,7 +115,7 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
   }
 
   void handleParameterStatus(String key, String value) {
-    logger.warn(getClass().getSimpleName() + " should handle message ParameterStatus");
+    logger.warn("Parameter " + key + " changed to " + value);
   }
 
   /**

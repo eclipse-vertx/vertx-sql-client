@@ -37,9 +37,4 @@ class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>
   void handleRowDescription(PgColumnDesc[] columnDescs) {
     decoder = new RowResultDecoder<>(cmd.collector(), PgRowDesc.create(columnDescs));
   }
-
-  @Override
-  void handleParameterStatus(String key, String value) {
-    LOGGER.debug(getClass().getSimpleName() + " should handle message ParameterStatus");
-  }
 }
