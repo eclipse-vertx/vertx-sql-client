@@ -251,6 +251,9 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       .returns(Tuple::getValue, Row::getValue, expected)
       .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
       .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, expected)
+      .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+      .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+      .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected.toLocalDateTime())
       .returns(Tuple::getTemporal, Row::getTemporal, expected);
     testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", checker, expected);
   }
@@ -262,6 +265,9 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       .returns(Tuple::getValue, Row::getValue, expected)
       .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
       .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, expected)
+      .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+      .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+      .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected.toLocalDateTime())
       .returns(Tuple::getTemporal, Row::getTemporal, expected);
     testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", checker, expected);
   }
@@ -273,6 +279,9 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       .returns(Tuple::getValue, Row::getValue, expected)
       .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
       .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, expected)
+      .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+      .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+      .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected.toLocalDateTime())
       .returns(Tuple::getTemporal, Row::getTemporal, expected);
     testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", checker, expected);
   }
@@ -296,6 +305,9 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
                   .returns(Tuple::getValue, Row::getValue, odt)
                   .returns(Tuple::getOffsetTime, Row::getOffsetTime, odt.toOffsetTime())
                   .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, odt)
+                  .returns(Tuple::getLocalDate, Row::getLocalDate, odt.toLocalDate())
+                  .returns(Tuple::getLocalTime, Row::getLocalTime, odt.toLocalTime())
+                  .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, odt.toLocalDateTime())
                   .returns(Tuple::getTemporal, Row::getTemporal, odt)
                   .forRow(row);
                 async.complete();
@@ -312,6 +324,9 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       .returns(Tuple::getValue, Row::getValue, expected)
       .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
       .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, expected)
+      .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+      .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+      .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected.toLocalDateTime())
       .returns(Tuple::getTemporal, Row::getTemporal, expected);
     testDecodeDataTimeGeneric(ctx, "TIMESTAMP WITH TIME ZONE", "TimestampTz", checker, expected);
   }
@@ -335,6 +350,9 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
                   .returns(Tuple::getValue, Row::getValue, odt)
                   .returns(Tuple::getOffsetTime, Row::getOffsetTime, odt.toOffsetTime())
                   .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, odt)
+                  .returns(Tuple::getLocalDate, Row::getLocalDate, odt.toLocalDate())
+                  .returns(Tuple::getLocalTime, Row::getLocalTime, odt.toLocalTime())
+                  .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, odt.toLocalDateTime())
                   .returns(Tuple::getTemporal, Row::getTemporal, odt)
                   .forRow(row);
                 async.complete();
