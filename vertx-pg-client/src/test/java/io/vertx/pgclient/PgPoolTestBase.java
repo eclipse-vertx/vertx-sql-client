@@ -60,7 +60,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
 
   @Test
   public void testPool(TestContext ctx) {
-    int num = 5000;
+    int num = 1000;
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
