@@ -28,6 +28,7 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.PgCodec;
+import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.*;
 import io.vertx.sqlclient.impl.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
@@ -93,7 +94,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   protected void handleMessage(Object msg) {
     super.handleMessage(msg);
-    if (msg instanceof Notification) {
+    if (msg instanceof Notification || msg instanceof TxFailedEvent) {
       handleEvent(msg);
     } else if (msg instanceof Notice) {
       handleNotice((Notice) msg);

@@ -23,7 +23,6 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotification;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.AsyncResult;
@@ -31,6 +30,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implements PgConnection  {
@@ -88,6 +88,11 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
         .setChannel(notification.getChannel())
         .setProcessId(notification.getProcessId())
         .setPayload(notification.getPayload()));
+    }
+    if (event instanceof TxFailedEvent) {
+      if (tx != null) {
+        tx.fail();
+      }
     }
   }
 

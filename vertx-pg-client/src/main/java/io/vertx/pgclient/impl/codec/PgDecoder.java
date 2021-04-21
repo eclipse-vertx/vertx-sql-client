@@ -92,7 +92,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
         in.setIndex(beginIdx + 5, endIdx);
         switch (id) {
           case PgProtocolConstants.MESSAGE_TYPE_READY_FOR_QUERY: {
-            decodeReadyForQuery(in);
+            decodeReadyForQuery(ctx, in);
             break;
           }
           case PgProtocolConstants.MESSAGE_TYPE_DATA_ROW: {
@@ -223,7 +223,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
 
   private static final byte I = (byte) 'I', T = (byte) 'T';
 
-  private void decodeReadyForQuery(ByteBuf in) {
+  private void decodeReadyForQuery(ChannelHandlerContext ctx, ByteBuf in) {
     byte id = in.readByte();
     if (id == I) {
       // IDLE
@@ -231,6 +231,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
       // ACTIVE
     } else {
       // FAILED
+      ctx.fireChannelRead(TxFailedEvent.INSTANCE);
     }
     inflight.peek().handleReadyForQuery();
   }

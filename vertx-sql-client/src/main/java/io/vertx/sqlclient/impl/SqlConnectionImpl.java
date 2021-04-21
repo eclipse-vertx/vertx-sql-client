@@ -35,7 +35,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
-  private TransactionImpl tx;
+  protected TransactionImpl tx;
 
   public SqlConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(context, conn, tracer, metrics);
@@ -115,10 +115,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
     if (tx != null) {
       throw new IllegalStateException();
     }
-    tx = new TransactionImpl(context, conn);
-    tx.completion().onComplete(ar -> {
-      tx = null;
-    });
+    tx = new TransactionImpl(context, v -> tx = null, conn);
     return tx.begin();
   }
 
