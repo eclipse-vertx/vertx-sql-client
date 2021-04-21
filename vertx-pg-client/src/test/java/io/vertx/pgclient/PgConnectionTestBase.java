@@ -445,19 +445,21 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
           conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
           conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
-            ctx.assertNotNull(queryAfterFailed.get());
-            ctx.assertTrue(queryAfterFailed.get().failed());
-            ctx.assertNotNull(commit.get());
-            ctx.assertTrue(commit.get().failed());
+            ctx.assertNull(queryAfterFailed.get());
+            ctx.assertNull(commit.get());
             ctx.assertTrue(ar2.failed());
+          });
+          conn.query("SELECT id FROM Test").execute(abc -> {
+            queryAfterFailed.set(abc);
             // This query won't be made in the same TX
             conn.query("SELECT id FROM Test WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(0, result.size());
               done.countDown();
             }));
           });
-          conn.query("SELECT id FROM Test").execute(queryAfterFailed::set);
-          tx.commit(commit::set);
+          tx.commit(ar -> {
+            commit.set(ar);
+          });
         }));
       });
     }));

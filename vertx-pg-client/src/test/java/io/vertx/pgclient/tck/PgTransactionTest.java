@@ -15,7 +15,10 @@
  */
 package io.vertx.pgclient.tck;
 
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -54,4 +57,19 @@ public class PgTransactionTest extends TransactionTestBase {
     return sb.toString();
   }
 
-}
+  /**
+   * PostgreSQL specific behavior that rolls back the transaction when a query fails.
+   */
+  @Test
+  public void testFailureWithPendingQueries(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.client.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(v -> {
+      }));
+      res.client.query("SELECT id, val FROM mutable").execute(ctx.asyncAssertFailure(err -> {
+        res.tx.rollback(ctx.asyncAssertSuccess(v -> {
+          async.complete();
+        }));
+      }));
+    }));
+  }}
