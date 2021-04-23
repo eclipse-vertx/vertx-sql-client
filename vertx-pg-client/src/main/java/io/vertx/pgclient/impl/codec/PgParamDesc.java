@@ -57,7 +57,7 @@ class PgParamDesc extends ParamDesc {
         } else {
           val = values.get(paramDataType.encodingType, i);
         }
-      } catch (ClassCastException e) {
+      } catch (Exception e) {
         return ErrorMessageFactory.buildWhenArgumentsTypeNotMatched(paramDataType.decodingType, i, values.getValue(i));
       }
       values.setValue(i, val);
