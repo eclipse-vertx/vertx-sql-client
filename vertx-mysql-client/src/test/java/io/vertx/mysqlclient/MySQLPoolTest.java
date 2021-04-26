@@ -29,8 +29,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -158,45 +158,51 @@ public class MySQLPoolTest extends MySQLTestBase {
     }));
   }
 
-  @Repeat(50)
   @Test
-  public void checkBorderConditionBetweenIdleAndGetConnection(TestContext ctx) {
+  @Repeat(50)
+  public void testNoConnectionLeaks(TestContext ctx) {
+    Tuple params = Tuple.of(options.getUser(), options.getDatabase());
+
     Async killConnections = ctx.async();
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT CONNECTION_ID()").execute(ctx.asyncAssertSuccess(r -> {
-        Integer currentConnectionId = r.iterator().next().getInteger(0);
-        String query = "SELECT ID FROM INFORMATION_SCHEMA.PROCESSLIST WHERE ID <> ? AND User = ? AND db = ?";
-        Collector<Row, ?, List<Integer>> collector = mapping(row -> row.getInteger(0), toList());
-        conn.preparedQuery(query).collecting(collector).execute(Tuple.of(currentConnectionId, options.getUser(), options.getDatabase()), ctx.asyncAssertSuccess(ids -> {
-          CompositeFuture killAll = ids.value().stream()
-            .<Future>map(connId -> conn.query("KILL " + connId).execute())
-            .collect(Collectors.collectingAndThen(toList(), CompositeFuture::all));
-          killAll.compose(cf -> conn.close()).onComplete(ctx.asyncAssertSuccess(v -> killConnections.countDown()));
-        }));
+      String sql = "SELECT ID FROM INFORMATION_SCHEMA.PROCESSLIST WHERE ID <> CONNECTION_ID() AND User = ? AND db = ?";
+      Collector<Row, ?, List<Integer>> collector = mapping(row -> row.getInteger(0), toList());
+      conn.preparedQuery(sql).collecting(collector).execute(params, ctx.asyncAssertSuccess(ids -> {
+        CompositeFuture killAll = ids.value().stream()
+          .<Future>map(connId -> conn.query("KILL " + connId).execute())
+          .collect(Collectors.collectingAndThen(toList(), CompositeFuture::all));
+        killAll.compose(cf -> conn.close()).onComplete(ctx.asyncAssertSuccess(v -> killConnections.complete()));
       }));
     }));
     killConnections.awaitSuccess();
 
-    int concurrentRequestAmount = 100;
-    int idle = 1000;
-    int poolSize = 5;
+    String sql = "SELECT CONNECTION_ID() AS cid, (SELECT count(*) FROM INFORMATION_SCHEMA.PROCESSLIST WHERE User = ? AND db = ?) AS cnt";
 
-    PoolOptions poolOptions = new PoolOptions();
-    poolOptions.setMaxSize(poolSize).setIdleTimeout(idle).setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+    int idleTimeout = 50;
+    PoolOptions poolOptions = new PoolOptions()
+      .setMaxSize(1)
+      .setIdleTimeout(idleTimeout)
+      .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
+      .setPoolCleanerPeriod(5);
     pool = MySQLPool.pool(options, poolOptions);
 
-    Async async = ctx.async(concurrentRequestAmount);
-    for (int i = 0; i < concurrentRequestAmount; i++) {
-      CompletableFuture.runAsync(() -> {
-        pool.query("SELECT CURRENT_TIMESTAMP;").execute(ctx.asyncAssertSuccess(rowSet -> {
-          String query = "SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.PROCESSLIST WHERE User = ? AND db = ?";
-          pool.preparedQuery(query).execute(Tuple.of(options.getUser(), options.getDatabase()), ctx.asyncAssertSuccess(rows -> {
-            Integer count = rows.iterator().next().getInteger("cnt");
-            ctx.assertInRange(count, 1, poolSize, "Oops!...Connections exceed poolSize. Are you leaked connections?.");
-            async.countDown();
+    Async async = ctx.async();
+    AtomicInteger cid = new AtomicInteger();
+    vertx.getOrCreateContext().runOnContext(v -> {
+      pool.preparedQuery(sql).execute(params, ctx.asyncAssertSuccess(rs1 -> {
+        Row row1 = rs1.iterator().next();
+        cid.set(row1.getInteger("cid"));
+        ctx.assertEquals(1, row1.getInteger("cnt"));
+        vertx.setTimer(2 * idleTimeout, l -> {
+          pool.preparedQuery(sql).execute(params, ctx.asyncAssertSuccess(rs2 -> {
+            Row row2 = rs2.iterator().next();
+            ctx.assertEquals(1, row2.getInteger("cnt"));
+            ctx.assertNotEquals(cid.get(), row2.getInteger("cid"));
+            async.complete();
           }));
-        }));
-      });
-    }
+        });
+      }));
+    });
+    async.awaitSuccess();
   }
 }
