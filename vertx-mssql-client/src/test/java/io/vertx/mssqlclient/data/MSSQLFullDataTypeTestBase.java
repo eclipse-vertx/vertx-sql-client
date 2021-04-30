@@ -97,7 +97,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
   @Test
   public void testDecodeDecimal(TestContext ctx) {
     testDecodeNotNullValue(ctx, "test_decimal", row -> {
-      checkNumber(row, "test_decimal", Numeric.create(12345.0));
+      checkNumber(row, "test_decimal", Numeric.create(12345));
     });
   }
 

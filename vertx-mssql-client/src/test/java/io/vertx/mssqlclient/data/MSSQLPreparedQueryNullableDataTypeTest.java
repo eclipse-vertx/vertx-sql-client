@@ -17,7 +17,6 @@ import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -112,9 +111,8 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   }
 
   @Test
-  @Ignore //FIXME
   public void testEncodeNumeric(TestContext ctx) {
-    testEncodeNumber(ctx, "test_numeric", Numeric.create(123456789.13));
+    testEncodeNumber(ctx, "test_numeric", Numeric.create(-123.13));
   }
 
   @Test
@@ -127,7 +125,6 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   }
 
   @Test
-  @Ignore //FIXME
   public void testEncodeDecimal(TestContext ctx) {
     testEncodeNumber(ctx, "test_decimal", Numeric.create(123456789));
   }
