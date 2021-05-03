@@ -75,9 +75,9 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
           messageBody.skipBytes(12); // this should only be after ERROR_TOKEN?
           break;
         case INFO_TOKEN:
-          int infoTokenLength = messageBody.readUnsignedShortLE();
-          //TODO not used for now
-          messageBody.skipBytes(infoTokenLength);
+        case ORDER_TOKEN:
+          int tokenLength = messageBody.readUnsignedShortLE();
+          messageBody.skipBytes(tokenLength);
           break;
         case ERROR_TOKEN:
           handleErrorToken(messageBody);
