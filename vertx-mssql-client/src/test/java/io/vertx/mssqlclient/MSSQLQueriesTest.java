@@ -13,17 +13,24 @@ package io.vertx.mssqlclient;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.Repeat;
+import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @RunWith(VertxUnitRunner.class)
 public class MSSQLQueriesTest extends MSSQLTestBase {
+
+  @Rule
+  public RepeatRule rule = new RepeatRule();
 
   Vertx vertx;
   MSSQLConnection connnection;
@@ -56,6 +63,7 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   }
 
   @Test
+  @Repeat(50)
   public void testQueryCurrentTimestamp(TestContext ctx) {
     LocalDateTime start = LocalDateTime.now();
     connnection.query("SELECT current_timestamp")
@@ -63,7 +71,7 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
         Object value = rs.iterator().next().getValue(0);
         ctx.assertTrue(value instanceof LocalDateTime);
         LocalDateTime localDateTime = (LocalDateTime) value;
-        ctx.assertTrue(localDateTime.isAfter(start));
+        ctx.assertTrue(Math.abs(localDateTime.until(start, ChronoUnit.SECONDS)) < 1);
       }));
   }
 }
