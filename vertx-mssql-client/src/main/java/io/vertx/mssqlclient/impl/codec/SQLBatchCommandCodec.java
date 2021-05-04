@@ -59,9 +59,9 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
           handleResultSetDone((int) doneRowCount);
           break;
         case INFO_TOKEN:
-          int infoTokenLength = messageBody.readUnsignedShortLE();
-          //TODO not used for now
-          messageBody.skipBytes(infoTokenLength);
+        case ORDER_TOKEN:
+          int tokenLength = messageBody.readUnsignedShortLE();
+          messageBody.skipBytes(tokenLength);
           break;
         case ERROR_TOKEN:
           handleErrorToken(messageBody);
