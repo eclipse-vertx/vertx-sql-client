@@ -130,7 +130,8 @@ public class SqlConnectionPool {
 
   public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
     Promise<R> promise = context.promise();
-    pool.acquire((EventLoopContext) context, 0, ar -> {
+    EventLoopContext eventLoopCtx = ConnectionFactory.asEventLoopContext(context);
+    pool.acquire(eventLoopCtx, 0, ar -> {
       if (ar.succeeded()) {
         Lease<PooledConnection> lease = ar.result();
         PooledConnection pooled = lease.get();

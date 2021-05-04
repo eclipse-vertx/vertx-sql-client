@@ -12,7 +12,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ContextTest extends PgTestBase {
+public abstract class ContextTest extends PgTestBase {
 
   protected Vertx vertx;
 
@@ -27,9 +27,7 @@ public class ContextTest extends PgTestBase {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
-  protected Context createContext() {
-    return vertx.getOrCreateContext();
-  }
+  protected abstract Context createContext();
 
   @Test
   public void testConnection(TestContext testCtx) {
@@ -65,6 +63,24 @@ public class ContextTest extends PgTestBase {
             async.complete();
           }));
         }));
+      });
+    });
+  }
+
+  @Test
+  public void testPoolQuery(TestContext testCtx) {
+    Context appCtx = createContext();
+    Async async = testCtx.async();
+    Context connCtx = vertx.getOrCreateContext();
+    connCtx.runOnContext(v1 -> {
+      PgPool pool = PgPool.pool(vertx, options, new PoolOptions());
+      appCtx.runOnContext(v -> {
+        pool
+          .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
+          .execute(testCtx.asyncAssertSuccess(result -> {
+            testCtx.assertEquals(appCtx, Vertx.currentContext());
+            async.complete();
+          }));
       });
     });
   }
