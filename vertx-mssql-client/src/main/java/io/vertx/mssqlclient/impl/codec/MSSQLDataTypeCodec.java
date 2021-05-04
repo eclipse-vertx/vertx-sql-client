@@ -23,8 +23,12 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+
 class MSSQLDataTypeCodec {
   static LocalDate START_DATE = LocalDate.of(1, 1, 1);
+  static LocalDate START_DATE_DATETIME = LocalDate.of(1900, 1, 1);
 
   private static final Map<Class<?>, String> parameterDefinitionsMapping = new HashMap<>();
 
@@ -89,6 +93,8 @@ class MSSQLDataTypeCodec {
         return decodeBit(in);
       case MSSQLDataTypeId.BITNTYPE_ID:
         return decodeBitN(in);
+      case MSSQLDataTypeId.DATETIMETYPE_ID:
+        return decodeDateTime(in);
       case MSSQLDataTypeId.DATENTYPE_ID:
         return decodeDateN(in);
       case MSSQLDataTypeId.TIMENTYPE_ID:
@@ -170,6 +176,13 @@ class MSSQLDataTypeCodec {
       return null;
     }
     return in.readCharSequence(length, StandardCharsets.UTF_8);
+  }
+
+  private static LocalDateTime decodeDateTime(ByteBuf in) {
+    LocalDate localDate = START_DATE_DATETIME.plus(in.readIntLE(), ChronoUnit.DAYS);
+    long nanoOfDay = NANOSECONDS.convert(Math.round(in.readIntLE() * (3 + 1D / 3)), MILLISECONDS);
+    LocalTime localTime = LocalTime.ofNanoOfDay(nanoOfDay);
+    return LocalDateTime.of(localDate, localTime);
   }
 
   private static LocalDate decodeDateN(ByteBuf in) {

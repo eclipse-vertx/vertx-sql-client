@@ -125,6 +125,8 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       case BITNTYPE_ID:
         payload.skipBytes(1); // should only be 1
         return BitNDataType.BIT_1_DATA_TYPE;
+      case DATETIMETYPE_ID:
+        return FixedLenDataType.DATETIMETYPE;
       case DATENTYPE_ID:
         return FixedLenDataType.DATENTYPE;
       case TIMENTYPE_ID:
