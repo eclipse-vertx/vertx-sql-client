@@ -188,8 +188,9 @@ public class SqlConnectionPool {
         onEnqueue(waiter);
       }
     }
+    EventLoopContext eventLoopContext = ConnectionFactory.asEventLoopContext(context);
     PoolRequest request = new PoolRequest();
-    pool.acquire((EventLoopContext) context, request,0, request);
+    pool.acquire(eventLoopContext, request,0, request);
   }
 
   public Future<Void> close() {
