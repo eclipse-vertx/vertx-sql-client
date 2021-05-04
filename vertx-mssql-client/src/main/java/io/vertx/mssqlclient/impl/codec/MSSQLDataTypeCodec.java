@@ -36,22 +36,22 @@ class MSSQLDataTypeCodec {
     parameterDefinitionsMapping.put(Boolean.class, "bit");
     parameterDefinitionsMapping.put(Float.class, "float");
     parameterDefinitionsMapping.put(Double.class, "float");
-    parameterDefinitionsMapping.put(String.class, "nvarchar(4000)");
+    parameterDefinitionsMapping.put(String.class, "nvarchar(max)");
     parameterDefinitionsMapping.put(LocalDate.class, "date");
     parameterDefinitionsMapping.put(LocalTime.class, "time");
-    parameterDefinitionsMapping.put(LocalDateTime.class, "datetime2");
-    parameterDefinitionsMapping.put(OffsetDateTime.class, "datetimeoffset");
+    parameterDefinitionsMapping.put(LocalDateTime.class, "datetime2(7)");
+    parameterDefinitionsMapping.put(OffsetDateTime.class, "datetimeoffset(7)");
   }
 
   static String inferenceParamDefinitionByValueType(Object value) {
     if (value == null) {
-      return "nvarchar(4000)";
+      return "nvarchar(max)";
     } else if (value instanceof Numeric) {
-      Numeric numeric = (Numeric) value;
-      if (numeric.isNaN()) {
-        return "nvarchar(4000)"; // null value, NaN not supported on this DB
+      BigDecimal bigDecimal = ((Numeric) value).bigDecimalValue();
+      if (bigDecimal == null) {
+        return "nvarchar(max)"; // null value, NaN not supported on this DB
       }
-      return "numeric(38," + Math.max(0, numeric.bigDecimalValue().scale()) + ")";
+      return "numeric(38," + Math.max(0, bigDecimal.scale()) + ")";
     } else if (value.getClass().isEnum()) {
       return parameterDefinitionsMapping.get(String.class);
     } else {
