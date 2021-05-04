@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,6 +14,8 @@ package io.vertx.mssqlclient.junit;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.MSSQLServerContainer;
+
+import java.time.ZoneId;
 
 public class MSSQLRule extends ExternalResource {
   private MSSQLServerContainer<?> server;
@@ -50,6 +52,7 @@ public class MSSQLRule extends ExternalResource {
     }
     server = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
       .acceptLicense()
+      .withEnv("TZ", ZoneId.systemDefault().toString())
       .withInitScript("init.sql")
       .withExposedPorts(MSSQLServerContainer.MS_SQL_SERVER_PORT);
     server.start();

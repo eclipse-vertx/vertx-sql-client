@@ -20,6 +20,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.time.LocalDateTime;
+
 @RunWith(VertxUnitRunner.class)
 public class MSSQLQueriesTest extends MSSQLTestBase {
 
@@ -51,5 +53,17 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   public void testPreparedQueryOrderBy(TestContext ctx) {
     connnection.preparedQuery("SELECT message FROM immutable WHERE id BETWEEN @p1 AND @p2 ORDER BY message DESC")
       .execute(Tuple.of(4, 9), ctx.asyncAssertSuccess(rs -> ctx.assertEquals(6, rs.size())));
+  }
+
+  @Test
+  public void testQueryCurrentTimestamp(TestContext ctx) {
+    LocalDateTime start = LocalDateTime.now();
+    connnection.query("SELECT current_timestamp")
+      .execute(ctx.asyncAssertSuccess(rs -> {
+        Object value = rs.iterator().next().getValue(0);
+        ctx.assertTrue(value instanceof LocalDateTime);
+        LocalDateTime localDateTime = (LocalDateTime) value;
+        ctx.assertTrue(localDateTime.isAfter(start));
+      }));
   }
 }
