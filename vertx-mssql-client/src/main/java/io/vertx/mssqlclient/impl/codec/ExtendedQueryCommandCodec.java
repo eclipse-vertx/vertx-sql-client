@@ -24,6 +24,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -457,8 +458,28 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     buffer.writeByte((int) (value / 0x100000000L));
   }
 
-  private void encodeNumericParameter(ByteBuf buffer, Numeric value) {
-    //TODO we may need some changes in Numeric to make this work
-    throw new UnsupportedOperationException();
+  private void encodeNumericParameter(ByteBuf payload, Numeric value) {
+    BigDecimal bigDecimal = value.bigDecimalValue();
+    if (bigDecimal == null) {
+      encodeNullParameter(payload);
+      return;
+    }
+
+    payload.writeByte(0x00);
+    payload.writeByte(0x00);
+    payload.writeByte(MSSQLDataTypeId.DECIMALNTYPE_ID);
+
+    payload.writeByte(17); // maximum length
+    payload.writeByte(38); // maximum precision
+
+    int sign = bigDecimal.signum() < 0 ? 0 : 1;
+    byte[] bytes = (sign == 0 ? bigDecimal.negate() : bigDecimal).unscaledValue().toByteArray();
+
+    payload.writeByte(Math.max(0, bigDecimal.scale()));
+    payload.writeByte(1 + bytes.length);
+    payload.writeByte(sign);
+    for (int i = bytes.length - 1; i >= 0; i--) {
+      payload.writeByte(bytes[i]);
+    }
   }
 }

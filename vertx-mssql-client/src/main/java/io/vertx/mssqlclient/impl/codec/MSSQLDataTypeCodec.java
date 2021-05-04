@@ -47,8 +47,11 @@ class MSSQLDataTypeCodec {
     if (value == null) {
       return "nvarchar(4000)";
     } else if (value instanceof Numeric) {
-      //TODO we may need some changes in Numeric to make this work
-      throw new UnsupportedOperationException();
+      Numeric numeric = (Numeric) value;
+      if (numeric.isNaN()) {
+        return "nvarchar(4000)"; // null value, NaN not supported on this DB
+      }
+      return "numeric(38," + Math.max(0, numeric.bigDecimalValue().scale()) + ")";
     } else if (value.getClass().isEnum()) {
       return parameterDefinitionsMapping.get(String.class);
     } else {
@@ -204,25 +207,16 @@ class MSSQLDataTypeCodec {
     short length = in.readUnsignedByte();
     if (length == 0) {
       return null;
-    } else {
-      int sign = in.readByte();
-      Number value;
-      switch (length - 1) {
-        case 4:
-          value = in.readIntLE();
-          break;
-        case 8:
-          value = in.readLongLE();
-          break;
-        case 12:
-          return Numeric.create(new BigDecimal(readUnsignedInt96LE(in), scale));
-        case 16:
-          return Numeric.create(new BigDecimal(readUnsignedInt128LE(in), scale));
-        default:
-          throw new IllegalStateException("Unexpected numeric length of [" + length + "]");
-      }
-      return Numeric.create(value.longValue() / Math.pow(10, scale) * sign);
     }
+    byte sign = in.readByte();
+    byte[] bytes = new byte[length - 1];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = in.getByte(in.readerIndex() + bytes.length - 1 - i);
+    }
+    in.skipBytes(bytes.length);
+    BigInteger bigInteger = new BigInteger(bytes);
+    BigDecimal bigDecimal = new BigDecimal(bigInteger, scale);
+    return Numeric.create(sign == 0 ? bigDecimal.negate() : bigDecimal);
   }
 
   private static long decodeBigInt(ByteBuf in) {
