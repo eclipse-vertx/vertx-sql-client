@@ -26,7 +26,7 @@ import static java.nio.charset.StandardCharsets.UTF_16LE;
 
 abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
   final C cmd;
-  public Throwable failure;
+  public MSSQLException failure;
   public R result;
   Handler<? super CommandResponse<R>> completionHandler;
   TdsMessageEncoder encoder;
@@ -57,7 +57,13 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
     String procedureName = readByteLenVarchar(buffer);
     int lineNumber = buffer.readIntLE();
 
-    failure = new MSSQLException(number, state, severity, message, serverName, procedureName, lineNumber);
+    MSSQLException failure = new MSSQLException(number, state, severity, message, serverName, procedureName, lineNumber);
+
+    if (this.failure == null) {
+      this.failure = failure;
+    } else {
+      this.failure.add(failure);
+    }
   }
 
   void complete() {
