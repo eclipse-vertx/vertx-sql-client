@@ -75,7 +75,7 @@ public class MSSQLException extends RuntimeException {
   }
 
   @Override
-  public String toString() {
+  public String getMessage() {
     StringBuilder sb = new StringBuilder("{")
       .append("number=").append(number)
       .append(", state=").append(state)
@@ -94,10 +94,5 @@ public class MSSQLException extends RuntimeException {
       sb.append(", additional=").append(additional);
     }
     return sb.append('}').toString();
-  }
-
-  @Override
-  public String getMessage() {
-    return toString();
   }
 }
