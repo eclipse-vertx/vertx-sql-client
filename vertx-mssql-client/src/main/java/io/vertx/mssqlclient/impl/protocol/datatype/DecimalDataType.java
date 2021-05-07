@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,12 +14,12 @@ package io.vertx.mssqlclient.impl.protocol.datatype;
 import java.sql.JDBCType;
 
 // NUMERIC, NUMERICN, DECIMAL, or DECIMALN.
-public class NumericDataType extends MSSQLDataType {
+public class DecimalDataType extends MSSQLDataType {
   private final int precision;
   private final int scale;
 
-  public NumericDataType(int id, Class<?> mappedJavaType, int precision, int scale) {
-    super(id, mappedJavaType, JDBCType.NUMERIC);
+  public DecimalDataType(int id, Class<?> mappedJavaType, int precision, int scale) {
+    super(id, mappedJavaType, JDBCType.DECIMAL);
     this.precision = precision;
     this.scale = scale;
   }
