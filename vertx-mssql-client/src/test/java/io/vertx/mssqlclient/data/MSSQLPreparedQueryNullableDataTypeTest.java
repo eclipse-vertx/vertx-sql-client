@@ -16,10 +16,10 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.function.Consumer;
 
@@ -112,12 +112,12 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   @Test
   public void testEncodeNumeric(TestContext ctx) {
-    testEncodeNumber(ctx, "test_numeric", Numeric.create(-123.13));
+    testEncodeNumber(ctx, "test_numeric", new BigDecimal("-123.13"));
   }
 
   @Test
   public void testEncodeNullNumeric(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_numeric", NUMERIC_NULL_VALUE, row -> {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_numeric", DECIMAL_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_numeric")
         .returnsNull()
         .forRow(row);
@@ -126,12 +126,12 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   @Test
   public void testEncodeDecimal(TestContext ctx) {
-    testEncodeNumber(ctx, "test_decimal", Numeric.create(123456789));
+    testEncodeNumber(ctx, "test_decimal", new BigDecimal("123456789"));
   }
 
   @Test
   public void testEncodeNullDecimal(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_decimal", NUMERIC_NULL_VALUE, row -> {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_decimal", DECIMAL_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_decimal")
         .returnsNull()
         .forRow(row);

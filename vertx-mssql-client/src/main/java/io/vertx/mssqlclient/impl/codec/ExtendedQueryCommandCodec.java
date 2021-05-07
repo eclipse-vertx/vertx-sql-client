@@ -21,7 +21,6 @@ import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
 import io.vertx.mssqlclient.impl.protocol.server.DoneToken;
 import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import java.math.BigDecimal;
@@ -289,8 +288,8 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
       encodeDateTimeNParameter(payload, (LocalDateTime) value, (byte) 6);
     } else if (value instanceof OffsetDateTime) {
       encodeOffsetDateTimeNParameter(payload, (OffsetDateTime) value, (byte) 6);
-    } else if (value instanceof Numeric) {
-      encodeNumericParameter(payload, (Numeric) value);
+    } else if (value instanceof BigDecimal) {
+      encodeDecimalParameter(payload, (BigDecimal) value);
     } else {
       throw new UnsupportedOperationException("Unsupported type");
     }
@@ -458,13 +457,7 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     buffer.writeByte((int) (value / 0x100000000L));
   }
 
-  private void encodeNumericParameter(ByteBuf payload, Numeric value) {
-    BigDecimal bigDecimal = value.bigDecimalValue();
-    if (bigDecimal == null) {
-      encodeNullParameter(payload);
-      return;
-    }
-
+  private void encodeDecimalParameter(ByteBuf payload, BigDecimal value) {
     payload.writeByte(0x00);
     payload.writeByte(0x00);
     payload.writeByte(MSSQLDataTypeId.DECIMALNTYPE_ID);
@@ -472,10 +465,10 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     payload.writeByte(17); // maximum length
     payload.writeByte(38); // maximum precision
 
-    int sign = bigDecimal.signum() < 0 ? 0 : 1;
-    byte[] bytes = (sign == 0 ? bigDecimal.negate() : bigDecimal).unscaledValue().toByteArray();
+    int sign = value.signum() < 0 ? 0 : 1;
+    byte[] bytes = (sign == 0 ? value.negate() : value).unscaledValue().toByteArray();
 
-    payload.writeByte(Math.max(0, bigDecimal.scale()));
+    payload.writeByte(Math.max(0, value.scale()));
     payload.writeByte(1 + bytes.length);
     payload.writeByte(sign);
     for (int i = bytes.length - 1; i >= 0; i--) {

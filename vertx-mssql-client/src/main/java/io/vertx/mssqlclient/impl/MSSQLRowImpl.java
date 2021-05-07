@@ -13,10 +13,10 @@ package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowDesc;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -63,8 +63,8 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getFloat(position));
     } else if (type == Double.class) {
       return type.cast(getDouble(position));
-    } else if (type == Numeric.class) {
-      return type.cast(getNumeric(position));
+    } else if (type == BigDecimal.class) {
+      return type.cast(getBigDecimal(position));
     } else if (type == String.class) {
       return type.cast(getString(position));
     } else if (type == LocalDate.class) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,7 +14,6 @@ package io.vertx.sqlclient.tck;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.sql.JDBCType;
@@ -23,9 +22,6 @@ import java.time.LocalTime;
 
 public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
 
-  public JDBCType NUMERIC_TYPE;
-
-
   @Test
   public void testSmallInt(TestContext ctx) {
     testDecodeGeneric(ctx, "test_int_2", Short.class, JDBCType.SMALLINT, (short) 32767);
@@ -33,32 +29,32 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
 
   @Test
   public void testInteger(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_int_4", Integer.class, JDBCType.INTEGER, (int) 2147483647);
+    testDecodeGeneric(ctx, "test_int_4", Integer.class, JDBCType.INTEGER, 2147483647);
   }
 
   @Test
   public void testBigInt(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_int_8", Long.class, JDBCType.BIGINT, (long) 9223372036854775807L);
+    testDecodeGeneric(ctx, "test_int_8", Long.class, JDBCType.BIGINT, 9223372036854775807L);
   }
 
   @Test
   public void testFloat4(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_float_4", Float.class, JDBCType.REAL, (float) 3.40282e38F);
+    testDecodeGeneric(ctx, "test_float_4", Float.class, JDBCType.REAL, 3.40282e38F);
   }
 
   @Test
   public void testDouble(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_float_8", Double.class, JDBCType.DOUBLE, (double) 1.7976931348623157E308);
+    testDecodeGeneric(ctx, "test_float_8", Double.class, JDBCType.DOUBLE, 1.7976931348623157E308);
   }
 
   @Test
   public void testNumeric(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_numeric", Numeric.class, NUMERIC_TYPE, Numeric.parse("999.99"));
+    testDecodeGeneric(ctx, "test_numeric", getNumericClass(), getNumericJDBCType(), getNumericValue("999.99"));
   }
 
   @Test
   public void testDecimal(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_decimal", Numeric.class, NUMERIC_TYPE, Numeric.parse("12345"));
+    testDecodeGeneric(ctx, "test_decimal", getNumericClass(), getNumericJDBCType(), getNumericValue("12345"));
   }
 
   @Test
@@ -88,7 +84,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
 
   protected <T> void testDecodeGeneric(TestContext ctx,
                                        String columnName,
-                                       Class<T> clazz,
+                                       Class<? extends T> clazz,
                                        JDBCType jdbcType,
                                        T expected) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
@@ -159,7 +155,7 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
             Row row = result.iterator().next();
             ctx.assertEquals(12, row.size());
             ctx.assertEquals((short) 32767, row.getShort(0));
-            ctx.assertEquals(Short.valueOf((short) 32767), row.getShort("test_int_2"));
+            ctx.assertEquals((short) 32767, row.getShort("test_int_2"));
             ctx.assertEquals(2147483647, row.getInteger(1));
             ctx.assertEquals(2147483647, row.getInteger("test_int_4"));
             ctx.assertEquals(9223372036854775807L, row.getLong(2));
@@ -168,10 +164,10 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
             ctx.assertEquals(3.40282E38F, row.getFloat("test_float_4"));
             ctx.assertEquals(1.7976931348623157E308, row.getDouble(4));
             ctx.assertEquals(1.7976931348623157E308, row.getDouble("test_float_8"));
-            ctx.assertEquals(Numeric.create(999.99), row.get(Numeric.class, 5));
-            ctx.assertEquals(Numeric.create(999.99), row.getValue("test_numeric"));
-            ctx.assertEquals(Numeric.create(12345), row.get(Numeric.class, 6));
-            ctx.assertEquals(Numeric.create(12345), row.getValue("test_decimal"));
+            ctx.assertEquals(getNumericValue(999.99), row.get(getNumericClass(), 5));
+            ctx.assertEquals(getNumericValue(999.99), row.getValue("test_numeric"));
+            ctx.assertEquals(getNumericValue(12345), row.get(getNumericClass(), 6));
+            ctx.assertEquals(getNumericValue(12345), row.getValue("test_decimal"));
             ctx.assertEquals(true, row.getBoolean(7));
             ctx.assertEquals(true, row.getBoolean("test_boolean"));
             ctx.assertEquals("testchar", row.getString(8));
@@ -208,13 +204,13 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
         JsonObject json = row.toJson();
 
         ctx.assertEquals(11, json.size());
-        ctx.assertEquals(Short.valueOf((short) 32767), json.getValue("test_int_2"));
+        ctx.assertEquals((short) 32767, json.getValue("test_int_2"));
         ctx.assertEquals(2147483647, json.getValue("test_int_4"));
         ctx.assertEquals(9223372036854775807L, json.getValue("test_int_8"));
         ctx.assertEquals(3.40282E38F, json.getValue("test_float_4"));
         ctx.assertEquals(1.7976931348623157E308, json.getValue("test_float_8"));
-        ctx.assertEquals(Numeric.create(999.99), json.getValue("test_numeric"));
-        ctx.assertEquals(Numeric.create(12345), json.getValue("test_decimal"));
+        ctx.assertEquals(getNumericValue(999.99), json.getValue("test_numeric"));
+        ctx.assertEquals(getNumericValue(12345), json.getValue("test_decimal"));
         Object booleanValue = json.getValue("test_boolean");
         ctx.assertTrue(booleanValue instanceof Boolean || booleanValue instanceof Number);
         ctx.assertEquals("testchar", json.getValue("test_char"));
