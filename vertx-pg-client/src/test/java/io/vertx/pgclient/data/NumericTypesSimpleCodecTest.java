@@ -204,11 +204,12 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
         Row row = result.iterator().next();
         ColumnChecker.checkColumn(0, columnName)
           .returns(Tuple::getValue, Row::getValue, value)
-          .returns(Tuple::getShortArray, Row::getShortArray, new Short[]{value[0].shortValue()})
-          .returns(Tuple::getIntegerArray, Row::getIntegerArray, new Integer[]{value[0].intValue()})
-          .returns(Tuple::getLongArray, Row::getLongArray, new Long[]{value[0].longValue()})
-          .returns(Tuple::getFloatArray, Row::getFloatArray, new Float[]{value[0].floatValue()})
-          .returns(Tuple::getDoubleArray, Row::getDoubleArray, new Double[]{value[0].doubleValue()})
+          .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, new Short[]{value[0].shortValue()})
+          .returns(Tuple::getArrayOfIntegers, Row::getArrayOfIntegers, new Integer[]{value[0].intValue()})
+          .returns(Tuple::getArrayOfLongs, Row::getArrayOfLongs, new Long[]{value[0].longValue()})
+          .returns(Tuple::getArrayOfFloats, Row::getArrayOfFloats, new Float[]{value[0].floatValue()})
+          .returns(Tuple::getArrayOfDoubles, Row::getArrayOfDoubles, new Double[]{value[0].doubleValue()})
+          .returns(Tuple::getArrayOfNumerics, Row::getArrayOfNumerics, new Numeric[]{Numeric.create(value[0])})
           .forRow(row);
         async.complete();
       }));
@@ -225,11 +226,12 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
         ctx.asyncAssertSuccess(result -> {
           ColumnChecker.checkColumn(0, "array")
             .returns(Tuple::getValue, Row::getValue, (Object[]) new Long[0])
-            .returns(Tuple::getShortArray, Row::getShortArray, (Object[]) new Short[0])
-            .returns(Tuple::getIntegerArray, Row::getIntegerArray, (Object[]) new Integer[0])
-            .returns(Tuple::getLongArray, Row::getLongArray, (Object[]) new Long[0])
-            .returns(Tuple::getFloatArray, Row::getFloatArray, (Object[]) new Float[0])
-            .returns(Tuple::getDoubleArray, Row::getDoubleArray, (Object[]) new Double[0])
+            .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, (Object[]) new Short[0])
+            .returns(Tuple::getArrayOfIntegers, Row::getArrayOfIntegers, (Object[]) new Integer[0])
+            .returns(Tuple::getArrayOfLongs, Row::getArrayOfLongs, (Object[]) new Long[0])
+            .returns(Tuple::getArrayOfFloats, Row::getArrayOfFloats, (Object[]) new Float[0])
+            .returns(Tuple::getArrayOfDoubles, Row::getArrayOfDoubles, (Object[]) new Double[0])
+            .returns(Tuple::getArrayOfNumerics, Row::getArrayOfNumerics, (Object[]) new Numeric[0])
             .forRow(result.iterator().next());
           async.complete();
         }));

@@ -19,22 +19,18 @@ package io.vertx.pgclient.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.PgCodec;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.Notice;
-import io.vertx.sqlclient.impl.Notification;
-import io.vertx.sqlclient.impl.QueryResultHandler;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.InitCommand;
-import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.pgclient.impl.codec.TxFailedEvent;
+import io.vertx.sqlclient.impl.*;
+import io.vertx.sqlclient.impl.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
@@ -55,7 +51,7 @@ public class PgSocketConnection extends SocketConnectionBase {
                             int preparedStatementCacheSize,
                             Predicate<String> preparedStatementCacheSqlFilter,
                             int pipeliningLimit,
-                            ContextInternal context) {
+                            EventLoopContext context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
@@ -67,9 +63,10 @@ public class PgSocketConnection extends SocketConnectionBase {
     super.init();
   }
 
+  // TODO RETURN FUTURE ???
   void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Promise<Connection> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    schedule(cmd, completionHandler);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   void sendCancelRequestMessage(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
@@ -97,7 +94,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   protected void handleMessage(Object msg) {
     super.handleMessage(msg);
-    if (msg instanceof Notification) {
+    if (msg instanceof Notification || msg instanceof TxFailedEvent) {
       handleEvent(msg);
     } else if (msg instanceof Notice) {
       handleNotice((Notice) msg);
@@ -160,8 +157,8 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   public boolean isIndeterminatePreparedStatementError(Throwable error) {
     if (error instanceof PgException) {
-      PgException e = (PgException) error;
-      return "42P18".equals(e.getCode());
+      String code = ((PgException) error).getCode();
+      return "42P18".equals(code) || "42804".equals(code);
     }
     return false;
   }

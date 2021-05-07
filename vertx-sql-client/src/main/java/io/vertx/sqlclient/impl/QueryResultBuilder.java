@@ -65,6 +65,7 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
       r.updated = updatedCount;
       r.size = size;
       r.columnNames = desc != null ? desc.columnNames() : null;
+      r.columnDescriptors = desc != null ? desc.columnDescriptor() : null;
       handleResult(r);
     }
   }

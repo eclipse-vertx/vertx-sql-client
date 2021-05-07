@@ -26,6 +26,7 @@ import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
@@ -35,23 +36,20 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     DB2ConnectionFactory client;
     try {
-      client = new DB2ConnectionFactory(ctx, options);
+      client = new DB2ConnectionFactory(ctx.owner(), options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
     ctx.addCloseHook(client);
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
-    Promise<DB2Connection> promise = ctx.promise();
-    ctx.emit(null, v -> connect(client, ctx, tracer, promise));
-    return promise.future();
-  }
-
-  private static void connect(DB2ConnectionFactory client, ContextInternal ctx, QueryTracer tracer, Promise<DB2Connection> promise) {
-    client.connect().map(conn -> {
-      DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn, tracer, null);
-      conn.init(db2Connection);
-      return (DB2Connection) db2Connection;
-    }).onComplete(promise);
+    Promise<Connection> promise = ctx.promise();
+    client.connect(promise);
+    return promise.future()
+      .map(conn -> {
+        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn, tracer, null);
+        conn.init(db2Connection);
+        return db2Connection;
+      });
   }
 
   public DB2ConnectionImpl(DB2ConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
@@ -69,9 +67,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
 
   @Override
   public Future<Void> ping() {
-    Promise<Void> promise = promise();
-    schedule(new PingCommand(), promise);
-    return promise.future();
+    return schedule(context, new PingCommand());
   }
 
   @Override

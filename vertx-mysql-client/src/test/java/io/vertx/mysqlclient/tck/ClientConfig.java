@@ -56,7 +56,7 @@ public enum ClientConfig {
   POOLED() {
     @Override
     Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
-      MySQLPool pool = MySQLPool.pool(new MySQLConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1));
+      MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1));
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {

@@ -34,15 +34,15 @@ import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.nio.charset.StandardCharsets;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.function.IntFunction;
-import java.util.stream.Collectors;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
@@ -604,81 +604,6 @@ class DataTypeCodec {
     }
   }
 
-
-  public static Object prepare(DataType type, Object value) {
-    if (value instanceof Enum) {
-      value = prepare(type, (Enum<?>) value);
-    } else if (value instanceof Enum[]) {
-      value = prepare(type, (Enum<?>[]) value);
-    }
-    switch (type) {
-      case JSON:
-      case JSONB:
-        if (value == null ||
-          value == Tuple.JSON_NULL ||
-          value instanceof String ||
-          value instanceof Boolean ||
-          value instanceof Number ||
-          value instanceof JsonObject ||
-          value instanceof JsonArray) {
-          return value;
-        } else {
-          return REFUSED_SENTINEL;
-        }
-      case UNKNOWN:
-        if (value instanceof String[]) {
-          return Arrays.stream((String[]) value).collect(Collectors.joining(",", "{", "}"));
-        } else if (value == null || value instanceof String) {
-          return value;
-        }
-        break;
-    }
-    Class<?> javaType = type.decodingType;
-    if (value == null || javaType.isInstance(value)) {
-      return value;
-    }
-    return REFUSED_SENTINEL;
-  }
-
-  private static Object prepare(DataType type, Enum<?> value) {
-    switch (type) {
-      case INT2:
-      case INT4:
-      case INT8:
-        return value.ordinal();
-      case UNKNOWN:
-      case VARCHAR:
-      case TEXT:
-        return value.name();
-    }
-    return value;
-  }
-
-  private static Object prepare(DataType type, Enum<?>[] value) {
-    int len = value.length;
-    switch (type) {
-      case INT2_ARRAY:
-      case INT4_ARRAY:
-      case INT8_ARRAY: {
-        Number[] ret = new Number[len];
-        for (int i = 0; i < len; i++) {
-          ret[i] = value[i].ordinal();
-        }
-        return ret;
-      }
-      case UNKNOWN:
-      case VARCHAR_ARRAY:
-      case TEXT_ARRAY: {
-        String[] ret = new String[len];
-        for (int i = 0; i < len; i++) {
-          ret[i] = value[i].name();
-        }
-        return ret;
-      }
-    }
-    return value;
-  }
-
   private static Object defaultDecodeText(int index, int len, ByteBuf buff) {
     // decode unknown text values as text or as an array if it begins with `{`
     if (len > 1 && buff.getByte(index) == '{') {
@@ -1038,16 +963,40 @@ class DataTypeCodec {
   }
 
   private static void binaryEncodeDATE(LocalDate value, ByteBuf buff) {
-    buff.writeInt((int) -value.until(LOCAL_DATE_EPOCH, ChronoUnit.DAYS));
+    int v;
+    if (value == LocalDate.MAX) {
+      v = Integer.MAX_VALUE;
+    } else if (value == LocalDate.MIN) {
+      v = Integer.MIN_VALUE;
+    } else {
+      v = (int) -value.until(LOCAL_DATE_EPOCH, ChronoUnit.DAYS);
+    }
+    buff.writeInt(v);
   }
 
   private static LocalDate binaryDecodeDATE(int index, int len, ByteBuf buff) {
-    return LOCAL_DATE_EPOCH.plus(buff.getInt(index), ChronoUnit.DAYS);
+    int val = buff.getInt(index);
+    switch (val) {
+      case Integer.MAX_VALUE:
+        return LocalDate.MAX;
+      case Integer.MIN_VALUE:
+        return LocalDate.MIN;
+      default:
+        return LOCAL_DATE_EPOCH.plus(val, ChronoUnit.DAYS);
+    }
   }
 
   private static LocalDate textDecodeDATE(int index, int len, ByteBuf buff) {
     CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
-    return LocalDate.parse(cs);
+    String s = cs.toString();
+    switch (s) {
+      case "infinity":
+        return LocalDate.MAX;
+      case "-infinity":
+        return LocalDate.MIN;
+      default:
+        return LocalDate.parse(cs);
+    }
   }
 
   private static void binaryEncodeTIME(LocalTime value, ByteBuf buff) {
@@ -1082,30 +1031,87 @@ class DataTypeCodec {
     return OffsetTime.parse(cs, TIMETZ_FORMAT);
   }
 
+  // 294277-01-09 04:00:54.775807
+  public static final LocalDateTime LDT_PLUS_INFINITY = LOCAL_DATE_TIME_EPOCH.plus(Long.MAX_VALUE, ChronoUnit.MICROS);
+  // 4714-11-24 00:00:00 BC
+  public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC",
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.ROOT));
+
   private static void binaryEncodeTIMESTAMP(LocalDateTime value, ByteBuf buff) {
+    if (value.compareTo(LDT_PLUS_INFINITY) >= 0) {
+      value = LDT_PLUS_INFINITY;
+    } else if (value.compareTo(LDT_MINUS_INFINITY) <= 0) {
+      value = LDT_MINUS_INFINITY;
+    }
     buff.writeLong(-value.until(LOCAL_DATE_TIME_EPOCH, ChronoUnit.MICROS));
   }
 
   private static LocalDateTime binaryDecodeTIMESTAMP(int index, int len, ByteBuf buff) {
-    return LOCAL_DATE_TIME_EPOCH.plus(buff.getLong(index), ChronoUnit.MICROS);
+    LocalDateTime val = LOCAL_DATE_TIME_EPOCH.plus(buff.getLong(index), ChronoUnit.MICROS);
+    if (LDT_PLUS_INFINITY.equals(val)) {
+      return LocalDateTime.MAX;
+    } else if (LDT_MINUS_INFINITY.equals(val)) {
+      return LocalDateTime.MIN;
+    } else {
+      return val;
+    }
   }
 
   private static LocalDateTime textDecodeTIMESTAMP(int index, int len, ByteBuf buff) {
     CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
-    return LocalDateTime.parse(cs, TIMESTAMP_FORMAT);
+    String s = cs.toString();
+    switch (s) {
+      case "infinity":
+        return LocalDateTime.MAX;
+      case "-infinity":
+        return LocalDateTime.MIN;
+      default:
+        return LocalDateTime.parse(cs, TIMESTAMP_FORMAT);
+    }
   }
 
   private static OffsetDateTime binaryDecodeTIMESTAMPTZ(int index, int len, ByteBuf buff) {
-    return OFFSET_DATE_TIME_EPOCH.plus(buff.getLong(index), ChronoUnit.MICROS);
+    LocalDateTime ldt = binaryDecodeTIMESTAMP(index, len, buff);
+    if (ldt == LocalDateTime.MAX) {
+      return OffsetDateTime.MAX;
+    } else if (ldt == LocalDateTime.MIN) {
+      return OffsetDateTime.MIN;
+    } else {
+      return OffsetDateTime.of(ldt, ZoneOffset.UTC);
+    }
   }
 
   private static void binaryEncodeTIMESTAMPTZ(OffsetDateTime value, ByteBuf buff) {
-    buff.writeLong(-value.until(OFFSET_DATE_TIME_EPOCH, ChronoUnit.MICROS));
+    LocalDateTime ldt;
+    if (value.getOffset() != ZoneOffset.UTC) {
+      OffsetDateTime max = OffsetDateTime.of(LDT_PLUS_INFINITY, ZoneOffset.UTC);
+      if (value.compareTo(max) >= 0) {
+        ldt = LocalDateTime.MAX;
+      } else {
+        OffsetDateTime min = OffsetDateTime.of(LDT_MINUS_INFINITY, ZoneOffset.UTC);
+        if (value.compareTo(min) <= 0) {
+          ldt = LocalDateTime.MIN;
+        } else {
+          ldt = value.toInstant().atOffset(ZoneOffset.UTC).toLocalDateTime();
+        }
+      }
+    } else {
+      ldt = value.toLocalDateTime();
+    }
+    binaryEncodeTIMESTAMP(ldt, buff);
   }
 
   private static OffsetDateTime textDecodeTIMESTAMPTZ(int index, int len, ByteBuf buff) {
     CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
-    return OffsetDateTime.parse(cs, TIMESTAMPTZ_FORMAT);
+    String s = cs.toString();
+    switch (s) {
+      case "infinity":
+        return OffsetDateTime.MAX;
+      case "-infinity":
+        return OffsetDateTime.MIN;
+      default:
+        return OffsetDateTime.parse(cs, TIMESTAMPTZ_FORMAT);
+    }
   }
 
   private static Buffer textDecodeBYTEA(int index, int len, ByteBuf buff) {

@@ -17,6 +17,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
@@ -35,24 +36,19 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     }
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(ctx, options);
+      client = new MySQLConnectionFactory(ctx.owner(), options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
     ctx.addCloseHook(client);
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
-    Promise<MySQLConnection> promise = ctx.promise();
-    ctx.emit(v -> connect(client, ctx, tracer, null, promise));
-    return promise.future();
-  }
-
-  private static void connect(MySQLConnectionFactory client, ContextInternal ctx, QueryTracer tracer, ClientMetrics metrics, Promise<MySQLConnection> promise) {
-    client.connect()
-      .map(conn -> {
-        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn, tracer, metrics);
-        conn.init(mySQLConnection);
-        return (MySQLConnection) mySQLConnection;
-      }).onComplete(promise);
+    PromiseInternal<Connection> promise = ctx.promise();
+    client.connect(promise);
+    return promise.future().map(conn -> {
+      MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn, tracer, null);
+      conn.init(mySQLConnection);
+      return mySQLConnection;
+    });
   }
 
   private final MySQLConnectionFactory factory;
@@ -74,9 +70,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> ping() {
-    Promise<Void> promise = promise();
-    schedule(new PingCommand(), promise);
-    return promise.future();
+    return schedule(context, new PingCommand());
   }
 
   @Override
@@ -90,9 +84,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> specifySchema(String schemaName) {
-    Promise<Void> promise = promise();
-    schedule(new InitDbCommand(schemaName), promise);
-    return promise.future();
+    return schedule(context, new InitDbCommand(schemaName));
   }
 
   @Override
@@ -106,9 +98,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<String> getInternalStatistics() {
-    Promise<String> promise = promise();
-    schedule(new StatisticsCommand(), promise);
-    return promise.future();
+    return schedule(context, new StatisticsCommand());
   }
 
   @Override
@@ -122,9 +112,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> setOption(MySQLSetOption option) {
-    Promise<Void> promise = promise();
-    schedule(new SetOptionCommand(option), promise);
-    return promise.future();
+    return schedule(context, new SetOptionCommand(option));
   }
 
   @Override
@@ -138,9 +126,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> resetConnection() {
-    Promise<Void> promise = promise();
-    schedule(new ResetConnectionCommand(), promise);
-    return promise.future();
+    return schedule(context, new ResetConnectionCommand());
   }
 
   @Override
@@ -154,9 +140,7 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
 
   @Override
   public Future<Void> debug() {
-    Promise<Void> promise = promise();
-    schedule(new DebugCommand(), promise);
-    return promise.future();
+    return schedule(context, new DebugCommand());
   }
 
   @Override
@@ -191,8 +175,6 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
       }
     }
     ChangeUserCommand cmd = new ChangeUserCommand(options.getUser(), options.getPassword(), options.getDatabase(), collation, serverRsaPublicKey, options.getProperties());
-    Promise<Void> promise = promise();
-    schedule(cmd, promise);
-    return promise.future();
+    return schedule(context, cmd);
   }
 }

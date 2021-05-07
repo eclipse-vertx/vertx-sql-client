@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -17,13 +17,10 @@ import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -38,9 +35,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   public void testEncodeNullTinyInt(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_tinyint", SHORT_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_tinyint")
-        .returns(Tuple::getValue, Row::getValue, SHORT_NULL_VALUE)
-        .returns(Tuple::getShort, Row::getShort, SHORT_NULL_VALUE)
-        .returns(Short.class, SHORT_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -54,9 +49,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   public void testEncodeNullSmallInt(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_smallint", SHORT_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_smallint")
-        .returns(Tuple::getValue, Row::getValue, SHORT_NULL_VALUE)
-        .returns(Tuple::getShort, Row::getShort, SHORT_NULL_VALUE)
-        .returns(Short.class, SHORT_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -70,9 +63,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   public void testEncodeNullInt(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_int", INT_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_int")
-        .returns(Tuple::getValue, Row::getValue, INT_NULL_VALUE)
-        .returns(Tuple::getInteger, Row::getInteger, INT_NULL_VALUE)
-        .returns(Integer.class, INT_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -86,9 +77,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   public void testEncodeNullBigInt(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_bigint", LONG_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_bigint")
-        .returns(Tuple::getValue, Row::getValue, LONG_NULL_VALUE)
-        .returns(Tuple::getLong, Row::getLong, LONG_NULL_VALUE)
-        .returns(Long.class, LONG_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -102,9 +91,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   public void testEncodeNullFloat4(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_float_4", FLOAT_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_float_4")
-        .returns(Tuple::getValue, Row::getValue, FLOAT_NULL_VALUE)
-        .returns(Tuple::getFloat, Row::getFloat, FLOAT_NULL_VALUE)
-        .returns(Float.class, FLOAT_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -118,31 +105,26 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   public void testEncodeNullFloat8(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_float_8", DOUBLE_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_float_8")
-        .returns(Tuple::getValue, Row::getValue, DOUBLE_NULL_VALUE)
-        .returns(Tuple::getDouble, Row::getDouble, DOUBLE_NULL_VALUE)
-        .returns(Double.class, DOUBLE_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
 
   @Test
-  @Ignore //FIXME
   public void testEncodeNumeric(TestContext ctx) {
-    testEncodeNumber(ctx, "test_numeric", Numeric.create(123456789.13));
+    testEncodeNumber(ctx, "test_numeric", Numeric.create(-123.13));
   }
 
   @Test
   public void testEncodeNullNumeric(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_numeric", NUMERIC_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_numeric")
-        .returns(Tuple::getValue, Row::getValue, NUMERIC_NULL_VALUE)
-        .returns(Numeric.class, NUMERIC_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
 
   @Test
-  @Ignore //FIXME
   public void testEncodeDecimal(TestContext ctx) {
     testEncodeNumber(ctx, "test_decimal", Numeric.create(123456789));
   }
@@ -151,8 +133,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   public void testEncodeNullDecimal(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_decimal", NUMERIC_NULL_VALUE, row -> {
       ColumnChecker.checkColumn(0, "test_decimal")
-        .returns(Tuple::getValue, Row::getValue, NUMERIC_NULL_VALUE)
-        .returns(Numeric.class, NUMERIC_NULL_VALUE)
+        .returnsNull()
         .forRow(row);
     });
   }
@@ -169,11 +150,16 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   private void testEncodeBitValue(TestContext ctx, Boolean value) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_boolean", value, row -> {
-      ColumnChecker.checkColumn(0, "test_boolean")
-        .returns(Tuple::getValue, Row::getValue, value)
-        .returns(Tuple::getBoolean, Row::getBoolean, value)
-        .returns(Boolean.class, value)
-        .forRow(row);
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_boolean");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker
+          .returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getBoolean, Row::getBoolean, value)
+          .returns(Boolean.class, value);
+      }
+      checker.forRow(row);
     });
   }
 
@@ -189,11 +175,16 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   private void testEncodeCharValue(TestContext ctx, String value) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_char", value, row -> {
-      ColumnChecker.checkColumn(0, "test_char")
-        .returns(Tuple::getValue, Row::getValue, value)
-        .returns(Tuple::getString, Row::getString, value)
-        .returns(String.class, value)
-        .forRow(row);
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_char");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker
+          .returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getString, Row::getString, value)
+          .returns(String.class, value);
+      }
+      checker.forRow(row);
     });
   }
 
@@ -209,11 +200,16 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   private void testEncodeVarCharValue(TestContext ctx, String value) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_varchar", value, row -> {
-      ColumnChecker.checkColumn(0, "test_varchar")
-        .returns(Tuple::getValue, Row::getValue, value)
-        .returns(Tuple::getString, Row::getString, value)
-        .returns(String.class, value)
-        .forRow(row);
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_varchar");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker
+          .returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getString, Row::getString, value)
+          .returns(String.class, value);
+      }
+      checker.forRow(row);
     });
   }
 
@@ -229,11 +225,16 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   private void testEncodeDateValue(TestContext ctx, LocalDate value) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_date", value, row -> {
-      ColumnChecker.checkColumn(0, "test_date")
-        .returns(Tuple::getValue, Row::getValue, value)
-        .returns(Tuple::getLocalDate, Row::getLocalDate, value)
-        .returns(LocalDate.class, value)
-        .forRow(row);
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_date");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker
+          .returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getLocalDate, Row::getLocalDate, value)
+          .returns(LocalDate.class, value);
+      }
+      checker.forRow(row);
     });
   }
 
@@ -249,11 +250,69 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   private void testEncodeTimeValue(TestContext ctx, LocalTime value) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_time", value, row -> {
-      ColumnChecker.checkColumn(0, "test_time")
-        .returns(Tuple::getValue, Row::getValue, value)
-        .returns(Tuple::getLocalTime, Row::getLocalTime, value)
-        .returns(LocalTime.class, value)
-        .forRow(row);
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_time");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker
+          .returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getLocalTime, Row::getLocalTime, value)
+          .returns(LocalTime.class, value);
+      }
+      checker.forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeDateTime(TestContext ctx) {
+    testEncodeDateTimeValue(ctx, LocalDateTime.of(1999, 12, 31, 23, 10, 45));
+  }
+
+  @Test
+  public void testEncodeNullDateTime(TestContext ctx) {
+    testEncodeDateTimeValue(ctx, LOCALDATETIME_NULL_VALUE);
+  }
+
+  private void testEncodeDateTimeValue(TestContext ctx, LocalDateTime value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_datetime2", value, row -> {
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_datetime2");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker.returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, value)
+          .returns(Tuple::getLocalDate, Row::getLocalDate, value.toLocalDate())
+          .returns(Tuple::getLocalTime, Row::getLocalTime, value.toLocalTime())
+          .returns(LocalDateTime.class, value)
+          .forRow(row);
+      }
+    });
+  }
+
+  @Test
+  public void testEncodeOffsetDateTime(TestContext ctx) {
+    testEncodeDateTimeValue(ctx, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)));
+  }
+
+  @Test
+  public void testEncodeNullOffsetDateTime(TestContext ctx) {
+    testEncodeDateTimeValue(ctx, OFFSETDATETIME_NULL_VALUE);
+  }
+
+  private void testEncodeDateTimeValue(TestContext ctx, OffsetDateTime value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_datetimeoffset", value, row -> {
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_datetimeoffset");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker.returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, value)
+          .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, value.toLocalDateTime())
+          .returns(Tuple::getLocalDate, Row::getLocalDate, value.toLocalDate())
+          .returns(Tuple::getLocalTime, Row::getLocalTime, value.toLocalTime())
+          .returns(OffsetDateTime.class, value)
+          .forRow(row);
+      }
     });
   }
 

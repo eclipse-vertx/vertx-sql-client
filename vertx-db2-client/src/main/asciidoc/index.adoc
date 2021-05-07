@@ -78,15 +78,15 @@ If you are running with Vert.x you can pass it your Vertx instance:
 {@link examples.DB2ClientExamples#connecting02}
 ----
 
-You need to release the pool when you don't need it anymore:
+You need to release the client when you don't need it anymore:
 
 [source,$lang]
 ----
 {@link examples.DB2ClientExamples#connecting03}
 ----
 
-When you need to execute several operations on the same connection, you need to use a client
-{@link io.vertx.db2client.DB2Connection connection}.
+When you need to execute several operations on the same connection, you need to acquire a
+{@link io.vertx.db2client.DB2Connection connection} from a pool
 
 You can easily get one from the pool:
 
@@ -96,6 +96,18 @@ You can easily get one from the pool:
 ----
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
+
+== Pool versus pooled client
+
+The {@link io.vertx.db2client.DB2Pool} allows you to create a pool or a pooled client
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#poolVersusPooledClient}
+----
+
+- pool operations are not pipelined, only connection client are pipelined
+- pooled client operations are pipelined
 
 == Configuration
 
@@ -137,6 +149,15 @@ Currently the client supports the following parameter key words in connection ur
 
 Note: configuring properties in connection URI will override the default properties.
 
+== Connect retries
+
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.DB2ClientExamples#reconnectAttempts}
+----
+
 include::queries.adoc[]
 
 You can fetch generated keys by wrapping your query in `SELECT <COLUMNS> FROM FINAL TABLE ( <SQL> )`, for example:
@@ -151,6 +172,10 @@ include::connections.adoc[]
 include::transactions.adoc[]
 
 include::cursor.adoc[]
+
+== Tracing queries
+
+include::tracing.adoc[]
 
 == DB2 type mapping
 

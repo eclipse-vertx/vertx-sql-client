@@ -40,9 +40,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
         Row row = result.iterator().next();
         String expected = null;
         ColumnChecker.checkColumn(0, "TsQuery")
-          .returns(Tuple::getString, Row::getString, expected)
-          .returns(Tuple::getValue, Row::getValue, expected)
-          .returns(String.class, expected)
+          .returnsNull()
           .forRow(row);
           async.complete();
       }));
@@ -57,10 +55,10 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         System.out.println(row.getValue(0));
-        System.out.println("Array: " + Stream.of(row.getStringArray(0)).collect(Collectors.joining(", ")));
+        System.out.println("Array: " + Stream.of(row.getArrayOfStrings(0)).collect(Collectors.joining(", ")));
         String[] expected = new String[]{"'fat' & 'rat'"};
         ColumnChecker.checkColumn(0, "TsQuery")
-          .returns(Tuple::getStringArray, Row::getStringArray, expected)
+          .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, expected)
           .returns(Tuple::getValue, Row::getValue, expected)
           .returns(String.class, expected)
           .forRow(row);
@@ -94,11 +92,8 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
       conn.query("SELECT null::tsvector as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
-        String expected = null;
         ColumnChecker.checkColumn(0, "TsVector")
-          .returns(Tuple::getString, Row::getString, expected)
-          .returns(Tuple::getValue, Row::getValue, expected)
-          .returns(String.class, expected)
+          .returnsNull()
           .forRow(row);
           async.complete();
       }));
@@ -132,7 +127,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
         Row row = result.iterator().next();
         String[] expected = new String[]{"'a' 'and' 'ate' 'cat' 'fat' 'mat' 'on' 'rat' 'sat'"};
         ColumnChecker.checkColumn(0, "TsVector")
-          .returns(Tuple::getStringArray, Row::getStringArray, expected)
+          .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, expected)
           .returns(Tuple::getValue, Row::getValue, expected)
           .returns(String.class, expected)
           .forRow(row);

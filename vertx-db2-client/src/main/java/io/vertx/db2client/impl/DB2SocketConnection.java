@@ -23,6 +23,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
@@ -48,17 +49,18 @@ public class DB2SocketConnection extends SocketConnectionBase {
       int preparedStatementCacheSize,
       Predicate<String> preparedStatementCacheSqlFilter,
       int pipeliningLimit,
-      ContextInternal context) {
+      EventLoopContext context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
+  // TODO RETURN FUTURE ???
   void sendStartupMessage(String username,
       String password,
       String database,
       Map<String, String> properties,
       Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, properties);
-    schedule(cmd, completionHandler);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   @Override

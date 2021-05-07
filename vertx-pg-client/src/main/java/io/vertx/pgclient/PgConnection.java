@@ -146,4 +146,15 @@ public interface PgConnection extends SqlConnection {
   @Override
   PgConnection closeHandler(Handler<Void> handler);
 
+  /**
+   * Cast a {@link SqlConnection} to {@link PgConnection}.
+   *
+   * This is mostly useful for Vert.x generated APIs like RxJava/Mutiny.
+   *
+   * @param sqlConnection the connection to cast
+   * @return a {@link PgConnection instance}
+   */
+  static PgConnection cast(SqlConnection sqlConnection) {
+    return (PgConnection) sqlConnection;
+  }
 }

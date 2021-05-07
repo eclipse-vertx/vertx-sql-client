@@ -1,6 +1,6 @@
 = The Reactive SQL Client
 
-image:https://travis-ci.org/eclipse-vertx/vertx-sql-client.svg?branch=master["Build Status",link="https://travis-ci.org/eclipse-vertx/vertx-sql-client"]
+image:https://github.com/eclipse-vertx/vertx-sql-client/workflows/CI/badge.svg?branch=master["Build Status", link="https://github.com/eclipse-vertx/vertx-sql-client/actions?query=workflow%3ACI"]
 
 * Simple API focusing on scalability and low overhead.
 * Reactive and non blocking which able to handle many database connections with a single thread.
@@ -20,7 +20,7 @@ it will only handle bug fixes.
 
 == Snapshots
 
-Snapshots are deployed in Sonatype OSS repository: https://oss.sonatype.org/content/repositories/snapshots/io/vertx/vertx-sql-client/
+Snapshots are deployed in Sonatype OSS repository: https://s01.oss.sonatype.org/content/repositories/snapshots/io/vertx/vertx-sql-client/
 
 == License
 

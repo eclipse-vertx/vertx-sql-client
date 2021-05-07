@@ -19,15 +19,25 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.Closeable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 
 public interface ConnectionFactory extends Closeable {
+
+  static EventLoopContext asEventLoopContext(ContextInternal ctx) {
+    if (ctx instanceof EventLoopContext) {
+      return (EventLoopContext) ctx;
+    } else {
+      return ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.workerPool(), ctx.classLoader());
+    }
+  }
 
   /**
    * Connect to the database and returns a connection.
    *
    * @return a connection future
    */
-  Future<Connection> connect();
+  void connect(Promise<Connection> promise);
 
   default void close(Promise<Void> promise) {
     promise.complete();

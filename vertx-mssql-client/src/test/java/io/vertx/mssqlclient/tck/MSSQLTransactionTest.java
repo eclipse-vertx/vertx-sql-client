@@ -1,24 +1,16 @@
 /*
- * Copyright (C) 2020 IBM Corporation
+ * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.mssqlclient.tck;
 
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.runner.RunWith;
-
+import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
@@ -26,8 +18,11 @@ import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.TransactionTestBase;
+import org.junit.AssumptionViolatedException;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-@Ignore // TODO: Implement transaction support
 @RunWith(VertxUnitRunner.class)
 public class MSSQLTransactionTest extends TransactionTestBase {
 
@@ -56,4 +51,8 @@ public class MSSQLTransactionTest extends TransactionTestBase {
     return sb.toString();
   }
 
+  @Test
+  public void testDelayedCommit(TestContext ctx) {
+    throw new AssumptionViolatedException("MSSQL holds write locks on inserted row with isolation level = 2");
+  }
 }

@@ -72,15 +72,15 @@ If you are running with Vert.x you can pass it your Vertx instance:
 {@link examples.PgClientExamples#connecting02}
 ----
 
-You need to release the pool when you don't need it anymore:
+You need to release the client when you don't need it anymore:
 
 [source,$lang]
 ----
 {@link examples.PgClientExamples#connecting03}
 ----
 
-When you need to execute several operations on the same connection, you need to use a client
-{@link io.vertx.pgclient.PgConnection connection}.
+When you need to execute several operations on the same connection, you need to acquire a
+{@link io.vertx.pgclient.PgConnection connection} from a pool.
 
 You can easily get one from the pool:
 
@@ -91,16 +91,39 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Pool versus pooled client
+
+The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled client
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#poolVersusPooledClient}
+----
+
+- pool operations are not pipelined, only connection client are pipelined
+- pooled client operations are pipelined
+
+== Unix domain sockets
+
 Sometimes you want to improve performance via Unix domain socket connection, we achieve this with Vert.x Native transports.
 
 Make sure you have added the required `netty-transport-native` dependency in your classpath and enabled the Unix domain socket option.
 
 [source,$lang]
 ----
-{@link examples.PgClientExamples#connecting06}
+{@link examples.PgClientExamples#unixDomainSockets}
 ----
 
-More information can be found in the [Vert.x documentation](https://vertx.io/docs/vertx-core/java/#_native_transports).
+More information can be found in the https://vertx.io/docs/vertx-core/java/#_native_transports[Vert.x documentation].
+
+== Connect retries
+
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#reconnectAttempts}
+----
 
 == Configuration
 
@@ -148,7 +171,7 @@ Currently the client supports the following parameter key words in connection ur
 * sslmode
 * properties including(application_name, fallback_application_name, search_path)
 
-Note: configuring properties in connection URI will override the default properties.
+NOTE: configuring properties in connection URI will override the default properties.
 
 === environment variables
 
@@ -204,7 +227,7 @@ dependencies {
 }
 ----
 
-Note that SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
+NOTE: SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
 
 
 include::queries.adoc[]
@@ -216,14 +239,26 @@ You can fetch generated keys with a 'RETURNING' clause in your query:
 {@link examples.PgClientExamples#returning(io.vertx.sqlclient.SqlClient)}
 ----
 
+A batch query with a `RETURNING` clause creates a {@link io.vertx.sqlclient.RowSet}
+containing a single for each element of the batch:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#batchReturning(io.vertx.sqlclient.SqlClient)}
+----
+
 include::connections.adoc[]
 
 include::transactions.adoc[]
 
 include::cursor.adoc[]
 
-Note: PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
+NOTE: PostreSQL destroys cursors at the end of a transaction, so the cursor API shall be used
 within a transaction, otherwise you will likely get the `34000` PostgreSQL error.
+
+== Tracing queries
+
+include::tracing.adoc[]
 
 == PostgreSQL type mapping
 
@@ -312,6 +347,21 @@ Arrays are available on {@link io.vertx.sqlclient.Tuple} and {@link io.vertx.sql
 [source,$lang]
 ----
 {@link examples.PgClientExamples#arrayExample}
+----
+
+== Handling Date/Time infinity
+
+PostgreSQL defines special values to represent infinity.
+
+The max/min constants of the corresponding type represents https://www.postgresql.org/docs/9.0/datatype-datetime.html[special value].
+
+- `OffsetDateTime.MAX`/OffsetDateTime.MIN`
+- `LocalDateTime.MAX`/LocalDateTime.MIN`
+- `LocalDate.MAX`/LocalDate.MIN`
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#infinitySpecialValue}
 ----
 
 == Handling custom types

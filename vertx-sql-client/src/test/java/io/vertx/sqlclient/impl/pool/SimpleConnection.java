@@ -17,7 +17,9 @@
 
 package io.vertx.sqlclient.impl.pool;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.impl.Connection;
@@ -36,7 +38,7 @@ class SimpleConnection implements Connection {
   public boolean isSsl() {
     return false;
   }
-  
+
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
     return new DatabaseMetadata() {
@@ -44,17 +46,17 @@ class SimpleConnection implements Connection {
       public String productName() {
         return null;
       }
-      
+
       @Override
       public String fullVersion() {
         return null;
       }
-      
+
       @Override
       public int minorVersion() {
         return 0;
       }
-      
+
       @Override
       public int majorVersion() {
         return 0;
@@ -73,7 +75,7 @@ class SimpleConnection implements Connection {
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
+  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
     throw new UnsupportedOperationException();
   }
 

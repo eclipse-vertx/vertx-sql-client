@@ -21,17 +21,17 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.Utils;
 
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
 /**
- * An object that represents a single row of the {@link RowSet execution result rowset}.
- * Users can retrieve values with the {@code getByIndex} accessor methods or {@code getByColumnName} accessor methods,
- * it's usually more efficient to use the former one because a column index lookup by could be saved.
+ * A single row of the {@link RowSet execution result rowset}.
  */
 @VertxGen
 public interface Row extends Tuple {
@@ -45,452 +45,680 @@ public interface Row extends Tuple {
   String getColumnName(int pos);
 
   /**
-   * Get a column position for the given column {@code name}.
+   * Get a column position for the given @code column}.
    *
-   * @param name the column name
+   * @param column the column name
    * @return the column name or {@code -1} if not found
    */
-  int getColumnIndex(String name);
+  int getColumnIndex(String column);
 
   /**
-   * Get an object value at {@code pos}.
+   * Get a value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default Object getValue(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getValue(pos);
+  default Object getValue(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getValue(pos);
   }
 
   /**
-   * Get a boolean value at {@code pos}.
+   * Get a boolean value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default Boolean getBoolean(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBoolean(pos);
+  default Boolean getBoolean(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getBoolean(pos);
   }
 
   /**
-   * Get a short value at {@code pos}.
+   * Get a short value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default Short getShort(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getShort(pos);
+  default Short getShort(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getShort(pos);
   }
 
   /**
-   * Get an integer value at {@code pos}.
+   * Get an integer value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default Integer getInteger(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getInteger(pos);
+  default Integer getInteger(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getInteger(pos);
   }
 
   /**
-   * Get a long value at {@code pos}.
+   * Get a long value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default Long getLong(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLong(pos);
+  default Long getLong(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getLong(pos);
   }
 
   /**
-   * Get a float value at {@code pos}.
+   * Get a float value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default Float getFloat(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getFloat(pos);
+  default Float getFloat(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getFloat(pos);
   }
 
   /**
-   * Get a double value at {@code pos}.
+   * Get a double value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default Double getDouble(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getDouble(pos);
+  default Double getDouble(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getDouble(pos);
   }
 
   /**
-   * Get a string value at {@code pos}.
+   * Get {@link Numeric} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  default String getString(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getString(pos);
-  }
-
-  /**
-   * Get a {@link JsonObject} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  default JsonObject getJsonObject(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getJsonObject(pos);
-  }
-
-  /**
-   * Get a {@link JsonArray} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  default JsonArray getJsonArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getJsonArray(pos);
-  }
-
-  /**
-   * Get a temporal value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Temporal getTemporal(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getTemporal(pos);
+  default Numeric getNumeric(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getNumeric(pos);
   }
 
   /**
-   * Get {@link java.time.LocalDate} value at {@code pos}.
+   * Get a string value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  default String getString(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getString(pos);
+  }
+
+  /**
+   * Get a JSON element for the given {@code column}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  default Object getJson(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getJson(pos);
+  }
+
+  /**
+   * Get a {@link JsonObject} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  default JsonObject getJsonObject(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getJsonObject(pos);
+  }
+
+  /**
+   * Get a {@link JsonArray} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  default JsonArray getJsonArray(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getJsonArray(pos);
+  }
+
+  /**
+   * Get a temporal value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDate getLocalDate(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalDate(pos);
+  default Temporal getTemporal(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getTemporal(pos);
   }
 
   /**
-   * Get {@link java.time.LocalTime} value at {@code pos}.
+   * Get {@link java.time.LocalDate} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalTime getLocalTime(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalTime(pos);
+  default LocalDate getLocalDate(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getLocalDate(pos);
   }
 
   /**
-   * Get {@link java.time.LocalDateTime} value at {@code pos}.
+   * Get {@link java.time.LocalTime} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDateTime getLocalDateTime(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalDateTime(pos);
+  default LocalTime getLocalTime(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getLocalTime(pos);
   }
 
   /**
-   * Get {@link java.time.OffsetTime} value at {@code pos}.
+   * Get {@link java.time.LocalDateTime} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetTime getOffsetTime(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getOffsetTime(pos);
+  default LocalDateTime getLocalDateTime(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getLocalDateTime(pos);
   }
 
   /**
-   * Get {@link java.time.OffsetDateTime} value at {@code pos}.
+   * Get {@link java.time.OffsetTime} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetDateTime getOffsetDateTime(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getOffsetDateTime(pos);
+  default OffsetTime getOffsetTime(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getOffsetTime(pos);
   }
 
   /**
-   * Get a buffer value at {@code pos}.
+   * Get {@link java.time.OffsetDateTime} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
-   */
-  default Buffer getBuffer(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBuffer(pos);
-  }
-
-  /**
-   * Get {@link java.util.UUID} value at {@code pos}.
-   *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default UUID getUUID(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getUUID(pos);
+  default OffsetDateTime getOffsetDateTime(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getOffsetDateTime(pos);
   }
 
   /**
-   * Get {@link BigDecimal} value at {@code pos}.
+   * Get a buffer value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  default Buffer getBuffer(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getBuffer(pos);
+  }
+
+  /**
+   * Get {@link java.util.UUID} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default BigDecimal getBigDecimal(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBigDecimal(pos);
+  default UUID getUUID(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getUUID(pos);
   }
 
   /**
-   * Get an array of {@link Boolean} value at {@code pos}.
+   * Get {@link BigDecimal} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Boolean[] getBooleanArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBooleanArray(pos);
+  default BigDecimal getBigDecimal(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getBigDecimal(pos);
   }
 
   /**
-   * Get an array of {@link Short} value at {@code pos}.
+   * Get an array of {@link Boolean} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Short[] getShortArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getShortArray(pos);
+  default Boolean[] getArrayOfBooleans(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfBooleans(pos);
   }
 
   /**
-   * Get an array of {@link Integer} value at {@code pos}.
+   * Get an array of {@link Short} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Integer[] getIntegerArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getIntegerArray(pos);
+  default Short[] getArrayOfShorts(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfShorts(pos);
   }
 
   /**
-   * Get an array of {@link Long} value at {@code pos}.
+   * Get an array of {@link Integer} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Long[] getLongArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLongArray(pos);
+  default Integer[] getArrayOfIntegers(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfIntegers(pos);
   }
 
   /**
-   * Get an array of {@link Float} value at {@code pos}.
+   * Get an array of {@link Long} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Float[] getFloatArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getFloatArray(pos);
+  default Long[] getArrayOfLongs(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfLongs(pos);
   }
 
   /**
-   * Get an array of {@link Double} value at {@code pos}.
+   * Get an array of {@link Float} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Double[] getDoubleArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getDoubleArray(pos);
+  default Float[] getArrayOfFloats(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfFloats(pos);
   }
 
   /**
-   * Get an array of {@link String} value at {@code pos}.
+   * Get an array of {@link Double} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default String[] getStringArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getStringArray(pos);
+  default Double[] getArrayOfDoubles(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfDoubles(pos);
   }
 
   /**
-   * Get an array of {@link JsonObject} value at {@code pos}.
+   * Get an array of {@link Numeric} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonObject[] getJsonObjectArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getJsonObjectArray(pos);
+  default Numeric[] getArrayOfNumerics(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfNumerics(pos);
   }
 
   /**
-   * Get an array of {@link JsonArray} value at {@code pos}.
+   * Get an array of {@link String} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonArray[] getJsonArrayArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getJsonArrayArray(pos);
+  default String[] getArrayOfStrings(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfStrings(pos);
   }
 
   /**
-   * Get an array of {@link Temporal} value at {@code pos}.
+   * Get an array of {@link JsonObject} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Temporal[] getTemporalArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getTemporalArray(pos);
+  default JsonObject[] getArrayOfJsonObjects(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfJsonObjects(pos);
   }
 
   /**
-   * Get an array of {@link LocalDate} value at {@code pos}.
+   * Get an array of {@link JsonArray} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDate[] getLocalDateArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalDateArray(pos);
+  default JsonArray[] getArrayOfJsonArrays(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfJsonArrays(pos);
   }
 
   /**
-   * Get an array of {@link LocalTime} value at {@code pos}.
+   * Get an array of {@link Temporal} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalTime[] getLocalTimeArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalTimeArray(pos);
+  default Temporal[] getArrayOfTemporals(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfTemporals(pos);
   }
 
   /**
-   * Get an array of {@link LocalDateTime} value at {@code pos}.
+   * Get an array of {@link LocalDate} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDateTime[] getLocalDateTimeArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getLocalDateTimeArray(pos);
+  default LocalDate[] getArrayOfLocalDates(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfLocalDates(pos);
   }
 
   /**
-   * Get an array of {@link OffsetTime} value at {@code pos}.
+   * Get an array of {@link LocalTime} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetTime[] getOffsetTimeArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getOffsetTimeArray(pos);
+  default LocalTime[] getArrayOfLocalTimes(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfLocalTimes(pos);
   }
 
   /**
-   * Get an array of {@link OffsetDateTime} value at {@code pos}.
+   * Get an array of {@link LocalDateTime} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetDateTime[] getOffsetDateTimeArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getOffsetDateTimeArray(pos);
+  default LocalDateTime[] getArrayOfLocalDateTimes(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfLocalDateTimes(pos);
   }
 
   /**
-   * Get an array of {@link Buffer} value at {@code pos}.
+   * Get an array of {@link OffsetTime} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default OffsetTime[] getArrayOfOffsetTimes(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfOffsetTimes(pos);
+  }
+
+  /**
+   * Get an array of {@link OffsetDateTime} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default OffsetDateTime[] getArrayOfOffsetDateTimes(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfOffsetDateTimes(pos);
+  }
+
+  /**
+   * Get an array of {@link Buffer} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore
-  default Buffer[] getBufferArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBufferArray(pos);
+  default Buffer[] getArrayOfBuffers(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfBuffers(pos);
   }
 
   /**
-   * Get an array of {@link UUID} value at {@code pos}.
+   * Get an array of {@link UUID} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default UUID[] getUUIDArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getUUIDArray(pos);
+  default UUID[] getArrayOfUUIDs(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfUUIDs(pos);
   }
 
   /**
-   * Get an array of {@link BigDecimal} value at {@code pos}.
+   * Get an array of {@link BigDecimal} value for the given {@code column}.
    *
-   * @param name the column
-   * @return the value or {@code null}
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default BigDecimal[] getBigDecimalArray(String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : getBigDecimalArray(pos);
+  default BigDecimal[] getArrayOfBigDecimals(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfBigDecimals(pos);
   }
 
   /**
-   * Like {@link #get(Class, int)} but specifying the column {@code name} instead of the position.
+   * Get an array of JSON elements for the given {@code column}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
    */
-  default <T> T get(Class<T> type, String name) {
-    int pos = getColumnIndex(name);
-    return pos == -1 ? null : get(type, pos);
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Object[] getArrayOfJsons(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfJsons(pos);
+  }
+
+  /**
+   * Like {@link #get(Class, int)} but specifying the {@code column} instead of the position.
+   */
+  default <T> T get(Class<T> type, String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return get(type, pos);
   }
 
   /**

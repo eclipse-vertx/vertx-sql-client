@@ -11,56 +11,47 @@
 
 package io.vertx.mysqlclient.impl;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
+import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
 
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.Map;
-import java.util.function.Predicate;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
-public class MySQLConnectionFactory implements ConnectionFactory {
+public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
 
-  private final NetClient netClient;
-  private final ContextInternal context;
-  private final SocketAddress socketAddress;
-  private final String username;
-  private final String password;
-  private final String database;
-  private final Map<String, String> connectionAttributes;
-  private final MySQLCollation collation;
-  private final Charset charsetEncoding;
-  private final boolean useAffectedRows;
-  private final SslMode sslMode;
-  private final Buffer serverRsaPublicKey;
-  private final boolean cachePreparedStatements;
-  private final int preparedStatementCacheSize;
-  private final Predicate<String> preparedStatementCacheSqlFilter;
-  private final int initialCapabilitiesFlags;
-  private final CloseFuture clientCloseFuture = new CloseFuture();
+  private MySQLCollation collation;
+  private Charset charsetEncoding;
+  private boolean useAffectedRows;
+  private SslMode sslMode;
+  private Buffer serverRsaPublicKey;
+  private int initialCapabilitiesFlags;
+  private MySQLAuthenticationPlugin authenticationPlugin;
 
-  public MySQLConnectionFactory(ContextInternal context, MySQLConnectOptions options) {
-    NetClientOptions netClientOptions = new NetClientOptions(options);
+  public MySQLConnectionFactory(VertxInternal vertx, MySQLConnectOptions options) {
+    super(vertx, options);
+  }
 
-    this.context = context;
-    this.socketAddress = options.getSocketAddress();
-    this.username = options.getUser();
-    this.password = options.getPassword();
-    this.database = options.getDatabase();
-    this.connectionAttributes = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
+  @Override
+  protected void initializeConfiguration(SqlConnectOptions connectOptions) {
+    if (!(connectOptions instanceof MySQLConnectOptions)) {
+      throw new IllegalArgumentException("mismatched connect options type");
+    }
+    MySQLConnectOptions options = (MySQLConnectOptions) connectOptions;
     MySQLCollation collation;
     if (options.getCollation() != null) {
       // override the collation if configured
@@ -83,6 +74,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     this.collation = collation;
     this.useAffectedRows = options.isUseAffectedRows();
     this.sslMode = options.isUsingDomainSocket() ? SslMode.DISABLED : options.getSslMode();
+    this.authenticationPlugin = options.getAuthenticationPlugin();
 
     // server RSA public key
     Buffer serverRsaPublicKey = null;
@@ -90,7 +82,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
       serverRsaPublicKey = options.getServerRsaPublicKeyValue();
     } else {
       if (options.getServerRsaPublicKeyPath() != null) {
-        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
+        serverRsaPublicKey = vertx.fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;
@@ -99,51 +91,35 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     // check the SSLMode here
     switch (sslMode) {
       case VERIFY_IDENTITY:
-        String hostnameVerificationAlgorithm = netClientOptions.getHostnameVerificationAlgorithm();
+        String hostnameVerificationAlgorithm = options.getHostnameVerificationAlgorithm();
         if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
           throw new IllegalArgumentException("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.");
         }
       case VERIFY_CA:
-        TrustOptions trustOptions = netClientOptions.getTrustOptions();
+        TrustOptions trustOptions = options.getTrustOptions();
         if (trustOptions == null) {
           throw new IllegalArgumentException("Trust options must be specified under " + sslMode.name() + " ssl-mode.");
         }
         break;
     }
-
-    this.cachePreparedStatements = options.getCachePreparedStatements();
-    this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
-    this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
-
-    this.netClient = context.owner().createNetClient(netClientOptions, clientCloseFuture);
-  }
-
-  // Called by hook
-  private void close(Handler<AsyncResult<Void>> completionHandler) {
-    netClient.close();
-    completionHandler.handle(Future.succeededFuture());
   }
 
   @Override
-  public void close(Promise<Void> promise) {
-    clientCloseFuture.close(promise);
+  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
+    netClientOptions.setSsl(false);
   }
 
   @Override
-  public Future<Connection> connect() {
-    Promise<Connection> promise = context.promise();
-    context.emit(promise, this::doConnect);
-    return promise.future();
-  }
-
-  private void doConnect(Promise<Connection> promise) {
+  protected void doConnectInternal(Promise<Connection> promise) {
+    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
+    EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
     Future<NetSocket> fut = netClient.connect(socketAddress);
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
         MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, context);
         conn.init();
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, connectionAttributes, sslMode, initialCapabilitiesFlags, charsetEncoding, promise);
+        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise);
       } else {
         promise.fail(ar.cause());
       }
@@ -155,7 +131,7 @@ public class MySQLConnectionFactory implements ConnectionFactory {
     if (database != null && !database.isEmpty()) {
       capabilitiesFlags |= CLIENT_CONNECT_WITH_DB;
     }
-    if (connectionAttributes != null && !connectionAttributes.isEmpty()) {
+    if (properties != null && !properties.isEmpty()) {
       capabilitiesFlags |= CLIENT_CONNECT_ATTRS;
     }
     if (!useAffectedRows) {

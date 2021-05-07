@@ -1,0 +1,22 @@
+The SQL client can trace query execution when Vert.x has tracing enabled.
+
+The client reports the following _client_ spans:
+
+- `Query` operation name
+- tags
+  - `db.user`: the database username
+  - `db.instance`: the database instance
+  - `db.statement`: the SQL query
+  - `db.type`: _sql_
+
+The default tracing policy is {@link io.vertx.core.tracing.TracingPolicy#PROPAGATE}, the client
+will only create a span when involved in an active trace.
+
+You can change the client policy with {@link io.vertx.sqlclient.SqlConnectOptions#setTracingPolicy},
+e.g you can set {@link io.vertx.core.tracing.TracingPolicy#ALWAYS} to always report
+a span:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#tracing01}
+----

@@ -24,6 +24,8 @@ import io.vertx.core.net.PfxOptions;
 import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.SSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
+import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.HashMap;
@@ -36,11 +38,24 @@ import java.util.concurrent.TimeUnit;
  */
 @DataObject(generateConverter = true)
 public class MSSQLConnectOptions extends SqlConnectOptions {
+
+  /**
+   * Provide a {@link MSSQLConnectOptions} configured from a connection URI.
+   *
+   * @param connectionUri the connection URI to configure from
+   * @return a {@link MSSQLConnectOptions} parsed from the connection URI
+   * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
+   */
+  public static MSSQLConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
+    JsonObject parsedConfiguration = MSSQLConnectionUriParser.parse(connectionUri);
+    return new MSSQLConnectOptions(parsedConfiguration);
+  }
+
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 1433;
   public static final String DEFAULT_USER = "sa";
   public static final String DEFAULT_PASSWORD = "";
-  public static final String DEFAULT_SCHEMA = "";
+  public static final String DEFAULT_DATABASE = "";
   public static final String DEFAULT_APP_NAME = "vertx-mssql-client";
   public static final String DEFAULT_CLIENT_INTERFACE_NAME = "Vert.x";
   public static final Map<String, String> DEFAULT_PROPERTIES;
@@ -314,6 +329,11 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     return (MSSQLConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
   }
 
+  @Override
+  public MSSQLConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
+    return (MSSQLConnectOptions) super.setTracingPolicy(tracingPolicy);
+  }
+
   /**
    * Initialize with the default options.
    */
@@ -322,7 +342,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     this.setPort(DEFAULT_PORT);
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
-    this.setDatabase(DEFAULT_SCHEMA);
+    this.setDatabase(DEFAULT_DATABASE);
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
   }
 

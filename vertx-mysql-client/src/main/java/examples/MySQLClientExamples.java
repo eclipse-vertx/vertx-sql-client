@@ -232,6 +232,13 @@ public class MySQLClientExamples {
     MySQLPool client2 = MySQLPool.pool(vertx, connectOptions, poolOptions);
   }
 
+  public void reconnectAttempts(MySQLConnectOptions options) {
+    // The client will try to connect at most 3 times at a 1 second interval
+    options
+      .setReconnectAttempts(2)
+      .setReconnectInterval(1000);
+  }
+
   public void lastInsertId(SqlClient client) {
     client
       .query("INSERT INTO test(val) VALUES ('v1')")
@@ -482,6 +489,16 @@ public class MySQLClientExamples {
         System.out.println("Failure: " + ar1.cause().getMessage());
       }
     });
+  }
+
+  public void defaultAuthPluginExample() {
+    MySQLConnectOptions options = new MySQLConnectOptions()
+      .setPort(3306)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setAuthenticationPlugin(MySQLAuthenticationPlugin.MYSQL_NATIVE_PASSWORD); // set the default authentication plugin
   }
 
   public void rsaPublicKeyExample() {

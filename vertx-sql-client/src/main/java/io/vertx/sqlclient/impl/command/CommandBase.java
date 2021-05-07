@@ -33,6 +33,10 @@ public abstract class CommandBase<R> {
     complete(Future.failedFuture(err));
   }
 
+  public final void fail(String failureMsg) {
+    complete(Future.failedFuture(failureMsg));
+  }
+
   public final void complete(AsyncResult<R> resp) {
     if (handler != null) {
       handler.handle(resp);

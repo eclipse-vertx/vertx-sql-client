@@ -63,6 +63,26 @@ public class ColumnChecker {
     this.name = name;
   }
 
+  public ColumnChecker returnsNull() {
+    tupleMethods
+      .forEach(m -> {
+      blackList.add(m.method());
+      expects.add(row -> {
+        Object v = m.apply(row, index);
+        assertNull(v);
+      });
+    });
+    rowMethods
+      .forEach(m -> {
+        blackList.add(m.method());
+        expects.add(row -> {
+          Object v = m.apply(row, name);
+          assertNull(v);
+        });
+      });
+    return this;
+  }
+
   public <R> ColumnChecker returns(Class<R> type, R expected) {
     return returns(getByIndex(type), getByName(type), expected);
   }
@@ -180,19 +200,20 @@ public class ColumnChecker {
   public void forRow(Row row) {
     for (SerializableBiFunction<Tuple, Integer, ?> m : tupleMethods) {
       if (!blackList.contains(m.method())) {
-        Object v = m.apply(row, index);
         try {
-          assertNull("Was expecting null for " + m.method() + " instead of " + v, v);
-        } catch (Throwable e) {
-          e.printStackTrace();
-          throw e;
+          Object v = m.apply(row, index);
+          fail("Was expecting " + m.method() + " to throw ClassCastException instead of returning " + v);
+        } catch (ClassCastException ignore) {
         }
       }
     }
     for (SerializableBiFunction<Row, String, ?> m : rowMethods) {
       if (!blackList.contains(m.method())) {
-        Object v = m.apply(row, name);
-        assertNull(v);
+        try {
+          Object v = m.apply(row, name);
+          fail("Was expecting " + m.method() + " to throw ClassCastException instead of returning " + v);
+        } catch (ClassCastException ignore) {
+        }
       }
     }
     for (Consumer<? super Row> e : expects) {

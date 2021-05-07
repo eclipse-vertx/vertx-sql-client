@@ -10,51 +10,47 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.templates.RowMapper;
+import io.vertx.sqlclient.templates.TupleMapper;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-public class SqlTemplateImpl<T, R> implements io.vertx.sqlclient.templates.SqlTemplate<T, R> {
+public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTemplate<I, R> {
 
   //
   public static final Collector<Row, Void, Void> NULL_COLLECTOR = Collector.of(() -> null, (v, row) -> {}, (a, b) -> null);
 
   protected final SqlClient client;
   protected final SqlTemplate sqlTemplate;
-  protected final Function<T, Map<String, Object>> paramsMapper;
+  protected final Function<I, Tuple> tupleMapper;
   protected Function<PreparedQuery<RowSet<Row>>, PreparedQuery<R>> queryMapper;
 
   public SqlTemplateImpl(SqlClient client,
                          SqlTemplate sqlTemplate,
                          Function<PreparedQuery<RowSet<Row>>,
                          PreparedQuery<R>> queryMapper,
-                         Function<T, Map<String, Object>> paramsMapper) {
+                         Function<I, Tuple> tupleMapper) {
     this.client = client;
     this.sqlTemplate = sqlTemplate;
     this.queryMapper = queryMapper;
-    this.paramsMapper = paramsMapper;
+    this.tupleMapper = tupleMapper;
   }
 
   @Override
-  public <T1> io.vertx.sqlclient.templates.SqlTemplate<T1, R> mapFrom(Function<T1, Map<String, Object>> mapper) {
-    return new SqlTemplateImpl<>(client, sqlTemplate, queryMapper, mapper);
+  public <T> io.vertx.sqlclient.templates.SqlTemplate<T, R> mapFrom(TupleMapper<T> mapper) {
+    return new SqlTemplateImpl<>(client, sqlTemplate, queryMapper, params -> mapper.map(sqlTemplate, sqlTemplate.numberOfParams(), params));
   }
 
   @Override
-  public <T1> io.vertx.sqlclient.templates.SqlTemplate<T1, R> mapFrom(Class<T1> type) {
-    return mapFrom(params -> JsonObject.mapFrom(params).getMap());
+  public <U> io.vertx.sqlclient.templates.SqlTemplate<I, SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
+    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.collecting(collector), tupleMapper);
   }
 
   @Override
-  public <U> io.vertx.sqlclient.templates.SqlTemplate<T, SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
-    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.collecting(collector), paramsMapper);
-  }
-
-  @Override
-  public <U> io.vertx.sqlclient.templates.SqlTemplate<T, RowSet<U>> mapTo(Class<U> type) {
+  public <U> io.vertx.sqlclient.templates.SqlTemplate<I, RowSet<U>> mapTo(Class<U> type) {
     return mapTo(row -> {
       JsonObject json = new JsonObject();
       for (int i = 0;i < row.size();i++) {
@@ -65,44 +61,40 @@ public class SqlTemplateImpl<T, R> implements io.vertx.sqlclient.templates.SqlTe
   }
 
   @Override
-  public <U> io.vertx.sqlclient.templates.SqlTemplate<T, RowSet<U>> mapTo(Function<Row, U> mapper) {
-    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.mapping(mapper), paramsMapper);
-  }
-
-  private Tuple toTuple(T params) {
-    return sqlTemplate.mapTuple(paramsMapper.apply(params));
+  public <U> io.vertx.sqlclient.templates.SqlTemplate<I, RowSet<U>> mapTo(RowMapper<U> mapper) {
+    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.mapping(mapper::map), tupleMapper);
   }
 
   @Override
-  public void execute(T parameters, Handler<AsyncResult<R>> handler) {
+  public void execute(I parameters, Handler<AsyncResult<R>> handler) {
 
     queryMapper
       .apply(client.preparedQuery(sqlTemplate.getSql()))
-      .execute(toTuple(parameters), handler);
+      .execute(tupleMapper.apply(parameters), handler);
   }
 
   @Override
-  public Future<R> execute(T params) {
+  public Future<R> execute(I params) {
     return queryMapper
       .apply(client.preparedQuery(sqlTemplate.getSql()))
-      .execute(toTuple(params));
+      .execute(tupleMapper.apply(params));
   }
 
   @Override
-  public void executeBatch(List<T> batch, Handler<AsyncResult<R>> handler) {
+  public void executeBatch(List<I> batch, Handler<AsyncResult<R>> handler) {
     queryMapper.apply(client.preparedQuery(sqlTemplate.getSql()))
       .executeBatch(batch
         .stream()
-        .map(this::toTuple)
+        .map(tupleMapper)
         .collect(Collectors.toList()), handler);
   }
 
   @Override
-  public Future<R> executeBatch(List<T> batch) {
+  public Future<R> executeBatch(List<I> batch) {
     return queryMapper.apply(client.preparedQuery(sqlTemplate.getSql()))
       .executeBatch(batch
         .stream()
-        .map(this::toTuple)
+        .map(tupleMapper)
         .collect(Collectors.toList()));
   }
 }

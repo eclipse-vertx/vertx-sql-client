@@ -16,7 +16,9 @@
  */
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -31,6 +33,7 @@ import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class SqlClientExamples {
@@ -205,28 +208,21 @@ public class SqlClientExamples {
     });
   }
 
-  public void usingConnections03(SqlConnection connection) {
-    connection.prepare("INSERT INTO USERS (id, name) VALUES ($1, $2)", ar1 -> {
-      if (ar1.succeeded()) {
-        PreparedStatement prepared = ar1.result();
-
-        // Create a query : bind parameters
-        List<Tuple> batch = new ArrayList();
-
-        // Add commands to the createBatch
-        batch.add(Tuple.of("julien", "Julien Viet"));
-        batch.add(Tuple.of("emad", "Emad Alblueshi"));
-
-        prepared.query().executeBatch(batch, res -> {
-          if (res.succeeded()) {
-
-            // Process rows
-            RowSet<Row> rows = res.result();
-          } else {
-            System.out.println("Batch failed " + res.cause());
-          }
-        });
-      }
+  public void usingConnections03(Pool pool) {
+    Future<Integer> future = pool.withConnection(conn -> conn
+      .query("SELECT id FROM USERS WHERE name = 'Julien'")
+      .execute()
+      .flatMap(rowSet -> {
+        Iterator<Row> rows = rowSet.iterator();
+        if (rows.hasNext()) {
+          Row row = rows.next();
+          return Future.succeededFuture(row.getInteger("id"));
+        } else {
+          return Future.failedFuture("No results");
+        }
+      }));
+    future.onSuccess(id -> {
+      System.out.println("User id: " + id);
     });
   }
 
@@ -380,5 +376,9 @@ public class SqlClientExamples {
         });
       }
     });
+  }
+
+  public void tracing01(SqlConnectOptions options) {
+    options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 }

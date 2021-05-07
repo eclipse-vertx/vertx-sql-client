@@ -179,6 +179,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
     packet.setMediumLE(packetStartIdx, lenOfPayload);
 
-    encoder.chctx.writeAndFlush(packet);
+    encoder.chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 }

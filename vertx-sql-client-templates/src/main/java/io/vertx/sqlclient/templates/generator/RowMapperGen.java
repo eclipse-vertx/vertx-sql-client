@@ -11,6 +11,7 @@ import io.vertx.codegen.type.DataObjectInfo;
 import io.vertx.codegen.type.MapperInfo;
 import io.vertx.codegen.type.PrimitiveTypeInfo;
 import io.vertx.codegen.type.TypeInfo;
+import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.annotations.Column;
 import io.vertx.sqlclient.templates.annotations.RowMapped;
 
@@ -37,6 +38,12 @@ public class RowMapperGen extends MapperGenBase {
   }
 
   @Override
+  protected void renderDeclaration(DataObjectModel model, PrintWriter writer) {
+    writer.print("@io.vertx.codegen.annotations.VertxGen\n");
+    writer.print("public interface " + genSimpleName(model) + " extends " + genFunctionExtends(model) + " {\n");
+  }
+
+  @Override
   protected String genSimpleName(DataObjectModel model) {
     return model.getType().getSimpleName() + "RowMapper";
   }
@@ -54,20 +61,23 @@ public class RowMapperGen extends MapperGenBase {
     genFromRow(visibility, model, writer);
   }
 
-  @Override
-  protected String genFunctionExtends(DataObjectModel model) {
-    return "java.util.function.Function<io.vertx.sqlclient.Row, " + model.getType().getSimpleName() + ">";
+  private String genFunctionExtends(DataObjectModel model) {
+    return RowMapper.class.getName() + "<" + model.getType().getSimpleName() + ">";
   }
 
   private void genFromRow(String visibility, DataObjectModel model, PrintWriter writer) {
     writer.print("\n");
-    writer.print("  " + visibility + " static final java.util.function.Function<io.vertx.sqlclient.Row, " +  model.getType().getSimpleName() + "> INSTANCE = new " + genSimpleName(model) + "();\n");
+    writer.print("  @io.vertx.codegen.annotations.GenIgnore\n");
+    writer.print("  " + genSimpleName(model) + " INSTANCE = new " + genSimpleName(model) + "() { };\n");
     writer.print("\n");
-    writer.print("  " + visibility + " static final java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<" + model.getType().getSimpleName() + ">> COLLECTOR = " + "java.util.stream.Collectors.mapping(INSTANCE, java.util.stream.Collectors.toList());\n");
+    writer.print("  @io.vertx.codegen.annotations.GenIgnore\n");
+    writer.print("  java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<" + model.getType().getSimpleName() + ">> COLLECTOR = " + "java.util.stream.Collectors.mapping(INSTANCE::map, java.util.stream.Collectors.toList());\n");
     writer.print("\n");
-    writer.print("  " + visibility + " " + model.getType().getSimpleName() + " apply(io.vertx.sqlclient.Row row) {\n");
+    writer.print("  @io.vertx.codegen.annotations.GenIgnore\n");
+    writer.print("  default " + model.getType().getSimpleName() + " map(io.vertx.sqlclient.Row row) {\n");
     writer.print("    " + model.getType().getSimpleName() + " obj = new " + model.getType().getSimpleName() + "();\n");
     writer.print("    Object val;\n");
+    writer.print("    int idx;\n");
     genFromSingleValued(model, writer);
     writer.print("    return obj;\n");
     writer.print("  }\n");
@@ -118,8 +128,7 @@ public class RowMapperGen extends MapperGenBase {
           String columnName = getMappingName(prop, Column.class.getName());
           if (columnName != null) {
             String rowType = rowType(prop.getType());
-            writer.print("    val = " + meth.apply(columnName) + ";\n");
-            writer.print("    if (val != null) {\n");
+            writer.print("    if ((idx = row.getColumnIndex(\"" + columnName + "\")) != -1 && (val = " + meth.apply("idx") + ") != null) {\n");
             writer.print("      for (" + rowType + " elt : (" + rowType + "[])val) {\n");
             writer.print("        obj." + prop.getAdderMethod() + "(" + wrapExpr(prop.getType(), "elt") + ");\n");
             writer.print("      }\n");
@@ -132,8 +141,7 @@ public class RowMapperGen extends MapperGenBase {
   private void bilto4(PrintWriter writer, Function<String, String> getter, PropertyInfo prop, String converter) {
     String columnName = getMappingName(prop, Column.class.getName());
     if (columnName != null) {
-      writer.print("    val = " + getter.apply(columnName) + ";\n");
-      writer.print("    if (val != null) {\n");
+      writer.print("    if ((idx = row.getColumnIndex(\"" + columnName + "\")) != -1 && (val = " + getter.apply("idx") + ") != null) {\n");
       writer.print("      obj." + prop.getSetterMethod() + "(" + converter +  ");\n");
       writer.print("    }\n");
     }
@@ -168,13 +176,24 @@ public class RowMapperGen extends MapperGenBase {
   private static Function<String, String> getter_(TypeInfo type, boolean isArray) {
     String getter = getter(type);
     if (getter != null) {
-      return col -> "row." + getter + (isArray ? "Array" : "") + "(\"" + col + "\")";
+      String name;
+      String prefix;
+      if (getter.startsWith("get")) {
+        prefix = "get";
+        name = getter.substring(3);
+      } else if (getter.startsWith("is")) {
+        prefix = "is";
+        name = getter.substring(2);
+      } else {
+        throw new IllegalStateException();
+      }
+      return arg -> "row." + prefix + (isArray ? "ArrayOf" : "") + name + (isArray ? "s" : "") + "(" + arg + ")";
     }
     if (type.getKind() == ClassKind.ENUM || type instanceof ClassTypeInfo) {
       if (isArray) {
-        return col -> "row.get(" + type.getName() + "[].class, \"" + col + "\")";
+        return arg -> "row.get(" + type.getName() + "[].class, " + arg + ")";
       } else {
-        return col -> "row.get(" + type.getName() + ".class, \"" + col + "\")";
+        return arg -> "row.get(" + type.getName() + ".class, " + arg + ")";
       }
     }
     return null;

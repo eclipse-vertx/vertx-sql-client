@@ -21,7 +21,9 @@ import io.netty.channel.ChannelPipeline;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
@@ -50,7 +52,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                                boolean cachePreparedStatements,
                                int preparedStatementCacheSize,
                                Predicate<String> preparedStatementCacheSqlFilter,
-                               ContextInternal context) {
+                               EventLoopContext context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, 1, context);
   }
 
@@ -63,9 +65,10 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                           SslMode sslMode,
                           int initialCapabilitiesFlags,
                           Charset charsetEncoding,
+                          MySQLAuthenticationPlugin authenticationPlugin,
                           Promise<Connection> completionHandler) {
-    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding);
-    schedule(cmd, completionHandler);
+    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   @Override

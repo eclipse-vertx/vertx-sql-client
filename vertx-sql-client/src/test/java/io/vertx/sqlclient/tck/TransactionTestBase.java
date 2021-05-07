@@ -142,19 +142,6 @@ public abstract class TransactionTestBase {
   }
 
   @Test
-  public void testReleaseConnectionOnSetRollback(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.tx.completion().onComplete(ctx.asyncAssertFailure(err -> {
-        ctx.assertEquals(TransactionRollbackException.INSTANCE, err);
-        async.complete();
-      }));
-      // Failure will abort
-      res.client.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(result -> { }));
-    }));
-  }
-
-  @Test
   public void testCommitWithPreparedQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
@@ -247,6 +234,20 @@ public abstract class TransactionTestBase {
               }));
             }));
           }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testFailureWithPendingQueries(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.client.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(v -> {
+      }));
+      res.client.query("SELECT id, val FROM mutable").execute(ctx.asyncAssertSuccess(err -> {
+        res.tx.commit(ctx.asyncAssertSuccess(v -> {
+          async.complete();
         }));
       }));
     }));

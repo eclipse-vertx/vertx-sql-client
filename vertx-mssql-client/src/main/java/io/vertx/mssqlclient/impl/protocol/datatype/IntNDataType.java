@@ -11,19 +11,21 @@
 
 package io.vertx.mssqlclient.impl.protocol.datatype;
 
+import java.sql.JDBCType;
+
 /**
  * Variable-Length Data type, length may be 0x01, 0x02, 0x04, and 0x08.
  */
 public class IntNDataType extends MSSQLDataType {
-  public static final IntNDataType INT_1_DATA_TYPE = new IntNDataType(MSSQLDataTypeId.INTNTYPE_ID, Byte.class, 1);
-  public static final IntNDataType INT_2_DATA_TYPE = new IntNDataType(MSSQLDataTypeId.INTNTYPE_ID, Short.class, 2);
-  public static final IntNDataType INT_4_DATA_TYPE = new IntNDataType(MSSQLDataTypeId.INTNTYPE_ID, Integer.class, 4);
-  public static final IntNDataType INT_8_DATA_TYPE = new IntNDataType(MSSQLDataTypeId.INTNTYPE_ID, Long.class, 8);
+  public static final IntNDataType INT_1_DATA_TYPE = new IntNDataType(MSSQLDataTypeId.INTNTYPE_ID, Byte.class, 1, JDBCType.TINYINT);
+  public static final IntNDataType INT_2_DATA_TYPE = new IntNDataType(MSSQLDataTypeId.INTNTYPE_ID, Short.class, 2, JDBCType.SMALLINT);
+  public static final IntNDataType INT_4_DATA_TYPE = new IntNDataType(MSSQLDataTypeId.INTNTYPE_ID, Integer.class, 4, JDBCType.INTEGER);
+  public static final IntNDataType INT_8_DATA_TYPE = new IntNDataType(MSSQLDataTypeId.INTNTYPE_ID, Long.class, 8, JDBCType.BIGINT);
 
   private final int length;
 
-  private IntNDataType(int id, Class<?> mappedJavaType, int length) {
-    super(id, mappedJavaType);
+  private IntNDataType(int id, Class<?> mappedJavaType, int length, JDBCType jdbcType) {
+    super(id, mappedJavaType, jdbcType);
     this.length = length;
   }
 

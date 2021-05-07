@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
@@ -119,7 +120,7 @@ public class DB2ClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    DB2Pool client = DB2Pool.pool(connectOptions, poolOptions);
+    SqlClient client = DB2Pool.client(connectOptions, poolOptions);
   }
 
   public void connecting02(Vertx vertx) {
@@ -136,13 +137,13 @@ public class DB2ClientExamples {
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
     // Create the pooled client
-    DB2Pool client = DB2Pool.pool(vertx, connectOptions, poolOptions);
+    SqlClient client = DB2Pool.client(vertx, connectOptions, poolOptions);
   }
 
-  public void connecting03(DB2Pool pool) {
+  public void connecting03(SqlClient client) {
 
     // Close the pool and all the associated resources
-    pool.close();
+    client.close();
   }
 
   public void connecting04(Vertx vertx) {
@@ -187,6 +188,28 @@ public class DB2ClientExamples {
     });
   }
 
+  public void poolVersusPooledClient(Vertx vertx, String sql, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
+
+    // Pooled client
+    SqlClient pooledClient = DB2Pool.client(vertx, connectOptions, poolOptions);
+
+    // Pipelined
+    Future<RowSet<Row>> res1 = pooledClient.query(sql).execute();
+
+    // Connection pool
+    DB2Pool pool = DB2Pool.pool(vertx, connectOptions, poolOptions);
+
+    // Not pipelined
+    Future<RowSet<Row>> res2 = pool.query(sql).execute();
+  }
+
+  public void reconnectAttempts(DB2ConnectOptions options) {
+    // The client will try to connect at most 3 times at a 1 second interval
+    options
+      .setReconnectAttempts(2)
+      .setReconnectInterval(1000);
+  }
+
   public void connecting05(Vertx vertx) {
 
     // Pool options
@@ -222,7 +245,7 @@ public class DB2ClientExamples {
       }
     });
   }
-  
+
   public void connectSsl(Vertx vertx) {
 
     DB2ConnectOptions options = new DB2ConnectOptions()
@@ -244,7 +267,7 @@ public class DB2ClientExamples {
       }
     });
   }
-  
+
   public void generatedKeys(SqlClient client) {
     client
       .preparedQuery("SELECT color_id FROM FINAL TABLE ( INSERT INTO color (color_name) VALUES (?), (?), (?) )")
@@ -260,7 +283,7 @@ public class DB2ClientExamples {
       }
     });
   }
-  
+
   public void typeMapping01(Pool pool) {
     pool
       .query("SELECT an_int_column FROM exampleTable")
@@ -320,15 +343,15 @@ public class DB2ClientExamples {
         }
       });
   }
-  
-  // Enum for days of the week 
+
+  // Enum for days of the week
   enum Days {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
   }
 
   /**
    * Using an enum as a string value in the Row and Tuple methods.
-   */  
+   */
   public void enumStringValues(SqlClient client) {
   	  client.preparedQuery("SELECT day_name FROM FINAL TABLE ( INSERT INTO days (day_name) VALUES (?), (?), (?) )")
   	  .execute(Tuple.of(Days.FRIDAY, Days.SATURDAY, Days.SUNDAY), ar -> {
@@ -341,13 +364,13 @@ public class DB2ClientExamples {
   		  } else {
   			  System.out.println("Failure: " + ar.cause().getMessage());
   		  }
-  	  });  	  
+  	  });
   }
 
   /**
-   * Using an enum as an int value in the Row and Tuple methods.  
-   * The row.get() method returns the corresponding enum's name() value at the ordinal position of the integer value retrieved. 
-   */  
+   * Using an enum as an int value in the Row and Tuple methods.
+   * The row.get() method returns the corresponding enum's name() value at the ordinal position of the integer value retrieved.
+   */
   public void enumIntValues(SqlClient client) {
 	  client.preparedQuery("SELECT day_num FROM FINAL TABLE ( INSERT INTO days (day_num) VALUES (?), (?), (?) )")
       .execute(Tuple.of(Days.FRIDAY.ordinal(), Days.SATURDAY.ordinal(), Days.SUNDAY.ordinal()), ar -> {
@@ -362,5 +385,5 @@ public class DB2ClientExamples {
       	}
       });
   }
-  
+
 }

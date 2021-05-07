@@ -5,6 +5,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
@@ -41,7 +42,7 @@ public interface SqlTemplate<I, R> {
    */
   static SqlTemplate<Map<String, Object>, RowSet<Row>> forQuery(SqlClient client, String template) {
     io.vertx.sqlclient.templates.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.templates.impl.SqlTemplate.create((SqlClientInternal) client, template);
-    return new SqlTemplateImpl<>(client, sqlTemplate, Function.identity(), Function.identity());
+    return new SqlTemplateImpl<>(client, sqlTemplate, Function.identity(), sqlTemplate::mapTuple);
   }
 
   /**
@@ -53,19 +54,19 @@ public interface SqlTemplate<I, R> {
    */
   static SqlTemplate<Map<String, Object>, SqlResult<Void>> forUpdate(SqlClient client, String template) {
     io.vertx.sqlclient.templates.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.templates.impl.SqlTemplate.create((SqlClientInternal) client, template);
-    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.collecting(SqlTemplateImpl.NULL_COLLECTOR), Function.identity());
+    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.collecting(SqlTemplateImpl.NULL_COLLECTOR), sqlTemplate::mapTuple);
   }
 
   /**
    * Set a parameters user defined mapping function.
    *
-   * <p> At query execution, the {@code mapper} function is called to map the parameters object
-   * to a {@code Map<String, Object>} that configures the prepared query.
+   * <p> At query execution, the {@code mapper} is called to map the parameters object
+   * to a {@code Tuple} that configures the prepared query.
    *
    * @param mapper the mapping function
    * @return a new template
    */
-  <T> SqlTemplate<T, R> mapFrom(Function<T, Map<String, Object>> mapper);
+  <T> SqlTemplate<T, R> mapFrom(TupleMapper<T> mapper);
 
   /**
    * Set a parameters user defined class mapping.
@@ -79,7 +80,9 @@ public interface SqlTemplate<I, R> {
    * @param type the mapping type
    * @return a new template
    */
-  <T> SqlTemplate<T, R> mapFrom(Class<T> type);
+  default <T> SqlTemplate<T, R> mapFrom(Class<T> type) {
+    return mapFrom(TupleMapper.mapper(params -> JsonObject.mapFrom(params).getMap()));
+  }
 
   /**
    * Set a row user defined mapping function.
@@ -90,7 +93,7 @@ public interface SqlTemplate<I, R> {
    * @param mapper the mapping function
    * @return a new template
    */
-  <U> SqlTemplate<I, RowSet<U>> mapTo(Function<Row, U> mapper);
+  <U> SqlTemplate<I, RowSet<U>> mapTo(RowMapper<U> mapper);
 
   /**
    * Set a row user defined mapping function.

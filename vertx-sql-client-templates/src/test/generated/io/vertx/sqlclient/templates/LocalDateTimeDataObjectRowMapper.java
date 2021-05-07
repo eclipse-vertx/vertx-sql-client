@@ -4,17 +4,21 @@ package io.vertx.sqlclient.templates;
  * Mapper for {@link LocalDateTimeDataObject}.
  * NOTE: This class has been automatically generated from the {@link LocalDateTimeDataObject} original class using Vert.x codegen.
  */
-public class LocalDateTimeDataObjectRowMapper implements java.util.function.Function<io.vertx.sqlclient.Row, LocalDateTimeDataObject> {
+@io.vertx.codegen.annotations.VertxGen
+public interface LocalDateTimeDataObjectRowMapper extends io.vertx.sqlclient.templates.RowMapper<LocalDateTimeDataObject> {
 
-  public static final java.util.function.Function<io.vertx.sqlclient.Row, LocalDateTimeDataObject> INSTANCE = new LocalDateTimeDataObjectRowMapper();
+  @io.vertx.codegen.annotations.GenIgnore
+  LocalDateTimeDataObjectRowMapper INSTANCE = new LocalDateTimeDataObjectRowMapper() { };
 
-  public static final java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<LocalDateTimeDataObject>> COLLECTOR = java.util.stream.Collectors.mapping(INSTANCE, java.util.stream.Collectors.toList());
+  @io.vertx.codegen.annotations.GenIgnore
+  java.util.stream.Collector<io.vertx.sqlclient.Row, ?, java.util.List<LocalDateTimeDataObject>> COLLECTOR = java.util.stream.Collectors.mapping(INSTANCE::map, java.util.stream.Collectors.toList());
 
-  public LocalDateTimeDataObject apply(io.vertx.sqlclient.Row row) {
+  @io.vertx.codegen.annotations.GenIgnore
+  default LocalDateTimeDataObject map(io.vertx.sqlclient.Row row) {
     LocalDateTimeDataObject obj = new LocalDateTimeDataObject();
     Object val;
-    val = row.getLocalDateTime("localDateTime");
-    if (val != null) {
+    int idx;
+    if ((idx = row.getColumnIndex("localDateTime")) != -1 && (val = row.getLocalDateTime(idx)) != null) {
       obj.setLocalDateTime((java.time.LocalDateTime)val);
     }
     return obj;

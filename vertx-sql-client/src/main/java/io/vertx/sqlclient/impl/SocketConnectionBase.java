@@ -22,11 +22,13 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -52,9 +54,11 @@ public abstract class SocketConnectionBase implements Connection {
 
   }
 
+  private static final String PENDING_CMD_CONNECTION_CORRUPT_MSG = "Pending requests failed to be sent due to connection has been closed.";
+
   protected final PreparedStatementCache psCache;
+  protected final EventLoopContext context;
   private final Predicate<String> preparedStatementCacheSqlFilter;
-  private final ContextInternal context;
   private Holder holder;
   private final int pipeliningLimit;
 
@@ -72,7 +76,7 @@ public abstract class SocketConnectionBase implements Connection {
                               int preparedStatementCacheSize,
                               Predicate<String> preparedStatementCacheSqlFilter,
                               int pipeliningLimit,
-                              ContextInternal context) {
+                              EventLoopContext context) {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
@@ -139,8 +143,10 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
-    context.emit(v -> doSchedule(cmd, promise));
+  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
+    Promise<R> promise = context.promise();
+    this.context.emit(v -> doSchedule(cmd, promise));
+    return promise.future();
   }
 
   protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
@@ -156,7 +162,7 @@ public abstract class SocketConnectionBase implements Connection {
       pending.add(cmd);
       checkPending();
     } else {
-      cmd.fail(new VertxException("Connection not open " + status));
+      cmd.fail(new NoStackTraceThrowable("Connection is not active now, current status: " + status));
     }
   }
 
@@ -186,7 +192,7 @@ public abstract class SocketConnectionBase implements Connection {
               if (closeCmd != null) {
                 inflight++;
                 written++;
-                ctx.write(closeCmd);
+                ctx.write(closeCmd, ctx.voidPromise());
               }
             }
             PrepareStatementCommand prepareCmd = prepareCommand(queryCmd, cache, false);
@@ -203,7 +209,7 @@ public abstract class SocketConnectionBase implements Connection {
           }
         }
         written++;
-        ctx.write(cmd);
+        ctx.write(cmd, ctx.voidPromise());
       }
       if (written > 0) {
         ctx.flush();
@@ -229,7 +235,7 @@ public abstract class SocketConnectionBase implements Connection {
           queryCmd.fail(new NoStackTraceThrowable(msg));
         } else {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
-          ctx.write(queryCmd);
+          ctx.write(queryCmd, ctx.voidPromise());
           ctx.flush();
         }
       } else {
@@ -237,7 +243,7 @@ public abstract class SocketConnectionBase implements Connection {
         if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           // We cannot cache this prepared statement because it might be executed with another type
-          ctx.write(prepareCommand(queryCmd, false, true));
+          ctx.write(prepareCommand(queryCmd, false, true), ctx.voidPromise());
           ctx.flush();
         } else {
           inflight--;
@@ -316,7 +322,7 @@ public abstract class SocketConnectionBase implements Connection {
           }
         }
       }
-      Throwable cause = t == null ? new VertxException("closed") : t;
+      Throwable cause = t == null ? new NoStackTraceThrowable(PENDING_CMD_CONNECTION_CORRUPT_MSG) : new VertxException(PENDING_CMD_CONNECTION_CORRUPT_MSG, t);
       CommandBase<?> cmd;
       while ((cmd = pending.poll()) != null) {
         CommandBase<?> c = cmd;

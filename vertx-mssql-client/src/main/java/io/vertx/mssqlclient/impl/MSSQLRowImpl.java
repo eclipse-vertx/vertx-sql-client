@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -17,7 +17,10 @@ import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowDesc;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.UUID;
@@ -37,11 +40,11 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public int getColumnIndex(String columnName) {
-    if (columnName == null) {
+  public int getColumnIndex(String column) {
+    if (column == null) {
       throw new IllegalArgumentException("Column name can not be null");
     }
-    return rowDesc.columnNames().indexOf(columnName);
+    return rowDesc.columnNames().indexOf(column);
   }
 
   @Override
@@ -68,7 +71,11 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getLocalDate(position));
     } else if (type == LocalTime.class) {
       return type.cast(getLocalTime(position));
-    }else if (type == Object.class) {
+    } else if (type == LocalDateTime.class) {
+      return type.cast(getLocalDateTime(position));
+    } else if (type == OffsetDateTime.class) {
+      return type.cast(getOffsetDateTime(position));
+    } else if (type == Object.class) {
       return type.cast(getValue(position));
     } else if (type.isEnum()) {
       return type.cast(getEnum(type, position));
@@ -78,102 +85,37 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
   }
 
   @Override
-  public Buffer getBuffer(String columnName) {
+  public Buffer getBuffer(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Temporal getTemporal(String columnName) {
+  public Temporal getTemporal(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public LocalDateTime getLocalDateTime(String columnName) {
+  public UUID getUUID(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetTime getOffsetTime(String columnName) {
+  public LocalDateTime[] getArrayOfLocalDateTimes(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public OffsetDateTime getOffsetDateTime(String columnName) {
+  public OffsetDateTime[] getArrayOfOffsetDateTimes(int pos) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public UUID getUUID(String columnName) {
+  public Buffer[] getArrayOfBuffers(String column) {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public Integer[] getIntegerArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Boolean[] getBooleanArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Short[] getShortArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Long[] getLongArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Float[] getFloatArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Double[] getDoubleArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public String[] getStringArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalDate[] getLocalDateArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalTime[] getLocalTimeArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public OffsetTime[] getOffsetTimeArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public LocalDateTime[] getLocalDateTimeArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public OffsetDateTime[] getOffsetDateTimeArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public Buffer[] getBufferArray(String columnName) {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public UUID[] getUUIDArray(String columnName) {
+  public UUID[] getArrayOfUUIDs(String column) {
     throw new UnsupportedOperationException();
   }
 
@@ -183,16 +125,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
       return (Byte) val;
     } else if (val instanceof Number) {
       return ((Number) val).byteValue();
-    }
-    return null;
-  }
-
-  private Numeric getNumeric(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Numeric) {
-      return (Numeric) val;
-    } else if (val instanceof Number) {
-      return Numeric.parse(val.toString());
     }
     return null;
   }

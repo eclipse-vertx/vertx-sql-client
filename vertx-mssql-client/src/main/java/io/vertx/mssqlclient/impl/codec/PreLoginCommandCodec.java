@@ -122,7 +122,7 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
     int packetLen = packet.writerIndex() - packetDataStartIdx + 8;
     packet.setShort(packetLenIdx, packetLen);
 
-    chctx.writeAndFlush(packet);
+    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 
   private void encodeTokenData(OptionToken optionToken, ByteBuf payload) {

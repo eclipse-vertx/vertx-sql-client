@@ -94,9 +94,41 @@ A simple way to configure the client is to specify a `MSSQLConnectOptions` data 
 
 include::queries.adoc[]
 
-== DATATYPE support
+== Connect retries
 
-Currently the client supports the following SQL Server types
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#reconnectAttempts}
+----
+
+=== Connection URI
+
+As an alternative to configuring the client with a {@link io.vertx.mssqlclient.MSSQLConnectOptions} data object, you can use a connection URI:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#configureFromUri(io.vertx.core.Vertx)}
+----
+
+The connection URI format is defined by the client in an idiomatic way: `sqlserver://[user[:[password]]@]host[:port][/database][?attribute1=value1&attribute2=value2...]`
+
+Currently, the client supports the following parameter keywords in connection uri (keys are case-insensitive):
+
+* host
+* port
+* user
+* password
+* database
+
+== Tracing queries
+
+include::tracing.adoc[]
+
+== Data types supported
+
+Currently, the client supports the following SQL Server types:
 
 * TINYINT(`java.lang.Short`)
 * SMALLINT(`java.lang.Short`)
@@ -105,10 +137,13 @@ Currently the client supports the following SQL Server types
 * BIT(`java.lang.Boolean`)
 * REAL(`java.lang.Float`)
 * DOUBLE(`java.lang.Double`)
-* CHAR(`java.lang.String`)
-* VARCHAR(`java.lang.String`)
+* NUMERIC/DECIMAL(`{@link io.vertx.sqlclient.data.Numeric}`)
+* CHAR/VARCHAR(`java.lang.String`)
+* NCHAR/NVARCHAR(`java.lang.String`)
 * DATE(`java.time.LocalDate`)
 * TIME(`java.time.LocalTime`)
+* DATETIME2(`java.time.LocalDateTime`)
+* DATETIMEOFFSET(`java.time.OffsetDateTime`)
 
 Tuple decoding uses the above types when storing values
 

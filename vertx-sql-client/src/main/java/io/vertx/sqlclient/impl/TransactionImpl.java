@@ -16,14 +16,10 @@
  */
 package io.vertx.sqlclient.impl;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.sqlclient.Transaction;
@@ -31,164 +27,105 @@ import io.vertx.sqlclient.TransactionRollbackException;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.TxCommand;
 
-class TransactionImpl implements Transaction {
-
-  private static final TxCommand<Void> ROLLBACK = new TxCommand<>(TxCommand.Kind.ROLLBACK, null);
-  private static final TxCommand<Void> COMMIT = new TxCommand<>(TxCommand.Kind.COMMIT, null);
-
-  private static final int ST_BEGIN = 0;
-  private static final int ST_PENDING = 1;
-  private static final int ST_PROCESSING = 2;
-  private static final int ST_COMPLETED = 3;
+public class TransactionImpl implements Transaction {
 
   private final ContextInternal context;
   private final Connection connection;
-  private Deque<ScheduledCommand<?>> pending = new ArrayDeque<>();
-  private int status = ST_BEGIN;
-  private final Promise<Void> completion;
+  private final Promise<TxCommand.Kind> completion;
+  private final Handler<Void> endHandler;
+  private int pendingQueries;
+  private boolean ended;
+  private boolean failed;
+  private TxCommand<?> endCommand;
 
-  TransactionImpl(ContextInternal context, Connection connection) {
+  TransactionImpl(ContextInternal context, Handler<Void> endHandler, Connection connection) {
     this.context = context;
     this.connection = connection;
     this.completion = context.promise();
-  }
-
-  static class ScheduledCommand<R> {
-    final CommandBase<R> cmd;
-    final Handler<AsyncResult<R>> handler;
-    ScheduledCommand(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
-      this.cmd = cmd;
-      this.handler = handler;
-    }
+    this.endHandler = endHandler;
   }
 
   Future<Transaction> begin() {
-    PromiseInternal<Transaction> promise = context.promise(this::afterBegin);
-    ScheduledCommand<Transaction> b = doQuery(new TxCommand<>(TxCommand.Kind.BEGIN, this), promise);
-    doSchedule(b.cmd, b.handler);
+    PromiseInternal<Transaction> promise = context.promise();
+    TxCommand<Transaction> begin = new TxCommand<>(TxCommand.Kind.BEGIN, this);
+    begin.handler = wrap(begin, promise);
+    schedule(begin);
     return promise.future();
   }
 
-  private <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
-    connection.schedule(cmd, context.promise(handler));
+  public void fail() {
+    failed = true;
   }
 
-  private <R> void wrapAndSchedule(ScheduledCommand<R> scheduled) {
-    CommandBase<R> cmd = scheduled.cmd;
-    if (isComplete(cmd)) {
-      status = ST_COMPLETED;
-      doSchedule(cmd, ar -> {
-        if (ar.succeeded()) {
-          if (cmd == COMMIT) {
-            completion.tryComplete();
-          } else {
-            completion.tryFail(TransactionRollbackException.INSTANCE);
-          }
-        } else {
-          completion.tryFail(ar.cause());
-        }
-        scheduled.handler.handle(ar);
-      });
-    } else {
-      status = ST_PROCESSING;
-      doSchedule(cmd, wrap(scheduled.handler));
-    }
+  private <R> void execute(CommandBase<R> cmd) {
+    Handler<AsyncResult<R>> handler = cmd.handler;
+    connection.schedule(context, cmd).onComplete(handler);
   }
 
-  private <T> Handler<AsyncResult<T>> wrap(Handler<AsyncResult<T>> handler) {
+  private <T> Handler<AsyncResult<T>> wrap(CommandBase<?> cmd, Promise<T> handler) {
     return ar -> {
+      CommandBase<?> abc = cmd;
       synchronized (TransactionImpl.this) {
-        status = ST_PENDING;
-        if (ar.failed()) {
-          // We won't recover from this so rollback
-          ScheduledCommand<?> c;
-          while ((c = pending.poll()) != null) {
-            c.handler.handle(Future.failedFuture("Rollback exception"));
-          }
-          schedule__(doQuery(ROLLBACK, context.promise(ar2 -> {
-            handler.handle(ar);
-          })));
-        } else {
-          handler.handle(ar);
-          checkPending();
-        }
+        pendingQueries--;
       }
+      checkEnd();
+      handler.handle(ar);
     };
   }
 
-  private synchronized void afterBegin(AsyncResult<Transaction> ar) {
-    if (ar.succeeded()) {
-      status = ST_PENDING;
-    } else {
-      status = ST_COMPLETED;
-    }
-    checkPending();
-  }
-
-  private static boolean isComplete(CommandBase<?> cmd) {
-    if (cmd instanceof TxCommand) {
-      TxCommand txCmd = (TxCommand) cmd;
-      return txCmd.kind == TxCommand.Kind.COMMIT || txCmd.kind == TxCommand.Kind.ROLLBACK;
-    }
-    return false;
-  }
-
-
-  private synchronized void checkPending() {
-    switch (status) {
-      case ST_BEGIN:
-        break;
-      case ST_PENDING: {
-        ScheduledCommand<?> cmd = pending.poll();
-        if (cmd != null) {
-          wrapAndSchedule(cmd);
-        }
-        break;
-      }
-      case ST_PROCESSING:
-        break;
-      case ST_COMPLETED: {
-        if (pending.size() > 0) {
-          VertxException err = new VertxException("Transaction already completed");
-          ScheduledCommand<?> cmd;
-          while ((cmd = pending.poll()) != null) {
-            cmd.cmd.fail(err);
-          }
-        }
-        break;
-      }
-    }
-  }
-
   public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
-    schedule__(cmd, handler);
-  }
-
-  public <R> void schedule__(ScheduledCommand<R> b) {
-    synchronized (this) {
-      pending.add(b);
+    cmd.handler = wrap(cmd, handler);
+    if (!schedule(cmd)) {
+      handler.fail("Transaction already completed");
     }
-    checkPending();
   }
 
-  public <R> void schedule__(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
-    schedule__(new ScheduledCommand<>(cmd, handler));
+  public <R> boolean schedule(CommandBase<R> b) {
+    synchronized (this) {
+      if (ended) {
+        return false;
+      }
+      pendingQueries++;
+    }
+    execute(b);
+    return true;
+  }
+
+  private void checkEnd() {
+    TxCommand<?> cmd;
+    synchronized (this) {
+      if (pendingQueries > 0 || !ended || endCommand != null) {
+        return;
+      }
+      TxCommand.Kind kind = failed ? TxCommand.Kind.ROLLBACK : TxCommand.Kind.COMMIT;
+      endCommand = txCommand(kind);
+      cmd = endCommand;
+    }
+    endHandler.handle(null);
+    execute(cmd);
+  }
+
+  private Future<TxCommand.Kind> end(boolean rollback) {
+    synchronized (this) {
+      if (endCommand != null) {
+        return context.failedFuture("Transaction already complete");
+      }
+      ended = true;
+      failed |= rollback;
+    }
+    checkEnd();
+    return completion.future();
   }
 
   @Override
   public Future<Void> commit() {
-    switch (status) {
-      case ST_BEGIN:
-      case ST_PENDING:
-      case ST_PROCESSING:
-        Promise<Void> promise = context.promise();
-        schedule__(doQuery(COMMIT, promise));
-        return promise.future();
-      case ST_COMPLETED:
-        return context.failedFuture("Transaction already completed");
-      default:
-        throw new IllegalStateException();
-    }
+    return end(false).flatMap(k -> {
+      if (k == TxCommand.Kind.COMMIT) {
+        return Future.succeededFuture();
+      } else {
+        return Future.failedFuture(TransactionRollbackException.INSTANCE);
+      }
+    });
   }
 
   public void commit(Handler<AsyncResult<Void>> handler) {
@@ -200,13 +137,7 @@ class TransactionImpl implements Transaction {
 
   @Override
   public Future<Void> rollback() {
-    if (status == ST_COMPLETED) {
-      return context.failedFuture("Transaction already completed");
-    } else {
-      Promise<Void> promise = context.promise();
-      schedule__(doQuery(ROLLBACK, promise));
-      return promise.future();
-    }
+    return end(true).mapEmpty();
   }
 
   public void rollback(Handler<AsyncResult<Void>> handler) {
@@ -216,12 +147,25 @@ class TransactionImpl implements Transaction {
     }
   }
 
-  private <R> ScheduledCommand<R> doQuery(TxCommand<R> cmd, Promise<R> handler) {
-    return new ScheduledCommand<>(cmd, handler);
+  private TxCommand<Void> txCommand(TxCommand.Kind kind) {
+    TxCommand<Void> cmd = new TxCommand<>(kind, null);
+    cmd.handler = ar -> completion.complete(kind);
+    return cmd;
+  }
+
+  @Override
+  public void completion(Handler<AsyncResult<Void>> handler) {
+    completion().onComplete(handler);
   }
 
   @Override
   public Future<Void> completion() {
-    return completion.future();
+    return completion.future().flatMap(k -> {
+      if (k == TxCommand.Kind.COMMIT) {
+        return Future.succeededFuture();
+      } else {
+        return Future.failedFuture(TransactionRollbackException.INSTANCE);
+      }
+    });
   }
 }

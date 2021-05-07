@@ -445,21 +445,39 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
           AtomicReference<AsyncResult<Void>> commit = new AtomicReference<>();
           conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-1')").execute(ar1 -> { });
           conn.query("INSERT INTO Test (id, val) VALUES (1, 'val-2')").execute(ar2 -> {
-            ctx.assertNotNull(queryAfterFailed.get());
-            ctx.assertTrue(queryAfterFailed.get().failed());
-            ctx.assertNotNull(commit.get());
-            ctx.assertTrue(commit.get().failed());
+            ctx.assertNull(queryAfterFailed.get());
+            ctx.assertNull(commit.get());
             ctx.assertTrue(ar2.failed());
+          });
+          conn.query("SELECT id FROM Test").execute(abc -> {
+            queryAfterFailed.set(abc);
             // This query won't be made in the same TX
             conn.query("SELECT id FROM Test WHERE id=1").execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(0, result.size());
               done.countDown();
             }));
           });
-          conn.query("SELECT id FROM Test").execute(queryAfterFailed::set);
-          tx.commit(commit::set);
+          tx.commit(ar -> {
+            commit.set(ar);
+          });
         }));
       });
+    }));
+  }
+
+  @Test
+  public void testCloseConnectionFromDifferentContext(TestContext ctx) {
+    Async done = ctx.async(1);
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+        ctx.assertEquals(1, res.size());
+        // schedule from another context
+        new Thread(() -> {
+          conn.close(v2 -> {
+            done.complete();
+          });
+        }).start();
+      }));
     }));
   }
 }

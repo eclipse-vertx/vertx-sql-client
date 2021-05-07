@@ -83,13 +83,13 @@ public abstract class MapperGenBase extends Generator<DataObjectModel> {
     writer.print(" * Mapper for {@link " + model.getType().getSimpleName() + "}.\n");
     writer.print(" * NOTE: This class has been automatically generated from the {@link " + model.getType().getSimpleName() + "} original class using Vert.x codegen.\n");
     writer.print(" */\n");
-    writer.print("public class " + genSimpleName(model) + " implements " + genFunctionExtends(model) + " {\n");
+    renderDeclaration(model, writer);
     renderMembers(visibility, model, writer);
     writer.print("}\n");
     return buffer.toString();
   }
 
-  protected abstract String genFunctionExtends(DataObjectModel model);
+  protected abstract void renderDeclaration(DataObjectModel model, PrintWriter writer);
 
   protected abstract void renderMembers(String visibility, DataObjectModel model, PrintWriter writer);
 

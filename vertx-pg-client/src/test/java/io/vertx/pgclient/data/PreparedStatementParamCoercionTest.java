@@ -54,4 +54,14 @@ public class PreparedStatementParamCoercionTest extends DataTypeTestBase {
           cont.run();
         }));
   }
+
+  @Test
+  public void testCoercionError(TestContext ctx) {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1::UUID", ctx.asyncAssertSuccess(pq -> {
+        pq.query().execute(Tuple.of("not-an-uuid"), ctx.asyncAssertFailure(res -> {
+        }));
+      }));
+    }));
+  }
 }

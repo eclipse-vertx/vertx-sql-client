@@ -21,6 +21,8 @@ import io.vertx.core.Vertx;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 
+import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
+
 /**
  * A connection to Microsoft SQL Server.
  */
@@ -49,6 +51,20 @@ public interface MSSQLConnection extends SqlConnection {
   }
 
   /**
+   * Like {@link #connect(Vertx, MSSQLConnectOptions, Handler)} with options built from {@code connectionUri}.
+   */
+  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MSSQLConnection>> handler) {
+    connect(vertx, fromUri(connectionUri), handler);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  static Future<MSSQLConnection> connect(Vertx vertx, String connectionUri) {
+    return connect(vertx, fromUri(connectionUri));
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Fluent
@@ -69,4 +85,15 @@ public interface MSSQLConnection extends SqlConnection {
   @Override
   MSSQLConnection closeHandler(Handler<Void> handler);
 
+  /**
+   * Cast a {@link SqlConnection} to {@link MSSQLConnection}.
+   *
+   * This is mostly useful for Vert.x generated APIs like RxJava/Mutiny.
+   *
+   * @param sqlConnection the connection to cast
+   * @return a {@link MSSQLConnection instance}
+   */
+  static MSSQLConnection cast(SqlConnection sqlConnection) {
+    return (MSSQLConnection) sqlConnection;
+  }
 }

@@ -30,10 +30,8 @@ import java.util.function.Consumer;
 class ConnectionQueue extends ArrayDeque<Handler<AsyncResult<Connection>>> implements Consumer<Handler<AsyncResult<Connection>>>, ConnectionFactory {
 
   @Override
-  public Future<Connection> connect() {
-    Promise<Connection> promise = Promise.promise();
+  public void connect(Promise<Connection> promise) {
     accept(promise);
-    return promise.future();
   }
 
   @Override

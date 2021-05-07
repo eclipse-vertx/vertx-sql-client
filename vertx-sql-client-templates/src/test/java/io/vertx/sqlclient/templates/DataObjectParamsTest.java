@@ -65,10 +65,10 @@ public class DataObjectParamsTest extends PgTemplateTestBase {
   }
 
   private void testGet(TestContext ctx, String sqlType, String paramName, TestDataObject obj, Object expected) {
-    super.<TestDataObject, Row, Object>testGet(
+    super.testGet(
       ctx,
       sqlType,
-      Function.identity(),
+      row -> row,
       TestDataObjectParametersMapper.INSTANCE,
       paramName,
       obj,

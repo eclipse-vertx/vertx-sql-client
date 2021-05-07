@@ -16,9 +16,11 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.spi.VertxTracerFactory;
+import io.vertx.core.spi.tracing.SpanKind;
 import io.vertx.core.spi.tracing.TagExtractor;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingOptions;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.*;
@@ -48,8 +50,8 @@ public abstract class TracingTestBase {
     vertx = Vertx.vertx(new VertxOptions().setTracingOptions(
       new TracingOptions().setFactory(tracingOptions -> new VertxTracer() {
         @Override
-        public Object sendRequest(Context context, Object request, String operation, BiConsumer headers, TagExtractor tagExtractor) {
-          return tracer.sendRequest(context, request, operation, headers, tagExtractor);
+        public Object sendRequest(Context context, SpanKind kind, TracingPolicy tracingPolicy, Object request, String operation, BiConsumer headers, TagExtractor tagExtractor) {
+          return tracer.sendRequest(context, kind, tracingPolicy, request, operation, headers, tagExtractor);
         }
         @Override
         public void receiveResponse(Context context, Object response, Object payload, Throwable failure, TagExtractor tagExtractor) {
@@ -97,7 +99,7 @@ public abstract class TracingTestBase {
     Object expectedPayload = new Object();
     tracer = new VertxTracer<Object, Object>() {
       @Override
-      public <R> Object sendRequest(Context context, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
+      public <R> Object sendRequest(Context context, SpanKind kind, TracingPolicy tracingPolicy, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
         QueryRequest query = (QueryRequest) request;
         ctx.assertEquals(expectedSql, query.sql());
         ctx.assertEquals(expectedTuples, query.tuples());
@@ -144,7 +146,7 @@ public abstract class TracingTestBase {
     Async completed = ctx.async();
     tracer = new VertxTracer<Object, Object>() {
       @Override
-      public <R> Object sendRequest(Context context, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
+      public <R> Object sendRequest(Context context, SpanKind kind, TracingPolicy tracingPolicy, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
         return null;
       }
       @Override
@@ -171,7 +173,7 @@ public abstract class TracingTestBase {
     String sql = statement("SELECT * FROM immutable WHERE id = ", "");
     tracer = new VertxTracer<Object, Object>() {
       @Override
-      public <R> Object sendRequest(Context context, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
+      public <R> Object sendRequest(Context context, SpanKind kind, TracingPolicy tracingPolicy, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
         return null;
       }
       @Override

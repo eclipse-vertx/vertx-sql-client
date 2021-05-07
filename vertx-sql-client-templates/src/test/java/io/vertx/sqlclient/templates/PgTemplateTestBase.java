@@ -76,8 +76,8 @@ public abstract class PgTemplateTestBase {
 
   protected <P, T, V> void testGet(TestContext ctx,
                                    String sqlType,
-                                   Function<Row, T> rowMapper,
-                                   Function<P, Map<String, Object>> paramsMapper,
+                                   RowMapper<T> rowMapper,
+                                   TupleMapper<P> paramsMapper,
                                    String paramName,
                                    P params,
                                    V expected,

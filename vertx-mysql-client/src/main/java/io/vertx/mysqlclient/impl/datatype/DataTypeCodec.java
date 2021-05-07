@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -28,6 +28,7 @@ import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -591,7 +592,11 @@ public class DataTypeCodec {
   }
 
   private static LocalDate binaryDecodeDate(ByteBuf buffer) {
-    return binaryDecodeDatetime(buffer).toLocalDate();
+    LocalDateTime localDateTime = binaryDecodeDatetime(buffer);
+    if (localDateTime != null) {
+        return localDateTime.toLocalDate();
+    }
+    return null;
   }
 
   private static Duration binaryDecodeTime(ByteBuf buffer) {
@@ -694,6 +699,10 @@ public class DataTypeCodec {
   private static LocalDate textDecodeDate(int collationId, ByteBuf buffer, int index, int length) {
     Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     CharSequence cs = buffer.toString(index, length, charset);
+    if (cs.equals("0000-00-00")) {
+      // Invalid date will be converted to zero
+      return null;
+    }
     return LocalDate.parse(cs);
   }
 
@@ -737,7 +746,7 @@ public class DataTypeCodec {
   }
 
   private static Object textDecodeJson(int collationId, ByteBuf buffer, int index, int length) {
-    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
+    Charset charset = StandardCharsets.UTF_8; // MySQL JSON data type will only be UTF-8 string
     // Try to do without the intermediary String (?)
     CharSequence cs = buffer.getCharSequence(index, length, charset);
     Object value = null;

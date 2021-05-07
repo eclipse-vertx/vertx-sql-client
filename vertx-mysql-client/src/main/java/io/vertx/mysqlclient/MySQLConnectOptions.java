@@ -16,15 +16,13 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -70,6 +68,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   private String serverRsaPublicKeyPath;
   private Buffer serverRsaPublicKeyValue;
   private String characterEncoding = DEFAULT_CHARACTER_ENCODING;
+  private MySQLAuthenticationPlugin authenticationPlugin = MySQLAuthenticationPlugin.DEFAULT;
 
   public MySQLConnectOptions() {
     super();
@@ -85,16 +84,26 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     if (other instanceof MySQLConnectOptions) {
       MySQLConnectOptions opts = (MySQLConnectOptions) other;
       this.collation = opts.collation;
+      this.charset = opts.charset;
+      this.useAffectedRows = opts.useAffectedRows;
+      this.sslMode = opts.sslMode;
       this.serverRsaPublicKeyPath = opts.serverRsaPublicKeyPath;
       this.serverRsaPublicKeyValue = opts.serverRsaPublicKeyValue != null ? opts.serverRsaPublicKeyValue.copy() : null;
+      this.characterEncoding = opts.characterEncoding;
+      this.authenticationPlugin = opts.authenticationPlugin;
     }
   }
 
   public MySQLConnectOptions(MySQLConnectOptions other) {
     super(other);
     this.collation = other.collation;
+    this.charset = other.charset;
+    this.useAffectedRows = other.useAffectedRows;
+    this.sslMode = other.sslMode;
     this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
     this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
+    this.characterEncoding = other.characterEncoding;
+    this.authenticationPlugin = other.authenticationPlugin;
   }
 
   /**
@@ -207,6 +216,27 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    */
   public MySQLConnectOptions setSslMode(SslMode sslMode) {
     this.sslMode = sslMode;
+    return this;
+  }
+
+  /**
+   * Get the default authentication plugin for connecting the server.
+   *
+   * @return the authentication plugin
+   */
+  public MySQLAuthenticationPlugin getAuthenticationPlugin() {
+    return authenticationPlugin;
+  }
+
+  /**
+   * Set the default {@link MySQLAuthenticationPlugin authentication plguin} for the client, the option will take effect at the connection start.
+   *
+   * @param authenticationPlugin the auth plugin to use
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setAuthenticationPlugin(MySQLAuthenticationPlugin authenticationPlugin) {
+    Objects.requireNonNull(authenticationPlugin, "Authentication plugin can not be null");
+    this.authenticationPlugin = authenticationPlugin;
     return this;
   }
 
@@ -525,6 +555,11 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   @Override
   public MySQLConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
     return (MySQLConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
+  }
+
+  @Override
+  public MySQLConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
+    return (MySQLConnectOptions) super.setTracingPolicy(tracingPolicy);
   }
 
   /**

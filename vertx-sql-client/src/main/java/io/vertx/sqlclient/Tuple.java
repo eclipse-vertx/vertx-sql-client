@@ -17,16 +17,18 @@
 
 package io.vertx.sqlclient;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.impl.ArrayTuple;
 import io.netty.buffer.ByteBuf;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.data.Numeric;
+import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.ListTuple;
 
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
@@ -47,7 +49,12 @@ public interface Tuple {
    * It is used to distinguish a JSON null literal value from the Java {@code null} value. This is only
    * used when the database supports JSON types.
    */
-  Object JSON_NULL = new Object();
+  Object JSON_NULL = new Object() {
+    @Override
+    public String toString() {
+      return "null";
+    }
+  };
 
   /**
    * @return a new empty tuple
@@ -63,8 +70,9 @@ public interface Tuple {
    *
    * @return the list wrapped as a tuple
    */
-  static Tuple wrap(List<Object> list) {
-    return new ListTuple(list);
+  @SuppressWarnings("unchecked")
+  static <T> Tuple from(List<T> list) {
+    return wrap(new ArrayList<>(list));
   }
 
   /**
@@ -75,7 +83,35 @@ public interface Tuple {
    * @return the list wrapped as a tuple
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  static Tuple wrap(Object... array) {
+  static Tuple from(Object[] array) {
+    ArrayList<Object> list = new ArrayList<>(array.length);
+    for (Object o : array) {
+      list.add(o);
+    }
+    return wrap(list);
+  }
+
+  /**
+   * Wrap the provided {@code list} with a tuple.
+   * <br/>
+   * The list is not copied and is used as store for tuple elements.
+   *
+   * @return the list wrapped as a tuple
+   */
+  @SuppressWarnings("unchecked")
+  static <T> Tuple wrap(List<T> list) {
+    return new ListTuple((List<Object>) list);
+  }
+
+  /**
+   * Wrap the provided {@code array} with a tuple.
+   * <br/>
+   * The array is not copied and is used as store for tuple elements.
+   *
+   * @return the list wrapped as a tuple
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static Tuple wrap(Object[] array) {
     return new ListTuple(Arrays.asList(array));
   }
 
@@ -214,7 +250,7 @@ public interface Tuple {
    * Get an object value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   Object getValue(int pos);
 
@@ -222,151 +258,213 @@ public interface Tuple {
    * Get a boolean value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default Boolean getBoolean(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Boolean) {
-      return (Boolean) val;
-    }
-    return null;
+    return (Boolean) getValue(pos);
   }
 
   /**
    * Get a short value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default Short getShort(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Short) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Short) {
       return (Short) val;
     } else if (val instanceof Number) {
       return ((Number) val).shortValue();
+    } else if (val instanceof Enum<?>) {
+      return (short)((Enum<?>) val).ordinal();
+    } else {
+      return (Short) val; // Throw CCE
     }
-    return null;
   }
 
   /**
    * Get an integer value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default Integer getInteger(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Integer) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Integer) {
       return (Integer) val;
     } else if (val instanceof Number) {
       return ((Number) val).intValue();
+    } else if (val instanceof Enum<?>) {
+      return ((Enum<?>) val).ordinal();
+    } else {
+      return (Integer) val; // Throw CCE
     }
-    return null;
   }
 
   /**
    * Get a long value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default Long getLong(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Long) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Long) {
       return (Long) val;
     } else if (val instanceof Number) {
       return ((Number) val).longValue();
+    } else if (val instanceof Enum<?>) {
+      return (long)((Enum<?>) val).ordinal();
+    } else {
+      return (Long) val; // Throw CCE
     }
-    return null;
   }
 
   /**
    * Get a float value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default Float getFloat(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Float) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Float) {
       return (Float) val;
     } else if (val instanceof Number) {
       return ((Number) val).floatValue();
+    } else if (val instanceof Enum<?>) {
+      return (float)((Enum<?>) val).ordinal();
+    } else {
+      return (Float) val; // Throw CCE
     }
-    return null;
   }
 
   /**
    * Get a double value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default Double getDouble(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Double) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Double) {
       return (Double) val;
     } else if (val instanceof Number) {
       return ((Number) val).doubleValue();
+    } else if (val instanceof Enum<?>) {
+      return (double)((Enum<?>) val).ordinal();
+    } else {
+      return (Double) val; // Throw CCE
     }
-    return null;
+  }
+
+  /**
+   * Get {@link Numeric} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Numeric getNumeric(int pos) {
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof Numeric) {
+      return (Numeric) val;
+    } else if (val instanceof Number) {
+      return Numeric.create((Number) val);
+    } else {
+      return (Numeric) val; // Throw CCE
+    }
   }
 
   /**
    * Get a string value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default String getString(int pos) {
     Object val = getValue(pos);
-    if (val instanceof String) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof String) {
       return (String) val;
+    } else if (val instanceof Enum<?>) {
+      return ((Enum<?>) val).name();
+    } else {
+      throw new ClassCastException("Invalid String value type " + val.getClass());
     }
-    return null;
   }
 
   /**
    * Get a {@link JsonObject} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default JsonObject getJsonObject(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof JsonObject) {
-      return (JsonObject) val;
-    }
-    return null;
+    return (JsonObject) getValue(pos);
   }
 
   /**
    * Get a {@link JsonArray} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default JsonArray getJsonArray(int pos) {
+    return (JsonArray) getValue(pos);
+  }
+
+  /**
+   * Get a JSON element at {@code pos}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param pos the position
+   * @return the value
+   */
+  default Object getJson(int pos) {
     Object val = getValue(pos);
-    if (val instanceof JsonArray) {
-      return (JsonArray) val;
+    if (val == null ||
+      val == Tuple.JSON_NULL ||
+      val instanceof String ||
+      val instanceof Boolean ||
+      val instanceof Number ||
+      val instanceof JsonObject ||
+      val instanceof JsonArray) {
+      return val;
+    } else {
+      throw new ClassCastException("Invalid JSON value type " + val.getClass());
     }
-    return null;
   }
 
   /**
    * Get a {@link java.time.temporal.Temporal} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Temporal getTemporal(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Temporal) {
-      return (Temporal) val;
-    }
-    return null;
+    return (Temporal) getValue(pos);
   }
 
   /**
@@ -376,17 +474,22 @@ public interface Tuple {
    * coerced to {@code LocalDate}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDate getLocalDate(int pos) {
     Object val = getValue(pos);
-    if (val instanceof LocalDate) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof LocalDate) {
       return (LocalDate) val;
     } else if (val instanceof LocalDateTime) {
       return ((LocalDateTime) val).toLocalDate();
+    } else if (val instanceof OffsetDateTime) {
+      return ((OffsetDateTime) val).toLocalDate();
+    } else {
+      return (LocalDate) val; // Throw CCE
     }
-    return null;
   }
 
   /**
@@ -396,32 +499,40 @@ public interface Tuple {
    * coerced to {@code LocalTime}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalTime getLocalTime(int pos) {
     Object val = getValue(pos);
-    if (val instanceof LocalTime) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof LocalTime) {
       return (LocalTime) val;
     } else if (val instanceof LocalDateTime) {
       return ((LocalDateTime) val).toLocalTime();
+    } else if (val instanceof OffsetDateTime) {
+      return ((OffsetDateTime) val).toLocalTime();
+    } else {
+      return (LocalTime) val; // Throw CCE
     }
-    return null;
   }
 
   /**
    * Get {@link java.time.LocalDateTime} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDateTime getLocalDateTime(int pos) {
     Object val = getValue(pos);
-    if (val instanceof LocalDateTime) {
-      return (LocalDateTime) val;
+    if (val == null) {
+      return null;
+    } else if (val instanceof OffsetDateTime) {
+      return ((OffsetDateTime) val).toLocalDateTime();
+    } else {
+      return (LocalDateTime) val; // Throw CCE
     }
-    return null;
   }
 
   /**
@@ -431,86 +542,92 @@ public interface Tuple {
    * coerced to {@code OffsetTime}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetTime getOffsetTime(int pos) {
     Object val = getValue(pos);
-    if (val instanceof OffsetTime) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof OffsetTime) {
       return (OffsetTime) val;
     } else if (val instanceof OffsetDateTime) {
       return ((OffsetDateTime)val).toOffsetTime();
+    } else {
+      return (OffsetTime) val; // Throw CCE
     }
-    return null;
   }
 
   /**
    * Get {@link java.time.OffsetDateTime} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default OffsetDateTime getOffsetDateTime(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof OffsetDateTime) {
-      return (OffsetDateTime) val;
-    }
-    return null;
+    return (OffsetDateTime) getValue(pos);
   }
 
   /**
    * Get a buffer value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   default Buffer getBuffer(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Buffer) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Buffer) {
       return (Buffer) val;
-    }
-    if (val instanceof ByteBuf) {
+    } else if (val instanceof ByteBuf) {
       return Buffer.buffer((ByteBuf) val);
-    }
-    if (val instanceof byte[]) {
+    } else if (val instanceof byte[]) {
       return Buffer.buffer((byte[]) val);
+    } else {
+      return (Buffer) val; // Throw CCE
     }
-    return null;
   }
 
   /**
    * Get {@link java.util.UUID} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default UUID getUUID(int pos) {
     Object val = getValue(pos);
-    if (val instanceof UUID) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof UUID) {
       return (UUID) val;
     } else if (val instanceof String) {
       return UUID.fromString((String) val);
+    } else {
+      return (UUID) val; // Throw CCE
     }
-    return null;
   }
 
   /**
    * Get {@link BigDecimal} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default BigDecimal getBigDecimal(int pos) {
     Object val = getValue(pos);
-    if (val instanceof BigDecimal) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof BigDecimal) {
       return (BigDecimal) val;
     } else if (val instanceof Number) {
       return new BigDecimal(val.toString());
+    } else {
+      return (BigDecimal) val; // Throw CCE
     }
-    return null;
   }
 
   /**
@@ -520,14 +637,16 @@ public interface Tuple {
    * coerced to {@code Boolean[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Boolean[] getBooleanArray(int pos) {
+  default Boolean[] getArrayOfBooleans(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Boolean[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Boolean[]) {
       return (Boolean[]) val;
-    } else if (val != null && val.getClass() == Object[].class) {
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Boolean[] booleanArray = new Boolean[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -535,7 +654,7 @@ public interface Tuple {
       }
       return booleanArray;
     } else {
-      return null;
+      return (Boolean[]) val; // Throw CCE
     }
   }
 
@@ -546,12 +665,14 @@ public interface Tuple {
    * coerced to {@code Short[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Short[] getShortArray(int pos) {
+  default Short[] getArrayOfShorts(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Short[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Short[]) {
       return (Short[]) val;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
@@ -564,7 +685,18 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val != null && val.getClass() == Object[].class) {
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Short[] arr = new Short[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (short)elt.ordinal();
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Short[] shortArray = new Short[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -572,7 +704,7 @@ public interface Tuple {
       }
       return shortArray;
     } else {
-      return null;
+      return (Short[]) val; // Throw CCE
     }
   }
 
@@ -583,12 +715,14 @@ public interface Tuple {
    * coerced to {@code Integer[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Integer[] getIntegerArray(int pos) {
+  default Integer[] getArrayOfIntegers(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Integer[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Integer[]) {
       return (Integer[]) val;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
@@ -601,7 +735,18 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val != null && val.getClass() == Object[].class) {
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Integer[] arr = new Integer[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.ordinal();
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Integer[] integerArray = new Integer[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -609,7 +754,7 @@ public interface Tuple {
       }
       return integerArray;
     } else {
-      return null;
+      return (Integer[]) val; // Throw CCE
     }
   }
 
@@ -620,12 +765,14 @@ public interface Tuple {
    * coerced to {@code Long[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Long[] getLongArray(int pos) {
+  default Long[] getArrayOfLongs(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Long[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Long[]) {
       return (Long[]) val;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
@@ -638,7 +785,18 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val != null && val.getClass() == Object[].class) {
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Long[] arr = new Long[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (long)elt.ordinal();
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Long[] longArray = new Long[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -646,7 +804,7 @@ public interface Tuple {
       }
       return longArray;
     } else {
-      return null;
+      return (Long[]) val; // Throw CCE
     }
   }
 
@@ -657,12 +815,14 @@ public interface Tuple {
    * coerced to {@code Float[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Float[] getFloatArray(int pos) {
+  default Float[] getArrayOfFloats(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Float[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Float[]) {
       return (Float[]) val;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
@@ -675,7 +835,18 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val != null && val.getClass() == Object[].class) {
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Float[] arr = new Float[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (float)elt.ordinal();
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Float[] floatArray = new Float[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -683,7 +854,7 @@ public interface Tuple {
       }
       return floatArray;
     } else {
-      return null;
+      return (Float[]) val; // Throw CCE
     }
   }
 
@@ -694,12 +865,14 @@ public interface Tuple {
    * coerced to {@code Double[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Double[] getDoubleArray(int pos) {
+  default Double[] getArrayOfDoubles(int pos) {
     Object val = getValue(pos);
-    if (val instanceof Double[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof Double[]) {
       return (Double[]) val;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
@@ -712,7 +885,18 @@ public interface Tuple {
         }
       }
       return arr;
-    } else if (val != null && val.getClass() == Object[].class) {
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Double[] arr = new Double[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (double)elt.ordinal();
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Double[] doubleArray = new Double[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -720,7 +904,54 @@ public interface Tuple {
       }
       return doubleArray;
     } else {
+      return (Double[]) val; // Throw CCE
+    }
+  }
+
+  /**
+   * Get an array of {@link Numeric} value at {@code pos}.
+   *
+   * @param pos the column
+   * @return the value
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Numeric[] getArrayOfNumerics(int pos) {
+    Object val = getValue(pos);
+    if (val == null) {
       return null;
+    } else if (val instanceof Numeric[]) {
+      return (Numeric[]) val;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      Numeric[] arr = new Numeric[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = Numeric.create(elt);
+        }
+      }
+      return arr;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Numeric[] arr = new Numeric[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = Numeric.create(elt.ordinal());
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
+      Object[] array = (Object[]) val;
+      Numeric[] doubleArray = new Numeric[array.length];
+      for (int i = 0;i < array.length;i++) {
+        doubleArray[i] = Numeric.create((Number) array[i]);
+      }
+      return doubleArray;
+    } else {
+      throw new ClassCastException();
     }
   }
 
@@ -731,14 +962,27 @@ public interface Tuple {
    * coerced to {@code String[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default String[] getStringArray(int pos) {
+  default String[] getArrayOfStrings(int pos) {
     Object val = getValue(pos);
-    if (val instanceof String[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof String[]) {
       return (String[]) val;
-    } else if (val != null && val.getClass() == Object[].class) {
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      String[] arr = new String[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.name();
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       String[] stringArray = new String[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -746,7 +990,7 @@ public interface Tuple {
       }
       return stringArray;
     } else {
-      return null;
+      return (String[]) val; // Throw CCE
     }
   }
 
@@ -754,12 +998,14 @@ public interface Tuple {
    * Get an array of  {@link JsonObject} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonObject[] getJsonObjectArray(int pos) {
+  default JsonObject[] getArrayOfJsonObjects(int pos) {
     Object val = getValue(pos);
-    if (val != null && val.getClass() == Object[].class) {
+    if (val == null) {
+      return null;
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       JsonObject[] jsonObjectArray = new JsonObject[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -767,7 +1013,7 @@ public interface Tuple {
       }
       return jsonObjectArray;
     } else {
-      return null;
+      return (JsonObject[]) val; // Throw CCE
     }
   }
 
@@ -775,12 +1021,14 @@ public interface Tuple {
    * Get an array of  {@link JsonArray} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default JsonArray[] getJsonArrayArray(int pos) {
+  default JsonArray[] getArrayOfJsonArrays(int pos) {
     Object val = getValue(pos);
-    if (val != null && val.getClass() == Object[].class) {
+    if (val == null) {
+      return null;
+    } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       JsonArray[] jsonObjectArray = new JsonArray[array.length];
       for (int i = 0;i < array.length;i++) {
@@ -788,7 +1036,50 @@ public interface Tuple {
       }
       return jsonObjectArray;
     } else {
+      return (JsonArray[]) val; // Throw CCE
+    }
+  }
+
+  /**
+   * Get an array of JSON elements at {@code pos}, the element might be {@link io.vertx.sqlclient.Tuple#JSON_NULL null} or one of the following types:
+   * <ul>
+   *   <li>String</li>
+   *   <li>Number</li>
+   *   <li>JsonObject</li>
+   *   <li>JsonArray</li>
+   *   <li>Boolean</li>
+   * </ul>
+   *
+   * @param pos the position
+   * @return the value
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Object[] getArrayOfJsons(int pos) {
+    Object val = getValue(pos);
+    if (val == null) {
       return null;
+    } else if (val instanceof JsonObject[]
+      || val instanceof JsonArray[]
+      || val instanceof Number[]
+      || val instanceof Boolean[]
+      || val instanceof String[]) {
+      return (Object[]) val;
+    } else if (val.getClass() == Object[].class) {
+      Object[] array = (Object[]) val;
+      for (int i = 0; i < array.length; i++) {
+        Object elt = Array.get(val, i);
+        if (elt != null && !(elt == Tuple.JSON_NULL ||
+          elt instanceof String ||
+          elt instanceof Boolean ||
+          elt instanceof Number ||
+          elt instanceof JsonObject ||
+          elt instanceof JsonArray)) {
+          throw new ClassCastException();
+        }
+      }
+      return array;
+    } else {
+      throw new ClassCastException();
     }
   }
 
@@ -796,16 +1087,11 @@ public interface Tuple {
    * Get an array of  {@link Temporal} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Temporal[] getTemporalArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Temporal[]) {
-      return (Temporal[]) val;
-    } else {
-      return null;
-    }
+  default Temporal[] getArrayOfTemporals(int pos) {
+    return (Temporal[]) getValue(pos);
   }
 
   /**
@@ -815,12 +1101,14 @@ public interface Tuple {
    * coerced to {@code LocalDate[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDate[] getLocalDateArray(int pos) {
+  default LocalDate[] getArrayOfLocalDates(int pos) {
     Object val = getValue(pos);
-    if (val instanceof LocalDate[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof LocalDate[]) {
       return (LocalDate[]) val;
     } else if (val instanceof LocalDateTime[]) {
       LocalDateTime[] a = (LocalDateTime[]) val;
@@ -834,7 +1122,7 @@ public interface Tuple {
       }
       return arr;
     } else {
-      return null;
+      return (LocalDate[]) val; // Throw CCE
     }
   }
 
@@ -845,12 +1133,14 @@ public interface Tuple {
    * coerced to {@code LocalTime[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalTime[] getLocalTimeArray(int pos) {
+  default LocalTime[] getArrayOfLocalTimes(int pos) {
     Object val = getValue(pos);
-    if (val instanceof LocalTime[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof LocalTime[]) {
       return (LocalTime[]) val;
     } else if (val instanceof LocalDateTime[]) {
       LocalDateTime[] a = (LocalDateTime[]) val;
@@ -864,7 +1154,7 @@ public interface Tuple {
       }
       return arr;
     } else {
-      return null;
+      return (LocalTime[]) val; // Throw CCE
     }
   }
 
@@ -872,16 +1162,11 @@ public interface Tuple {
    * Get an array of  {@link LocalDateTime} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default LocalDateTime[] getLocalDateTimeArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof LocalDateTime[]) {
-      return (LocalDateTime[]) val;
-    } else {
-      return null;
-    }
+  default LocalDateTime[] getArrayOfLocalDateTimes(int pos) {
+    return (LocalDateTime[]) getValue(pos);
   }
 
   /**
@@ -891,12 +1176,14 @@ public interface Tuple {
    * coerced to {@code OffsetTime[]}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetTime[] getOffsetTimeArray(int pos) {
+  default OffsetTime[] getArrayOfOffsetTimes(int pos) {
     Object val = getValue(pos);
-    if (val instanceof OffsetTime[]) {
+    if (val == null) {
+      return null;
+    } else if (val instanceof OffsetTime[]) {
       return (OffsetTime[]) val;
     } else if (val instanceof OffsetDateTime[]) {
       OffsetDateTime[] a = (OffsetDateTime[]) val;
@@ -910,7 +1197,7 @@ public interface Tuple {
       }
       return arr;
     } else {
-      return null;
+      return (OffsetTime[]) val; // Throw CCE
     }
   }
 
@@ -918,64 +1205,44 @@ public interface Tuple {
    * Get an array of  {@link OffsetDateTime} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default OffsetDateTime[] getOffsetDateTimeArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof OffsetDateTime[]) {
-      return (OffsetDateTime[]) val;
-    } else {
-      return null;
-    }
+  default OffsetDateTime[] getArrayOfOffsetDateTimes(int pos) {
+    return (OffsetDateTime[]) getValue(pos);
   }
 
   /**
    * Get an array of  {@link Buffer} value at {@code pos}.
    *
    * @param pos the position
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore
-  default Buffer[] getBufferArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Buffer[]) {
-      return (Buffer[]) val;
-    } else {
-      return null;
-    }
+  default Buffer[] getArrayOfBuffers(int pos) {
+    return (Buffer[]) getValue(pos);
   }
 
   /**
    * Get an array of {@link UUID} value at {@code pos}.
    *
    * @param pos the column
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default UUID[] getUUIDArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof UUID[]) {
-      return (UUID[]) val;
-    } else {
-      return null;
-    }
+  default UUID[] getArrayOfUUIDs(int pos) {
+    return (UUID[]) getValue(pos);
   }
 
   /**
    * Get an array of {@link BigDecimal} value at {@code pos}.
    *
    * @param pos the column
-   * @return the value or {@code null}
+   * @return the value
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default BigDecimal[] getBigDecimalArray(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof BigDecimal[]) {
-      return (BigDecimal[]) val;
-    } else {
-      return null;
-    }
+  default BigDecimal[] getArrayOfBigDecimals(int pos) {
+    return (BigDecimal[]) getValue(pos);
   }
 
   /**
@@ -1192,7 +1459,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addBooleanArray(Boolean[] value) {
+  default Tuple addArrayOfBoolean(Boolean[] value) {
     return addValue(value);
   }
 
@@ -1203,7 +1470,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addShortArray(Short[] value) {
+  default Tuple addArrayOfShort(Short[] value) {
     return addValue(value);
   }
 
@@ -1217,7 +1484,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addIntegerArray(Integer[] value) {
+  default Tuple addArrayOfInteger(Integer[] value) {
     return addValue(value);
   }
 
@@ -1228,7 +1495,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addLongArray(Long[] value) {
+  default Tuple addArrayOfLong(Long[] value) {
     return addValue(value);
   }
 
@@ -1239,7 +1506,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addFloatArray(Float[] value) {
+  default Tuple addArrayOfFloat(Float[] value) {
     return addValue(value);
   }
 
@@ -1250,7 +1517,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addDoubleArray(Double[] value) {
+  default Tuple addArrayOfDouble(Double[] value) {
     return addValue(value);
   }
 
@@ -1261,7 +1528,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addStringArray(String[] value) {
+  default Tuple addArrayOfString(String[] value) {
     return addValue(value);
   }
 
@@ -1272,7 +1539,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addJsonObjectArray(JsonObject[] value) {
+  default Tuple addArrayOfJsonObject(JsonObject[] value) {
     return addValue(value);
   }
 
@@ -1283,7 +1550,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addJsonArrayArray(JsonArray[] value) {
+  default Tuple addArrayOfJsonArray(JsonArray[] value) {
     return addValue(value);
   }
 
@@ -1294,7 +1561,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addTemporalArray(Temporal[] value) {
+  default Tuple addArrayOfTemporal(Temporal[] value) {
     return addValue(value);
   }
 
@@ -1305,7 +1572,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addLocalDateArray(LocalDate[] value) {
+  default Tuple addArrayOfLocalDate(LocalDate[] value) {
     return addValue(value);
   }
 
@@ -1316,7 +1583,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addLocalTimeArray(LocalTime[] value) {
+  default Tuple addArrayOfLocalTime(LocalTime[] value) {
     return addValue(value);
   }
 
@@ -1327,7 +1594,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addLocalDateTimeArray(LocalDateTime[] value) {
+  default Tuple addArrayOfLocalDateTime(LocalDateTime[] value) {
     return addValue(value);
   }
 
@@ -1338,7 +1605,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addOffsetTimeArray(OffsetTime[] value) {
+  default Tuple addArrayOfOffsetTime(OffsetTime[] value) {
     return addValue(value);
   }
 
@@ -1349,7 +1616,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addOffsetDateTimeArray(OffsetDateTime[] value) {
+  default Tuple addArrayOfOffsetDateTime(OffsetDateTime[] value) {
     return addValue(value);
   }
 
@@ -1360,7 +1627,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  default Tuple addBufferArray(Buffer[] value) {
+  default Tuple addArrayOfBuffer(Buffer[] value) {
     return addValue(value);
   }
 
@@ -1371,7 +1638,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addUUIDArray(UUID[] value) {
+  default Tuple addArrayOfUUID(UUID[] value) {
     return addValue(value);
   }
 
@@ -1382,7 +1649,7 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  default Tuple addBigDecimalArray(BigDecimal[] value) {
+  default Tuple addArrayOfBigDecimal(BigDecimal[] value) {
     return addValue(value);
   }
 
@@ -1394,7 +1661,7 @@ public interface Tuple {
    *
    * @param type the expected value type
    * @param position the value position
-   * @return the value or {@code null} if the value is not found or null.
+   * @return the value if the value is not found or null.
    */
   default <T> T get(Class<T> type, int position) {
     if (type == null) {

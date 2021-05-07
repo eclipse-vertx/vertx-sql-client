@@ -17,6 +17,7 @@
 package io.vertx.pgclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
@@ -29,6 +30,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implements PgConnection  {
@@ -37,15 +39,22 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
     if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
       return context.failedFuture("Native transport is not available");
     } else {
-      PgConnectionFactory client = new PgConnectionFactory(context.owner(), context, options);
+      PgConnectionFactory client;
+      try {
+        client = new PgConnectionFactory(context.owner(), options);
+      } catch (Exception e) {
+        return context.failedFuture(e);
+      }
       context.addCloseHook(client);
-      return client.connect()
+      PromiseInternal<Connection> promise = context.promise();
+      client.connect(promise);
+      return promise.future()
         .map(conn -> {
-        QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), options);
-        PgConnectionImpl pgConn = new PgConnectionImpl(client, context, conn, tracer, null);
-        conn.init(pgConn);
-        return pgConn;
-      });
+          QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), options);
+          PgConnectionImpl pgConn = new PgConnectionImpl(client, context, conn, tracer, null);
+          conn.init(pgConn);
+          return pgConn;
+        });
     }
   }
 
@@ -79,6 +88,11 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
         .setChannel(notification.getChannel())
         .setProcessId(notification.getProcessId())
         .setPayload(notification.getPayload()));
+    }
+    if (event instanceof TxFailedEvent) {
+      if (tx != null) {
+        tx.fail();
+      }
     }
   }
 

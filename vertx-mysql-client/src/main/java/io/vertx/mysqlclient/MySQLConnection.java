@@ -64,7 +64,7 @@ public interface MySQLConnection extends SqlConnection {
   }
 
   /**
-   * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} with options build from {@code connectionUri}.
+   * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} with options built from {@code connectionUri}.
    */
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MySQLConnection>> handler) {
     connect(vertx, fromUri(connectionUri), handler);
@@ -199,4 +199,16 @@ public interface MySQLConnection extends SqlConnection {
    * Like {@link #changeUser(MySQLAuthOptions, Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<Void> changeUser(MySQLAuthOptions options);
+
+  /**
+   * Cast a {@link SqlConnection} to {@link MySQLConnection}.
+   *
+   * This is mostly useful for Vert.x generated APIs like RxJava/Mutiny.
+   *
+   * @param sqlConnection the connection to cast
+   * @return a {@link MySQLConnection instance}
+   */
+  static MySQLConnection cast(SqlConnection sqlConnection) {
+    return (MySQLConnection) sqlConnection;
+  }
 }

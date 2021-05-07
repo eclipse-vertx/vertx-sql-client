@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,12 +11,12 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
@@ -36,37 +36,44 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
   void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
     ByteBuf messageBody = message.content();
     while (messageBody.isReadable()) {
-      int tokenByte = messageBody.readUnsignedByte();
-      switch (tokenByte) {
-        case DataPacketStreamTokenType.COLMETADATA_TOKEN:
+      DataPacketStreamTokenType tokenType = DataPacketStreamTokenType.valueOf(messageBody.readUnsignedByte());
+      if (tokenType == null) {
+        throw new UnsupportedOperationException("Unsupported token: " + tokenType);
+      }
+      switch (tokenType) {
+        case COLMETADATA_TOKEN:
           MSSQLRowDesc rowDesc = decodeColmetadataToken(messageBody);
           rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
           break;
-        case DataPacketStreamTokenType.ROW_TOKEN:
+        case ROW_TOKEN:
           handleRow(messageBody);
           break;
-        case DataPacketStreamTokenType.NBCROW_TOKEN:
+        case NBCROW_TOKEN:
           handleNbcRow(messageBody);
           break;
-        case DataPacketStreamTokenType.DONE_TOKEN:
+        case DONE_TOKEN:
+        case DONEPROC_TOKEN:
           short status = messageBody.readShortLE();
           short curCmd = messageBody.readShortLE();
           long doneRowCount = messageBody.readLongLE();
           handleResultSetDone((int) doneRowCount);
-          handleDoneToken();
           break;
-        case DataPacketStreamTokenType.INFO_TOKEN:
-          int infoTokenLength = messageBody.readUnsignedShortLE();
-          //TODO not used for now
-          messageBody.skipBytes(infoTokenLength);
+        case INFO_TOKEN:
+        case ORDER_TOKEN:
+          int tokenLength = messageBody.readUnsignedShortLE();
+          messageBody.skipBytes(tokenLength);
           break;
-        case DataPacketStreamTokenType.ERROR_TOKEN:
+        case ERROR_TOKEN:
           handleErrorToken(messageBody);
           break;
+        case ENVCHANGE_TOKEN:
+          handleEnvChangeToken(messageBody);
+          break;
         default:
-          throw new UnsupportedOperationException("Unsupported token: " + tokenByte);
+          throw new UnsupportedOperationException("Unsupported token: " + tokenType);
       }
     }
+    complete();
   }
 
   private void sendBatchClientRequest() {
@@ -85,7 +92,7 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
 
     int start = packet.writerIndex();
     packet.writeIntLE(0x00); // TotalLength for ALL_HEADERS
-    encodeTransactionDescriptor(packet, 0, 1);
+    encodeTransactionDescriptor(packet);
     // set TotalLength for ALL_HEADERS
     packet.setIntLE(start, packet.writerIndex() - start);
 
@@ -95,6 +102,6 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
     int packetLen = packet.writerIndex() - packetLenIdx + 2;
     packet.setShort(packetLenIdx, packetLen);
 
-    chctx.writeAndFlush(packet);
+    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 }

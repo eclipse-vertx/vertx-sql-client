@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -20,6 +20,7 @@ import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 import java.util.stream.Collector;
 
+import static io.vertx.mssqlclient.impl.protocol.EnvChange.*;
 import static io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId.*;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends MSSQLCommandCodec<Boolean, C> {
@@ -33,11 +34,11 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
     return collector.finisher().apply(collector.supplier().get());
   }
 
-  protected void encodeTransactionDescriptor(ByteBuf payload, long transactionDescriptor, int outstandingRequestCount) {
+  protected void encodeTransactionDescriptor(ByteBuf payload) {
     payload.writeIntLE(18); // HeaderLength is always 18
     payload.writeShortLE(0x0002); // HeaderType
-    payload.writeLongLE(transactionDescriptor);
-    payload.writeIntLE(outstandingRequestCount);
+    payload.writeLongLE(encoder.transactionDescriptor);
+    payload.writeIntLE(1);
   }
 
   protected MSSQLRowDesc decodeColmetadataToken(ByteBuf payload) {
@@ -87,6 +88,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
 
   private MSSQLDataType decodeDataTypeMetadata(ByteBuf payload) {
     int typeInfo = payload.readUnsignedByte();
+    byte scale;
     switch (typeInfo) {
       /*
        * FixedLen DataType
@@ -112,8 +114,8 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       case DECIMALNTYPE_ID:
         short numericTypeSize = payload.readUnsignedByte();
         byte numericPrecision = payload.readByte();
-        byte numericScale = payload.readByte();
-        return new NumericDataType(NUMERICNTYPE_ID, Numeric.class, numericPrecision, numericScale);
+        scale = payload.readByte();
+        return new NumericDataType(NUMERICNTYPE_ID, Numeric.class, numericPrecision, scale);
       case INTNTYPE_ID:
         byte intNTypeLength = payload.readByte();
         return IntNDataType.valueOf(intNTypeLength);
@@ -123,21 +125,54 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       case BITNTYPE_ID:
         payload.skipBytes(1); // should only be 1
         return BitNDataType.BIT_1_DATA_TYPE;
+      case DATETIMETYPE_ID:
+        return FixedLenDataType.DATETIMETYPE;
       case DATENTYPE_ID:
         return FixedLenDataType.DATENTYPE;
       case TIMENTYPE_ID:
-        byte scale = payload.readByte();
+        scale = payload.readByte();
         return new TimeNDataType(scale);
+      case DATETIME2NTYPE_ID:
+        scale = payload.readByte();
+        return new DateTime2NDataType(scale);
+      case DATETIMEOFFSETNTYPE_ID:
+        scale = payload.readByte();
+        return new DateTimeOffsetNDataType(scale);
       case BIGCHARTYPE_ID:
       case BIGVARCHRTYPE_ID:
+      case NCHARTYPE_ID:
+      case NVARCHARTYPE_ID:
         int size = payload.readUnsignedShortLE();
         short collateCodepage = payload.readShortLE();
         short collateFlags = payload.readShortLE();
         byte collateCharsetId = payload.readByte();
-        return new TextWithCollationDataType(BIGVARCHRTYPE_ID, String.class, null);
+        return new TextWithCollationDataType(typeInfo, String.class, null);
       default:
         throw new UnsupportedOperationException("Unsupported type with typeinfo: " + typeInfo);
     }
+  }
+
+  void handleEnvChangeToken(ByteBuf messageBody) {
+    int totalLength = messageBody.readUnsignedShortLE();
+    int startPos = messageBody.readerIndex();
+    int type = messageBody.readUnsignedByte();
+    switch (type) {
+      case XACT_BEGIN:
+      case DTC_ENLIST:
+        if (messageBody.readUnsignedByte() != 8) {
+          throw new IllegalStateException();
+        }
+        encoder.transactionDescriptor = messageBody.readLongLE();
+        break;
+      case XACT_COMMIT:
+      case XACT_ROLLBACK:
+      case DTC_DEFECT:
+        encoder.transactionDescriptor = 0;
+        break;
+      default:
+        break;
+    }
+    messageBody.readerIndex(startPos + totalLength);
   }
 }
 

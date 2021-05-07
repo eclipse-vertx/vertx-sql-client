@@ -209,6 +209,15 @@ Currently, the client supports the following parameter keywords in connection ur
 * socket
 * useAffectedRows
 
+== Connect retries
+
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#reconnectAttempts}
+----
+
 include::queries.adoc[]
 
 == MySQL LAST_INSERT_ID
@@ -227,6 +236,10 @@ include::connections.adoc[]
 include::transactions.adoc[]
 
 include::cursor.adoc[]
+
+== Tracing queries
+
+include::tracing.adoc[]
 
 == MySQL type mapping
 
@@ -476,6 +489,22 @@ This client supports for handling the LOCAL INFILE Request, if you want to load 
 `LOAD DATA LOCAL INFILE '<filename>' INTO TABLE <table>;`. More information can be found in the https://dev.mysql.com/doc/refman/8.0/en/load-data.html[MySQL Reference Manual].
 
 == Authentication
+
+=== Default authentication plugin
+
+This client supports for specifying the default authentication plugin to use at the connection start.
+Currently the following plugins are supported:
+
+- mysql_native_password
+- caching_sha2_password
+- mysql_clear_password
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#defaultAuthPluginExample}
+----
+
+=== New authentication method introduced in MySQL 8
 
 MySQL 8.0 introduces a new authentication method named `caching_sha2_password` and it's the default one to authenticate.
 In order to connect to the server using this new authentication method, you need either use a secure connection(i.e. enable TLS/SSL) or exchange the encrypted password using an RSA key pair to avoid leaks of password. The RSA key pair is automatically exchanged during the communication, but the server RSA public key may be hacked during the process since it's transferred on a insecure connection.

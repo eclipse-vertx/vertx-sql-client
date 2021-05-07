@@ -24,31 +24,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.data.Box;
-import io.vertx.pgclient.data.Circle;
-import io.vertx.pgclient.data.Interval;
-import io.vertx.pgclient.data.Line;
-import io.vertx.pgclient.data.LineSegment;
-import io.vertx.pgclient.data.Path;
-import io.vertx.pgclient.data.Point;
-import io.vertx.pgclient.data.Polygon;
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.pgclient.data.*;
+import io.vertx.sqlclient.*;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.lang.reflect.Array;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
@@ -191,28 +174,17 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Consumer<Throwable> check = failure -> ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [invalid-id] can not be coerced to the expected class = [java.lang.Number] for encoding.", failure.getMessage());
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       // This will test with pipelining
-      Thread th = Thread.currentThread();
       for (int i = 0;i < times;i++) {
-        int iter = i;
-        AtomicInteger count = new AtomicInteger();
-        count.incrementAndGet();
         test.accept(conn, failure1 -> {
           check.accept(failure1);
-          count.incrementAndGet();
           test.accept(conn, failure2 -> {
             check.accept(failure2);
-            ctx.assertTrue(count.get() < 2, "Was expecting " + count.get() + " < 2");
-            count.incrementAndGet();
             test.accept(conn, failure3 -> {
               check.accept(failure3);
-              ctx.assertTrue(count.get() < 2, "Was expecting " + count.get() + " < 2");
               async.countDown();
             });
-            count.decrementAndGet();
           });
-          count.decrementAndGet();
         });
-        count.decrementAndGet();
       }
     }));
   }
@@ -547,6 +519,18 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT CONCAT('HELLO', $1)", ctx.asyncAssertSuccess(ps -> {
         ps.query().execute(Tuple.of(null), ctx.asyncAssertFailure(result -> {
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testInferDataTypeLazyPolymorphic(TestContext ctx) {
+    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT to_jsonb($1)", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of("foo"), ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals("foo", result.iterator().next().getString(0));
           conn.close();
         }));
       }));

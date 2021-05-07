@@ -62,19 +62,22 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     authPluginData = new byte[NONCE_LENGTH];
     payload.readBytes(authPluginData);
-    byte[] scrambledPassword;
+    byte[] authResponse;
     switch (pluginName) {
       case "mysql_native_password":
-        scrambledPassword = Native41Authenticator.encode(password, authPluginData);
+        authResponse = Native41Authenticator.encode(password, authPluginData);
         break;
       case "caching_sha2_password":
-        scrambledPassword = CachingSha2Authenticator.encode(password, authPluginData);
+        authResponse = CachingSha2Authenticator.encode(password, authPluginData);
+        break;
+      case "mysql_clear_password":
+        authResponse = password;
         break;
       default:
         completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
         return;
     }
-    sendBytesAsPacket(scrambledPassword);
+    sendBytesAsPacket(authResponse);
   }
 
   private void sendChangeUserCommand() {

@@ -18,10 +18,11 @@ package io.vertx.db2client;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.db2client.impl.DB2PoolImpl;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlClient;
 
 import static io.vertx.db2client.DB2ConnectOptions.fromUri;
 
@@ -77,7 +78,7 @@ public interface DB2Pool extends Pool {
     }
     VertxOptions vertxOptions = new VertxOptions();
     Vertx vertx = Vertx.vertx(vertxOptions);
-    return DB2PoolImpl.create((ContextInternal) vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return DB2PoolImpl.create((VertxInternal) vertx, true, false, connectOptions, poolOptions);
   }
 
   /**
@@ -85,6 +86,63 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static DB2Pool pool(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return DB2PoolImpl.create((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return DB2PoolImpl.create((VertxInternal) vertx, false, false, connectOptions, poolOptions);
+  }
+
+  /**
+   * Like {@link #client(String, PoolOptions)} with a default {@code poolOptions}.
+   */
+  static SqlClient client(String connectionUri) {
+    return client(connectionUri, new PoolOptions());
+  }
+
+  /**
+   * Like {@link #client(DB2ConnectOptions, PoolOptions)} with
+   * {@code connectOptions} build from {@code connectionUri}.
+   */
+  static SqlClient client(String connectionUri, PoolOptions poolOptions) {
+    return client(fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Like {@link #client(Vertx, String,PoolOptions)} with a default
+   * {@code poolOptions}..
+   */
+  static SqlClient client(Vertx vertx, String connectionUri) {
+    return client(vertx, fromUri(connectionUri), new PoolOptions());
+  }
+
+  /**
+   * Like {@link #client(Vertx, DB2ConnectOptions, PoolOptions)} with
+   * {@code connectOptions} build from {@code connectionUri}.
+   */
+  static SqlClient client(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
+    return client(vertx, fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Create a pooled client to the DB2 server configured with the given
+   * {@code connectOptions} and {@code poolOptions}.
+   *
+   * @param connectOptions the options for the connection
+   * @param poolOptions    the options for creating the pool
+   * @return the connection pool
+   */
+  static SqlClient client(DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
+    if (Vertx.currentContext() != null) {
+      throw new IllegalStateException(
+        "Running in a Vertx context => use DB2Pool#pool(Vertx, DB2ConnectOptions, PoolOptions) instead");
+    }
+    VertxOptions vertxOptions = new VertxOptions();
+    Vertx vertx = Vertx.vertx(vertxOptions);
+    return DB2PoolImpl.create((VertxInternal) vertx, true, true, connectOptions, poolOptions);
+  }
+
+  /**
+   * Like {@link #client(DB2ConnectOptions, PoolOptions)} with a specific
+   * {@link Vertx} instance.
+   */
+  static SqlClient client(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
+    return DB2PoolImpl.create((VertxInternal) vertx, false, true, connectOptions, poolOptions);
   }
 }

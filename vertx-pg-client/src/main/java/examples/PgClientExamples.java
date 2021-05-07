@@ -17,6 +17,7 @@
 
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
@@ -30,6 +31,8 @@ import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collector;
@@ -56,7 +59,7 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    PgPool client = PgPool.pool(connectOptions, poolOptions);
+    SqlClient client = PgPool.client(connectOptions, poolOptions);
 
     // A simple query
     client
@@ -145,7 +148,7 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(connectOptions, poolOptions);
+    SqlClient client = PgPool.client(connectOptions, poolOptions);
   }
 
   public void connecting02(Vertx vertx) {
@@ -163,13 +166,13 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
+    SqlClient client = PgPool.client(vertx, connectOptions, poolOptions);
   }
 
-  public void connecting03(PgPool pool) {
+  public void connecting03(PgPool client) {
 
-    // Close the pool and all the associated resources
-    pool.close();
+    // Close the pooled client and all the associated resources
+    client.close();
   }
 
   public void connecting04(Vertx vertx) {
@@ -187,10 +190,10 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(vertx, connectOptions, poolOptions);
+    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
 
     // Get a connection from the pool
-    client.getConnection().compose(conn -> {
+    pool.getConnection().compose(conn -> {
       System.out.println("Got a connection from the pool");
 
       // All operations execute on the same connection
@@ -250,7 +253,22 @@ public class PgClientExamples {
     });
   }
 
-  public void connecting06(Vertx vertx) {
+  public void poolVersusPooledClient(Vertx vertx, String sql, PgConnectOptions connectOptions, PoolOptions poolOptions) {
+
+    // Pooled client
+    SqlClient pooledClient = PgPool.client(vertx, connectOptions, poolOptions);
+
+    // Pipelined
+    Future<RowSet<Row>> res1 = pooledClient.query(sql).execute();
+
+    // Connection pool
+    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+
+    // Not pipelined
+    Future<RowSet<Row>> res2 = pool.query(sql).execute();
+  }
+
+  public void unixDomainSockets(Vertx vertx) {
 
     // Connect Options
     // Socket file name will be /var/run/postgresql/.s.PGSQL.5432
@@ -269,6 +287,13 @@ public class PgClientExamples {
     // Create the pooled client with a vertx instance
     // Make sure the vertx instance has enabled native transports
     PgPool client2 = PgPool.pool(vertx, connectOptions, poolOptions);
+  }
+
+  public void reconnectAttempts(PgConnectOptions options) {
+    // The client will try to connect at most 3 times at a 1 second interval
+    options
+      .setReconnectAttempts(2)
+      .setReconnectInterval(1000);
   }
 
   public void typeMapping01(Pool pool) {
@@ -460,10 +485,23 @@ public class PgClientExamples {
     Tuple tuple = Tuple.of(new String[]{ "a", "tuple", "with", "arrays" });
 
     // Add a string array to the tuple
-    tuple.addStringArray(new String[]{"another", "array"});
+    tuple.addArrayOfString(new String[]{"another", "array"});
 
     // Get the first array of string
-    String[] array = tuple.getStringArray(0);
+    String[] array = tuple.getArrayOfStrings(0);
+  }
+
+  public void infinitySpecialValue(SqlClient client) {
+    client
+      .query("SELECT 'infinity'::DATE \"LocalDate\"")
+      .execute(ar -> {
+        if (ar.succeeded()) {
+          Row row = ar.result().iterator().next();
+          System.out.println(row.getLocalDate("LocalDate").equals(LocalDate.MAX));
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
+      });
   }
 
   public void customType01Example(SqlClient client) {
@@ -635,5 +673,20 @@ public class PgClientExamples {
         System.out.println("Failure: " + ar.cause().getMessage());
       }
     });
+  }
+
+  public void batchReturning(SqlClient client) {
+    client
+      .preparedQuery("INSERT INTO color (color_name) VALUES ($1) RETURNING color_id")
+      .executeBatch(Arrays.asList(Tuple.of("white"), Tuple.of("red"), Tuple.of("blue")),ar -> {
+        if (ar.succeeded()) {
+          for (RowSet<Row> rows = ar.result();rows.next() != null;rows = rows.next()) {
+            Integer colorId = rows.iterator().next().getInteger("color_id");
+            System.out.println("generated key: " + colorId);
+          }
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
+      });
   }
 }

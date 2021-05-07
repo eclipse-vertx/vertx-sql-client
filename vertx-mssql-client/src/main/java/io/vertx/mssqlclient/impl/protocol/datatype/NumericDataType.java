@@ -11,13 +11,15 @@
 
 package io.vertx.mssqlclient.impl.protocol.datatype;
 
+import java.sql.JDBCType;
+
 // NUMERIC, NUMERICN, DECIMAL, or DECIMALN.
 public class NumericDataType extends MSSQLDataType {
   private final int precision;
   private final int scale;
 
   public NumericDataType(int id, Class<?> mappedJavaType, int precision, int scale) {
-    super(id, mappedJavaType);
+    super(id, mappedJavaType, JDBCType.NUMERIC);
     this.precision = precision;
     this.scale = scale;
   }

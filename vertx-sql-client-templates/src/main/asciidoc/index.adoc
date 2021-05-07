@@ -58,45 +58,64 @@ You can use the backslash char `\` to escape  any `#` character, i.e `\#{foo}` w
 
 By default templates produce {@link io.vertx.sqlclient.Row} as result type.
 
-You can provide a function to achieve row level mapping instead:
+You can provide a custom {@link io.vertx.sqlclient.templates.RowMapper} to achieve row level mapping instead:
 
 [source,$lang]
 ----
 {@link examples.TemplateExamples#rowUserMapper}
 ----
 
-[[row_mapping_with_custom_function]]
+[[row_mapping_with_custom_mapper]]
 to achieve row level mapping instead:
 
 [source,$lang]
 ----
-{@link examples.TemplateExamples#bindingRowWithCustomFunction}
+{@link examples.TemplateExamples#bindingRowWithCustomMapper}
+----
+
+== Anemic JSON row mapping
+
+Anemic JSON row mapping is a trivial mapping between template row columns and a JSON object
+using the {@link io.vertx.sqlclient.Row#toJson()}
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingRowWithAnemicJsonMapper}
 ----
 
 == Parameters mapping
 
 Templates consume `Map<String, Object>` as default input.
 
-You can provide a function:
+You can provide a custom mapper:
 
 [source,$lang]
 ----
 {@link examples.TemplateExamples#paramsUserMapper}
 ----
 
-[[params_mapping_with_custom_function]]
+[[params_mapping_with_custom_mapper]]
 to achieve parameter mapping instead:
 
 [source,$lang]
 ----
-{@link examples.TemplateExamples#bindingParamsWithCustomFunction}
+{@link examples.TemplateExamples#bindingParamsWithCustomMapper}
 ----
 
 You can also perform batching easily:
 
 [source,$lang]
 ----
-{@link examples.TemplateExamples#batchBindingParamsWithCustomFunction}
+{@link examples.TemplateExamples#batchBindingParamsWithCustomMapper}
+----
+
+== Anemic JSON parameters mapping
+
+Anemic JSON parameters mapping is a trivial mapping between template parameters and a JSON object:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#bindingParamsWithAnemicJsonMapper}
 ----
 
 == Mapping with Jackson databind
@@ -275,7 +294,7 @@ annotation.
 
 You can annotate the field, the getter or the setter.
 
-The generated mapper can be used to perform row mapping like explained in <<row_mapping_with_custom_function,row mapping chapter>>.
+The generated mapper can be used to perform row mapping like explained in <<row_mapping_with_custom_mapper,row mapping chapter>>.
 
 [source,$lang]
 ----

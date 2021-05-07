@@ -17,7 +17,11 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.Future;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
@@ -28,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -55,7 +60,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
 
   @Test
   public void testPool(TestContext ctx) {
-    int num = 5000;
+    int num = 1000;
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
@@ -82,7 +87,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     for (int i = 0;i < num;i++) {
       pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
-          SqlResult result = ar.result();
+          SqlResult<?> result = ar.result();
           ctx.assertEquals(10000, result.size());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -194,5 +199,20 @@ public abstract class PgPoolTestBase extends PgTestBase {
       }));
       ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
     }));
+  }
+
+  @Test
+  public void testWithConnection(TestContext ctx) {
+    Async async = ctx.async(10);
+    PgPool pool = createPool(options, 1);
+    Function<SqlConnection, Future<RowSet<Row>>> success = conn -> conn.query("SELECT 1").execute();
+    Function<SqlConnection, Future<RowSet<Row>>> failure = conn -> conn.query("SELECT does_not_exist").execute();
+    for (int i = 0;i < 10;i++) {
+      if (i % 2 == 0) {
+        pool.withConnection(success, ctx.asyncAssertSuccess(v -> async.countDown()));
+      } else {
+        pool.withConnection(failure, ctx.asyncAssertFailure(v -> async.countDown()));
+      }
+    }
   }
 }

@@ -35,10 +35,15 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
-  private TransactionImpl tx;
+  protected TransactionImpl tx;
 
   public SqlConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(context, conn, tracer, metrics);
+  }
+
+  @Override
+  protected ContextInternal context() {
+    return context;
   }
 
   @Override
@@ -60,11 +65,14 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
+  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
     if (tx != null) {
+      // TODO
+      Promise<R> promise = context.promise();
       tx.schedule(cmd, promise);
+      return promise.future();
     } else {
-      conn.schedule(cmd, promise);
+      return conn.schedule(context, cmd);
     }
   }
 
@@ -107,10 +115,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
     if (tx != null) {
       throw new IllegalStateException();
     }
-    tx = new TransactionImpl(context, conn);
-    tx.completion().onComplete(ar -> {
-      tx = null;
-    });
+    tx = new TransactionImpl(context, v -> tx = null, conn);
     return tx.begin();
   }
 
@@ -141,15 +146,13 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   }
 
   private void close(Promise<Void> promise) {
-    if (context == Vertx.currentContext()) {
+    context.execute(promise, p -> {
       if (tx != null) {
-        tx.rollback(ar -> conn.close(this, promise));
+        tx.rollback(ar -> conn.close(this, p));
         tx = null;
       } else {
-        conn.close(this, promise);
+        conn.close(this, p);
       }
-    } else {
-      context.runOnContext(v -> close());
-    }
+    });
   }
 }

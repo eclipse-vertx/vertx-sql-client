@@ -16,8 +16,11 @@
  */
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -32,6 +35,7 @@ import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Source
@@ -170,145 +174,98 @@ public class SqlClientExamples {
 
   public void usingConnections01(Vertx vertx, Pool pool) {
 
-    pool.getConnection(ar1 -> {
-      if (ar1.succeeded()) {
-        SqlConnection connection = ar1.result();
-
+    pool
+      .getConnection()
+      .compose(connection ->
         connection
-          .query("SELECT * FROM users WHERE id='julien'")
-          .execute(ar2 -> {
-          if (ar1.succeeded()) {
-            connection
-              .query("SELECT * FROM users WHERE id='paulo'")
-              .execute(ar3 -> {
-              // Do something with rows and return the connection to the pool
-              connection.close();
-            });
-          } else {
-            // Return the connection to the pool
-            connection.close();
-          }
-        });
-      }
+          .preparedQuery("INSERT INTO Users (first_name,last_name) VALUES (?, ?)")
+          .executeBatch(Arrays.asList(
+            Tuple.of("Julien", "Viet"),
+            Tuple.of("Emad", "Alblueshi")
+          ))
+          .compose(res -> connection
+            // Do something with rows
+            .query("SELECT COUNT(*) FROM Users")
+            .execute()
+            .map(rows -> rows.iterator().next().getInteger(0)))
+          // Return the connection to the pool
+          .eventually(v -> connection.close())
+      ).onSuccess(count -> {
+      System.out.println("Insert users, now the number of users is " + count);
     });
   }
 
   public void usingConnections02(SqlConnection connection) {
-    connection.prepare("SELECT * FROM users WHERE first_name LIKE ?", ar1 -> {
-      if (ar1.succeeded()) {
-        PreparedStatement prepared = ar1.result();
-        prepared.query().execute(Tuple.of("julien"), ar2 -> {
-          if (ar2.succeeded()) {
-            // All rows
-            RowSet<Row> rows = ar2.result();
-          }
-        });
-      }
+    connection
+      .prepare("SELECT * FROM users WHERE first_name LIKE ?")
+      .compose(pq ->
+        pq.query()
+          .execute(Tuple.of("Julien"))
+          .eventually(v -> pq.close())
+      ).onSuccess(rows -> {
+      // All rows
     });
   }
 
-  public void usingConnections03(SqlConnection connection) {
-    connection.prepare("INSERT INTO USERS (id, name) VALUES (?, ?)", ar1 -> {
-      if (ar1.succeeded()) {
-        PreparedStatement prepared = ar1.result();
-
-        // Create a query : bind parameters
-        List<Tuple> batch = new ArrayList();
-
-        // Add commands to the createBatch
-        batch.add(Tuple.of("julien", "Julien Viet"));
-        batch.add(Tuple.of("emad", "Emad Alblueshi"));
-
-        prepared.query().executeBatch(batch, res -> {
-          if (res.succeeded()) {
-
-            // Process rows
-            RowSet<Row> rows = res.result();
-          } else {
-            System.out.println("Batch failed " + res.cause());
-          }
-        });
-      }
+  public void usingConnections03(Pool pool) {
+    pool.withConnection(connection ->
+      connection
+        .preparedQuery("INSERT INTO Users (first_name,last_name) VALUES (?, ?)")
+        .executeBatch(Arrays.asList(
+          Tuple.of("Julien", "Viet"),
+          Tuple.of("Emad", "Alblueshi")
+        ))
+        .compose(res -> connection
+          // Do something with rows
+          .query("SELECT COUNT(*) FROM Users")
+          .execute()
+          .map(rows -> rows.iterator().next().getInteger(0)))
+    ).onSuccess(count -> {
+      System.out.println("Insert users, now the number of users is " + count);
     });
   }
 
   public void transaction01(Pool pool) {
-    pool.getConnection(res -> {
-      if (res.succeeded()) {
-
-        // Transaction must use a connection
-        SqlConnection conn = res.result();
-
+    pool.getConnection()
+      // Transaction must use a connection
+      .onSuccess(conn -> {
         // Begin the transaction
-        conn.begin(ar0 -> {
-          if (ar0.succeeded()) {
-            Transaction tx = ar0.result();
+        conn.begin()
+          .compose(tx -> conn
             // Various statements
-            conn
-              .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-              .execute(ar1 -> {
-                if (ar1.succeeded()) {
-                  conn
-                    .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
-                    .execute(ar2 -> {
-                      if (ar2.succeeded()) {
-                        // Commit the transaction
-                        tx.commit(ar3 -> {
-                          if (ar3.succeeded()) {
-                            System.out.println("Transaction succeeded");
-                          } else {
-                            System.out.println("Transaction failed " + ar3.cause().getMessage());
-                          }
-                          // Return the connection to the pool
-                          conn.close();
-                        });
-                      } else {
-                        // Return the connection to the pool
-                        conn.close();
-                      }
-                    });
-                } else {
-                  // Return the connection to the pool
-                  conn.close();
-                }
-              });
-          } else {
-            // Return the connection to the pool
-            conn.close();
-          }
-        });
-      }
-    });
+            .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+            .execute()
+            .compose(res2 -> conn
+              .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+              .execute())
+            // Commit the transaction
+            .compose(res3 -> tx.commit()))
+          // Return the connection to the pool
+          .eventually(v -> conn.close())
+          .onSuccess(v -> System.out.println("Transaction succeeded"))
+          .onFailure(err -> System.out.println("Transaction failed: " + err.getMessage()));
+      });
   }
 
   public void transaction02(Transaction tx) {
-    tx.completion().onFailure(err -> {
-      System.out.println("Transaction failed => rollbacked");
-    });
+    tx.completion()
+      .onFailure(err -> {
+        System.out.println("Transaction failed => rolled back");
+      });
   }
 
   public void transaction03(Pool pool) {
-
     // Acquire a transaction and begin the transaction
     pool.withTransaction(client -> client
       .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
       .execute()
       .flatMap(res -> client
-        .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+        .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
         .execute()
         // Map to a message result
-        .map("Users inserted"))
-    ).onComplete(ar -> {
-      // The connection was automatically return to the pool
-      if (ar.succeeded()) {
-        // Transaction was committed
-        String message = ar.result();
-        System.out.println("Transaction succeeded: " + message);
-      } else {
-        // Transaction was rolled back
-        System.out.println("Transaction failed " + ar.cause().getMessage());
-      }
-    });
+        .map("Users inserted")))
+      .onSuccess(v -> System.out.println("Transaction succeeded"))
+      .onFailure(err -> System.out.println("Transaction failed: " + err.getMessage()));
   }
 
   public void usingCursors01(SqlConnection connection) {
@@ -366,5 +323,9 @@ public class SqlClientExamples {
         });
       }
     });
+  }
+
+  public void tracing01(MySQLConnectOptions options) {
+    options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 }
