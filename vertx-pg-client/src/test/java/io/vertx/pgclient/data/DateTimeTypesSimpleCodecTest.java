@@ -166,6 +166,9 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
             .returns(Tuple::getValue, Row::getValue, expected)
             .returns(Tuple::getOffsetTime, Row::getOffsetTime, expected.toOffsetTime())
             .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, expected)
+            .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+            .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+            .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected.toLocalDateTime())
             .returns(Tuple::getTemporal, Row::getTemporal, expected)
             .forRow(row);
           async.complete();

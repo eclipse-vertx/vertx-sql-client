@@ -17,13 +17,10 @@ import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -114,9 +111,8 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   }
 
   @Test
-  @Ignore //FIXME
   public void testEncodeNumeric(TestContext ctx) {
-    testEncodeNumber(ctx, "test_numeric", Numeric.create(123456789.13));
+    testEncodeNumber(ctx, "test_numeric", Numeric.create(-123.13));
   }
 
   @Test
@@ -129,7 +125,6 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   }
 
   @Test
-  @Ignore //FIXME
   public void testEncodeDecimal(TestContext ctx) {
     testEncodeNumber(ctx, "test_decimal", Numeric.create(123456789));
   }
@@ -289,6 +284,33 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
           .returns(Tuple::getLocalDate, Row::getLocalDate, value.toLocalDate())
           .returns(Tuple::getLocalTime, Row::getLocalTime, value.toLocalTime())
           .returns(LocalDateTime.class, value)
+          .forRow(row);
+      }
+    });
+  }
+
+  @Test
+  public void testEncodeOffsetDateTime(TestContext ctx) {
+    testEncodeDateTimeValue(ctx, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)));
+  }
+
+  @Test
+  public void testEncodeNullOffsetDateTime(TestContext ctx) {
+    testEncodeDateTimeValue(ctx, OFFSETDATETIME_NULL_VALUE);
+  }
+
+  private void testEncodeDateTimeValue(TestContext ctx, OffsetDateTime value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_datetimeoffset", value, row -> {
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_datetimeoffset");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker.returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, value)
+          .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, value.toLocalDateTime())
+          .returns(Tuple::getLocalDate, Row::getLocalDate, value.toLocalDate())
+          .returns(Tuple::getLocalTime, Row::getLocalTime, value.toLocalTime())
+          .returns(OffsetDateTime.class, value)
           .forRow(row);
       }
     });

@@ -21,6 +21,8 @@ import io.vertx.core.Vertx;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 
+import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
+
 /**
  * A connection to Microsoft SQL Server.
  */
@@ -46,6 +48,20 @@ public interface MSSQLConnection extends SqlConnection {
    */
   static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions connectOptions) {
     return MSSQLConnectionImpl.connect(vertx, connectOptions);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, MSSQLConnectOptions, Handler)} with options built from {@code connectionUri}.
+   */
+  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MSSQLConnection>> handler) {
+    connect(vertx, fromUri(connectionUri), handler);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  static Future<MSSQLConnection> connect(Vertx vertx, String connectionUri) {
+    return connect(vertx, fromUri(connectionUri));
   }
 
   /**

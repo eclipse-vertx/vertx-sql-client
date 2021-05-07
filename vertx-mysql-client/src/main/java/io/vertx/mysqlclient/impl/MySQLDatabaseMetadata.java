@@ -39,7 +39,8 @@ public class MySQLDatabaseMetadata implements DatabaseMetadata {
     int versionTokenStartIdx = isMariaDb ? 6 : 0; // MariaDB server version is by default prefixed by "5.5.5-"
     int versionTokenEndIdx = versionTokenStartIdx;
     while (versionTokenEndIdx < len) {
-      if (serverVersion.charAt(versionTokenEndIdx) == '-') {
+      char c = serverVersion.charAt(versionTokenEndIdx);
+      if (c == '-' || c == ' ') {
         versionToken = serverVersion.substring(versionTokenStartIdx, versionTokenEndIdx);
         break;
       }

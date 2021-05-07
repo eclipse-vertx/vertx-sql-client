@@ -11,17 +11,31 @@
 
 package io.vertx.mysqlclient;
 
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.Repeat;
+import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLPoolTest extends MySQLTestBase {
@@ -29,6 +43,9 @@ public class MySQLPoolTest extends MySQLTestBase {
   Vertx vertx;
   MySQLConnectOptions options;
   MySQLPool pool;
+
+  @Rule
+  public RepeatRule rule = new RepeatRule();
 
   @Before
   public void setup() {
@@ -39,6 +56,9 @@ public class MySQLPoolTest extends MySQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
+    if (pool != null) {
+      pool.close();
+    }
     vertx.close(ctx.asyncAssertSuccess());
   }
 
@@ -136,5 +156,53 @@ public class MySQLPoolTest extends MySQLTestBase {
         });
       }));
     }));
+  }
+
+  @Test
+  @Repeat(50)
+  public void testNoConnectionLeaks(TestContext ctx) {
+    Tuple params = Tuple.of(options.getUser(), options.getDatabase());
+
+    Async killConnections = ctx.async();
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      String sql = "SELECT ID FROM INFORMATION_SCHEMA.PROCESSLIST WHERE ID <> CONNECTION_ID() AND User = ? AND db = ?";
+      Collector<Row, ?, List<Integer>> collector = mapping(row -> row.getInteger(0), toList());
+      conn.preparedQuery(sql).collecting(collector).execute(params, ctx.asyncAssertSuccess(ids -> {
+        CompositeFuture killAll = ids.value().stream()
+          .<Future>map(connId -> conn.query("KILL " + connId).execute())
+          .collect(Collectors.collectingAndThen(toList(), CompositeFuture::all));
+        killAll.compose(cf -> conn.close()).onComplete(ctx.asyncAssertSuccess(v -> killConnections.complete()));
+      }));
+    }));
+    killConnections.awaitSuccess();
+
+    String sql = "SELECT CONNECTION_ID() AS cid, (SELECT count(*) FROM INFORMATION_SCHEMA.PROCESSLIST WHERE User = ? AND db = ?) AS cnt";
+
+    int idleTimeout = 50;
+    PoolOptions poolOptions = new PoolOptions()
+      .setMaxSize(1)
+      .setIdleTimeout(idleTimeout)
+      .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
+      .setPoolCleanerPeriod(5);
+    pool = MySQLPool.pool(options, poolOptions);
+
+    Async async = ctx.async();
+    AtomicInteger cid = new AtomicInteger();
+    vertx.getOrCreateContext().runOnContext(v -> {
+      pool.preparedQuery(sql).execute(params, ctx.asyncAssertSuccess(rs1 -> {
+        Row row1 = rs1.iterator().next();
+        cid.set(row1.getInteger("cid"));
+        ctx.assertEquals(1, row1.getInteger("cnt"));
+        vertx.setTimer(2 * idleTimeout, l -> {
+          pool.preparedQuery(sql).execute(params, ctx.asyncAssertSuccess(rs2 -> {
+            Row row2 = rs2.iterator().next();
+            ctx.assertEquals(1, row2.getInteger("cnt"));
+            ctx.assertNotEquals(cid.get(), row2.getInteger("cid"));
+            async.complete();
+          }));
+        });
+      }));
+    });
+    async.awaitSuccess();
   }
 }

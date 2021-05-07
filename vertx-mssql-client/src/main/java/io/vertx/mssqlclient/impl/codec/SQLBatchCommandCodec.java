@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -36,41 +36,44 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
   void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
     ByteBuf messageBody = message.content();
     while (messageBody.isReadable()) {
-      int tokenByte = messageBody.readUnsignedByte();
-      switch (tokenByte) {
-        case DataPacketStreamTokenType.COLMETADATA_TOKEN:
+      DataPacketStreamTokenType tokenType = DataPacketStreamTokenType.valueOf(messageBody.readUnsignedByte());
+      if (tokenType == null) {
+        throw new UnsupportedOperationException("Unsupported token: " + tokenType);
+      }
+      switch (tokenType) {
+        case COLMETADATA_TOKEN:
           MSSQLRowDesc rowDesc = decodeColmetadataToken(messageBody);
           rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
           break;
-        case DataPacketStreamTokenType.ROW_TOKEN:
+        case ROW_TOKEN:
           handleRow(messageBody);
           break;
-        case DataPacketStreamTokenType.NBCROW_TOKEN:
+        case NBCROW_TOKEN:
           handleNbcRow(messageBody);
           break;
-        case DataPacketStreamTokenType.DONE_TOKEN:
-        case DataPacketStreamTokenType.DONEPROC_TOKEN:
+        case DONE_TOKEN:
+        case DONEPROC_TOKEN:
           short status = messageBody.readShortLE();
           short curCmd = messageBody.readShortLE();
           long doneRowCount = messageBody.readLongLE();
           handleResultSetDone((int) doneRowCount);
-          handleDoneToken();
           break;
-        case DataPacketStreamTokenType.INFO_TOKEN:
-          int infoTokenLength = messageBody.readUnsignedShortLE();
-          //TODO not used for now
-          messageBody.skipBytes(infoTokenLength);
+        case INFO_TOKEN:
+        case ORDER_TOKEN:
+          int tokenLength = messageBody.readUnsignedShortLE();
+          messageBody.skipBytes(tokenLength);
           break;
-        case DataPacketStreamTokenType.ERROR_TOKEN:
+        case ERROR_TOKEN:
           handleErrorToken(messageBody);
           break;
-        case DataPacketStreamTokenType.ENVCHANGE_TOKEN:
+        case ENVCHANGE_TOKEN:
           handleEnvChangeToken(messageBody);
           break;
         default:
-          throw new UnsupportedOperationException("Unsupported token: " + tokenByte);
+          throw new UnsupportedOperationException("Unsupported token: " + tokenType);
       }
     }
+    complete();
   }
 
   private void sendBatchClientRequest() {

@@ -17,22 +17,25 @@
 
 package io.vertx.sqlclient;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.impl.ArrayTuple;
 import io.netty.buffer.ByteBuf;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.data.Numeric;
+import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.ListTuple;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * A general purpose tuple.
@@ -482,6 +485,8 @@ public interface Tuple {
       return (LocalDate) val;
     } else if (val instanceof LocalDateTime) {
       return ((LocalDateTime) val).toLocalDate();
+    } else if (val instanceof OffsetDateTime) {
+      return ((OffsetDateTime) val).toLocalDate();
     } else {
       return (LocalDate) val; // Throw CCE
     }
@@ -505,6 +510,8 @@ public interface Tuple {
       return (LocalTime) val;
     } else if (val instanceof LocalDateTime) {
       return ((LocalDateTime) val).toLocalTime();
+    } else if (val instanceof OffsetDateTime) {
+      return ((OffsetDateTime) val).toLocalTime();
     } else {
       return (LocalTime) val; // Throw CCE
     }
@@ -518,7 +525,14 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default LocalDateTime getLocalDateTime(int pos) {
-    return (LocalDateTime) getValue(pos);
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof OffsetDateTime) {
+      return ((OffsetDateTime) val).toLocalDateTime();
+    } else {
+      return (LocalDateTime) val; // Throw CCE
+    }
   }
 
   /**

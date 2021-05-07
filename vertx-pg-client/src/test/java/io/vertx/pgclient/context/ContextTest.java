@@ -1,21 +1,20 @@
-package io.vertx.pgclient;
+package io.vertx.pgclient.context;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Context;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.Pool;
+import io.vertx.pgclient.PgConnection;
+import io.vertx.pgclient.PgPool;
+import io.vertx.pgclient.PgTestBase;
 import io.vertx.sqlclient.PoolOptions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ContextTest extends PgTestBase {
+public abstract class ContextTest extends PgTestBase {
 
-  private Vertx vertx;
+  protected Vertx vertx;
 
   @Before
   public void setup() throws Exception {
@@ -28,10 +27,12 @@ public class ContextTest extends PgTestBase {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
+  protected abstract Context createContext();
+
   @Test
   public void testConnection(TestContext testCtx) {
     Async async = testCtx.async();
-    Context connCtx = vertx.getOrCreateContext();
+    Context connCtx = createContext();
     connCtx.runOnContext(v1 -> {
       PgConnection.connect(vertx, options, testCtx.asyncAssertSuccess(conn -> {
         testCtx.assertEquals(connCtx, Vertx.currentContext());
@@ -47,7 +48,7 @@ public class ContextTest extends PgTestBase {
 
   @Test
   public void testPooledConnection(TestContext testCtx) {
-    Context appCtx = vertx.getOrCreateContext();
+    Context appCtx = createContext();
     Async async = testCtx.async();
     Context connCtx = vertx.getOrCreateContext();
     connCtx.runOnContext(v1 -> {
@@ -67,38 +68,20 @@ public class ContextTest extends PgTestBase {
   }
 
   @Test
-  public void testWorkerContext(TestContext testCtx) {
-    vertx.deployVerticle(() -> new AbstractVerticle() {
-      @Override
-      public void start(Promise<Void> startPromise) {
-        PgConnection.connect(vertx, options, testCtx.asyncAssertSuccess(conn -> {
-          testCtx.assertEquals(context, Vertx.currentContext());
-          conn
-            .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
-            .execute(testCtx.asyncAssertSuccess(result -> {
-              testCtx.assertEquals(context, Vertx.currentContext());
-              startPromise.complete();
-            }));
-        }));
-      }
-    }, new DeploymentOptions().setWorker(true), testCtx.asyncAssertSuccess(v -> {
-    }));
-  }
-
-  @Test
-  public void testPoolWithWorkerContext(TestContext testCtx) {
-    vertx.deployVerticle(() -> new AbstractVerticle() {
-      @Override
-      public void start(Promise<Void> startPromise) {
-        Pool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(1));
+  public void testPoolQuery(TestContext testCtx) {
+    Context appCtx = createContext();
+    Async async = testCtx.async();
+    Context connCtx = vertx.getOrCreateContext();
+    connCtx.runOnContext(v1 -> {
+      PgPool pool = PgPool.pool(vertx, options, new PoolOptions());
+      appCtx.runOnContext(v -> {
         pool
           .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
           .execute(testCtx.asyncAssertSuccess(result -> {
-            testCtx.assertEquals(context, Vertx.currentContext());
-            startPromise.complete();
+            testCtx.assertEquals(appCtx, Vertx.currentContext());
+            async.complete();
           }));
-      }
-    }, new DeploymentOptions().setWorker(true), testCtx.asyncAssertSuccess(v -> {
-    }));
+      });
+    });
   }
 }

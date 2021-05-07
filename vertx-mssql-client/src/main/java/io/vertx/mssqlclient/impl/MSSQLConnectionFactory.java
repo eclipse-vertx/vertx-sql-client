@@ -11,8 +11,9 @@
 
 package io.vertx.mssqlclient.impl;
 
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.core.*;
@@ -25,8 +26,8 @@ import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
 
 class MSSQLConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
 
-  MSSQLConnectionFactory(EventLoopContext context, MSSQLConnectOptions options) {
-    super(context, options);
+  MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
+    super(vertx, options);
   }
 
   @Override
@@ -41,6 +42,8 @@ class MSSQLConnectionFactory extends SqlConnectionFactoryBase implements Connect
 
   @Override
   protected void doConnectInternal(Promise<Connection> promise) {
+    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
+    EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
     Future<NetSocket> fut = netClient.connect(socketAddress);
     fut.onComplete(ar -> {
       if (ar.succeeded()) {

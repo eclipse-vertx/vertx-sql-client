@@ -166,9 +166,15 @@ public interface Pool extends SqlClient {
             res -> tx
               .commit()
               .flatMap(v -> Future.succeededFuture(res)),
-            err -> tx
-              .rollback()
-              .compose(v -> Future.failedFuture(err), failure -> Future.failedFuture(err))))
+            err -> {
+              if (err instanceof TransactionRollbackException) {
+                return Future.failedFuture(err);
+              } else {
+                return tx
+                  .rollback()
+                  .compose(v -> Future.failedFuture(err), failure -> Future.failedFuture(err));
+              }
+            }))
         .onComplete(ar -> conn.close()));
   }
 

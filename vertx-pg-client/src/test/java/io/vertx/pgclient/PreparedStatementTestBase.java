@@ -174,28 +174,17 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     Consumer<Throwable> check = failure -> ctx.assertEquals("Parameter at position[0] with class = [java.lang.String] and value = [invalid-id] can not be coerced to the expected class = [java.lang.Number] for encoding.", failure.getMessage());
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       // This will test with pipelining
-      Thread th = Thread.currentThread();
       for (int i = 0;i < times;i++) {
-        int iter = i;
-        AtomicInteger count = new AtomicInteger();
-        count.incrementAndGet();
         test.accept(conn, failure1 -> {
           check.accept(failure1);
-          count.incrementAndGet();
           test.accept(conn, failure2 -> {
             check.accept(failure2);
-            ctx.assertTrue(count.get() < 2, "Was expecting " + count.get() + " < 2");
-            count.incrementAndGet();
             test.accept(conn, failure3 -> {
               check.accept(failure3);
-              ctx.assertTrue(count.get() < 2, "Was expecting " + count.get() + " < 2");
               async.countDown();
             });
-            count.decrementAndGet();
           });
-          count.decrementAndGet();
         });
-        count.decrementAndGet();
       }
     }));
   }

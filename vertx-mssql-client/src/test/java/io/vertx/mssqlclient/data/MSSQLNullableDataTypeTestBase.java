@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.function.Consumer;
 
 public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTestBase {
@@ -35,6 +36,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   protected static final LocalDate LOCALDATE_NULL_VALUE = null;
   protected static final LocalTime LOCALTIME_NULL_VALUE = null;
   protected static final LocalDateTime LOCALDATETIME_NULL_VALUE = null;
+  protected static final OffsetDateTime OFFSETDATETIME_NULL_VALUE = null;
 
   @Test
   public void testDecodeNullAllColumns(TestContext ctx) {
@@ -53,6 +55,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
       ctx.assertEquals(null, row.getValue("test_date"));
       ctx.assertEquals(null, row.getValue("test_time"));
       ctx.assertEquals(null, row.getValue("test_datetime2"));
+      ctx.assertEquals(null, row.getValue("test_datetimeoffset"));
     });
   }
 
@@ -178,6 +181,15 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullDateTime(TestContext ctx) {
     testDecodeNullValue(ctx, "test_datetime2", row -> {
       ColumnChecker.checkColumn(0, "test_datetime2")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullOffsetDateTime(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_datetimeoffset", row -> {
+      ColumnChecker.checkColumn(0, "test_datetimeoffset")
         .returnsNull()
         .forRow(row);
     });

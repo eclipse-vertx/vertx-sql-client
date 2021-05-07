@@ -28,6 +28,7 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.PgCodec;
+import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.*;
 import io.vertx.sqlclient.impl.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
@@ -62,9 +63,10 @@ public class PgSocketConnection extends SocketConnectionBase {
     super.init();
   }
 
+  // TODO RETURN FUTURE ???
   void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Promise<Connection> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    schedule(cmd, completionHandler);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   void sendCancelRequestMessage(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
@@ -92,7 +94,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   protected void handleMessage(Object msg) {
     super.handleMessage(msg);
-    if (msg instanceof Notification) {
+    if (msg instanceof Notification || msg instanceof TxFailedEvent) {
       handleEvent(msg);
     } else if (msg instanceof Notice) {
       handleNotice((Notice) msg);

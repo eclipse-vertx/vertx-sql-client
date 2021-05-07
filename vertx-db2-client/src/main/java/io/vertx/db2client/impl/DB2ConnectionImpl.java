@@ -36,7 +36,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     DB2ConnectionFactory client;
     try {
-      client = new DB2ConnectionFactory(ConnectionFactory.asEventLoopContext(ctx), options);
+      client = new DB2ConnectionFactory(ctx.owner(), options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
@@ -67,9 +67,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
 
   @Override
   public Future<Void> ping() {
-    Promise<Void> promise = promise();
-    schedule(new PingCommand(), promise);
-    return promise.future();
+    return schedule(context, new PingCommand());
   }
 
   @Override

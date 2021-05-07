@@ -14,7 +14,6 @@ package io.vertx.mysqlclient;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.Pool;
@@ -36,21 +35,21 @@ public interface MySQLPool extends Pool {
   }
 
   /**
-   * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
    */
   static MySQLPool pool(String connectionUri, PoolOptions poolOptions) {
     return pool(fromUri(connectionUri), poolOptions);
   }
 
   /**
-   * Like {@link #pool(Vertx, String,PoolOptions)} with a default {@code poolOptions}..
+   * Like {@link #pool(Vertx, String, PoolOptions)} with a default {@code poolOptions}..
    */
   static MySQLPool pool(Vertx vertx, String connectionUri) {
     return pool(vertx, fromUri(connectionUri), new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(Vertx, MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   * Like {@link #pool(Vertx, MySQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
    */
   static MySQLPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
     return pool(vertx, fromUri(connectionUri), poolOptions);
@@ -72,14 +71,14 @@ public interface MySQLPool extends Pool {
       vertxOptions.setPreferNativeTransport(true);
     }
     VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return MySQLPoolImpl.create(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return MySQLPoolImpl.create(vertx, true, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return MySQLPoolImpl.create((ContextInternal) vertx.getOrCreateContext(), false, connectOptions, poolOptions);
+    return MySQLPoolImpl.create((VertxInternal) vertx, false, connectOptions, poolOptions);
   }
 
 }

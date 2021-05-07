@@ -41,20 +41,4 @@ public class MSSQLBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase 
     }
     return sb.toString();
   }
-
-  @Test
-  @Ignore
-  @Override
-  public void testNumeric(TestContext ctx) {
-    //TODO do we need wrapped type?
-    super.testNumeric(ctx);
-  }
-
-  @Test
-  @Ignore
-  @Override
-  public void testDecimal(TestContext ctx) {
-    //TODO do we need wrapped type?
-    super.testDecimal(ctx);
-  }
 }

@@ -59,9 +59,9 @@ public class UnixDomainSocketTest {
   }
 
   @After
-  public void after() {
+  public void after(TestContext ctx) {
     if (client != null) {
-      client.close();
+      client.close(ctx.asyncAssertSuccess());
     }
   }
 
@@ -77,7 +77,7 @@ public class UnixDomainSocketTest {
   public void simpleConnect(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
     client = PgPool.pool(new PgConnectOptions(options), new PoolOptions());
-    client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
+    client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close(context.asyncAssertSuccess())));
   }
 
   @Test

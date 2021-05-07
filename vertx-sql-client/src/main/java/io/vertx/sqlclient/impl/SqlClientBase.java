@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PreparedQuery;
@@ -52,6 +53,8 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     queryBuilder.append("?");
     return current;
   }
+
+  protected abstract ContextInternal context();
 
   protected abstract <T> PromiseInternal<T> promise();
 

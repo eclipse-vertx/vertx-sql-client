@@ -44,19 +44,17 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
+  // TODO RETURN FUTURE ???
   // command response should show what capabilities server provides
   void sendPreLoginMessage(boolean ssl, Handler<AsyncResult<Void>> completionHandler) {
     PreLoginCommand cmd = new PreLoginCommand(ssl);
-    Promise<Void> promise = Promise.promise();
-    promise.future().onComplete(completionHandler);
-    schedule(cmd, promise);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
+  // TODO RETURN FUTURE ???
   void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<AsyncResult<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    Promise<Connection> promise = Promise.promise();
-    promise.future().onComplete(completionHandler);
-    schedule(cmd, promise);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   @Override

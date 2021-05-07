@@ -22,6 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -56,8 +57,8 @@ public abstract class SocketConnectionBase implements Connection {
   private static final String PENDING_CMD_CONNECTION_CORRUPT_MSG = "Pending requests failed to be sent due to connection has been closed.";
 
   protected final PreparedStatementCache psCache;
+  protected final EventLoopContext context;
   private final Predicate<String> preparedStatementCacheSqlFilter;
-  private final EventLoopContext context;
   private Holder holder;
   private final int pipeliningLimit;
 
@@ -142,8 +143,10 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
-  public <R> void schedule(CommandBase<R> cmd, Promise<R> promise) {
-    context.emit(v -> doSchedule(cmd, promise));
+  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
+    Promise<R> promise = context.promise();
+    this.context.emit(v -> doSchedule(cmd, promise));
+    return promise.future();
   }
 
   protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {

@@ -18,16 +18,19 @@ import io.vertx.sqlclient.data.Numeric;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
+
 class MSSQLDataTypeCodec {
   static LocalDate START_DATE = LocalDate.of(1, 1, 1);
-  private static Map<Class, String> parameterDefinitionsMapping = new HashMap<>();
+  static LocalDate START_DATE_DATETIME = LocalDate.of(1900, 1, 1);
+
+  private static final Map<Class<?>, String> parameterDefinitionsMapping = new HashMap<>();
 
   static {
     parameterDefinitionsMapping.put(Byte.class, "tinyint");
@@ -40,15 +43,19 @@ class MSSQLDataTypeCodec {
     parameterDefinitionsMapping.put(String.class, "nvarchar(4000)");
     parameterDefinitionsMapping.put(LocalDate.class, "date");
     parameterDefinitionsMapping.put(LocalTime.class, "time");
-    parameterDefinitionsMapping.put(LocalDateTime.class, "datetime2");
+    parameterDefinitionsMapping.put(LocalDateTime.class, "datetime2(7)");
+    parameterDefinitionsMapping.put(OffsetDateTime.class, "datetimeoffset(7)");
   }
 
   static String inferenceParamDefinitionByValueType(Object value) {
     if (value == null) {
       return "nvarchar(4000)";
     } else if (value instanceof Numeric) {
-      //TODO we may need some changes in Numeric to make this work
-      throw new UnsupportedOperationException();
+      BigDecimal bigDecimal = ((Numeric) value).bigDecimalValue();
+      if (bigDecimal == null) {
+        return "nvarchar(4000)"; // null value, NaN not supported on this DB
+      }
+      return "numeric(38," + Math.max(0, bigDecimal.scale()) + ")";
     } else if (value.getClass().isEnum()) {
       return parameterDefinitionsMapping.get(String.class);
     } else {
@@ -86,12 +93,16 @@ class MSSQLDataTypeCodec {
         return decodeBit(in);
       case MSSQLDataTypeId.BITNTYPE_ID:
         return decodeBitN(in);
+      case MSSQLDataTypeId.DATETIMETYPE_ID:
+        return decodeDateTime(in);
       case MSSQLDataTypeId.DATENTYPE_ID:
         return decodeDateN(in);
       case MSSQLDataTypeId.TIMENTYPE_ID:
         return decodeTimeN((TimeNDataType) dataType, in);
       case MSSQLDataTypeId.DATETIME2NTYPE_ID:
         return decodeDateTime2N((DateTime2NDataType) dataType, in);
+      case MSSQLDataTypeId.DATETIMEOFFSETNTYPE_ID:
+        return decodeDateTimeOffsetN((DateTimeOffsetNDataType) dataType, in);
       case MSSQLDataTypeId.BIGVARCHRTYPE_ID:
       case MSSQLDataTypeId.BIGCHARTYPE_ID:
         return decodeVarchar(in);
@@ -104,62 +115,49 @@ class MSSQLDataTypeCodec {
   }
 
   private static LocalTime decodeTimeN(TimeNDataType dataType, ByteBuf in) {
-    int scale = dataType.scale();
-    byte timeLength = in.readByte();
-    long timeValue;
-    switch (timeLength) {
-      case 0:
-        return null;
-      case 3:
-        timeValue = in.readUnsignedMediumLE();
-        break;
-      case 4:
-        timeValue = in.readUnsignedIntLE();
-        break;
-      case 5:
-        timeValue = readUnsignedInt40LE(in);
-        break;
-      default:
-        throw new IllegalStateException("Unexpected timeLength of [" + timeLength + "]");
+    byte length = in.readByte();
+    if (length == 0) {
+      return null;
     }
-    return getLocalTime(scale, timeValue);
+    return decodeLocalTime(in, length, dataType.scale());
   }
 
-  private static LocalTime getLocalTime(int scale, long timeValue) {
-    for (int i = 0; i < 7 - scale; i++) {
-      timeValue *= 10;
+  private static LocalTime decodeLocalTime(ByteBuf in, int length, int scale) {
+    long hundredNanos;
+    if (length == 3) {
+      hundredNanos = in.readUnsignedMediumLE();
+    } else if (length == 4) {
+      hundredNanos = in.readUnsignedIntLE();
+    } else if (length == 5) {
+      hundredNanos = readUnsignedInt40LE(in);
+    } else {
+      throw new IllegalArgumentException("Unexpected timeLength of [" + length + "]");
     }
-    timeValue = (long) (timeValue * Math.pow(10, 7 - scale));
-    long secondsValue = timeValue / 100000000;
-    long nanosValue = timeValue % 100000000;
-    return LocalTime.ofSecondOfDay(secondsValue).plusNanos(nanosValue);
+    for (int i = scale; i < 7; i++) {
+      hundredNanos *= 10;
+    }
+    return LocalTime.ofNanoOfDay(100 * hundredNanos);
   }
 
   private static LocalDateTime decodeDateTime2N(DateTime2NDataType dataType, ByteBuf in) {
-    int scale = dataType.scale();
-    byte timeLength = in.readByte();
-    long timeValue;
-    switch (timeLength) {
-      case 0:
-        return null;
-      case 3 + 3:
-        timeValue = in.readUnsignedMediumLE();
-        break;
-      case 4 + 3:
-        timeValue = in.readUnsignedIntLE();
-        break;
-      case 5 + 3:
-        timeValue = readUnsignedInt40LE(in);
-        break;
-      default:
-        throw new IllegalStateException("Unexpected timeLength of [" + timeLength + "]");
+    byte length = in.readByte();
+    if (length == 0) {
+      return null;
     }
-    LocalTime localTime = getLocalTime(scale, timeValue);
-
-    int days = in.readUnsignedMediumLE();
-    LocalDate localDate = getLocalDate(days);
-
+    LocalTime localTime = decodeLocalTime(in, length - 3, dataType.scale());
+    LocalDate localDate = decodeLocalDate(in, 3);
     return LocalDateTime.of(localDate, localTime);
+  }
+
+  private static OffsetDateTime decodeDateTimeOffsetN(DateTimeOffsetNDataType dataType, ByteBuf in) {
+    byte length = in.readByte();
+    if (length == 0) {
+      return null;
+    }
+    LocalTime localTime = decodeLocalTime(in, length - 5, dataType.scale());
+    LocalDate localDate = decodeLocalDate(in, 3);
+    short minutes = in.readShortLE();
+    return LocalDateTime.of(localDate, localTime).plusMinutes(minutes).atOffset(ZoneOffset.ofTotalSeconds(60 * minutes));
   }
 
   private static CharSequence decodeNVarchar(ByteBuf in) {
@@ -180,19 +178,28 @@ class MSSQLDataTypeCodec {
     return in.readCharSequence(length, StandardCharsets.UTF_8);
   }
 
-  private static LocalDate decodeDateN(ByteBuf in) {
-    byte dateLength = in.readByte();
-    if (dateLength == 0) {
-      return null;
-    } else if (dateLength == 3) {
-      int days = in.readUnsignedMediumLE();
-      return getLocalDate(days);
-    } else {
-      throw new IllegalStateException("Unexpected dateLength of [" + dateLength + "]");
-    }
+  private static LocalDateTime decodeDateTime(ByteBuf in) {
+    LocalDate localDate = START_DATE_DATETIME.plus(in.readIntLE(), ChronoUnit.DAYS);
+    long nanoOfDay = NANOSECONDS.convert(Math.round(in.readIntLE() * (3 + 1D / 3)), MILLISECONDS);
+    LocalTime localTime = LocalTime.ofNanoOfDay(nanoOfDay);
+    return LocalDateTime.of(localDate, localTime);
   }
 
-  private static LocalDate getLocalDate(int days) {
+  private static LocalDate decodeDateN(ByteBuf in) {
+    byte length = in.readByte();
+    if (length == 0) {
+      return null;
+    }
+    return decodeLocalDate(in, length);
+  }
+
+  private static LocalDate decodeLocalDate(ByteBuf in, int length) {
+    int days;
+    if (length == 3) {
+      days = in.readUnsignedMediumLE();
+    } else {
+      throw new IllegalArgumentException("Unexpected dateLength of [" + length + "]");
+    }
     return START_DATE.plus(days, ChronoUnit.DAYS);
   }
 
@@ -213,25 +220,16 @@ class MSSQLDataTypeCodec {
     short length = in.readUnsignedByte();
     if (length == 0) {
       return null;
-    } else {
-      int sign = in.readByte();
-      Number value;
-      switch (length - 1) {
-        case 4:
-          value = in.readIntLE();
-          break;
-        case 8:
-          value = in.readLongLE();
-          break;
-        case 12:
-          return Numeric.create(new BigDecimal(readUnsignedInt96LE(in), scale));
-        case 16:
-          return Numeric.create(new BigDecimal(readUnsignedInt128LE(in), scale));
-        default:
-          throw new IllegalStateException("Unexpected numeric length of [" + length + "]");
-      }
-      return Numeric.create(value.longValue() / Math.pow(10, scale) * sign);
     }
+    byte sign = in.readByte();
+    byte[] bytes = new byte[length - 1];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = in.getByte(in.readerIndex() + bytes.length - 1 - i);
+    }
+    in.skipBytes(bytes.length);
+    BigInteger bigInteger = new BigInteger(bytes);
+    BigDecimal bigDecimal = new BigDecimal(bigInteger, scale);
+    return Numeric.create(sign == 0 ? bigDecimal.negate() : bigDecimal);
   }
 
   private static long decodeBigInt(ByteBuf in) {
@@ -251,12 +249,9 @@ class MSSQLDataTypeCodec {
   }
 
   private static long readUnsignedInt40LE(ByteBuf buffer) {
-    //TODO optimize
-    return (long) buffer.readUnsignedByte() |
-      ((long) buffer.readUnsignedByte()) << 8 |
-      ((long) buffer.readUnsignedByte()) << 16 |
-      ((long) buffer.readUnsignedByte()) << 24 |
-      ((long) buffer.readUnsignedByte()) << 32;
+    long low = buffer.readUnsignedIntLE();
+    short high = buffer.readUnsignedByte();
+    return (0x100000000L * high) + low;
   }
 
   private static BigInteger readUnsignedInt96LE(ByteBuf buffer) {

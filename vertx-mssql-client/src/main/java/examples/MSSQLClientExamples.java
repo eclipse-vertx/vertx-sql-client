@@ -12,6 +12,7 @@
 package examples;
 
 import io.vertx.mssqlclient.MSSQLConnectOptions;
+import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.core.Vertx;
 import io.vertx.docgen.Source;
@@ -73,6 +74,20 @@ public class MSSQLClientExamples {
     MSSQLPool pool = MSSQLPool.pool(vertx, connectOptions, poolOptions);
 
     pool.getConnection(ar -> {
+      // Handling your connection
+    });
+  }
+
+  public void configureFromUri(Vertx vertx) {
+
+    // Connection URI
+    String connectionUri = "sqlserver://dbuser:secretpassword@database.server.com:3211/mydb";
+
+    // Create the pool from the connection URI
+    MSSQLPool pool = MSSQLPool.pool(connectionUri);
+
+    // Create the connection from the connection URI
+    MSSQLConnection.connect(vertx, connectionUri, res -> {
       // Handling your connection
     });
   }

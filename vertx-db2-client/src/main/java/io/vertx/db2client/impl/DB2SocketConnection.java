@@ -53,13 +53,14 @@ public class DB2SocketConnection extends SocketConnectionBase {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
   }
 
+  // TODO RETURN FUTURE ???
   void sendStartupMessage(String username,
       String password,
       String database,
       Map<String, String> properties,
       Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, properties);
-    schedule(cmd, completionHandler);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   @Override

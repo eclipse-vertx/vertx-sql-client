@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,12 +11,12 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
-import io.vertx.mssqlclient.impl.protocol.TdsMessage;
-import io.vertx.mssqlclient.impl.protocol.TdsPacket;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import io.vertx.mssqlclient.impl.protocol.MessageStatus;
+import io.vertx.mssqlclient.impl.protocol.TdsMessage;
+import io.vertx.mssqlclient.impl.protocol.TdsPacket;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -41,13 +41,12 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
     if (tdsPacket.status() == MessageStatus.END_OF_MESSAGE) {
       if (message == null) {
         message = TdsMessage.newTdsMessageFromSinglePacket(tdsPacket);
-        decodeMessage();
       } else {
         // last packet of this message
         CompositeByteBuf messageData = (CompositeByteBuf) message.content();
         messageData.addComponent(true, tdsPacket.content());
-        decodeMessage();
       }
+      decodeMessage();
     } else {
       if (message == null) {
         // first packet of this message and there will be more packets

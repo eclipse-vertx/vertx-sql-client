@@ -19,12 +19,10 @@ import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.function.Consumer;
 
-public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase{
+public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
 
   @Test
   public void testDecodeAllColumns(TestContext ctx) {
@@ -43,6 +41,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase{
       ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue("test_date"));
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2), row.getValue("test_datetime2"));
+      ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row.getValue("test_datetimeoffset"));
     });
   }
 
@@ -98,7 +97,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase{
   @Test
   public void testDecodeDecimal(TestContext ctx) {
     testDecodeNotNullValue(ctx, "test_decimal", row -> {
-      checkNumber(row, "test_decimal", Numeric.create(12345.0));
+      checkNumber(row, "test_decimal", Numeric.create(12345));
     });
   }
 
@@ -166,6 +165,20 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase{
         .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(2019, 1, 1))
         .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 2))
         .returns(LocalDateTime.class, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeOffsetDateTime(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_datetimeoffset", row -> {
+      ColumnChecker.checkColumn(0, "test_datetimeoffset")
+        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
+        .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
+        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(2019, 1, 1))
+        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 2))
+        .returns(OffsetDateTime.class, LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
         .forRow(row);
     });
   }

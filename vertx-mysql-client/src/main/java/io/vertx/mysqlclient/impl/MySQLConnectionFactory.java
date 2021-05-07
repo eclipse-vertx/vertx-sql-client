@@ -16,6 +16,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
@@ -40,8 +42,8 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
   private int initialCapabilitiesFlags;
   private MySQLAuthenticationPlugin authenticationPlugin;
 
-  public MySQLConnectionFactory(EventLoopContext context, MySQLConnectOptions options) {
-    super(context, options);
+  public MySQLConnectionFactory(VertxInternal vertx, MySQLConnectOptions options) {
+    super(vertx, options);
   }
 
   @Override
@@ -80,7 +82,7 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
       serverRsaPublicKey = options.getServerRsaPublicKeyValue();
     } else {
       if (options.getServerRsaPublicKeyPath() != null) {
-        serverRsaPublicKey = context.owner().fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
+        serverRsaPublicKey = vertx.fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;
@@ -109,6 +111,8 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
 
   @Override
   protected void doConnectInternal(Promise<Connection> promise) {
+    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
+    EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
     Future<NetSocket> fut = netClient.connect(socketAddress);
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
