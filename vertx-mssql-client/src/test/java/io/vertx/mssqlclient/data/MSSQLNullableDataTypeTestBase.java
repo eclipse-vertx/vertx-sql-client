@@ -14,9 +14,9 @@ package io.vertx.mssqlclient.data;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -30,7 +30,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   protected static final Long LONG_NULL_VALUE = null;
   protected static final Float FLOAT_NULL_VALUE = null;
   protected static final Double DOUBLE_NULL_VALUE = null;
-  protected static final Numeric NUMERIC_NULL_VALUE = null;
+  protected static final BigDecimal DECIMAL_NULL_VALUE = null;
   protected static final Boolean BOOLEAN_NULL_VALUE = null;
   protected static final String STRING_NULL_VALUE = null;
   protected static final LocalDate LOCALDATE_NULL_VALUE = null;
