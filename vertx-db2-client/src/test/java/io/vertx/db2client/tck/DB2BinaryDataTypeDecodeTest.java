@@ -1,17 +1,15 @@
+/*
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.db2client.tck;
-
-import static org.junit.Assume.assumeFalse;
-
-import java.sql.JDBCType;
-import java.time.LocalTime;
-
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-import org.junit.runner.RunWith;
 
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
@@ -19,6 +17,14 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.tck.BinaryDataTypeDecodeTestBase;
+import org.junit.*;
+import org.junit.rules.TestName;
+import org.junit.runner.RunWith;
+
+import java.sql.JDBCType;
+import java.time.LocalTime;
+
+import static org.junit.Assume.assumeFalse;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
@@ -33,8 +39,24 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
     System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
   }
 
-  public DB2BinaryDataTypeDecodeTest() {
-    NUMERIC_TYPE = JDBCType.NUMERIC;
+  @Override
+  protected JDBCType getNumericJDBCType() {
+    return JDBCType.DECIMAL;
+  }
+
+  @Override
+  protected Class<? extends Number> getNumericClass() {
+    return Numeric.class;
+  }
+
+  @Override
+  protected Number getNumericValue(Number value) {
+    return Numeric.create(value);
+  }
+
+  @Override
+  protected Number getNumericValue(String value) {
+    return Numeric.parse(value);
   }
 
   @Override
@@ -77,18 +99,6 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   public void testChar(TestContext ctx) {
     // Override to expecting JDBCType.CHAR instead of VARCHAR
     testDecodeGeneric(ctx, "test_char", String.class, JDBCType.CHAR, "testchar");
-  }
-
-  @Override
-  public void testNumeric(TestContext ctx) {
-    // Override to expecting JDBCType.DECIMAL instead of NUMERIC
-    testDecodeGeneric(ctx, "test_numeric", Numeric.class, JDBCType.DECIMAL, Numeric.parse("999.99"));
-  }
-
-  @Override
-  public void testDecimal(TestContext ctx) {
-    // Override to expecting JDBCType.DECIMAL instead of NUMERIC
-    testDecodeGeneric(ctx, "test_decimal", Numeric.class, JDBCType.DECIMAL, Numeric.parse("12345"));
   }
 
   @Override

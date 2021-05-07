@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,7 +14,6 @@ package io.vertx.sqlclient.tck;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -28,32 +27,32 @@ public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
 
   @Test
   public void testInteger(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_int_4", Integer.class, (int) 2147483647);
+    testDecodeGeneric(ctx, "test_int_4", Integer.class, 2147483647);
   }
 
   @Test
   public void testBigInt(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_int_8", Long.class, (long) 9223372036854775807L);
+    testDecodeGeneric(ctx, "test_int_8", Long.class, 9223372036854775807L);
   }
 
   @Test
   public void testFloat4(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_float_4", Float.class, (float) 3.40282e38F);
+    testDecodeGeneric(ctx, "test_float_4", Float.class, 3.40282e38F);
   }
 
   @Test
   public void testDouble(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_float_8", Double.class, (double) 1.7976931348623157E308);
+    testDecodeGeneric(ctx, "test_float_8", Double.class, 1.7976931348623157E308);
   }
 
   @Test
   public void testNumeric(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_numeric", Numeric.class, Numeric.parse("999.99"));
+    testDecodeGeneric(ctx, "test_numeric", getNumericClass(), getNumericValue("999.99"));
   }
 
   @Test
   public void testDecimal(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_decimal", Numeric.class, Numeric.parse("12345"));
+    testDecodeGeneric(ctx, "test_decimal", getNumericClass(), getNumericValue("12345"));
   }
 
   @Test
@@ -83,7 +82,7 @@ public abstract class TextDataTypeDecodeTestBase extends DataTypeTestBase {
 
   protected <T> void testDecodeGeneric(TestContext ctx,
                                        String columnName,
-                                       Class<T> clazz,
+                                       Class<? extends T> clazz,
                                        T expected) {
     Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
