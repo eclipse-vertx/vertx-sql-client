@@ -138,7 +138,7 @@ public class PacketReader {
   private TableColumns receiveTableColumns(ByteBufAllocator alloc, ByteBuf in, ServerPacketType type) {
     if (multistringMessage == null) {
       if (multistringReader == null) {
-        multistringReader = new MultistringMessageReader();
+        multistringReader = new MultistringMessageReader(md.getStringCharset());
       }
       multistringMessage = multistringReader.readFrom(in, type);
     }
@@ -210,7 +210,7 @@ public class PacketReader {
 
   private ClickhouseServerException readExceptionBlock(ByteBuf in) {
     if (exceptionReader == null) {
-      exceptionReader = new ClickhouseExceptionReader();
+      exceptionReader = new ClickhouseExceptionReader(md.getStringCharset());
     }
     ClickhouseServerException exc = exceptionReader.readFrom(in);
     if (exc != null) {
@@ -230,7 +230,7 @@ public class PacketReader {
   private ColumnOrientedBlock readDataBlock(ByteBufAllocator alloc, ByteBuf in, boolean preferCompressionIfEnabled) {
     if (md.getRevision() >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_TEMPORARY_TABLES) {
       if (tempTableInfo == null) {
-        tempTableInfo = ByteBufUtils.readPascalString(in);
+        tempTableInfo = ByteBufUtils.readPascalString(in, md.getStringCharset());
         if (tempTableInfo == null) {
           return null;
         }
@@ -258,9 +258,9 @@ public class PacketReader {
 
   private ClickhouseStreamDataSource dataSource(ByteBufAllocator alloc, boolean preferCompressionIfEnabled) {
     if (lz4Factory == null || !preferCompressionIfEnabled) {
-      return new RawClickhouseStreamDataSource();
+      return new RawClickhouseStreamDataSource(md.getStringCharset());
     } else {
-      return new Lz4ClickhouseStreamDataSource(lz4Factory, alloc);
+      return new Lz4ClickhouseStreamDataSource(lz4Factory, md.getStringCharset(), alloc);
     }
   }
 

@@ -15,14 +15,17 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MultistringMessageReader {
   private final List<String> strings;
+  private final Charset charset;
   private Integer stringsExpected;
 
-  public MultistringMessageReader() {
+  public MultistringMessageReader(Charset charset) {
+    this.charset = charset;
     strings = new ArrayList<>();
   }
 
@@ -31,7 +34,7 @@ public class MultistringMessageReader {
       stringsExpected = stringsInMessage(packetType);
     }
     String ln;
-    while (strings.size() < stringsExpected && (ln = ByteBufUtils.readPascalString(in)) != null) {
+    while (strings.size() < stringsExpected && (ln = ByteBufUtils.readPascalString(in, charset)) != null) {
       strings.add(ln);
     }
     if (strings.size() == stringsExpected) {

@@ -15,6 +15,7 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class ByteBufUtils {
@@ -57,7 +58,7 @@ public class ByteBufUtils {
     return value;
   }
 
-  public static String readPascalString(ByteBuf buf) {
+  public static String readPascalString(ByteBuf buf, Charset charset) {
     int readerIndex = buf.readerIndex();
     Integer length = readULeb128(buf);
     if (length == null) {
@@ -66,7 +67,7 @@ public class ByteBufUtils {
     if (buf.readableBytes() >= length) {
       byte[] b = new byte[length];
       buf.readBytes(b);
-      return new String(b, StandardCharsets.UTF_8);
+      return new String(b, charset);
     }
     buf.readerIndex(readerIndex);
     return null;

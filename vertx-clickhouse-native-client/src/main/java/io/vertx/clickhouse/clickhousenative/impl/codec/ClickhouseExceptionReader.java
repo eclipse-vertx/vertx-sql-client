@@ -16,17 +16,23 @@ package io.vertx.clickhouse.clickhousenative.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseServerException;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ClickhouseExceptionReader {
   private final List<ExceptionBlock> exceptionBlocks = new ArrayList<>();
 
+  private final Charset charset;
   private Integer code;
   private String name;
   private String message;
   private String stacktrace;
   private Boolean hasNested;
+
+  public ClickhouseExceptionReader(Charset charset) {
+    this.charset = charset;
+  }
 
 
   public ClickhouseServerException readFrom(ByteBuf in) {
@@ -40,19 +46,19 @@ public class ClickhouseExceptionReader {
         }
       }
       if (name == null) {
-        name = ByteBufUtils.readPascalString(in);
+        name = ByteBufUtils.readPascalString(in, charset);
         if (name == null) {
           return null;
         }
       }
       if (message == null) {
-        message = ByteBufUtils.readPascalString(in);
+        message = ByteBufUtils.readPascalString(in, charset);
         if (message == null) {
           return null;
         }
       }
       if (stacktrace == null) {
-        stacktrace = ByteBufUtils.readPascalString(in);
+        stacktrace = ByteBufUtils.readPascalString(in, charset);
         if (stacktrace == null) {
           return null;
         }

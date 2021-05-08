@@ -15,15 +15,11 @@ package io.vertx.clickhouse.clickhousenative.impl.codec.columns;
 
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseNativeColumnDescriptor;
 import io.vertx.clickhouse.clickhousenative.impl.codec.ClickhouseStreamDataSource;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigInteger;
 
 public class UInt64ColumnReader extends ClickhouseColumnReader {
-  private static final Logger LOG = LoggerFactory.getLogger(UInt64ColumnReader.class);
-
   public static final int ELEMENT_SIZE = 8;
 
   public UInt64ColumnReader(int nRows, ClickhouseNativeColumnDescriptor columnDescriptor) {
@@ -33,6 +29,7 @@ public class UInt64ColumnReader extends ClickhouseColumnReader {
   @Override
   protected Object readItems(ClickhouseStreamDataSource in) {
     //TODO: maybe read elements as soon as they arrive if we have enough data (> ELEMENT_SIZE)
+    //TODO: maybe store all fixed-size types within (direct)buffer (+WeakReference + Queue to release buffer)
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       long[] data = new long[nRows];
       for (int i = 0; i < nRows; ++i) {
