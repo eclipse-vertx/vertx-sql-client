@@ -17,10 +17,14 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufUtil;
 
+import java.nio.charset.Charset;
+
 public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource {
+  private final Charset charset;
   private ByteBuf source;
 
-  public RawClickhouseStreamDataSource() {
+  public RawClickhouseStreamDataSource(Charset charset) {
+    this.charset = charset;
   }
 
   @Override
@@ -40,7 +44,7 @@ public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource
 
   @Override
   public String readPascalString() {
-    return ByteBufUtils.readPascalString(source);
+    return ByteBufUtils.readPascalString(source, charset);
   }
 
   @Override

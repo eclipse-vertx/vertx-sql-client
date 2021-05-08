@@ -18,12 +18,15 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
+import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseServerException;
 import io.vertx.clickhouse.clickhousenative.impl.codec.PacketReader;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +46,10 @@ public class NestedExceptionsTest {
     }
 
     PooledByteBufAllocator allocator = new PooledByteBufAllocator();
-    PacketReader rdr = new PacketReader(null, "none", Collections.emptyMap(), null);
+    ClickhouseNativeDatabaseMetadata md = new ClickhouseNativeDatabaseMetadata("a", "b",
+      0, 0,0, 0, "dname", ZoneId.systemDefault(), ZoneId.systemDefault(), "client",
+      Collections.emptyMap(), StandardCharsets.UTF_8, null, null, null, true, true);
+    PacketReader rdr = new PacketReader(md, "none", Collections.emptyMap(), null);
     ClickhouseServerException exception = (ClickhouseServerException)rdr.receivePacket(allocator, buf);
     Assert.assertEquals("DB::Exception", exception.getName());
     ClickhouseServerException nested = (ClickhouseServerException) exception.getCause();

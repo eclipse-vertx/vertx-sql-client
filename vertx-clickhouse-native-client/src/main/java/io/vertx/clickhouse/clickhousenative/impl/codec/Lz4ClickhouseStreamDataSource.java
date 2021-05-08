@@ -23,6 +23,7 @@ import net.jpountz.lz4.LZ4Factory;
 import net.jpountz.lz4.LZ4FastDecompressor;
 import ru.yandex.clickhouse.util.ClickHouseCityHash;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource {
@@ -33,7 +34,7 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   //cityhash size + compression method byte + sizeWithHeader + decompressed size
   public static final int HEADER_LENGTH = 16 + CHECKSUMED_HEADER_LENGTH;
 
-
+  private final Charset charset;
   private final LZ4Factory lz4Factory;
   private final ByteBuf decompressedData;
   private long[] serverCityHash;
@@ -41,9 +42,10 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   private Long uncompressedSize;
   private ByteBuf arrayBb;
 
-  public Lz4ClickhouseStreamDataSource(LZ4Factory lz4Factory, ByteBufAllocator alloc) {
+  public Lz4ClickhouseStreamDataSource(LZ4Factory lz4Factory, Charset charset, ByteBufAllocator alloc) {
     this.lz4Factory = lz4Factory;
     this.decompressedData = alloc.heapBuffer();
+    this.charset = charset;
   }
 
   @Override
@@ -149,7 +151,7 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
 
   @Override
   public String readPascalString() {
-    return ByteBufUtils.readPascalString(decompressedData);
+    return ByteBufUtils.readPascalString(decompressedData, charset);
   }
 
   @Override

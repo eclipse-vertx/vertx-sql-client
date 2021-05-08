@@ -18,6 +18,7 @@ import io.vertx.clickhouse.clickhousenative.ClickhouseConstants;
 import io.vertx.clickhouse.clickhousenative.impl.ClickhouseNativeDatabaseMetadata;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Map;
@@ -43,7 +44,7 @@ public class DatabaseMetadataReader {
 
   public ClickhouseNativeDatabaseMetadata readFrom(ByteBuf in) {
     if (productName == null) {
-      productName = ByteBufUtils.readPascalString(in);
+      productName = ByteBufUtils.readPascalString(in, StandardCharsets.UTF_8);
       if (productName == null) {
         return null;
       }
@@ -67,13 +68,13 @@ public class DatabaseMetadataReader {
       }
     }
     if (serverZoneIdName == null && revision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_SERVER_TIMEZONE) {
-      serverZoneIdName = ByteBufUtils.readPascalString(in);
+      serverZoneIdName = ByteBufUtils.readPascalString(in, StandardCharsets.UTF_8);
       if (serverZoneIdName == null) {
         return null;
       }
     }
     if (displayName == null && revision >= ClickhouseConstants.DBMS_MIN_REVISION_WITH_SERVER_DISPLAY_NAME ) {
-      displayName = ByteBufUtils.readPascalString(in);
+      displayName = ByteBufUtils.readPascalString(in, StandardCharsets.UTF_8);
       if (displayName == null) {
         return null;
       }

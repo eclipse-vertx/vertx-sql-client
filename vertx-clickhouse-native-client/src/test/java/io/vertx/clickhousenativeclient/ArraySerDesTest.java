@@ -88,7 +88,7 @@ public class ArraySerDesTest {
     sink.finish();
 
     ClickhouseColumnReader reader = col.reader(data.size());
-    ClickhouseStreamDataSource ds = new RawClickhouseStreamDataSource();
+    ClickhouseStreamDataSource ds = new RawClickhouseStreamDataSource(StandardCharsets.UTF_8);
     ds.moreData(buf, UnpooledByteBufAllocator.DEFAULT);
     reader.readColumn(ds);
     for (int rowIdx = 0; rowIdx < data.size(); ++rowIdx) {
