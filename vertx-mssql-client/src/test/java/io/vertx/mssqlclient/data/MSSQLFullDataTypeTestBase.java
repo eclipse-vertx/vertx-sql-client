@@ -15,7 +15,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -33,8 +32,8 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(9223372036854775807L, row.getValue("test_bigint"));
       ctx.assertEquals((float) 3.40282E38, row.getValue("test_float_4"));
       ctx.assertEquals(1.7976931348623157E308, row.getValue("test_float_8"));
-      ctx.assertEquals(Numeric.create(999.99), row.getValue("test_numeric"));
-      ctx.assertEquals(Numeric.create(12345), row.getValue("test_decimal"));
+      ctx.assertEquals(new BigDecimal("999.99"), row.getValue("test_numeric"));
+      ctx.assertEquals(new BigDecimal("12345"), row.getValue("test_decimal"));
       ctx.assertEquals(true, row.getValue("test_boolean"));
       ctx.assertEquals("testchar", row.getValue("test_char"));
       ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
@@ -90,14 +89,14 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
   @Test
   public void testDecodeNumeric(TestContext ctx) {
     testDecodeNotNullValue(ctx, "test_numeric", row -> {
-      checkNumber(row, "test_numeric", Numeric.create(999.99));
+      checkNumber(row, "test_numeric", new BigDecimal("999.99"));
     });
   }
 
   @Test
   public void testDecodeDecimal(TestContext ctx) {
     testDecodeNotNullValue(ctx, "test_decimal", row -> {
-      checkNumber(row, "test_decimal", Numeric.create(12345));
+      checkNumber(row, "test_decimal", new BigDecimal("12345"));
     });
   }
 
@@ -199,7 +198,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       .returns(Tuple::getDouble, Row::getDouble, value.doubleValue())
       .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(value.toString()))
       .returns(Byte.class, value.byteValue())
-      .returns(Numeric.class, Numeric.create(value))
+      .returns(BigDecimal.class, new BigDecimal(value.toString()))
       .forRow(row);
   }
 }

@@ -137,7 +137,7 @@ Currently, the client supports the following SQL Server types:
 * BIT(`java.lang.Boolean`)
 * REAL(`java.lang.Float`)
 * DOUBLE(`java.lang.Double`)
-* NUMERIC/DECIMAL(`{@link io.vertx.sqlclient.data.Numeric}`)
+* NUMERIC/DECIMAL(`{@link java.math.BigDecimal}`)
 * CHAR/VARCHAR(`java.lang.String`)
 * NCHAR/NVARCHAR(`java.lang.String`)
 * DATE(`java.time.LocalDate`)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,7 +14,6 @@ package io.vertx.sqlclient.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -26,37 +25,37 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
 
   @Test
   public void testSmallInt(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_int_2", Short.class, Row::getShort, (short) Short.MIN_VALUE);
+    testEncodeGeneric(ctx, "test_int_2", Short.class, Row::getShort, Short.MIN_VALUE);
   }
 
   @Test
   public void testInteger(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_int_4", Integer.class, Row::getInteger, (int) Integer.MIN_VALUE);
+    testEncodeGeneric(ctx, "test_int_4", Integer.class, Row::getInteger, Integer.MIN_VALUE);
   }
 
   @Test
   public void testBigInt(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_int_8", Long.class, Row::getLong, (long) Long.MIN_VALUE);
+    testEncodeGeneric(ctx, "test_int_8", Long.class, Row::getLong, Long.MIN_VALUE);
   }
 
   @Test
   public void testFloat4(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_float_4", Float.class, Row::getFloat, (float) -3.402823e38F);
+    testEncodeGeneric(ctx, "test_float_4", Float.class, Row::getFloat, -3.402823e38F);
   }
 
   @Test
   public void testDouble(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_float_8", Double.class, Row::getDouble, (double) Double.MIN_VALUE);
+    testEncodeGeneric(ctx, "test_float_8", Double.class, Row::getDouble, Double.MIN_VALUE);
   }
 
   @Test
   public void testNumeric(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_numeric", Numeric.class, null, Numeric.parse("-999.99"));
+    testEncodeGeneric(ctx, "test_numeric", getNumericClass(), null, getNumericValue("-999.99"));
   }
 
   @Test
   public void testDecimal(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_decimal", Numeric.class, null, Numeric.parse("-12345"));
+    testEncodeGeneric(ctx, "test_decimal", getNumericClass(), null, getNumericValue("-12345"));
   }
 
   @Test
@@ -141,8 +140,8 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
 
   protected <T> void testEncodeGeneric(TestContext ctx,
                                        String columnName,
-                                       Class<T> clazz,
-                                       BiFunction<Row,String,T> getter,
+                                       Class<? extends T> clazz,
+                                       BiFunction<Row, String, T> getter,
                                        T expected) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn

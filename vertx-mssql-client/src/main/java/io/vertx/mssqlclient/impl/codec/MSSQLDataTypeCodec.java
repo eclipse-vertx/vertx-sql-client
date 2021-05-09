@@ -13,7 +13,6 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mssqlclient.impl.protocol.datatype.*;
-import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -50,11 +49,8 @@ class MSSQLDataTypeCodec {
   static String inferenceParamDefinitionByValueType(Object value) {
     if (value == null) {
       return "nvarchar(4000)";
-    } else if (value instanceof Numeric) {
-      BigDecimal bigDecimal = ((Numeric) value).bigDecimalValue();
-      if (bigDecimal == null) {
-        return "nvarchar(4000)"; // null value, NaN not supported on this DB
-      }
+    } else if (value instanceof BigDecimal) {
+      BigDecimal bigDecimal = (BigDecimal) value;
       return "numeric(38," + Math.max(0, bigDecimal.scale()) + ")";
     } else if (value.getClass().isEnum()) {
       return parameterDefinitionsMapping.get(String.class);
@@ -80,7 +76,7 @@ class MSSQLDataTypeCodec {
         return decodeBigInt(in);
       case MSSQLDataTypeId.NUMERICNTYPE_ID:
       case MSSQLDataTypeId.DECIMALNTYPE_ID:
-        return decodeNumeric((NumericDataType) dataType, in);
+        return decodeDecimal((DecimalDataType) dataType, in);
       case MSSQLDataTypeId.INTNTYPE_ID:
         return decodeIntN(in);
       case MSSQLDataTypeId.FLT4TYPE_ID:
@@ -215,7 +211,7 @@ class MSSQLDataTypeCodec {
     return in.readFloatLE();
   }
 
-  private static Numeric decodeNumeric(NumericDataType dataType, ByteBuf in) {
+  private static BigDecimal decodeDecimal(DecimalDataType dataType, ByteBuf in) {
     int scale = dataType.scale();
     short length = in.readUnsignedByte();
     if (length == 0) {
@@ -229,7 +225,7 @@ class MSSQLDataTypeCodec {
     in.skipBytes(bytes.length);
     BigInteger bigInteger = new BigInteger(bytes);
     BigDecimal bigDecimal = new BigDecimal(bigInteger, scale);
-    return Numeric.create(sign == 0 ? bigDecimal.negate() : bigDecimal);
+    return sign == 0 ? bigDecimal.negate() : bigDecimal;
   }
 
   private static long decodeBigInt(ByteBuf in) {
