@@ -22,7 +22,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-sql-client-parent</artifactId>
-    <version>4.0.3-SNAPSHOT</version>
+    <version>4.1.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>vertx-clickhouse-native-client</artifactId>

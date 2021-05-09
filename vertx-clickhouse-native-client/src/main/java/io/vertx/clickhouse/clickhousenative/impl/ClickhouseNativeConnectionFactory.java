@@ -18,6 +18,8 @@ import io.vertx.clickhouse.clickhousenative.ClickhouseNativeConnectOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetClientOptions;
@@ -34,8 +36,8 @@ public class ClickhouseNativeConnectionFactory extends SqlConnectionFactoryBase 
 
   private final LZ4Factory lz4Factory;
 
-  ClickhouseNativeConnectionFactory(EventLoopContext context, ClickhouseNativeConnectOptions options) {
-    super(context, options);
+  ClickhouseNativeConnectionFactory(VertxInternal vertx, ClickhouseNativeConnectOptions options) {
+    super(vertx, options);
     this.lz4Factory = lz4FactoryForName(options.getProperties().getOrDefault(ClickhouseConstants.OPTION_COMPRESSOR, "none"));
   }
 
@@ -68,7 +70,8 @@ public class ClickhouseNativeConnectionFactory extends SqlConnectionFactoryBase 
 
   @Override
   protected void doConnectInternal(Promise<Connection> promise) {
-    doConnect().flatMap(conn -> {
+    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
+    doConnect(ConnectionFactory.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
       ClickhouseNativeSocketConnection socket = (ClickhouseNativeSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
@@ -76,19 +79,19 @@ public class ClickhouseNativeConnectionFactory extends SqlConnectionFactoryBase 
     }).onComplete(promise);
   }
 
-  private Future<Connection> doConnect() {
+  private Future<Connection> doConnect(EventLoopContext ctx) {
     Future<NetSocket> soFut;
     try {
       soFut = netClient.connect(socketAddress, (String) null);
     } catch (Exception e) {
       // Client is closed
-      return context.failedFuture(e);
+      return ctx.failedFuture(e);
     }
-    return soFut.map(so -> newSocketConnection((NetSocketInternal) so));
+    return soFut.map(so -> newSocketConnection(ctx, (NetSocketInternal) so));
   }
 
-  private ClickhouseNativeSocketConnection newSocketConnection(NetSocketInternal socket) {
+  private ClickhouseNativeSocketConnection newSocketConnection(EventLoopContext ctx, NetSocketInternal socket) {
     return new ClickhouseNativeSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize,
-      preparedStatementCacheSqlFilter, context, lz4Factory);
+      preparedStatementCacheSqlFilter, ctx, lz4Factory);
   }
 }
