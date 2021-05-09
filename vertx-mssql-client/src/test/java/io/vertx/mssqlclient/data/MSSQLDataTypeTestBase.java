@@ -19,10 +19,10 @@ import io.vertx.mssqlclient.MSSQLTestBase;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.After;
 import org.junit.Before;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -51,7 +51,7 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
       tupleMethods.add(Tuple::getLocalTime);
       tupleMethods.add(Tuple::getLocalDateTime);
 
-      tupleMethods.add(getByIndex(Numeric.class));
+      tupleMethods.add(getByIndex(BigDecimal.class));
       return tupleMethods;
     }, () -> {
       List<ColumnChecker.SerializableBiFunction<Row, String, ?>> rowMethods = new ArrayList<>();
@@ -69,7 +69,7 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
       rowMethods.add(Row::getLocalTime);
       rowMethods.add(Row::getLocalDateTime);
 
-      rowMethods.add(getByName(Numeric.class));
+      rowMethods.add(getByName(BigDecimal.class));
 
       return rowMethods;
     });

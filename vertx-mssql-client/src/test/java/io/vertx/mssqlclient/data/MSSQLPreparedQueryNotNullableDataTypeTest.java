@@ -16,7 +16,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,12 +57,12 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
 
   @Test
   public void testEncodeNumeric(TestContext ctx) {
-    testEncodeNumber(ctx, "test_numeric", Numeric.create(new BigDecimal("-123.13")));
+    testEncodeNumber(ctx, "test_numeric", new BigDecimal("-123.13"));
   }
 
   @Test
   public void testEncodeDecimal(TestContext ctx) {
-    testEncodeNumber(ctx, "test_decimal", Numeric.create(new BigDecimal("123456789")));
+    testEncodeNumber(ctx, "test_decimal", new BigDecimal("123456789"));
   }
 
   @Test

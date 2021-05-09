@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -19,10 +19,20 @@ import io.vertx.sqlclient.SqlConnection;
 import org.junit.After;
 import org.junit.Before;
 
+import java.sql.JDBCType;
+
 public abstract class DataTypeTestBase {
 
   protected Vertx vertx;
   protected Connector<SqlConnection> connector;
+
+  protected abstract JDBCType getNumericJDBCType();
+
+  protected abstract Class<? extends Number> getNumericClass();
+
+  protected abstract Number getNumericValue(Number value);
+
+  protected abstract Number getNumericValue(String value);
 
   protected abstract void initConnector();
 
