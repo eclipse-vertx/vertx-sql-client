@@ -56,7 +56,7 @@ public class ClickhouseNativeSocketConnection extends SocketConnectionBase {
 
   void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Promise<Connection> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    schedule(cmd, completionHandler);
+    schedule(context, cmd).onComplete(completionHandler);
   }
 
   public void setDatabaseMetadata(ClickhouseNativeDatabaseMetadata md) {

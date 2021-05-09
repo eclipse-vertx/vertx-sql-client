@@ -31,7 +31,7 @@ public class ClickhouseNativeConnectionImpl extends SqlConnectionImpl<Clickhouse
   public static Future<ClickhouseNativeConnection> connect(ContextInternal ctx, ClickhouseNativeConnectOptions options) {
     ClickhouseNativeConnectionFactory client;
     try {
-      client = new ClickhouseNativeConnectionFactory(ConnectionFactory.asEventLoopContext(ctx), options);
+      client = new ClickhouseNativeConnectionFactory(ctx.owner(), options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }

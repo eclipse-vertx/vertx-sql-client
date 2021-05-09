@@ -29,11 +29,11 @@ public interface ClickhouseNativePool extends Pool {
     }
     VertxOptions vertxOptions = new VertxOptions();
     VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return ClickhouseNativePoolImpl.create(vertx.getOrCreateContext(), true, connectOptions, poolOptions);
+    return ClickhouseNativePoolImpl.create(vertx, true, connectOptions, poolOptions);
   }
 
 
   static ClickhouseNativePool pool(Vertx vertx, ClickhouseNativeConnectOptions connectOptions, PoolOptions poolOptions) {
-    return ClickhouseNativePoolImpl.create(((VertxInternal)vertx).getOrCreateContext(), false, connectOptions, poolOptions);
+    return ClickhouseNativePoolImpl.create((VertxInternal)vertx, false, connectOptions, poolOptions);
   }
 }

@@ -18,6 +18,7 @@ import io.vertx.clickhouse.clickhousenative.ClickhouseNativePool;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.sqlclient.PoolOptions;
@@ -28,29 +29,28 @@ import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class ClickhouseNativePoolImpl extends PoolBase<ClickhouseNativePoolImpl> implements ClickhouseNativePool {
-  public static ClickhouseNativePoolImpl create(ContextInternal context, boolean closeVertx,
+  public static ClickhouseNativePoolImpl create(VertxInternal vertx, boolean closeVertx,
                                                 ClickhouseNativeConnectOptions connectOptions, PoolOptions poolOptions) {
-    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), connectOptions);
-    VertxMetrics vertxMetrics = context.owner().metricsSPI();
+    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), connectOptions);
+    VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(),
       "sql", connectOptions.getMetricsName()) : null;
-    EventLoopContext eventLoopContext = ConnectionFactory.asEventLoopContext(context);
-    ClickhouseNativePoolImpl pool = new ClickhouseNativePoolImpl(eventLoopContext,
-      new ClickhouseNativeConnectionFactory(eventLoopContext, connectOptions), tracer, metrics, poolOptions);
+    ClickhouseNativePoolImpl pool = new ClickhouseNativePoolImpl(vertx,
+      new ClickhouseNativeConnectionFactory(vertx, connectOptions), tracer, metrics, poolOptions);
     CloseFuture closeFuture = pool.closeFuture();
     if (closeVertx) {
-      closeFuture.onComplete(ar -> context.owner().close());
+      closeFuture.future().onComplete(ar -> vertx.close());
     } else {
-      context.addCloseHook(closeFuture);
+      vertx.addCloseHook(closeFuture);
     }
     return pool;
   }
 
   private final ClickhouseNativeConnectionFactory factory;
 
-  private ClickhouseNativePoolImpl(EventLoopContext context, ClickhouseNativeConnectionFactory factory, QueryTracer tracer,
+  private ClickhouseNativePoolImpl(VertxInternal vertx, ClickhouseNativeConnectionFactory factory, QueryTracer tracer,
                                    ClientMetrics metrics, PoolOptions poolOptions) {
-    super(context, factory, tracer, metrics, poolOptions);
+    super(vertx, factory, tracer, metrics, 1, poolOptions);
     this.factory = factory;
   }
 
