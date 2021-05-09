@@ -33,7 +33,26 @@ public class ClickhouseNativeBinaryDataTypeDecodeTest extends BinaryDataTypeDeco
   public static ClickhouseResource rule = new ClickhouseResource();
 
   public ClickhouseNativeBinaryDataTypeDecodeTest() {
-    NUMERIC_TYPE = JDBCType.DECIMAL;
+  }
+
+  @Override
+  protected JDBCType getNumericJDBCType() {
+    return JDBCType.DECIMAL;
+  }
+
+  @Override
+  protected Class<? extends Number> getNumericClass() {
+    return Numeric.class;
+  }
+
+  @Override
+  protected Number getNumericValue(Number value) {
+    return Numeric.create(value);
+  }
+
+  @Override
+  protected Number getNumericValue(String value) {
+    return Numeric.parse(value);
   }
 
   @Override
