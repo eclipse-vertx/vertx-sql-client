@@ -67,7 +67,7 @@ public class ClickhouseNativeRowImpl implements Row {
     if (type.isAssignableFrom(value.getClass())) {
       return type.cast(value);
     }
-    throw new ClassCastException("can't cast value " + value + " of class " + value.getClass().getName() + " to class " + type.getName());
+    throw new ClassCastException("can't cast value " + value + " at position " + position + " of class " + value.getClass().getName() + " to class " + type.getName());
   }
 
   @Override
