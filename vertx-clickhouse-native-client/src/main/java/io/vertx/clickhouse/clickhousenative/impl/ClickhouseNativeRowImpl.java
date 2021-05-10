@@ -18,9 +18,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 
 import java.nio.charset.Charset;
-import java.sql.JDBCType;
 import java.util.List;
-import java.util.Objects;
 
 public class ClickhouseNativeRowImpl implements Row {
   private final int rowNo;
@@ -63,10 +61,13 @@ public class ClickhouseNativeRowImpl implements Row {
       throw new IllegalArgumentException("Accessor type can not be null");
     }
     Object value = getValue(position, type);
-    if (value != null && type.isAssignableFrom(value.getClass())) {
+    if (value == null) {
+      return null;
+    }
+    if (type.isAssignableFrom(value.getClass())) {
       return type.cast(value);
     }
-    return null;
+    throw new ClassCastException("can't cast value " + value + " of class " + value.getClass().getName() + " to class " + type.getName());
   }
 
   @Override
