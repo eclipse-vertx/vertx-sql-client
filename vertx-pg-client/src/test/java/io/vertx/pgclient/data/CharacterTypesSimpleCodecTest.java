@@ -1,14 +1,9 @@
 package io.vertx.pgclient.data;
 
-import io.vertx.ext.unit.Async;
-import io.vertx.pgclient.PgConnection;
-import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
-
-import java.util.Arrays;
 
 public class CharacterTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
@@ -68,33 +63,5 @@ public class CharacterTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestB
   @Test
   public void testDecodeNAMEArray(TestContext ctx) {
     testDecodeGenericArray(ctx, "ARRAY ['Knock, knock.Who’s there?very long pause….Java.' :: NAME]", "NameArray", Tuple::getArrayOfStrings, Row::getArrayOfStrings, "Knock, knock.Who’s there?very long pause….Java.");
-  }
-
-  @Test
-  public void testFoo(TestContext ctx) {
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TABLE test2 (col text[])")
-        .execute()
-        .flatMap(res ->
-        conn.query("INSERT INTO test2 VALUES (ARRAY['foo','b\\ar'])").execute()
-      ).flatMap(v ->
-        conn.query("SELECT * FROM test2").execute()
-      ).onComplete(ctx.asyncAssertSuccess(res -> {
-        Row next = res.iterator().next();
-        System.out.println(Arrays.asList(next.getArrayOfStrings("col")));
-      }));
-      /*
-      conn.query("SET TIME ZONE 'UTC'").execute(
-        ctx.asyncAssertSuccess(res -> {
-          conn.query("SELECT " + arrayData + " \"" + columnName + "\"").execute(ctx.asyncAssertSuccess(result -> {
-            ctx.assertEquals(1, result.size());
-            Row row = result.iterator().next();
-            checker.forRow(row);
-            async.complete();
-          }));
-        }));
-
-       */
-    }));
   }
 }
