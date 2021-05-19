@@ -19,7 +19,7 @@ package io.vertx.pgclient.impl.util;
 import io.netty.util.ByteProcessor;
 
 /**
- * A processor that detects the end of a well formed UTF8 string, starting end ending with a {@code "}.
+ * A processor that detects the end of a well formed UTF8 string, starting and ending with a {@code "} char.
  * <p/>
  * It process all bytes until it finds the ending {@code "}.
  */
@@ -45,7 +45,7 @@ public class UTF8StringEndDetector implements ByteProcessor {
           }
           break;
         case '\\':
-          if (inString) {
+          if (inString && !wasEscaped) {
             escaped = true;
           }
           break;
