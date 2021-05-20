@@ -30,7 +30,7 @@ public class ListTuple implements TupleInternal {
   }
 
   @Override
-  public Object getValue(int pos) {
+  public Object getValueInternal(int pos) {
     return list.get(pos);
   }
 
@@ -54,5 +54,5 @@ public class ListTuple implements TupleInternal {
   public void clear() {
     list.clear();
   }
-  
+
 }

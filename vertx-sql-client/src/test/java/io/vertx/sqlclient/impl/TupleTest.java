@@ -21,6 +21,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.NullValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -28,17 +29,12 @@ import org.junit.runners.Parameterized;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
 public class TupleTest {
@@ -534,5 +530,199 @@ public class TupleTest {
     assertEquals(1, tuple.getValue(0));
     assertEquals(2, tuple.getValue(1));
     assertEquals(3, tuple.getValue(2));
+  }
+
+  @Test
+  public void testBooleanNullValue() {
+    testNullValue(Boolean.class, tuple -> tuple.addBoolean(null), (i, tuple) -> tuple.getBoolean(i));
+  }
+
+  @Test
+  public void testShortNullValue() {
+    testNullValue(Short.class, tuple -> tuple.addShort(null), (i, tuple) -> tuple.getShort(i));
+  }
+
+  @Test
+  public void testIntegerNullValue() {
+    testNullValue(Integer.class, tuple -> tuple.addInteger(null), (i, tuple) -> tuple.getInteger(i));
+  }
+
+  @Test
+  public void testLongNullValue() {
+    testNullValue(Long.class, tuple -> tuple.addLong(null), (i, tuple) -> tuple.getLong(i));
+  }
+
+  @Test
+  public void testFloatNullValue() {
+    testNullValue(Float.class, tuple -> tuple.addFloat(null), (i, tuple) -> tuple.getFloat(i));
+  }
+
+  @Test
+  public void testDoubleNullValue() {
+    testNullValue(Double.class, tuple -> tuple.addDouble(null), (i, tuple) -> tuple.getDouble(i));
+  }
+
+  @Test
+  public void testStringNullValue() {
+    testNullValue(String.class, tuple -> tuple.addString(null), (i, tuple) -> tuple.getString(i));
+  }
+
+  @Test
+  public void testJsonObjectNullValue() {
+    testNullValue(JsonObject.class, tuple -> tuple.addJsonObject(null), (i, tuple) -> tuple.getJsonObject(i));
+  }
+
+  @Test
+  public void testJsonArrayNullValue() {
+    testNullValue(JsonArray.class, tuple -> tuple.addJsonArray(null), (i, tuple) -> tuple.getJsonArray(i));
+  }
+
+  @Test
+  public void testTemporalNullValue() {
+    testNullValue(Temporal.class, tuple -> tuple.addTemporal(null), (i, tuple) -> tuple.getTemporal(i));
+  }
+
+  @Test
+  public void testLocalDateNullValue() {
+    testNullValue(LocalDate.class, tuple -> tuple.addLocalDate(null), (i, tuple) -> tuple.getLocalDate(i));
+  }
+
+  @Test
+  public void testLocalTimeNullValue() {
+    testNullValue(LocalTime.class, tuple -> tuple.addLocalTime(null), (i, tuple) -> tuple.getLocalTime(i));
+  }
+
+  @Test
+  public void testLocalDateTimeNullValue() {
+    testNullValue(LocalDateTime.class, tuple -> tuple.addLocalDateTime(null), (i, tuple) -> tuple.getLocalDateTime(i));
+  }
+
+  @Test
+  public void testOffsetTimeNullValue() {
+    testNullValue(OffsetTime.class, tuple -> tuple.addOffsetTime(null), (i, tuple) -> tuple.getOffsetTime(i));
+  }
+
+  @Test
+  public void testOffsetDateTimeNullValue() {
+    testNullValue(OffsetDateTime.class, tuple -> tuple.addOffsetDateTime(null), (i, tuple) -> tuple.getOffsetDateTime(i));
+  }
+
+  @Test
+  public void testBufferNullValue() {
+    testNullValue(Buffer.class, tuple -> tuple.addBuffer(null), (i, tuple) -> tuple.getBuffer(i));
+  }
+
+  @Test
+  public void testUUIDNullValue() {
+    testNullValue(UUID.class, tuple -> tuple.addUUID(null), (i, tuple) -> tuple.getUUID(i));
+  }
+
+  @Test
+  public void testBigDecimalNullValue() {
+    testNullValue(BigDecimal.class, tuple -> tuple.addBigDecimal(null), (i, tuple) -> tuple.getBigDecimal(i));
+  }
+
+  @Test
+  public void testArrayOfBooleanNullValue() {
+    testNullValue(Boolean[].class, tuple -> tuple.addArrayOfBoolean(null), (i, tuple) -> tuple.getArrayOfBooleans(i));
+  }
+
+  @Test
+  public void testArrayOfShortNullValue() {
+    testNullValue(Short[].class, tuple -> tuple.addArrayOfShort(null), (i, tuple) -> tuple.getArrayOfShorts(i));
+  }
+
+  @Test
+  public void testArrayOfIntegerNullValue() {
+    testNullValue(Integer[].class, tuple -> tuple.addArrayOfInteger(null), (i, tuple) -> tuple.getArrayOfIntegers(i));
+  }
+
+  @Test
+  public void testArrayOfLongNullValue() {
+    testNullValue(Long[].class, tuple -> tuple.addArrayOfLong(null), (i, tuple) -> tuple.getArrayOfLongs(i));
+  }
+
+  @Test
+  public void testArrayOfFloatNullValue() {
+    testNullValue(Float[].class, tuple -> tuple.addArrayOfFloat(null), (i, tuple) -> tuple.getArrayOfFloats(i));
+  }
+
+  @Test
+  public void testArrayOfDoubleNullValue() {
+    testNullValue(Double[].class, tuple -> tuple.addArrayOfDouble(null), (i, tuple) -> tuple.getArrayOfDoubles(i));
+  }
+
+  @Test
+  public void testArrayOfStringNullValue() {
+    testNullValue(String[].class, tuple -> tuple.addArrayOfString(null), (i, tuple) -> tuple.getArrayOfStrings(i));
+  }
+
+  @Test
+  public void testArrayOfJsonObjectNullValue() {
+    testNullValue(JsonObject[].class, tuple -> tuple.addArrayOfJsonObject(null), (i, tuple) -> tuple.getArrayOfJsonObjects(i));
+  }
+
+  @Test
+  public void testArrayOfJsonArrayNullValue() {
+    testNullValue(JsonArray[].class, tuple -> tuple.addArrayOfJsonArray(null), (i, tuple) -> tuple.getArrayOfJsonArrays(i));
+  }
+
+  @Test
+  public void testArrayOfTemporalNullValue() {
+    testNullValue(Temporal[].class, tuple -> tuple.addArrayOfTemporal(null), (i, tuple) -> tuple.getArrayOfTemporals(i));
+  }
+
+  @Test
+  public void testArrayOfLocalDateNullValue() {
+    testNullValue(LocalDate[].class, tuple -> tuple.addArrayOfLocalDate(null), (i, tuple) -> tuple.getArrayOfLocalDates(i));
+  }
+
+  @Test
+  public void testArrayOfLocalTimeNullValue() {
+    testNullValue(LocalTime[].class, tuple -> tuple.addArrayOfLocalTime(null), (i, tuple) -> tuple.getArrayOfLocalTimes(i));
+  }
+
+  @Test
+  public void testArrayOfLocalDateTimeNullValue() {
+    testNullValue(LocalDateTime[].class, tuple -> tuple.addArrayOfLocalDateTime(null), (i, tuple) -> tuple.getArrayOfLocalDateTimes(i));
+  }
+
+  @Test
+  public void testArrayOfOffsetTimeNullValue() {
+    testNullValue(OffsetTime[].class, tuple -> tuple.addArrayOfOffsetTime(null), (i, tuple) -> tuple.getArrayOfOffsetTimes(i));
+  }
+
+  @Test
+  public void testArrayOfOffsetDateTimeNullValue() {
+    testNullValue(OffsetDateTime[].class, tuple -> tuple.addArrayOfOffsetDateTime(null), (i, tuple) -> tuple.getArrayOfOffsetDateTimes(i));
+  }
+
+  @Test
+  public void testArrayOfBufferNullValue() {
+    testNullValue(Buffer[].class, tuple -> tuple.addArrayOfBuffer(null), (i, tuple) -> tuple.getArrayOfBuffers(i));
+  }
+
+  @Test
+  public void testArrayOfUUIDNullValue() {
+    testNullValue(UUID[].class, tuple -> tuple.addArrayOfUUID(null), (i, tuple) -> tuple.getArrayOfUUIDs(i));
+  }
+
+  @Test
+  public void testArrayOfBigDecimalNullValue() {
+    testNullValue(BigDecimal[].class, tuple -> tuple.addArrayOfBigDecimal(null), (i, tuple) -> tuple.getArrayOfBigDecimals(i));
+  }
+
+  @Test
+  public void testArbitraryClassNullValue() {
+    testNullValue(LinkedHashSet.class, tuple -> tuple.addValue(NullValue.of(LinkedHashSet.class)), (i, tuple) -> tuple.getValue(i));
+  }
+
+  private void testNullValue(Class<?> c, Consumer<Tuple> addValue, BiFunction<Integer, Tuple, ?> getValue) {
+    Tuple tuple = tuple();
+    addValue.accept(tuple);
+    assertNull(tuple.getValue(0));
+    assertNull(getValue.apply(0, tuple));
+    assertNull(tuple.get(c, 0));
+    assertSame(c, tuple.types().get(0));
   }
 }
