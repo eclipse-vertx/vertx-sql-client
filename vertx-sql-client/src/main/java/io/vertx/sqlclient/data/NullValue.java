@@ -11,12 +11,12 @@
 
 package io.vertx.sqlclient.data;
 
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.impl.data.NullValueImpl;
 
 import java.math.BigDecimal;
 import java.time.*;
@@ -27,57 +27,89 @@ import java.util.UUID;
  * Instances of this class indicate the type associated with a {@code NULL} column value.
  * This is useful when infering database types from {@link io.vertx.sqlclient.Tuple} items.
  */
-@VertxGen
-public interface NullValue {
+@DataObject
+public class NullValue {
 
-  NullValue Boolean = NullValueImpl.of(Boolean.class);
-  NullValue Short = NullValueImpl.of(Short.class);
-  NullValue Integer = NullValueImpl.of(Integer.class);
-  NullValue Long = NullValueImpl.of(Long.class);
-  NullValue Float = NullValueImpl.of(Float.class);
-  NullValue Double = NullValueImpl.of(Double.class);
-  NullValue String = NullValueImpl.of(String.class);
-  NullValue JsonObject = NullValueImpl.of(JsonObject.class);
-  NullValue JsonArray = NullValueImpl.of(JsonArray.class);
-  NullValue Temporal = NullValueImpl.of(Temporal.class);
-  NullValue LocalDate = NullValueImpl.of(LocalDate.class);
-  NullValue LocalTime = NullValueImpl.of(LocalTime.class);
-  NullValue LocalDateTime = NullValueImpl.of(LocalDateTime.class);
-  NullValue OffsetTime = NullValueImpl.of(OffsetTime.class);
-  NullValue OffsetDateTime = NullValueImpl.of(OffsetDateTime.class);
-  NullValue Buffer = NullValueImpl.of(Buffer.class);
-  NullValue UUID = NullValueImpl.of(UUID.class);
-  NullValue BigDecimal = NullValueImpl.of(BigDecimal.class);
-  NullValue ArrayOfBoolean = NullValueImpl.of(Boolean[].class);
-  NullValue ArrayOfShort = NullValueImpl.of(Short[].class);
-  NullValue ArrayOfInteger = NullValueImpl.of(Integer[].class);
-  NullValue ArrayOfLong = NullValueImpl.of(Long[].class);
-  NullValue ArrayOfFloat = NullValueImpl.of(Float[].class);
-  NullValue ArrayOfDouble = NullValueImpl.of(Double[].class);
-  NullValue ArrayOfString = NullValueImpl.of(String[].class);
-  NullValue ArrayOfJsonObject = NullValueImpl.of(JsonObject[].class);
-  NullValue ArrayOfJsonArray = NullValueImpl.of(JsonArray[].class);
-  NullValue ArrayOfTemporal = NullValueImpl.of(Temporal[].class);
-  NullValue ArrayOfLocalDate = NullValueImpl.of(LocalDate[].class);
-  NullValue ArrayOfLocalTime = NullValueImpl.of(LocalTime[].class);
-  NullValue ArrayOfLocalDateTime = NullValueImpl.of(LocalDateTime[].class);
-  NullValue ArrayOfOffsetTime = NullValueImpl.of(OffsetTime[].class);
-  NullValue ArrayOfOffsetDateTime = NullValueImpl.of(OffsetDateTime[].class);
-  NullValue ArrayOfBuffer = NullValueImpl.of(Buffer[].class);
-  NullValue ArrayOfUUID = NullValueImpl.of(UUID[].class);
-  NullValue ArrayOfBigDecimal = NullValueImpl.of(BigDecimal[].class);
+  public static NullValue Boolean = new NullValue(Boolean.class);
+  public static NullValue Short = new NullValue(Short.class);
+  public static NullValue Integer = new NullValue(Integer.class);
+  public static NullValue Long = new NullValue(Long.class);
+  public static NullValue Float = new NullValue(Float.class);
+  public static NullValue Double = new NullValue(Double.class);
+  public static NullValue String = new NullValue(String.class);
+  public static NullValue JsonObject = new NullValue(JsonObject.class);
+  public static NullValue JsonArray = new NullValue(JsonArray.class);
+  public static NullValue Temporal = new NullValue(Temporal.class);
+  public static NullValue LocalDate = new NullValue(LocalDate.class);
+  public static NullValue LocalTime = new NullValue(LocalTime.class);
+  public static NullValue LocalDateTime = new NullValue(LocalDateTime.class);
+  public static NullValue OffsetTime = new NullValue(OffsetTime.class);
+  public static NullValue OffsetDateTime = new NullValue(OffsetDateTime.class);
+  public static NullValue Buffer = new NullValue(Buffer.class);
+  public static NullValue UUID = new NullValue(UUID.class);
+  public static NullValue BigDecimal = new NullValue(BigDecimal.class);
+  public static NullValue ArrayOfBoolean = new NullValue(Boolean[].class);
+  public static NullValue ArrayOfShort = new NullValue(Short[].class);
+  public static NullValue ArrayOfInteger = new NullValue(Integer[].class);
+  public static NullValue ArrayOfLong = new NullValue(Long[].class);
+  public static NullValue ArrayOfFloat = new NullValue(Float[].class);
+  public static NullValue ArrayOfDouble = new NullValue(Double[].class);
+  public static NullValue ArrayOfString = new NullValue(String[].class);
+  public static NullValue ArrayOfJsonObject = new NullValue(JsonObject[].class);
+  public static NullValue ArrayOfJsonArray = new NullValue(JsonArray[].class);
+  public static NullValue ArrayOfTemporal = new NullValue(Temporal[].class);
+  public static NullValue ArrayOfLocalDate = new NullValue(LocalDate[].class);
+  public static NullValue ArrayOfLocalTime = new NullValue(LocalTime[].class);
+  public static NullValue ArrayOfLocalDateTime = new NullValue(LocalDateTime[].class);
+  public static NullValue ArrayOfOffsetTime = new NullValue(OffsetTime[].class);
+  public static NullValue ArrayOfOffsetDateTime = new NullValue(OffsetDateTime[].class);
+  public static NullValue ArrayOfBuffer = new NullValue(Buffer[].class);
+  public static NullValue ArrayOfUUID = new NullValue(UUID[].class);
+  public static NullValue ArrayOfBigDecimal = new NullValue(BigDecimal[].class);
 
-  /**
-   * @return an instance of {@link NullValue} for the given {@code type}
-   */
-  static NullValue of(Object type) {
-    return NullValueImpl.of(type);
+  private Class<?> type;
+
+  public NullValue() {
+  }
+
+  public NullValue(NullValue other) {
+    type = other.type;
+  }
+
+  public NullValue(JsonObject json) {
+    String type = json.getString("type");
+    if (type != null) {
+      try {
+        this.type = Class.forName(type);
+      } catch (ClassNotFoundException e) {
+        throw new VertxException("Cannot create NullValue instance", e);
+      }
+    }
+  }
+
+  @SuppressWarnings("rawtypes")
+  @GenIgnore
+  public NullValue(Class type) {
+    this.type = type;
+  }
+
+  public String getType() {
+    return type.getName();
+  }
+
+  public void setType(String type) {
+    try {
+      this.type = Class.forName(type);
+    } catch (ClassNotFoundException e) {
+      throw new VertxException("Cannot set type for NullValue", e);
+    }
   }
 
   /**
    * @return the type associated with a null value
    */
   @GenIgnore
-  Class<?> type();
-
+  public Class<?> type() {
+    return type;
+  }
 }
