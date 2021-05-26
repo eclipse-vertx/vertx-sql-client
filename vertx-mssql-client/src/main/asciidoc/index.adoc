@@ -144,8 +144,9 @@ Currently, the client supports the following SQL Server types:
 * TIME(`java.time.LocalTime`)
 * DATETIME2(`java.time.LocalDateTime`)
 * DATETIMEOFFSET(`java.time.OffsetDateTime`)
+* BINARY/VARBINARY(`io.vertx.core.buffer.Buffer`)
 
-Tuple decoding uses the above types when storing values
+Tuple decoding uses the above types when storing values.
 
 === Handling ENUM
 
@@ -163,6 +164,24 @@ You can retrieve the ENUM column as Java enums like this:
 [source,$lang]
 ----
 {@link examples.MSSQLClientExamples#enumeratedType02Example}
+----
+
+=== Handling `NULL`
+
+If you modify a `Tuple` with one of the `addXXX` methods, `null` values are handled transparently.
+
+The client can infer the right SQL type when executing a prepared query:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#transparentNullHandling}
+----
+
+Otherwise, you should declare the type explicitely using one of the {@link io.vertx.sqlclient.data.NullValue} constants or the {@link io.vertx.sqlclient.data.NullValue#of} method:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#explicitNullHandling}
 ----
 
 == Collector queries
