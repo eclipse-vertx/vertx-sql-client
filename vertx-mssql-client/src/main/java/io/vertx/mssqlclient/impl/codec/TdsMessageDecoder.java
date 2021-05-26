@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.TdsPacket;
@@ -22,9 +22,8 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
-import java.util.List;
 
-class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
+class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
   private final ArrayDeque<MSSQLCommandCodec<?, ?>> inflight;
   private final TdsMessageEncoder encoder;
 
@@ -36,7 +35,8 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
   }
 
   @Override
-  protected void decode(ChannelHandlerContext channelHandlerContext, TdsPacket tdsPacket, List<Object> list) throws Exception {
+  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+    TdsPacket tdsPacket = (TdsPacket) msg;
     // assemble packets
     if (tdsPacket.status() == MessageStatus.END_OF_MESSAGE) {
       if (message == null) {
@@ -50,7 +50,7 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
     } else {
       if (message == null) {
         // first packet of this message and there will be more packets
-        CompositeByteBuf messageData = channelHandlerContext.alloc().compositeDirectBuffer();
+        CompositeByteBuf messageData = ctx.alloc().compositeDirectBuffer();
         messageData.addComponent(true, tdsPacket.content());
         message = TdsMessage.newTdsMessage(tdsPacket.type(), tdsPacket.status(), tdsPacket.processId(), messageData);
       } else {
@@ -61,14 +61,29 @@ class TdsMessageDecoder extends MessageToMessageDecoder<TdsPacket> {
   }
 
   @Override
+  public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    releaseMessage();
+  }
+
+  private void releaseMessage() {
+    if (message != null) {
+      message.release();
+      message = null;
+    }
+  }
+
+  @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     clearInflightCommands(ctx, "Fail to read any response from the server, the underlying connection might get lost unexpectedly.");
     super.channelInactive(ctx);
   }
 
   private void decodeMessage() {
-    inflight.peek().decodeMessage(message, encoder);
-    this.message = null;
+    try {
+      inflight.peek().decodeMessage(message, encoder);
+    } finally {
+      releaseMessage();
+    }
   }
 
   private void clearInflightCommands(ChannelHandlerContext ctx, String failureMsg) {
