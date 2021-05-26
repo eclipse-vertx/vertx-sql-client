@@ -29,56 +29,56 @@ import java.util.UUID;
  */
 public class NullValue {
 
+  // We only cache instances for JDK types and some Vert.x types (JSON/Buffer)
   private static final Map<Class<?>, NullValue> cached = new HashMap<>();
 
-  public static final NullValue Boolean = new NullValue(Boolean.class);
-  public static final NullValue Short = new NullValue(Short.class);
-  public static final NullValue Integer = new NullValue(Integer.class);
-  public static final NullValue Long = new NullValue(Long.class);
-  public static final NullValue Float = new NullValue(Float.class);
-  public static final NullValue Double = new NullValue(Double.class);
-  public static final NullValue String = new NullValue(String.class);
-  public static final NullValue JsonObject = new NullValue(JsonObject.class);
-  public static final NullValue JsonArray = new NullValue(JsonArray.class);
-  public static final NullValue Temporal = new NullValue(Temporal.class, false);
-  public static final NullValue LocalDate = new NullValue(LocalDate.class);
-  public static final NullValue LocalTime = new NullValue(LocalTime.class);
-  public static final NullValue LocalDateTime = new NullValue(LocalDateTime.class);
-  public static final NullValue OffsetTime = new NullValue(OffsetTime.class);
-  public static final NullValue OffsetDateTime = new NullValue(OffsetDateTime.class);
-  public static final NullValue Buffer = new NullValue(Buffer.class, false);
-  public static final NullValue UUID = new NullValue(UUID.class);
-  public static final NullValue BigDecimal = new NullValue(BigDecimal.class);
-  public static final NullValue ArrayOfBoolean = new NullValue(Boolean[].class);
-  public static final NullValue ArrayOfShort = new NullValue(Short[].class);
-  public static final NullValue ArrayOfInteger = new NullValue(Integer[].class);
-  public static final NullValue ArrayOfLong = new NullValue(Long[].class);
-  public static final NullValue ArrayOfFloat = new NullValue(Float[].class);
-  public static final NullValue ArrayOfDouble = new NullValue(Double[].class);
-  public static final NullValue ArrayOfString = new NullValue(String[].class);
-  public static final NullValue ArrayOfJsonObject = new NullValue(JsonObject[].class);
-  public static final NullValue ArrayOfJsonArray = new NullValue(JsonArray[].class);
-  public static final NullValue ArrayOfTemporal = new NullValue(Temporal[].class, false);
-  public static final NullValue ArrayOfLocalDate = new NullValue(LocalDate[].class);
-  public static final NullValue ArrayOfLocalTime = new NullValue(LocalTime[].class);
-  public static final NullValue ArrayOfLocalDateTime = new NullValue(LocalDateTime[].class);
-  public static final NullValue ArrayOfOffsetTime = new NullValue(OffsetTime[].class);
-  public static final NullValue ArrayOfOffsetDateTime = new NullValue(OffsetDateTime[].class);
-  public static final NullValue ArrayOfBuffer = new NullValue(Buffer[].class, false);
-  public static final NullValue ArrayOfUUID = new NullValue(UUID[].class);
-  public static final NullValue ArrayOfBigDecimal = new NullValue(BigDecimal[].class);
+  public static final NullValue Boolean = createAndCache(Boolean.class);
+  public static final NullValue Short = createAndCache(Short.class);
+  public static final NullValue Integer = createAndCache(Integer.class);
+  public static final NullValue Long = createAndCache(Long.class);
+  public static final NullValue Float = createAndCache(Float.class);
+  public static final NullValue Double = createAndCache(Double.class);
+  public static final NullValue String = createAndCache(String.class);
+  public static final NullValue JsonObject = createAndCache(JsonObject.class);
+  public static final NullValue JsonArray = createAndCache(JsonArray.class);
+  public static final NullValue Temporal = createAndCache(Temporal.class);
+  public static final NullValue LocalDate = createAndCache(LocalDate.class);
+  public static final NullValue LocalTime = createAndCache(LocalTime.class);
+  public static final NullValue LocalDateTime = createAndCache(LocalDateTime.class);
+  public static final NullValue OffsetTime = createAndCache(OffsetTime.class);
+  public static final NullValue OffsetDateTime = createAndCache(OffsetDateTime.class);
+  public static final NullValue Buffer = createAndCache(Buffer.class);
+  public static final NullValue UUID = createAndCache(UUID.class);
+  public static final NullValue BigDecimal = createAndCache(BigDecimal.class);
+  public static final NullValue ArrayOfBoolean = createAndCache(Boolean[].class);
+  public static final NullValue ArrayOfShort = createAndCache(Short[].class);
+  public static final NullValue ArrayOfInteger = createAndCache(Integer[].class);
+  public static final NullValue ArrayOfLong = createAndCache(Long[].class);
+  public static final NullValue ArrayOfFloat = createAndCache(Float[].class);
+  public static final NullValue ArrayOfDouble = createAndCache(Double[].class);
+  public static final NullValue ArrayOfString = createAndCache(String[].class);
+  public static final NullValue ArrayOfJsonObject = createAndCache(JsonObject[].class);
+  public static final NullValue ArrayOfJsonArray = createAndCache(JsonArray[].class);
+  public static final NullValue ArrayOfTemporal = createAndCache(Temporal[].class);
+  public static final NullValue ArrayOfLocalDate = createAndCache(LocalDate[].class);
+  public static final NullValue ArrayOfLocalTime = createAndCache(LocalTime[].class);
+  public static final NullValue ArrayOfLocalDateTime = createAndCache(LocalDateTime[].class);
+  public static final NullValue ArrayOfOffsetTime = createAndCache(OffsetTime[].class);
+  public static final NullValue ArrayOfOffsetDateTime = createAndCache(OffsetDateTime[].class);
+  public static final NullValue ArrayOfBuffer = createAndCache(Buffer[].class);
+  public static final NullValue ArrayOfUUID = createAndCache(UUID[].class);
+  public static final NullValue ArrayOfBigDecimal = createAndCache(BigDecimal[].class);
+
+  private static NullValue createAndCache(Class<?> type) {
+    NullValue instance = new NullValue(type);
+    cached.put(type, instance);
+    return instance;
+  }
 
   private final Class<?> type;
 
   private NullValue(Class<?> type) {
-    this(type, true);
-  }
-
-  private NullValue(Class<?> type, boolean cache) {
     this.type = type;
-    if (cache) {
-      cached.put(type, this);
-    }
   }
 
   public static NullValue of(Class<?> type) {
