@@ -21,6 +21,7 @@ import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
 import io.vertx.mssqlclient.impl.protocol.server.DoneToken;
 import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import java.math.BigDecimal;
@@ -163,7 +164,7 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     Tuple params = cmd.params();
 
     // Param definitions
-    String paramDefinitions = parseParamDefinitions(params);
+    String paramDefinitions = parseParamDefinitions((TupleInternal) params);
     encodeNVarcharParameter(packet, paramDefinitions);
 
     // SQL text
@@ -233,10 +234,10 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 
-  private String parseParamDefinitions(Tuple params) {
+  private String parseParamDefinitions(TupleInternal params) {
     StringBuilder stringBuilder = new StringBuilder();
     for (int i = 0; i < params.size(); i++) {
-      Object param = params.getValue(i);
+      Object param = params.getValueInternal(i);
       stringBuilder.append("@P").append(i + 1).append(" ");
       stringBuilder.append(inferenceParamDefinitionByValueType(param));
       if (i != params.size() - 1) {

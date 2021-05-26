@@ -13,6 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mssqlclient.impl.protocol.datatype.*;
+import io.vertx.sqlclient.data.NullValue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -49,17 +50,19 @@ class MSSQLDataTypeCodec {
   static String inferenceParamDefinitionByValueType(Object value) {
     if (value == null) {
       return "nvarchar(4000)";
-    } else if (value instanceof BigDecimal) {
-      BigDecimal bigDecimal = (BigDecimal) value;
-      return "numeric(38," + Math.max(0, bigDecimal.scale()) + ")";
-    } else if (value.getClass().isEnum()) {
+    }
+    boolean nullValue = value instanceof NullValue;
+    Class<?> type = nullValue ? ((NullValue) value).type() : value.getClass();
+    if (type == BigDecimal.class) {
+      return "numeric(38," + (nullValue ? 0 : Math.max(0, ((BigDecimal) value).scale())) + ")";
+    } else if (type.isEnum()) {
       return parameterDefinitionsMapping.get(String.class);
     } else {
-      String paramDefinition = parameterDefinitionsMapping.get(value.getClass());
+      String paramDefinition = parameterDefinitionsMapping.get(type);
       if (paramDefinition != null) {
         return paramDefinition;
       } else {
-        throw new UnsupportedOperationException("Unsupported type" + value.getClass());
+        throw new UnsupportedOperationException("Unsupported type: " + type.getSimpleName());
       }
     }
   }
