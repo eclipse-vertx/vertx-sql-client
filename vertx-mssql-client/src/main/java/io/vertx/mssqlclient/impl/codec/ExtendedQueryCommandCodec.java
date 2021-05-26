@@ -13,6 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
@@ -291,6 +292,8 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
       encodeOffsetDateTimeNParameter(payload, (OffsetDateTime) value, (byte) 6);
     } else if (value instanceof BigDecimal) {
       encodeDecimalParameter(payload, (BigDecimal) value);
+    } else if (value instanceof Buffer) {
+      encodeBufferParameter(payload, (Buffer) value);
     } else {
       throw new UnsupportedOperationException("Unsupported type");
     }
@@ -475,5 +478,16 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     for (int i = bytes.length - 1; i >= 0; i--) {
       payload.writeByte(bytes[i]);
     }
+  }
+
+  private void encodeBufferParameter(ByteBuf payload, Buffer value) {
+    payload.writeByte(0x00);
+    payload.writeByte(0x00);
+    payload.writeByte(MSSQLDataTypeId.BIGBINARYTYPE_ID);
+
+    payload.writeShortLE(value.length()); // max length
+    payload.writeShortLE(value.length()); // length
+
+    payload.writeBytes(value.getByteBuf());
   }
 }

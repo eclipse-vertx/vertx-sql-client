@@ -11,11 +11,13 @@
 
 package io.vertx.mssqlclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.NullValue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -311,6 +313,48 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
           .returns(Tuple::getLocalDate, Row::getLocalDate, value.toLocalDate())
           .returns(Tuple::getLocalTime, Row::getLocalTime, value.toLocalTime())
           .returns(OffsetDateTime.class, value)
+          .forRow(row);
+      }
+    });
+  }
+
+  @Test
+  public void testEncodeBinary(TestContext ctx) {
+    String str = "joselito";
+    Buffer value = Buffer.buffer(str);
+    Buffer actual = Buffer.buffer(str).appendBytes(new byte[20 - str.length()]);
+    testEncodeBufferValue(ctx, "test_binary", value, actual);
+  }
+
+  @Test
+  public void testEncodeNullBinary(TestContext ctx) {
+    testEncodeBufferValue(ctx, "test_binary", BUFFER_NULL_VALUE);
+  }
+
+  @Test
+  public void testEncodeVarBinary(TestContext ctx) {
+    testEncodeBufferValue(ctx, "test_varbinary", Buffer.buffer("joselito"));
+  }
+
+  @Test
+  public void testEncodeNullVarBinary(TestContext ctx) {
+    testEncodeBufferValue(ctx, "test_varbinary", BUFFER_NULL_VALUE);
+  }
+
+  private void testEncodeBufferValue(TestContext ctx, String columnName, Object value) {
+    testEncodeBufferValue(ctx, columnName, value, value);
+  }
+
+  private void testEncodeBufferValue(TestContext ctx, String columnName, Object value, Object expected) {
+    Object param = value == null ? NullValue.Buffer : value;
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", columnName, param, row -> {
+      ColumnChecker checker = ColumnChecker.checkColumn(0, columnName);
+      if (value == null || value instanceof NullValue) {
+        checker.returnsNull();
+      } else {
+        checker.returns(Tuple::getValue, Row::getValue, expected)
+          .returns(Tuple::getBuffer, Row::getBuffer, expected)
+          .returns(Buffer.class, (Buffer) expected)
           .forRow(row);
       }
     });

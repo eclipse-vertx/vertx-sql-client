@@ -147,6 +147,12 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
         short collateFlags = payload.readShortLE();
         byte collateCharsetId = payload.readByte();
         return new TextWithCollationDataType(typeInfo, String.class, null);
+      case BIGBINARYTYPE_ID:
+      case BINARYTYPE_ID:
+        return new BinaryDataType(typeInfo, payload.readUnsignedShortLE());
+      case BIGVARBINTYPE_ID:
+      case VARBINARYTYPE_ID:
+        return new VarBinaryDataType(typeInfo, payload.readUnsignedShortLE());
       default:
         throw new UnsupportedOperationException("Unsupported type with typeinfo: " + typeInfo);
     }

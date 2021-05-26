@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.vertx.sqlclient.data.NullValue;
 
@@ -55,6 +56,8 @@ class MSSQLDataTypeCodec {
     Class<?> type = nullValue ? ((NullValue) value).type() : value.getClass();
     if (type == BigDecimal.class) {
       return "numeric(38," + (nullValue ? 0 : Math.max(0, ((BigDecimal) value).scale())) + ")";
+    } else if (Buffer.class.isAssignableFrom(type)) {
+      return "binary(" + (nullValue ? 1 : ((Buffer) value).length()) + ")";
     } else if (type.isEnum()) {
       return parameterDefinitionsMapping.get(String.class);
     } else {
@@ -108,6 +111,11 @@ class MSSQLDataTypeCodec {
       case MSSQLDataTypeId.NCHARTYPE_ID:
       case MSSQLDataTypeId.NVARCHARTYPE_ID:
         return decodeNVarchar(in);
+      case MSSQLDataTypeId.BIGBINARYTYPE_ID:
+      case MSSQLDataTypeId.BINARYTYPE_ID:
+      case MSSQLDataTypeId.BIGVARBINTYPE_ID:
+      case MSSQLDataTypeId.VARBINARYTYPE_ID:
+        return decodeBinary(in);
       default:
         throw new UnsupportedOperationException("Unsupported datatype: " + dataType);
     }
@@ -166,6 +174,13 @@ class MSSQLDataTypeCodec {
       return null;
     }
     return in.readCharSequence(length, StandardCharsets.UTF_16LE);
+  }
+
+  private static Buffer decodeBinary(ByteBuf in) {
+    int length = in.readUnsignedShortLE();
+    byte[] bytes = new byte[length];
+    in.readBytes(bytes, 0, length);
+    return Buffer.buffer(bytes);
   }
 
   private static CharSequence decodeVarchar(ByteBuf in) {
