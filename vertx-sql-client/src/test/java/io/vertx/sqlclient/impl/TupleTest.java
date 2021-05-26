@@ -714,7 +714,7 @@ public class TupleTest {
 
   @Test
   public void testArbitraryClassNullValue() {
-    testNullValue(LinkedHashSet.class, tuple -> tuple.addValue(new NullValue(LinkedHashSet.class)), (i, tuple) -> tuple.getValue(i));
+    testNullValue(LinkedHashSet.class, tuple -> tuple.addValue(NullValue.of(LinkedHashSet.class)), (i, tuple) -> tuple.getValue(i));
   }
 
   private void testNullValue(Class<?> c, Consumer<Tuple> addValue, BiFunction<Integer, Tuple, ?> getValue) {
