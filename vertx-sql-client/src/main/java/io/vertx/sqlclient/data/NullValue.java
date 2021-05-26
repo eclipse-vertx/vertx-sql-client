@@ -87,14 +87,14 @@ public class NullValue {
       boolean array = type.isArray();
       Class<?> c = array ? type.getComponentType() : type;
       if (java.time.temporal.Temporal.class.isAssignableFrom(c)) {
-        return array ? ArrayOfTemporal : Temporal;
-      }
-      if (io.vertx.core.buffer.Buffer.class.isAssignableFrom(c)) {
-        return array ? ArrayOfBuffer : Buffer;
+        instance = array ? ArrayOfTemporal : Temporal;
+      } else if (io.vertx.core.buffer.Buffer.class.isAssignableFrom(c)) {
+        instance = array ? ArrayOfBuffer : Buffer;
+      } else {
+        instance = new NullValue(type);
       }
     }
-    return new NullValue(type, false);
-
+    return instance;
   }
 
   /**
