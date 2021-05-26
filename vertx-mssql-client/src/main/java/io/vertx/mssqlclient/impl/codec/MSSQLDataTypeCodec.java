@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.vertx.sqlclient.data.NullValue;
@@ -178,9 +179,10 @@ class MSSQLDataTypeCodec {
 
   private static Buffer decodeBinary(ByteBuf in) {
     int length = in.readUnsignedShortLE();
-    byte[] bytes = new byte[length];
-    in.readBytes(bytes, 0, length);
-    return Buffer.buffer(bytes);
+    ByteBuf byteBuf = Unpooled.buffer(length);
+    in.readBytes(byteBuf, 0, length);
+    byteBuf.writerIndex(length);
+    return Buffer.buffer(byteBuf);
   }
 
   private static CharSequence decodeVarchar(ByteBuf in) {
