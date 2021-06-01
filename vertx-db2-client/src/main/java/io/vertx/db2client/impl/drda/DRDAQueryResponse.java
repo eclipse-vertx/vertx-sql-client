@@ -2217,6 +2217,15 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 ddmLength = adjustDdmLength(ddmLength, length);
                 peekCP = peekCodePoint();
             }
+            
+            if (peekCP == CodePoint.QRYBLKFCT) {
+                // @MJS added
+                foundInPass = true;
+                length = peekedLength_;
+                parseFastQRYBLKFCT();
+                ddmLength = adjustDdmLength(ddmLength, length);
+                peekCP = peekCodePoint();
+            }
 
 
             if (!foundInPass) {
@@ -2327,6 +2336,12 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         // @AGG added
         matchCodePoint(CodePoint.QRYATTISOL);
         return readUnsignedShort();
+    }
+    
+    private int parseFastQRYBLKFCT() {
+        //@MJS added
+        matchCodePoint(CodePoint.QRYBLKFCT);
+        return readFastInt();
     }
 
     private int parseFastQRYATTSNS() {
