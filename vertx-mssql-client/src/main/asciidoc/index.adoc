@@ -1,4 +1,6 @@
 = Reactive MSSQL Client
+:PREPARED_PARAMS: `@1`, `@2`, etc…​
+:batching-unsupported:
 
 The Reactive MSSQL Client is a client for Microsoft SQL Server with a straightforward API focusing on
 scalability and low overhead.
@@ -10,6 +12,13 @@ scalability and low overhead.
 * Built-in connection pooling
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
+
+*Not supported yet*
+
+* Prepared queries caching
+* Batch and cursor
+* Row streaming
+* Some https://github.com/eclipse-vertx/vertx-sql-client/issues/608#issuecomment-629390027[data types] are not supported
 
 == Usage
 
@@ -92,17 +101,6 @@ A simple way to configure the client is to specify a `MSSQLConnectOptions` data 
 {@link examples.MSSQLClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
 ----
 
-include::queries.adoc[]
-
-== Connect retries
-
-You can configure the client to retry when a connection fails to be established.
-
-[source,$lang]
-----
-{@link examples.MSSQLClientExamples#reconnectAttempts}
-----
-
 === Connection URI
 
 As an alternative to configuring the client with a {@link io.vertx.mssqlclient.MSSQLConnectOptions} data object, you can use a connection URI:
@@ -121,6 +119,21 @@ Currently, the client supports the following parameter keywords in connection ur
 * user
 * password
 * database
+
+== Connect retries
+
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#reconnectAttempts}
+----
+
+include::queries.adoc[leveloffset=1]
+
+include::connections.adoc[]
+
+include::transactions.adoc[]
 
 == Tracing queries
 
@@ -148,18 +161,18 @@ Currently, the client supports the following SQL Server types:
 
 Tuple decoding uses the above types when storing values.
 
-=== Handling ENUM
+=== Using Java `enum` types
 
-SQL Server does not have ENUM data type but the client can map the retrieved string/numeric data type to enum.
+SQL Server does not have `ENUM` data type, but the client can map the retrieved string/numeric data type to enum.
 
-You can encode Java enums as String like this:
+You can encode Java enums like this:
 
 [source,$lang]
 ----
 {@link examples.MSSQLClientExamples#enumeratedType01Example}
 ----
 
-You can retrieve the ENUM column as Java enums like this:
+You can decode a Java enum like this:
 
 [source,$lang]
 ----

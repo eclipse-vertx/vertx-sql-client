@@ -1,4 +1,4 @@
-== Running queries
+= Running queries
 
 When you don't need a transaction or run single queries, you can run queries directly on the pool; the pool
 will use one of its connection to run the query and return the result to you.
@@ -10,7 +10,7 @@ Here is how to run simple queries:
 {@link examples.SqlClientExamples#queries01(io.vertx.sqlclient.SqlClient)}
 ----
 
-=== Prepared queries
+== Prepared queries
 
 You can do the same with prepared queries.
 
@@ -72,7 +72,8 @@ You can create a `PreparedStatement` and manage the lifecycle by yourself.
 {@link examples.SqlClientExamples#queries10(io.vertx.sqlclient.SqlConnection)}
 ----
 
-=== Batches
+ifndef::batching-unsupported[]
+== Batches
 
 You can execute prepared batch
 
@@ -80,3 +81,4 @@ You can execute prepared batch
 ----
 {@link examples.SqlClientExamples#queries08(io.vertx.sqlclient.SqlClient)}
 ----
+endif::[]
