@@ -428,6 +428,11 @@ public class CodePoint {
      */
     public static final int QRYCLSIMP = 0x215D;
 
+    /**
+     * Query Blocking Factor (0x215F is also recognized as QRYOPTVAL)
+     */
+    public static final int QRYBLKFCT = 0x215F;
+    
     /** 
      * Query Scroll Orientation.
      */
