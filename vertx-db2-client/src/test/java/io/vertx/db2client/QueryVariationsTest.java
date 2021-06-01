@@ -28,7 +28,7 @@ public class QueryVariationsTest extends DB2TestBase {
       conn.query("select message from immutable order by id fetch first 1 rows only").execute(
         ctx.asyncAssertSuccess(rowSet -> {
           ctx.assertEquals(1, rowSet.size());
-          ctx.assertEquals(Arrays.asList("message"), rowSet.columnsNames());
+          ctx.assertEquals(Arrays.asList("MESSAGE"), rowSet.columnsNames());
           RowIterator<Row> rows = rowSet.iterator();
           ctx.assertTrue(rows.hasNext());
           Row row = rows.next();
