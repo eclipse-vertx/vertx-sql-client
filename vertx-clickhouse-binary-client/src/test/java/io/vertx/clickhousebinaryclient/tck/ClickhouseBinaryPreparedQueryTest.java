@@ -11,7 +11,16 @@
  *
  */
 
-@ModuleGen(name = "vertx-clickhousebinary-client", groupPackage = "io.vertx")
-package io.vertx.clickhouse.clickhouse.binary;
+package io.vertx.clickhousebinaryclient.tck;
 
-import io.vertx.codegen.annotations.ModuleGen;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.runner.RunWith;
+
+@RunWith(VertxUnitRunner.class)
+public class ClickhouseBinaryPreparedQueryTest extends ClickhouseBinaryPreparedQueryTestBase {
+  @Override
+  protected void initConnector() {
+    options = rule.options();
+    connector = ClientConfig.CONNECT.connect(vertx, options);
+  }
+}
