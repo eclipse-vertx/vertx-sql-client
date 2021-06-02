@@ -27,7 +27,7 @@
 
   <artifactId>vertx-clickhouse-binary-client</artifactId>
 
-  <name>Vertx Clickhouse native(binary) Client</name>
+  <name>Vertx Clickhouse binary Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive Clickhouse Client</description>
 
