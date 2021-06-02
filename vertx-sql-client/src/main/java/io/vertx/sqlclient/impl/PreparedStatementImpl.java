@@ -198,7 +198,13 @@ class PreparedStatementImpl implements PreparedStatement {
       if (ar.succeeded()) {
         CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ar.result());
         cmd.handler = handler;
-        conn.schedule(cmd);
+        if (context == Vertx.currentContext()) {
+          conn.schedule(cmd);
+        } else {
+          context.runOnContext(v -> {
+            conn.schedule(cmd);
+          });
+        }
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
