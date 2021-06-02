@@ -1,1 +1,1 @@
-io.vertx.clickhouse.clickhouse.binary.spi.ClickhouseBinaryDriver
+io.vertx.clickhouseclient.binary.spi.ClickhouseBinaryDriver
