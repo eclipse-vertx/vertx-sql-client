@@ -11,7 +11,8 @@
  *
  */
 
-@ModuleGen(name = "vertx-clickhousebinary-client", groupPackage = "io.vertx")
-package io.vertx.clickhouse.clickhouse.binary;
+package io.vertx.clickhousebinaryclient.alltypes;
 
-import io.vertx.codegen.annotations.ModuleGen;
+enum TestEnum {
+  v0, v1, v2, v3, v4, v5, v6
+}

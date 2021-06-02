@@ -11,7 +11,15 @@
  *
  */
 
-@ModuleGen(name = "vertx-clickhousebinary-client", groupPackage = "io.vertx")
-package io.vertx.clickhouse.clickhouse.binary;
+package io.vertx.clickhousebinaryclient.alltypes;
 
-import io.vertx.codegen.annotations.ModuleGen;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.runner.RunWith;
+
+@RunWith(VertxUnitRunner.class)
+public class Enum16Test extends EnumTest {
+  public Enum16Test() {
+    super("enum16");
+  }
+}
+
