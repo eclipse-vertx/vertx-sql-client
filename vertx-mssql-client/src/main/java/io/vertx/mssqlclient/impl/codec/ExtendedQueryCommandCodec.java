@@ -13,6 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
@@ -21,6 +22,7 @@ import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
 import io.vertx.mssqlclient.impl.protocol.server.DoneToken;
 import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import java.math.BigDecimal;
@@ -163,7 +165,7 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     Tuple params = cmd.params();
 
     // Param definitions
-    String paramDefinitions = parseParamDefinitions(params);
+    String paramDefinitions = parseParamDefinitions((TupleInternal) params);
     encodeNVarcharParameter(packet, paramDefinitions);
 
     // SQL text
@@ -233,10 +235,10 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
   }
 
-  private String parseParamDefinitions(Tuple params) {
+  private String parseParamDefinitions(TupleInternal params) {
     StringBuilder stringBuilder = new StringBuilder();
     for (int i = 0; i < params.size(); i++) {
-      Object param = params.getValue(i);
+      Object param = params.getValueInternal(i);
       stringBuilder.append("@P").append(i + 1).append(" ");
       stringBuilder.append(inferenceParamDefinitionByValueType(param));
       if (i != params.size() - 1) {
@@ -290,6 +292,8 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
       encodeOffsetDateTimeNParameter(payload, (OffsetDateTime) value, (byte) 6);
     } else if (value instanceof BigDecimal) {
       encodeDecimalParameter(payload, (BigDecimal) value);
+    } else if (value instanceof Buffer) {
+      encodeBufferParameter(payload, (Buffer) value);
     } else {
       throw new UnsupportedOperationException("Unsupported type");
     }
@@ -474,5 +478,16 @@ class ExtendedQueryCommandCodec<T> extends QueryCommandBaseCodec<T, ExtendedQuer
     for (int i = bytes.length - 1; i >= 0; i--) {
       payload.writeByte(bytes[i]);
     }
+  }
+
+  private void encodeBufferParameter(ByteBuf payload, Buffer value) {
+    payload.writeByte(0x00);
+    payload.writeByte(0x00);
+    payload.writeByte(MSSQLDataTypeId.BIGBINARYTYPE_ID);
+
+    payload.writeShortLE(value.length()); // max length
+    payload.writeShortLE(value.length()); // length
+
+    payload.writeBytes(value.getByteBuf());
   }
 }

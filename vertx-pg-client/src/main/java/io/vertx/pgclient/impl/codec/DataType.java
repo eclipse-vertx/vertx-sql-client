@@ -46,7 +46,7 @@ import java.util.UUID;
  *
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-enum DataType {
+public enum DataType {
 
   BOOL(16, true, Boolean.class, JDBCType.BOOLEAN, Tuple::getBoolean),
   BOOL_ARRAY(1000, true, Boolean[].class, JDBCType.BOOLEAN, Tuple::getArrayOfBooleans),

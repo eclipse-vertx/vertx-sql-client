@@ -11,6 +11,7 @@
 
 package io.vertx.mssqlclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -41,6 +42,8 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2), row.getValue("test_datetime2"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row.getValue("test_datetimeoffset"));
+      ctx.assertEquals(Buffer.buffer("hello world").appendBytes(new byte[20 - "hello world".length()]), row.getValue("test_binary"));
+      ctx.assertEquals(Buffer.buffer("big apple"), row.getValue("test_varbinary"));
     });
   }
 
@@ -178,6 +181,30 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
         .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(2019, 1, 1))
         .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 2))
         .returns(OffsetDateTime.class, LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeBinary(TestContext ctx) {
+    String str = "hello world";
+    Buffer expected = Buffer.buffer(str).appendBytes(new byte[20 - str.length()]);
+    testDecodeNotNullValue(ctx, "test_binary", row -> {
+      ColumnChecker.checkColumn(0, "test_binary")
+        .returns(Tuple::getValue, Row::getValue, expected)
+        .returns(Tuple::getBuffer, Row::getBuffer, expected)
+        .returns(Buffer.class, expected)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeVarBinary(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_varbinary", row -> {
+      ColumnChecker.checkColumn(0, "test_varbinary")
+        .returns(Tuple::getValue, Row::getValue, Buffer.buffer("big apple"))
+        .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("big apple"))
+        .returns(Buffer.class, Buffer.buffer("big apple"))
         .forRow(row);
     });
   }

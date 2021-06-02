@@ -218,7 +218,7 @@ You can configure the client to retry when a connection fails to be established.
 {@link examples.MySQLClientExamples#reconnectAttempts}
 ----
 
-include::queries.adoc[]
+include::queries.adoc[leveloffset=1]
 
 == MySQL LAST_INSERT_ID
 

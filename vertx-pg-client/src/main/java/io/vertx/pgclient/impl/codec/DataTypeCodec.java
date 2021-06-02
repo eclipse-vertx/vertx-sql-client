@@ -52,7 +52,7 @@ import static java.util.concurrent.TimeUnit.*;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class DataTypeCodec {
+public class DataTypeCodec {
 
   private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
 

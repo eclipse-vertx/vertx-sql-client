@@ -75,6 +75,8 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getLocalDateTime(position));
     } else if (type == OffsetDateTime.class) {
       return type.cast(getOffsetDateTime(position));
+    } else if (type == Buffer.class) {
+      return type.cast(getBuffer(position));
     } else if (type == Object.class) {
       return type.cast(getValue(position));
     } else if (type.isEnum()) {
@@ -82,11 +84,6 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
-  }
-
-  @Override
-  public Buffer getBuffer(int pos) {
-    throw new UnsupportedOperationException();
   }
 
   @Override

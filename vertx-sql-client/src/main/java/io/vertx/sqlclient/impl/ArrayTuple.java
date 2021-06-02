@@ -52,7 +52,7 @@ public class ArrayTuple implements TupleInternal {
   }
 
   @Override
-  public Object getValue(int pos) {
+  public Object getValueInternal(int pos) {
     return pos >= 0 && pos < size ? values[pos] : null;
   }
 

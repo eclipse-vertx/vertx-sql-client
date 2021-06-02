@@ -94,25 +94,27 @@ CREATE TABLE nullable_datatype
     test_date           DATE,
     test_time           TIME(5),
     test_datetime2      DATETIME2(4),
-    test_datetimeoffset DATETIMEOFFSET(3)
+    test_datetimeoffset DATETIMEOFFSET(3),
+    test_binary         BINARY(20),
+    test_varbinary      VARBINARY(20)
 );
 
 INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
                               test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date, test_time,
-                              test_datetime2, test_datetimeoffset)
+                              test_datetime2, test_datetimeoffset, test_binary, test_varbinary)
 VALUES (1, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
         12345, 1, 'testchar', 'testvarchar', '2019-01-01', '18:45:02', '2019-01-01T18:45:02',
-        '2019-01-01T18:45:02-03:15');
+        '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'));
 INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
                               test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date, test_time,
-                              test_datetime2, test_datetimeoffset)
+                              test_datetime2, test_datetimeoffset, test_binary, test_varbinary)
 VALUES (2, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
         12345, 1, 'testchar', 'testvarchar', '2019-01-01', '18:45:02', '2019-01-01T18:45:02',
-        '2019-01-01T18:45:02-03:15');
+        '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'));
 INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
                               test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date, test_time,
-                              test_datetime2, test_datetimeoffset)
-VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+                              test_datetime2, test_datetimeoffset, test_binary, test_varbinary)
+VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 -- table for testing nullable data types
 
 -- table for testing NOT NULL data types
@@ -135,20 +137,22 @@ CREATE TABLE not_nullable_datatype
     test_time           TIME(6)          NOT NULL,
     test_datetime2      DATETIME2(7)     NOT NULL,
     test_datetimeoffset DATETIMEOFFSET(1) NOT NULL,
+    test_binary         BINARY(20)       NOT NULL,
+    test_varbinary      VARBINARY(20)    NOT NULL
 );
 
 INSERT INTO not_nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
                                   test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date,
-                                  test_time, test_datetime2, test_datetimeoffset)
+                                  test_time, test_datetime2, test_datetimeoffset, test_binary, test_varbinary)
 VALUES (1, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
         12345, 1, 'testchar', 'testvarchar', '2019-01-01', '18:45:02', '2019-01-01T18:45:02',
-        '2019-01-01T18:45:02-03:15');
+        '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'));
 INSERT INTO not_nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
                                   test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date,
-                                  test_time, test_datetime2, test_datetimeoffset)
+                                  test_time, test_datetime2, test_datetimeoffset, test_binary, test_varbinary)
 VALUES (2, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
         12345, 1, 'testchar', 'testvarchar', '2019-01-01', '18:45:02', '2019-01-01T18:45:02',
-        '2019-01-01T18:45:02-03:15');
+        '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'));
 -- table for testing NOT NULL data types
 
 -- Fortune table

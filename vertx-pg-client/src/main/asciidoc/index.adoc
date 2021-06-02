@@ -230,7 +230,7 @@ dependencies {
 NOTE: SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
 
 
-include::queries.adoc[]
+include::queries.adoc[leveloffset=1]
 
 You can fetch generated keys with a 'RETURNING' clause in your query:
 
