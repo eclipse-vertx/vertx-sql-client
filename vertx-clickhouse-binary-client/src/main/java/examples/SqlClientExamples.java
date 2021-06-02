@@ -13,7 +13,7 @@
 
 package examples;
 
-import io.vertx.clickhouse.clickhouse.binary.ClickhouseBinaryConnectOptions;
+import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnectOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
