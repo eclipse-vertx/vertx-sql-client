@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,18 +11,15 @@
 
 package io.vertx.sqlclient.impl;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
-
 /**
  * A sequence of hex values, each terminated by a zero byte.
  *
- * The hex number is left padded to start with at least three 0
+ * <p>The hex number is left padded to start with at least three 0
  * and to have at least seven digits.
  *
- * After 000FFFFFFFFFFFFFFFF it will restart with 0000000.
+ * <p>After 000FFFFFFFFFFFFFFFF it will restart with 0000000.
  *
- * The generated sequence:
+ * <p>The generated sequence:
  * <pre>
  * 0000000
  * 0000001
@@ -57,17 +54,33 @@ public class HexSequence {
     i = startValue;
   }
 
+  private static byte toHex(long c) {
+    if (c < 10) {
+      return (byte)('0' + c);
+    } else {
+      return (byte)('A' + c - 10);
+    }
+  }
+
   /**
-   * @return a copy of the next hex value, terminated by a zero byte.
+   * A copy of the next hex value, terminated by a zero byte.
    */
   public byte[] next() {
-    String hex = Long.toUnsignedString(i, 16).toUpperCase(Locale.ROOT);
-    i++;
-    switch (hex.length()) {
-    case 1: return ("000000" + hex + "\0").getBytes(StandardCharsets.US_ASCII);
-    case 2: return ("00000" + hex + "\0").getBytes(StandardCharsets.US_ASCII);
-    case 3: return ("0000" + hex + "\0").getBytes(StandardCharsets.US_ASCII);
-    default: return ("000" + hex + "\0").getBytes(StandardCharsets.US_ASCII);
+    int len = 3  // 3 leading zeroes
+        + (64 - Long.numberOfLeadingZeros(i) + 3) / 4  // hex characters
+        + 1;  // tailing null byte
+    len = Math.max(8, len);  // at least 7 hex digits plus null byte
+    byte [] hex = new byte [len];
+    int pos = len - 1;
+    hex[pos--] = '\0';
+    long n = i++;
+    while (n != 0) {
+      hex[pos--] = toHex(n & 0xf);
+      n >>>= 4;
     }
+    while (pos >= 0) {
+      hex[pos--] = '0';
+    }
+    return hex;
   }
 }
