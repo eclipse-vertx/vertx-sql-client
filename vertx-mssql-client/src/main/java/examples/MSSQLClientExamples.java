@@ -11,12 +11,13 @@
 
 package examples;
 
+import io.vertx.core.Vertx;
+import io.vertx.docgen.Source;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLPool;
-import io.vertx.core.Vertx;
-import io.vertx.docgen.Source;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.data.NullValue;
 
 import java.util.Map;
 import java.util.stream.Collector;
@@ -253,6 +254,27 @@ public class MSSQLClientExamples {
             System.out.println(row.get(Color.class, "color"));
           }
         }
+      });
+  }
+
+  public void transparentNullHandling(SqlClient client) {
+    Tuple tuple = Tuple.tuple()
+      .addInteger(17)
+      .addString("The Man Who Knew Too Much")
+      .addString(null);
+    client
+      .preparedQuery("INSERT INTO movies (id, title, plot) VALUES (@p1, @p2, @p3)")
+      .execute(tuple, res -> {
+        // ...
+      });
+  }
+
+  public void explicitNullHandling(SqlClient client) {
+    Tuple tuple = Tuple.of(17, "The Man Who Knew Too Much", NullValue.String);
+    client
+      .preparedQuery("INSERT INTO movies (id, title, plot) VALUES (@p1, @p2, @p3)")
+      .execute(tuple, res -> {
+        // ...
       });
   }
 }

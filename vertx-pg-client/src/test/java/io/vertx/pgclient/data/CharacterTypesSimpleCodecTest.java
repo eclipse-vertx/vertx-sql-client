@@ -48,6 +48,14 @@ public class CharacterTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestB
   }
 
   @Test
+  public void testDecodeTEXTArray2(TestContext ctx) {
+    // \ is escaped when reading the text array and we get {foo,"bar\\"}
+    // as it is the last char of the second element we need to ensure
+    // that the self escape (\\) does not escape the ending "
+    testDecodeGenericArray(ctx, "ARRAY ['foo' :: TEXT, 'bar\\' :: TEXT]", "TextArray", Tuple::getArrayOfStrings, Row::getArrayOfStrings, "foo", "bar\\");
+  }
+
+  @Test
   public void testDecodeVARCHARArray(TestContext ctx) {
     testDecodeGenericArray(ctx, "ARRAY ['Knock, knock.Who’s there?very long pause….Java.' :: VARCHAR]", "VarcharArray", Tuple::getArrayOfStrings, Row::getArrayOfStrings, "Knock, knock.Who’s there?very long pause….Java.");
   }

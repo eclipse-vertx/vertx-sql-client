@@ -158,7 +158,7 @@ You can configure the client to retry when a connection fails to be established.
 {@link examples.DB2ClientExamples#reconnectAttempts}
 ----
 
-include::queries.adoc[]
+include::queries.adoc[leveloffset=1]
 
 You can fetch generated keys by wrapping your query in `SELECT <COLUMNS> FROM FINAL TABLE ( <SQL> )`, for example:
 

@@ -12,8 +12,10 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.mssqlclient.impl.protocol.datatype.*;
-import io.vertx.sqlclient.data.Numeric;
+import io.vertx.sqlclient.data.NullValue;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -50,20 +52,21 @@ class MSSQLDataTypeCodec {
   static String inferenceParamDefinitionByValueType(Object value) {
     if (value == null) {
       return "nvarchar(4000)";
-    } else if (value instanceof Numeric) {
-      BigDecimal bigDecimal = ((Numeric) value).bigDecimalValue();
-      if (bigDecimal == null) {
-        return "nvarchar(4000)"; // null value, NaN not supported on this DB
-      }
-      return "numeric(38," + Math.max(0, bigDecimal.scale()) + ")";
-    } else if (value.getClass().isEnum()) {
+    }
+    boolean nullValue = value instanceof NullValue;
+    Class<?> type = nullValue ? ((NullValue) value).type() : value.getClass();
+    if (type == BigDecimal.class) {
+      return "numeric(38," + (nullValue ? 0 : Math.max(0, ((BigDecimal) value).scale())) + ")";
+    } else if (Buffer.class.isAssignableFrom(type)) {
+      return "binary(" + (nullValue ? 1 : ((Buffer) value).length()) + ")";
+    } else if (type.isEnum()) {
       return parameterDefinitionsMapping.get(String.class);
     } else {
-      String paramDefinition = parameterDefinitionsMapping.get(value.getClass());
+      String paramDefinition = parameterDefinitionsMapping.get(type);
       if (paramDefinition != null) {
         return paramDefinition;
       } else {
-        throw new UnsupportedOperationException("Unsupported type" + value.getClass());
+        throw new UnsupportedOperationException("Unsupported type: " + type.getSimpleName());
       }
     }
   }
@@ -80,7 +83,7 @@ class MSSQLDataTypeCodec {
         return decodeBigInt(in);
       case MSSQLDataTypeId.NUMERICNTYPE_ID:
       case MSSQLDataTypeId.DECIMALNTYPE_ID:
-        return decodeNumeric((NumericDataType) dataType, in);
+        return decodeDecimal((DecimalDataType) dataType, in);
       case MSSQLDataTypeId.INTNTYPE_ID:
         return decodeIntN(in);
       case MSSQLDataTypeId.FLT4TYPE_ID:
@@ -109,6 +112,11 @@ class MSSQLDataTypeCodec {
       case MSSQLDataTypeId.NCHARTYPE_ID:
       case MSSQLDataTypeId.NVARCHARTYPE_ID:
         return decodeNVarchar(in);
+      case MSSQLDataTypeId.BIGBINARYTYPE_ID:
+      case MSSQLDataTypeId.BINARYTYPE_ID:
+      case MSSQLDataTypeId.BIGVARBINTYPE_ID:
+      case MSSQLDataTypeId.VARBINARYTYPE_ID:
+        return decodeBinary(in);
       default:
         throw new UnsupportedOperationException("Unsupported datatype: " + dataType);
     }
@@ -169,6 +177,14 @@ class MSSQLDataTypeCodec {
     return in.readCharSequence(length, StandardCharsets.UTF_16LE);
   }
 
+  private static Buffer decodeBinary(ByteBuf in) {
+    int length = in.readUnsignedShortLE();
+    ByteBuf byteBuf = Unpooled.buffer(length);
+    in.readBytes(byteBuf, 0, length);
+    byteBuf.writerIndex(length);
+    return Buffer.buffer(byteBuf);
+  }
+
   private static CharSequence decodeVarchar(ByteBuf in) {
     int length = in.readUnsignedShortLE();
     if (length == 65535) {
@@ -215,7 +231,7 @@ class MSSQLDataTypeCodec {
     return in.readFloatLE();
   }
 
-  private static Numeric decodeNumeric(NumericDataType dataType, ByteBuf in) {
+  private static BigDecimal decodeDecimal(DecimalDataType dataType, ByteBuf in) {
     int scale = dataType.scale();
     short length = in.readUnsignedByte();
     if (length == 0) {
@@ -229,7 +245,7 @@ class MSSQLDataTypeCodec {
     in.skipBytes(bytes.length);
     BigInteger bigInteger = new BigInteger(bytes);
     BigDecimal bigDecimal = new BigDecimal(bigInteger, scale);
-    return Numeric.create(sign == 0 ? bigDecimal.negate() : bigDecimal);
+    return sign == 0 ? bigDecimal.negate() : bigDecimal;
   }
 
   private static long decodeBigInt(ByteBuf in) {

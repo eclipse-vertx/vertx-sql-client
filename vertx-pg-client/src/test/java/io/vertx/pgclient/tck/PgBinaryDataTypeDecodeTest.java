@@ -1,11 +1,22 @@
-package io.vertx.pgclient.tck;
+/*
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
 
-import org.junit.ClassRule;
-import org.junit.runner.RunWith;
+package io.vertx.pgclient.tck;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.tck.BinaryDataTypeDecodeTestBase;
+import org.junit.ClassRule;
+import org.junit.runner.RunWith;
 
 import java.sql.JDBCType;
 
@@ -14,8 +25,24 @@ public class PgBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @ClassRule
   public static ContainerPgRule rule = new ContainerPgRule();
 
-  public PgBinaryDataTypeDecodeTest() {
-    NUMERIC_TYPE = JDBCType.NUMERIC;
+  @Override
+  protected JDBCType getNumericJDBCType() {
+    return JDBCType.NUMERIC;
+  }
+
+  @Override
+  protected Class<? extends Number> getNumericClass() {
+    return Numeric.class;
+  }
+
+  @Override
+  protected Number getNumericValue(Number value) {
+    return Numeric.create(value);
+  }
+
+  @Override
+  protected Number getNumericValue(String value) {
+    return Numeric.parse(value);
   }
 
   @Override

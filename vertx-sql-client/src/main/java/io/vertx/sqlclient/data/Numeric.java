@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * The Postgres <i>NUMERIC</i> type.
+ * An arbitrary number that supports NaN.
  */
 public final class Numeric extends Number {
 

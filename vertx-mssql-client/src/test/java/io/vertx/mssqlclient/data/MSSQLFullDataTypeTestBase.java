@@ -11,11 +11,11 @@
 
 package io.vertx.mssqlclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -33,8 +33,8 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(9223372036854775807L, row.getValue("test_bigint"));
       ctx.assertEquals((float) 3.40282E38, row.getValue("test_float_4"));
       ctx.assertEquals(1.7976931348623157E308, row.getValue("test_float_8"));
-      ctx.assertEquals(Numeric.create(999.99), row.getValue("test_numeric"));
-      ctx.assertEquals(Numeric.create(12345), row.getValue("test_decimal"));
+      ctx.assertEquals(new BigDecimal("999.99"), row.getValue("test_numeric"));
+      ctx.assertEquals(new BigDecimal("12345"), row.getValue("test_decimal"));
       ctx.assertEquals(true, row.getValue("test_boolean"));
       ctx.assertEquals("testchar", row.getValue("test_char"));
       ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
@@ -42,6 +42,8 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2), row.getValue("test_datetime2"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row.getValue("test_datetimeoffset"));
+      ctx.assertEquals(Buffer.buffer("hello world").appendBytes(new byte[20 - "hello world".length()]), row.getValue("test_binary"));
+      ctx.assertEquals(Buffer.buffer("big apple"), row.getValue("test_varbinary"));
     });
   }
 
@@ -90,14 +92,14 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
   @Test
   public void testDecodeNumeric(TestContext ctx) {
     testDecodeNotNullValue(ctx, "test_numeric", row -> {
-      checkNumber(row, "test_numeric", Numeric.create(999.99));
+      checkNumber(row, "test_numeric", new BigDecimal("999.99"));
     });
   }
 
   @Test
   public void testDecodeDecimal(TestContext ctx) {
     testDecodeNotNullValue(ctx, "test_decimal", row -> {
-      checkNumber(row, "test_decimal", Numeric.create(12345));
+      checkNumber(row, "test_decimal", new BigDecimal("12345"));
     });
   }
 
@@ -183,6 +185,30 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
     });
   }
 
+  @Test
+  public void testDecodeBinary(TestContext ctx) {
+    String str = "hello world";
+    Buffer expected = Buffer.buffer(str).appendBytes(new byte[20 - str.length()]);
+    testDecodeNotNullValue(ctx, "test_binary", row -> {
+      ColumnChecker.checkColumn(0, "test_binary")
+        .returns(Tuple::getValue, Row::getValue, expected)
+        .returns(Tuple::getBuffer, Row::getBuffer, expected)
+        .returns(Buffer.class, expected)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeVarBinary(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_varbinary", row -> {
+      ColumnChecker.checkColumn(0, "test_varbinary")
+        .returns(Tuple::getValue, Row::getValue, Buffer.buffer("big apple"))
+        .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("big apple"))
+        .returns(Buffer.class, Buffer.buffer("big apple"))
+        .forRow(row);
+    });
+  }
+
   protected abstract void testDecodeValue(TestContext ctx, boolean isNull, String columnName, Consumer<Row> checker);
 
   private void testDecodeNotNullValue(TestContext ctx, String columnName, Consumer<Row> checker) {
@@ -199,7 +225,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       .returns(Tuple::getDouble, Row::getDouble, value.doubleValue())
       .returns(Tuple::getBigDecimal, Row::getBigDecimal, new BigDecimal(value.toString()))
       .returns(Byte.class, value.byteValue())
-      .returns(Numeric.class, Numeric.create(value))
+      .returns(BigDecimal.class, new BigDecimal(value.toString()))
       .forRow(row);
   }
 }

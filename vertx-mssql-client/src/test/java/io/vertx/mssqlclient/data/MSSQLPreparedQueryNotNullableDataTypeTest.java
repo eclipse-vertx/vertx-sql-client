@@ -11,12 +11,12 @@
 
 package io.vertx.mssqlclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -58,12 +58,12 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
 
   @Test
   public void testEncodeNumeric(TestContext ctx) {
-    testEncodeNumber(ctx, "test_numeric", Numeric.create(new BigDecimal("-123.13")));
+    testEncodeNumber(ctx, "test_numeric", new BigDecimal("-123.13"));
   }
 
   @Test
   public void testEncodeDecimal(TestContext ctx) {
-    testEncodeNumber(ctx, "test_decimal", Numeric.create(new BigDecimal("123456789")));
+    testEncodeNumber(ctx, "test_decimal", new BigDecimal("123456789"));
   }
 
   @Test
@@ -144,6 +144,31 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
         .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(1999, 12, 31))
         .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(23, 10, 45))
         .returns(OffsetDateTime.class, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeBinary(TestContext ctx) {
+    String str = "john doe";
+    Buffer param = Buffer.buffer(str);
+    Buffer expected = Buffer.buffer(str).appendBytes(new byte[20 - str.length()]);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_binary", param, row -> {
+      ColumnChecker.checkColumn(0, "test_binary")
+        .returns(Tuple::getValue, Row::getValue, expected)
+        .returns(Tuple::getBuffer, Row::getBuffer, expected)
+        .returns(Buffer.class, expected)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeVarBinary(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_varbinary", Buffer.buffer("ninja plumber"), row -> {
+      ColumnChecker.checkColumn(0, "test_varbinary")
+        .returns(Tuple::getValue, Row::getValue, Buffer.buffer("ninja plumber"))
+        .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("ninja plumber"))
+        .returns(Buffer.class, Buffer.buffer("ninja plumber"))
         .forRow(row);
     });
   }

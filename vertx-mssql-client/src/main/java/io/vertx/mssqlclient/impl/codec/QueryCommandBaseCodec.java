@@ -14,10 +14,10 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
+import java.math.BigDecimal;
 import java.util.stream.Collector;
 
 import static io.vertx.mssqlclient.impl.protocol.EnvChange.*;
@@ -112,10 +112,10 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
        */
       case NUMERICNTYPE_ID:
       case DECIMALNTYPE_ID:
-        short numericTypeSize = payload.readUnsignedByte();
-        byte numericPrecision = payload.readByte();
+        short decimalTypeSize = payload.readUnsignedByte();
+        byte decimalPrecision = payload.readByte();
         scale = payload.readByte();
-        return new NumericDataType(NUMERICNTYPE_ID, Numeric.class, numericPrecision, scale);
+        return new DecimalDataType(typeInfo, BigDecimal.class, decimalPrecision, scale);
       case INTNTYPE_ID:
         byte intNTypeLength = payload.readByte();
         return IntNDataType.valueOf(intNTypeLength);
@@ -147,6 +147,12 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
         short collateFlags = payload.readShortLE();
         byte collateCharsetId = payload.readByte();
         return new TextWithCollationDataType(typeInfo, String.class, null);
+      case BIGBINARYTYPE_ID:
+      case BINARYTYPE_ID:
+        return new BinaryDataType(typeInfo, payload.readUnsignedShortLE());
+      case BIGVARBINTYPE_ID:
+      case VARBINARYTYPE_ID:
+        return new VarBinaryDataType(typeInfo, payload.readUnsignedShortLE());
       default:
         throw new UnsupportedOperationException("Unsupported type with typeinfo: " + typeInfo);
     }

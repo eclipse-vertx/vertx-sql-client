@@ -11,12 +11,13 @@
 
 package io.vertx.mssqlclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -30,13 +31,14 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   protected static final Long LONG_NULL_VALUE = null;
   protected static final Float FLOAT_NULL_VALUE = null;
   protected static final Double DOUBLE_NULL_VALUE = null;
-  protected static final Numeric NUMERIC_NULL_VALUE = null;
+  protected static final BigDecimal DECIMAL_NULL_VALUE = null;
   protected static final Boolean BOOLEAN_NULL_VALUE = null;
   protected static final String STRING_NULL_VALUE = null;
   protected static final LocalDate LOCALDATE_NULL_VALUE = null;
   protected static final LocalTime LOCALTIME_NULL_VALUE = null;
   protected static final LocalDateTime LOCALDATETIME_NULL_VALUE = null;
   protected static final OffsetDateTime OFFSETDATETIME_NULL_VALUE = null;
+  protected static final Buffer BUFFER_NULL_VALUE = null;
 
   @Test
   public void testDecodeNullAllColumns(TestContext ctx) {
@@ -56,6 +58,8 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
       ctx.assertEquals(null, row.getValue("test_time"));
       ctx.assertEquals(null, row.getValue("test_datetime2"));
       ctx.assertEquals(null, row.getValue("test_datetimeoffset"));
+      ctx.assertEquals(null, row.getValue("test_binary"));
+      ctx.assertEquals(null, row.getValue("test_varbinary"));
     });
   }
 
@@ -190,6 +194,24 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullOffsetDateTime(TestContext ctx) {
     testDecodeNullValue(ctx, "test_datetimeoffset", row -> {
       ColumnChecker.checkColumn(0, "test_datetimeoffset")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullBinary(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_binary", row -> {
+      ColumnChecker.checkColumn(0, "test_binary")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullVarBinary(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_varbinary", row -> {
+      ColumnChecker.checkColumn(0, "test_varbinary")
         .returnsNull()
         .forRow(row);
     });

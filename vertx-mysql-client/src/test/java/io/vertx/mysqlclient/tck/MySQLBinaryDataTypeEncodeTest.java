@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,19 +14,41 @@ package io.vertx.mysqlclient.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.MySQLRule;
-import io.vertx.sqlclient.tck.BinaryDataTypeEncodeTestBase;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.Numeric;
+import io.vertx.sqlclient.tck.BinaryDataTypeEncodeTestBase;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.sql.JDBCType;
 import java.time.Duration;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
   @ClassRule
   public static MySQLRule rule = MySQLRule.SHARED_INSTANCE;
+
+  @Override
+  protected JDBCType getNumericJDBCType() {
+    return JDBCType.DECIMAL;
+  }
+
+  @Override
+  protected Class<? extends Number> getNumericClass() {
+    return Numeric.class;
+  }
+
+  @Override
+  protected Number getNumericValue(Number value) {
+    return Numeric.create(value);
+  }
+
+  @Override
+  protected Number getNumericValue(String value) {
+    return Numeric.parse(value);
+  }
 
   @Override
   protected void initConnector() {

@@ -24,6 +24,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.data.NullValue;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.ListTuple;
@@ -1262,7 +1263,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addBoolean(Boolean value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.Boolean : value);
   }
 
   /**
@@ -1273,7 +1274,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addShort(Short value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.Short : value);
   }
 
   /**
@@ -1283,8 +1284,8 @@ public interface Tuple {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  default Tuple addInteger(Integer value)  {
-    return addValue(value);
+  default Tuple addInteger(Integer value) {
+    return addValue(value == null ? NullValue.Integer : value);
   }
 
   /**
@@ -1295,7 +1296,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addLong(Long value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.Long : value);
   }
 
   /**
@@ -1306,7 +1307,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addFloat(Float value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.Float : value);
   }
 
   /**
@@ -1317,7 +1318,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addDouble(Double value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.Double : value);
   }
 
   /**
@@ -1328,7 +1329,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addString(String value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.String : value);
   }
 
   /**
@@ -1339,7 +1340,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addJsonObject(JsonObject value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.JsonObject : value);
   }
 
   /**
@@ -1350,7 +1351,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addJsonArray(JsonArray value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.JsonArray : value);
   }
 
   /**
@@ -1361,7 +1362,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addTemporal(Temporal value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.Temporal : value);
   }
 
   /**
@@ -1372,7 +1373,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addLocalDate(LocalDate value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.LocalDate : value);
   }
 
   /**
@@ -1383,7 +1384,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addLocalTime(LocalTime value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.LocalTime : value);
   }
 
   /**
@@ -1394,7 +1395,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addLocalDateTime(LocalDateTime value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.LocalDateTime : value);
   }
 
   /**
@@ -1405,7 +1406,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addOffsetTime(OffsetTime value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.OffsetTime : value);
   }
 
   /**
@@ -1416,7 +1417,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addOffsetDateTime(OffsetDateTime value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.OffsetDateTime : value);
   }
 
   /**
@@ -1427,7 +1428,7 @@ public interface Tuple {
    */
   @Fluent
   default Tuple addBuffer(Buffer value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.Buffer : value);
   }
 
   /**
@@ -1438,7 +1439,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addUUID(UUID value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.UUID : value);
   }
 
   /**
@@ -1449,7 +1450,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addBigDecimal(BigDecimal value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.BigDecimal : value);
   }
 
   /**
@@ -1460,7 +1461,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfBoolean(Boolean[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfBoolean : value);
   }
 
   /**
@@ -1471,7 +1472,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfShort(Short[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfShort : value);
   }
 
   /**
@@ -1485,7 +1486,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfInteger(Integer[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfInteger : value);
   }
 
   /**
@@ -1496,7 +1497,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfLong(Long[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfLong : value);
   }
 
   /**
@@ -1507,7 +1508,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfFloat(Float[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfFloat : value);
   }
 
   /**
@@ -1518,7 +1519,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfDouble(Double[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfDouble : value);
   }
 
   /**
@@ -1529,7 +1530,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfString(String[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfString : value);
   }
 
   /**
@@ -1540,7 +1541,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfJsonObject(JsonObject[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfJsonObject : value);
   }
 
   /**
@@ -1551,7 +1552,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfJsonArray(JsonArray[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfJsonArray : value);
   }
 
   /**
@@ -1562,7 +1563,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfTemporal(Temporal[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfTemporal : value);
   }
 
   /**
@@ -1573,7 +1574,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfLocalDate(LocalDate[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfLocalDate : value);
   }
 
   /**
@@ -1584,7 +1585,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfLocalTime(LocalTime[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfLocalTime : value);
   }
 
   /**
@@ -1595,7 +1596,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfLocalDateTime(LocalDateTime[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfLocalDateTime : value);
   }
 
   /**
@@ -1606,7 +1607,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfOffsetTime(OffsetTime[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfOffsetTime : value);
   }
 
   /**
@@ -1617,7 +1618,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfOffsetDateTime(OffsetDateTime[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfOffsetDateTime : value);
   }
 
   /**
@@ -1628,7 +1629,7 @@ public interface Tuple {
    */
   @GenIgnore
   default Tuple addArrayOfBuffer(Buffer[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfBuffer : value);
   }
 
   /**
@@ -1639,7 +1640,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfUUID(UUID[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfUUID : value);
   }
 
   /**
@@ -1650,7 +1651,7 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default Tuple addArrayOfBigDecimal(BigDecimal[] value) {
-    return addValue(value);
+    return addValue(value == null ? NullValue.ArrayOfBigDecimal : value);
   }
 
   /**
@@ -1685,19 +1686,7 @@ public interface Tuple {
    * @return the list of types built from the tuple
    */
   @GenIgnore
-  default List<Class<?>> types() {
-    int len = size();
-    List<Class<?>> types = new ArrayList<>();
-    for (int i = 0;i < len;i++) {
-      Object param = getValue(i);
-      if (param == null) {
-        types.add(Object.class);
-      } else {
-        types.add(param.getClass());
-      }
-    }
-    return types;
-  }
+  List<Class<?>> types();
 
     /**
      * @return A String containing the {@link Object#toString} value of each element,
