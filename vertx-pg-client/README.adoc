@@ -15,7 +15,7 @@ Documentation:
 - Row streaming
 - `java.util.stream.Collector` row set transformation
 - Command pipeling
-- RxJava 1 and RxJava 2
+- RxJava API
 - Direct memory to object without unnecessary copies
 - Java 8 Date and Time
 - SSL/TLS
