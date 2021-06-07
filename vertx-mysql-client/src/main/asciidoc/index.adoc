@@ -12,7 +12,7 @@ scalability and low overhead.
 * Prepared queries caching
 * Cursor support
 * Row streaming
-* RxJava 1 and RxJava 2
+* RxJava API
 * Direct memory to object without unnecessary copies
 * Complete data type support
 * Stored Procedures support

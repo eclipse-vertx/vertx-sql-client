@@ -12,6 +12,7 @@ scalability and low overhead.
 * Built-in connection pooling
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
+* RxJava API
 
 *Not supported yet*
 
