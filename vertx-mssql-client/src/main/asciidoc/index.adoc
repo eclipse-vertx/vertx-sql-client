@@ -132,6 +132,15 @@ You can configure the client to retry when a connection fails to be established.
 
 include::queries.adoc[leveloffset=1]
 
+== Working with `identity` columns
+
+You can retrieve the value of an `identity` column after inserting new data using the `OUTPUT` clause:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#identityColumn}
+----
+
 include::connections.adoc[]
 
 include::transactions.adoc[]
