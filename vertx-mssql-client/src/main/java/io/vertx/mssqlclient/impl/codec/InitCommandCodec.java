@@ -86,9 +86,17 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     packet.writeIntLE(0x00); // ClientProgVer
     packet.writeIntLE(0x00); // ClientPID
     packet.writeIntLE(0x00); // ConnectionID
-    packet.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS1
-      | LoginPacket.OPTION_FLAGS1_DUMPLOAD_OFF); // OptionFlags1
-    packet.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS2); // OptionFlags2
+    packet.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS1 |
+      LoginPacket.OPTION_FLAGS1_ORDER_X86 |
+      LoginPacket.OPTION_FLAGS1_CHARSET_ASCII |
+      LoginPacket.OPTION_FLAGS1_FLOAT_IEEE_754 |
+      LoginPacket.OPTION_FLAGS1_USE_DB_OFF |
+      LoginPacket.OPTION_FLAGS1_INIT_DB_FATAL |
+      LoginPacket.OPTION_FLAGS1_SET_LANG_ON
+    ); // OptionFlags1
+    packet.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS2 |
+      LoginPacket.OPTION_FLAGS2_ODBC_ON
+    ); // OptionFlags2
     packet.writeByte(LoginPacket.DEFAULT_TYPE_FLAGS); // TypeFlags
     packet.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS3); // OptionFlags3
     packet.writeIntLE(0x00); // ClientTimeZone

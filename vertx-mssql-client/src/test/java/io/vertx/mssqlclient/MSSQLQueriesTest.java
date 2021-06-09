@@ -17,6 +17,7 @@ import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.NullValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -72,6 +73,18 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
         ctx.assertTrue(value instanceof LocalDateTime);
         LocalDateTime localDateTime = (LocalDateTime) value;
         ctx.assertTrue(Math.abs(localDateTime.until(start, ChronoUnit.SECONDS)) < 1);
+      }));
+  }
+
+  @Test
+  public void testCreateTable(TestContext ctx) {
+    connnection.query("drop table if exists Basic")
+      .execute(ctx.asyncAssertSuccess(drop -> {
+        connnection.preparedQuery("create table Basic (id int, dessimal numeric(19,2), primary key (id))")
+          .execute(ctx.asyncAssertSuccess(create -> {
+            connnection.preparedQuery("INSERT INTO Basic (id, dessimal) values (3, @p1)")
+              .execute(Tuple.of(NullValue.BigDecimal), ctx.asyncAssertSuccess());
+          }));
       }));
   }
 }

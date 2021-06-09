@@ -37,7 +37,7 @@ public final class LoginPacket {
   public static final byte OPTION_FLAGS1_ORDER_X68000 = 0x01;
   public static final byte OPTION_FLAGS1_CHARSET_ASCII = 0x00;
   public static final byte OPTION_FLAGS1_CHARSET_EBCDIC = 0x02;
-  public static final byte OPTION_FALGS1_FLOAT_IEEE_754 = 0x00;
+  public static final byte OPTION_FLAGS1_FLOAT_IEEE_754 = 0x00;
   public static final byte OPTION_FALGS1_FLOAT_VAX = 0x04;
   public static final byte OPTION_FALGS1_ND5000 = 0x08;
   public static final byte OPTION_FLAGS1_DUMPLOAD_ON = 0x00;
