@@ -188,3 +188,11 @@ INSERT INTO Fortune (id, message)
 VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO Fortune (id, message)
 VALUES (12, 'フレームワークのベンチマーク');
+
+-- Table for testing OUTPUT
+CREATE TABLE EntityWithIdentity
+(
+    id       bigint identity NOT NULL,
+    name     varchar(255)
+    primary key (id)
+);

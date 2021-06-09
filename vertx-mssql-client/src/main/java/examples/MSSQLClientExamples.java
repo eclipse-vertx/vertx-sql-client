@@ -277,4 +277,15 @@ public class MSSQLClientExamples {
         // ...
       });
   }
+
+  public void identityColumn(SqlClient client) {
+    client
+      .preparedQuery("INSERT INTO movies (title) OUTPUT INSERTED.id VALUES (@p1)")
+      .execute(Tuple.of("The Man Who Knew Too Much"), res -> {
+        if (res.succeeded()) {
+          Row row = res.result().iterator().next();
+          System.out.println(row.getLong("id"));
+        }
+      });
+  }
 }
