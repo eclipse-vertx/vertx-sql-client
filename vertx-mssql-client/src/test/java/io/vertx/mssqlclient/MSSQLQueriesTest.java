@@ -16,6 +16,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.NullValue;
 import org.junit.After;
@@ -34,32 +35,32 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   public RepeatRule rule = new RepeatRule();
 
   Vertx vertx;
-  MSSQLConnection connnection;
+  MSSQLConnection connection;
 
   @Before
   public void setup(TestContext ctx) {
     vertx = Vertx.vertx();
     options = new MSSQLConnectOptions(MSSQLTestBase.options);
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> this.connnection = conn));
+    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> this.connection = conn));
   }
 
   @After
   public void tearDown(TestContext ctx) {
-    if (connnection != null) {
-      connnection.close(ctx.asyncAssertSuccess());
+    if (connection != null) {
+      connection.close(ctx.asyncAssertSuccess());
     }
     vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testSimpleQueryOrderBy(TestContext ctx) {
-    connnection.query("SELECT message FROM immutable ORDER BY message DESC")
+    connection.query("SELECT message FROM immutable ORDER BY message DESC")
       .execute(ctx.asyncAssertSuccess(rs -> ctx.assertTrue(rs.size() > 1)));
   }
 
   @Test
   public void testPreparedQueryOrderBy(TestContext ctx) {
-    connnection.preparedQuery("SELECT message FROM immutable WHERE id BETWEEN @p1 AND @p2 ORDER BY message DESC")
+    connection.preparedQuery("SELECT message FROM immutable WHERE id BETWEEN @p1 AND @p2 ORDER BY message DESC")
       .execute(Tuple.of(4, 9), ctx.asyncAssertSuccess(rs -> ctx.assertEquals(6, rs.size())));
   }
 
@@ -67,7 +68,7 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   @Repeat(50)
   public void testQueryCurrentTimestamp(TestContext ctx) {
     LocalDateTime start = LocalDateTime.now();
-    connnection.query("SELECT current_timestamp")
+    connection.query("SELECT current_timestamp")
       .execute(ctx.asyncAssertSuccess(rs -> {
         Object value = rs.iterator().next().getValue(0);
         ctx.assertTrue(value instanceof LocalDateTime);
@@ -78,13 +79,24 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
 
   @Test
   public void testCreateTable(TestContext ctx) {
-    connnection.query("drop table if exists Basic")
+    connection.query("drop table if exists Basic")
       .execute(ctx.asyncAssertSuccess(drop -> {
-        connnection.preparedQuery("create table Basic (id int, dessimal numeric(19,2), primary key (id))")
+        connection.preparedQuery("create table Basic (id int, dessimal numeric(19,2), primary key (id))")
           .execute(ctx.asyncAssertSuccess(create -> {
-            connnection.preparedQuery("INSERT INTO Basic (id, dessimal) values (3, @p1)")
+            connection.preparedQuery("INSERT INTO Basic (id, dessimal) values (3, @p1)")
               .execute(Tuple.of(NullValue.BigDecimal), ctx.asyncAssertSuccess());
           }));
+      }));
+  }
+
+
+  @Test
+  public void testInsertReturning(TestContext ctx) {
+    connection.preparedQuery("insert into EntityWithIdentity (name) OUTPUT INSERTED.id, INSERTED.name VALUES (@p1)")
+      .execute(Tuple.of("John"), ctx.asyncAssertSuccess(result -> {
+        Row row = result.iterator().next();
+        ctx.assertNotNull(row.getInteger("id"));
+        ctx.assertEquals("John", row.getString("name"));
       }));
   }
 }
