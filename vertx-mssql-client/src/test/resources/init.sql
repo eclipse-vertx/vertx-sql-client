@@ -136,7 +136,7 @@ CREATE TABLE not_nullable_datatype
     test_date           DATE             NOT NULL,
     test_time           TIME(6)          NOT NULL,
     test_datetime2      DATETIME2(7)     NOT NULL,
-    test_datetimeoffset DATETIMEOFFSET(1) NOT NULL,
+    test_datetimeoffset DATETIMEOFFSET(5) NOT NULL,
     test_binary         BINARY(20)       NOT NULL,
     test_varbinary      VARBINARY(20)    NOT NULL
 );
