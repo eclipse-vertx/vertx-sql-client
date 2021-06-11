@@ -12,11 +12,18 @@ By default, the test suite runs SQL Server in a container using https://www.test
 
 ==== Testing with an external database
 
-You can run tests with an external database:
+You can start an external database:
 
-[source]
+[source,bash]
 ----
-> mvn test -Dconnection.uri=sqlserver://my_user:my_password@my_host:1433/my_db
+docker run -t -i -p 1433:1433 -e TZ=Europe/Paris -e ACCEPT_EULA=Y -e SA_PASSWORD=A_Str0ng_Required_Password mcr.microsoft.com/mssql/server:2017-latest
+----
+
+Then run tests against it:
+
+[source,bash]
+----
+mvn test -Dconnection.uri=sqlserver://SA:A_Str0ng_Required_Password@localhost:1433
 ----
 
 * `connection.uri`: configure the client to connect to the specified database
