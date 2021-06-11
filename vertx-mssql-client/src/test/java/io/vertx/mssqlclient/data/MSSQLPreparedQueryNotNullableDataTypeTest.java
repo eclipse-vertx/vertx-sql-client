@@ -13,10 +13,13 @@ package io.vertx.mssqlclient.data;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.Repeat;
+import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,6 +29,10 @@ import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
 public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableDataTypeTestBase {
+
+  @Rule
+  public RepeatRule rule = new RepeatRule();
+
   @Test
   public void testEncodeTinyInt(TestContext ctx) {
     testEncodeNumber(ctx, "test_tinyint", (short) 255);
@@ -111,39 +118,45 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   }
 
   @Test
+  @Repeat(100)
   public void testEncodeTime(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_time", LocalTime.of(23, 10, 45), row -> {
+    LocalTime now = LocalTime.now();
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_time", now, row -> {
       ColumnChecker.checkColumn(0, "test_time")
-        .returns(Tuple::getValue, Row::getValue, LocalTime.of(23, 10, 45))
-        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(23, 10, 45))
-        .returns(LocalTime.class, LocalTime.of(23, 10, 45))
+        .returns(Tuple::getValue, Row::getValue, now)
+        .returns(Tuple::getLocalTime, Row::getLocalTime, now)
+        .returns(LocalTime.class, now)
         .forRow(row);
     });
   }
 
   @Test
+  @Repeat(100)
   public void testEncodeDateTime(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime2", LocalDateTime.of(1999, 12, 31, 23, 10, 45), row -> {
+    LocalDateTime now = LocalDateTime.now();
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime2", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetime2")
-        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
-        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
-        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(1999, 12, 31))
-        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(23, 10, 45))
-        .returns(LocalDateTime.class, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
+        .returns(Tuple::getValue, Row::getValue, now)
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, now)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, now.toLocalDate())
+        .returns(Tuple::getLocalTime, Row::getLocalTime, now.toLocalTime())
+        .returns(LocalDateTime.class, now)
         .forRow(row);
     });
   }
 
   @Test
+  @Repeat(100)
   public void testEncodeOffsetDateTime(TestContext ctx) {
-    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetimeoffset", LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row -> {
+    OffsetDateTime now = LocalDateTime.now().atOffset(ZoneOffset.ofHoursMinutes(-3, -15));
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetimeoffset", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetimeoffset")
-        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
-        .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
-        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(1999, 12, 31, 23, 10, 45))
-        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(1999, 12, 31))
-        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(23, 10, 45))
-        .returns(OffsetDateTime.class, LocalDateTime.of(1999, 12, 31, 23, 10, 45).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)))
+        .returns(Tuple::getValue, Row::getValue, now)
+        .returns(Tuple::getOffsetDateTime, Row::getOffsetDateTime, now)
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, now.toLocalDateTime())
+        .returns(Tuple::getLocalDate, Row::getLocalDate, now.toLocalDate())
+        .returns(Tuple::getLocalTime, Row::getLocalTime, now.toLocalTime())
+        .returns(OffsetDateTime.class, now)
         .forRow(row);
     });
   }
