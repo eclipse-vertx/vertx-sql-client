@@ -2,6 +2,7 @@ package io.vertx.db2client;
 
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
@@ -13,6 +14,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.tck.SimpleQueryTestBase;
 
 @RunWith(VertxUnitRunner.class)
+@Ignore
 public class DB2SecureTest extends SimpleQueryTestBase {
 
     @ClassRule
