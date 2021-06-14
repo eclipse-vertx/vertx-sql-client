@@ -20,7 +20,6 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.*;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -163,37 +162,6 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   private void acquire(ContextInternal context, long timeout, Handler<AsyncResult<Connection>> completionHandler) {
     pool.acquire(context, timeout, completionHandler);
-  }
-
-  private static abstract class CommandWaiter implements Connection.Holder, Handler<AsyncResult<Connection>> {
-
-    protected abstract void onSuccess(Connection conn);
-
-    protected abstract void onFailure(Throwable cause);
-
-    @Override
-    public void handleEvent(Object event) {
-      // What should we do ?
-    }
-
-    @Override
-    public void handle(AsyncResult<Connection> ar) {
-      if (ar.succeeded()) {
-        Connection conn = ar.result();
-        conn.init(this);
-        onSuccess(conn);
-      } else {
-        onFailure(ar.cause());
-      }
-    }
-
-    @Override
-    public void handleClosed() {
-    }
-
-    @Override
-    public void handleException(Throwable err) {
-    }
   }
 
   protected abstract SqlConnectionImpl wrap(ContextInternal context, Connection conn);
