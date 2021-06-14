@@ -46,18 +46,4 @@ public class MSSQLTracingTest extends TracingTestBase {
     }
     return sb.toString();
   }
-
-  @Ignore
-  @Test
-  @Override
-  public void testTraceBatchQuery(TestContext ctx) {
-    super.testTraceBatchQuery(ctx);
-  }
-
-  @Ignore
-  @Test
-  @Override
-  public void testTracingFailure(TestContext ctx) {
-    super.testTracingFailure(ctx);
-  }
 }
