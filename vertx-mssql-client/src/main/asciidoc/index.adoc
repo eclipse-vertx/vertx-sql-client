@@ -1,6 +1,5 @@
 = Reactive MSSQL Client
 :PREPARED_PARAMS: `@1`, `@2`, etc…​
-:batching-unsupported:
 
 The Reactive MSSQL Client is a client for Microsoft SQL Server with a straightforward API focusing on
 scalability and low overhead.
@@ -17,7 +16,7 @@ scalability and low overhead.
 *Not supported yet*
 
 * Prepared queries caching
-* Batch and cursor
+* Cursor
 * Row streaming
 * Some https://github.com/eclipse-vertx/vertx-sql-client/issues/608#issuecomment-629390027[data types] are not supported
 
