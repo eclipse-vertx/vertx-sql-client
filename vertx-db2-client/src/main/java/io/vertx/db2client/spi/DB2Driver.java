@@ -27,25 +27,16 @@ public class DB2Driver implements Driver {
 
   @Override
   public Pool createPool(PoolConfig config) {
-    return DB2Pool.pool(wrap(config.determineConnectOptions()), config.options());
+    return DB2Pool.pool(DB2ConnectOptions.wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
   public Pool createPool(Vertx vertx, PoolConfig config) {
-    return DB2Pool.pool(vertx, wrap(config.determineConnectOptions()), config.options());
+    return DB2Pool.pool(vertx, DB2ConnectOptions.wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof DB2ConnectOptions || SqlConnectOptions.class.equals(options.getClass());
   }
-
-  private static DB2ConnectOptions wrap(SqlConnectOptions options) {
-    if (options instanceof DB2ConnectOptions) {
-      return (DB2ConnectOptions) options;
-    } else {
-      return new DB2ConnectOptions(options);
-    }
-  }
-
 }

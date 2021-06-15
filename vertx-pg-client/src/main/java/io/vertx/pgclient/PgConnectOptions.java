@@ -44,6 +44,17 @@ import static java.lang.System.getenv;
 public class PgConnectOptions extends SqlConnectOptions {
 
   /**
+   * @return the {@code options} as PostgreSQL specific connect options
+   */
+  public static PgConnectOptions wrap(SqlConnectOptions options) {
+    if (options instanceof PgConnectOptions) {
+      return (PgConnectOptions) options;
+    } else {
+      return new PgConnectOptions(options);
+    }
+  }
+
+  /**
    * Provide a {@link PgConnectOptions} configured from a connection URI.
    *
    * @param connectionUri the connection URI to configure from

@@ -62,19 +62,30 @@ public interface MSSQLPool extends Pool {
    * @return the connection pool
    */
   static MSSQLPool pool(MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use MSSQLPool#pool(Vertx, MSSQLConnectOptions, PoolOptions) instead");
-    }
-    VertxOptions vertxOptions = new VertxOptions();
-    Vertx vertx = Vertx.vertx(vertxOptions);
-    return MSSQLPoolImpl.create((VertxInternal) vertx, true, connectOptions, poolOptions);
+    return pool(null, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MSSQLPool pool(Vertx vertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return MSSQLPoolImpl.create((VertxInternal) vertx, false, connectOptions, poolOptions);
+    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
   }
 
+  /**
+   * Create a connection pool to the SQL server configured with the given {@code config}.
+   *
+   * @param config the pool configuration
+   * @return the connection pool
+   */
+  static MSSQLPool pool(PoolConfig config) {
+    return MSSQLPoolImpl.create(null, config);
+  }
+
+  /**
+   * Like {@link #pool(PoolConfig)} with a specific {@link Vertx} instance.
+   */
+  static MSSQLPool pool(Vertx vertx, PoolConfig config) {
+    return MSSQLPoolImpl.create((VertxInternal) vertx, config);
+  }
 }

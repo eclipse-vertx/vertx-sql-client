@@ -31,6 +31,7 @@ import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
+import java.util.function.Function;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -54,8 +55,20 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
                   QueryTracer tracer,
                   ClientMetrics metrics,
                   int pipeliningLimit,
-                  PoolOptions poolOptions) {
+                  PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
     super(tracer, metrics);
+
+    Handler<Connection> connectionInitializer;
+    if (connectHandler != null) {
+      connectionInitializer = conn -> {
+        ContextInternal current = vertx.getContext();
+        SqlConnectionImpl wrapper = wrap(current, conn);
+        conn.init(wrapper);
+        current.dispatch(wrapper, connectHandler);
+      };
+    } else {
+      connectionInitializer = null;
+    }
 
     this.factory = factory;
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
@@ -63,7 +76,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(factory, this.vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
+    this.pool = new SqlConnectionPool(factory, connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
     this.closeFuture = new CloseFuture();
   }
 

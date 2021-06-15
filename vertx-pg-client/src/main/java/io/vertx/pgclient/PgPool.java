@@ -19,6 +19,7 @@ package io.vertx.pgclient;
 
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.pgclient.impl.PgPoolImpl;
+import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.codegen.annotations.VertxGen;
@@ -89,14 +90,31 @@ public interface PgPool extends Pool {
    * @return the connection pool
    */
   static PgPool pool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return PgPoolImpl.create(false, connectOptions, poolOptions);
+    return pool(null, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return PgPoolImpl.create(((VertxInternal)vertx), false, false, connectOptions, poolOptions);
+    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+  }
+
+  /**
+   * Create a connection pool to the database configured with the given {@code config}.
+   *
+   * @param config the pool config
+   * @return the connection pool
+   */
+  static PgPool pool(PoolConfig config) {
+    return pool(null, config);
+  }
+
+  /**
+   * Like {@link #pool(PoolConfig)} with a specific {@link Vertx} instance.
+   */
+  static PgPool pool(Vertx vertx, PoolConfig config) {
+    return PgPoolImpl.create((VertxInternal) vertx, false, config);
   }
 
   /**
@@ -155,13 +173,30 @@ public interface PgPool extends Pool {
    * @return the client
    */
   static SqlClient client(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return PgPoolImpl.create(true, connectOptions, poolOptions);
+    return client(null, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #client(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return PgPoolImpl.create(((VertxInternal)vertx), false, true, connectOptions, poolOptions);
+    return client(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+  }
+
+  /**
+   * Like {@link #client(PoolConfig)} with a specific {@link Vertx} instance.
+   */
+  static SqlClient client(Vertx vertx, PoolConfig config) {
+    return PgPoolImpl.create((VertxInternal) vertx, true, config);
+  }
+
+  /**
+   * Create a client backed by a connection pool to the database configured with the given {@code config}.
+   *
+   * @param config the pool config for creating the backing pool
+   * @return the client
+   */
+  static SqlClient client(PoolConfig config) {
+    return client(null, config);
   }
 }

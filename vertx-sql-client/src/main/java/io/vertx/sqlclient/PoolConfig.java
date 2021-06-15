@@ -17,26 +17,66 @@
 
 package io.vertx.sqlclient;
 
-import io.vertx.codegen.annotations.CacheReturn;
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.PoolConfigImpl;
 
 /**
+ * The pool configuration that comprehends several mandatory configuration items, plus a few extra optional ones.
+ *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 @VertxGen
 public interface PoolConfig {
 
-  static PoolConfig builder(PoolOptions options) {
-    return null;
+  /**
+   * Create a pool config.
+   *
+   * @param options the pool options
+   */
+  static PoolConfig create(PoolOptions options) {
+    return new PoolConfigImpl(options);
   }
 
+  /**
+   * Create a pool config.
+   */
+  static PoolConfig create() {
+    return create(new PoolOptions());
+  }
+
+  /**
+   * Set the connect options.
+   *
+   * @param options the connect options
+   * @return a reference to this, so the API can be used fluently
+   */
   @Fluent
   PoolConfig connectOptions(SqlConnectOptions options);
 
+  /**
+   * Set an handler called when the pool has established a connection to the database.
+   *
+   * <p> This handler allows interactions with the database before the connection is added to the pool.
+   *
+   * <p> When the handler has finished, it must call {@link SqlConnection#close()} to release the connection
+   * to the pool.
+   *
+   * @param handler the handler
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  PoolConfig connectHandler(Handler<SqlConnection> handler);
+
+  @GenIgnore
+  SqlConnectOptions determineConnectOptions();
+
+  @GenIgnore
   PoolOptions options();
 
-  @CacheReturn
-  SqlConnectOptions determineConnectOptions();
+  @GenIgnore
+  Handler<SqlConnection> connectHandler();
 
 }

@@ -27,25 +27,16 @@ public class MSSQLDriver implements Driver {
 
   @Override
   public Pool createPool(PoolConfig config) {
-    return MSSQLPool.pool(wrap(config.determineConnectOptions()), config.options());
+    return MSSQLPool.pool(MSSQLConnectOptions.wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
   public Pool createPool(Vertx vertx, PoolConfig config) {
-    return MSSQLPool.pool(vertx, wrap(config.determineConnectOptions()), config.options());
+    return MSSQLPool.pool(vertx, MSSQLConnectOptions.wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof MSSQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
   }
-
-  private static MSSQLConnectOptions wrap(SqlConnectOptions options) {
-    if (options instanceof MSSQLConnectOptions) {
-      return (MSSQLConnectOptions) options;
-    } else {
-      return new MSSQLConnectOptions(options);
-    }
-  }
-
 }

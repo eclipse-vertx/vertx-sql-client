@@ -16,14 +16,17 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Handler;
 import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 
 public class PoolConfigImpl implements PoolConfig {
 
   private final PoolOptions options;
   private SqlConnectOptions connectOptions;
+  private Handler<SqlConnection> connectHook;
 
   public PoolConfigImpl(PoolOptions options) {
     this.options = options;
@@ -37,6 +40,17 @@ public class PoolConfigImpl implements PoolConfig {
   @Override
   public PoolConfig connectOptions(SqlConnectOptions options) {
     this.connectOptions = options;
+    return this;
+  }
+
+  @Override
+  public Handler<SqlConnection> connectHandler() {
+    return connectHook;
+  }
+
+  @Override
+  public PoolConfig connectHandler(Handler<SqlConnection> handler) {
+    connectHook = handler;
     return this;
   }
 

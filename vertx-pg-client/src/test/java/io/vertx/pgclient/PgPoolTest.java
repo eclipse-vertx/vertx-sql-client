@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.Handler;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
@@ -65,8 +66,8 @@ public class PgPoolTest extends PgPoolTestBase {
   }
 
   @Override
-  protected PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+  protected PgPool createPool(PoolConfig config) {
+    PgPool pool = PgPool.pool(vertx, config);
     pools.add(pool);
     return pool;
   }
@@ -388,5 +389,52 @@ public class PgPoolTest extends PgPoolTestBase {
       }));
     });
     async.awaitSuccess();
+  }
+
+  @Test
+  public void testConnectionHook(TestContext ctx) {
+    Async async = ctx.async();
+    Handler<SqlConnection> hook = f -> {
+      vertx.setTimer(1000, id -> {
+        f.close();
+      });
+    };
+    PoolConfig config = PoolConfig
+      .create(new PoolOptions().setMaxSize(1))
+      .connectOptions(options)
+      .connectHandler(hook);
+    PgPool pool = createPool(config);
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testConnectionClosedInHook(TestContext ctx) {
+    Async async = ctx.async(2);
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
+    proxy.proxyHandler(conn -> {
+      proxyConn.set(conn);
+      conn.connect();
+    });
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+      Handler<SqlConnection> hook = f -> {
+        f.closeHandler(v -> {
+          async.countDown();
+        });
+        proxyConn.get().close();
+      };
+      PoolConfig config = PoolConfig
+        .create(new PoolOptions().setMaxSize(1))
+        .connectOptions(new PgConnectOptions(options).setPort(8080).setHost("localhost"))
+        .connectHandler(hook);
+      PgPool pool = createPool(config);
+      pool.getConnection(ctx.asyncAssertFailure(conn -> {
+        async.countDown();
+      }));
+    }));
   }
 }

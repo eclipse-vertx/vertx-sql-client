@@ -21,6 +21,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.net.impl.pool.ConnectResult;
 import io.vertx.core.net.impl.pool.Lease;
 import io.vertx.core.net.impl.pool.ConnectionPool;
@@ -36,6 +37,7 @@ import io.vertx.core.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Todo :
@@ -49,11 +51,12 @@ public class SqlConnectionPool {
   private final ConnectionFactory factory;
   private final VertxInternal vertx;
   private final ConnectionPool<PooledConnection> pool;
+  private final Handler<Connection> hook;
   private final int pipeliningLimit;
   private final long idleTimeout;
   private final int maxSize;
 
-  public SqlConnectionPool(ConnectionFactory factory, VertxInternal vertx, long idleTimeout, int maxSize, int pipeliningLimit, int maxWaitQueueSize) {
+  public SqlConnectionPool(ConnectionFactory factory, Handler<Connection> hook, VertxInternal vertx, long idleTimeout, int maxSize, int pipeliningLimit, int maxWaitQueueSize) {
     Objects.requireNonNull(factory, "No null connector");
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
@@ -67,6 +70,7 @@ public class SqlConnectionPool {
     this.idleTimeout = idleTimeout;
     this.maxSize = maxSize;
     this.factory = factory;
+    this.hook = hook;
 
     if (pipeliningLimit > 1) {
       pool.connectionSelector((waiter, list) -> {
@@ -93,7 +97,8 @@ public class SqlConnectionPool {
     public void connect(EventLoopContext context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<PooledConnection>>> handler) {
       PromiseInternal<Connection> promise = context.promise();
       factory.connect(promise);
-      promise.future()
+      Future<Connection> future = promise.future();
+      future
         .map(connection -> {
           PooledConnection pooled = new PooledConnection(connection, listener);
           connection.init(pooled);
@@ -163,6 +168,15 @@ public class SqlConnectionPool {
           Lease<PooledConnection> lease = ar.result();
           PooledConnection pooled = lease.get();
           pooled.lease = lease;
+          if (!pooled.initialized) {
+            if (hook != null) {
+              pooled.continuation = handler;
+              hook.handle(pooled);
+              return;
+            } else {
+              pooled.initialized = true;
+            }
+          }
           handler.handle(Future.succeededFuture(pooled));
         } else {
           handler.handle(Future.failedFuture(ar.cause()));
@@ -209,6 +223,8 @@ public class SqlConnectionPool {
     public long expirationTimestamp;
     private int inflight;
     private int num;
+    private boolean initialized;
+    private Handler<AsyncResult<Connection>> continuation;
 
     PooledConnection(Connection conn, PoolConnector.Listener listener) {
       this.conn = conn;
@@ -261,8 +277,15 @@ public class SqlConnectionPool {
         // Log it ?
         promise.fail(msg);
       } else {
-        Lease<PooledConnection> l = this.lease;
         this.holder = null;
+        if (!initialized) {
+          initialized = true;
+          Handler<AsyncResult<Connection>> c = continuation;
+          continuation = null;
+          c.handle(Future.succeededFuture(this));
+          return;
+        }
+        Lease<PooledConnection> l = this.lease;
         this.lease = null;
         this.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
         l.recycle();
@@ -274,6 +297,12 @@ public class SqlConnectionPool {
     public void handleClosed() {
       if (holder != null) {
         holder.handleClosed();
+      }
+
+      Handler<AsyncResult<Connection>> c = this.continuation;
+      if (c != null) {
+        this.continuation = null;
+        c.handle(Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION));
       }
       listener.onRemove();
     }

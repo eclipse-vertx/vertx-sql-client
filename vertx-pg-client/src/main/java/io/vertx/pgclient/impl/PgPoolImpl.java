@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.CloseFuture;
@@ -25,9 +26,10 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.*;
+import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
@@ -43,35 +45,39 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
  */
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
-  public static PgPoolImpl create(boolean pipelined, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgConnectOptions, PoolOptions) instead");
+  public static PgPoolImpl create(final VertxInternal vertx, boolean pipelined, PoolConfig config) {
+    PgConnectOptions connectOptions = PgConnectOptions.wrap(config.determineConnectOptions());
+    VertxInternal vx;
+    if (vertx == null) {
+      if (Vertx.currentContext() != null) {
+        throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgConnectOptions, PoolOptions) instead");
+      }
+      VertxOptions vertxOptions = new VertxOptions();
+      if (connectOptions.isUsingDomainSocket()) {
+        vertxOptions.setPreferNativeTransport(true);
+      }
+      vx = (VertxInternal) Vertx.vertx(vertxOptions);
+    } else {
+      vx = vertx;
     }
-    VertxOptions vertxOptions = new VertxOptions();
-    if (connectOptions.isUsingDomainSocket()) {
-      vertxOptions.setPreferNativeTransport(true);
-    }
-    VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return create(vertx, true, pipelined, connectOptions, poolOptions);
-  }
-
-  public static PgPoolImpl create(VertxInternal vertx, boolean closeVertx, boolean pipelined, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), connectOptions);
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
+    Handler<SqlConnection> connectHook = config.connectHandler();
+    PoolOptions poolOptions = config.options();
+    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), connectOptions);
+    VertxMetrics vertxMetrics = vx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
     int pipeliningLimit = pipelined ? connectOptions.getPipeliningLimit() : 1;
-    PgPoolImpl pool = new PgPoolImpl(vertx, new PgConnectionFactory(vertx, connectOptions), tracer, metrics, pipeliningLimit, poolOptions);
+    PgPoolImpl pool = new PgPoolImpl(vx, new PgConnectionFactory(vx, connectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHook);
     pool.init();
     CloseFuture closeFuture = pool.closeFuture();
-    vertx.addCloseHook(closeFuture);
-    if (closeVertx) {
-      closeFuture.future().onComplete(ar -> vertx.close());
+    vx.addCloseHook(closeFuture);
+    if (vertx == null) {
+      closeFuture.future().onComplete(ar -> vx.close());
     } else {
-      ContextInternal ctx = vertx.getContext();
+      ContextInternal ctx = vx.getContext();
       if (ctx != null) {
         ctx.addCloseHook(closeFuture);
       } else {
-        vertx.addCloseHook(closeFuture);
+        vx.addCloseHook(closeFuture);
       }
     }
     return pool;
@@ -79,8 +85,8 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   private final PgConnectionFactory factory;
 
-  private PgPoolImpl(VertxInternal vertx, PgConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions) {
-    super(vertx, factory, tracer, metrics, pipeliningLimit, poolOptions);
+  private PgPoolImpl(VertxInternal vertx, PgConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions, Handler<SqlConnection> connectHook) {
+    super(vertx, factory, tracer, metrics, pipeliningLimit, poolOptions, connectHook);
     this.factory = factory;
   }
 

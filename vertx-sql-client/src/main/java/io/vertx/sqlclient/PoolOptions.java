@@ -18,9 +18,13 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * The options for configuring a connection pool.

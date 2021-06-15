@@ -27,25 +27,16 @@ public class MySQLDriver implements Driver {
 
   @Override
   public Pool createPool(PoolConfig config) {
-    return MySQLPool.pool(wrap(config.determineConnectOptions()), config.options());
+    return MySQLPool.pool(MySQLConnectOptions.wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
   public Pool createPool(Vertx vertx, PoolConfig config) {
-    return MySQLPool.pool(vertx, wrap(config.determineConnectOptions()), config.options());
+    return MySQLPool.pool(vertx, MySQLConnectOptions.wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof MySQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
   }
-
-  private static MySQLConnectOptions wrap(SqlConnectOptions options) {
-    if (options instanceof MySQLConnectOptions) {
-      return (MySQLConnectOptions) options;
-    } else {
-      return new MySQLConnectOptions(options);
-    }
-  }
-
 }

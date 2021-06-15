@@ -13,10 +13,10 @@ package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
@@ -63,22 +63,30 @@ public interface MySQLPool extends Pool {
    * @return the connection pool
    */
   static MySQLPool pool(MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use MySQLPool#pool(Vertx, MySQLConnectOptions, PoolOptions) instead");
-    }
-    VertxOptions vertxOptions = new VertxOptions();
-    if (connectOptions.isUsingDomainSocket()) {
-      vertxOptions.setPreferNativeTransport(true);
-    }
-    VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return MySQLPoolImpl.create(vertx, true, connectOptions, poolOptions);
+    return pool(null, connectOptions, poolOptions);
   }
 
   /**
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return MySQLPoolImpl.create((VertxInternal) vertx, false, connectOptions, poolOptions);
+    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
   }
 
+  /**
+   * Create a connection pool to the MySQL server configured with the given {@code config}.
+   *
+   * @param config the pool configuration
+   * @return the connection pool
+   */
+  static MySQLPool pool(PoolConfig config) {
+    return pool(null, config);
+  }
+
+  /**
+   * Like {@link #pool(PoolConfig)} with a specific {@link Vertx} instance.
+   */
+  static MySQLPool pool(Vertx vertx, PoolConfig config) {
+    return MySQLPoolImpl.create((VertxInternal) vertx, config);
+  }
 }

@@ -17,10 +17,10 @@ package io.vertx.db2client;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.db2client.impl.DB2PoolImpl;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 
@@ -72,13 +72,7 @@ public interface DB2Pool extends Pool {
    * @return the connection pool
    */
   static DB2Pool pool(DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException(
-          "Running in a Vertx context => use DB2Pool#pool(Vertx, DB2ConnectOptions, PoolOptions) instead");
-    }
-    VertxOptions vertxOptions = new VertxOptions();
-    Vertx vertx = Vertx.vertx(vertxOptions);
-    return DB2PoolImpl.create((VertxInternal) vertx, true, false, connectOptions, poolOptions);
+    return pool(null, connectOptions, poolOptions);
   }
 
   /**
@@ -86,7 +80,26 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static DB2Pool pool(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return DB2PoolImpl.create((VertxInternal) vertx, false, false, connectOptions, poolOptions);
+    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+  }
+
+  /**
+   * Create a connection pool to the DB2 server configured with the given
+   * {@code config}.
+   *
+   * @param config the pool config
+   * @return the connection pool
+   */
+  static DB2Pool pool(PoolConfig config) {
+    return pool(null, config);
+  }
+
+  /**
+   * Like {@link #pool(PoolConfig)} with a specific
+   * {@link Vertx} instance.
+   */
+  static DB2Pool pool(Vertx vertx, PoolConfig config) {
+    return DB2PoolImpl.create((VertxInternal) vertx, false, config);
   }
 
   /**
@@ -129,13 +142,7 @@ public interface DB2Pool extends Pool {
    * @return the connection pool
    */
   static SqlClient client(DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException(
-        "Running in a Vertx context => use DB2Pool#pool(Vertx, DB2ConnectOptions, PoolOptions) instead");
-    }
-    VertxOptions vertxOptions = new VertxOptions();
-    Vertx vertx = Vertx.vertx(vertxOptions);
-    return DB2PoolImpl.create((VertxInternal) vertx, true, true, connectOptions, poolOptions);
+    return client(null, connectOptions, poolOptions);
   }
 
   /**
@@ -143,6 +150,25 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return DB2PoolImpl.create((VertxInternal) vertx, false, true, connectOptions, poolOptions);
+    return client(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+  }
+
+  /**
+   * Create a pooled client to the DB2 server configured with the given
+   * {@code config}.
+   *
+   * @param config the pool config
+   * @return the connection pool
+   */
+  static SqlClient client(PoolConfig config) {
+    return client(null, config);
+  }
+
+  /**
+   * Like {@link #client(PoolConfig)} with a specific
+   * {@link Vertx} instance.
+   */
+  static SqlClient client(Vertx vertx, PoolConfig config) {
+    return DB2PoolImpl.create((VertxInternal) vertx, true, config);
   }
 }

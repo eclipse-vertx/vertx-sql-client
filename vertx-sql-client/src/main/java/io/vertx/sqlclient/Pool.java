@@ -60,7 +60,7 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(SqlConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(PoolConfig.builder(poolOptions).connectOptions(connectOptions));
+    return pool(PoolConfig.create(poolOptions).connectOptions(connectOptions));
   }
 
   /**
@@ -97,7 +97,7 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(vertx, PoolConfig.builder(poolOptions).connectOptions(connectOptions));
+    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
   }
 
   /**
