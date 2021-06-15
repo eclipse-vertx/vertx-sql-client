@@ -73,7 +73,7 @@ public class HexSequence {
     byte [] hex = new byte [len];
     int pos = len - 1;
     hex[pos--] = '\0';
-    long n = i++;
+    long n = i;
     while (n != 0) {
       hex[pos--] = toHex(n & 0xf);
       n >>>= 4;
@@ -81,6 +81,7 @@ public class HexSequence {
     while (pos >= 0) {
       hex[pos--] = '0';
     }
+    i++;
     return hex;
   }
 }
