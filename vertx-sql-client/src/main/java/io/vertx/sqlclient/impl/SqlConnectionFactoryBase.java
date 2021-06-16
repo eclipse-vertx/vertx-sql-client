@@ -33,6 +33,12 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   protected final VertxInternal vertx;
   protected final NetClient netClient;
   protected final List<SocketAddress> socketAddresses;
+  // up to size of socketAddresses
+  // updates could race with each other which is nevertheless benign
+  // and reads could be fulfilled with stale values
+  // probably could be volatile to prevent stale reads
+  // however connection routines are recoverable and would advance stale value themselves
+  protected int lastLiveHost = 0;
   protected final String username;
   protected final String password;
   protected final String database;

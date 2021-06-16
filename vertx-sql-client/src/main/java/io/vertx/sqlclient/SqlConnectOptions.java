@@ -74,7 +74,7 @@ public class SqlConnectOptions extends NetClientOptions {
    * @return the host
    */
   public String getHost() {
-    if (this.hosts.size() > 1) {
+    if (this.hosts.size() != 1) {
       throw new IllegalStateException("There are multiple hosts specified, use SqlConnectOptions#getHosts");
     }
     return hosts.get(0).getHost();
@@ -88,13 +88,11 @@ public class SqlConnectOptions extends NetClientOptions {
    */
   public SqlConnectOptions setHost(String host) {
     Objects.requireNonNull(host, "Host can not be null");
-    if (this.hosts.size() > 1) {
-      throw new IllegalStateException("There are multiple hosts specified," +
+    if (this.hosts.size() != 1) {
+      throw new IllegalStateException("There are multiple hosts specified: " + hosts.size() + "," +
         " use either SqlConnectOptions#setHosts or SqlConnectOptions#addHost to configure multiple connections");
     }
-    SqlHost sqlHost = hosts.size() == 0 ? new SqlHost() : hosts.get(0);
-    sqlHost.setHost(host);
-    hosts.set(0, sqlHost);
+    hosts.get(0).setHost(host);
     return this;
   }
 
@@ -104,7 +102,7 @@ public class SqlConnectOptions extends NetClientOptions {
    * @return the port
    */
   public int getPort() {
-    if (this.hosts.size() > 1) {
+    if (this.hosts.size() != 1) {
       throw new IllegalStateException("There are multiple hosts specified, use SqlConnectOptions#getHosts");
     }
     return hosts.get(0).getPort();
@@ -120,13 +118,11 @@ public class SqlConnectOptions extends NetClientOptions {
     if (port < 0 || port > 65535) {
       throw new IllegalArgumentException("Port should range in 0-65535");
     }
-    if (this.hosts.size() > 1) {
-      throw new IllegalStateException("There are multiple hosts specified," +
+    if (this.hosts.size() != 1) {
+      throw new IllegalStateException("There are multiple hosts specified: " + hosts.size() + "," +
         " use either SqlConnectOptions#setHosts or SqlConnectOptions#addHost to configure multiple connections");
     }
-    SqlHost sqlHost = hosts.size() == 0 ? new SqlHost() : hosts.get(0);
-    sqlHost.setPort(port);
-    hosts.set(0, sqlHost);
+    hosts.get(0).setPort(port);
     return this;
   }
 
@@ -302,14 +298,18 @@ public class SqlConnectOptions extends NetClientOptions {
     return this;
   }
 
-
-  @GenIgnore
   public List<SocketAddress> getSocketAddresses() {
     List<SocketAddress> addresses = new ArrayList<>(hosts.size());
     for (SqlHost host : hosts) {
       addresses.add(SocketAddress.inetSocketAddress(host.getPort(), host.getHost()));
     }
     return addresses;
+  }
+
+  public void setSocketAddresses(List<SocketAddress> addresses) {
+    for (SocketAddress address : addresses) {
+      hosts.add(new SqlHost(address.host(), address.port()));
+    }
   }
 
   @GenIgnore
@@ -346,5 +346,6 @@ public class SqlConnectOptions extends NetClientOptions {
    * Initialize with the default options.
    */
   protected void init() {
+    hosts.add(new SqlHost());
   }
 }

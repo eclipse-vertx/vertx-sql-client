@@ -26,6 +26,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.TrustOptions;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.pgclient.PgConnectOptions;
@@ -120,15 +121,48 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
   }
 
   private Future<Connection> doConnect(EventLoopContext context, boolean ssl) {
+    return doConnect(context, ssl, super.socketAddresses.get(0));
+//    final int firstSocket = super.lastLiveHost;
+//    return doConnect(context, ssl, firstSocket, firstSocket);
+  }
+
+  /**
+   * Try to establish connection with a host in round-robin fashion. Cycle through set of
+   * @see SqlConnectionFactoryBase#socketAddresses
+   * starting with
+   * @see SqlConnectionFactoryBase#lastLiveHost
+   * resetting
+   * @see SqlConnectionFactoryBase#lastLiveHost
+   * to index of
+   * @see SqlConnectionFactoryBase#socketAddresses
+   * that was succesfully connected to
+   * and giving up with initial error on full cycle
+   */
+  private Future<Connection> doConnect(EventLoopContext context, boolean ssl, int firstSocket, int currentSocket) {
+    final SocketAddress socketAddresses = super.socketAddresses.get(currentSocket);
+    System.out.println("_____SOCKET IN CONNECTION FACTORY_____ " + socketAddresses.host() + " " + socketAddresses.port());
+    return doConnect(context, ssl, socketAddresses).recover(cause -> {
+      int nextSocket = currentSocket + 1;
+      if (nextSocket == super.socketAddresses.size()) nextSocket = 0;
+      if (nextSocket == firstSocket) {
+        return Future.failedFuture(cause);
+      } else {
+        return doConnect(context, ssl, firstSocket, nextSocket);
+      }
+    }).onSuccess(ar -> super.lastLiveHost = currentSocket);
+  }
+
+  private Future<Connection> doConnect(EventLoopContext context, boolean ssl, SocketAddress address) {
     Future<NetSocket> soFut;
     try {
-      soFut = netClient.connect(socketAddress, (String) null);
+      soFut = netClient.connect(address, (String) null);
     } catch (Exception e) {
-      // Client is closed
+      // Client is closed, it is meaningless to retry other hosts
+      // maybe consider own exception class?
       return context.failedFuture(e);
     }
     Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so));
-    if (ssl && !socketAddress.isDomainSocket()) {
+    if (ssl && !address.isDomainSocket()) {
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
         PgSocketConnection socket = (PgSocketConnection) conn;

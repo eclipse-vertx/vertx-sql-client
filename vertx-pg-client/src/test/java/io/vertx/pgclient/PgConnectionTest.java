@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.net.SocketAddress;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
@@ -34,6 +35,9 @@ public class PgConnectionTest extends PgConnectionTestBase {
 
   public PgConnectionTest() {
     connector = (handler) -> PgConnection.connect(vertx, options, ar -> {
+      for (SocketAddress sa : options.getSocketAddresses()) {
+        System.out.println("_________SOCKET IN TEST_______ " + sa.host() + " " + sa.port());
+      }
       handler.handle(ar.map(p -> p));
     });
   }

@@ -29,9 +29,15 @@ public class SqlHost extends NetClientOptions {
     init();
   }
 
+  public SqlHost(String host, int port) {
+    init();
+    this.host = host;
+    this.port = port;
+  }
+
   public SqlHost(JsonObject json) {
     init();
-    SqlConnectOptionsConverter.fromJson(json, this);
+    SqlHostConverter.fromJson(json, this);
   }
 
   public SqlHost(SqlHost other) {
