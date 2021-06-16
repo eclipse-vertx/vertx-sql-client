@@ -69,12 +69,6 @@ public class MSSQLNullValueEncodeTest extends NullValueEncodeTestBase {
   @Test
   @Ignore
   @Override
-  public void testEncodeNullBuffer(TestContext ctx) {
-  }
-
-  @Test
-  @Ignore
-  @Override
   public void testEncodeNullArrayOfDouble(TestContext ctx) {
   }
 
@@ -166,12 +160,6 @@ public class MSSQLNullValueEncodeTest extends NullValueEncodeTestBase {
   @Ignore
   @Override
   public void testEncodeNullOffsetTime(TestContext ctx) {
-  }
-
-  @Test
-  @Ignore
-  @Override
-  public void testEncodeNullBigDecimal(TestContext ctx) {
   }
 
   @Test
