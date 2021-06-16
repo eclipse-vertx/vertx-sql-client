@@ -38,30 +38,13 @@ public class MSSQLConnectionTest extends ConnectionTestBase {
     super.tearDown(ctx);
   }
 
-  /*
-    TODO enable the tests when we support simple query
-   */
-  @Ignore
-  @Test
-  @Override
-  public void testCloseWithErrorInProgress(TestContext ctx) {
-    super.testCloseWithErrorInProgress(ctx);
-  }
-
-  @Ignore
-  @Test
-  @Override
-  public void testCloseWithQueryInProgress(TestContext ctx) {
-    super.testCloseWithQueryInProgress(ctx);
-  }
-  
   @Ignore
   @Test
   @Override
   public void testDatabaseMetaData(TestContext ctx) {
     super.testDatabaseMetaData(ctx);
   }
-  
+
   @Override
   protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
     // TODO implement this along with testDatabaseMetaData
