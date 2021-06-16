@@ -17,10 +17,11 @@ import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
-import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId;
 import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
+
+import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 
 class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementCommand> {
 
@@ -93,7 +94,7 @@ class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementC
     // Option flags
     packet.writeShortLE(0x0000);
 
-    encodeIntNParameter(packet, ((MSSQLPreparedStatement) cmd.statement()).handle);
+    INTN.encodeParam(packet, null, false, ((MSSQLPreparedStatement) cmd.statement()).handle);
 
     int packetLen = packet.writerIndex() - packetLenIdx + 2;
     packet.setShort(packetLenIdx, packetLen);
@@ -106,14 +107,5 @@ class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementC
     payload.writeShortLE(0x0002); // HeaderType
     payload.writeLongLE(transactionDescriptor);
     payload.writeIntLE(outstandingRequestCount);
-  }
-
-  private void encodeIntNParameter(ByteBuf payload, Object value) {
-    payload.writeByte(0x00);
-    payload.writeByte(0x00);
-    payload.writeByte(MSSQLDataTypeId.INTNTYPE_ID);
-    payload.writeByte(4);
-    payload.writeByte(4);
-    payload.writeIntLE((Integer) value);
   }
 }

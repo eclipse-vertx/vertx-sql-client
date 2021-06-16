@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -22,7 +22,7 @@ class MSSQLRowDesc extends RowDesc {
   final ColumnData[] columnDatas;
 
   MSSQLRowDesc(ColumnData[] columnDatas) {
-    super(Stream.of(columnDatas).map(ColumnData::colName).collect(Collectors.toList()), Collections.unmodifiableList(Arrays.asList(columnDatas)));
+    super(Stream.of(columnDatas).map(ColumnData::name).collect(Collectors.toList()), Collections.unmodifiableList(Arrays.asList(columnDatas)));
     this.columnDatas = columnDatas;
   }
 }
