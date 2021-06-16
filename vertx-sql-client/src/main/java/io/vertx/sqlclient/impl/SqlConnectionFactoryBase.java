@@ -10,12 +10,9 @@
  */
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClient;
@@ -24,6 +21,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -34,7 +32,7 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
 
   protected final VertxInternal vertx;
   protected final NetClient netClient;
-  protected final SocketAddress socketAddress;
+  protected final List<SocketAddress> socketAddresses;
   protected final String username;
   protected final String password;
   protected final String database;
@@ -54,7 +52,7 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
 
   protected SqlConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
     this.vertx = vertx;
-    this.socketAddress = options.getSocketAddress();
+    this.socketAddresses = options.getSocketAddresses();
     this.username = options.getUser();
     this.password = options.getPassword();
     this.database = options.getDatabase();

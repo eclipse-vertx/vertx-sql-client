@@ -18,9 +18,7 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -34,8 +32,7 @@ public class SqlConnectOptions extends NetClientOptions {
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT = 2048;
   public static final Predicate<String> DEFAULT_PREPARED_STATEMENT_CACHE_FILTER = sql -> sql.length() < DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
 
-  private String host;
-  private int port;
+  private List<SqlHost> hosts = new ArrayList<>(1);
   private String user;
   private String password;
   private String database;
@@ -58,14 +55,14 @@ public class SqlConnectOptions extends NetClientOptions {
 
   public SqlConnectOptions(SqlConnectOptions other) {
     super(other);
-    this.host = other.host;
-    this.port = other.port;
+    this.hosts = new ArrayList<>(other.hosts);
     this.user = other.user;
     this.password = other.password;
     this.database = other.database;
     this.cachePreparedStatements = other.cachePreparedStatements;
     this.preparedStatementCacheMaxSize = other.preparedStatementCacheMaxSize;
     this.preparedStatementCacheSqlFilter = other.preparedStatementCacheSqlFilter;
+    this.tracingPolicy = other.tracingPolicy;
     if (other.properties != null) {
       this.properties = new HashMap<>(other.properties);
     }
@@ -77,7 +74,10 @@ public class SqlConnectOptions extends NetClientOptions {
    * @return the host
    */
   public String getHost() {
-    return host;
+    if (this.hosts.size() > 1) {
+      throw new IllegalStateException("There are multiple hosts specified, use SqlConnectOptions#getHosts");
+    }
+    return hosts.get(0).getHost();
   }
 
   /**
@@ -88,7 +88,13 @@ public class SqlConnectOptions extends NetClientOptions {
    */
   public SqlConnectOptions setHost(String host) {
     Objects.requireNonNull(host, "Host can not be null");
-    this.host = host;
+    if (this.hosts.size() > 1) {
+      throw new IllegalStateException("There are multiple hosts specified," +
+        " use either SqlConnectOptions#setHosts or SqlConnectOptions#addHost to configure multiple connections");
+    }
+    SqlHost sqlHost = hosts.size() == 0 ? new SqlHost() : hosts.get(0);
+    sqlHost.setHost(host);
+    hosts.set(0, sqlHost);
     return this;
   }
 
@@ -98,7 +104,10 @@ public class SqlConnectOptions extends NetClientOptions {
    * @return the port
    */
   public int getPort() {
-    return port;
+    if (this.hosts.size() > 1) {
+      throw new IllegalStateException("There are multiple hosts specified, use SqlConnectOptions#getHosts");
+    }
+    return hosts.get(0).getPort();
   }
 
   /**
@@ -111,7 +120,13 @@ public class SqlConnectOptions extends NetClientOptions {
     if (port < 0 || port > 65535) {
       throw new IllegalArgumentException("Port should range in 0-65535");
     }
-    this.port = port;
+    if (this.hosts.size() > 1) {
+      throw new IllegalStateException("There are multiple hosts specified," +
+        " use either SqlConnectOptions#setHosts or SqlConnectOptions#addHost to configure multiple connections");
+    }
+    SqlHost sqlHost = hosts.size() == 0 ? new SqlHost() : hosts.get(0);
+    sqlHost.setPort(port);
+    hosts.set(0, sqlHost);
     return this;
   }
 
@@ -287,6 +302,15 @@ public class SqlConnectOptions extends NetClientOptions {
     return this;
   }
 
+
+  @GenIgnore
+  public List<SocketAddress> getSocketAddresses() {
+    List<SocketAddress> addresses = new ArrayList<>(hosts.size());
+    for (SqlHost host : hosts) {
+      addresses.add(SocketAddress.inetSocketAddress(host.getPort(), host.getHost()));
+    }
+    return addresses;
+  }
 
   @GenIgnore
   public SocketAddress getSocketAddress() {
