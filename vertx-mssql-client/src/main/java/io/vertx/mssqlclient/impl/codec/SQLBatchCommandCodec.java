@@ -16,10 +16,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
-import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
+
+import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 
 class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
   SQLBatchCommandCodec(SimpleQueryCommand cmd) {
@@ -36,37 +37,34 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
   void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
     ByteBuf messageBody = message.content();
     while (messageBody.isReadable()) {
-      DataPacketStreamTokenType tokenType = DataPacketStreamTokenType.valueOf(messageBody.readUnsignedByte());
-      if (tokenType == null) {
-        throw new UnsupportedOperationException("Unsupported token: " + tokenType);
-      }
+      int tokenType = messageBody.readUnsignedByte();
       switch (tokenType) {
-        case COLMETADATA_TOKEN:
+        case COLMETADATA:
           MSSQLRowDesc rowDesc = decodeColmetadataToken(messageBody);
           rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
           break;
-        case ROW_TOKEN:
+        case ROW:
           handleRow(messageBody);
           break;
-        case NBCROW_TOKEN:
+        case NBCROW:
           handleNbcRow(messageBody);
           break;
-        case DONE_TOKEN:
-        case DONEPROC_TOKEN:
+        case DONE:
+        case DONEPROC:
           short status = messageBody.readShortLE();
           short curCmd = messageBody.readShortLE();
           long doneRowCount = messageBody.readLongLE();
           handleResultSetDone((int) doneRowCount);
           break;
-        case INFO_TOKEN:
-        case ORDER_TOKEN:
+        case INFO:
+        case ORDER:
           int tokenLength = messageBody.readUnsignedShortLE();
           messageBody.skipBytes(tokenLength);
           break;
-        case ERROR_TOKEN:
+        case ERROR:
           handleErrorToken(messageBody);
           break;
-        case ENVCHANGE_TOKEN:
+        case ENVCHANGE:
           handleEnvChangeToken(messageBody);
           break;
         default:
