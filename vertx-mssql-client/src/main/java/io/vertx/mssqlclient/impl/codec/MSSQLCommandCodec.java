@@ -14,7 +14,6 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
 import io.vertx.mssqlclient.MSSQLException;
-import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;

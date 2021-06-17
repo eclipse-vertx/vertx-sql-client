@@ -18,13 +18,13 @@ public final class TdsPacket extends DefaultByteBufHolder {
   public static final int PACKET_HEADER_SIZE = 8;
   public static final int MAX_PACKET_DATA_SIZE = 0xFFFF - 8;
 
-  private final MessageType type;
+  private final int type;
   private final int status;
   private final int length;
   private final int processId;
   private final short packetId;
 
-  private TdsPacket(MessageType type, int status, int length, int processId, short packetId, ByteBuf data) {
+  private TdsPacket(int type, int status, int length, int processId, short packetId, ByteBuf data) {
     super(data);
     this.type = type;
     this.status = status;
@@ -33,11 +33,11 @@ public final class TdsPacket extends DefaultByteBufHolder {
     this.packetId = packetId;
   }
 
-  public static TdsPacket newTdsPacket(MessageType type, int status, int length, int processId, short packetId, ByteBuf data) {
+  public static TdsPacket newTdsPacket(int type, int status, int length, int processId, short packetId, ByteBuf data) {
     return new TdsPacket(type, status, length, processId, packetId, data);
   }
 
-  public MessageType type() {
+  public int type() {
     return type;
   }
 
