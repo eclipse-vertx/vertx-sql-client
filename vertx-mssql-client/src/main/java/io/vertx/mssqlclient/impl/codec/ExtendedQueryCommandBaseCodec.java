@@ -18,12 +18,12 @@ import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
 import io.vertx.mssqlclient.impl.protocol.server.DoneToken;
-import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.sqlclient.data.NullValue;
 import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.*;
+import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 
 abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
 
@@ -48,38 +48,35 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
   void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
     ByteBuf messageBody = message.content();
     while (messageBody.isReadable()) {
-      DataPacketStreamTokenType tokenType = DataPacketStreamTokenType.valueOf(messageBody.readUnsignedByte());
-      if (tokenType == null) {
-        throw new UnsupportedOperationException("Unsupported token: " + tokenType);
-      }
+      int tokenType = messageBody.readUnsignedByte();
       MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
       switch (tokenType) {
-        case COLMETADATA_TOKEN:
+        case COLMETADATA:
           MSSQLRowDesc rowDesc = decodeColmetadataToken(messageBody);
           rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
           break;
-        case ROW_TOKEN:
+        case ROW:
           handleRow(messageBody);
           break;
-        case NBCROW_TOKEN:
+        case NBCROW:
           handleNbcRow(messageBody);
           break;
-        case DONE_TOKEN:
-          messageBody.skipBytes(12); // this should only be after ERROR_TOKEN?
+        case DONE:
+          messageBody.skipBytes(12); // this should only be after ERROR?
           break;
-        case INFO_TOKEN:
-        case ORDER_TOKEN:
+        case INFO:
+        case ORDER:
           int tokenLength = messageBody.readUnsignedShortLE();
           messageBody.skipBytes(tokenLength);
           break;
-        case ERROR_TOKEN:
+        case ERROR:
           handleErrorToken(messageBody);
           break;
-        case DONEPROC_TOKEN:
+        case DONEPROC:
           messageBody.skipBytes(12);
           handleResultSetDone(rowCount);
           break;
-        case DONEINPROC_TOKEN:
+        case DONEINPROC:
           short status = messageBody.readShortLE();
           short curCmd = messageBody.readShortLE();
           long doneRowCount = messageBody.readLongLE();
@@ -89,10 +86,10 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
             handleResultSetDone((int) doneRowCount);
           }
           break;
-        case RETURNSTATUS_TOKEN:
+        case RETURNSTATUS:
           messageBody.skipBytes(4);
           break;
-        case RETURNVALUE_TOKEN:
+        case RETURNVALUE:
           if (ps.handle == 0) {
             messageBody.skipBytes(2); // skip ordinal position
             messageBody.skipBytes(2 * messageBody.readUnsignedByte()); // skip param name
