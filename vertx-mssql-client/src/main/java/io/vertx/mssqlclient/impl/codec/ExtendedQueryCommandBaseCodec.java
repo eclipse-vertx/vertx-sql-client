@@ -15,7 +15,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
-import io.vertx.mssqlclient.impl.protocol.server.DoneToken;
 import io.vertx.sqlclient.data.NullValue;
 import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
