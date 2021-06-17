@@ -134,7 +134,7 @@ public abstract class ConnectionAutoRetryTestBase {
   @Test
   public void testConnMultipleHostsRetrySuccess(TestContext ctx) {
     options.setReconnectAttempts(0);
-    options.setReconnectInterval(0);
+    options.setReconnectInterval(1);
     UnstableProxyServer unstableProxyServer1 = new UnstableProxyServer(1);
     UnstableProxyServer unstableProxyServer2 = new UnstableProxyServer(0);
     unstableProxyServer1.initialize(options, ctx.asyncAssertSuccess(v1 -> {
@@ -151,7 +151,7 @@ public abstract class ConnectionAutoRetryTestBase {
   @Test
   public void testPoolMultipleHostsRetrySuccess(TestContext ctx) {
     options.setReconnectAttempts(0);
-    options.setReconnectInterval(0);
+    options.setReconnectInterval(1);
     UnstableProxyServer unstableProxyServer1 = new UnstableProxyServer(1);
     UnstableProxyServer unstableProxyServer2 = new UnstableProxyServer(0);
     unstableProxyServer1.initialize(options, ctx.asyncAssertSuccess(v1 -> {

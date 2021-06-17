@@ -71,10 +71,13 @@ public class SqlConnectOptions extends NetClientOptions {
   }
 
   /**
+   * @deprecated use {@link SqlConnectOptions#getHosts()}
+   *
    * Get the host for connecting to the server.
    *
    * @return the host
    */
+  @Deprecated
   @GenIgnore
   public String getHost() {
     if (this.hosts.size() != 1) {
@@ -84,11 +87,14 @@ public class SqlConnectOptions extends NetClientOptions {
   }
 
   /**
+   * @deprecated use {@link SqlConnectOptions#setHosts(SqlHost...)}
+   *
    * Specify the host for connecting to the server.
    *
    * @param host the host to specify
    * @return a reference to this, so the API can be used fluently
    */
+  @Deprecated
   public SqlConnectOptions setHost(String host) {
     Objects.requireNonNull(host, "Host can not be null");
     if (this.hosts.size() > 1) {
@@ -103,10 +109,13 @@ public class SqlConnectOptions extends NetClientOptions {
   }
 
   /**
+   * @deprecated use {@link SqlConnectOptions#getHosts()}
+   *
    * Get the port for connecting to the server.
    *
    * @return the port
    */
+  @Deprecated
   @GenIgnore
   public int getPort() {
     if (this.hosts.size() != 1) {
@@ -116,11 +125,14 @@ public class SqlConnectOptions extends NetClientOptions {
   }
 
   /**
+   * @deprecated use {@link SqlConnectOptions#setHosts(SqlHost...)}
+   *
    * Specify the port for connecting to the server.
    *
    * @param port the port to specify
    * @return a reference to this, so the API can be used fluently
    */
+  @Deprecated
   public SqlConnectOptions setPort(int port) {
     if (port < 0 || port > 65535) {
       throw new IllegalArgumentException("Port should range in 0-65535");
@@ -338,6 +350,10 @@ public class SqlConnectOptions extends NetClientOptions {
     return this;
   }
 
+  /**
+   * @deprecated use {@link SqlConnectOptions#getSocketAddresses()}
+   */
+  @Deprecated
   @GenIgnore
   public SocketAddress getSocketAddress() {
     if (this.hosts.size() > 1) {
