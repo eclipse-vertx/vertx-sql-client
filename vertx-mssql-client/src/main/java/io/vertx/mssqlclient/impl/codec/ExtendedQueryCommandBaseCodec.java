@@ -13,7 +13,6 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
@@ -24,6 +23,8 @@ import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.*;
 import static io.vertx.mssqlclient.impl.codec.TokenType.*;
+import static io.vertx.mssqlclient.impl.protocol.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.protocol.MessageStatus.NORMAL;
 
 abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
 
@@ -125,7 +126,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
 
     // packet header
     packet.writeByte(MessageType.RPC.value());
-    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
+    packet.writeByte(NORMAL | END_OF_MESSAGE);
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later
     packet.writeShort(0x00);
@@ -178,7 +179,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
 
     // packet header
     packet.writeByte(MessageType.RPC.value());
-    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
+    packet.writeByte(NORMAL | END_OF_MESSAGE);
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later
     packet.writeShort(0x00);

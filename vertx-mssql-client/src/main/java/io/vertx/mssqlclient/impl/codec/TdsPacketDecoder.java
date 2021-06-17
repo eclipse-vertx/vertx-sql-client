@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,12 +11,11 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
-import io.vertx.mssqlclient.impl.protocol.MessageType;
-import io.vertx.mssqlclient.impl.protocol.TdsPacket;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import io.vertx.mssqlclient.impl.protocol.MessageType;
+import io.vertx.mssqlclient.impl.protocol.TdsPacket;
 
 import java.util.List;
 
@@ -30,7 +29,7 @@ class TdsPacketDecoder extends ByteToMessageDecoder {
 
       if (in.readableBytes() >= packetLen) {
         MessageType type = MessageType.valueOf(in.readUnsignedByte());
-        MessageStatus status = MessageStatus.valueOf(in.readUnsignedByte());
+        int status = in.readUnsignedByte();
         in.skipBytes(2); // packet length
         int processId = in.readUnsignedShort();
         short packetId = in.readUnsignedByte();

@@ -14,7 +14,6 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket;
@@ -25,6 +24,8 @@ import io.vertx.sqlclient.impl.command.InitCommand;
 import java.util.Map;
 
 import static io.vertx.mssqlclient.impl.codec.TokenType.*;
+import static io.vertx.mssqlclient.impl.protocol.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.protocol.MessageStatus.NORMAL;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
 
 class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
@@ -69,7 +70,7 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
 
     // packet header
     packet.writeByte(MessageType.TDS7_LOGIN.value());
-    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
+    packet.writeByte(NORMAL | END_OF_MESSAGE);
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later
     packet.writeShort(0x00);
