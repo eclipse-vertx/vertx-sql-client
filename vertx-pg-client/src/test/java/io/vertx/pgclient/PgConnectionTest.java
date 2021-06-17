@@ -17,12 +17,11 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.core.net.SocketAddress;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 import java.util.ArrayList;

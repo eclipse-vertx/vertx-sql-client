@@ -164,7 +164,6 @@ public class PgConnectOptions extends SqlConnectOptions {
     return (PgConnectOptions) super.setUser(user);
   }
 
-  // diagnostic: warning: Unclosed files for the types 'PathForCodeGenProcessor'; these types will not undergo annotation processing
   @Override
   public PgConnectOptions setPassword(String password) {
     return (PgConnectOptions) super.setPassword(password);

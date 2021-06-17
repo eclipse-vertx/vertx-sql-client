@@ -132,14 +132,35 @@ public abstract class ConnectionAutoRetryTestBase {
   }
 
   @Test
-  public void testPoolRetrySuccess(TestContext ctx) {
-    options.setReconnectAttempts(1);
-    options.setReconnectInterval(1000);
-    UnstableProxyServer unstableProxyServer = new UnstableProxyServer(1);
-    unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
-      initialConnector(unstableProxyServer.port());
-      poolConnector.connect(ctx.asyncAssertSuccess(conn -> {
-        conn.close();
+  public void testConnMultipleHostsRetrySuccess(TestContext ctx) {
+    options.setReconnectAttempts(0);
+    options.setReconnectInterval(0);
+    UnstableProxyServer unstableProxyServer1 = new UnstableProxyServer(1);
+    UnstableProxyServer unstableProxyServer2 = new UnstableProxyServer(0);
+    unstableProxyServer1.initialize(options, ctx.asyncAssertSuccess(v1 -> {
+      unstableProxyServer2.initialize(options, ctx.asyncAssertSuccess(v2 -> {
+        initialConnector(unstableProxyServer1.port(), unstableProxyServer2.port());
+        connectionConnector.connect(ctx.asyncAssertSuccess(conn -> {
+          // how to verify that we connected through second proxy?
+          conn.close();
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testPoolMultipleHostsRetrySuccess(TestContext ctx) {
+    options.setReconnectAttempts(0);
+    options.setReconnectInterval(0);
+    UnstableProxyServer unstableProxyServer1 = new UnstableProxyServer(1);
+    UnstableProxyServer unstableProxyServer2 = new UnstableProxyServer(0);
+    unstableProxyServer1.initialize(options, ctx.asyncAssertSuccess(v1 -> {
+      unstableProxyServer2.initialize(options, ctx.asyncAssertSuccess(v2 -> {
+        initialConnector(unstableProxyServer1.port(), unstableProxyServer2.port());
+        poolConnector.connect(ctx.asyncAssertSuccess(conn -> {
+          // how to verify that we connected through second proxy?
+          conn.close();
+        }));
       }));
     }));
   }

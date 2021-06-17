@@ -127,7 +127,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
       soFut = netClient.connect(address, (String) null);
     } catch (Exception e) {
       // Client is closed, it is meaningless to retry other hosts
-      // maybe consider own exception class to filter it in Future<Connection>::recover?
+      // maybe consider own exception class to filter it in upstream promise?
       return context.failedFuture(e);
     }
     Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so));
