@@ -13,15 +13,15 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
 
-import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
 import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.MessageType.SQL_BATCH;
+import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 
 class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
   SQLBatchCommandCodec(SimpleQueryCommand cmd) {
@@ -81,7 +81,7 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
     ByteBuf packet = chctx.alloc().ioBuffer();
 
     // packet header
-    packet.writeByte(MessageType.SQL_BATCH.value());
+    packet.writeByte(SQL_BATCH);
     packet.writeByte(NORMAL | END_OF_MESSAGE);
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later

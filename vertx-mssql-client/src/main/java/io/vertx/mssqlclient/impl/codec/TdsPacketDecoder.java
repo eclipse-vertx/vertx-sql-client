@@ -14,7 +14,6 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsPacket;
 
 import java.util.List;
@@ -28,7 +27,7 @@ class TdsPacketDecoder extends ByteToMessageDecoder {
       int packetLen = in.getUnsignedShort(packetStartIdx + 2);
 
       if (in.readableBytes() >= packetLen) {
-        MessageType type = MessageType.valueOf(in.readUnsignedByte());
+        int type = in.readUnsignedByte();
         int status = in.readUnsignedByte();
         in.skipBytes(2); // packet length
         int processId = in.readUnsignedShort();

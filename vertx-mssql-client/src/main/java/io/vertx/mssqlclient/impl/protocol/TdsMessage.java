@@ -15,18 +15,18 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.DefaultByteBufHolder;
 
 public final class TdsMessage extends DefaultByteBufHolder {
-  private final MessageType type;
+  private final int type;
   private final int status;
   private final int processId;
 
-  private TdsMessage(MessageType type, int status, int processId, ByteBuf data) {
+  private TdsMessage(int type, int status, int processId, ByteBuf data) {
     super(data);
     this.type = type;
     this.status = status;
     this.processId = processId;
   }
 
-  public static TdsMessage newTdsMessage(MessageType type, int status, int processId, ByteBuf data) {
+  public static TdsMessage newTdsMessage(int type, int status, int processId, ByteBuf data) {
     return new TdsMessage(type, status, processId, data);
   }
 
@@ -35,7 +35,7 @@ public final class TdsMessage extends DefaultByteBufHolder {
     return newTdsMessage(tdsPacket.type(), tdsPacket.status(), tdsPacket.processId(), packetData);
   }
 
-  public MessageType type() {
+  public int type() {
     return type;
   }
 
