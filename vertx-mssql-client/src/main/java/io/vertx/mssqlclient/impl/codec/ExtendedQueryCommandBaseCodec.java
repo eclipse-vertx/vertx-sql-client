@@ -23,8 +23,8 @@ import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.*;
 import static io.vertx.mssqlclient.impl.codec.TokenType.*;
-import static io.vertx.mssqlclient.impl.protocol.MessageStatus.END_OF_MESSAGE;
-import static io.vertx.mssqlclient.impl.protocol.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
 
 abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
 
