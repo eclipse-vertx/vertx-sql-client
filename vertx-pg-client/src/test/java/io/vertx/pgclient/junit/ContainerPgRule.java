@@ -121,7 +121,7 @@ public class ContainerPgRule extends ExternalResource {
   public synchronized PgConnectOptions startServers(String databaseVersion, int serverCount) throws Exception {
     this.servers = new ArrayList<>();
     for (int i = 0; i < serverCount; i++) {
-      final PostgreSQLContainer<?> server = initServer(databaseVersion);
+      final ServerContainer<?> server = initServer(databaseVersion);
       server.start();
       servers.add(server);
     }

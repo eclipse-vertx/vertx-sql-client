@@ -136,7 +136,7 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
 
   private void doConnectWithRetry(PromiseInternal<Connection> promise, int remainingAttempts, Iterator<SocketAddress> addresses) {
     ContextInternal context = promise.context();
-    PromiseInternal<Connection> promise0 = context.promise();
+    Promise<Connection> promise0 = context.promise();
     promise0.future().onComplete(ar -> {
       if (ar.succeeded()) {
         promise.complete(ar.result());

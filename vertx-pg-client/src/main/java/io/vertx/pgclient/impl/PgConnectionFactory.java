@@ -121,17 +121,17 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
     return connFuture;
   }
 
-  private Future<Connection> doConnect(EventLoopContext context, boolean ssl, SocketAddress address) {
+  private Future<Connection> doConnect(EventLoopContext context, boolean ssl, SocketAddress socketAddress) {
     Future<NetSocket> soFut;
     try {
-      soFut = netClient.connect(address, (String) null);
+      soFut = netClient.connect(socketAddress, (String) null);
     } catch (Exception e) {
       // Client is closed, it is meaningless to retry other hosts
       // maybe consider own exception class to filter it in upstream promise?
       return context.failedFuture(e);
     }
     Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so));
-    if (ssl && !address.isDomainSocket()) {
+    if (ssl && !socketAddress.isDomainSocket()) {
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
         PgSocketConnection socket = (PgSocketConnection) conn;
