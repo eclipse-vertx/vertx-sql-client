@@ -19,30 +19,30 @@ import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.Driver;
 
 public class MySQLDriver implements Driver {
 
   @Override
-  public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
-    return MySQLPool.pool(wrap(options), poolOptions);
+  public Pool createPool(PoolConfig config) {
+    return MySQLPool.pool(wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
-  public Pool createPool(Vertx vertx, SqlConnectOptions options, PoolOptions poolOptions) {
-    return MySQLPool.pool(vertx, wrap(options), poolOptions);
+  public Pool createPool(Vertx vertx, PoolConfig config) {
+    return MySQLPool.pool(vertx, wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof MySQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
   }
-  
+
   private static MySQLConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof MySQLConnectOptions) {
-      return (MySQLConnectOptions) options; 
+      return (MySQLConnectOptions) options;
     } else {
       return new MySQLConnectOptions(options);
     }

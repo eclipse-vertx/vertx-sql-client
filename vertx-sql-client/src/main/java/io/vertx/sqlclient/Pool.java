@@ -60,6 +60,18 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(SqlConnectOptions connectOptions, PoolOptions poolOptions) {
+    return pool(PoolConfig.builder(poolOptions).connectOptions(connectOptions));
+  }
+
+  /**
+   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   *
+   * @param config the pool config for creating the pool
+   * @return the connection pool
+   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
+   */
+  static Pool pool(PoolConfig config) {
+    SqlConnectOptions connectOptions = config.determineConnectOptions();
     List<Driver> candidates = new ArrayList<>(1);
     for (Driver d : ServiceLoader.load(Driver.class)) {
       if (d.acceptsOptions(connectOptions)) {
@@ -71,7 +83,7 @@ public interface Pool extends SqlClient {
     } else if (candidates.size() > 1) {
       throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
     } else {
-      return candidates.get(0).createPool(connectOptions, poolOptions);
+      return candidates.get(0).createPool(config);
     }
   }
 
@@ -85,6 +97,19 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
+    return pool(vertx, PoolConfig.builder(poolOptions).connectOptions(connectOptions));
+  }
+
+  /**
+   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   *
+   * @param vertx the Vertx instance to be used with the connection pool
+   * @param config the pool config for creating the pool
+   * @return the connection pool
+   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
+   */
+  static Pool pool(Vertx vertx, PoolConfig config) {
+    SqlConnectOptions connectOptions = config.determineConnectOptions();
     List<Driver> candidates = new ArrayList<>(1);
     for (Driver d : ServiceLoader.load(Driver.class)) {
       if (d.acceptsOptions(connectOptions)) {
@@ -96,7 +121,7 @@ public interface Pool extends SqlClient {
     } else if (candidates.size() > 1) {
       throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
     } else {
-      return candidates.get(0).createPool(vertx, connectOptions, poolOptions);
+      return candidates.get(0).createPool(vertx, config);
     }
   }
 

@@ -19,30 +19,30 @@ import io.vertx.core.Vertx;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.Driver;
 
 public class MSSQLDriver implements Driver {
 
   @Override
-  public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
-    return MSSQLPool.pool(wrap(options), poolOptions);
+  public Pool createPool(PoolConfig config) {
+    return MSSQLPool.pool(wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
-  public Pool createPool(Vertx vertx, SqlConnectOptions options, PoolOptions poolOptions) {
-    return MSSQLPool.pool(vertx, wrap(options), poolOptions);
+  public Pool createPool(Vertx vertx, PoolConfig config) {
+    return MSSQLPool.pool(vertx, wrap(config.determineConnectOptions()), config.options());
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof MSSQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
   }
-  
+
   private static MSSQLConnectOptions wrap(SqlConnectOptions options) {
     if (options instanceof MSSQLConnectOptions) {
-      return (MSSQLConnectOptions) options; 
+      return (MSSQLConnectOptions) options;
     } else {
       return new MSSQLConnectOptions(options);
     }
