@@ -282,6 +282,14 @@ The following versions of embedded Postgres are supported:
 - `10.6` (default)
 - `11.x` (Unix Domain Socket Test are ignored)
 
+The embedded Postgres database binds to an arbitrary port by default to avoid conflicts.
+Nevertheless, you can force the usage of the standard PostgreSQL port (5432) with a flag:
+
+[source,bash]
+----
+mvn test -DcontainerFixedPort
+----
+
 === Testing with an external database
 
 You can run tests with an external database:
