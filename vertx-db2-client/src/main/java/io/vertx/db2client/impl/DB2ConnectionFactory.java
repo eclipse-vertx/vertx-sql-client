@@ -23,6 +23,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -50,7 +51,7 @@ public class DB2ConnectionFactory extends SqlConnectionFactoryBase implements Co
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
+  protected void doConnectInternal(Promise<Connection> promise, SocketAddress socketAddress) {
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
     EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
     Future<NetSocket> fut = netClient.connect(socketAddress);

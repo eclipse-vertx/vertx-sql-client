@@ -52,7 +52,7 @@ public abstract class ConnectionAutoRetryTestBase {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
-  protected abstract void initialConnector(int proxyPort);
+  protected abstract void initialConnector(int... proxyPorts);
 
   @Test
   public void testConnSuccessWithoutRetry(TestContext ctx) {

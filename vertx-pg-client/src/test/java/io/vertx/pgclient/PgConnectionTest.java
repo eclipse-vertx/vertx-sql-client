@@ -35,9 +35,6 @@ public class PgConnectionTest extends PgConnectionTestBase {
 
   public PgConnectionTest() {
     connector = (handler) -> PgConnection.connect(vertx, options, ar -> {
-      for (SocketAddress sa : options.getSocketAddresses()) {
-        System.out.println("_________SOCKET IN TEST_______ " + sa.host() + " " + sa.port());
-      }
       handler.handle(ar.map(p -> p));
     });
   }

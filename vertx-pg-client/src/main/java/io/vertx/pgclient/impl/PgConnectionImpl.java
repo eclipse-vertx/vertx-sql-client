@@ -106,6 +106,10 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
     return conn.getSecretKey();
   }
 
+  public String addr() {
+    return ((PgSocketConnection)conn).socket().toString();
+  }
+
   @Override
   public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();

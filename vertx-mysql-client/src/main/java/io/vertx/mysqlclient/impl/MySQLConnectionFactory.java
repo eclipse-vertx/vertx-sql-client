@@ -110,7 +110,7 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
+  protected void doConnectInternal(Promise<Connection> promise, SocketAddress socketAddress) {
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
     EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
     Future<NetSocket> fut = netClient.connect(socketAddress);

@@ -22,6 +22,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
+import io.vertx.sqlclient.SqlHost;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

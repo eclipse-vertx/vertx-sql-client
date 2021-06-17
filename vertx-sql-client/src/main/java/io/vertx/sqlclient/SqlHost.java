@@ -25,7 +25,7 @@ public class SqlHost extends NetClientOptions {
   private String host;
   private int port;
 
-  public SqlHost() {
+  SqlHost() {
     init();
   }
 
@@ -87,6 +87,13 @@ public class SqlHost extends NetClientOptions {
     }
     this.port = port;
     return this;
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = super.toJson();
+    SqlHostConverter.toJson(this, json);
+    return json;
   }
 
   /**

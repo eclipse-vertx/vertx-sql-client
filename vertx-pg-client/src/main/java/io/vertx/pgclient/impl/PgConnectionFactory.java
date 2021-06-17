@@ -76,9 +76,9 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
+  protected void doConnectInternal(Promise<Connection> promise, SocketAddress socketAddress) {
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    doConnect(ConnectionFactory.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
+    doConnect(ConnectionFactory.asEventLoopContext(promiseInternal.context()), socketAddress).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
@@ -87,7 +87,8 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
   }
 
   public void cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
-    doConnect(vertx.createEventLoopContext()).onComplete(ar -> {
+    // TODO: find proper host
+    doConnect(vertx.createEventLoopContext(), socketAddresses.get(0)).onComplete(ar -> {
       if (ar.succeeded()) {
         PgSocketConnection conn = (PgSocketConnection) ar.result();
         conn.sendCancelRequestMessage(processId, secretKey, handler);
@@ -97,59 +98,27 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
     });
   }
 
-  private Future<Connection> doConnect(EventLoopContext context) {
+  private Future<Connection> doConnect(EventLoopContext context, SocketAddress socketAddress) {
     Future<Connection> connFuture;
     switch (sslMode) {
       case DISABLE:
-        connFuture = doConnect(context,false);
+        connFuture = doConnect(context,false, socketAddress);
         break;
       case ALLOW:
-        connFuture = doConnect(context,false).recover(err -> doConnect(context,true));
+        connFuture = doConnect(context,false, socketAddress).recover(err -> doConnect(context,true, socketAddress));
         break;
       case PREFER:
-        connFuture = doConnect(context,true).recover(err -> doConnect(context,false));
+        connFuture = doConnect(context,true, socketAddress).recover(err -> doConnect(context,false, socketAddress));
         break;
       case REQUIRE:
       case VERIFY_CA:
       case VERIFY_FULL:
-        connFuture = doConnect(context, true);
+        connFuture = doConnect(context, true, socketAddress);
         break;
       default:
         return context.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
     }
     return connFuture;
-  }
-
-  private Future<Connection> doConnect(EventLoopContext context, boolean ssl) {
-    return doConnect(context, ssl, super.socketAddresses.get(0));
-//    final int firstSocket = super.lastLiveHost;
-//    return doConnect(context, ssl, firstSocket, firstSocket);
-  }
-
-  /**
-   * Try to establish connection with a host in round-robin fashion. Cycle through set of
-   * @see SqlConnectionFactoryBase#socketAddresses
-   * starting with
-   * @see SqlConnectionFactoryBase#lastLiveHost
-   * resetting
-   * @see SqlConnectionFactoryBase#lastLiveHost
-   * to index of
-   * @see SqlConnectionFactoryBase#socketAddresses
-   * that was succesfully connected to
-   * and giving up with initial error on full cycle
-   */
-  private Future<Connection> doConnect(EventLoopContext context, boolean ssl, int firstSocket, int currentSocket) {
-    final SocketAddress socketAddresses = super.socketAddresses.get(currentSocket);
-    System.out.println("_____SOCKET IN CONNECTION FACTORY_____ " + socketAddresses.host() + " " + socketAddresses.port());
-    return doConnect(context, ssl, socketAddresses).recover(cause -> {
-      int nextSocket = currentSocket + 1;
-      if (nextSocket == super.socketAddresses.size()) nextSocket = 0;
-      if (nextSocket == firstSocket) {
-        return Future.failedFuture(cause);
-      } else {
-        return doConnect(context, ssl, firstSocket, nextSocket);
-      }
-    }).onSuccess(ar -> super.lastLiveHost = currentSocket);
   }
 
   private Future<Connection> doConnect(EventLoopContext context, boolean ssl, SocketAddress address) {
@@ -158,7 +127,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
       soFut = netClient.connect(address, (String) null);
     } catch (Exception e) {
       // Client is closed, it is meaningless to retry other hosts
-      // maybe consider own exception class?
+      // maybe consider own exception class to filter it in Future<Connection>::recover?
       return context.failedFuture(e);
     }
     Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so));

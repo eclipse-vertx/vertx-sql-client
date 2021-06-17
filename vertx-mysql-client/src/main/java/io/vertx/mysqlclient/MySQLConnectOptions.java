@@ -20,6 +20,7 @@ import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlHost;
 
 import java.nio.charset.Charset;
 import java.util.*;
@@ -298,6 +299,17 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   @Override
   public MySQLConnectOptions setPort(int port) {
     return (MySQLConnectOptions) super.setPort(port);
+  }
+
+  @Override
+  public MySQLConnectOptions setHosts(List<SqlHost> hosts) {
+    return (MySQLConnectOptions) super.setHosts(hosts);
+  }
+
+  @GenIgnore
+  @Override
+  public MySQLConnectOptions setHosts(SqlHost... hosts) {
+    return (MySQLConnectOptions) super.setHosts(hosts);
   }
 
   @Override

@@ -16,9 +16,15 @@ import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlHost;
 import io.vertx.sqlclient.tck.ConnectionAutoRetryTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
+
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2ConnectionAutoRetryTest extends ConnectionAutoRetryTestBase {
@@ -39,10 +45,10 @@ public class DB2ConnectionAutoRetryTest extends ConnectionAutoRetryTestBase {
   }
 
   @Override
-  protected void initialConnector(int proxyPort) {
+  protected void initialConnector(int... proxyPorts) {
     SqlConnectOptions proxyOptions = new DB2ConnectOptions(options);
-    proxyOptions.setPort(proxyPort);
-    proxyOptions.setHost("localhost");
+    List<SqlHost> hosts = IntStream.of(proxyPorts).mapToObj(port -> new SqlHost("localhost", port)).collect(toList());
+    proxyOptions.setHosts(hosts);
     connectionConnector = ClientConfig.CONNECT.connect(vertx, proxyOptions);
     poolConnector = ClientConfig.POOLED.connect(vertx, proxyOptions);
   }

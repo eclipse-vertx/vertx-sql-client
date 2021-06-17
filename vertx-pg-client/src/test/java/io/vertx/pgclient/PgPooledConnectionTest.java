@@ -20,6 +20,7 @@ package io.vertx.pgclient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlHost;
 import org.junit.Test;
 
 /**

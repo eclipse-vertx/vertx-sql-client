@@ -68,7 +68,7 @@ public class PgDatabaseMetadataTest {
       }));
       async.await(20_000);
     } finally {
-      rule.stopServer();
+      rule.stopServers();
     }
   }
 }

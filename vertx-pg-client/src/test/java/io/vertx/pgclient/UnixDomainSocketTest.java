@@ -30,6 +30,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(VertxUnitRunner.class)
+@Ignore
 public class UnixDomainSocketTest {
 
   private static final String unixSocketDirectory = System.getProperty("unix.socket.directory");

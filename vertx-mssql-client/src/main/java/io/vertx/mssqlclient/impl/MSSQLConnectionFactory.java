@@ -15,6 +15,7 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.core.*;
 import io.vertx.core.net.impl.NetSocketInternal;
@@ -41,7 +42,7 @@ class MSSQLConnectionFactory extends SqlConnectionFactoryBase implements Connect
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
+  protected void doConnectInternal(Promise<Connection> promise, SocketAddress socketAddress) {
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
     EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
     Future<NetSocket> fut = netClient.connect(socketAddress);

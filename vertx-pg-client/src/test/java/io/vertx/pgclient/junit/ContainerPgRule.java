@@ -18,6 +18,7 @@ package io.vertx.pgclient.junit;
 
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlHost;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -28,6 +29,11 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Postgresql test database based on https://www.testcontainers.org
@@ -41,14 +47,19 @@ public class ContainerPgRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
 
-  private PostgreSQLContainer server;
+  private List<PostgreSQLContainer<?>> servers;
   private PgConnectOptions options;
   private String databaseVersion;
   private boolean ssl;
-
+  private int serverCount = 1;
 
   public ContainerPgRule ssl(boolean ssl) {
     this.ssl = ssl;
+    return this;
+  }
+
+  public ContainerPgRule setServerCount(int i) {
+    this.serverCount = i;
     return this;
   }
 
@@ -60,10 +71,10 @@ public class ContainerPgRule extends ExternalResource {
     return new PoolOptions();
   }
 
-  private void initServer(String version) throws Exception {
+  private PostgreSQLContainer<?> initServer(String version) throws Exception {
     File setupFile = getTestResource("resources" + File.separator + "create-postgres.sql");
 
-    server = (PostgreSQLContainer) new PostgreSQLContainer("postgres:" + version)
+    final PostgreSQLContainer<?> server = new PostgreSQLContainer<>("postgres:" + version)
       .withDatabaseName("postgres")
       .withUsername("postgres")
       .withPassword("postgres")
@@ -73,6 +84,7 @@ public class ContainerPgRule extends ExternalResource {
         .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("resources" + File.separator + "server.key").toPath()), "/server.key")
         .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("ssl.sh").toPath()), "/docker-entrypoint-initdb.d/ssl.sh");
     }
+    return server;
   }
 
   private static File getTestResource(String name) throws Exception {
@@ -94,18 +106,28 @@ public class ContainerPgRule extends ExternalResource {
     return systemProperty != null && !systemProperty.isEmpty();
   }
 
-  public synchronized PgConnectOptions startServer(String databaseVersion) throws Exception {
-    initServer(databaseVersion);
-    server.start();
+  public PgConnectOptions startServer(String databaseVersion) throws Exception {
+    return startServers(databaseVersion, 1);
+  }
 
+  public synchronized PgConnectOptions startServers(String databaseVersion, int serverCount) throws Exception {
+    this.servers = new ArrayList<>();
+    for (int i = 0; i < serverCount; i++) {
+      final PostgreSQLContainer<?> server = initServer(databaseVersion);
+      server.start();
+      servers.add(server);
+    }
+
+    final List<SqlHost> hosts = servers
+      .stream()
+      .map(s -> new SqlHost(s.getContainerIpAddress(), s.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT)))
+      .collect(toList());
     return new PgConnectOptions()
-        .setPort(server.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT))
-        .setHost(server.getContainerIpAddress())
+        .setHosts(hosts)
         .setDatabase("postgres")
         .setUser("postgres")
         .setPassword("postgres");
   }
-
 
   private static String getPostgresVersion() {
     String specifiedVersion = System.getProperty("embedded.postgres.version");
@@ -120,12 +142,14 @@ public class ContainerPgRule extends ExternalResource {
     return version;
   }
 
-  public synchronized void stopServer() throws Exception {
-    if (server != null) {
+  public synchronized void stopServers() throws Exception {
+    if (servers != null) {
       try {
-        server.stop();
+        for (PostgreSQLContainer<?> server : servers) {
+          server.stop();
+        }
       } finally {
-        server = null;
+        servers = null;
       }
     }
   }
@@ -145,13 +169,13 @@ public class ContainerPgRule extends ExternalResource {
       return;
     }
 
-    // We do not need to launch another server if it's a shared instance
-    if (this.server != null) {
+    // We do not need to launch another set of servers if it's a shared instance
+    if (this.servers != null) {
       return;
     }
 
-    this.databaseVersion =  getPostgresVersion();
-    options = startServer(databaseVersion);
+    this.databaseVersion = getPostgresVersion();
+    options = startServers(databaseVersion, serverCount);
   }
 
   public static boolean isAtLeastPg10() {
@@ -163,7 +187,7 @@ public class ContainerPgRule extends ExternalResource {
   protected void after() {
     if (!isTestingWithExternalDatabase()) {
       try {
-        stopServer();
+        stopServers();
       } catch (Exception e) {
         e.printStackTrace();
       }

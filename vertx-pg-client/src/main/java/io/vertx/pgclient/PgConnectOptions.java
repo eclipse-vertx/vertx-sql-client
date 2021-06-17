@@ -25,11 +25,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlHost;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -95,6 +93,7 @@ public class PgConnectOptions extends SqlConnectOptions {
 
   public static final String DEFAULT_HOST = "localhost";
   public static int DEFAULT_PORT = 5432;
+  public static final SqlHost DEFAULT_HOSTS;
   public static final String DEFAULT_DATABASE = "db";
   public static final String DEFAULT_USER = "user";
   public static final String DEFAULT_PASSWORD = "pass";
@@ -103,6 +102,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final Map<String, String> DEFAULT_PROPERTIES;
 
   static {
+    DEFAULT_HOSTS = new SqlHost(DEFAULT_HOST, DEFAULT_PORT);
     Map<String, String> defaultProperties = new HashMap<>();
     defaultProperties.put("application_name", "vertx-pg-client");
     defaultProperties.put("client_encoding", "utf8");
@@ -149,10 +149,22 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   @Override
+  public PgConnectOptions setHosts(List<SqlHost> hosts) {
+    return (PgConnectOptions) super.setHosts(hosts);
+  }
+
+  @GenIgnore
+  @Override
+  public PgConnectOptions setHosts(SqlHost... hosts) {
+    return (PgConnectOptions) super.setHosts(hosts);
+  }
+
+  @Override
   public PgConnectOptions setUser(String user) {
     return (PgConnectOptions) super.setUser(user);
   }
 
+  // diagnostic: warning: Unclosed files for the types 'PathForCodeGenProcessor'; these types will not undergo annotation processing
   @Override
   public PgConnectOptions setPassword(String password) {
     return (PgConnectOptions) super.setPassword(password);
@@ -448,9 +460,7 @@ public class PgConnectOptions extends SqlConnectOptions {
    * Initialize with the default options.
    */
   protected void init() {
-    super.init();
-    this.setHost(DEFAULT_HOST);
-    this.setPort(DEFAULT_PORT);
+    this.setHosts(DEFAULT_HOSTS);
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);
@@ -496,6 +506,6 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   public boolean isUsingDomainSocket() {
-    return this.getHost().startsWith("/");
+    return this.getHosts().stream().anyMatch(host -> host.getHost().startsWith("/"));
   }
 }

@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JdkSSLEngineOptions;
@@ -27,8 +28,10 @@ import io.vertx.core.net.TrustOptions;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlHost;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -92,6 +95,17 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   @Override
   public MSSQLConnectOptions setPort(int port) {
     return (MSSQLConnectOptions) super.setPort(port);
+  }
+
+  @Override
+  public MSSQLConnectOptions setHosts(List<SqlHost> hosts) {
+    return (MSSQLConnectOptions) super.setHosts(hosts);
+  }
+
+  @GenIgnore
+  @Override
+  public MSSQLConnectOptions setHosts(SqlHost... hosts) {
+    return (MSSQLConnectOptions) super.setHosts(hosts);
   }
 
   @Override
