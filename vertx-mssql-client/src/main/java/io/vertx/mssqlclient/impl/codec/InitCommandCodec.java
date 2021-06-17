@@ -14,17 +14,18 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
-import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket;
-import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.mssqlclient.impl.utils.Utils;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.InitCommand;
 
 import java.util.Map;
 
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.MessageType.TDS7_LOGIN;
+import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
 
 class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
@@ -42,23 +43,20 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
   void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
     ByteBuf messageBody = message.content();
     while (messageBody.isReadable()) {
-      DataPacketStreamTokenType tokenType = DataPacketStreamTokenType.valueOf(messageBody.readUnsignedByte());
-      if (tokenType == null) {
-        continue;
-      }
+      int tokenType = messageBody.readUnsignedByte();
       switch (tokenType) {
         //FIXME complete all the logic here
-        case LOGINACK_TOKEN:
+        case LOGINACK:
           result = cmd.connection();
           break;
-        case ERROR_TOKEN:
+        case ERROR:
           handleErrorToken(messageBody);
           break;
-        case INFO_TOKEN:
+        case INFO:
           break;
-        case ENVCHANGE_TOKEN:
+        case ENVCHANGE:
           break;
-        case DONE_TOKEN:
+        case DONE:
           break;
       }
     }
@@ -71,8 +69,8 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     ByteBuf packet = chctx.alloc().ioBuffer();
 
     // packet header
-    packet.writeByte(MessageType.TDS7_LOGIN.value());
-    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
+    packet.writeByte(TDS7_LOGIN);
+    packet.writeByte(NORMAL | END_OF_MESSAGE);
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later
     packet.writeShort(0x00);

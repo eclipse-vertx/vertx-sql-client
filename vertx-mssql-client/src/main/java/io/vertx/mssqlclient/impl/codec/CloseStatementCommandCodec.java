@@ -13,15 +13,15 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
-import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
-import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
-import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
+import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 
 class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementCommand> {
 
@@ -44,18 +44,15 @@ class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementC
   void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
     ByteBuf messageBody = message.content();
     while (messageBody.isReadable()) {
-      DataPacketStreamTokenType tokenType = DataPacketStreamTokenType.valueOf(messageBody.readUnsignedByte());
-      if (tokenType == null) {
-        throw new UnsupportedOperationException("Unsupported token: " + tokenType);
-      }
+      int tokenType = messageBody.readUnsignedByte();
       switch (tokenType) {
-        case ERROR_TOKEN:
+        case ERROR:
           handleErrorToken(messageBody);
           break;
-        case DONEPROC_TOKEN:
+        case DONEPROC:
           messageBody.skipBytes(12);
           break;
-        case RETURNSTATUS_TOKEN:
+        case RETURNSTATUS:
           messageBody.skipBytes(4);
           break;
         default:
@@ -71,8 +68,8 @@ class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementC
     ByteBuf packet = chctx.alloc().ioBuffer();
 
     // packet header
-    packet.writeByte(MessageType.RPC.value());
-    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
+    packet.writeByte(RPC);
+    packet.writeByte(NORMAL | END_OF_MESSAGE);
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later
     packet.writeShort(0x00);

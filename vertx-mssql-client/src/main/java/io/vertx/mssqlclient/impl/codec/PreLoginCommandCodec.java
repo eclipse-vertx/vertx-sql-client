@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,18 +11,20 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
-import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.EncryptionOptionToken;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.OptionToken;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.VersionOptionToken;
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.List;
+
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.MessageType.PRE_LOGIN;
 
 class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
 
@@ -48,8 +50,8 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
     ByteBuf packet = chctx.alloc().ioBuffer();
 
     // packet header
-    packet.writeByte(MessageType.PRE_LOGIN.value());
-    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
+    packet.writeByte(PRE_LOGIN);
+    packet.writeByte(NORMAL | END_OF_MESSAGE);
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later
     packet.writeShort(0x00);

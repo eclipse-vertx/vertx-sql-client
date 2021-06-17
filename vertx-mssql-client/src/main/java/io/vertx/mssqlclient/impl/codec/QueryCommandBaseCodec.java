@@ -18,7 +18,7 @@ import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
 import java.util.stream.Collector;
 
-import static io.vertx.mssqlclient.impl.protocol.EnvChange.*;
+import static io.vertx.mssqlclient.impl.codec.EnvChange.*;
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedByteLengthString;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends MSSQLCommandCodec<Boolean, C> {

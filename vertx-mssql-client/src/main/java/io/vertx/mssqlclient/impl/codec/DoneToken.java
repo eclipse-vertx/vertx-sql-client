@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -9,9 +9,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.mssqlclient.impl.protocol.server;
+package io.vertx.mssqlclient.impl.codec;
 
-public final class DoneToken {
+@SuppressWarnings("unused")
+public class DoneToken {
+
   public static final short STATUS_DONE_FINAL = 0x00;
   public static final short STATUS_DONE_MORE = 0x1;
   public static final short STATUS_DONE_ERROR = 0x2;
@@ -19,4 +21,8 @@ public final class DoneToken {
   public static final short STATUS_DONE_COUNT = 0x10;
   public static final short STATUS_DONE_ATTN = 0x20;
   public static final short STATUS_DONE_SRVERROR = 0x100;
+
+  private DoneToken() {
+    // Constants class
+  }
 }

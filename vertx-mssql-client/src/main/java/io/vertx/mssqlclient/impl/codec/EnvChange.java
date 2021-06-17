@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -9,8 +9,9 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.mssqlclient.impl.protocol;
+package io.vertx.mssqlclient.impl.codec;
 
+@SuppressWarnings("unused")
 public class EnvChange {
 
   public static final int DATABASE = 1;
