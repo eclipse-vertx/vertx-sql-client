@@ -22,10 +22,14 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class PoolConfigImpl implements PoolConfig {
 
   private final PoolOptions options;
-  private SqlConnectOptions connectOptions;
+  private List<SqlConnectOptions> connectOptions;
   private Handler<SqlConnection> connectHook;
 
   public PoolConfigImpl(PoolOptions options) {
@@ -38,9 +42,22 @@ public class PoolConfigImpl implements PoolConfig {
   }
 
   @Override
-  public PoolConfig connectOptions(SqlConnectOptions options) {
-    this.connectOptions = options;
+  public PoolConfig connectOptions(List<SqlConnectOptions> options) {
+    List<SqlConnectOptions> list = Collections.unmodifiableList(new ArrayList<>(options));
+    if (list.isEmpty()) {
+      throw new IllegalArgumentException();
+    }
+    for (int i = 1;i < list.size();i++) {
+      if (list.get(0).getClass() != list.get(i).getClass()) {
+        throw new IllegalArgumentException();
+      }
+    }
+    this.connectOptions = list;
     return this;
+  }
+
+  public List<SqlConnectOptions> connectOptions() {
+    return connectOptions;
   }
 
   @Override
@@ -56,6 +73,6 @@ public class PoolConfigImpl implements PoolConfig {
 
   @Override
   public SqlConnectOptions determineConnectOptions() {
-    return connectOptions;
+    return connectOptions.get(0);
   }
 }

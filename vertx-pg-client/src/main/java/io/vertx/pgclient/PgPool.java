@@ -97,7 +97,9 @@ public interface PgPool extends Pool {
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    PoolConfig poolConfig = PoolConfig.create(poolOptions);
+    PoolConfig config = poolConfig.connectOptions(connectOptions);
+    return pool(vertx, config);
   }
 
   /**

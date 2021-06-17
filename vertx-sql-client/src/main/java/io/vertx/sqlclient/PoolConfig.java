@@ -23,6 +23,9 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.PoolConfigImpl;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * The pool configuration that comprehends several mandatory configuration items, plus a few extra optional ones.
  *
@@ -54,7 +57,18 @@ public interface PoolConfig {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  PoolConfig connectOptions(SqlConnectOptions options);
+  default PoolConfig connectOptions(SqlConnectOptions options) {
+    return connectOptions(Collections.singletonList(options));
+  }
+
+  /**
+   * Set the connect options.
+   *
+   * @param options the connect options
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  PoolConfig connectOptions(List<SqlConnectOptions> options);
 
   /**
    * Set an handler called when the pool has established a connection to the database.
