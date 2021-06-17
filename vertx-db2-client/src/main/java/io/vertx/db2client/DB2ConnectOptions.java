@@ -15,10 +15,7 @@
  */
 package io.vertx.db2client;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -40,6 +37,7 @@ import io.vertx.db2client.impl.DB2ConnectionUriParser;
 import io.vertx.db2client.impl.drda.SQLState;
 import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlHost;
 
 /**
  * Connect options for configuring {@link DB2Connection} or {@link DB2Pool}.
@@ -62,12 +60,14 @@ public class DB2ConnectOptions extends SqlConnectOptions {
 
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 50000;
+  public static final SqlHost DEFAULT_HOSTS;
   public static final String DEFAULT_CHARSET = "utf8";
   public static final boolean DEFAULT_USE_AFFECTED_ROWS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 1; // 256; // TODO default to 256 once implemented properly
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
 
   static {
+    DEFAULT_HOSTS = new SqlHost(DEFAULT_HOST, DEFAULT_PORT);
     Map<String, String> defaultAttributes = new HashMap<>();
     defaultAttributes.put("_client_name", "vertx-db2-client");
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
@@ -105,6 +105,17 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   @Override
   public DB2ConnectOptions setPort(int port) {
     return (DB2ConnectOptions) super.setPort(port);
+  }
+
+  @Override
+  public DB2ConnectOptions setHosts(List<SqlHost> hosts) {
+    return (DB2ConnectOptions) super.setHosts(hosts);
+  }
+
+  @GenIgnore
+  @Override
+  public DB2ConnectOptions setHosts(SqlHost... hosts) {
+    return (DB2ConnectOptions) super.setHosts(hosts);
   }
 
   @Override
@@ -264,8 +275,7 @@ public class DB2ConnectOptions extends SqlConnectOptions {
    * Initialize with the default options.
    */
   protected void init() {
-    this.setHost(DEFAULT_HOST);
-    this.setPort(DEFAULT_PORT);
+    this.setHosts(DEFAULT_HOSTS);
     this.setProperties(new HashMap<>(DEFAULT_CONNECTION_ATTRIBUTES));
   }
 

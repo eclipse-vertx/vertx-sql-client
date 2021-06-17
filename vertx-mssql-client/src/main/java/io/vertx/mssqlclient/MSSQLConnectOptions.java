@@ -56,6 +56,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
 
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 1433;
+  public static final SqlHost DEFAULT_HOSTS;
   public static final String DEFAULT_USER = "sa";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_DATABASE = "";
@@ -64,6 +65,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   public static final Map<String, String> DEFAULT_PROPERTIES;
 
   static {
+    DEFAULT_HOSTS = new SqlHost(DEFAULT_HOST, DEFAULT_PORT);
     Map<String, String> defaultProperties = new HashMap<>();
     defaultProperties.put("appName", DEFAULT_APP_NAME);
     defaultProperties.put("clientInterfaceName", DEFAULT_CLIENT_INTERFACE_NAME);
@@ -352,8 +354,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
    * Initialize with the default options.
    */
   protected void init() {
-    this.setHost(DEFAULT_HOST);
-    this.setPort(DEFAULT_PORT);
+    this.setHosts(DEFAULT_HOSTS);
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);

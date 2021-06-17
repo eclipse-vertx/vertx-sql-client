@@ -131,6 +131,19 @@ public abstract class ConnectionAutoRetryTestBase {
     }));
   }
 
+  @Test
+  public void testPoolRetrySuccess(TestContext ctx) {
+    options.setReconnectAttempts(1);
+    options.setReconnectInterval(1000);
+    UnstableProxyServer unstableProxyServer = new UnstableProxyServer(1);
+    unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
+      initialConnector(unstableProxyServer.port());
+      poolConnector.connect(ctx.asyncAssertSuccess(conn -> {
+        conn.close();
+      }));
+    }));
+  }
+
   public class UnstableProxyServer {
 
     private final Logger LOGGER = LoggerFactory.getLogger(UnstableProxyServer.class);

@@ -47,6 +47,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
 
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 3306;
+  public static final SqlHost DEFAULT_HOSTS;
   public static final String DEFAULT_USER = "root";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_SCHEMA = "";
@@ -57,6 +58,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
   static {
+    DEFAULT_HOSTS = new SqlHost(DEFAULT_HOST, DEFAULT_PORT);
     Map<String, String> defaultAttributes = new HashMap<>();
     defaultAttributes.put("_client_name", "vertx-mysql-client");
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
@@ -580,8 +582,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   @Override
   protected void init() {
     super.init();
-    this.setHost(DEFAULT_HOST);
-    this.setPort(DEFAULT_PORT);
+    this.setHosts(DEFAULT_HOSTS);
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_SCHEMA);

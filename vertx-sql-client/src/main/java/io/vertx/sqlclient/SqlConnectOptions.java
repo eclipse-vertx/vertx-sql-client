@@ -316,14 +316,6 @@ public class SqlConnectOptions extends NetClientOptions {
     return addresses;
   }
 
-  public SqlConnectOptions setSocketAddresses(List<SocketAddress> socketAddresses) {
-    Objects.requireNonNull(socketAddresses, "Addresses can not be null");
-    for (SocketAddress address : socketAddresses) {
-      hosts.add(new SqlHost(address.host(), address.port()));
-    }
-    return this;
-  }
-
   public List<SqlHost> getHosts() {
     ArrayList<SqlHost> hosts = new ArrayList<>(this.hosts.size());
     for (SqlHost host : this.hosts) {
@@ -348,6 +340,10 @@ public class SqlConnectOptions extends NetClientOptions {
 
   @GenIgnore
   public SocketAddress getSocketAddress() {
+    if (this.hosts.size() > 1) {
+      throw new IllegalStateException("There are multiple hosts specified: " + hosts.size() + "," +
+        " use SqlConnectOptions#getSocketAddresses");
+    }
     return SocketAddress.inetSocketAddress(getPort(), getHost());
   }
 

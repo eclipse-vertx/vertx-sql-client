@@ -31,6 +31,16 @@ public class SqlConnectOptionsConverter {
             obj.setHost((String)member.getValue());
           }
           break;
+        case "hosts":
+          if (member.getValue() instanceof JsonArray) {
+            java.util.ArrayList<io.vertx.sqlclient.SqlHost> list =  new java.util.ArrayList<>();
+            ((Iterable<Object>)member.getValue()).forEach( item -> {
+              if (item instanceof JsonObject)
+                list.add(new io.vertx.sqlclient.SqlHost((io.vertx.core.json.JsonObject)item));
+            });
+            obj.setHosts(list);
+          }
+          break;
         case "password":
           if (member.getValue() instanceof String) {
             obj.setPassword((String)member.getValue());
@@ -84,13 +94,14 @@ public class SqlConnectOptionsConverter {
     if (obj.getDatabase() != null) {
       json.put("database", obj.getDatabase());
     }
-    if (obj.getHost() != null) {
-      json.put("host", obj.getHost());
+    if (obj.getHosts() != null) {
+      JsonArray array = new JsonArray();
+      obj.getHosts().forEach(item -> array.add(item.toJson()));
+      json.put("hosts", array);
     }
     if (obj.getPassword() != null) {
       json.put("password", obj.getPassword());
     }
-    json.put("port", obj.getPort());
     json.put("preparedStatementCacheMaxSize", obj.getPreparedStatementCacheMaxSize());
     if (obj.getProperties() != null) {
       JsonObject map = new JsonObject();
