@@ -67,9 +67,9 @@ class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
     } else if (cmd instanceof ExtendedQueryCommand) {
       ExtendedQueryCommand<?> queryCmd = (ExtendedQueryCommand<?>) cmd;
       if (queryCmd.isBatch()) {
-        throw new UnsupportedOperationException();
+        return new ExtendedBatchQueryCommandCodec<>(queryCmd);
       } else {
-        return new ExtendedQueryCommandCodec((ExtendedQueryCommand) cmd);
+        return new ExtendedQueryCommandCodec<>(queryCmd);
       }
     } else if (cmd instanceof CloseStatementCommand) {
       return new CloseStatementCommandCodec((CloseStatementCommand) cmd);

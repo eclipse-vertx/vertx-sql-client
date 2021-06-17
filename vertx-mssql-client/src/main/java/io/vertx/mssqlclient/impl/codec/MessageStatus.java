@@ -11,21 +11,16 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataType;
+@SuppressWarnings("unused")
+public class MessageStatus {
 
-import java.sql.JDBCType;
+  public static final int NORMAL = 0x00;
+  public static final int END_OF_MESSAGE = 0x01;
+  public static final int IGNORE_THIS_EVENT = 0x02;
+  public static final int RESET_CONNECTION = 0x08;
+  public static final int RESET_CONNECTION_SKIP_TRAN = 0x10;
 
-public class BinaryDataType extends MSSQLDataType {
-
-  private final int length;
-
-  public BinaryDataType(int id, int length) {
-    super(id, Buffer.class, JDBCType.BINARY);
-    this.length = length;
-  }
-
-  public int getLength() {
-    return length;
+  private MessageStatus() {
+    // Constants class
   }
 }

@@ -12,16 +12,14 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
-import java.math.BigDecimal;
 import java.util.stream.Collector;
 
-import static io.vertx.mssqlclient.impl.protocol.EnvChange.*;
-import static io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId.*;
+import static io.vertx.mssqlclient.impl.codec.EnvChange.*;
+import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedByteLengthString;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends MSSQLCommandCodec<Boolean, C> {
   protected RowResultDecoder<?, T> rowResultDecoder;
@@ -49,9 +47,10 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
     for (int i = 0; i < columnCount; i++) {
       long userType = payload.readUnsignedIntLE();
       int flags = payload.readUnsignedShortLE();
-      MSSQLDataType dataType = decodeDataTypeMetadata(payload);
-      String columnName = readByteLenVarchar(payload);
-      columnDatas[i] = new ColumnData(userType, flags, dataType, columnName);
+      DataType dataType = DataType.forId(payload.readUnsignedByte());
+      DataType.Metadata metadata = dataType.decodeMetadata(payload);
+      String columnName = readUnsignedByteLengthString(payload);
+      columnDatas[i] = new ColumnData(columnName, dataType, metadata);
     }
 
     return new MSSQLRowDesc(columnDatas);
@@ -84,78 +83,6 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       rowDesc = null;
     }
     cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result, failure);
-  }
-
-  private MSSQLDataType decodeDataTypeMetadata(ByteBuf payload) {
-    int typeInfo = payload.readUnsignedByte();
-    byte scale;
-    switch (typeInfo) {
-      /*
-       * FixedLen DataType
-       */
-      case INT1TYPE_ID:
-        return FixedLenDataType.INT1TYPE;
-      case INT2TYPE_ID:
-        return FixedLenDataType.INT2TYPE;
-      case INT4TYPE_ID:
-        return FixedLenDataType.INT4TYPE;
-      case INT8TYPE_ID:
-        return FixedLenDataType.INT8TYPE;
-      case FLT4TYPE_ID:
-        return FixedLenDataType.FLT4TYPE;
-      case FLT8TYPE_ID:
-        return FixedLenDataType.FLT8TYPE;
-      case BITTYPE_ID:
-        return FixedLenDataType.BITTYPE;
-      /*
-       * Variable Length Data Type
-       */
-      case NUMERICNTYPE_ID:
-      case DECIMALNTYPE_ID:
-        short decimalTypeSize = payload.readUnsignedByte();
-        byte decimalPrecision = payload.readByte();
-        scale = payload.readByte();
-        return new DecimalDataType(typeInfo, BigDecimal.class, decimalPrecision, scale);
-      case INTNTYPE_ID:
-        byte intNTypeLength = payload.readByte();
-        return IntNDataType.valueOf(intNTypeLength);
-      case FLTNTYPE_ID:
-        byte fltNTypeLength = payload.readByte();
-        return FloatNDataType.valueOf(fltNTypeLength);
-      case BITNTYPE_ID:
-        payload.skipBytes(1); // should only be 1
-        return BitNDataType.BIT_1_DATA_TYPE;
-      case DATETIMETYPE_ID:
-        return FixedLenDataType.DATETIMETYPE;
-      case DATENTYPE_ID:
-        return FixedLenDataType.DATENTYPE;
-      case TIMENTYPE_ID:
-        scale = payload.readByte();
-        return new TimeNDataType(scale);
-      case DATETIME2NTYPE_ID:
-        scale = payload.readByte();
-        return new DateTime2NDataType(scale);
-      case DATETIMEOFFSETNTYPE_ID:
-        scale = payload.readByte();
-        return new DateTimeOffsetNDataType(scale);
-      case BIGCHARTYPE_ID:
-      case BIGVARCHRTYPE_ID:
-      case NCHARTYPE_ID:
-      case NVARCHARTYPE_ID:
-        int size = payload.readUnsignedShortLE();
-        short collateCodepage = payload.readShortLE();
-        short collateFlags = payload.readShortLE();
-        byte collateCharsetId = payload.readByte();
-        return new TextWithCollationDataType(typeInfo, String.class, null);
-      case BIGBINARYTYPE_ID:
-      case BINARYTYPE_ID:
-        return new BinaryDataType(typeInfo, payload.readUnsignedShortLE());
-      case BIGVARBINTYPE_ID:
-      case VARBINARYTYPE_ID:
-        return new VarBinaryDataType(typeInfo, payload.readUnsignedShortLE());
-      default:
-        throw new UnsupportedOperationException("Unsupported type with typeinfo: " + typeInfo);
-    }
   }
 
   void handleEnvChangeToken(ByteBuf messageBody) {

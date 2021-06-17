@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -15,18 +15,18 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.DefaultByteBufHolder;
 
 public final class TdsMessage extends DefaultByteBufHolder {
-  private final MessageType type;
-  private final MessageStatus status;
+  private final int type;
+  private final int status;
   private final int processId;
 
-  private TdsMessage(MessageType type, MessageStatus status, int processId, ByteBuf data) {
+  private TdsMessage(int type, int status, int processId, ByteBuf data) {
     super(data);
     this.type = type;
     this.status = status;
     this.processId = processId;
   }
 
-  public static TdsMessage newTdsMessage(MessageType type, MessageStatus status, int processId, ByteBuf data) {
+  public static TdsMessage newTdsMessage(int type, int status, int processId, ByteBuf data) {
     return new TdsMessage(type, status, processId, data);
   }
 
@@ -35,11 +35,11 @@ public final class TdsMessage extends DefaultByteBufHolder {
     return newTdsMessage(tdsPacket.type(), tdsPacket.status(), tdsPacket.processId(), packetData);
   }
 
-  public MessageType type() {
+  public int type() {
     return type;
   }
 
-  public MessageStatus status() {
+  public int status() {
     return status;
   }
 

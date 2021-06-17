@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -55,10 +55,8 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   private Row decodeMssqlRow(int len, ByteBuf in) {
     Row row = new MSSQLRowImpl(desc);
     for (int c = 0; c < len; c++) {
-      Object decoded = null;
       ColumnData columnData = desc.columnDatas[c];
-      decoded = MSSQLDataTypeCodec.decode(columnData.dataType(), in);
-      row.addValue(decoded);
+      row.addValue(columnData.dataType().decodeValue(in, columnData.metadata()));
     }
     return row;
   }
@@ -78,7 +76,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
       if ((nullByte & mask) == 0) {
         // not null
         ColumnData columnData = desc.columnDatas[c];
-        decoded = MSSQLDataTypeCodec.decode(columnData.dataType(), in);
+        decoded = columnData.dataType().decodeValue(in, columnData.metadata());
       }
       row.addValue(decoded);
     }

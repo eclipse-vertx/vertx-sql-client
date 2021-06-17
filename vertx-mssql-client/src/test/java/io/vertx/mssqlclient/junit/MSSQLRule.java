@@ -13,12 +13,15 @@ package io.vertx.mssqlclient.junit;
 
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 import java.time.ZoneId;
 
+import static org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT;
+
 public class MSSQLRule extends ExternalResource {
-  private MSSQLServerContainer<?> server;
+  private ServerContainer<?> server;
   private MSSQLConnectOptions options;
 
   public static final MSSQLRule SHARED_INSTANCE = new MSSQLRule();
@@ -50,16 +53,20 @@ public class MSSQLRule extends ExternalResource {
     if (containerVersion == null || containerVersion.isEmpty()) {
       containerVersion = "2017-latest";
     }
-    server = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
+    server = new ServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
       .acceptLicense()
       .withEnv("TZ", ZoneId.systemDefault().toString())
-      .withInitScript("init.sql")
-      .withExposedPorts(MSSQLServerContainer.MS_SQL_SERVER_PORT);
+      .withInitScript("init.sql");
+    if (System.getProperties().containsKey("containerFixedPort")) {
+      server.withFixedExposedPort(MS_SQL_SERVER_PORT, MS_SQL_SERVER_PORT);
+    } else {
+      server.withExposedPorts(MS_SQL_SERVER_PORT);
+    }
     server.start();
 
     return new MSSQLConnectOptions()
       .setHost(server.getContainerIpAddress())
-      .setPort(server.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT))
+      .setPort(server.getMappedPort(MS_SQL_SERVER_PORT))
       .setUser(server.getUsername())
       .setPassword(server.getPassword());
   }
@@ -76,5 +83,17 @@ public class MSSQLRule extends ExternalResource {
 
   public MSSQLConnectOptions options() {
     return new MSSQLConnectOptions(options);
+  }
+
+  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends MSSQLServerContainer<SELF> {
+
+    public ServerContainer(String dockerImageName) {
+      super(dockerImageName);
+    }
+
+    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+      super.addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
+      return self();
+    }
   }
 }
