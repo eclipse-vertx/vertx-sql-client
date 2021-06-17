@@ -20,8 +20,8 @@ import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mssqlclient.impl.codec.TokenType.*;
-import static io.vertx.mssqlclient.impl.protocol.MessageStatus.END_OF_MESSAGE;
-import static io.vertx.mssqlclient.impl.protocol.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
 
 class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
   SQLBatchCommandCodec(SimpleQueryCommand cmd) {

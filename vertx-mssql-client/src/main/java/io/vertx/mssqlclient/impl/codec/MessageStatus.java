@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.mssqlclient.impl.protocol;
+package io.vertx.mssqlclient.impl.codec;
 
 @SuppressWarnings("unused")
 public class MessageStatus {
