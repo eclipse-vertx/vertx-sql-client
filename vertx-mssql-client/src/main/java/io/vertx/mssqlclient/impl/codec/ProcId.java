@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -9,12 +9,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.mssqlclient.impl.protocol.client.rpc;
+package io.vertx.mssqlclient.impl.codec;
 
 /**
  * The number identifying the special stored procedure to be executed.
  */
-public final class ProcId {
+@SuppressWarnings("unused")
+public class ProcId {
+
   public static final int Sp_Cursor = 1;
   public static final int Sp_CursorOpen = 2;
   public static final int Sp_cursorPrepare = 3;
@@ -30,4 +32,8 @@ public final class ProcId {
   public static final int Sp_PrepExec = 13;
   public static final int Sp_PrepExecRpc = 14;
   public static final int Sp_Unprepare = 15;
+
+  private ProcId() {
+    // Constants class
+  }
 }

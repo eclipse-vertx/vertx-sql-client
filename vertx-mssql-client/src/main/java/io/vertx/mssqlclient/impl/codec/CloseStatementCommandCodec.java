@@ -14,7 +14,6 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
-import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
