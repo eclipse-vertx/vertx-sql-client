@@ -13,7 +13,6 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
 import io.vertx.mssqlclient.impl.protocol.MessageType;
 import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.rpc.ProcId;
@@ -22,6 +21,8 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 import static io.vertx.mssqlclient.impl.codec.TokenType.*;
+import static io.vertx.mssqlclient.impl.protocol.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.protocol.MessageStatus.NORMAL;
 
 class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementCommand> {
 
@@ -69,7 +70,7 @@ class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementC
 
     // packet header
     packet.writeByte(MessageType.RPC.value());
-    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
+    packet.writeByte(NORMAL | END_OF_MESSAGE);
     int packetLenIdx = packet.writerIndex();
     packet.writeShort(0); // set length later
     packet.writeShort(0x00);

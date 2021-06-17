@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -19,12 +19,12 @@ public final class TdsPacket extends DefaultByteBufHolder {
   public static final int MAX_PACKET_DATA_SIZE = 0xFFFF - 8;
 
   private final MessageType type;
-  private final MessageStatus status;
+  private final int status;
   private final int length;
   private final int processId;
   private final short packetId;
 
-  private TdsPacket(MessageType type, MessageStatus status, int length, int processId, short packetId, ByteBuf data) {
+  private TdsPacket(MessageType type, int status, int length, int processId, short packetId, ByteBuf data) {
     super(data);
     this.type = type;
     this.status = status;
@@ -33,7 +33,7 @@ public final class TdsPacket extends DefaultByteBufHolder {
     this.packetId = packetId;
   }
 
-  public static TdsPacket newTdsPacket(MessageType type, MessageStatus status, int length, int processId, short packetId, ByteBuf data) {
+  public static TdsPacket newTdsPacket(MessageType type, int status, int length, int processId, short packetId, ByteBuf data) {
     return new TdsPacket(type, status, length, processId, packetId, data);
   }
 
@@ -41,7 +41,7 @@ public final class TdsPacket extends DefaultByteBufHolder {
     return type;
   }
 
-  public MessageStatus status() {
+  public int status() {
     return status;
   }
 
