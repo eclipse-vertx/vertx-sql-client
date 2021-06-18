@@ -26,9 +26,11 @@ import org.testcontainers.utility.MountableFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.function.Consumer;
 
 import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT;
 
@@ -120,7 +122,7 @@ public class ContainerPgRule extends ExternalResource {
     String version;
     if (specifiedVersion == null || specifiedVersion.isEmpty()) {
       // if version is not specified then V10.10 will be used by default
-      version = "10.10";
+      version = "13.3";
     } else {
       version = specifiedVersion;
     }

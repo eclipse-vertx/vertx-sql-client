@@ -21,11 +21,11 @@ import java.util.function.Function;
 @RunWith(VertxUnitRunner.class)
 public abstract class PgTemplateTestBase {
 
-  private static PostgreSQLContainer server;
+  private static PostgreSQLContainer<?> server;
 
   @BeforeClass
   public static void startDatabase() {
-    server = new PostgreSQLContainer("postgres:" + "10.10")
+    server = new PostgreSQLContainer<>("postgres:" + "13.3")
       .withDatabaseName("postgres")
       .withUsername("postgres")
       .withPassword("postgres");
