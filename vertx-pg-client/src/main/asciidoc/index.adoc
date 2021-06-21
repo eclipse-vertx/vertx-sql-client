@@ -298,6 +298,7 @@ Currently the client supports the following PostgreSQL types
 * CIRCLE (`io.vertx.pgclient.data.Circle`)
 * TSVECTOR (`java.lang.String`)
 * TSQUERY (`java.lang.String`)
+* INET (`io.vertx.pgclient.data.Inet`)
 
 Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
 
