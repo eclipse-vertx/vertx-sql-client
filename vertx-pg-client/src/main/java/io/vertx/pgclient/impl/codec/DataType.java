@@ -95,6 +95,7 @@ public enum DataType {
   BYTEA_ARRAY(1001, true, Buffer[].class, JDBCType.BINARY, Tuple::getArrayOfBuffers),
   MACADDR(829, true, Object.class, JDBCType.OTHER),
   INET(869, true, Inet.class, JDBCType.OTHER),
+  INET_ARRAY(1041, true, Inet[].class, JDBCType.OTHER),
   CIDR(650, true, Object.class, JDBCType.OTHER),
   MACADDR8(774, true, Object[].class, JDBCType.OTHER),
   UUID(2950, true, UUID.class, JDBCType.OTHER, Tuple::getUUID),

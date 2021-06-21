@@ -89,6 +89,7 @@ public class DataTypeCodec {
   private static final LocalDate LOCAL_DATE_EPOCH = LocalDate.of(2000, 1, 1);
   private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
   private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
+  private static final Inet[] empty_inet_array = new Inet[0];
 
   // Sentinel used when an object is refused by the data type
   public static final Object REFUSED_SENTINEL = new Object();
@@ -117,6 +118,7 @@ public class DataTypeCodec {
   private static final IntFunction<Polygon[]> POLYGON_ARRAY_FACTORY = size -> size == 0 ? empty_polygon_array : new Polygon[size];
   private static final IntFunction<Circle[]> CIRCLE_ARRAY_FACTORY = size -> size == 0 ? empty_circle_array : new Circle[size];
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
+  private static final IntFunction<Inet[]> INET_ARRAY_FACTORY = size -> size == 0 ? empty_inet_array : new Inet[size];
 
   private static final java.time.format.DateTimeFormatter TIMETZ_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
@@ -347,6 +349,9 @@ public class DataTypeCodec {
       case INET:
         binaryEncodeInet((Inet) value, buff);
         break;
+      case INET_ARRAY:
+        binaryEncodeArray((Inet[]) value, DataType.INET, buff);
+        break;
       default:
         logger.debug("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -478,6 +483,8 @@ public class DataTypeCodec {
         return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.TS_VECTOR, index, len, buff);
       case INET:
         return binaryDecodeInet(index, len, buff);
+      case INET_ARRAY:
+        return binaryDecodeArray(INET_ARRAY_FACTORY, DataType.INET, index, len, buff);
       default:
         logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
@@ -612,6 +619,8 @@ public class DataTypeCodec {
         return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TS_VECTOR, index, len, buff);
       case INET:
         return textDecodeInet(index, len, buff);
+      case INET_ARRAY:
+        return textDecodeArray(INET_ARRAY_FACTORY, DataType.INET, index, len, buff);
       default:
         return defaultDecodeText(index, len, buff);
     }
