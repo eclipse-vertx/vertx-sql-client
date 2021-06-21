@@ -24,6 +24,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.Box;
 import io.vertx.pgclient.data.Circle;
+import io.vertx.pgclient.data.Inet;
 import io.vertx.pgclient.data.Line;
 import io.vertx.pgclient.data.LineSegment;
 import io.vertx.sqlclient.Tuple;
@@ -93,7 +94,7 @@ public enum DataType {
   BYTEA(17, true, Buffer.class, JDBCType.BINARY, Tuple::getBuffer),
   BYTEA_ARRAY(1001, true, Buffer[].class, JDBCType.BINARY, Tuple::getArrayOfBuffers),
   MACADDR(829, true, Object.class, JDBCType.OTHER),
-  INET(869, true, Object[].class, JDBCType.OTHER),
+  INET(869, true, Inet.class, JDBCType.OTHER),
   CIDR(650, true, Object.class, JDBCType.OTHER),
   MACADDR8(774, true, Object[].class, JDBCType.OTHER),
   UUID(2950, true, UUID.class, JDBCType.OTHER, Tuple::getUUID),
