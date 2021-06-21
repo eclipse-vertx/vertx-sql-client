@@ -12,29 +12,21 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.sqlclient.data.NullValue;
 import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.*;
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
-import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 
 abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
 
-  protected int rowCount;
-
-  ExtendedQueryCommandBaseCodec(ExtendedQueryCommand<T> cmd) {
-    super(cmd);
+  ExtendedQueryCommandBaseCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
+    super(tdsMessageCodec, cmd);
   }
 
   @Override
-  void encode(TdsMessageEncoder encoder) {
-    super.encode(encoder);
+  void encode() {
     MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
     if (ps.handle > 0) {
       sendExecRequest();
@@ -44,158 +36,76 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
   }
 
   @Override
-  void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
-    ByteBuf messageBody = message.content();
-    while (messageBody.isReadable()) {
-      int tokenType = messageBody.readUnsignedByte();
-      MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
-      switch (tokenType) {
-        case COLMETADATA:
-          MSSQLRowDesc rowDesc = decodeColmetadataToken(messageBody);
-          rowResultDecoder = new RowResultDecoder<>(cmd.collector(), rowDesc);
-          break;
-        case ROW:
-          handleRow(messageBody);
-          break;
-        case NBCROW:
-          handleNbcRow(messageBody);
-          break;
-        case DONE:
-          messageBody.skipBytes(12); // this should only be after ERROR?
-          break;
-        case INFO:
-        case ORDER:
-          int tokenLength = messageBody.readUnsignedShortLE();
-          messageBody.skipBytes(tokenLength);
-          break;
-        case ERROR:
-          handleErrorToken(messageBody);
-          break;
-        case DONEPROC:
-          messageBody.skipBytes(12);
-          handleResultSetDone(rowCount);
-          break;
-        case DONEINPROC:
-          short status = messageBody.readShortLE();
-          short curCmd = messageBody.readShortLE();
-          long doneRowCount = messageBody.readLongLE();
-          if ((status | DoneToken.STATUS_DONE_FINAL) != 0) {
-            rowCount += doneRowCount;
-          } else {
-            handleResultSetDone((int) doneRowCount);
-          }
-          break;
-        case RETURNSTATUS:
-          messageBody.skipBytes(4);
-          break;
-        case RETURNVALUE:
-          if (ps.handle == 0) {
-            messageBody.skipBytes(2); // skip ordinal position
-            messageBody.skipBytes(2 * messageBody.readUnsignedByte()); // skip param name
-            messageBody.skipBytes(1); // skip status
-            messageBody.skipBytes(4); // skip user type
-            messageBody.skipBytes(2); // skip flags
-            messageBody.skipBytes(1); // skip type id
-            messageBody.skipBytes(2); // max length and length
-            ps.handle = messageBody.readIntLE();
-          }
-          messageBody.skipBytes(messageBody.readableBytes()); // FIXME
-          handleResultSetDone(rowCount);
-          break;
-        default:
-          throw new UnsupportedOperationException("Unsupported token: " + tokenType);
-      }
+  protected void handleDone(short tokenType) {
+    if (tokenType == TokenType.DONEPROC) {
+      handleResultSetDone();
     }
-    handleMessageDecoded();
   }
 
   @Override
-  protected void handleResultSetDone(int affectedRows) {
-    super.handleResultSetDone(rowCount);
+  protected void handleResultSetDone() {
+    super.handleResultSetDone();
     rowCount = 0;
   }
 
-  protected abstract void handleMessageDecoded();
+  @Override
+  protected void handleReturnValue(ByteBuf payload) {
+    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
+    if (ps.handle == 0) {
+      payload.skipBytes(2); // skip ordinal position
+      payload.skipBytes(2 * payload.readUnsignedByte()); // skip param name
+      payload.skipBytes(1); // skip status
+      payload.skipBytes(4); // skip user type
+      payload.skipBytes(2); // skip flags
+      payload.skipBytes(1); // skip type id
+      payload.skipBytes(2); // max length and length
+      ps.handle = payload.readIntLE();
+    }
+  }
 
   private void sendPrepexecRequest() {
-    ChannelHandlerContext chctx = encoder.chctx;
+    ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
-    ByteBuf packet = chctx.alloc().ioBuffer();
-
-    // packet header
-    packet.writeByte(RPC);
-    packet.writeByte(NORMAL | END_OF_MESSAGE);
-    int packetLenIdx = packet.writerIndex();
-    packet.writeShort(0); // set length later
-    packet.writeShort(0x00);
-    packet.writeByte(0x00); // FIXME packet ID
-    packet.writeByte(0x00);
-
-    int start = packet.writerIndex();
-    packet.writeIntLE(0x00); // TotalLength for ALL_HEADERS
-    encodeTransactionDescriptor(packet);
-    // set TotalLength for ALL_HEADERS
-    packet.setIntLE(start, packet.writerIndex() - start);
+    tdsMessageCodec.encoder().encodeHeaders(content);
 
     // RPCReqBatch
-    packet.writeShortLE(0xFFFF);
-    packet.writeShortLE(ProcId.Sp_PrepExec);
+    content.writeShortLE(0xFFFF);
+    content.writeShortLE(ProcId.Sp_PrepExec);
 
     // Option flags
-    packet.writeShortLE(0x0000);
+    content.writeShortLE(0x0000);
 
     // Parameter
 
     // OUT Parameter
     MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.ps;
-    INTN.encodeParam(packet, null, true, ps.handle);
+    INTN.encodeParam(content, null, true, ps.handle);
 
     TupleInternal params = prepexecRequestParams();
 
     // Param definitions
     String paramDefinitions = parseParamDefinitions(params);
-    NVARCHAR.encodeParam(packet, null, false, paramDefinitions);
+    NVARCHAR.encodeParam(content, null, false, paramDefinitions);
 
     // SQL text
-    NVARCHAR.encodeParam(packet, null, false, cmd.sql());
+    NVARCHAR.encodeParam(content, null, false, cmd.sql());
 
     // Param values
-    encodeParams(packet, params);
+    encodeParams(content, params);
 
-    int packetLen = packet.writerIndex() - packetLenIdx + 2;
-    packet.setShort(packetLenIdx, packetLen);
-
-    chctx.writeAndFlush(packet);
+    tdsMessageCodec.encoder().writePacket(RPC, content);
   }
 
   protected abstract TupleInternal prepexecRequestParams();
 
   void sendExecRequest() {
-    ChannelHandlerContext chctx = encoder.chctx;
+    ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
-    ByteBuf packet = chctx.alloc().ioBuffer();
+    tdsMessageCodec.encoder().encodeHeaders(content);
 
-    // packet header
-    packet.writeByte(RPC);
-    packet.writeByte(NORMAL | END_OF_MESSAGE);
-    int packetLenIdx = packet.writerIndex();
-    packet.writeShort(0); // set length later
-    packet.writeShort(0x00);
-    packet.writeByte(0x00); // FIXME packet ID
-    packet.writeByte(0x00);
+    writeRpcRequestBatch(content);
 
-    int start = packet.writerIndex();
-    packet.writeIntLE(0x00); // TotalLength for ALL_HEADERS
-    encodeTransactionDescriptor(packet);
-    // set TotalLength for ALL_HEADERS
-    packet.setIntLE(start, packet.writerIndex() - start);
-
-    writeRpcRequestBatch(packet);
-
-    int packetLen = packet.writerIndex() - packetLenIdx + 2;
-    packet.setShort(packetLenIdx, packetLen);
-
-    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
+    tdsMessageCodec.encoder().writePacket(RPC, content);
   }
 
   protected void writeRpcRequestBatch(ByteBuf packet) {

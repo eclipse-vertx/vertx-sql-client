@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,11 +14,10 @@ package io.vertx.mssqlclient.impl;
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.mssqlclient.impl.codec.MSSQLCodec;
+import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
+import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
@@ -60,7 +59,8 @@ class MSSQLSocketConnection extends SocketConnectionBase {
   @Override
   public void init() {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    MSSQLCodec.initPipeLine(pipeline);
+    pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec());
+    pipeline.addBefore("messageCodec", "packetDecoder", new TdsPacketDecoder());
     super.init();
   }
 
