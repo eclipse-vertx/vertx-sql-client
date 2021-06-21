@@ -78,4 +78,42 @@ public class InetCodecTest extends DataTypeTestBase {
         }));
     }));
   }
+
+  @Test
+  public void testBinaryDecodeINETArray(TestContext ctx) throws Exception {
+    InetAddress addr1 = Inet4Address.getByName("0.1.2.3");
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT ARRAY['0.1.2.3'::INET,'0.1.2.3/4'::INET]")
+        .execute(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        Inet[] array = (Inet[]) row.getValue(0);
+          Inet v1 = array[0];
+          Inet v2 = array[1];
+          ctx.assertEquals(addr1, v1.getAddress());
+          ctx.assertNull(v1.getNetmask());
+          ctx.assertEquals(addr1, v2.getAddress());
+          ctx.assertEquals(4, v2.getNetmask());
+      }));
+    }));
+  }
+
+  @Test
+  public void testBinaryEncodeINETArray(TestContext ctx) throws Exception {
+    InetAddress addr1 = Inet4Address.getByName("0.1.2.3");
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT ($1::INET[])::VARCHAR[]").execute(Tuple.of(
+        new Inet[]{new Inet().setAddress(addr1), new Inet().setAddress(addr1).setNetmask(4)}
+        ),
+        ctx.asyncAssertSuccess(rows -> {
+          ctx.assertEquals(1, rows.size());
+          Row row = rows.iterator().next();
+          String[] array = row.getArrayOfStrings(0);
+          String v1 = array[0];
+          String v2 = array[1];
+          ctx.assertEquals("0.1.2.3/32", v1);
+          ctx.assertEquals("0.1.2.3/4", v2);
+        }));
+    }));
+  }
 }
