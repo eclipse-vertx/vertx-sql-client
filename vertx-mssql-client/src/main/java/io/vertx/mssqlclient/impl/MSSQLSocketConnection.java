@@ -34,7 +34,7 @@ class MSSQLSocketConnection extends SocketConnectionBase {
 
   private final int packetSize;
 
-  public MSSQLDatabaseMetadata dbMetaData;
+  public MSSQLDatabaseMetadata databaseMetadata;
 
   MSSQLSocketConnection(NetSocketInternal socket,
                         int packetSize,
@@ -47,14 +47,11 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     this.packetSize = packetSize;
   }
 
-  // TODO RETURN FUTURE ???
-  // command response should show what capabilities server provides
   void sendPreLoginMessage(boolean ssl, Handler<AsyncResult<Void>> completionHandler) {
     PreLoginCommand cmd = new PreLoginCommand(ssl);
-    schedule(context, cmd).onComplete(completionHandler);
+    schedule(context, cmd).onSuccess(this::setDatabaseMetadata).<Void>mapEmpty().onComplete(completionHandler);
   }
 
-  // TODO RETURN FUTURE ???
   void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<AsyncResult<Connection>> completionHandler) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
     schedule(context, cmd).onComplete(completionHandler);
@@ -87,6 +84,10 @@ class MSSQLSocketConnection extends SocketConnectionBase {
 
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
-    return dbMetaData;
+    return databaseMetadata;
+  }
+
+  private void setDatabaseMetadata(MSSQLDatabaseMetadata metadata) {
+    this.databaseMetadata = metadata;
   }
 }

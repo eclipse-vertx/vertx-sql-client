@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mssqlclient.impl.MSSQLDatabaseMetadata;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.EncryptionOptionToken;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.OptionToken;
@@ -22,7 +23,7 @@ import java.util.List;
 
 import static io.vertx.mssqlclient.impl.codec.MessageType.PRE_LOGIN;
 
-class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
+class PreLoginCommandCodec extends MSSQLCommandCodec<MSSQLDatabaseMetadata, PreLoginCommand> {
 
   PreLoginCommandCodec(TdsMessageCodec tdsMessageCodec, PreLoginCommand cmd) {
     super(tdsMessageCodec, cmd);
@@ -108,6 +109,22 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
 
   @Override
   void decode(ByteBuf payload) {
-    completionHandler.handle(CommandResponse.success(null));
+    MSSQLDatabaseMetadata metadata = null;
+    while (true) {
+      short optionType = payload.readUnsignedByte();
+      int offset = payload.readUnsignedShort();
+      payload.skipBytes(2); // length
+      if (optionType == VersionOptionToken.TYPE) {
+        payload.readerIndex(offset);
+        int major = payload.readUnsignedByte();
+        int minor = payload.readUnsignedByte();
+        int build = payload.readUnsignedShort();
+        metadata = new MSSQLDatabaseMetadata(String.format("%d.%d.%d", major, minor, build), major, minor);
+        break;
+      } else if (optionType == 0xFF) {
+        break;
+      }
+    }
+    completionHandler.handle(CommandResponse.success(metadata));
   }
 }
