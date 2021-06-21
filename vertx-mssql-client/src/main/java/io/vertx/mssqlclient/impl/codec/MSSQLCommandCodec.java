@@ -156,8 +156,11 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
   private void handleEnvChange(ByteBuf payload) {
     int totalLength = payload.readUnsignedShortLE();
     int startPos = payload.readerIndex();
-    int type = payload.readUnsignedByte();
+    short type = payload.readUnsignedByte();
     switch (type) {
+      case PACKETSIZE:
+        tdsMessageCodec.encoder().setPacketSize(Integer.parseInt(readUnsignedByteLengthString(payload)));
+        break;
       case XACT_BEGIN:
       case DTC_ENLIST:
         if (payload.readUnsignedByte() != 8) {

@@ -30,9 +30,9 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   private ByteBufAllocator alloc;
   private long transactionDescriptor;
 
-  public TdsMessageCodec() {
+  public TdsMessageCodec(int packetSize) {
     TdsMessageDecoder decoder = new TdsMessageDecoder(this);
-    encoder = new TdsMessageEncoder(this);
+    encoder = new TdsMessageEncoder(this, packetSize);
     init(decoder, encoder);
   }
 

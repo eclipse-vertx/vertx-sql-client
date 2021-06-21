@@ -91,7 +91,7 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
       }
     }
 
-    tdsMessageCodec.encoder().writePacket(PRE_LOGIN, content);
+    tdsMessageCodec.encoder().writeTdsMessage(PRE_LOGIN, content);
   }
 
   private void encodeTokenData(OptionToken optionToken, ByteBuf payload) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,16 +14,7 @@ package io.vertx.mssqlclient;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.JdkSSLEngineOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.KeyCertOptions;
-import io.vertx.core.net.OpenSSLEngineOptions;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.PfxOptions;
-import io.vertx.core.net.ProxyOptions;
-import io.vertx.core.net.SSLEngineOptions;
-import io.vertx.core.net.TrustOptions;
+import io.vertx.core.net.*;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -70,6 +61,9 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_APP_NAME = "vertx-mssql-client";
   public static final String DEFAULT_CLIENT_INTERFACE_NAME = "Vert.x";
   public static final Map<String, String> DEFAULT_PROPERTIES;
+  public static final int MIN_PACKET_SIZE = 512;
+  public static final int MAX_PACKET_SIZE = 32767;
+  public static final int DEFAULT_PACKET_SIZE = 4096;
 
   static {
     Map<String, String> defaultProperties = new HashMap<>();
@@ -77,6 +71,8 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     defaultProperties.put("clientInterfaceName", DEFAULT_CLIENT_INTERFACE_NAME);
     DEFAULT_PROPERTIES = defaultProperties;
   }
+
+  private int packetSize;
 
   public MSSQLConnectOptions() {
     super();
@@ -89,10 +85,12 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
 
   public MSSQLConnectOptions(SqlConnectOptions other) {
     super(other);
+    packetSize = DEFAULT_PACKET_SIZE;
   }
 
   public MSSQLConnectOptions(MSSQLConnectOptions other) {
     super(other);
+    packetSize = other.packetSize;
   }
 
   @Override
@@ -128,6 +126,30 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   @Override
   public MSSQLConnectOptions addProperty(String key, String value) {
     return (MSSQLConnectOptions) super.addProperty(key, value);
+  }
+
+  /**
+   * Get the desired size for TDS packets.
+   *
+   * @return the desired packet size
+   */
+  public int getPacketSize() {
+    return packetSize;
+  }
+
+  /**
+   * Set the desired size for TDS packets.
+   * <p>
+   * The client will use the value as a parameter in the LOGIN7 packet.
+   * The server may or may not accept it.
+   *
+   * @param packetSize the desired packet size
+   * @return a reference to this, so the API can be used fluently
+   * @throws IllegalArgumentException if {@code packetSize} is smaller than {@link #MIN_PACKET_SIZE} or bigger than {@link #MAX_PACKET_SIZE}
+   */
+  public MSSQLConnectOptions setPacketSize(int packetSize) {
+    this.packetSize = packetSize;
+    return this;
   }
 
   @Override
@@ -355,6 +377,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
+    packetSize = DEFAULT_PACKET_SIZE;
   }
 
   @Override

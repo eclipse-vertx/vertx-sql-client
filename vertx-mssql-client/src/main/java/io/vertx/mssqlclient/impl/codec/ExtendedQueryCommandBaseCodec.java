@@ -93,7 +93,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
     // Param values
     encodeParams(content, params);
 
-    tdsMessageCodec.encoder().writePacket(RPC, content);
+    tdsMessageCodec.encoder().writeTdsMessage(RPC, content);
   }
 
   protected abstract TupleInternal prepexecRequestParams();
@@ -105,7 +105,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
 
     writeRpcRequestBatch(content);
 
-    tdsMessageCodec.encoder().writePacket(RPC, content);
+    tdsMessageCodec.encoder().writeTdsMessage(RPC, content);
   }
 
   protected void writeRpcRequestBatch(ByteBuf packet) {

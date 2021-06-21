@@ -17,8 +17,6 @@ import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.DefaultByteBufHolder;
 
 import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
-import static io.vertx.mssqlclient.impl.codec.TdsPacket.MIN_PACKET_LENGTH;
-import static io.vertx.mssqlclient.impl.codec.TdsPacket.PACKET_HEADER_SIZE;
 
 public class TdsMessage extends DefaultByteBufHolder {
 
@@ -37,10 +35,6 @@ public class TdsMessage extends DefaultByteBufHolder {
       data = alloc.compositeDirectBuffer().addComponent(true, tdsPacket.content());
     }
     return new TdsMessage(tdsPacket.type(), data);
-  }
-
-  public static TdsMessage createForEncoding(ByteBufAllocator alloc, short type) {
-    return new TdsMessage(type, alloc.ioBuffer(MIN_PACKET_LENGTH - PACKET_HEADER_SIZE));
   }
 
   public int type() {

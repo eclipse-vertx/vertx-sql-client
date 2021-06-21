@@ -17,8 +17,6 @@ import io.netty.buffer.DefaultByteBufHolder;
 public class TdsPacket extends DefaultByteBufHolder {
 
   public static final int PACKET_HEADER_SIZE = 8;
-  public static final int MIN_PACKET_LENGTH = 512;
-  public static final int MAX_PACKET_LENGTH = 32767;
 
   private final short type;
   private final short status;

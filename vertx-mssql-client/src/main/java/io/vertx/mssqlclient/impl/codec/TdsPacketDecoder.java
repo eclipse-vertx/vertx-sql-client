@@ -15,13 +15,13 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 
-import static io.vertx.mssqlclient.impl.codec.TdsPacket.MAX_PACKET_LENGTH;
+import static io.vertx.mssqlclient.MSSQLConnectOptions.MAX_PACKET_SIZE;
 import static io.vertx.mssqlclient.impl.codec.TdsPacket.PACKET_HEADER_SIZE;
 
 public class TdsPacketDecoder extends LengthFieldBasedFrameDecoder {
 
   public TdsPacketDecoder() {
-    super(MAX_PACKET_LENGTH, 2, 2, -4, 0);
+    super(MAX_PACKET_SIZE, 2, 2, -4, 0);
   }
 
   @Override

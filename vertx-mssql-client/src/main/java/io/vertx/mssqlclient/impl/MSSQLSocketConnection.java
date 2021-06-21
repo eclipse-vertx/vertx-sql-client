@@ -32,15 +32,19 @@ import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 
 class MSSQLSocketConnection extends SocketConnectionBase {
 
+  private final int packetSize;
+
   public MSSQLDatabaseMetadata dbMetaData;
 
   MSSQLSocketConnection(NetSocketInternal socket,
+                        int packetSize,
                         boolean cachePreparedStatements,
                         int preparedStatementCacheSize,
                         Predicate<String> preparedStatementCacheSqlFilter,
                         int pipeliningLimit,
                         EventLoopContext context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    this.packetSize = packetSize;
   }
 
   // TODO RETURN FUTURE ???
@@ -59,7 +63,7 @@ class MSSQLSocketConnection extends SocketConnectionBase {
   @Override
   public void init() {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec());
+    pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec(packetSize));
     pipeline.addBefore("messageCodec", "packetDecoder", new TdsPacketDecoder());
     super.init();
   }

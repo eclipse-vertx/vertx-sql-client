@@ -13,24 +13,30 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.netty.util.ReferenceCountUtil;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.impl.command.*;
 
+import static io.vertx.mssqlclient.MSSQLConnectOptions.MIN_PACKET_SIZE;
 import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
 import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.TdsPacket.PACKET_HEADER_SIZE;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
   private final TdsMessageCodec tdsMessageCodec;
 
   private ChannelHandlerContext chctx;
   private ByteBufAllocator alloc;
+  private int payloadMaxLength;
 
-  public TdsMessageEncoder(TdsMessageCodec tdsMessageCodec) {
+  public TdsMessageEncoder(TdsMessageCodec tdsMessageCodec, int packetSize) {
     this.tdsMessageCodec = tdsMessageCodec;
+    setPacketSize(packetSize);
   }
 
   @Override
@@ -85,6 +91,15 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
     }
   }
 
+  public int packetSize() {
+    return payloadMaxLength + PACKET_HEADER_SIZE;
+  }
+
+  void setPacketSize(int packetSize) {
+    int packetMaxLength = max(MIN_PACKET_SIZE, packetSize);
+    payloadMaxLength = packetMaxLength - PACKET_HEADER_SIZE;
+  }
+
   void encodeHeaders(ByteBuf content) {
     int startIdx = content.writerIndex();
     content.writeIntLE(0x00); // TotalLength for ALL_HEADERS
@@ -100,19 +115,33 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
     content.writeIntLE(1);
   }
 
-  void writePacket(short messageType, ByteBuf content) {
+  void writeTdsMessage(short messageType, ByteBuf tdsMessageContent) {
+    try {
+      int tdsMessageLength = tdsMessageContent.writerIndex();
+      int numPackets = (tdsMessageLength / payloadMaxLength) + ((tdsMessageLength % payloadMaxLength) == 0 ? 0 : 1);
+
+      for (int i = 0; i < numPackets; i++) {
+        int start = i * payloadMaxLength;
+        int length = min(tdsMessageLength - start, payloadMaxLength);
+        ByteBuf slice = tdsMessageContent.retainedSlice(start, length);
+        short status = NORMAL;
+        if (i == numPackets - 1) {
+          status |= END_OF_MESSAGE;
+        }
+        writeTdsPacket(messageType, status, length, slice);
+      }
+    } finally {
+      ReferenceCountUtil.release(tdsMessageContent);
+    }
+  }
+
+  private void writeTdsPacket(short messageType, short status, int length, ByteBuf payload) {
     ByteBuf header = alloc.ioBuffer(8);
-
     header.writeByte(messageType);
-    header.writeByte(NORMAL | END_OF_MESSAGE);
-    header.writeShort(content.writerIndex() + 8);
-    header.writeShort(0x00);
-    header.writeByte(0x00); // FIXME packet ID
-    header.writeByte(0x00);
-
-    CompositeByteBuf packet = alloc.compositeDirectBuffer(2);
-    packet.addComponents(true, header, content);
-
-    chctx.writeAndFlush(packet, chctx.voidPromise());
+    header.writeByte(status);
+    header.writeShort(PACKET_HEADER_SIZE + length);
+    header.writeZero(4);
+    chctx.write(header, chctx.voidPromise());
+    chctx.writeAndFlush(payload, chctx.voidPromise());
   }
 }

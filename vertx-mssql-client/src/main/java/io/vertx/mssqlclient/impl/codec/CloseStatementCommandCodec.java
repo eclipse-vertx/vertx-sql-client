@@ -50,6 +50,6 @@ class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementC
 
     INTN.encodeParam(content, null, false, ((MSSQLPreparedStatement) cmd.statement()).handle);
 
-    tdsMessageCodec.encoder().writePacket(RPC, content);
+    tdsMessageCodec.encoder().writeTdsMessage(RPC, content);
   }
 }

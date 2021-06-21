@@ -32,7 +32,7 @@ class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryComman
     // SQLText
     content.writeCharSequence(cmd.sql(), StandardCharsets.UTF_16LE);
 
-    tdsMessageCodec.encoder().writePacket(SQL_BATCH, content);
+    tdsMessageCodec.encoder().writeTdsMessage(SQL_BATCH, content);
   }
 
   @Override

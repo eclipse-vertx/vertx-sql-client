@@ -36,7 +36,7 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     int startIdx = content.writerIndex(); // Length
     content.writeInt(0x00); // set length later by calculating
     content.writeInt(LoginPacket.SQL_SERVER_2017_VERSION); // TDSVersion
-    content.writeIntLE(LoginPacket.DEFAULT_PACKET_SIZE); // PacketSize
+    content.writeIntLE(tdsMessageCodec.encoder().packetSize()); // PacketSize
     content.writeIntLE(0x00); // ClientProgVer
     content.writeIntLE(0x00); // ClientPID
     content.writeIntLE(0x00); // ConnectionID
@@ -180,7 +180,7 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     // set length
     content.setIntLE(startIdx, content.writerIndex() - startIdx);
 
-    tdsMessageCodec.encoder().writePacket(TDS7_LOGIN, content);
+    tdsMessageCodec.encoder().writeTdsMessage(TDS7_LOGIN, content);
   }
 
   /*
