@@ -23,11 +23,9 @@ import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> implements MSSQLConnection {
-  private final MSSQLConnectionFactory factory;
 
-  public MSSQLConnectionImpl(MSSQLConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  public MSSQLConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(context, conn, tracer, metrics);
-    this.factory = factory;
   }
 
   @Override
@@ -42,9 +40,9 @@ public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> 
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner(), options);
     ctx.addCloseHook(client);
     Promise<Connection> promise = ctx.promise();
-    ctx.emit(null, v -> client.connect(promise));
+    ctx.emit(null, v -> client.connect(options.getSocketAddress(), options.getUser(), options.getPassword(), options.getDatabase(), promise));
     return promise.future().map(conn -> {
-      MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(client, ctx, conn, tracer, null);
+      MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, conn, tracer, null);
       conn.init(msConn);
       return msConn;
     });

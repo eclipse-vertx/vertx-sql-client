@@ -25,6 +25,7 @@ import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
@@ -51,6 +52,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   private long timerID;
 
   public PoolBase(VertxInternal vertx,
+                  SqlConnectOptions connectOptions,
                   ConnectionFactory factory,
                   QueryTracer tracer,
                   ClientMetrics metrics,
@@ -76,7 +78,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(factory, connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
+    this.pool = new SqlConnectionPool(factory, connectOptions, connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
     this.closeFuture = new CloseFuture();
   }
 
@@ -90,6 +92,10 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
       }
     }
     return (P) this;
+  }
+
+  public ConnectionFactory connectionFactory() {
+    return factory;
   }
 
   private void checkExpired() {

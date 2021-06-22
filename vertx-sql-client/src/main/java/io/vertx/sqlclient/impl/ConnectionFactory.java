@@ -17,10 +17,10 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Closeable;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.net.SocketAddress;
 
 public interface ConnectionFactory extends Closeable {
 
@@ -37,7 +37,7 @@ public interface ConnectionFactory extends Closeable {
    *
    * @return a connection future
    */
-  void connect(Promise<Connection> promise);
+  void connect(SocketAddress server, String user, String password, String database, Promise<Connection> promise);
 
   default void close(Promise<Void> promise) {
     promise.complete();

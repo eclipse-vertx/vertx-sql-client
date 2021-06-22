@@ -47,7 +47,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
       }
       context.addCloseHook(client);
       PromiseInternal<Connection> promise = context.promise();
-      client.connect(promise);
+      client.connect(options.getSocketAddress(), options.getUser(), options.getPassword(), options.getDatabase(), promise);
       return promise.future()
         .map(conn -> {
           QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), options);
@@ -110,7 +110,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      factory.cancelRequest(this.processId(), this.secretKey(), handler);
+      factory.cancelRequest(conn.server(), this.processId(), this.secretKey(), handler);
     } else {
       context.runOnContext(v -> cancelRequest(handler));
     }

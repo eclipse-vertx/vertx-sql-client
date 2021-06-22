@@ -32,6 +32,7 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
@@ -103,6 +104,11 @@ public abstract class SocketConnectionBase implements Connection {
 
   public NetSocketInternal socket() {
     return socket;
+  }
+
+  @Override
+  public SocketAddress server() {
+    return socket.remoteAddress();
   }
 
   public boolean isSsl() {

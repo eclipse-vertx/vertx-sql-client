@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
@@ -29,6 +30,8 @@ public interface Connection extends CommandScheduler  {
   default boolean isIndeterminatePreparedStatementError(Throwable error) {
     return false;
   }
+
+  SocketAddress server();
 
   void init(Holder holder);
 

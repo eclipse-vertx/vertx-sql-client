@@ -14,7 +14,6 @@ package io.vertx.mysqlclient.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
@@ -43,20 +42,16 @@ public class MySQLConnectionImpl extends SqlConnectionImpl<MySQLConnectionImpl> 
     ctx.addCloseHook(client);
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     PromiseInternal<Connection> promise = ctx.promise();
-    client.connect(promise);
+    client.connect(options.getSocketAddress(), options.getUser(), options.getPassword(), options.getDatabase(), promise);
     return promise.future().map(conn -> {
-      MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(client, ctx, conn, tracer, null);
+      MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(ctx, conn, tracer, null);
       conn.init(mySQLConnection);
       return mySQLConnection;
     });
   }
 
-  private final MySQLConnectionFactory factory;
-
-  public MySQLConnectionImpl(MySQLConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  public MySQLConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(context, conn, tracer, metrics);
-
-    this.factory = factory;
   }
 
   @Override

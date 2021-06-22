@@ -14,7 +14,6 @@ package io.vertx.mysqlclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
@@ -39,7 +38,6 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
   private boolean useAffectedRows;
   private SslMode sslMode;
   private Buffer serverRsaPublicKey;
-  private int initialCapabilitiesFlags;
   private MySQLAuthenticationPlugin authenticationPlugin;
 
   public MySQLConnectionFactory(VertxInternal vertx, MySQLConnectOptions options) {
@@ -86,7 +84,6 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;
-    this.initialCapabilitiesFlags = initCapabilitiesFlags();
 
     // check the SSLMode here
     switch (sslMode) {
@@ -110,10 +107,11 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
+  protected void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise) {
+    int initialCapabilitiesFlags = initCapabilitiesFlags(database);
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
     EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
-    Future<NetSocket> fut = netClient.connect(socketAddress);
+    Future<NetSocket> fut = netClient.connect(server);
     fut.onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket so = ar.result();
@@ -126,7 +124,7 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
     });
   }
 
-  private int initCapabilitiesFlags() {
+  private int initCapabilitiesFlags(String database) {
     int capabilitiesFlags = CLIENT_SUPPORTED_CAPABILITIES_FLAGS;
     if (database != null && !database.isEmpty()) {
       capabilitiesFlags |= CLIENT_CONNECT_WITH_DB;

@@ -26,6 +26,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.TrustOptions;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.pgclient.PgConnectOptions;
@@ -75,9 +76,9 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
+  protected void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise) {
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    doConnect(ConnectionFactory.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
+    doConnect(server, ConnectionFactory.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
@@ -85,8 +86,8 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
     }).onComplete(promise);
   }
 
-  public void cancelRequest(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
-    doConnect(vertx.createEventLoopContext()).onComplete(ar -> {
+  public void cancelRequest(SocketAddress server, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
+    doConnect(server, vertx.createEventLoopContext()).onComplete(ar -> {
       if (ar.succeeded()) {
         PgSocketConnection conn = (PgSocketConnection) ar.result();
         conn.sendCancelRequestMessage(processId, secretKey, handler);
@@ -96,22 +97,22 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
     });
   }
 
-  private Future<Connection> doConnect(EventLoopContext context) {
+  private Future<Connection> doConnect(SocketAddress server, EventLoopContext context) {
     Future<Connection> connFuture;
     switch (sslMode) {
       case DISABLE:
-        connFuture = doConnect(context,false);
+        connFuture = doConnect(server, context,false);
         break;
       case ALLOW:
-        connFuture = doConnect(context,false).recover(err -> doConnect(context,true));
+        connFuture = doConnect(server, context,false).recover(err -> doConnect(server, context,true));
         break;
       case PREFER:
-        connFuture = doConnect(context,true).recover(err -> doConnect(context,false));
+        connFuture = doConnect(server, context,true).recover(err -> doConnect(server, context,false));
         break;
       case REQUIRE:
       case VERIFY_CA:
       case VERIFY_FULL:
-        connFuture = doConnect(context, true);
+        connFuture = doConnect(server, context, true);
         break;
       default:
         return context.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
@@ -119,16 +120,16 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
     return connFuture;
   }
 
-  private Future<Connection> doConnect(EventLoopContext context, boolean ssl) {
+  private Future<Connection> doConnect(SocketAddress server, EventLoopContext context, boolean ssl) {
     Future<NetSocket> soFut;
     try {
-      soFut = netClient.connect(socketAddress, (String) null);
+      soFut = netClient.connect(server, (String) null);
     } catch (Exception e) {
       // Client is closed
       return context.failedFuture(e);
     }
     Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so));
-    if (ssl && !socketAddress.isDomainSocket()) {
+    if (ssl && !server.isDomainSocket()) {
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
         PgSocketConnection socket = (PgSocketConnection) conn;

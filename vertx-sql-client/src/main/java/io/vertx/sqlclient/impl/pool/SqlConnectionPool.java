@@ -21,6 +21,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.net.impl.pool.ConnectResult;
 import io.vertx.core.net.impl.pool.Lease;
@@ -28,6 +29,7 @@ import io.vertx.core.net.impl.pool.ConnectionPool;
 import io.vertx.core.net.impl.pool.PoolConnection;
 import io.vertx.core.net.impl.pool.PoolConnector;
 import io.vertx.core.net.impl.pool.PoolWaiter;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -37,7 +39,6 @@ import io.vertx.core.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * Todo :
@@ -49,6 +50,7 @@ import java.util.function.Function;
 public class SqlConnectionPool {
 
   private final ConnectionFactory factory;
+  private final SqlConnectOptions options;
   private final VertxInternal vertx;
   private final ConnectionPool<PooledConnection> pool;
   private final Handler<Connection> hook;
@@ -56,7 +58,7 @@ public class SqlConnectionPool {
   private final long idleTimeout;
   private final int maxSize;
 
-  public SqlConnectionPool(ConnectionFactory factory, Handler<Connection> hook, VertxInternal vertx, long idleTimeout, int maxSize, int pipeliningLimit, int maxWaitQueueSize) {
+  public SqlConnectionPool(ConnectionFactory factory, SqlConnectOptions options, Handler<Connection> hook, VertxInternal vertx, long idleTimeout, int maxSize, int pipeliningLimit, int maxWaitQueueSize) {
     Objects.requireNonNull(factory, "No null connector");
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
@@ -64,6 +66,7 @@ public class SqlConnectionPool {
     if (pipeliningLimit < 1) {
       throw new IllegalArgumentException("Pipelining limit must be > 0");
     }
+    this.options = options;
     this.pool = ConnectionPool.pool(connector, new int[] { maxSize }, maxWaitQueueSize);
     this.vertx = vertx;
     this.pipeliningLimit = pipeliningLimit;
@@ -96,7 +99,7 @@ public class SqlConnectionPool {
     @Override
     public void connect(EventLoopContext context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<PooledConnection>>> handler) {
       PromiseInternal<Connection> promise = context.promise();
-      factory.connect(promise);
+      factory.connect(options.getSocketAddress(), options.getUser(), options.getPassword(), options.getDatabase(), promise);
       Future<Connection> future = promise.future();
       future
         .map(connection -> {
@@ -229,6 +232,11 @@ public class SqlConnectionPool {
     PooledConnection(Connection conn, PoolConnector.Listener listener) {
       this.conn = conn;
       this.listener = listener;
+    }
+
+    @Override
+    public SocketAddress server() {
+      return conn.server();
     }
 
     @Override

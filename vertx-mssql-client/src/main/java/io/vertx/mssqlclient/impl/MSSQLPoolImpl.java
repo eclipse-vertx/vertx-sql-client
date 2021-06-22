@@ -44,7 +44,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
     QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), connectOptions);
     VertxMetrics vertxMetrics = vx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    MSSQLPoolImpl pool = new MSSQLPoolImpl(vx, new MSSQLConnectionFactory(vx, connectOptions), tracer, metrics, config.options(), config.connectHandler());
+    MSSQLPoolImpl pool = new MSSQLPoolImpl(vx, connectOptions, tracer, metrics, config.options(), config.connectHandler());
     pool.init();
     CloseFuture closeFuture = pool.closeFuture();
     if (vertx == null) {
@@ -60,11 +60,8 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
     return pool;
   }
 
-  private final MSSQLConnectionFactory connectionFactory;
-
-  private MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
-    super(vertx, factory, tracer, metrics, 1, poolOptions, connectHandler);
-    this.connectionFactory = factory;
+  private MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectOptions connectOptions, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
+    super(vertx, connectOptions, new MSSQLConnectionFactory(vertx, connectOptions), tracer, metrics, 1, poolOptions, connectHandler);
   }
 
   @Override
@@ -75,6 +72,6 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection connection) {
-    return new MSSQLConnectionImpl(connectionFactory, context, connection, tracer, metrics);
+    return new MSSQLConnectionImpl(context, connection, tracer, metrics);
   }
 }

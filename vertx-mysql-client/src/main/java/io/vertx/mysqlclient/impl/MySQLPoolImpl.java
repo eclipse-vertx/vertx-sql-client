@@ -49,7 +49,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
     QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), connectOptions);
     VertxMetrics vertxMetrics = vx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    MySQLPoolImpl pool = new MySQLPoolImpl(vx, new MySQLConnectionFactory(vx, connectOptions), tracer, metrics, config.options(), config.connectHandler());
+    MySQLPoolImpl pool = new MySQLPoolImpl(vx, connectOptions, tracer, metrics, config.options(), config.connectHandler());
     pool.init();
     CloseFuture closeFuture = pool.closeFuture();
     if (vertx == null) {
@@ -65,15 +65,12 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
     return pool;
   }
 
-  private final MySQLConnectionFactory factory;
-
-  private MySQLPoolImpl(VertxInternal vertx, MySQLConnectionFactory factory, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
-    super(vertx, factory, tracer, metrics, 1, poolOptions, connectHandler);
-    this.factory = factory;
+  private MySQLPoolImpl(VertxInternal vertx, MySQLConnectOptions connectOptions, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
+    super(vertx, connectOptions, new MySQLConnectionFactory(vertx, connectOptions), tracer, metrics, 1, poolOptions, connectHandler);
   }
 
   @Override
   protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new MySQLConnectionImpl(factory, context, conn, tracer, metrics);
+    return new MySQLConnectionImpl(context, conn, tracer, metrics);
   }
 }

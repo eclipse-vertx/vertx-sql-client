@@ -26,7 +26,6 @@ import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
@@ -43,16 +42,16 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
     ctx.addCloseHook(client);
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     Promise<Connection> promise = ctx.promise();
-    client.connect(promise);
+    client.connect(options.getSocketAddress(), options.getUser(), options.getPassword(), options.getDatabase(), promise);
     return promise.future()
       .map(conn -> {
-        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(client, ctx, conn, tracer, null);
+        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(ctx, conn, tracer, null);
         conn.init(db2Connection);
         return db2Connection;
       });
   }
 
-  public DB2ConnectionImpl(DB2ConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  public DB2ConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(context, conn, tracer, metrics);
   }
 

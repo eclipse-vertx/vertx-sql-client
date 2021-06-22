@@ -10,12 +10,9 @@
  */
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClient;
@@ -34,10 +31,6 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
 
   protected final VertxInternal vertx;
   protected final NetClient netClient;
-  protected final SocketAddress socketAddress;
-  protected final String username;
-  protected final String password;
-  protected final String database;
   protected final Map<String, String> properties;
 
   // cache
@@ -52,34 +45,30 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   private final int reconnectAttempts;
   private final long reconnectInterval;
 
-  protected SqlConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
+  protected SqlConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions optionsBase) {
     this.vertx = vertx;
-    this.socketAddress = options.getSocketAddress();
-    this.username = options.getUser();
-    this.password = options.getPassword();
-    this.database = options.getDatabase();
-    this.properties = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
+    this.properties = optionsBase.getProperties() == null ? null : Collections.unmodifiableMap(optionsBase.getProperties());
 
-    this.cachePreparedStatements = options.getCachePreparedStatements();
-    this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
-    this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
+    this.cachePreparedStatements = optionsBase.getCachePreparedStatements();
+    this.preparedStatementCacheSize = optionsBase.getPreparedStatementCacheMaxSize();
+    this.preparedStatementCacheSqlFilter = optionsBase.getPreparedStatementCacheSqlFilter();
 
-    this.reconnectAttempts = options.getReconnectAttempts();
-    this.reconnectInterval = options.getReconnectInterval();
+    this.reconnectAttempts = optionsBase.getReconnectAttempts();
+    this.reconnectInterval = optionsBase.getReconnectInterval();
 
-    initializeConfiguration(options);
+    initializeConfiguration(optionsBase);
 
-    NetClientOptions netClientOptions = new NetClientOptions(options);
+    NetClientOptions netClientOptions = new NetClientOptions(optionsBase);
     configureNetClientOptions(netClientOptions);
     netClientOptions.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
     this.netClient = vertx.createNetClient(netClientOptions, clientCloseFuture);
   }
 
   @Override
-  public void connect(Promise<Connection> promise) {
+  public void connect(SocketAddress server, String user, String password, String database, Promise<Connection> promise) {
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
     ContextInternal context = promiseInternal.context();
-    context.emit(promise, p -> doConnectWithRetry(promiseInternal, reconnectAttempts));
+    context.emit(promise, p -> doConnectWithRetry(server, user, password, database, promiseInternal, reconnectAttempts));
   }
 
   @Override
@@ -87,7 +76,7 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
     clientCloseFuture.close(promise);
   }
 
-  private void doConnectWithRetry(PromiseInternal<Connection> promise, int remainingAttempts) {
+  private void doConnectWithRetry(SocketAddress server, String username, String password, String database, PromiseInternal<Connection> promise, int remainingAttempts) {
     ContextInternal context = promise.context();
     Promise<Connection> promise0 = context.promise();
     promise0.future().onComplete(ar -> {
@@ -96,14 +85,14 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
       } else {
         if (remainingAttempts >= 0) {
           context.owner().setTimer(reconnectInterval, id -> {
-            doConnectWithRetry(promise, remainingAttempts - 1);
+            doConnectWithRetry(server, username, password, database, promise, remainingAttempts - 1);
           });
         } else {
           promise.fail(ar.cause());
         }
       }
     });
-    doConnectInternal(promise0);
+    doConnectInternal(server, username, password, database, promise0);
   }
 
   /**
@@ -123,8 +112,12 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   /**
    * Perform establishing connection to the server.
    *
+   * @param server
+   * @param username
+   * @param password
+   * @param database
    * @param promise the result handler
    */
-  protected abstract void doConnectInternal(Promise<Connection> promise);
+  protected abstract void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise);
 
 }
