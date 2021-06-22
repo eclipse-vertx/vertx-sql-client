@@ -11,11 +11,8 @@ public class Line {
   private double b;
   private double c;
 
-  public Line() {
-    this(0.0, 0.0, 0.0);
-  }
-
   public Line(double a, double b, double c) {
+    validate(a, b);
     this.a = a;
     this.b = b;
     this.c = c;
@@ -26,6 +23,7 @@ public class Line {
   }
 
   public void setA(double a) {
+    validate(a, b);
     this.a = a;
   }
 
@@ -34,6 +32,7 @@ public class Line {
   }
 
   public void setB(double b) {
+    validate(a, b);
     this.b = b;
   }
 
@@ -43,6 +42,12 @@ public class Line {
 
   public void setC(double c) {
     this.c = c;
+  }
+
+  private static void validate(double a, double b) {
+    if (a == 0.0 && b == 0.0) {
+      throw new IllegalArgumentException("Invalid line specification: A and B cannot both be zero");
+    }
   }
 
   @Override
