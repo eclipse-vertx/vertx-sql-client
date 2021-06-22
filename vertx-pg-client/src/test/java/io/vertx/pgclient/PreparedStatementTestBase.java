@@ -434,8 +434,8 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
 
   @Test
   public void testInferDataTypeLine(TestContext ctx) {
-    Line value = new Line();
-    testInferDataType(ctx, Line.class, value, "{0,0,0}", "{\"{0,0,0}\"}");
+    Line value = new Line(1.0, 0.0, 0.0);
+    testInferDataType(ctx, Line.class, value, "{1,0,0}", "{\"{1,0,0}\"}");
   }
 
   @Test
