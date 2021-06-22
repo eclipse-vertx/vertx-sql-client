@@ -16,13 +16,14 @@
  */
 package examples;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -35,7 +36,6 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 @Source
@@ -342,5 +342,33 @@ public class SqlClientExamples {
 
   public void tracing01(PgConnectOptions options) {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
+  }
+
+  public void poolConfig01(PgConnectOptions connectOptions) {
+    PoolConfig config = PoolConfig.create().connectingTo(connectOptions);
+    PgPool pool = PgPool.pool(config);
+  }
+
+  public void poolConfig02(PgConnectOptions server1, PgConnectOptions server2, PgConnectOptions server3) {
+    PoolConfig config = PoolConfig.create().connectingTo(Arrays.asList(server1, server2, server3));
+  }
+
+  public void poolConfig03(SqlConnectOptions base) {
+    PoolConfig config = PoolConfig.create().connectingTo(base, () -> {
+      return giveMeAServer();
+    });
+  }
+
+  private static SqlConnectOptions giveMeAServer() {
+    throw new UnsupportedOperationException();
+  }
+
+  public void poolConfig04(PoolConfig config, String sql) {
+    config.connectHandler(conn -> {
+      conn.query(sql).execute().onSuccess(res -> {
+        // Release the connection to the pool, ready to be used by the application
+        conn.close();
+      });
+    });
   }
 }

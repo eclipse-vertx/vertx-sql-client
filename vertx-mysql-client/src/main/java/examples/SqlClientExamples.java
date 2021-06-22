@@ -21,8 +21,10 @@ import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.MySQLConnectOptions;
+import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
@@ -327,5 +329,33 @@ public class SqlClientExamples {
 
   public void tracing01(MySQLConnectOptions options) {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
+  }
+
+  public void poolConfig01(MySQLConnectOptions connectOptions) {
+    PoolConfig config = PoolConfig.create().connectingTo(connectOptions);
+    MySQLPool pool = MySQLPool.pool(config);
+  }
+
+  public void poolConfig02(MySQLConnectOptions server1, MySQLConnectOptions server2, MySQLConnectOptions server3) {
+    PoolConfig config = PoolConfig.create().connectingTo(Arrays.asList(server1, server2, server3));
+  }
+
+  public void poolConfig03(SqlConnectOptions base) {
+    PoolConfig config = PoolConfig.create().connectingTo(base, () -> {
+      return giveMeAServer();
+    });
+  }
+
+  private static SqlConnectOptions giveMeAServer() {
+    throw new UnsupportedOperationException();
+  }
+
+  public void poolConfig04(PoolConfig config, String sql) {
+    config.connectHandler(conn -> {
+      conn.query(sql).execute().onSuccess(res -> {
+        // Release the connection to the pool, ready to be used by the application
+        conn.close();
+      });
+    });
   }
 }

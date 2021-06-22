@@ -20,6 +20,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
+import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.sqlclient.*;
 
 import java.util.ArrayList;
@@ -341,5 +342,33 @@ public class SqlClientExamples {
 
   public void tracing01(MSSQLConnectOptions options) {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
+  }
+
+  public void poolConfig01(MSSQLConnectOptions connectOptions) {
+    PoolConfig config = PoolConfig.create().connectingTo(connectOptions);
+    MSSQLPool pool = MSSQLPool.pool(config);
+  }
+
+  public void poolConfig02(MSSQLConnectOptions server1, MSSQLConnectOptions server2, MSSQLConnectOptions server3) {
+    PoolConfig config = PoolConfig.create().connectingTo(Arrays.asList(server1, server2, server3));
+  }
+
+  public void poolConfig03(SqlConnectOptions base) {
+    PoolConfig config = PoolConfig.create().connectingTo(base, () -> {
+      return giveMeAServer();
+    });
+  }
+
+  private static SqlConnectOptions giveMeAServer() {
+    throw new UnsupportedOperationException();
+  }
+
+  public void poolConfig04(PoolConfig config, String sql) {
+    config.connectHandler(conn -> {
+      conn.query(sql).execute().onSuccess(res -> {
+        // Release the connection to the pool, ready to be used by the application
+        conn.close();
+      });
+    });
   }
 }
