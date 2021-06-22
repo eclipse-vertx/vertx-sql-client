@@ -12,12 +12,12 @@ public class PgDriver implements Driver {
 
   @Override
   public Pool createPool(PoolConfig config) {
-    return PgPool.pool(PgConnectOptions.wrap(config.determineConnectOptions()), config.options());
+    return PgPool.pool(PgConnectOptions.wrap(config.baseConnectOptions()), config.options());
   }
 
   @Override
   public Pool createPool(Vertx vertx, PoolConfig config) {
-    return PgPool.pool(vertx, PgConnectOptions.wrap(config.determineConnectOptions()), config.options());
+    return PgPool.pool(vertx, PgConnectOptions.wrap(config.baseConnectOptions()), config.options());
   }
 
   @Override

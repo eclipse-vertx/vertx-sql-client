@@ -98,7 +98,7 @@ public interface PgPool extends Pool {
    */
   static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
     PoolConfig poolConfig = PoolConfig.create(poolOptions);
-    PoolConfig config = poolConfig.connectOptions(connectOptions);
+    PoolConfig config = poolConfig.connectingTo(connectOptions);
     return pool(vertx, config);
   }
 
@@ -182,7 +182,7 @@ public interface PgPool extends Pool {
    * Like {@link #client(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    return client(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
   }
 
   /**

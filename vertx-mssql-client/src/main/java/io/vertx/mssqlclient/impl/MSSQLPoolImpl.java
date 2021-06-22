@@ -22,16 +22,19 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
+import java.util.function.Supplier;
+
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
 
   public static MSSQLPoolImpl create(VertxInternal vertx, PoolConfig config) {
-    MSSQLConnectOptions connectOptions = MSSQLConnectOptions.wrap(config.determineConnectOptions());
+    MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(config.baseConnectOptions());
     VertxInternal vx;
     if (vertx == null) {
       if (Vertx.currentContext() != null) {
@@ -41,10 +44,10 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
     } else {
       vx = vertx;
     }
-    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), connectOptions);
+    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    MSSQLPoolImpl pool = new MSSQLPoolImpl(vx, connectOptions, tracer, metrics, config.options(), config.connectHandler());
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
+    MSSQLPoolImpl pool = new MSSQLPoolImpl(vx, baseConnectOptions, config.connectOptionsProvider(), tracer, metrics, config.options(), config.connectHandler());
     pool.init();
     CloseFuture closeFuture = pool.closeFuture();
     if (vertx == null) {
@@ -60,8 +63,8 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
     return pool;
   }
 
-  private MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectOptions connectOptions, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
-    super(vertx, connectOptions, new MSSQLConnectionFactory(vertx, connectOptions), tracer, metrics, 1, poolOptions, connectHandler);
+  private MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectOptions baseConnectOptions, Supplier<SqlConnectOptions> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
+    super(vertx, baseConnectOptions, connectOptionsProvider, new MSSQLConnectionFactory(vertx, baseConnectOptions), tracer, metrics, 1, poolOptions, connectHandler);
   }
 
   @Override

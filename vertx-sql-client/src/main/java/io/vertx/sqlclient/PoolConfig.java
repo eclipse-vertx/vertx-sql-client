@@ -25,9 +25,17 @@ import io.vertx.sqlclient.impl.PoolConfigImpl;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * The pool configuration that comprehends several mandatory configuration items, plus a few extra optional ones.
+ *
+ * The pool config provides advanced features:
+ *
+ * <ul>
+ *   <li>Connect handler for connection initialization</li>
+ *   <li>Load balance across multiple servers</li>
+ * </ul>
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
@@ -51,24 +59,47 @@ public interface PoolConfig {
   }
 
   /**
-   * Set the connect options.
+   * Configures the pool to connect to given {@code server}.
    *
-   * @param options the connect options
+   * @param server the connect options
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  default PoolConfig connectOptions(SqlConnectOptions options) {
-    return connectOptions(Collections.singletonList(options));
-  }
+  PoolConfig connectingTo(SqlConnectOptions server);
 
   /**
-   * Set the connect options.
+   * Configures the pool to pick the server among the given list of {@code servers} using round robin
+   * load balancing.
    *
-   * @param options the connect options
+   * <ul>
+   *   <li>The first server of the list defines the base options applied to all servers and defines the common connection configuration such as SSL certificates, etc...</li>
+   *   <li>The remaining servers use the network address, user, password and databases</li>
+   * </ul>
+   * <p>
+   *
+   * @param servers the list of servers
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
-  PoolConfig connectOptions(List<SqlConnectOptions> options);
+  PoolConfig connectingTo(List<SqlConnectOptions> servers);
+
+  /**
+   * Configures the pool to user a dynamic configuration provided by the {@code serverProvider}.
+   *
+   * <ul>
+   *   <li>The {@code base} options is applied to all servers and defines the common connection configure such as SSL certificates, etc...</li>
+   *   <li>When the pool creates a connection it uses the value returned by the supplier to define the network address, user, password and databases to use</li>
+   * </ul>
+   * <p>
+   *
+   * When the {@code serverProvider} fails to return a value, the pool falls back to the {@code base} options.
+   *
+   * @param base the base options for all servers
+   * @param serverProvider the list of servers
+   * @return a reference to this, so the API can be used fluently
+   */
+  @GenIgnore
+  <C extends SqlConnectOptions> PoolConfig connectingTo(C base, Supplier<C> serverProvider);
 
   /**
    * Set an handler called when the pool has established a connection to the database.
@@ -84,8 +115,10 @@ public interface PoolConfig {
   @Fluent
   PoolConfig connectHandler(Handler<SqlConnection> handler);
 
-  @GenIgnore
-  SqlConnectOptions determineConnectOptions();
+  SqlConnectOptions baseConnectOptions();
+
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  Supplier<SqlConnectOptions> connectOptionsProvider();
 
   @GenIgnore
   PoolOptions options();

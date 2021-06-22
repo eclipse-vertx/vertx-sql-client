@@ -60,7 +60,7 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(SqlConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    return pool(PoolConfig.create(poolOptions).connectingTo(connectOptions));
   }
 
   /**
@@ -71,7 +71,7 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(PoolConfig config) {
-    SqlConnectOptions connectOptions = config.determineConnectOptions();
+    SqlConnectOptions connectOptions = config.baseConnectOptions();
     List<Driver> candidates = new ArrayList<>(1);
     for (Driver d : ServiceLoader.load(Driver.class)) {
       if (d.acceptsOptions(connectOptions)) {
@@ -97,7 +97,7 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    return pool(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
   }
 
   /**
@@ -109,7 +109,7 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(Vertx vertx, PoolConfig config) {
-    SqlConnectOptions connectOptions = config.determineConnectOptions();
+    SqlConnectOptions connectOptions = config.baseConnectOptions();
     List<Driver> candidates = new ArrayList<>(1);
     for (Driver d : ServiceLoader.load(Driver.class)) {
       if (d.acceptsOptions(connectOptions)) {

@@ -15,7 +15,6 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.sqlclient.*;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
@@ -69,7 +68,7 @@ public interface MSSQLPool extends Pool {
    * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MSSQLPool pool(Vertx vertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    return pool(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
   }
 
   /**

@@ -70,7 +70,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    return pool(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
   }
 
   /**

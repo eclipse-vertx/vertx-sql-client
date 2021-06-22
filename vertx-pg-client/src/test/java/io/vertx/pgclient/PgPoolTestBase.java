@@ -58,7 +58,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   }
 
   protected PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return createPool(PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    return createPool(PoolConfig.create(poolOptions).connectingTo(connectOptions));
   }
 
   protected abstract PgPool createPool(PoolConfig config);

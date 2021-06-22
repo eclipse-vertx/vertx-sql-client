@@ -28,11 +28,14 @@ import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.*;
 import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+
+import java.util.function.Supplier;
 
 /**
  * Todo :
@@ -46,14 +49,14 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   public static PgPoolImpl create(final VertxInternal vertx, boolean pipelined, PoolConfig config) {
-    PgConnectOptions connectOptions = PgConnectOptions.wrap(config.determineConnectOptions());
+    PgConnectOptions baseConnectOptions = PgConnectOptions.wrap(config.baseConnectOptions());
     VertxInternal vx;
     if (vertx == null) {
       if (Vertx.currentContext() != null) {
         throw new IllegalStateException("Running in a Vertx context => use PgPool#pool(Vertx, PgConnectOptions, PoolOptions) instead");
       }
       VertxOptions vertxOptions = new VertxOptions();
-      if (connectOptions.isUsingDomainSocket()) {
+      if (baseConnectOptions.isUsingDomainSocket()) {
         vertxOptions.setPreferNativeTransport(true);
       }
       vx = (VertxInternal) Vertx.vertx(vertxOptions);
@@ -62,11 +65,11 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     }
     Handler<SqlConnection> connectHook = config.connectHandler();
     PoolOptions poolOptions = config.options();
-    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), connectOptions);
+    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    int pipeliningLimit = pipelined ? connectOptions.getPipeliningLimit() : 1;
-    PgPoolImpl pool = new PgPoolImpl(vx, connectOptions, tracer, metrics, pipeliningLimit, poolOptions, connectHook);
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
+    int pipeliningLimit = pipelined ? baseConnectOptions.getPipeliningLimit() : 1;
+    PgPoolImpl pool = new PgPoolImpl(vx, baseConnectOptions, config.connectOptionsProvider(), tracer, metrics, pipeliningLimit, poolOptions, connectHook);
     pool.init();
     CloseFuture closeFuture = pool.closeFuture();
     vx.addCloseHook(closeFuture);
@@ -83,8 +86,8 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     return pool;
   }
 
-  private PgPoolImpl(VertxInternal vertx, PgConnectOptions connectOptions, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions, Handler<SqlConnection> connectHook) {
-    super(vertx, connectOptions, new PgConnectionFactory(vertx, connectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHook);
+  private PgPoolImpl(VertxInternal vertx, PgConnectOptions baseConnectOptions, Supplier<SqlConnectOptions> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions, Handler<SqlConnection> connectHook) {
+    super(vertx, baseConnectOptions, connectOptionsProvider, new PgConnectionFactory(vertx, baseConnectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHook);
   }
 
   @Override

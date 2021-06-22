@@ -26,16 +26,19 @@ import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Pool;
 import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
+import java.util.function.Supplier;
+
 public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
 
   public static DB2PoolImpl create(VertxInternal vertx, boolean pipelined, PoolConfig config) {
-    DB2ConnectOptions connectOptions = DB2ConnectOptions.wrap(config.determineConnectOptions());
+    DB2ConnectOptions baseConnectOptions = DB2ConnectOptions.wrap(config.baseConnectOptions());
     VertxInternal vx;
     if (vertx == null) {
       if (Vertx.currentContext() != null) {
@@ -46,11 +49,11 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
     } else {
       vx = vertx;
     }
-    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), connectOptions);
+    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vx.metricsSPI();
-    int pipeliningLimit = pipelined ? connectOptions.getPipeliningLimit() : 1;
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql", connectOptions.getMetricsName()) : null;
-    DB2PoolImpl pool = new DB2PoolImpl(vx, pipeliningLimit, config.options(), connectOptions, tracer, metrics, config.connectHandler());
+    int pipeliningLimit = pipelined ? baseConnectOptions.getPipeliningLimit() : 1;
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
+    DB2PoolImpl pool = new DB2PoolImpl(vx, pipeliningLimit, config.options(), baseConnectOptions, config.connectOptionsProvider(), tracer, metrics, config.connectHandler());
     pool.init();
     CloseFuture closeFuture = pool.closeFuture();
     if (vertx == null) {
@@ -66,8 +69,8 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
     return pool;
   }
 
-  private DB2PoolImpl(VertxInternal vertx, int pipeliningLimit, PoolOptions poolOptions, DB2ConnectOptions connectOptions, QueryTracer tracer, ClientMetrics metrics, Handler<SqlConnection> connectHandler) {
-    super(vertx, connectOptions, new DB2ConnectionFactory(vertx, connectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHandler);
+  private DB2PoolImpl(VertxInternal vertx, int pipeliningLimit, PoolOptions poolOptions, DB2ConnectOptions baseConnectOptions, Supplier<SqlConnectOptions> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, Handler<SqlConnection> connectHandler) {
+    super(vertx, baseConnectOptions, connectOptionsProvider, new DB2ConnectionFactory(vertx, baseConnectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHandler);
   }
 
   @SuppressWarnings("rawtypes")

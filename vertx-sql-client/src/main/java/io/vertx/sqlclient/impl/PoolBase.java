@@ -33,6 +33,7 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -52,7 +53,8 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   private long timerID;
 
   public PoolBase(VertxInternal vertx,
-                  SqlConnectOptions connectOptions,
+                  SqlConnectOptions baseConnectOptions,
+                  Supplier<SqlConnectOptions> connectOptionsProvider,
                   ConnectionFactory factory,
                   QueryTracer tracer,
                   ClientMetrics metrics,
@@ -78,7 +80,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(factory, connectOptions, connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
+    this.pool = new SqlConnectionPool(factory, baseConnectOptions, connectOptionsProvider, connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
     this.closeFuture = new CloseFuture();
   }
 

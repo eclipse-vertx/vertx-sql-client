@@ -401,7 +401,7 @@ public class PgPoolTest extends PgPoolTestBase {
     };
     PoolConfig config = PoolConfig
       .create(new PoolOptions().setMaxSize(1))
-      .connectOptions(options)
+      .connectingTo(options)
       .connectHandler(hook);
     PgPool pool = createPool(config);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
@@ -429,7 +429,7 @@ public class PgPoolTest extends PgPoolTestBase {
       };
       PoolConfig config = PoolConfig
         .create(new PoolOptions().setMaxSize(1))
-        .connectOptions(new PgConnectOptions(options).setPort(8080).setHost("localhost"))
+        .connectingTo(new PgConnectOptions(options).setPort(8080).setHost("localhost"))
         .connectHandler(hook);
       PgPool pool = createPool(config);
       pool.getConnection(ctx.asyncAssertFailure(conn -> {

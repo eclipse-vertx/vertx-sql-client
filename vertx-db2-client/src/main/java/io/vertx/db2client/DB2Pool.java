@@ -80,7 +80,7 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static DB2Pool pool(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    return pool(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
   }
 
   /**
@@ -150,7 +150,7 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(vertx, PoolConfig.create(poolOptions).connectOptions(connectOptions));
+    return client(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
   }
 
   /**

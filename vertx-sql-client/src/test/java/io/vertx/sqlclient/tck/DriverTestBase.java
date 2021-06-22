@@ -49,7 +49,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver01(TestContext ctx) {
-    Pool p = getDriver().createPool(PoolConfig.create().connectOptions(defaultOptions()));
+    Pool p = getDriver().createPool(PoolConfig.create().connectingTo(defaultOptions()));
     p.getConnection(ctx.asyncAssertSuccess(ar -> {
       ar.close();
     }));
@@ -57,7 +57,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver02(TestContext ctx) {
-    Pool p = getDriver().createPool(PoolConfig.create().connectOptions(new SqlConnectOptions(defaultOptions())));
+    Pool p = getDriver().createPool(PoolConfig.create().connectingTo(new SqlConnectOptions(defaultOptions())));
     p.getConnection(ctx.asyncAssertSuccess(ar -> {
       ar.close();
     }));
@@ -65,7 +65,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver03(TestContext ctx) {
-    Pool p = getDriver().createPool(PoolConfig.create(new PoolOptions().setMaxSize(1)).connectOptions(defaultOptions()));
+    Pool p = getDriver().createPool(PoolConfig.create(new PoolOptions().setMaxSize(1)).connectingTo(defaultOptions()));
     p.getConnection(ctx.asyncAssertSuccess(ar -> {
       ar.close();
     }));
@@ -73,7 +73,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver04(TestContext ctx) {
-    Pool p = getDriver().createPool(Vertx.vertx(), PoolConfig.create(new PoolOptions().setMaxSize(1)).connectOptions(defaultOptions()));
+    Pool p = getDriver().createPool(Vertx.vertx(), PoolConfig.create(new PoolOptions().setMaxSize(1)).connectingTo(defaultOptions()));
     p.getConnection(ctx.asyncAssertSuccess(ar -> {
       ar.close();
     }));

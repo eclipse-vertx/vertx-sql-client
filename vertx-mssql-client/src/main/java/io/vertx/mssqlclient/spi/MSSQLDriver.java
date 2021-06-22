@@ -27,12 +27,12 @@ public class MSSQLDriver implements Driver {
 
   @Override
   public Pool createPool(PoolConfig config) {
-    return MSSQLPool.pool(MSSQLConnectOptions.wrap(config.determineConnectOptions()), config.options());
+    return MSSQLPool.pool(MSSQLConnectOptions.wrap(config.baseConnectOptions()), config.options());
   }
 
   @Override
   public Pool createPool(Vertx vertx, PoolConfig config) {
-    return MSSQLPool.pool(vertx, MSSQLConnectOptions.wrap(config.determineConnectOptions()), config.options());
+    return MSSQLPool.pool(vertx, MSSQLConnectOptions.wrap(config.baseConnectOptions()), config.options());
   }
 
   @Override
