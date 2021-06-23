@@ -16,6 +16,7 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
@@ -26,12 +27,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class PoolConfigImpl implements PoolConfig {
 
   private final PoolOptions options;
   private SqlConnectOptions baseConnectOptions;
-  private Supplier<SqlConnectOptions> connectOptionsProvider;
+  private Supplier<Future<SqlConnectOptions>> connectOptionsProvider;
   private Handler<SqlConnection> connectHook;
 
   public PoolConfigImpl(PoolOptions options) {
@@ -46,13 +48,16 @@ public class PoolConfigImpl implements PoolConfig {
   @Override
   public PoolConfig connectingTo(SqlConnectOptions server) {
     this.baseConnectOptions = server;
-    this.connectOptionsProvider = () -> server;
+    this.connectOptionsProvider = null;
     return this;
   }
 
   @Override
   public PoolConfig connectingTo(List<SqlConnectOptions> servers) {
-    List<SqlConnectOptions> list = new ArrayList<>(servers);
+    List<Future<SqlConnectOptions>> list = servers
+      .stream()
+      .map(Future::succeededFuture)
+      .collect(Collectors.toList());
     if (list.isEmpty()) {
       throw new IllegalArgumentException();
     }
@@ -62,11 +67,11 @@ public class PoolConfigImpl implements PoolConfig {
       }
     }
     this.baseConnectOptions = servers.get(0);
-    this.connectOptionsProvider = new Supplier<SqlConnectOptions>() {
+    this.connectOptionsProvider = new Supplier<Future<SqlConnectOptions>>() {
       int idx = 0;
       @Override
-      public SqlConnectOptions get() {
-        SqlConnectOptions o = list.get(idx++);
+      public Future<SqlConnectOptions> get() {
+        Future<SqlConnectOptions> o = list.get(idx++);
         if (idx >= list.size()) {
           idx = 0;
         }
@@ -88,9 +93,9 @@ public class PoolConfigImpl implements PoolConfig {
   }
 
   @Override
-  public <C extends SqlConnectOptions> PoolConfig connectingTo(C base, Supplier<C> serverProvider) {
+  public PoolConfig connectingTo(SqlConnectOptions base, Supplier<Future<SqlConnectOptions>> serverProvider) {
     this.baseConnectOptions = base;
-    this.connectOptionsProvider = serverProvider::get;
+    this.connectOptionsProvider = serverProvider;
     return this;
   }
 
@@ -100,7 +105,7 @@ public class PoolConfigImpl implements PoolConfig {
   }
 
   @Override
-  public Supplier<SqlConnectOptions> connectOptionsProvider() {
+  public Supplier<Future<SqlConnectOptions>> connectOptionsProvider() {
     return connectOptionsProvider;
   }
 }

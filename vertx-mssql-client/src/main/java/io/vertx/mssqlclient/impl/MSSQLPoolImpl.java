@@ -11,6 +11,7 @@
 
 package io.vertx.mssqlclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
@@ -63,7 +64,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
     return pool;
   }
 
-  private MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectOptions baseConnectOptions, Supplier<SqlConnectOptions> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
+  private MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
     super(vertx, baseConnectOptions, connectOptionsProvider, new MSSQLConnectionFactory(vertx, baseConnectOptions), tracer, metrics, 1, poolOptions, connectHandler);
   }
 

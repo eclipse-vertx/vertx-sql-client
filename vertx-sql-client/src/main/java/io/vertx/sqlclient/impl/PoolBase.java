@@ -54,7 +54,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
 
   public PoolBase(VertxInternal vertx,
                   SqlConnectOptions baseConnectOptions,
-                  Supplier<SqlConnectOptions> connectOptionsProvider,
+                  Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
                   ConnectionFactory factory,
                   QueryTracer tracer,
                   ClientMetrics metrics,

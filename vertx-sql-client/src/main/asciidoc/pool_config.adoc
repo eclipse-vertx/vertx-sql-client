@@ -28,7 +28,7 @@ You can also use a provider to provide a dynamic configuration of the pool
 
 Like previously, the {@code base} defines the common networking configuration applied to all connections.
 
-The {@code provider} returns a server to be used when the pool needs to create a connection.
+The {@code provider} returns a {@link io.vertx.core.Future} of the server to be used when the pool needs to create a connection.
 
 === Connection initialization
 

@@ -11,6 +11,7 @@
 
 package io.vertx.mysqlclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -68,7 +69,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
     return pool;
   }
 
-  private MySQLPoolImpl(VertxInternal vertx, MySQLConnectOptions baseConnectOptions, Supplier<SqlConnectOptions> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
+  private MySQLPoolImpl(VertxInternal vertx, MySQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
     super(vertx, baseConnectOptions, connectOptionsProvider, new MySQLConnectionFactory(vertx, baseConnectOptions), tracer, metrics, 1, poolOptions, connectHandler);
   }
 

@@ -2,6 +2,7 @@ package io.vertx.pgclient;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -9,6 +10,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import org.junit.After;
 import org.junit.Before;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,11 +48,35 @@ public class PoolMultiTest {
   }
 
   @Test
-  public void testLoadBalancing(TestContext ctx) {
+  public void testListLoadBalancing(TestContext ctx) {
+    testLoadBalancing(ctx, PoolConfig.create().connectingTo(Arrays.asList(db1.options(), db2.options())));
+  }
+
+  @Test
+  public void testAsyncLoadBalancing(TestContext ctx) {
+    testLoadBalancing(ctx, PoolConfig.create().connectingTo(db1.options(), new Supplier<Future<SqlConnectOptions>>() {
+      int idx = 0;
+      @Override
+      public Future<SqlConnectOptions> get() {
+        boolean fail = (idx++) % 2 == 0;
+        Promise<SqlConnectOptions> promise = Promise.promise();
+        vertx.setTimer(30, id -> {
+          if (fail) {
+            // Force to use base options
+            promise.fail("");
+          } else {
+            promise.complete(db2.options());
+          }
+        });
+        return promise.future();
+      }
+    }));
+  }
+
+  private void testLoadBalancing(TestContext ctx, PoolConfig config) {
     int count = 5;
     Async async = ctx.async(count);
-    PoolConfig config = PoolConfig.create(new PoolOptions().setMaxSize(count))
-      .connectingTo(Arrays.asList(db1.options(), db2.options()));
+    config.options().setMaxSize(5);
     PgPool pool = PgPool.pool(config);
     List<Future<SqlConnection>> futures = new ArrayList<>();
     for (int i = 0; i < count;i++) {

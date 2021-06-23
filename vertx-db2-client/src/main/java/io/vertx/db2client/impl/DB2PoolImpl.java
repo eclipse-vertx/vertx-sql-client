@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
@@ -69,7 +70,7 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
     return pool;
   }
 
-  private DB2PoolImpl(VertxInternal vertx, int pipeliningLimit, PoolOptions poolOptions, DB2ConnectOptions baseConnectOptions, Supplier<SqlConnectOptions> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, Handler<SqlConnection> connectHandler) {
+  private DB2PoolImpl(VertxInternal vertx, int pipeliningLimit, PoolOptions poolOptions, DB2ConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, Handler<SqlConnection> connectHandler) {
     super(vertx, baseConnectOptions, connectOptionsProvider, new DB2ConnectionFactory(vertx, baseConnectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHandler);
   }
 

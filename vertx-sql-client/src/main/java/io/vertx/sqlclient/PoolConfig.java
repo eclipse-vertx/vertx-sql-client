@@ -20,10 +20,10 @@ package io.vertx.sqlclient;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.PoolConfigImpl;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -99,7 +99,7 @@ public interface PoolConfig {
    * @return a reference to this, so the API can be used fluently
    */
   @GenIgnore
-  <C extends SqlConnectOptions> PoolConfig connectingTo(C base, Supplier<C> serverProvider);
+  PoolConfig connectingTo(SqlConnectOptions base, Supplier<Future<SqlConnectOptions>> serverProvider);
 
   /**
    * Set an handler called when the pool has established a connection to the database.
@@ -118,7 +118,7 @@ public interface PoolConfig {
   SqlConnectOptions baseConnectOptions();
 
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
-  Supplier<SqlConnectOptions> connectOptionsProvider();
+  Supplier<Future<SqlConnectOptions>> connectOptionsProvider();
 
   @GenIgnore
   PoolOptions options();

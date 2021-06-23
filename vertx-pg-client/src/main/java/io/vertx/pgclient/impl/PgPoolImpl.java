@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -86,7 +87,7 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     return pool;
   }
 
-  private PgPoolImpl(VertxInternal vertx, PgConnectOptions baseConnectOptions, Supplier<SqlConnectOptions> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions, Handler<SqlConnection> connectHook) {
+  private PgPoolImpl(VertxInternal vertx, PgConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions, Handler<SqlConnection> connectHook) {
     super(vertx, baseConnectOptions, connectOptionsProvider, new PgConnectionFactory(vertx, baseConnectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHook);
   }
 

@@ -56,7 +56,7 @@ public class SqlConnectionPool {
 
   private final ConnectionFactory factory;
   private final SqlConnectOptions baseConnectOptions;
-  private final Supplier<SqlConnectOptions> connectOptionsProvider;
+  private final Supplier<Future<SqlConnectOptions>> connectOptionsProvider;
   private final VertxInternal vertx;
   private final ConnectionPool<PooledConnection> pool;
   private final Handler<Connection> hook;
@@ -66,7 +66,7 @@ public class SqlConnectionPool {
 
   public SqlConnectionPool(ConnectionFactory factory,
                            SqlConnectOptions baseConnectOptions,
-                           Supplier<SqlConnectOptions> connectOptionsProvider,
+                           Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
                            Handler<Connection> hook,
                            VertxInternal vertx,
                            long idleTimeout,
@@ -114,17 +114,6 @@ public class SqlConnectionPool {
     @Override
     public void connect(EventLoopContext context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<PooledConnection>>> handler) {
       PromiseInternal<Connection> promise = context.promise();
-      SqlConnectOptions connectOptions;
-      try {
-        connectOptions = connectOptionsProvider.get();
-      } catch (Exception e) {
-        connectOptions = null;
-        log.error("Connect options provider failure, falling back on base connect options", e);
-      }
-      if (connectOptions == null) {
-        connectOptions = baseConnectOptions;
-      }
-      factory.connect(connectOptions.getSocketAddress(), connectOptions.getUser(), connectOptions.getPassword(), connectOptions.getDatabase(), promise);
       Future<Connection> future = promise.future();
       future
         .map(connection -> {
@@ -133,6 +122,30 @@ public class SqlConnectionPool {
           return new ConnectResult<>(pooled, pipeliningLimit, 0);
         })
         .onComplete(handler);
+      Future<SqlConnectOptions> connectOptions = null;
+      if (connectOptionsProvider != null) {
+        try {
+          connectOptions = connectOptionsProvider.get();
+        } catch (Exception e) {
+          log.error("Connect options provider failure, falling back on base connect options", e);
+        }
+      }
+      if (connectOptions == null) {
+        connect(baseConnectOptions, promise);
+      } else {
+        connectOptions.onComplete(ar -> {
+          if (ar.succeeded()) {
+            connect(ar.result(), promise);
+          } else {
+            log.error("Connect options provider failure, falling back on base connect options", ar.cause());
+            connect(baseConnectOptions, promise);
+          }
+        });
+      }
+    }
+
+    private void connect(SqlConnectOptions connectOptions, PromiseInternal<Connection> promise) {
+      factory.connect(connectOptions.getSocketAddress(), connectOptions.getUser(), connectOptions.getPassword(), connectOptions.getDatabase(), promise);
     }
 
     @Override

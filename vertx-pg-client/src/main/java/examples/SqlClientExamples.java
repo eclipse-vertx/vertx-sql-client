@@ -16,6 +16,7 @@
  */
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
@@ -355,11 +356,12 @@ public class SqlClientExamples {
 
   public void poolConfig03(SqlConnectOptions base) {
     PoolConfig config = PoolConfig.create().connectingTo(base, () -> {
-      return giveMeAServer();
+      Future<SqlConnectOptions> fut = giveMeAServer();
+      return fut;
     });
   }
 
-  private static SqlConnectOptions giveMeAServer() {
+  private static Future<SqlConnectOptions> giveMeAServer() {
     throw new UnsupportedOperationException();
   }
 
