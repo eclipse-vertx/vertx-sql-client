@@ -17,6 +17,7 @@ package io.vertx.pgclient.tck;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.pgclient.PgException;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -72,4 +73,19 @@ public class PgTransactionTest extends TransactionTestBase {
         }));
       }));
     }));
-  }}
+  }
+
+  @Test
+  public void testDeferredConstraintTriggersRollbackOnCommit(TestContext ctx) {
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.client.query("INSERT INTO deferred_constraints (name, parent) values ('john', 'mike')")
+        .execute()
+        .compose(ok -> res.tx.commit())
+        .onComplete(ctx.asyncAssertFailure(failure -> {
+          PgException pgEx = (PgException) failure;
+          // foreign key constraint violation
+          ctx.assertEquals("23503", pgEx.getCode());
+        }));
+    }));
+  }
+}
