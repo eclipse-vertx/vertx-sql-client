@@ -149,7 +149,13 @@ public class TransactionImpl implements Transaction {
 
   private TxCommand<Void> txCommand(TxCommand.Kind kind) {
     TxCommand<Void> cmd = new TxCommand<>(kind, null);
-    cmd.handler = ar -> completion.complete(kind);
+    cmd.handler = ar -> {
+      if (ar.succeeded()) {
+        completion.complete(kind);
+      } else {
+        completion.fail(ar.cause());
+      }
+    };
     return cmd;
   }
 
