@@ -22,7 +22,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.mysqlclient.spi.MySQLDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -30,13 +30,16 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
 
-  public static MySQLPoolImpl create(VertxInternal vertx, PoolConfig config) {
-    MySQLConnectOptions baseConnectOptions = MySQLConnectOptions.wrap(config.baseConnectOptions());
+  public static MySQLPoolImpl create(VertxInternal vertx, List<? extends SqlConnectOptions> servers, PoolOptions poolOptions) {
+    MySQLConnectOptions baseConnectOptions = MySQLConnectOptions.wrap(servers.get(0));
     VertxInternal vx;
     if (vertx == null) {
       if (Vertx.currentContext() != null) {
@@ -53,9 +56,14 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
     QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    MySQLPoolImpl pool = new MySQLPoolImpl(vx, baseConnectOptions, config.connectOptionsProvider(), tracer, metrics, config.options(), config.connectHandler());
+    MySQLPoolImpl pool = new MySQLPoolImpl(vx, baseConnectOptions, null, tracer, metrics, poolOptions);
     pool.init();
+    MySQLDriver driver = new MySQLDriver();
+    List<ConnectionFactory> lst = servers.stream().map(options -> driver.createConnectionFactory(vx, options)).collect(Collectors.toList());
+    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
+    pool.connectionProvider(factory::connect);
     CloseFuture closeFuture = pool.closeFuture();
+    closeFuture.add(factory);
     if (vertx == null) {
       closeFuture.future().onComplete(ar -> vx.close());
     } else {
@@ -69,12 +77,17 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
     return pool;
   }
 
-  private MySQLPoolImpl(VertxInternal vertx, MySQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
-    super(vertx, baseConnectOptions, connectOptionsProvider, new MySQLConnectionFactory(vertx, baseConnectOptions), tracer, metrics, 1, poolOptions, connectHandler);
+  private MySQLPoolImpl(VertxInternal vertx, MySQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions) {
+    super(vertx, baseConnectOptions, connectOptionsProvider, tracer, metrics, 1, poolOptions);
   }
 
   @Override
-  protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new MySQLConnectionImpl(context, conn, tracer, metrics);
+  protected SqlConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection conn) {
+    return new MySQLConnectionImpl(context, factory, conn, tracer, metrics);
+  }
+
+  @Override
+  public MySQLPool connectHandler(Handler<SqlConnection> handler) {
+    return (MySQLPool) super.connectHandler(handler);
   }
 }

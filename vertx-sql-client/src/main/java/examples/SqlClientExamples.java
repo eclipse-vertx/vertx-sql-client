@@ -21,7 +21,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
@@ -384,28 +383,12 @@ public class SqlClientExamples {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 
-  public void poolConfig01(SqlConnectOptions connectOptions) {
-    PoolConfig config = PoolConfig.create().connectingTo(connectOptions);
-    Pool pool = Pool.pool(config);
+  public void poolConfig01(SqlConnectOptions server1, SqlConnectOptions server2, SqlConnectOptions server3, PoolOptions options) {
+    Pool pool = Pool.pool(Arrays.asList(server1, server2, server3), options);
   }
 
-  public void poolConfig02(SqlConnectOptions server1, SqlConnectOptions server2, SqlConnectOptions server3) {
-    PoolConfig config = PoolConfig.create().connectingTo(Arrays.asList(server1, server2, server3));
-  }
-
-  public void poolConfig03(SqlConnectOptions base) {
-    PoolConfig config = PoolConfig.create().connectingTo(base, () -> {
-      Future<SqlConnectOptions> fut = giveMeAServer();
-      return fut;
-    });
-  }
-
-  private static Future<SqlConnectOptions> giveMeAServer() {
-    throw new UnsupportedOperationException();
-  }
-
-  public void poolConfig04(PoolConfig config, String sql) {
-    config.connectHandler(conn -> {
+  public void poolConfig02(Pool pool, String sql) {
+    pool.connectHandler(conn -> {
       conn.query(sql).execute().onSuccess(res -> {
         // Release the connection to the pool, ready to be used by the application
         conn.close();

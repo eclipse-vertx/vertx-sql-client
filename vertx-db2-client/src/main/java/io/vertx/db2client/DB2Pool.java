@@ -16,13 +16,16 @@
 package io.vertx.db2client;
 
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.db2client.impl.DB2PoolImpl;
+import io.vertx.db2client.spi.DB2Driver;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
+import io.vertx.sqlclient.SqlConnection;
+
+import java.util.Collections;
+import java.util.List;
 
 import static io.vertx.db2client.DB2ConnectOptions.fromUri;
 
@@ -33,7 +36,7 @@ import static io.vertx.db2client.DB2ConnectOptions.fromUri;
 public interface DB2Pool extends Pool {
 
   /**
-   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
+   * Like {@link #pool(String, PoolOptions)} with default options.
    */
   static DB2Pool pool(String connectionUri) {
     return pool(connectionUri, new PoolOptions());
@@ -41,15 +44,14 @@ public interface DB2Pool extends Pool {
 
   /**
    * Like {@link #pool(DB2ConnectOptions, PoolOptions)} with
-   * {@code connectOptions} build from {@code connectionUri}.
+   * {@code database} build from {@code connectionUri}.
    */
-  static DB2Pool pool(String connectionUri, PoolOptions poolOptions) {
-    return pool(fromUri(connectionUri), poolOptions);
+  static DB2Pool pool(String connectionUri, PoolOptions options) {
+    return pool(fromUri(connectionUri), options);
   }
 
   /**
-   * Like {@link #pool(Vertx, String,PoolOptions)} with a default
-   * {@code poolOptions}..
+   * Like {@link #pool(Vertx, String,PoolOptions)} with default options.
    */
   static DB2Pool pool(Vertx vertx, String connectionUri) {
     return pool(vertx, fromUri(connectionUri), new PoolOptions());
@@ -57,53 +59,53 @@ public interface DB2Pool extends Pool {
 
   /**
    * Like {@link #pool(Vertx, DB2ConnectOptions, PoolOptions)} with
-   * {@code connectOptions} build from {@code connectionUri}.
+   * {@code database} build from {@code connectionUri}.
    */
-  static DB2Pool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
-    return pool(vertx, fromUri(connectionUri), poolOptions);
+  static DB2Pool pool(Vertx vertx, String connectionUri, PoolOptions options) {
+    return pool(vertx, fromUri(connectionUri), options);
   }
 
   /**
-   * Create a connection pool to the DB2 server configured with the given
-   * {@code connectOptions} and {@code poolOptions}.
+   * Create a connection pool to the DB2 {@code database} configured with the given {@code options}.
    *
-   * @param connectOptions the options for the connection
-   * @param poolOptions    the options for creating the pool
+   * @param database the options for the connection
+   * @param options    the options for creating the pool
    * @return the connection pool
    */
-  static DB2Pool pool(DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(null, connectOptions, poolOptions);
+  static DB2Pool pool(DB2ConnectOptions database, PoolOptions options) {
+    return pool(null, database, options);
   }
 
   /**
    * Like {@link #pool(DB2ConnectOptions, PoolOptions)} with a specific
    * {@link Vertx} instance.
    */
-  static DB2Pool pool(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
+  static DB2Pool pool(Vertx vertx, DB2ConnectOptions database, PoolOptions options) {
+    return pool(vertx, Collections.singletonList(database), options);
   }
 
   /**
-   * Create a connection pool to the DB2 server configured with the given
-   * {@code config}.
+   * Create a connection pool to the DB2 {@code databases} with
+   * round-robin selection.
    *
-   * @param config the pool config
+   * @param databases the list of servers
+   * @param options the options for creating the pool
    * @return the connection pool
    */
-  static DB2Pool pool(PoolConfig config) {
-    return pool(null, config);
+  static DB2Pool pool(List<DB2ConnectOptions> databases, PoolOptions options) {
+    return pool(null, databases, options);
   }
 
   /**
-   * Like {@link #pool(PoolConfig)} with a specific
+   * Like {@link #pool(List, PoolOptions)} with a specific
    * {@link Vertx} instance.
    */
-  static DB2Pool pool(Vertx vertx, PoolConfig config) {
-    return DB2PoolImpl.create((VertxInternal) vertx, false, config);
+  static DB2Pool pool(Vertx vertx, List<DB2ConnectOptions> databases, PoolOptions options) {
+    return new DB2Driver().createPool(vertx, databases, options);
   }
 
   /**
-   * Like {@link #client(String, PoolOptions)} with a default {@code poolOptions}.
+   * Like {@link #client(String, PoolOptions)} with default options.
    */
   static SqlClient client(String connectionUri) {
     return client(connectionUri, new PoolOptions());
@@ -111,15 +113,14 @@ public interface DB2Pool extends Pool {
 
   /**
    * Like {@link #client(DB2ConnectOptions, PoolOptions)} with
-   * {@code connectOptions} build from {@code connectionUri}.
+   * {@code database} build from {@code connectionUri}.
    */
-  static SqlClient client(String connectionUri, PoolOptions poolOptions) {
-    return client(fromUri(connectionUri), poolOptions);
+  static SqlClient client(String connectionUri, PoolOptions options) {
+    return client(fromUri(connectionUri), options);
   }
 
   /**
-   * Like {@link #client(Vertx, String,PoolOptions)} with a default
-   * {@code poolOptions}..
+   * Like {@link #client(Vertx, String, PoolOptions)} with default options.
    */
   static SqlClient client(Vertx vertx, String connectionUri) {
     return client(vertx, fromUri(connectionUri), new PoolOptions());
@@ -127,48 +128,51 @@ public interface DB2Pool extends Pool {
 
   /**
    * Like {@link #client(Vertx, DB2ConnectOptions, PoolOptions)} with
-   * {@code connectOptions} build from {@code connectionUri}.
+   * {@code database} build from {@code connectionUri}.
    */
-  static SqlClient client(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
-    return client(vertx, fromUri(connectionUri), poolOptions);
+  static SqlClient client(Vertx vertx, String connectionUri, PoolOptions options) {
+    return client(vertx, fromUri(connectionUri), options);
   }
 
   /**
-   * Create a pooled client to the DB2 server configured with the given
-   * {@code connectOptions} and {@code poolOptions}.
+   * Create a pooled client to the DB2 {@code database} configured with the given {@code options}.
    *
-   * @param connectOptions the options for the connection
-   * @param poolOptions    the options for creating the pool
+   * @param database the options for the connection
+   * @param options    the options for creating the pool
    * @return the connection pool
    */
-  static SqlClient client(DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(null, connectOptions, poolOptions);
+  static SqlClient client(DB2ConnectOptions database, PoolOptions options) {
+    return client(null, database, options);
   }
 
   /**
    * Like {@link #client(DB2ConnectOptions, PoolOptions)} with a specific
    * {@link Vertx} instance.
    */
-  static SqlClient client(Vertx vertx, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
+  static SqlClient client(Vertx vertx, DB2ConnectOptions database, PoolOptions options) {
+    return client(vertx, Collections.singletonList(database), options);
   }
 
   /**
-   * Create a pooled client to the DB2 server configured with the given
-   * {@code config}.
+   * Create a client backed by a connection pool to the DB2 {@code databases} with
+   * round-robin selection.
    *
-   * @param config the pool config
-   * @return the connection pool
+   * @param databases the list of servers
+   * @param options the options for creating the pool
+   * @return the pooled client
    */
-  static SqlClient client(PoolConfig config) {
-    return client(null, config);
+  static SqlClient client(List<DB2ConnectOptions> databases, PoolOptions options) {
+    return client(null, databases, options);
   }
 
   /**
-   * Like {@link #client(PoolConfig)} with a specific
+   * Like {@link #client(List, PoolOptions)} with a specific
    * {@link Vertx} instance.
    */
-  static SqlClient client(Vertx vertx, PoolConfig config) {
-    return DB2PoolImpl.create((VertxInternal) vertx, true, config);
+  static SqlClient client(Vertx vertx, List<DB2ConnectOptions> databases, PoolOptions options) {
+    return new DB2Driver().createClient(vertx, databases, options);
   }
+
+  @Override
+  DB2Pool connectHandler(Handler<SqlConnection> handler);
 }

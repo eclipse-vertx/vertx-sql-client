@@ -12,10 +12,13 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.*;
+
+import java.util.Collections;
+import java.util.List;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
 
@@ -26,65 +29,70 @@ import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
 public interface MSSQLPool extends Pool {
 
   /**
-   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
+   * Like {@link #pool(String, PoolOptions)} with default options.
    */
   static MSSQLPool pool(String connectionUri) {
     return pool(connectionUri, new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
+   * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with {@code database} built from {@code connectionUri}.
    */
-  static MSSQLPool pool(String connectionUri, PoolOptions poolOptions) {
-    return pool(fromUri(connectionUri), poolOptions);
+  static MSSQLPool pool(String connectionUri, PoolOptions options) {
+    return pool(fromUri(connectionUri), options);
   }
 
   /**
-   * Like {@link #pool(Vertx, String, PoolOptions)} with a default {@code poolOptions}..
+   * Like {@link #pool(Vertx, String, PoolOptions)} with default options.
    */
   static MSSQLPool pool(Vertx vertx, String connectionUri) {
     return pool(vertx, fromUri(connectionUri), new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(Vertx, MSSQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
+   * Like {@link #pool(Vertx, MSSQLConnectOptions, PoolOptions)} with {@code database} built from {@code connectionUri}.
    */
-  static MSSQLPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
-    return pool(vertx, fromUri(connectionUri), poolOptions);
+  static MSSQLPool pool(Vertx vertx, String connectionUri, PoolOptions options) {
+    return pool(vertx, fromUri(connectionUri), options);
   }
 
   /**
-   * Create a connection pool to the SQL server configured with the given {@code connectOptions} and {@code poolOptions}.
+   * Create a connection pool to the SQL server {@code database} configured with the given {@code options}.
    *
-   * @param connectOptions the options for the connection
-   * @param poolOptions the options for creating the pool
+   * @param database the options for the connection
+   * @param options the options for creating the pool
    * @return the connection pool
    */
-  static MSSQLPool pool(MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(null, connectOptions, poolOptions);
+  static MSSQLPool pool(MSSQLConnectOptions database, PoolOptions options) {
+    return pool(null, database, options);
   }
 
   /**
    * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static MSSQLPool pool(Vertx vertx, MSSQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
+  static MSSQLPool pool(Vertx vertx, MSSQLConnectOptions database, PoolOptions options) {
+    return pool(vertx, Collections.singletonList(database), options);
   }
 
   /**
-   * Create a connection pool to the SQL server configured with the given {@code config}.
+   * Create a connection pool to the SQL Server {@code databases} with
+   * round-robin selection.
    *
-   * @param config the pool configuration
+   * @param databases the list of databases
+   * @param options the options for creating the pool
    * @return the connection pool
    */
-  static MSSQLPool pool(PoolConfig config) {
-    return MSSQLPoolImpl.create(null, config);
+  static MSSQLPool pool(List<MSSQLConnectOptions> databases, PoolOptions options) {
+    return pool(null, databases, options);
   }
 
   /**
-   * Like {@link #pool(PoolConfig)} with a specific {@link Vertx} instance.
+   * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static MSSQLPool pool(Vertx vertx, PoolConfig config) {
-    return MSSQLPoolImpl.create((VertxInternal) vertx, config);
+  static MSSQLPool pool(Vertx vertx, List<MSSQLConnectOptions> databases, PoolOptions options) {
+    return new MSSQLDriver().createPool(vertx, databases, options);
   }
+
+  @Override
+  MSSQLPool connectHandler(Handler<SqlConnection> handler);
 }

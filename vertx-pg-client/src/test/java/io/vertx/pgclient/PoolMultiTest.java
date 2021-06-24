@@ -1,17 +1,17 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.CompositeFuture;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 
@@ -49,35 +49,28 @@ public class PoolMultiTest {
 
   @Test
   public void testListLoadBalancing(TestContext ctx) {
-    testLoadBalancing(ctx, PoolConfig.create().connectingTo(Arrays.asList(db1.options(), db2.options())));
+    testLoadBalancing(ctx, PgPool.pool(vertx, Arrays.asList(db1.options(), db2.options()),new PoolOptions().setMaxSize(5)));
   }
 
   @Test
   public void testAsyncLoadBalancing(TestContext ctx) {
-    testLoadBalancing(ctx, PoolConfig.create().connectingTo(db1.options(), new Supplier<Future<SqlConnectOptions>>() {
+    PgPool pool = PgPool.pool(vertx, new PoolOptions().setMaxSize(5));
+    PgDriver driver = new PgDriver();
+    ConnectionFactory provider1 = driver.createConnectionFactory(vertx, db1.options());
+    ConnectionFactory provider2 = driver.createConnectionFactory(vertx, db2.options());
+    pool.connectionProvider(new Function<Context, Future<SqlConnection>>() {
       int idx = 0;
       @Override
-      public Future<SqlConnectOptions> get() {
-        boolean fail = (idx++) % 2 == 0;
-        Promise<SqlConnectOptions> promise = Promise.promise();
-        vertx.setTimer(30, id -> {
-          if (fail) {
-            // Force to use base options
-            promise.fail("");
-          } else {
-            promise.complete(db2.options());
-          }
-        });
-        return promise.future();
+      public Future<SqlConnection> apply(Context context) {
+        return (idx++ % 2 == 0 ? provider1 : provider2).connect(context);
       }
-    }));
+    });
+    testLoadBalancing(ctx, pool);
   }
 
-  private void testLoadBalancing(TestContext ctx, PoolConfig config) {
+  private void testLoadBalancing(TestContext ctx, PgPool pool) {
     int count = 5;
     Async async = ctx.async(count);
-    config.options().setMaxSize(5);
-    PgPool pool = PgPool.pool(config);
     List<Future<SqlConnection>> futures = new ArrayList<>();
     for (int i = 0; i < count;i++) {
       futures.add(pool.getConnection());

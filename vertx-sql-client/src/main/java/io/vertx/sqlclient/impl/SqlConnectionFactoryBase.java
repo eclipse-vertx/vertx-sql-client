@@ -13,12 +13,14 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.Collections;
 import java.util.Map;
@@ -32,6 +34,10 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   protected final VertxInternal vertx;
   protected final NetClient netClient;
   protected final Map<String, String> properties;
+  protected final SocketAddress server;
+  protected final String user;
+  protected final String password;
+  protected final String database;
 
   // cache
   protected final boolean cachePreparedStatements;
@@ -48,6 +54,10 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   protected SqlConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions optionsBase) {
     this.vertx = vertx;
     this.properties = optionsBase.getProperties() == null ? null : Collections.unmodifiableMap(optionsBase.getProperties());
+    this.server = optionsBase.getSocketAddress();
+    this.user = optionsBase.getUser();
+    this.password = optionsBase.getPassword();
+    this.database = optionsBase.getDatabase();
 
     this.cachePreparedStatements = optionsBase.getCachePreparedStatements();
     this.preparedStatementCacheSize = optionsBase.getPreparedStatementCacheMaxSize();
@@ -64,8 +74,15 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
     this.netClient = vertx.createNetClient(netClientOptions, clientCloseFuture);
   }
 
-  @Override
-  public void connect(SocketAddress server, String user, String password, String database, Promise<Connection> promise) {
+  public static EventLoopContext asEventLoopContext(ContextInternal ctx) {
+    if (ctx instanceof EventLoopContext) {
+      return (EventLoopContext) ctx;
+    } else {
+      return ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.workerPool(), ctx.classLoader());
+    }
+  }
+
+  public void connect(Promise<Connection> promise) {
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
     ContextInternal context = promiseInternal.context();
     context.emit(promise, p -> doConnectWithRetry(server, user, password, database, promiseInternal, reconnectAttempts));

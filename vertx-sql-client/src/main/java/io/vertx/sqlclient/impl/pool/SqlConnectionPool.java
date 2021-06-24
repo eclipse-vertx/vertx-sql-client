@@ -20,7 +20,6 @@ package io.vertx.sqlclient.impl.pool;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.SocketAddress;
@@ -32,15 +31,18 @@ import io.vertx.core.net.impl.pool.PoolConnection;
 import io.vertx.core.net.impl.pool.PoolConnector;
 import io.vertx.core.net.impl.pool.PoolWaiter;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
+import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.core.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -54,26 +56,25 @@ public class SqlConnectionPool {
 
   private static final Logger log = LoggerFactory.getLogger(SqlConnectionPool.class);
 
-  private final ConnectionFactory factory;
   private final SqlConnectOptions baseConnectOptions;
   private final Supplier<Future<SqlConnectOptions>> connectOptionsProvider;
+  private final Function<Context, Future<SqlConnection>> connectionProvider;
   private final VertxInternal vertx;
   private final ConnectionPool<PooledConnection> pool;
-  private final Handler<Connection> hook;
+  private final Supplier<Handler<PooledConnection>> hook;
   private final int pipeliningLimit;
   private final long idleTimeout;
   private final int maxSize;
 
-  public SqlConnectionPool(ConnectionFactory factory,
-                           SqlConnectOptions baseConnectOptions,
+  public SqlConnectionPool(SqlConnectOptions baseConnectOptions,
                            Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
-                           Handler<Connection> hook,
+                           Function<Context, Future<SqlConnection>> connectionProvider,
+                           Supplier<Handler<PooledConnection>> hook,
                            VertxInternal vertx,
                            long idleTimeout,
                            int maxSize,
                            int pipeliningLimit,
                            int maxWaitQueueSize) {
-    Objects.requireNonNull(factory, "No null connector");
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
@@ -87,8 +88,8 @@ public class SqlConnectionPool {
     this.pipeliningLimit = pipeliningLimit;
     this.idleTimeout = idleTimeout;
     this.maxSize = maxSize;
-    this.factory = factory;
     this.hook = hook;
+    this.connectionProvider = connectionProvider;
 
     if (pipeliningLimit > 1) {
       pool.connectionSelector((waiter, list) -> {
@@ -113,40 +114,42 @@ public class SqlConnectionPool {
   private final PoolConnector<PooledConnection> connector = new PoolConnector<PooledConnection>() {
     @Override
     public void connect(EventLoopContext context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<PooledConnection>>> handler) {
-      PromiseInternal<Connection> promise = context.promise();
-      Future<Connection> future = promise.future();
+      Future<SqlConnection> future = connectionProvider.apply(context);
       future
         .map(connection -> {
-          PooledConnection pooled = new PooledConnection(connection, listener);
-          connection.init(pooled);
+          SqlConnectionImpl impl = (SqlConnectionImpl) connection;
+          Connection conn = impl.unwrap();
+          PooledConnection pooled = new PooledConnection(impl.factory(), conn, listener);
+          conn.init(pooled);
           return new ConnectResult<>(pooled, pipeliningLimit, 0);
         })
         .onComplete(handler);
-      Future<SqlConnectOptions> connectOptions = null;
-      if (connectOptionsProvider != null) {
-        try {
-          connectOptions = connectOptionsProvider.get();
-        } catch (Exception e) {
-          log.error("Connect options provider failure, falling back on base connect options", e);
-        }
-      }
-      if (connectOptions == null) {
-        connect(baseConnectOptions, promise);
-      } else {
-        connectOptions.onComplete(ar -> {
-          if (ar.succeeded()) {
-            connect(ar.result(), promise);
-          } else {
-            log.error("Connect options provider failure, falling back on base connect options", ar.cause());
-            connect(baseConnectOptions, promise);
-          }
-        });
-      }
+
+//      Future<SqlConnectOptions> connectOptions = null;
+//      if (connectOptionsProvider != null) {
+//        try {
+//          connectOptions = connectOptionsProvider.get();
+//        } catch (Exception e) {
+//          log.error("Connect options provider failure, falling back on base connect options", e);
+//        }
+//      }
+//      if (connectOptions == null) {
+//        connect(baseConnectOptions, promise);
+//      } else {
+//        connectOptions.onComplete(ar -> {
+//          if (ar.succeeded()) {
+//            connect(ar.result(), promise);
+//          } else {
+//            log.error("Connect options provider failure, falling back on base connect options", ar.cause());
+//            connect(baseConnectOptions, promise);
+//          }
+//        });
+//      }
     }
 
-    private void connect(SqlConnectOptions connectOptions, PromiseInternal<Connection> promise) {
-      factory.connect(connectOptions.getSocketAddress(), connectOptions.getUser(), connectOptions.getPassword(), connectOptions.getDatabase(), promise);
-    }
+//    private void connect(SqlConnectOptions connectOptions, PromiseInternal<Connection> promise) {
+//      factory.connect(connectOptions.getSocketAddress(), connectOptions.getUser(), connectOptions.getPassword(), connectOptions.getDatabase(), promise);
+//    }
 
     @Override
     public boolean isValid(PooledConnection connection) {
@@ -176,7 +179,7 @@ public class SqlConnectionPool {
 
   public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
     Promise<R> promise = context.promise();
-    EventLoopContext eventLoopCtx = ConnectionFactory.asEventLoopContext(context);
+    EventLoopContext eventLoopCtx = SqlConnectionFactoryBase.asEventLoopContext(context);
     pool.acquire(eventLoopCtx, 0, ar -> {
       if (ar.succeeded()) {
         Lease<PooledConnection> lease = ar.result();
@@ -197,7 +200,7 @@ public class SqlConnectionPool {
     return promise.future();
   }
 
-  public void acquire(ContextInternal context, long timeout, Handler<AsyncResult<Connection>> handler) {
+  public void acquire(ContextInternal context, long timeout, Handler<AsyncResult<PooledConnection>> handler) {
     class PoolRequest implements PoolWaiter.Listener<PooledConnection>, Handler<AsyncResult<Lease<PooledConnection>>> {
       private long timerID = -1L;
       @Override
@@ -210,9 +213,10 @@ public class SqlConnectionPool {
           PooledConnection pooled = lease.get();
           pooled.lease = lease;
           if (!pooled.initialized) {
-            if (hook != null) {
+            Handler<PooledConnection> connectionHandler = hook.get();
+            if (connectionHandler != null) {
               pooled.continuation = handler;
-              hook.handle(pooled);
+              connectionHandler.handle(pooled);
               return;
             } else {
               pooled.initialized = true;
@@ -244,19 +248,20 @@ public class SqlConnectionPool {
         onEnqueue(waiter);
       }
     }
-    EventLoopContext eventLoopContext = ConnectionFactory.asEventLoopContext(context);
+    EventLoopContext eventLoopContext = SqlConnectionFactoryBase.asEventLoopContext(context);
     PoolRequest request = new PoolRequest();
     pool.acquire(eventLoopContext, request,0, request);
   }
 
   public Future<Void> close() {
     Promise<Void> promise = vertx.promise();
-    pool.close(ar -> factory.close(promise));
+    pool.close(ar -> promise.complete());
     return promise.future();
   }
 
-  private class PooledConnection implements Connection, Connection.Holder  {
+  public class PooledConnection implements Connection, Connection.Holder  {
 
+    private final ConnectionFactory factory;
     private final Connection conn;
     private final PoolConnector.Listener listener;
     private Holder holder;
@@ -265,11 +270,16 @@ public class SqlConnectionPool {
     private int inflight;
     private int num;
     private boolean initialized;
-    private Handler<AsyncResult<Connection>> continuation;
+    private Handler<AsyncResult<PooledConnection>> continuation;
 
-    PooledConnection(Connection conn, PoolConnector.Listener listener) {
+    PooledConnection(ConnectionFactory factory, Connection conn, PoolConnector.Listener listener) {
+      this.factory = factory;
       this.conn = conn;
       this.listener = listener;
+    }
+
+    public ConnectionFactory factory() {
+      return factory;
     }
 
     @Override
@@ -326,7 +336,7 @@ public class SqlConnectionPool {
         this.holder = null;
         if (!initialized) {
           initialized = true;
-          Handler<AsyncResult<Connection>> c = continuation;
+          Handler<AsyncResult<PooledConnection>> c = continuation;
           continuation = null;
           c.handle(Future.succeededFuture(this));
           return;
@@ -345,7 +355,7 @@ public class SqlConnectionPool {
         holder.handleClosed();
       }
 
-      Handler<AsyncResult<Connection>> c = this.continuation;
+      Handler<AsyncResult<PooledConnection>> c = this.continuation;
       if (c != null) {
         this.continuation = null;
         c.handle(Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION));

@@ -18,9 +18,11 @@
 package io.vertx.pgclient.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
@@ -32,20 +34,24 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
 import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PgConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
+public class PgConnectionFactory extends SqlConnectionFactoryBase {
 
   private SslMode sslMode;
   private int pipeliningLimit;
+  private final PgConnectOptions options;
 
-  PgConnectionFactory(VertxInternal context, PgConnectOptions options) {
+  public PgConnectionFactory(VertxInternal context, PgConnectOptions options) {
     super(context, options);
+
+    this.options = options; // TEMP
   }
 
   @Override
@@ -78,7 +84,7 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
   @Override
   protected void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise) {
     PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    doConnect(server, ConnectionFactory.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
+    doConnect(server, SqlConnectionFactoryBase.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
@@ -143,6 +149,20 @@ class PgConnectionFactory extends SqlConnectionFactoryBase implements Connection
       }));
     }
     return connFut;
+  }
+
+  @Override
+  public Future<SqlConnection> connect(Context context) {
+    ContextInternal contextInternal = (ContextInternal) context;
+    PromiseInternal<Connection> promise = contextInternal.promise();
+    connect(promise);
+    return promise.future()
+      .map(conn -> {
+        QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
+        PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn, tracer, null);
+        conn.init(pgConn);
+        return pgConn;
+      });
   }
 
   private PgSocketConnection newSocketConnection(EventLoopContext context, NetSocketInternal socket) {

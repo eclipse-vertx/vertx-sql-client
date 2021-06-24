@@ -66,8 +66,8 @@ public class PgPoolTest extends PgPoolTestBase {
   }
 
   @Override
-  protected PgPool createPool(PoolConfig config) {
-    PgPool pool = PgPool.pool(vertx, config);
+  protected PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
+    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
     pools.add(pool);
     return pool;
   }
@@ -399,11 +399,7 @@ public class PgPoolTest extends PgPoolTestBase {
         f.close();
       });
     };
-    PoolConfig config = PoolConfig
-      .create(new PoolOptions().setMaxSize(1))
-      .connectingTo(options)
-      .connectHandler(hook);
-    PgPool pool = createPool(config);
+    PgPool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
         async.complete();
@@ -427,11 +423,7 @@ public class PgPoolTest extends PgPoolTestBase {
         });
         proxyConn.get().close();
       };
-      PoolConfig config = PoolConfig
-        .create(new PoolOptions().setMaxSize(1))
-        .connectingTo(new PgConnectOptions(options).setPort(8080).setHost("localhost"))
-        .connectHandler(hook);
-      PgPool pool = createPool(config);
+      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), new PoolOptions().setMaxSize(1)).connectHandler(hook);
       pool.getConnection(ctx.asyncAssertFailure(conn -> {
         async.countDown();
       }));

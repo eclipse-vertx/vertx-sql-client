@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -27,7 +28,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.*;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -35,8 +36,11 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
-import java.util.function.Supplier;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Todo :
@@ -49,8 +53,8 @@ import java.util.function.Supplier;
  */
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
-  public static PgPoolImpl create(final VertxInternal vertx, boolean pipelined, PoolConfig config) {
-    PgConnectOptions baseConnectOptions = PgConnectOptions.wrap(config.baseConnectOptions());
+  public static PgPoolImpl create(final VertxInternal vertx, boolean pipelined, List<? extends SqlConnectOptions> servers, PoolOptions poolOptions) {
+    PgConnectOptions baseConnectOptions = PgConnectOptions.wrap(servers.get(0));
     VertxInternal vx;
     if (vertx == null) {
       if (Vertx.currentContext() != null) {
@@ -64,15 +68,18 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     } else {
       vx = vertx;
     }
-    Handler<SqlConnection> connectHook = config.connectHandler();
-    PoolOptions poolOptions = config.options();
     QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
     int pipeliningLimit = pipelined ? baseConnectOptions.getPipeliningLimit() : 1;
-    PgPoolImpl pool = new PgPoolImpl(vx, baseConnectOptions, config.connectOptionsProvider(), tracer, metrics, pipeliningLimit, poolOptions, connectHook);
+    PgPoolImpl pool = new PgPoolImpl(vx, baseConnectOptions, tracer, metrics, pipeliningLimit, poolOptions);
+    PgDriver driver = new PgDriver();
+    List<ConnectionFactory> lst = servers.stream().map(options -> driver.createConnectionFactory(vx, options)).collect(Collectors.toList());
+    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
+    pool.connectionProvider(factory::connect);
     pool.init();
     CloseFuture closeFuture = pool.closeFuture();
+    closeFuture.add(factory);
     vx.addCloseHook(closeFuture);
     if (vertx == null) {
       closeFuture.future().onComplete(ar -> vx.close());
@@ -87,8 +94,8 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     return pool;
   }
 
-  private PgPoolImpl(VertxInternal vertx, PgConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions, Handler<SqlConnection> connectHook) {
-    super(vertx, baseConnectOptions, connectOptionsProvider, new PgConnectionFactory(vertx, baseConnectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHook);
+  private PgPoolImpl(VertxInternal vertx, PgConnectOptions baseConnectOptions, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions) {
+    super(vertx, baseConnectOptions, null, tracer, metrics, pipeliningLimit, poolOptions);
   }
 
   @Override
@@ -98,7 +105,17 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
   }
 
   @Override
-  protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new PgConnectionImpl((PgConnectionFactory) connectionFactory(), context, conn, tracer, metrics);
+  protected SqlConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection conn) {
+    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn, tracer, metrics);
+  }
+
+  @Override
+  public PgPool connectHandler(Handler<SqlConnection> handler) {
+    return (PgPool) super.connectHandler(handler);
+  }
+
+  @Override
+  public PgPoolImpl connectionProvider(Function<Context, Future<SqlConnection>> connectionProvider) {
+    return (PgPoolImpl) super.connectionProvider(connectionProvider);
   }
 }

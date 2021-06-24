@@ -18,7 +18,6 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Future;
-import io.vertx.sqlclient.PoolConfig;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -57,11 +56,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
     return createPool(connectOptions, new PoolOptions().setMaxSize(size));
   }
 
-  protected PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return createPool(PoolConfig.create(poolOptions).connectingTo(connectOptions));
-  }
-
-  protected abstract PgPool createPool(PoolConfig config);
+  protected abstract PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions);
 
   @Test
   public void testPool(TestContext ctx) {

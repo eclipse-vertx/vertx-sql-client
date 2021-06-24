@@ -16,27 +16,32 @@
 package io.vertx.mysqlclient.spi;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.mysqlclient.impl.MySQLConnectionFactory;
+import io.vertx.mysqlclient.impl.MySQLPoolImpl;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.Driver;
+import io.vertx.sqlclient.spi.ConnectionFactory;
+
+import java.util.List;
 
 public class MySQLDriver implements Driver {
 
   @Override
-  public Pool createPool(PoolConfig config) {
-    return MySQLPool.pool(MySQLConnectOptions.wrap(config.baseConnectOptions()), config.options());
-  }
-
-  @Override
-  public Pool createPool(Vertx vertx, PoolConfig config) {
-    return MySQLPool.pool(vertx, MySQLConnectOptions.wrap(config.baseConnectOptions()), config.options());
+  public MySQLPool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
+    return MySQLPoolImpl.create((VertxInternal) vertx, databases, options);
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof MySQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
+  }
+
+  @Override
+  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+    return new MySQLConnectionFactory((VertxInternal) vertx, MySQLConnectOptions.wrap(database));
   }
 }

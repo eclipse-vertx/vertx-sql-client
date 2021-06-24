@@ -18,8 +18,10 @@ package io.vertx.sqlclient.spi;
 
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+
+import java.util.List;
 
 /**
  * An entry point to the Vertx Reactive SQL Client
@@ -30,19 +32,21 @@ public interface Driver {
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
    *
-   * @param config the pool config for creating the pool
+   * @param vertx the Vertx instance to be used with the connection pool
+   * @param databases the list of databases
+   * @param options the options for creating the pool
    * @return the connection pool
    */
-  Pool createPool(PoolConfig config);
+  Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options);
 
   /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   * Create a connection factory to the given {@code database}.
    *
-   * @param vertx the Vertx instance to be used with the connection pool
-   * @param config the pool config for creating the pool
-   * @return the connection pool
+   * @param vertx the Vertx instance t
+   * @param database the database to connect to
+   * @return the connection factory
    */
-  Pool createPool(Vertx vertx, PoolConfig config);
+  ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database);
 
   /**
    * @return true if the driver accepts the {@code connectOptions}, false otherwise

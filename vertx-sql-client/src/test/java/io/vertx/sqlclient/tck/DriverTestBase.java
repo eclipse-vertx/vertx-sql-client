@@ -5,11 +5,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import io.vertx.sqlclient.PoolConfig;
 import org.junit.Test;
 
 import io.vertx.core.Vertx;
@@ -49,7 +49,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver01(TestContext ctx) {
-    Pool p = getDriver().createPool(PoolConfig.create().connectingTo(defaultOptions()));
+    Pool p = getDriver().createPool(null, Collections.singletonList(defaultOptions()), new PoolOptions());
     p.getConnection(ctx.asyncAssertSuccess(ar -> {
       ar.close();
     }));
@@ -57,7 +57,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver02(TestContext ctx) {
-    Pool p = getDriver().createPool(PoolConfig.create().connectingTo(new SqlConnectOptions(defaultOptions())));
+    Pool p = getDriver().createPool(null, Collections.singletonList(new SqlConnectOptions(defaultOptions())), new PoolOptions());
     p.getConnection(ctx.asyncAssertSuccess(ar -> {
       ar.close();
     }));
@@ -65,7 +65,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver03(TestContext ctx) {
-    Pool p = getDriver().createPool(PoolConfig.create(new PoolOptions().setMaxSize(1)).connectingTo(defaultOptions()));
+    Pool p = getDriver().createPool(null, Collections.singletonList(defaultOptions()), new PoolOptions().setMaxSize(1));
     p.getConnection(ctx.asyncAssertSuccess(ar -> {
       ar.close();
     }));
@@ -73,7 +73,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver04(TestContext ctx) {
-    Pool p = getDriver().createPool(Vertx.vertx(), PoolConfig.create(new PoolOptions().setMaxSize(1)).connectingTo(defaultOptions()));
+    Pool p = getDriver().createPool(Vertx.vertx(), Collections.singletonList(defaultOptions()), new PoolOptions().setMaxSize(1));
     p.getConnection(ctx.asyncAssertSuccess(ar -> {
       ar.close();
     }));

@@ -17,7 +17,6 @@
 package io.vertx.pgclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
@@ -46,25 +45,14 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
         return context.failedFuture(e);
       }
       context.addCloseHook(client);
-      PromiseInternal<Connection> promise = context.promise();
-      client.connect(options.getSocketAddress(), options.getUser(), options.getPassword(), options.getDatabase(), promise);
-      return promise.future()
-        .map(conn -> {
-          QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(context.tracer(), options);
-          PgConnectionImpl pgConn = new PgConnectionImpl(client, context, conn, tracer, null);
-          conn.init(pgConn);
-          return pgConn;
-        });
+      return (Future) client.connect(context);
     }
   }
 
-  private final PgConnectionFactory factory;
   private volatile Handler<PgNotification> notificationHandler;
 
-  PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, conn, tracer, metrics);
-
-    this.factory = factory;
+  public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    super(context, factory, conn, tracer, metrics);
   }
 
   @Override
@@ -110,7 +98,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      factory.cancelRequest(conn.server(), this.processId(), this.secretKey(), handler);
+      ((PgConnectionFactory)factory).cancelRequest(conn.server(), this.processId(), this.secretKey(), handler);
     } else {
       context.runOnContext(v -> cancelRequest(handler));
     }

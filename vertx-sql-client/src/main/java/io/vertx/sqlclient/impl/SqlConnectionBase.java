@@ -24,6 +24,7 @@ import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -31,12 +32,22 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBase<C> {
 
   protected final ContextInternal context;
+  protected final ConnectionFactory factory;
   protected final Connection conn;
 
-  protected SqlConnectionBase(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  protected SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(tracer, metrics);
     this.context = context;
+    this.factory = factory;
     this.conn = conn;
+  }
+
+  public ConnectionFactory factory() {
+    return factory;
+  }
+
+  public Connection unwrap() {
+    return conn;
   }
 
   public C prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler) {

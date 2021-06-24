@@ -1,43 +1,24 @@
-Advanced pool configuration is available with {@link io.vertx.sqlclient.PoolConfig}
-
-[source,$lang]
-----
-{@link examples.SqlClientExamples#poolConfig01}
-----
-
 === Server load balancing
 
 You can configure the pool with a list of servers instead of a single server.
 
 [source,$lang]
 ----
-{@link examples.SqlClientExamples#poolConfig02}
+{@link examples.SqlClientExamples#poolConfig01}
 ----
 
-The pool uses the first options of the list to apply common networking configuration such as SSL certificates, etc...
+The pool uses a round-robin load balancing when a connection is created to select different servers.
 
-The pool uses then a round-robin load balancing when a connection is created to select different network address, user, password and database.
-Note, this provides load balancing when the connection is created and not when the a connection is borrowed from the pool.
+NOTE: this provides load balancing when the connection is created and not when the connection is borrowed from the pool.
 
-You can also use a provider to provide a dynamic configuration of the pool
+=== Pool connection initialization
 
-[source,$lang]
-----
-{@link examples.SqlClientExamples#poolConfig03}
-----
-
-Like previously, the {@code base} defines the common networking configuration applied to all connections.
-
-The {@code provider} returns a {@link io.vertx.core.Future} of the server to be used when the pool needs to create a connection.
-
-=== Connection initialization
-
-You can use the {@link io.vertx.sqlclient.PoolConfig#connectHandler} to interact with a connection after it
+You can use the {@link io.vertx.sqlclient.Pool#connectHandler} to interact with a connection after it
 has been created and before it is inserted in the pool.
 
 [source,$lang]
 ----
-{@link examples.SqlClientExamples#poolConfig04}
+{@link examples.SqlClientExamples#poolConfig02}
 ----
 
 Once you are done with the connection, you should simply close it to signal the pool to use it.

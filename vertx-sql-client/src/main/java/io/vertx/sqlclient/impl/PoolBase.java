@@ -30,6 +30,7 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.List;
 import java.util.function.Function;
@@ -44,43 +45,30 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
 public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implements Pool, Closeable {
 
   private final VertxInternal vertx;
-  private final ConnectionFactory factory;
   private final SqlConnectionPool pool;
   private final CloseFuture closeFuture;
   private final long idleTimeout;
   private final long connectionTimeout;
   private final long cleanerPeriod;
+  private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
   private long timerID;
+  private volatile Function<Context, Future<SqlConnection>> connectionProvider;
 
   public PoolBase(VertxInternal vertx,
                   SqlConnectOptions baseConnectOptions,
                   Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
-                  ConnectionFactory factory,
                   QueryTracer tracer,
                   ClientMetrics metrics,
                   int pipeliningLimit,
-                  PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
+                  PoolOptions poolOptions) {
     super(tracer, metrics);
 
-    Handler<Connection> connectionInitializer;
-    if (connectHandler != null) {
-      connectionInitializer = conn -> {
-        ContextInternal current = vertx.getContext();
-        SqlConnectionImpl wrapper = wrap(current, conn);
-        conn.init(wrapper);
-        current.dispatch(wrapper, connectHandler);
-      };
-    } else {
-      connectionInitializer = null;
-    }
-
-    this.factory = factory;
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(factory, baseConnectOptions, connectOptionsProvider, connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
+    this.pool = new SqlConnectionPool(baseConnectOptions, connectOptionsProvider, ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
     this.closeFuture = new CloseFuture();
   }
 
@@ -96,8 +84,9 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     return (P) this;
   }
 
-  public ConnectionFactory connectionFactory() {
-    return factory;
+  public PoolBase connectionProvider(Function<Context, Future<SqlConnection>> connectionProvider) {
+    this.connectionProvider = connectionProvider;
+    return this;
   }
 
   private void checkExpired() {
@@ -148,7 +137,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     } else {
       metric = null;
     }
-    Promise<Connection> promise = current.promise();
+    Promise<SqlConnectionPool.PooledConnection> promise = current.promise();
     acquire(current, connectionTimeout, promise);
     if (metrics != null) {
       promise.future().onComplete(ar -> {
@@ -156,7 +145,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
       });
     }
     return promise.future().map(conn -> {
-      SqlConnectionImpl wrapper = wrap(current, conn);
+      SqlConnectionImpl wrapper = wrap(current, conn.factory(), conn);
       conn.init(wrapper);
       return wrapper;
     });
@@ -181,11 +170,11 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     return fut;
   }
 
-  private void acquire(ContextInternal context, long timeout, Handler<AsyncResult<Connection>> completionHandler) {
+  private void acquire(ContextInternal context, long timeout, Handler<AsyncResult<SqlConnectionPool.PooledConnection>> completionHandler) {
     pool.acquire(context, timeout, completionHandler);
   }
 
-  protected abstract SqlConnectionImpl wrap(ContextInternal context, Connection conn);
+  protected abstract SqlConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection conn);
 
   @Override
   public void close(Promise<Void> completion) {
@@ -204,6 +193,21 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     closeFuture.close(vertx.promise(handler));
   }
 
+  @Override
+  public Pool connectHandler(Handler<SqlConnection> handler) {
+    if (handler != null) {
+      connectionInitializer = conn -> {
+        ContextInternal current = vertx.getContext();
+        SqlConnectionImpl wrapper = wrap(current, conn.factory(), conn);
+        conn.init(wrapper);
+        current.dispatch(wrapper, handler);
+      };
+    } else {
+      connectionInitializer = null;
+    }
+    return this;
+  }
+
   private Future<Void> doClose() {
     synchronized (this) {
       if (timerID >= 0) {
@@ -211,12 +215,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
         timerID = -1;
       }
     }
-    ContextInternal ctx = context();
-    return pool.close().eventually(v -> {
-      PromiseInternal<Void> promise = ctx.promise();
-      factory.close(promise);
-      return promise;
-    }).onComplete(v -> {
+    return pool.close().onComplete(v -> {
       if (metrics != null) {
         metrics.close();
       }

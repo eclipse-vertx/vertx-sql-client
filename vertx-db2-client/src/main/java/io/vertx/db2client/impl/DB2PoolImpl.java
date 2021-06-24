@@ -25,7 +25,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Pool;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.db2client.spi.DB2Driver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -33,13 +33,16 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
+import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
 
-  public static DB2PoolImpl create(VertxInternal vertx, boolean pipelined, PoolConfig config) {
-    DB2ConnectOptions baseConnectOptions = DB2ConnectOptions.wrap(config.baseConnectOptions());
+  public static DB2PoolImpl create(VertxInternal vertx, boolean pipelined, List<? extends SqlConnectOptions> servers, PoolOptions poolOptions) {
+    DB2ConnectOptions baseConnectOptions = DB2ConnectOptions.wrap(servers.get(0));
     VertxInternal vx;
     if (vertx == null) {
       if (Vertx.currentContext() != null) {
@@ -54,9 +57,14 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
     VertxMetrics vertxMetrics = vx.metricsSPI();
     int pipeliningLimit = pipelined ? baseConnectOptions.getPipeliningLimit() : 1;
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    DB2PoolImpl pool = new DB2PoolImpl(vx, pipeliningLimit, config.options(), baseConnectOptions, config.connectOptionsProvider(), tracer, metrics, config.connectHandler());
+    DB2PoolImpl pool = new DB2PoolImpl(vx, pipeliningLimit, poolOptions, baseConnectOptions, null, tracer, metrics);
     pool.init();
+    DB2Driver driver = new DB2Driver();
+    List<ConnectionFactory> lst = servers.stream().map(options -> driver.createConnectionFactory(vx, options)).collect(Collectors.toList());
+    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
+    pool.connectionProvider(factory::connect);
     CloseFuture closeFuture = pool.closeFuture();
+    closeFuture.add(factory);
     if (vertx == null) {
       closeFuture.future().onComplete(ar -> vx.close());
     } else {
@@ -70,13 +78,18 @@ public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
     return pool;
   }
 
-  private DB2PoolImpl(VertxInternal vertx, int pipeliningLimit, PoolOptions poolOptions, DB2ConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, Handler<SqlConnection> connectHandler) {
-    super(vertx, baseConnectOptions, connectOptionsProvider, new DB2ConnectionFactory(vertx, baseConnectOptions), tracer, metrics, pipeliningLimit, poolOptions, connectHandler);
+  private DB2PoolImpl(VertxInternal vertx, int pipeliningLimit, PoolOptions poolOptions, DB2ConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics) {
+    super(vertx, baseConnectOptions, connectOptionsProvider, tracer, metrics, pipeliningLimit, poolOptions);
   }
 
   @SuppressWarnings("rawtypes")
   @Override
-  protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new DB2ConnectionImpl(context, conn, tracer, metrics);
+  protected SqlConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection conn) {
+    return new DB2ConnectionImpl(context, factory, conn, tracer, metrics);
+  }
+
+  @Override
+  public DB2Pool connectHandler(Handler<SqlConnection> handler) {
+    return (DB2Pool) super.connectHandler(handler);
   }
 }

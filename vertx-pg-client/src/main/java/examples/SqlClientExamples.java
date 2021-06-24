@@ -16,7 +16,6 @@
  */
 package examples;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
@@ -24,7 +23,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -345,28 +344,12 @@ public class SqlClientExamples {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 
-  public void poolConfig01(PgConnectOptions connectOptions) {
-    PoolConfig config = PoolConfig.create().connectingTo(connectOptions);
-    PgPool pool = PgPool.pool(config);
+  public void poolConfig01(PgConnectOptions server1, PgConnectOptions server2, PgConnectOptions server3, PoolOptions options) {
+    PgPool pool = PgPool.pool(Arrays.asList(server1, server2, server3), options);
   }
 
-  public void poolConfig02(PgConnectOptions server1, PgConnectOptions server2, PgConnectOptions server3) {
-    PoolConfig config = PoolConfig.create().connectingTo(Arrays.asList(server1, server2, server3));
-  }
-
-  public void poolConfig03(SqlConnectOptions base) {
-    PoolConfig config = PoolConfig.create().connectingTo(base, () -> {
-      Future<SqlConnectOptions> fut = giveMeAServer();
-      return fut;
-    });
-  }
-
-  private static Future<SqlConnectOptions> giveMeAServer() {
-    throw new UnsupportedOperationException();
-  }
-
-  public void poolConfig04(PoolConfig config, String sql) {
-    config.connectHandler(conn -> {
+  public void poolConfig02(PgPool pool, String sql) {
+    pool.connectHandler(conn -> {
       conn.query(sql).execute().onSuccess(res -> {
         // Release the connection to the pool, ready to be used by the application
         conn.close();

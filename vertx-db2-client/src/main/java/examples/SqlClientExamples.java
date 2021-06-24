@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.db2client.DB2ConnectOptions;
@@ -27,7 +26,7 @@ import io.vertx.db2client.DB2Pool;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -346,28 +345,12 @@ public class SqlClientExamples {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 
-  public void poolConfig01(DB2ConnectOptions connectOptions) {
-    PoolConfig config = PoolConfig.create().connectingTo(connectOptions);
-    DB2Pool pool = DB2Pool.pool(config);
+  public void poolConfig01(DB2ConnectOptions server1, DB2ConnectOptions server2, DB2ConnectOptions server3, PoolOptions options) {
+    DB2Pool pool = DB2Pool.pool(Arrays.asList(server1, server2, server3), options);
   }
 
-  public void poolConfig02(DB2ConnectOptions server1, DB2ConnectOptions server2, DB2ConnectOptions server3) {
-    PoolConfig config = PoolConfig.create().connectingTo(Arrays.asList(server1, server2, server3));
-  }
-
-  public void poolConfig03(SqlConnectOptions base) {
-    PoolConfig config = PoolConfig.create().connectingTo(base, () -> {
-      Future<SqlConnectOptions> fut = giveMeAServer();
-      return fut;
-    });
-  }
-
-  private static Future<SqlConnectOptions> giveMeAServer() {
-    throw new UnsupportedOperationException();
-  }
-
-  public void poolConfig04(PoolConfig config, String sql) {
-    config.connectHandler(conn -> {
+  public void poolConfig02(DB2Pool pool, String sql) {
+    pool.connectHandler(conn -> {
       conn.query(sql).execute().onSuccess(res -> {
         // Release the connection to the pool, ready to be used by the application
         conn.close();

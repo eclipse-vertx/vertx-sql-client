@@ -17,14 +17,21 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.pgclient.impl.PgPoolImpl;
-import io.vertx.sqlclient.PoolConfig;
+import io.vertx.codegen.annotations.Fluent;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.SqlClient;
+import io.vertx.sqlclient.SqlConnection;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * A {@link Pool pool} of {@link PgConnection PostgreSQL connections}.
@@ -44,8 +51,8 @@ public interface PgPool extends Pool {
   /**
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
    */
-  static PgPool pool(PoolOptions poolOptions) {
-    return pool(PgConnectOptions.fromEnv(), poolOptions);
+  static PgPool pool(PoolOptions options) {
+    return pool(PgConnectOptions.fromEnv(), options);
   }
 
   /**
@@ -58,147 +65,156 @@ public interface PgPool extends Pool {
   /**
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
    */
-  static PgPool pool(String connectionUri, PoolOptions poolOptions) {
-    return pool(PgConnectOptions.fromUri(connectionUri), poolOptions);
+  static PgPool pool(String connectionUri, PoolOptions options) {
+    return pool(PgConnectOptions.fromUri(connectionUri), options);
   }
 
   /**
-   * Like {@link #pool(Vertx, String,PoolOptions)} with a default {@code poolOptions}.
+   * Like {@link #pool(Vertx, String,PoolOptions)} with default options.
    */
   static PgPool pool(Vertx vertx, String connectionUri) {
     return pool(vertx, PgConnectOptions.fromUri(connectionUri), new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
+   * Like {@link #pool(Vertx, PgConnectOptions, PoolOptions)} with the {@code database} retrieved from the environment variables.
    */
-  static PgPool pool(Vertx vertx, PoolOptions poolOptions) {
-    return pool(vertx, PgConnectOptions.fromEnv(), poolOptions);
+  static PgPool pool(Vertx vertx, PoolOptions options) {
+    return pool(vertx, PgConnectOptions.fromEnv(), options);
   }
 
   /**
-   * Like {@link #pool(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   * Like {@link #pool(Vertx, PgConnectOptions, PoolOptions)} with {@code database} retrieved from the given {@code connectionUri}.
    */
   static PgPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
     return pool(vertx, PgConnectOptions.fromUri(connectionUri), poolOptions);
   }
 
   /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   * Create a connection pool to the PostgreSQL {@code database} configured with the given {@code options}.
    *
-   * @param poolOptions the options for creating the pool
+   * @param database the database
+   * @param options the options for creating the pool
    * @return the connection pool
    */
-  static PgPool pool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return pool(null, connectOptions, poolOptions);
+  static PgPool pool(PgConnectOptions database, PoolOptions options) {
+    return pool(null, database, options);
   }
 
   /**
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static PgPool pool(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    PoolConfig poolConfig = PoolConfig.create(poolOptions);
-    PoolConfig config = poolConfig.connectingTo(connectOptions);
-    return pool(vertx, config);
+  static PgPool pool(Vertx vertx, PgConnectOptions database, PoolOptions options) {
+    return pool(vertx, Collections.singletonList(database), options);
   }
 
   /**
-   * Create a connection pool to the database configured with the given {@code config}.
+   * Create a connection pool to the PostgreSQL {@code databases} with
+   * round-robin selection.
    *
-   * @param config the pool config
+   * @param databases the list of databases
+   * @param poolOptions the options for creating the pool
    * @return the connection pool
    */
-  static PgPool pool(PoolConfig config) {
-    return pool(null, config);
+  static PgPool pool(List<PgConnectOptions> databases, PoolOptions poolOptions) {
+    return pool(null, databases, poolOptions);
   }
 
   /**
-   * Like {@link #pool(PoolConfig)} with a specific {@link Vertx} instance.
+   * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static PgPool pool(Vertx vertx, PoolConfig config) {
-    return PgPoolImpl.create((VertxInternal) vertx, false, config);
+  static PgPool pool(Vertx vertx, List<PgConnectOptions> databases, PoolOptions poolOptions) {
+    return new PgDriver().createPool(vertx, databases, poolOptions);
   }
 
   /**
-   * Like {@link #client(PoolOptions)} with a default {@code poolOptions}.
+   * Like {@link #client(PoolOptions)} with default options.
    */
   static SqlClient client() {
     return client(PgConnectOptions.fromEnv(), new PoolOptions());
   }
 
   /**
-   * Like {@link #client(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
+   * Like {@link #client(PgConnectOptions, PoolOptions)} with {@code database} retrieved from the environment variables.
    */
-  static SqlClient client(PoolOptions poolOptions) {
-    return client(PgConnectOptions.fromEnv(), poolOptions);
+  static SqlClient client(PoolOptions options) {
+    return client(PgConnectOptions.fromEnv(), options);
   }
 
   /**
-   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
+   * Like {@link #pool(String, PoolOptions)} with default options.
    */
   static SqlClient client(String connectionUri) {
     return client(connectionUri, new PoolOptions());
   }
 
   /**
-   * Like {@link #client(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   * Like {@link #client(PgConnectOptions, PoolOptions)} with {@code database} retrieved from the {@code connectionUri}.
    */
-  static SqlClient client(String connectionUri, PoolOptions poolOptions) {
-    return client(PgConnectOptions.fromUri(connectionUri), poolOptions);
+  static SqlClient client(String connectionUri, PoolOptions options) {
+    return client(PgConnectOptions.fromUri(connectionUri), options);
   }
 
   /**
-   * Like {@link #client(Vertx, String,PoolOptions)} with a default {@code poolOptions}.
+   * Like {@link #client(Vertx, String,PoolOptions)} with default options.
    */
   static SqlClient client(Vertx vertx, String connectionUri) {
     return client(vertx, PgConnectOptions.fromUri(connectionUri), new PoolOptions());
   }
 
   /**
-   * Like {@link #client(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
+   * Like {@link #client(Vertx, PgConnectOptions, PoolOptions)} with {@code database} retrieved from the environment variables.
    */
   static SqlClient client(Vertx vertx, PoolOptions poolOptions) {
     return client(vertx, PgConnectOptions.fromEnv(), poolOptions);
   }
 
   /**
-   * Like {@link #client(Vertx, PgConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   * Like {@link #client(Vertx, PgConnectOptions, PoolOptions)} with {@code database} build from {@code connectionUri}.
    */
-  static SqlClient client(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
-    return client(vertx, PgConnectOptions.fromUri(connectionUri), poolOptions);
+  static SqlClient client(Vertx vertx, String connectionUri, PoolOptions options) {
+    return client(vertx, PgConnectOptions.fromUri(connectionUri), options);
   }
 
   /**
-   * Create a client backed by a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   * Create a client backed by a connection pool to the PostgreSQL {@code database} configured with the given {@code options}.
    *
-   * @param poolOptions the options for creating the backing pool
-   * @return the client
+   * @param options the options for creating the backing pool
+   * @return the pooled client
    */
-  static SqlClient client(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(null, connectOptions, poolOptions);
+  static SqlClient client(PgConnectOptions database, PoolOptions options) {
+    return client(null, database, options);
   }
 
   /**
    * Like {@link #client(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static SqlClient client(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(vertx, PoolConfig.create(poolOptions).connectingTo(connectOptions));
+  static SqlClient client(Vertx vertx, PgConnectOptions database, PoolOptions options) {
+    return client(vertx, Collections.singletonList(database), options);
   }
 
   /**
-   * Like {@link #client(PoolConfig)} with a specific {@link Vertx} instance.
+   * Like {@link #client(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static SqlClient client(Vertx vertx, PoolConfig config) {
-    return PgPoolImpl.create((VertxInternal) vertx, true, config);
+  static SqlClient client(Vertx vertx, List<PgConnectOptions> databases, PoolOptions options) {
+    return new PgDriver().createClient(vertx, databases, options);
   }
 
   /**
-   * Create a client backed by a connection pool to the database configured with the given {@code config}.
+   * Create a client backed by a connection pool to the PostgreSQL {@code databases} with
+   * round-robin selection.
    *
-   * @param config the pool config for creating the backing pool
-   * @return the client
+   * @param databases the list of databases
+   * @param options the options for creating the pool
+   * @return the pooled client
    */
-  static SqlClient client(PoolConfig config) {
-    return client(null, config);
+  static SqlClient client(List<PgConnectOptions> databases, PoolOptions options) {
+    return client(null, databases, options);
   }
+
+  @Override
+  PgPool connectHandler(Handler<SqlConnection> handler);
+
+  @Fluent
+  PgPool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 }
