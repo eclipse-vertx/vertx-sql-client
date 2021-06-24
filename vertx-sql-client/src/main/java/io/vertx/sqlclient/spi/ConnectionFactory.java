@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A connection factory.
+ * A connection factory, can be obtained from {@link Driver#createConnectionFactory}
  */
 public interface ConnectionFactory extends Closeable {
 

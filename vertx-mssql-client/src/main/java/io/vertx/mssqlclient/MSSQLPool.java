@@ -11,7 +11,10 @@
 
 package io.vertx.mssqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
@@ -19,6 +22,7 @@ import io.vertx.sqlclient.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
 
@@ -95,4 +99,7 @@ public interface MSSQLPool extends Pool {
 
   @Override
   MSSQLPool connectHandler(Handler<SqlConnection> handler);
+
+  @Fluent
+  MSSQLPool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 }

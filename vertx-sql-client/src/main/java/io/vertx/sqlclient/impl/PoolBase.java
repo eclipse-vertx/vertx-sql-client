@@ -84,9 +84,12 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     return (P) this;
   }
 
-  public PoolBase connectionProvider(Function<Context, Future<SqlConnection>> connectionProvider) {
+  public P connectionProvider(Function<Context, Future<SqlConnection>> connectionProvider) {
+    if (connectionProvider == null) {
+      throw new NullPointerException();
+    }
     this.connectionProvider = connectionProvider;
-    return this;
+    return (P) this;
   }
 
   private void checkExpired() {

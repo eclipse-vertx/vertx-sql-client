@@ -11,7 +11,10 @@
 
 package io.vertx.mysqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mysqlclient.spi.MySQLDriver;
@@ -21,6 +24,7 @@ import io.vertx.sqlclient.SqlConnection;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 
@@ -97,4 +101,7 @@ public interface MySQLPool extends Pool {
 
   @Override
   MySQLPool connectHandler(Handler<SqlConnection> handler);
+
+  @Fluent
+  MySQLPool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 }

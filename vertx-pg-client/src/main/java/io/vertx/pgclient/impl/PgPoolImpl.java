@@ -17,8 +17,6 @@
 
 package io.vertx.pgclient.impl;
 
-import io.vertx.core.Context;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
@@ -39,7 +37,6 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -114,8 +111,4 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     return (PgPool) super.connectHandler(handler);
   }
 
-  @Override
-  public PgPoolImpl connectionProvider(Function<Context, Future<SqlConnection>> connectionProvider) {
-    return (PgPoolImpl) super.connectionProvider(connectionProvider);
-  }
 }

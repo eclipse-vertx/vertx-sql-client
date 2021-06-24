@@ -15,7 +15,10 @@
  */
 package io.vertx.db2client;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.db2client.spi.DB2Driver;
@@ -26,6 +29,7 @@ import io.vertx.sqlclient.SqlConnection;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import static io.vertx.db2client.DB2ConnectOptions.fromUri;
 
@@ -175,4 +179,7 @@ public interface DB2Pool extends Pool {
 
   @Override
   DB2Pool connectHandler(Handler<SqlConnection> handler);
+
+  @Fluent
+  DB2Pool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 }

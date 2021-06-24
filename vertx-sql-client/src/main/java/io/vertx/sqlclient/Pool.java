@@ -27,6 +27,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -254,4 +255,15 @@ public interface Pool extends SqlClient {
   @Fluent
   Pool connectHandler(Handler<SqlConnection> handler);
 
+  /**
+   * Replace the default pool connection provider, the new {@code provider} returns a future connection for a
+   * given {@link Context}.
+   *
+   * <p> A {@link io.vertx.sqlclient.spi.ConnectionFactory} can be used as connection provider.
+   *
+   * @param provider the new connection provider
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  Pool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 }
