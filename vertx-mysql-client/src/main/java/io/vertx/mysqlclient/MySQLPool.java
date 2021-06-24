@@ -81,8 +81,8 @@ public interface MySQLPool extends Pool {
   }
 
   /**
-   * Create a connection pool to the MySQL {@code databases} with
-   * round-robin selection.
+   * Create a connection pool to the MySQL {@code databases} with round-robin selection.
+   * Round-robin is applied when a new connection is created by the pool.
    *
    * @param databases the list of servers
    * @param options the options for creating the pool

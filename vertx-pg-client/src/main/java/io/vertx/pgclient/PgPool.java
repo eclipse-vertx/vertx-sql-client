@@ -109,8 +109,8 @@ public interface PgPool extends Pool {
   }
 
   /**
-   * Create a connection pool to the PostgreSQL {@code databases} with
-   * round-robin selection.
+   * Create a connection pool to the PostgreSQL {@code databases} with round-robin selection.
+   * Round-robin is applied when a new connection is created by the pool.
    *
    * @param databases the list of databases
    * @param poolOptions the options for creating the pool
@@ -201,8 +201,8 @@ public interface PgPool extends Pool {
   }
 
   /**
-   * Create a client backed by a connection pool to the PostgreSQL {@code databases} with
-   * round-robin selection.
+   * Create a client backed by a connection pool to the PostgreSQL {@code databases} with round-robin selection.
+   * Round-robin is applied when a new connection is created by the pool.
    *
    * @param databases the list of databases
    * @param options the options for creating the pool

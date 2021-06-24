@@ -89,8 +89,8 @@ public interface DB2Pool extends Pool {
   }
 
   /**
-   * Create a connection pool to the DB2 {@code databases} with
-   * round-robin selection.
+   * Create a connection pool to the DB2 {@code databases} with round-robin selection.
+   * Round-robin is applied when a new connection is created by the pool.
    *
    * @param databases the list of servers
    * @param options the options for creating the pool
@@ -158,8 +158,8 @@ public interface DB2Pool extends Pool {
   }
 
   /**
-   * Create a client backed by a connection pool to the DB2 {@code databases} with
-   * round-robin selection.
+   * Create a client backed by a connection pool to the DB2 {@code databases} with round-robin selection.
+   * Round-robin is applied when a new connection is created by the pool.
    *
    * @param databases the list of servers
    * @param options the options for creating the pool

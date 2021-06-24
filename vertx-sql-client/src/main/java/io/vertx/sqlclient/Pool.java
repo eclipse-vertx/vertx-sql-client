@@ -44,36 +44,21 @@ import java.util.function.Function;
 public interface Pool extends SqlClient {
 
   /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and default {@link PoolOptions}
-   *
-   * @param connectOptions the options used to create the connection pool, such as database hostname
-   * @return the connection pool
-   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
+   * Like {@link #pool(SqlConnectOptions, PoolOptions)} with default options.
    */
   static Pool pool(SqlConnectOptions connectOptions) {
     return pool(connectOptions, new PoolOptions());
   }
 
   /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
-   *
-   * @param connectOptions the options used to create the connection pool, such as database hostname
-   * @param poolOptions the options for creating the pool
-   * @return the connection pool
-   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
+   * Like {@link #pool(Vertx, SqlConnectOptions, PoolOptions)} with a Vert.x instance created automatically.
    */
   static Pool pool(SqlConnectOptions connectOptions, PoolOptions poolOptions) {
     return pool(Collections.singletonList(connectOptions), poolOptions);
   }
 
   /**
-   * Create a connection pool to the {@code databases} with
-   * round-robin selection.
-   *
-   * @param databases the list of databases
-   * @param options the options for creating the pool
-   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
-   * @return the connection pool
+   * Like {@link #pool(Vertx, List, PoolOptions)} with a Vert.x instance created automatically.
    */
   static Pool pool(List<SqlConnectOptions> databases, PoolOptions options) {
     SqlConnectOptions connectOptions = databases.get(0);
@@ -95,6 +80,10 @@ public interface Pool extends SqlClient {
   /**
    * Create a connection pool to the {@code database} with the given {@code options}.
    *
+   * <p> A {@link Driver} will be selected among the drivers found on the classpath returning
+   * {@code true} when {@link Driver#acceptsOptions(SqlConnectOptions)} applied to the first options
+   * of the list.
+   *
    * @param vertx the Vertx instance to be used with the connection pool
    * @param database the options used to create the connection pool, such as database hostname
    * @param options the options for creating the pool
@@ -106,8 +95,12 @@ public interface Pool extends SqlClient {
   }
 
   /**
-   * Create a connection pool to the {@code database} with
-   * round-robin selection.
+   * Create a connection pool to the {@code database} with round-robin selection.
+   * Round-robin is applied when a new connection is created by the pool.
+   *
+   * <p> A {@link Driver} will be selected among the drivers found on the classpath returning
+   * {@code true} when {@link Driver#acceptsOptions(SqlConnectOptions)} applied to the first options
+   * of the list.
    *
    * @param databases the list of databases
    * @param options the options for creating the pool
