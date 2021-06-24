@@ -42,12 +42,9 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase {
   private SslMode sslMode;
   private Buffer serverRsaPublicKey;
   private MySQLAuthenticationPlugin authenticationPlugin;
-  private MySQLConnectOptions options;
 
   public MySQLConnectionFactory(VertxInternal vertx, MySQLConnectOptions options) {
     super(vertx, options);
-
-    this.options = options;
   }
 
   @Override

@@ -34,6 +34,7 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   protected final VertxInternal vertx;
   protected final NetClient netClient;
   protected final Map<String, String> properties;
+  protected final SqlConnectOptions options;
   protected final SocketAddress server;
   protected final String user;
   protected final String password;
@@ -51,24 +52,25 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   private final int reconnectAttempts;
   private final long reconnectInterval;
 
-  protected SqlConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions optionsBase) {
+  protected SqlConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
     this.vertx = vertx;
-    this.properties = optionsBase.getProperties() == null ? null : Collections.unmodifiableMap(optionsBase.getProperties());
-    this.server = optionsBase.getSocketAddress();
-    this.user = optionsBase.getUser();
-    this.password = optionsBase.getPassword();
-    this.database = optionsBase.getDatabase();
+    this.properties = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
+    this.server = options.getSocketAddress();
+    this.options = options;
+    this.user = options.getUser();
+    this.password = options.getPassword();
+    this.database = options.getDatabase();
 
-    this.cachePreparedStatements = optionsBase.getCachePreparedStatements();
-    this.preparedStatementCacheSize = optionsBase.getPreparedStatementCacheMaxSize();
-    this.preparedStatementCacheSqlFilter = optionsBase.getPreparedStatementCacheSqlFilter();
+    this.cachePreparedStatements = options.getCachePreparedStatements();
+    this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
+    this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
 
-    this.reconnectAttempts = optionsBase.getReconnectAttempts();
-    this.reconnectInterval = optionsBase.getReconnectInterval();
+    this.reconnectAttempts = options.getReconnectAttempts();
+    this.reconnectInterval = options.getReconnectInterval();
 
-    initializeConfiguration(optionsBase);
+    initializeConfiguration(options);
 
-    NetClientOptions netClientOptions = new NetClientOptions(optionsBase);
+    NetClientOptions netClientOptions = new NetClientOptions(options);
     configureNetClientOptions(netClientOptions);
     netClientOptions.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
     this.netClient = vertx.createNetClient(netClientOptions, clientCloseFuture);

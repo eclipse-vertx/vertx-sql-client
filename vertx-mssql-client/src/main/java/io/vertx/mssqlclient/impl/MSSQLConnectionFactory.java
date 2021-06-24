@@ -29,12 +29,8 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MSSQLConnectionFactory extends SqlConnectionFactoryBase {
 
-  private MSSQLConnectOptions options;
-
   public MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
     super(vertx, options);
-
-    this.options = options;
   }
 
   @Override

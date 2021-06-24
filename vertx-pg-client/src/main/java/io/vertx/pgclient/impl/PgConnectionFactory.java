@@ -46,12 +46,9 @@ public class PgConnectionFactory extends SqlConnectionFactoryBase {
 
   private SslMode sslMode;
   private int pipeliningLimit;
-  private final PgConnectOptions options;
 
   public PgConnectionFactory(VertxInternal context, PgConnectOptions options) {
     super(context, options);
-
-    this.options = options; // TEMP
   }
 
   @Override

@@ -36,11 +36,9 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 public class DB2ConnectionFactory extends SqlConnectionFactoryBase {
 
   private int pipeliningLimit;
-  private final DB2ConnectOptions options;
 
   public DB2ConnectionFactory(VertxInternal vertx, DB2ConnectOptions options) {
     super(vertx, options);
-    this.options = options;
   }
 
   @Override
