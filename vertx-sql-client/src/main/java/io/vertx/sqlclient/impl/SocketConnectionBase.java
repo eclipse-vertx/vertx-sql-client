@@ -116,7 +116,19 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
+  public boolean isValid() {
+    return status == Status.CONNECTED;
+  }
+
+  @Override
   public void init(Holder holder) {
+    Context context = Vertx.currentContext();
+    if (context != this.context) {
+      throw new IllegalStateException();
+    }
+    if (status != Status.CONNECTED) {
+      throw new IllegalStateException();
+    }
     this.holder = holder;
   }
 

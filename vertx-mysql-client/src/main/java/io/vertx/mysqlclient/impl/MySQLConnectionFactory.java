@@ -18,7 +18,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
@@ -110,20 +109,13 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase {
   }
 
   @Override
-  protected void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise) {
+  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
     int initialCapabilitiesFlags = initCapabilitiesFlags(database);
-    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    EventLoopContext context = SqlConnectionFactoryBase.asEventLoopContext(promiseInternal.context());
     Future<NetSocket> fut = netClient.connect(server);
-    fut.onComplete(ar -> {
-      if (ar.succeeded()) {
-        NetSocket so = ar.result();
-        MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, context);
-        conn.init();
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise);
-      } else {
-        promise.fail(ar.cause());
-      }
+    return fut.flatMap(so -> {
+      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, context);
+      conn.init();
+      return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
     });
   }
 
@@ -146,12 +138,14 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase {
   public Future<SqlConnection> connect(Context context) {
     ContextInternal contextInternal = (ContextInternal) context;
     QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
-    PromiseInternal<Connection> promise = contextInternal.promise();
-    connect(promise);
-    return promise.future().map(conn -> {
-      MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn, tracer, null);
-      conn.init(mySQLConnection);
-      return mySQLConnection;
-    });
+    Promise<SqlConnection> promise = contextInternal.promise();
+    connect(asEventLoopContext(contextInternal))
+      .map(conn -> {
+        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn, tracer, null);
+        conn.init(mySQLConnection);
+        return (SqlConnection)mySQLConnection;
+      })
+      .onComplete(promise);
+    return promise.future();
   }
 }

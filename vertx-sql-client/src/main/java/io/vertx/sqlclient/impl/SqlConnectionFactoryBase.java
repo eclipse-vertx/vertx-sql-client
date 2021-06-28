@@ -10,6 +10,7 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -84,10 +85,10 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
     }
   }
 
-  public void connect(Promise<Connection> promise) {
-    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    ContextInternal context = promiseInternal.context();
-    context.emit(promise, p -> doConnectWithRetry(server, user, password, database, promiseInternal, reconnectAttempts));
+  public Future<Connection> connect(EventLoopContext context) {
+    PromiseInternal<Connection> promise = context.promise();
+    context.emit(promise, p -> doConnectWithRetry(server, user, password, database, p, reconnectAttempts));
+    return promise.future();
   }
 
   @Override
@@ -96,14 +97,13 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   }
 
   private void doConnectWithRetry(SocketAddress server, String username, String password, String database, PromiseInternal<Connection> promise, int remainingAttempts) {
-    ContextInternal context = promise.context();
-    Promise<Connection> promise0 = context.promise();
-    promise0.future().onComplete(ar -> {
+    EventLoopContext ctx = (EventLoopContext) promise.context();
+    doConnectInternal(server, username, password, database, ctx).onComplete(ar -> {
       if (ar.succeeded()) {
         promise.complete(ar.result());
       } else {
         if (remainingAttempts >= 0) {
-          context.owner().setTimer(reconnectInterval, id -> {
+          ctx.owner().setTimer(reconnectInterval, id -> {
             doConnectWithRetry(server, username, password, database, promise, remainingAttempts - 1);
           });
         } else {
@@ -111,7 +111,6 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
         }
       }
     });
-    doConnectInternal(server, username, password, database, promise0);
   }
 
   /**
@@ -129,14 +128,8 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   protected abstract void configureNetClientOptions(NetClientOptions netClientOptions);
 
   /**
-   * Perform establishing connection to the server.
-   *
-   * @param server
-   * @param username
-   * @param password
-   * @param database
-   * @param promise the result handler
+   * Establish a connection to the server.
    */
-  protected abstract void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise);
+  protected abstract Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context);
 
 }

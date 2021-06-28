@@ -14,7 +14,6 @@ package io.vertx.mssqlclient.impl;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
@@ -44,38 +43,29 @@ public class MSSQLConnectionFactory extends SqlConnectionFactoryBase {
   }
 
   @Override
-  protected void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise) {
-    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    EventLoopContext context = SqlConnectionFactoryBase.asEventLoopContext(promiseInternal.context());
+  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
     Future<NetSocket> fut = netClient.connect(server);
-    fut.onComplete(ar -> {
-      if (ar.succeeded()) {
-        NetSocket so = ar.result();
+    return fut
+      .map(so -> {
         MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, false, 0, sql -> true, 1, context);
         conn.init();
-        conn.sendPreLoginMessage(false, preLogin -> {
-          if (preLogin.succeeded()) {
-            conn.sendLoginMessage(username, password, database, properties, promise);
-          } else {
-            promise.fail(preLogin.cause());
-          }
-        });
-      } else {
-        promise.fail(ar.cause());
-      }
-    });
+        return conn;
+      }).flatMap(conn -> Future.<Void>future(promise -> conn.sendPreLoginMessage(false, promise))
+        .flatMap(v -> Future.future(promise -> conn.sendLoginMessage(username, password, database, properties, promise))));
   }
 
   @Override
   public Future<SqlConnection> connect(Context context) {
     ContextInternal ctx = (ContextInternal) context;
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
-    Promise<Connection> promise = ctx.promise();
-    ctx.emit(promise, v -> connect(promise));
-    return promise.future().map(conn -> {
-      MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn, tracer, null);
-      conn.init(msConn);
-      return msConn;
-    });
+    Promise<SqlConnection> promise = ctx.promise();
+    connect(asEventLoopContext(ctx))
+      .map(conn -> {
+        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn, tracer, null);
+        conn.init(msConn);
+        return (SqlConnection)msConn;
+      })
+      .onComplete(promise);
+    return promise.future();
   }
 }

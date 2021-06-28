@@ -37,6 +37,8 @@ public interface Connection extends CommandScheduler  {
 
   boolean isSsl();
 
+  boolean isValid();
+
   DatabaseMetadata getDatabaseMetaData();
 
   void close(Holder holder, Promise<Void> promise);

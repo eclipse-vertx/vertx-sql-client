@@ -115,16 +115,21 @@ public class SqlConnectionPool {
     @Override
     public void connect(EventLoopContext context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<PooledConnection>>> handler) {
       Future<SqlConnection> future = connectionProvider.apply(context);
-      future
-        .map(connection -> {
-          SqlConnectionImpl impl = (SqlConnectionImpl) connection;
-          Connection conn = impl.unwrap();
-          PooledConnection pooled = new PooledConnection(impl.factory(), conn, listener);
-          conn.init(pooled);
-          return new ConnectResult<>(pooled, pipeliningLimit, 0);
-        })
-        .onComplete(handler);
-
+      future.onComplete(ar -> {
+        if (ar.succeeded()) {
+          SqlConnectionImpl res = (SqlConnectionImpl) ar.result();
+          Connection conn = res.unwrap();
+          if (conn.isValid()) {
+            PooledConnection pooled = new PooledConnection(res.factory(), conn, listener);
+            conn.init(pooled);
+            handler.handle(Future.succeededFuture(new ConnectResult<>(pooled, pipeliningLimit, 0)));
+          } else {
+            handler.handle(Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION));
+          }
+        } else {
+          handler.handle(Future.failedFuture(ar.cause()));
+        }
+      });
 //      Future<SqlConnectOptions> connectOptions = null;
 //      if (connectOptionsProvider != null) {
 //        try {
@@ -290,6 +295,11 @@ public class SqlConnectionPool {
     @Override
     public boolean isSsl() {
       return conn.isSsl();
+    }
+
+    @Override
+    public boolean isValid() {
+      return true;
     }
 
     @Override

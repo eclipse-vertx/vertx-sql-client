@@ -259,4 +259,9 @@ public interface Pool extends SqlClient {
    */
   @Fluent
   Pool connectionProvider(Function<Context, Future<SqlConnection>> provider);
+
+  /**
+   * @return the current pool size approximation
+   */
+  int size();
 }

@@ -21,7 +21,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
@@ -79,14 +78,13 @@ public class PgConnectionFactory extends SqlConnectionFactoryBase {
   }
 
   @Override
-  protected void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise) {
-    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    doConnect(server, SqlConnectionFactoryBase.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
+  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
+    return doConnect(server, context).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
         .map(conn);
-    }).onComplete(promise);
+    });
   }
 
   public void cancelRequest(SocketAddress server, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
@@ -151,15 +149,16 @@ public class PgConnectionFactory extends SqlConnectionFactoryBase {
   @Override
   public Future<SqlConnection> connect(Context context) {
     ContextInternal contextInternal = (ContextInternal) context;
-    PromiseInternal<Connection> promise = contextInternal.promise();
-    connect(promise);
-    return promise.future()
+    PromiseInternal<SqlConnection> promise = contextInternal.promise();
+    connect(asEventLoopContext(contextInternal))
       .map(conn -> {
         QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
         PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn, tracer, null);
         conn.init(pgConn);
-        return pgConn;
-      });
+        return (SqlConnection)pgConn;
+      })
+      .onComplete(promise);
+    return promise.future();
   }
 
   private PgSocketConnection newSocketConnection(EventLoopContext context, NetSocketInternal socket) {

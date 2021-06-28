@@ -21,9 +21,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.DB2ConnectOptions;
@@ -53,20 +51,12 @@ public class DB2ConnectionFactory extends SqlConnectionFactoryBase {
   }
 
   @Override
-  protected void doConnectInternal(SocketAddress server, String username, String password, String database, Promise<Connection> promise) {
-    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    EventLoopContext context = SqlConnectionFactoryBase.asEventLoopContext(promiseInternal.context());
-    Future<NetSocket> fut = netClient.connect(server);
-    fut.onComplete(ar -> {
-      if (ar.succeeded()) {
-        NetSocket so = ar.result();
-        DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
-          preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
-        conn.init();
-        conn.sendStartupMessage(username, password, database, properties, promise);
-      } else {
-        promise.fail(ar.cause());
-      }
+  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
+    return netClient.connect(server).flatMap(so -> {
+      DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
+        preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+      conn.init();
+      return Future.future(p -> conn.sendStartupMessage(username, password, database, properties, p));
     });
   }
 
@@ -74,13 +64,13 @@ public class DB2ConnectionFactory extends SqlConnectionFactoryBase {
   public Future<SqlConnection> connect(Context context) {
     ContextInternal contextInternal = (ContextInternal) context;
     QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
-    Promise<Connection> promise = contextInternal.promise();
-    connect(promise);
-    return promise.future()
+    Promise<SqlConnection> promise = contextInternal.promise();
+    connect(asEventLoopContext(contextInternal))
       .map(conn -> {
         DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn, tracer, null);
         conn.init(db2Connection);
-        return db2Connection;
-      });
+        return (SqlConnection)db2Connection;
+      }).onComplete(promise);
+    return promise.future();
   }
 }
