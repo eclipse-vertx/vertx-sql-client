@@ -21,44 +21,36 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.util.List;
+
 /**
  * An entry point to the Vertx Reactive SQL Client
  * Every driver must implement this interface.
  */
 public interface Driver {
-  
-  /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and default {@link PoolOptions}
-   *
-   * @param connectOptions the options used to create the connection pool, such as database hostname
-   * @return the connection pool
-   */
-  default Pool createPool(SqlConnectOptions connectOptions) {
-    return createPool(connectOptions, new PoolOptions());
-  }
-  
-  /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
-   *
-   * @param connectOptions the options used to create the connection pool, such as database hostname
-   * @param poolOptions the options for creating the pool
-   * @return the connection pool
-   */
-  Pool createPool(SqlConnectOptions connectOptions, PoolOptions poolOptions);
-  
+
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
    *
    * @param vertx the Vertx instance to be used with the connection pool
-   * @param connectOptions the options used to create the connection pool, such as database hostname
-   * @param poolOptions the options for creating the pool
+   * @param databases the list of databases
+   * @param options the options for creating the pool
    * @return the connection pool
    */
-  Pool createPool(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions);
-  
+  Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options);
+
+  /**
+   * Create a connection factory to the given {@code database}.
+   *
+   * @param vertx the Vertx instance t
+   * @param database the database to connect to
+   * @return the connection factory
+   */
+  ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database);
+
   /**
    * @return true if the driver accepts the {@code connectOptions}, false otherwise
    */
   boolean acceptsOptions(SqlConnectOptions connectOptions);
-  
+
 }

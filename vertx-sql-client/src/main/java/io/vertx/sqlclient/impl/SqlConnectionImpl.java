@@ -27,6 +27,7 @@ import io.vertx.sqlclient.Transaction;
 import io.vertx.core.*;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -37,8 +38,8 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   private volatile Handler<Void> closeHandler;
   protected TransactionImpl tx;
 
-  public SqlConnectionImpl(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, conn, tracer, metrics);
+  public SqlConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    super(context, factory, conn, tracer, metrics);
   }
 
   @Override

@@ -48,7 +48,7 @@ public class ContainerPgRule extends ExternalResource {
   private PgConnectOptions options;
   private String databaseVersion;
   private boolean ssl;
-
+  private String user = "postgres";
 
   public ContainerPgRule ssl(boolean ssl) {
     this.ssl = ssl;
@@ -63,12 +63,20 @@ public class ContainerPgRule extends ExternalResource {
     return new PoolOptions();
   }
 
+  public ContainerPgRule user(String user) {
+    if (user == null) {
+      throw new NullPointerException();
+    }
+    this.user = user;
+    return this;
+  }
+
   private void initServer(String version) throws Exception {
     File setupFile = getTestResource("resources" + File.separator + "create-postgres.sql");
 
     server = new ServerContainer<>("postgres:" + version)
       .withDatabaseName("postgres")
-      .withUsername("postgres")
+      .withUsername(user)
       .withPassword("postgres")
       .withCopyFileToContainer(MountableFile.forHostPath(setupFile.toPath()), "/docker-entrypoint-initdb.d/create-postgres.sql");
     if (ssl) {
@@ -110,7 +118,7 @@ public class ContainerPgRule extends ExternalResource {
         .setPort(server.getMappedPort(POSTGRESQL_PORT))
         .setHost(server.getContainerIpAddress())
         .setDatabase("postgres")
-        .setUser("postgres")
+        .setUser(user)
         .setPassword("postgres");
   }
 
