@@ -28,10 +28,10 @@ import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
-public class DB2ConnectionFactory extends SqlConnectionFactoryBase {
+public class DB2ConnectionFactory extends ConnectionFactoryBase {
 
   private int pipeliningLimit;
 

@@ -26,14 +26,14 @@ import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.nio.charset.Charset;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
-public class MySQLConnectionFactory extends SqlConnectionFactoryBase {
+public class MySQLConnectionFactory extends ConnectionFactoryBase {
 
   private MySQLCollation collation;
   private Charset charsetEncoding;

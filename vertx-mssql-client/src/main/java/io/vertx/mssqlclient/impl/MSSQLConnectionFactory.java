@@ -23,10 +23,10 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
-public class MSSQLConnectionFactory extends SqlConnectionFactoryBase {
+public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   public MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
     super(vertx, options);

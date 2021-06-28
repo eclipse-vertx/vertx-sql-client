@@ -35,13 +35,13 @@ import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgConnectionFactory extends SqlConnectionFactoryBase {
+public class PgConnectionFactory extends ConnectionFactoryBase {
 
   private SslMode sslMode;
   private int pipeliningLimit;

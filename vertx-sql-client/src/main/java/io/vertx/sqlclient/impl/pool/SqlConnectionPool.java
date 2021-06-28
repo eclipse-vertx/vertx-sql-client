@@ -33,7 +33,7 @@ import io.vertx.core.net.impl.pool.PoolWaiter;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
@@ -160,7 +160,7 @@ public class SqlConnectionPool {
 
   public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
     Promise<R> promise = context.promise();
-    EventLoopContext eventLoopCtx = SqlConnectionFactoryBase.asEventLoopContext(context);
+    EventLoopContext eventLoopCtx = ConnectionFactoryBase.asEventLoopContext(context);
     pool.acquire(eventLoopCtx, 0, ar -> {
       if (ar.succeeded()) {
         Lease<PooledConnection> lease = ar.result();
@@ -229,7 +229,7 @@ public class SqlConnectionPool {
         onEnqueue(waiter);
       }
     }
-    EventLoopContext eventLoopContext = SqlConnectionFactoryBase.asEventLoopContext(context);
+    EventLoopContext eventLoopContext = ConnectionFactoryBase.asEventLoopContext(context);
     PoolRequest request = new PoolRequest();
     pool.acquire(eventLoopContext, request,0, request);
   }

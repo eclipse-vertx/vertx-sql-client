@@ -28,9 +28,9 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 /**
- * An abstract connection factory for creating database connections
+ * An base connection factory for creating database connections
  */
-public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
+public abstract class ConnectionFactoryBase implements ConnectionFactory {
 
   protected final VertxInternal vertx;
   protected final NetClient netClient;
@@ -53,7 +53,7 @@ public abstract class SqlConnectionFactoryBase implements ConnectionFactory {
   private final int reconnectAttempts;
   private final long reconnectInterval;
 
-  protected SqlConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
+  protected ConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
     this.vertx = vertx;
     this.properties = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
     this.server = options.getSocketAddress();
