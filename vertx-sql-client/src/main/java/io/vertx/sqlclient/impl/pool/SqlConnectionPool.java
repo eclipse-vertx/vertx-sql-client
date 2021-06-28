@@ -130,31 +130,7 @@ public class SqlConnectionPool {
           handler.handle(Future.failedFuture(ar.cause()));
         }
       });
-//      Future<SqlConnectOptions> connectOptions = null;
-//      if (connectOptionsProvider != null) {
-//        try {
-//          connectOptions = connectOptionsProvider.get();
-//        } catch (Exception e) {
-//          log.error("Connect options provider failure, falling back on base connect options", e);
-//        }
-//      }
-//      if (connectOptions == null) {
-//        connect(baseConnectOptions, promise);
-//      } else {
-//        connectOptions.onComplete(ar -> {
-//          if (ar.succeeded()) {
-//            connect(ar.result(), promise);
-//          } else {
-//            log.error("Connect options provider failure, falling back on base connect options", ar.cause());
-//            connect(baseConnectOptions, promise);
-//          }
-//        });
-//      }
     }
-
-//    private void connect(SqlConnectOptions connectOptions, PromiseInternal<Connection> promise) {
-//      factory.connect(connectOptions.getSocketAddress(), connectOptions.getUser(), connectOptions.getPassword(), connectOptions.getDatabase(), promise);
-//    }
 
     @Override
     public boolean isValid(PooledConnection connection) {
