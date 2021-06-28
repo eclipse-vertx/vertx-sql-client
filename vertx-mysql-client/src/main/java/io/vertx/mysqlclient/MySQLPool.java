@@ -11,13 +11,20 @@
 
 package io.vertx.mysqlclient;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.mysqlclient.impl.MySQLPoolImpl;
+import io.vertx.mysqlclient.spi.MySQLDriver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnection;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 
@@ -28,57 +35,73 @@ import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 public interface MySQLPool extends Pool {
 
   /**
-   * Like {@link #pool(String, PoolOptions)} with a default {@code poolOptions}.
+   * Like {@link #pool(String, PoolOptions)} with default options.
    */
   static MySQLPool pool(String connectionUri) {
     return pool(connectionUri, new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
+   * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with {@code database} built from {@code connectionUri}.
    */
-  static MySQLPool pool(String connectionUri, PoolOptions poolOptions) {
-    return pool(fromUri(connectionUri), poolOptions);
+  static MySQLPool pool(String connectionUri, PoolOptions options) {
+    return pool(fromUri(connectionUri), options);
   }
 
   /**
-   * Like {@link #pool(Vertx, String, PoolOptions)} with a default {@code poolOptions}..
+   * Like {@link #pool(Vertx, String, PoolOptions)} with default options.
    */
   static MySQLPool pool(Vertx vertx, String connectionUri) {
     return pool(vertx, fromUri(connectionUri), new PoolOptions());
   }
 
   /**
-   * Like {@link #pool(Vertx, MySQLConnectOptions, PoolOptions)} with {@code connectOptions} built from {@code connectionUri}.
+   * Like {@link #pool(Vertx, MySQLConnectOptions, PoolOptions)} with {@code database} built from {@code connectionUri}.
    */
-  static MySQLPool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
-    return pool(vertx, fromUri(connectionUri), poolOptions);
+  static MySQLPool pool(Vertx vertx, String connectionUri, PoolOptions options) {
+    return pool(vertx, fromUri(connectionUri), options);
   }
 
   /**
-   * Create a connection pool to the MySQL server configured with the given {@code connectOptions} and {@code poolOptions}.
+   * Create a connection pool to the MySQL {@code server} configured with the given {@code options}.
    *
-   * @param connectOptions the options for the connection
-   * @param poolOptions the options for creating the pool
+   * @param database the options for the connection
+   * @param options the options for creating the pool
    * @return the connection pool
    */
-  static MySQLPool pool(MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use MySQLPool#pool(Vertx, MySQLConnectOptions, PoolOptions) instead");
-    }
-    VertxOptions vertxOptions = new VertxOptions();
-    if (connectOptions.isUsingDomainSocket()) {
-      vertxOptions.setPreferNativeTransport(true);
-    }
-    VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return MySQLPoolImpl.create(vertx, true, connectOptions, poolOptions);
+  static MySQLPool pool(MySQLConnectOptions database, PoolOptions options) {
+    return pool(null, database, options);
   }
 
   /**
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  static MySQLPool pool(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return MySQLPoolImpl.create((VertxInternal) vertx, false, connectOptions, poolOptions);
+  static MySQLPool pool(Vertx vertx, MySQLConnectOptions database, PoolOptions options) {
+    return pool(vertx, Collections.singletonList(database), options);
   }
 
+  /**
+   * Create a connection pool to the MySQL {@code databases} with round-robin selection.
+   * Round-robin is applied when a new connection is created by the pool.
+   *
+   * @param databases the list of servers
+   * @param options the options for creating the pool
+   * @return the connection pool
+   */
+  static MySQLPool pool(List<MySQLConnectOptions> databases, PoolOptions options) {
+    return pool(null, databases, options);
+  }
+
+  /**
+   * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  static MySQLPool pool(Vertx vertx, List<MySQLConnectOptions> databases, PoolOptions options) {
+    return new MySQLDriver().createPool(vertx, databases, options);
+  }
+
+  @Override
+  MySQLPool connectHandler(Handler<SqlConnection> handler);
+
+  @Fluent
+  MySQLPool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 }

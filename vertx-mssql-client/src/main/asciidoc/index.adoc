@@ -225,3 +225,7 @@ create easily create a string directly from the row set:
 ----
 {@link examples.MSSQLClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
 ----
+
+== Advanced pool configuration
+
+include::pool_config.adoc[]

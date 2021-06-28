@@ -40,6 +40,17 @@ import java.util.concurrent.TimeUnit;
 public class MSSQLConnectOptions extends SqlConnectOptions {
 
   /**
+   * @return the {@code options} as MSSQL specific connect options
+   */
+  public static MSSQLConnectOptions wrap(SqlConnectOptions options) {
+    if (options instanceof MSSQLConnectOptions) {
+      return (MSSQLConnectOptions) options;
+    } else {
+      return new MSSQLConnectOptions(options);
+    }
+  }
+
+  /**
    * Provide a {@link MSSQLConnectOptions} configured from a connection URI.
    *
    * @param connectionUri the connection URI to configure from

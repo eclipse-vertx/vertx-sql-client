@@ -17,11 +17,15 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
+import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -388,5 +392,86 @@ public class PgPoolTest extends PgPoolTestBase {
       }));
     });
     async.awaitSuccess();
+  }
+
+  @Test
+  public void testConnectionHook(TestContext ctx) {
+    Async async = ctx.async();
+    Handler<SqlConnection> hook = f -> {
+      vertx.setTimer(1000, id -> {
+        f.close();
+      });
+    };
+    PgPool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
+        async.complete();
+      }));
+    }));
+  }
+
+  @Test
+  public void testConnectionClosedInHook(TestContext ctx) {
+    Async async = ctx.async(2);
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
+    proxy.proxyHandler(conn -> {
+      proxyConn.set(conn);
+      conn.connect();
+    });
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+      Handler<SqlConnection> hook = f -> {
+        f.closeHandler(v -> {
+          async.countDown();
+        });
+        proxyConn.get().close();
+      };
+      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), new PoolOptions().setMaxSize(1)).connectHandler(hook);
+      pool.getConnection(ctx.asyncAssertFailure(conn -> {
+        async.countDown();
+      }));
+    }));
+  }
+
+  @Test
+  public void testConnectionClosedInProvider1(TestContext ctx) {
+    testConnectionClosedInProvider(ctx, true);
+  }
+
+  @Test
+  public void testConnectionClosedInProvider2(TestContext ctx) {
+    testConnectionClosedInProvider(ctx, false);
+  }
+
+  private void testConnectionClosedInProvider(TestContext ctx, boolean immediately) {
+    Async async = ctx.async(2);
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
+    proxy.proxyHandler(conn -> {
+      proxyConn.set(conn);
+      conn.connect();
+    });
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+      PgConnectOptions options = new PgConnectOptions(this.options).setPort(8080).setHost("localhost");
+      ConnectionFactory factory = new PgDriver().createConnectionFactory(vertx, options);
+      PgPool pool = createPool(options, new PoolOptions().setMaxSize(1));
+      pool.connectionProvider(context -> {
+        Future<SqlConnection> fut = factory.connect(context);
+        if (immediately) {
+          return fut.map(conn -> {
+            conn.close();
+            return conn;
+          });
+        } else {
+          return fut.flatMap(conn -> conn.close().map(conn));
+        }
+      });
+      pool.getConnection(ctx.asyncAssertFailure(conn -> {
+        vertx.runOnContext(v -> {
+          ctx.assertEquals(0, pool.size());
+          async.complete();
+        });
+      }));
+    }));
   }
 }

@@ -33,6 +33,7 @@ import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -380,5 +381,18 @@ public class SqlClientExamples {
 
   public void tracing01(SqlConnectOptions options) {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
+  }
+
+  public void poolConfig01(SqlConnectOptions server1, SqlConnectOptions server2, SqlConnectOptions server3, PoolOptions options) {
+    Pool pool = Pool.pool(Arrays.asList(server1, server2, server3), options);
+  }
+
+  public void poolConfig02(Pool pool, String sql) {
+    pool.connectHandler(conn -> {
+      conn.query(sql).execute().onSuccess(res -> {
+        // Release the connection to the pool, ready to be used by the application
+        conn.close();
+      });
+    });
   }
 }

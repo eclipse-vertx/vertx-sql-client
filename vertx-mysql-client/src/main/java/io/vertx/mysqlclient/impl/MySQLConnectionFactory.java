@@ -11,35 +11,35 @@
 
 package io.vertx.mysqlclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
-import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.nio.charset.Charset;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
-public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
+public class MySQLConnectionFactory extends ConnectionFactoryBase {
 
   private MySQLCollation collation;
   private Charset charsetEncoding;
   private boolean useAffectedRows;
   private SslMode sslMode;
   private Buffer serverRsaPublicKey;
-  private int initialCapabilitiesFlags;
   private MySQLAuthenticationPlugin authenticationPlugin;
 
   public MySQLConnectionFactory(VertxInternal vertx, MySQLConnectOptions options) {
@@ -86,7 +86,6 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;
-    this.initialCapabilitiesFlags = initCapabilitiesFlags();
 
     // check the SSLMode here
     switch (sslMode) {
@@ -110,23 +109,17 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
-    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
-    Future<NetSocket> fut = netClient.connect(socketAddress);
-    fut.onComplete(ar -> {
-      if (ar.succeeded()) {
-        NetSocket so = ar.result();
-        MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, context);
-        conn.init();
-        conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise);
-      } else {
-        promise.fail(ar.cause());
-      }
+  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
+    int initialCapabilitiesFlags = initCapabilitiesFlags(database);
+    Future<NetSocket> fut = netClient.connect(server);
+    return fut.flatMap(so -> {
+      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, context);
+      conn.init();
+      return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
     });
   }
 
-  private int initCapabilitiesFlags() {
+  private int initCapabilitiesFlags(String database) {
     int capabilitiesFlags = CLIENT_SUPPORTED_CAPABILITIES_FLAGS;
     if (database != null && !database.isEmpty()) {
       capabilitiesFlags |= CLIENT_CONNECT_WITH_DB;
@@ -139,5 +132,20 @@ public class MySQLConnectionFactory extends SqlConnectionFactoryBase implements 
     }
 
     return capabilitiesFlags;
+  }
+
+  @Override
+  public Future<SqlConnection> connect(Context context) {
+    ContextInternal contextInternal = (ContextInternal) context;
+    QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
+    Promise<SqlConnection> promise = contextInternal.promise();
+    connect(asEventLoopContext(contextInternal))
+      .map(conn -> {
+        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn, tracer, null);
+        conn.init(mySQLConnection);
+        return (SqlConnection)mySQLConnection;
+      })
+      .onComplete(promise);
+    return promise.future();
   }
 }

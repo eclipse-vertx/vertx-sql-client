@@ -11,22 +11,24 @@
 
 package io.vertx.mssqlclient.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.core.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.NetSocket;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
-import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
-class MSSQLConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
+public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
-  MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
+  public MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
     super(vertx, options);
   }
 
@@ -41,25 +43,29 @@ class MSSQLConnectionFactory extends SqlConnectionFactoryBase implements Connect
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
-    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    EventLoopContext context = ConnectionFactory.asEventLoopContext(promiseInternal.context());
-    Future<NetSocket> fut = netClient.connect(socketAddress);
-    fut.onComplete(ar -> {
-      if (ar.succeeded()) {
-        NetSocket so = ar.result();
+  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
+    Future<NetSocket> fut = netClient.connect(server);
+    return fut
+      .map(so -> {
         MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, false, 0, sql -> true, 1, context);
         conn.init();
-        conn.sendPreLoginMessage(false, preLogin -> {
-          if (preLogin.succeeded()) {
-            conn.sendLoginMessage(username, password, database, properties, promise);
-          } else {
-            promise.fail(preLogin.cause());
-          }
-        });
-      } else {
-        promise.fail(ar.cause());
-      }
-    });
+        return conn;
+      }).flatMap(conn -> Future.<Void>future(promise -> conn.sendPreLoginMessage(false, promise))
+        .flatMap(v -> Future.future(promise -> conn.sendLoginMessage(username, password, database, properties, promise))));
+  }
+
+  @Override
+  public Future<SqlConnection> connect(Context context) {
+    ContextInternal ctx = (ContextInternal) context;
+    QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
+    Promise<SqlConnection> promise = ctx.promise();
+    connect(asEventLoopContext(ctx))
+      .map(conn -> {
+        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn, tracer, null);
+        conn.init(msConn);
+        return (SqlConnection)msConn;
+      })
+      .onComplete(promise);
+    return promise.future();
   }
 }

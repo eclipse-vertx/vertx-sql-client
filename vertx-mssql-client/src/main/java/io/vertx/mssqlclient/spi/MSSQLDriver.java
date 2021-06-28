@@ -16,36 +16,32 @@
 package io.vertx.mssqlclient.spi;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
-import io.vertx.sqlclient.Pool;
+import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
+import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.Driver;
+import io.vertx.sqlclient.spi.ConnectionFactory;
+
+import java.util.List;
 
 public class MSSQLDriver implements Driver {
 
   @Override
-  public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
-    return MSSQLPool.pool(wrap(options), poolOptions);
-  }
-
-  @Override
-  public Pool createPool(Vertx vertx, SqlConnectOptions options, PoolOptions poolOptions) {
-    return MSSQLPool.pool(vertx, wrap(options), poolOptions);
+  public MSSQLPool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
+    return MSSQLPoolImpl.create((VertxInternal) vertx, databases, options);
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof MSSQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
   }
-  
-  private static MSSQLConnectOptions wrap(SqlConnectOptions options) {
-    if (options instanceof MSSQLConnectOptions) {
-      return (MSSQLConnectOptions) options; 
-    } else {
-      return new MSSQLConnectOptions(options);
-    }
-  }
 
+  @Override
+  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+    return new MSSQLConnectionFactory((VertxInternal) vertx, MSSQLConnectOptions.wrap(database));
+  }
 }

@@ -48,6 +48,17 @@ import io.vertx.sqlclient.SqlConnectOptions;
 public class DB2ConnectOptions extends SqlConnectOptions {
 
   /**
+   * @return the {@code options} as DB2 specific connect options
+   */
+  public static DB2ConnectOptions wrap(SqlConnectOptions options) {
+    if (options instanceof DB2ConnectOptions) {
+      return (DB2ConnectOptions) options;
+    } else {
+      return new DB2ConnectOptions(options);
+    }
+  }
+
+  /**
    * Provide a {@link DB2ConnectOptions} configured from a connection URI.
    *
    * @param connectionUri the connection URI to configure from

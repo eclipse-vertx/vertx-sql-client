@@ -32,6 +32,7 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
@@ -105,12 +106,29 @@ public abstract class SocketConnectionBase implements Connection {
     return socket;
   }
 
+  @Override
+  public SocketAddress server() {
+    return socket.remoteAddress();
+  }
+
   public boolean isSsl() {
     return socket.isSsl();
   }
 
   @Override
+  public boolean isValid() {
+    return status == Status.CONNECTED;
+  }
+
+  @Override
   public void init(Holder holder) {
+    Context context = Vertx.currentContext();
+    if (context != this.context) {
+      throw new IllegalStateException();
+    }
+    if (status != Status.CONNECTED) {
+      throw new IllegalStateException();
+    }
     this.holder = holder;
   }
 
