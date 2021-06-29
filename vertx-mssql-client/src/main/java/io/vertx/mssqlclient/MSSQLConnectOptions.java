@@ -129,7 +129,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   }
 
   /**
-   * Get the desired size for TDS packets.
+   * Get the desired size (in bytes) for TDS packets.
    *
    * @return the desired packet size
    */
@@ -138,12 +138,12 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   }
 
   /**
-   * Set the desired size for TDS packets.
+   * Set the desired size (in bytes) for TDS packets.
    * <p>
    * The client will use the value as a parameter in the LOGIN7 packet.
    * The server may or may not accept it.
    *
-   * @param packetSize the desired packet size
+   * @param packetSize the desired packet size (in bytes)
    * @return a reference to this, so the API can be used fluently
    * @throws IllegalArgumentException if {@code packetSize} is smaller than {@link #MIN_PACKET_SIZE} or bigger than {@link #MAX_PACKET_SIZE}
    */
