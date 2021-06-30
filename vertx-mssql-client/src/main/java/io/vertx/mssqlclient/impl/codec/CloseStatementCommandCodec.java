@@ -12,26 +12,20 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
-import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 
 class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementCommand> {
 
-  CloseStatementCommandCodec(CloseStatementCommand cmd) {
-    super(cmd);
+  CloseStatementCommandCodec(TdsMessageCodec tdsMessageCodec, CloseStatementCommand cmd) {
+    super(tdsMessageCodec, cmd);
   }
 
   @Override
-  void encode(TdsMessageEncoder encoder) {
-    super.encode(encoder);
+  void encode() {
     MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.statement();
     if (ps.handle > 0) {
       sendUnprepareRequest();
@@ -40,69 +34,22 @@ class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementC
     }
   }
 
-  @Override
-  void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
-    ByteBuf messageBody = message.content();
-    while (messageBody.isReadable()) {
-      int tokenType = messageBody.readUnsignedByte();
-      switch (tokenType) {
-        case ERROR:
-          handleErrorToken(messageBody);
-          break;
-        case DONEPROC:
-          messageBody.skipBytes(12);
-          break;
-        case RETURNSTATUS:
-          messageBody.skipBytes(4);
-          break;
-        default:
-          throw new UnsupportedOperationException("Unsupported token: " + tokenType);
-      }
-    }
-    complete();
-  }
-
   private void sendUnprepareRequest() {
-    ChannelHandlerContext chctx = encoder.chctx;
+    ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
-    ByteBuf packet = chctx.alloc().ioBuffer();
-
-    // packet header
-    packet.writeByte(RPC);
-    packet.writeByte(NORMAL | END_OF_MESSAGE);
-    int packetLenIdx = packet.writerIndex();
-    packet.writeShort(0); // set length later
-    packet.writeShort(0x00);
-    packet.writeByte(0x00); // FIXME packet ID
-    packet.writeByte(0x00);
-
-    int start = packet.writerIndex();
-    packet.writeIntLE(0x00); // TotalLength for ALL_HEADERS
-    encodeTransactionDescriptor(packet, 0, 1);
-    // set TotalLength for ALL_HEADERS
-    packet.setIntLE(start, packet.writerIndex() - start);
+    tdsMessageCodec.encoder().encodeHeaders(content);
 
     /*
       RPCReqBatch
      */
-    packet.writeShortLE(0xFFFF);
-    packet.writeShortLE(ProcId.Sp_Unprepare);
+    content.writeShortLE(0xFFFF);
+    content.writeShortLE(ProcId.Sp_Unprepare);
 
     // Option flags
-    packet.writeShortLE(0x0000);
+    content.writeShortLE(0x0000);
 
-    INTN.encodeParam(packet, null, false, ((MSSQLPreparedStatement) cmd.statement()).handle);
+    INTN.encodeParam(content, null, false, ((MSSQLPreparedStatement) cmd.statement()).handle);
 
-    int packetLen = packet.writerIndex() - packetLenIdx + 2;
-    packet.setShort(packetLenIdx, packetLen);
-
-    chctx.writeAndFlush(packet);
-  }
-
-  protected void encodeTransactionDescriptor(ByteBuf payload, long transactionDescriptor, int outstandingRequestCount) {
-    payload.writeIntLE(18); // HeaderLength is always 18
-    payload.writeShortLE(0x0002); // HeaderType
-    payload.writeLongLE(transactionDescriptor);
-    payload.writeIntLE(outstandingRequestCount);
+    tdsMessageCodec.encoder().writeTdsMessage(RPC, content);
   }
 }

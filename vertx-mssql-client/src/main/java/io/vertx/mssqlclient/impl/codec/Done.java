@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 @SuppressWarnings("unused")
-public class DoneToken {
+public class Done {
 
   public static final short STATUS_DONE_FINAL = 0x00;
   public static final short STATUS_DONE_MORE = 0x1;
@@ -22,7 +22,7 @@ public class DoneToken {
   public static final short STATUS_DONE_ATTN = 0x20;
   public static final short STATUS_DONE_SRVERROR = 0x100;
 
-  private DoneToken() {
+  private Done() {
     // Constants class
   }
 }

@@ -14,17 +14,17 @@ package io.vertx.mssqlclient.impl.codec;
 @SuppressWarnings("unused")
 public class MessageType {
 
-  public static final int SQL_BATCH = 1;
-  public static final int PRE_TDS7_LOGIN = 2;
-  public static final int RPC = 3;
-  public static final int TABULAR_RESULT = 4;
-  public static final int ATTENTION_SIGNAL = 6;
-  public static final int BULK_LOAD_DATA = 7;
-  public static final int FEDERATED_AUTHENTICATION_TOKEN = 8;
-  public static final int TRANSACTION_MANAGER_REQUEST = 14;
-  public static final int TDS7_LOGIN = 16;
-  public static final int SSPI = 17;
-  public static final int PRE_LOGIN = 18;
+  public static final short SQL_BATCH = 1;
+  public static final short PRE_TDS7_LOGIN = 2;
+  public static final short RPC = 3;
+  public static final short TABULAR_RESULT = 4;
+  public static final short ATTENTION_SIGNAL = 6;
+  public static final short BULK_LOAD_DATA = 7;
+  public static final short FEDERATED_AUTHENTICATION_TOKEN = 8;
+  public static final short TRANSACTION_MANAGER_REQUEST = 14;
+  public static final short TDS7_LOGIN = 16;
+  public static final short SSPI = 17;
+  public static final short PRE_LOGIN = 18;
 
   private MessageType() {
     // Constants class

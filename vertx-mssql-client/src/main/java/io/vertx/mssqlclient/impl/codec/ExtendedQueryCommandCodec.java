@@ -16,13 +16,8 @@ import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
 
-  ExtendedQueryCommandCodec(ExtendedQueryCommand<T> cmd) {
-    super(cmd);
-  }
-
-  @Override
-  protected void handleMessageDecoded() {
-    complete();
+  ExtendedQueryCommandCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
+    super(tdsMessageCodec, cmd);
   }
 
   @Override

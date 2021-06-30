@@ -12,9 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
-import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.EncryptionOptionToken;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.OptionToken;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.VersionOptionToken;
@@ -22,48 +20,20 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.List;
 
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
 import static io.vertx.mssqlclient.impl.codec.MessageType.PRE_LOGIN;
 
 class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
 
-  PreLoginCommandCodec(PreLoginCommand cmd) {
-    super(cmd);
+  PreLoginCommandCodec(TdsMessageCodec tdsMessageCodec, PreLoginCommand cmd) {
+    super(tdsMessageCodec, cmd);
   }
 
   @Override
-  void encode(TdsMessageEncoder encoder) {
-    super.encode(encoder);
-    sendPreLoginMessage();
-  }
-
-  @Override
-  void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
-    // nothing to do for now?
-    completionHandler.handle(CommandResponse.success(null));
-  }
-
-  private void sendPreLoginMessage() {
-    ChannelHandlerContext chctx = encoder.chctx;
-
-    ByteBuf packet = chctx.alloc().ioBuffer();
-
-    // packet header
-    packet.writeByte(PRE_LOGIN);
-    packet.writeByte(NORMAL | END_OF_MESSAGE);
-    int packetLenIdx = packet.writerIndex();
-    packet.writeShort(0); // set length later
-    packet.writeShort(0x00);
-    packet.writeByte(0x00); // FIXME packet ID
-    packet.writeByte(0x00);
+  void encode() {
+    ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
     // packet data
-    int packetDataStartIdx = packet.writerIndex();
-
     List<OptionToken> optionTokens = cmd.optionTokens();
-
-    int payloadStartIdx = packet.writerIndex();
 
     int totalLengthOfOptionsData = 0;
 
@@ -79,41 +49,41 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
     // option token header
     for (OptionToken token : optionTokens) {
       totalLengthOfOptionsData += token.optionLength();
-      packet.writeByte(token.tokenType());
+      content.writeByte(token.tokenType());
       switch (token.tokenType()) {
         case VersionOptionToken.TYPE:
-          versionOptionTokenOffsetLengthIdx = packet.writerIndex();
+          versionOptionTokenOffsetLengthIdx = content.writerIndex();
           break;
         case EncryptionOptionToken.TYPE:
-          encryptionOptionTokenOffsetLengthIdx = packet.writerIndex();
+          encryptionOptionTokenOffsetLengthIdx = content.writerIndex();
           break;
         default:
           throw new IllegalStateException("Unexpected token type");
       }
-      packet.writeShort(0x00);
-      packet.writeShort(token.optionLength());
+      content.writeShort(0x00);
+      content.writeShort(token.optionLength());
     }
 
     // terminator token
-    packet.writeByte(0xFF);
+    content.writeByte(0xFF);
 
     // option token data
     for (OptionToken token : optionTokens) {
-      encodeTokenData(token, packet);
+      encodeTokenData(token, content);
     }
 
     // calculate Option offset
-    int totalLengthOfPayload = packet.writerIndex() - payloadStartIdx;
+    int totalLengthOfPayload = content.writerIndex();
     int offsetStart = totalLengthOfPayload - totalLengthOfOptionsData;
 
     for (OptionToken token : optionTokens) {
       switch (token.tokenType()) {
         case VersionOptionToken.TYPE:
-          packet.setShort(versionOptionTokenOffsetLengthIdx, offsetStart);
+          content.setShort(versionOptionTokenOffsetLengthIdx, offsetStart);
           offsetStart += token.optionLength();
           break;
         case EncryptionOptionToken.TYPE:
-          packet.setShort(encryptionOptionTokenOffsetLengthIdx, offsetStart);
+          content.setShort(encryptionOptionTokenOffsetLengthIdx, offsetStart);
           offsetStart += token.optionLength();
           break;
         default:
@@ -121,10 +91,7 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
       }
     }
 
-    int packetLen = packet.writerIndex() - packetDataStartIdx + 8;
-    packet.setShort(packetLenIdx, packetLen);
-
-    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
+    tdsMessageCodec.encoder().writeTdsMessage(PRE_LOGIN, content);
   }
 
   private void encodeTokenData(OptionToken optionToken, ByteBuf payload) {
@@ -137,5 +104,10 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
         payload.writeByte(((EncryptionOptionToken) optionToken).setting());
         break;
     }
+  }
+
+  @Override
+  void decode(ByteBuf payload) {
+    completionHandler.handle(CommandResponse.success(null));
   }
 }

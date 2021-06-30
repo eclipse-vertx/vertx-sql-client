@@ -26,22 +26,22 @@ class ExtendedBatchQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T>
   private int paramsIdx;
   private int messageDecoded;
 
-  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<T> cmd) {
-    super(cmd);
+  ExtendedBatchQueryCommandCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
+    super(tdsMessageCodec, cmd);
     paramsList = cmd.paramsList();
   }
 
   @Override
-  void encode(TdsMessageEncoder encoder) {
+  void encode() {
     if (paramsList.isEmpty()) {
       completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
       return;
     }
-    super.encode(encoder);
+    super.encode();
   }
 
   @Override
-  protected void handleMessageDecoded() {
+  protected void handleDecodingComplete() {
     if (paramsList.size() == 1 || ++messageDecoded == 2) {
       complete();
     } else {

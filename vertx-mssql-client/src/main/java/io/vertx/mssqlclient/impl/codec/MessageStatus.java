@@ -14,11 +14,11 @@ package io.vertx.mssqlclient.impl.codec;
 @SuppressWarnings("unused")
 public class MessageStatus {
 
-  public static final int NORMAL = 0x00;
-  public static final int END_OF_MESSAGE = 0x01;
-  public static final int IGNORE_THIS_EVENT = 0x02;
-  public static final int RESET_CONNECTION = 0x08;
-  public static final int RESET_CONNECTION_SKIP_TRAN = 0x10;
+  public static final short NORMAL = 0x00;
+  public static final short END_OF_MESSAGE = 0x01;
+  public static final short IGNORE_THIS_EVENT = 0x02;
+  public static final short RESET_CONNECTION = 0x08;
+  public static final short RESET_CONNECTION_SKIP_TRAN = 0x10;
 
   private MessageStatus() {
     // Constants class

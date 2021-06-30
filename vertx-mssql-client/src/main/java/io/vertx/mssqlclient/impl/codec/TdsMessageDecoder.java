@@ -11,51 +11,36 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.vertx.mssqlclient.impl.protocol.TdsMessage;
-import io.vertx.mssqlclient.impl.protocol.TdsPacket;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import java.util.ArrayDeque;
-import java.util.Iterator;
+public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
 
-class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
-  private final ArrayDeque<MSSQLCommandCodec<?, ?>> inflight;
-  private final TdsMessageEncoder encoder;
+  private final TdsMessageCodec tdsMessageCodec;
 
+  private ByteBufAllocator alloc;
   private TdsMessage message;
 
-  TdsMessageDecoder(ArrayDeque<MSSQLCommandCodec<?, ?>> inflight, TdsMessageEncoder encoder) {
-    this.inflight = inflight;
-    this.encoder = encoder;
+  public TdsMessageDecoder(TdsMessageCodec tdsMessageCodec) {
+    this.tdsMessageCodec = tdsMessageCodec;
+  }
+
+  @Override
+  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    alloc = ctx.alloc();
   }
 
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     TdsPacket tdsPacket = (TdsPacket) msg;
-    // assemble packets
-    if (tdsPacket.status() == MessageStatus.END_OF_MESSAGE) {
-      if (message == null) {
-        message = TdsMessage.newTdsMessageFromSinglePacket(tdsPacket);
-      } else {
-        // last packet of this message
-        CompositeByteBuf messageData = (CompositeByteBuf) message.content();
-        messageData.addComponent(true, tdsPacket.content());
-      }
-      decodeMessage();
+    if (message == null) {
+      message = TdsMessage.createForDecoding(alloc, tdsPacket);
     } else {
-      if (message == null) {
-        // first packet of this message and there will be more packets
-        CompositeByteBuf messageData = ctx.alloc().compositeDirectBuffer();
-        messageData.addComponent(true, tdsPacket.content());
-        message = TdsMessage.newTdsMessage(tdsPacket.type(), tdsPacket.status(), tdsPacket.processId(), messageData);
-      } else {
-        CompositeByteBuf messageData = (CompositeByteBuf) message.content();
-        messageData.addComponent(true, tdsPacket.content());
-      }
+      message.aggregate(tdsPacket);
+    }
+    if (tdsPacket.status() == MessageStatus.END_OF_MESSAGE) {
+      decodeMessage();
     }
   }
 
@@ -71,28 +56,15 @@ class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
     }
   }
 
-  @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands(ctx, "Fail to read any response from the server, the underlying connection might get lost unexpectedly.");
-    super.channelInactive(ctx);
-  }
-
   private void decodeMessage() {
     try {
-      inflight.peek().decodeMessage(message, encoder);
+      MSSQLCommandCodec<?, ?> commandCodec = tdsMessageCodec.peek();
+      if (commandCodec == null) {
+        throw new IllegalStateException("No command codec for message of type [" + message.type() + "]");
+      }
+      commandCodec.decode(message.content());
     } finally {
       releaseMessage();
-    }
-  }
-
-  private void clearInflightCommands(ChannelHandlerContext ctx, String failureMsg) {
-    // SQL Server provides a rollback mechanism, this is used for low level connection getting lost.
-    for (Iterator<MSSQLCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext();) {
-      MSSQLCommandCodec<?, ?> codec = it.next();
-      it.remove();
-      CommandResponse<Object> failure = CommandResponse.failure(failureMsg);
-      failure.cmd = (CommandBase) codec.cmd;
-      ctx.fireChannelRead(failure);
     }
   }
 }

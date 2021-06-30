@@ -11,27 +11,38 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.netty.util.ReferenceCountUtil;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.impl.command.*;
 
-import java.util.ArrayDeque;
+import static io.vertx.mssqlclient.MSSQLConnectOptions.MIN_PACKET_SIZE;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
+import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.TdsPacket.PACKET_HEADER_SIZE;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
-class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
-  private final ArrayDeque<MSSQLCommandCodec<?, ?>> inflight;
+public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
+  private final TdsMessageCodec tdsMessageCodec;
 
-  long transactionDescriptor;
-  ChannelHandlerContext chctx;
+  private ChannelHandlerContext chctx;
+  private ByteBufAllocator alloc;
+  private int payloadMaxLength;
 
-  TdsMessageEncoder(ArrayDeque<MSSQLCommandCodec<?, ?>> inflight) {
-    this.inflight = inflight;
+  public TdsMessageEncoder(TdsMessageCodec tdsMessageCodec, int packetSize) {
+    this.tdsMessageCodec = tdsMessageCodec;
+    setPacketSize(packetSize);
   }
 
   @Override
   public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
     chctx = ctx;
+    alloc = chctx.alloc();
   }
 
   @Override
@@ -47,36 +58,90 @@ class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
   void write(CommandBase<?> cmd) {
     MSSQLCommandCodec<?, ?> codec = wrap(cmd);
     codec.completionHandler = resp -> {
-      MSSQLCommandCodec<?, ?> c = inflight.poll();
+      MSSQLCommandCodec<?, ?> c = this.tdsMessageCodec.poll();
       resp.cmd = (CommandBase) c.cmd;
       chctx.fireChannelRead(resp);
     };
-    inflight.add(codec);
-    codec.encode(this);
+    this.tdsMessageCodec.add(codec);
+    codec.encode();
   }
 
   private MSSQLCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
     if (cmd instanceof PreLoginCommand) {
-      return new PreLoginCommandCodec((PreLoginCommand) cmd);
+      return new PreLoginCommandCodec(tdsMessageCodec, (PreLoginCommand) cmd);
     } else if (cmd instanceof InitCommand) {
-      return new InitCommandCodec((InitCommand) cmd);
+      return new InitCommandCodec(tdsMessageCodec, (InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
-      return new SQLBatchCommandCodec((SimpleQueryCommand) cmd);
+      return new SQLBatchCommandCodec<>(tdsMessageCodec, (SimpleQueryCommand<?>) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+      return new PrepareStatementCodec(tdsMessageCodec, (PrepareStatementCommand) cmd);
     } else if (cmd instanceof ExtendedQueryCommand) {
       ExtendedQueryCommand<?> queryCmd = (ExtendedQueryCommand<?>) cmd;
       if (queryCmd.isBatch()) {
-        return new ExtendedBatchQueryCommandCodec<>(queryCmd);
+        return new ExtendedBatchQueryCommandCodec<>(tdsMessageCodec, queryCmd);
       } else {
-        return new ExtendedQueryCommandCodec<>(queryCmd);
+        return new ExtendedQueryCommandCodec<>(tdsMessageCodec, queryCmd);
       }
     } else if (cmd instanceof CloseStatementCommand) {
-      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+      return new CloseStatementCommandCodec(tdsMessageCodec, (CloseStatementCommand) cmd);
     } else if (cmd == CloseConnectionCommand.INSTANCE) {
-      return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+      return new CloseConnectionCommandCodec(tdsMessageCodec, (CloseConnectionCommand) cmd);
     } else {
       throw new UnsupportedOperationException();
     }
+  }
+
+  public int packetSize() {
+    return payloadMaxLength + PACKET_HEADER_SIZE;
+  }
+
+  void setPacketSize(int packetSize) {
+    int packetMaxLength = max(MIN_PACKET_SIZE, packetSize);
+    payloadMaxLength = packetMaxLength - PACKET_HEADER_SIZE;
+  }
+
+  void encodeHeaders(ByteBuf content) {
+    int startIdx = content.writerIndex();
+    content.writeIntLE(0x00); // TotalLength for ALL_HEADERS
+    encodeTransactionDescriptor(content);
+    // set TotalLength for ALL_HEADERS
+    content.setIntLE(startIdx, content.writerIndex() - startIdx);
+  }
+
+  private void encodeTransactionDescriptor(ByteBuf content) {
+    content.writeIntLE(18); // HeaderLength is always 18
+    content.writeShortLE(0x0002); // HeaderType
+    content.writeLongLE(tdsMessageCodec.transactionDescriptor());
+    content.writeIntLE(1);
+  }
+
+  void writeTdsMessage(short messageType, ByteBuf tdsMessageContent) {
+    try {
+      int tdsMessageLength = tdsMessageContent.writerIndex();
+      int numPackets = (tdsMessageLength / payloadMaxLength) + ((tdsMessageLength % payloadMaxLength) == 0 ? 0 : 1);
+
+      for (int i = 0; i < numPackets; i++) {
+        int start = i * payloadMaxLength;
+        int length = min(tdsMessageLength - start, payloadMaxLength);
+        ByteBuf slice = tdsMessageContent.retainedSlice(start, length);
+        short status = NORMAL;
+        if (i == numPackets - 1) {
+          status |= END_OF_MESSAGE;
+        }
+        writeTdsPacket(messageType, status, length, slice);
+      }
+    } finally {
+      ReferenceCountUtil.release(tdsMessageContent);
+    }
+  }
+
+  private void writeTdsPacket(short messageType, short status, int length, ByteBuf payload) {
+    ByteBuf header = alloc.ioBuffer(8);
+    header.writeByte(messageType);
+    header.writeByte(status);
+    header.writeShort(PACKET_HEADER_SIZE + length);
+    header.writeZero(4);
+    chctx.write(header, chctx.voidPromise());
+    chctx.writeAndFlush(payload, chctx.voidPromise());
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -18,9 +18,6 @@ public final class LoginPacket {
    */
 
   public static final int SQL_SERVER_2017_VERSION = 0x04000074;  // SQL_SERVER_2012, SQL_SERVER_2014, SQL_SERVER_2016, SQL_SERVER_2017
-
-  public static final int DEFAULT_PACKET_SIZE = 4096;
-
 
   /*
     optionFlags1 = 8 BIT in Least Significant Bit Order

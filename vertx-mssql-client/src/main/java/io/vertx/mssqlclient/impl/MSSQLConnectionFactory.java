@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,15 +11,17 @@
 
 package io.vertx.mssqlclient.impl;
 
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.SocketAddress;
-import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.core.*;
-import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
@@ -28,8 +30,11 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
+  private final int desiredPacketSize;
+
   public MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
     super(vertx, options);
+    desiredPacketSize = options.getPacketSize();
   }
 
   @Override
@@ -47,7 +52,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     Future<NetSocket> fut = netClient.connect(server);
     return fut
       .map(so -> {
-        MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, false, 0, sql -> true, 1, context);
+        MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, desiredPacketSize, false, 0, sql -> true, 1, context);
         conn.init();
         return conn;
       }).flatMap(conn -> Future.<Void>future(promise -> conn.sendPreLoginMessage(false, promise))
