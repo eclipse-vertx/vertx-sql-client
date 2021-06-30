@@ -11,6 +11,7 @@
 
 package io.vertx.mssqlclient.impl.command;
 
+import io.vertx.mssqlclient.impl.MSSQLDatabaseMetadata;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.EncryptionOptionToken;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.OptionToken;
 import io.vertx.mssqlclient.impl.protocol.client.prelogin.VersionOptionToken;
@@ -19,7 +20,7 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PreLoginCommand extends CommandBase<Void> {
+public class PreLoginCommand extends CommandBase<MSSQLDatabaseMetadata> {
   private final List<OptionToken> optionTokens = new ArrayList<>();
 
   public PreLoginCommand(boolean ssl) {
