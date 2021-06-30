@@ -30,16 +30,16 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
-  private int packetSize;
+  private final int desiredPacketSize;
 
   public MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
     super(vertx, options);
+    desiredPacketSize = options.getPacketSize();
   }
 
   @Override
   protected void initializeConfiguration(SqlConnectOptions options) {
-    MSSQLConnectOptions mssqlConnectOptions = (MSSQLConnectOptions) options;
-    packetSize = mssqlConnectOptions.getPacketSize();
+    // currently no-op
   }
 
   @Override
@@ -52,7 +52,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     Future<NetSocket> fut = netClient.connect(server);
     return fut
       .map(so -> {
-        MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, packetSize, false, 0, sql -> true, 1, context);
+        MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, desiredPacketSize, false, 0, sql -> true, 1, context);
         conn.init();
         return conn;
       }).flatMap(conn -> Future.<Void>future(promise -> conn.sendPreLoginMessage(false, promise))

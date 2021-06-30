@@ -148,6 +148,9 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
    * @throws IllegalArgumentException if {@code packetSize} is smaller than {@link #MIN_PACKET_SIZE} or bigger than {@link #MAX_PACKET_SIZE}
    */
   public MSSQLConnectOptions setPacketSize(int packetSize) {
+    if (packetSize < MIN_PACKET_SIZE || packetSize > MAX_PACKET_SIZE) {
+      throw new IllegalArgumentException("Packet size: " + packetSize);
+    }
     this.packetSize = packetSize;
     return this;
   }
