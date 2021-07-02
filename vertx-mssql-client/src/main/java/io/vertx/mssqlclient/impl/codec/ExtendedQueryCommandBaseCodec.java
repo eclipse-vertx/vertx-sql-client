@@ -51,10 +51,11 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
   @Override
   protected void handleReturnValue(ByteBuf payload) {
     MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
-    if (ps.handle == 0) {
-      short paramNameLength = payload.getUnsignedByte(payload.readerIndex() + 2);
-      payload.skipBytes(13 + 2 * paramNameLength);
-      ps.handle = payload.readIntLE();
+    short paramNameLength = payload.getUnsignedByte(payload.readerIndex() + 2);
+    payload.skipBytes(12 + 2 * paramNameLength);
+    Number value = (Number) INTN.decodeValue(payload, null);
+    if (ps.handle == 0 && value != null) {
+      ps.handle = value.intValue();
     }
   }
 
