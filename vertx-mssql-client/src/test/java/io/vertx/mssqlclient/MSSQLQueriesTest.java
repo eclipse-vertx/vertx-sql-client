@@ -28,6 +28,10 @@ import org.junit.runner.RunWith;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 @RunWith(VertxUnitRunner.class)
 public class MSSQLQueriesTest extends MSSQLTestBase {
 
@@ -89,7 +93,6 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
       }));
   }
 
-
   @Test
   public void testInsertReturning(TestContext ctx) {
     connection.preparedQuery("insert into EntityWithIdentity (name) OUTPUT INSERTED.id, INSERTED.name VALUES (@p1)")
@@ -97,6 +100,18 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
         Row row = result.iterator().next();
         ctx.assertNotNull(row.getInteger("id"));
         ctx.assertEquals("John", row.getString("name"));
+      }));
+  }
+
+  @Test
+  public void testQueryNonExisting(TestContext ctx) {
+    connection.preparedQuery("DELETE FROM Fonky.Family")
+      .execute(Tuple.tuple(), ctx.asyncAssertFailure(t -> {
+        ctx.verify(unused -> {
+          assertThat(t, is(instanceOf(MSSQLException.class)));
+        });
+        MSSQLException mssqlException = (MSSQLException) t;
+        ctx.assertEquals(208, mssqlException.number());
       }));
   }
 }
