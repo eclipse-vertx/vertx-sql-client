@@ -96,6 +96,8 @@ public interface Tuple {
    * Wrap the provided {@code list} with a tuple.
    * <br/>
    * The list is not copied and is used as store for tuple elements.
+   * <br/>
+   * Note: The list might be modified and users should use {@link #tuple(List)} ()} if the list is unmodifiable
    *
    * @return the list wrapped as a tuple
    */
@@ -229,7 +231,7 @@ public interface Tuple {
   static Tuple of(Object elt1, Object... elts) {
     ArrayTuple tuple = new ArrayTuple(1 + elts.length);
     tuple.addValue(elt1);
-    for (Object elt: elts) {
+    for (Object elt : elts) {
       tuple.addValue(elt);
     }
     return tuple;
@@ -280,7 +282,7 @@ public interface Tuple {
     } else if (val instanceof Number) {
       return ((Number) val).shortValue();
     } else if (val instanceof Enum<?>) {
-      return (short)((Enum<?>) val).ordinal();
+      return (short) ((Enum<?>) val).ordinal();
     } else {
       return (Short) val; // Throw CCE
     }
@@ -322,7 +324,7 @@ public interface Tuple {
     } else if (val instanceof Number) {
       return ((Number) val).longValue();
     } else if (val instanceof Enum<?>) {
-      return (long)((Enum<?>) val).ordinal();
+      return (long) ((Enum<?>) val).ordinal();
     } else {
       return (Long) val; // Throw CCE
     }
@@ -343,7 +345,7 @@ public interface Tuple {
     } else if (val instanceof Number) {
       return ((Number) val).floatValue();
     } else if (val instanceof Enum<?>) {
-      return (float)((Enum<?>) val).ordinal();
+      return (float) ((Enum<?>) val).ordinal();
     } else {
       return (Float) val; // Throw CCE
     }
@@ -364,7 +366,7 @@ public interface Tuple {
     } else if (val instanceof Number) {
       return ((Number) val).doubleValue();
     } else if (val instanceof Enum<?>) {
-      return (double)((Enum<?>) val).ordinal();
+      return (double) ((Enum<?>) val).ordinal();
     } else {
       return (Double) val; // Throw CCE
     }
@@ -553,7 +555,7 @@ public interface Tuple {
     } else if (val instanceof OffsetTime) {
       return (OffsetTime) val;
     } else if (val instanceof OffsetDateTime) {
-      return ((OffsetDateTime)val).toOffsetTime();
+      return ((OffsetDateTime) val).toOffsetTime();
     } else {
       return (OffsetTime) val; // Throw CCE
     }
@@ -650,7 +652,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Boolean[] booleanArray = new Boolean[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         booleanArray[i] = (Boolean) array[i];
       }
       return booleanArray;
@@ -693,14 +695,14 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (short)elt.ordinal();
+          arr[i] = (short) elt.ordinal();
         }
       }
       return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Short[] shortArray = new Short[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         shortArray[i] = ((Number) array[i]).shortValue();
       }
       return shortArray;
@@ -750,7 +752,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Integer[] integerArray = new Integer[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         integerArray[i] = ((Number) array[i]).intValue();
       }
       return integerArray;
@@ -793,14 +795,14 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (long)elt.ordinal();
+          arr[i] = (long) elt.ordinal();
         }
       }
       return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Long[] longArray = new Long[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         longArray[i] = ((Number) array[i]).longValue();
       }
       return longArray;
@@ -843,14 +845,14 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (float)elt.ordinal();
+          arr[i] = (float) elt.ordinal();
         }
       }
       return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Float[] floatArray = new Float[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         floatArray[i] = ((Number) array[i]).floatValue();
       }
       return floatArray;
@@ -893,14 +895,14 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (double)elt.ordinal();
+          arr[i] = (double) elt.ordinal();
         }
       }
       return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Double[] doubleArray = new Double[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         doubleArray[i] = ((Number) array[i]).doubleValue();
       }
       return doubleArray;
@@ -947,7 +949,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Numeric[] doubleArray = new Numeric[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         doubleArray[i] = Numeric.create((Number) array[i]);
       }
       return doubleArray;
@@ -986,7 +988,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       String[] stringArray = new String[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         stringArray[i] = (String) array[i];
       }
       return stringArray;
@@ -1009,7 +1011,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       JsonObject[] jsonObjectArray = new JsonObject[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         jsonObjectArray[i] = (JsonObject) array[i];
       }
       return jsonObjectArray;
@@ -1032,7 +1034,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       JsonArray[] jsonObjectArray = new JsonArray[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         jsonObjectArray[i] = (JsonArray) array[i];
       }
       return jsonObjectArray;
@@ -1660,7 +1662,7 @@ public interface Tuple {
    * <p>The type can be one of the types returned by the row (e.g {@code String.class}) or an array
    * of the type (e.g {@code String[].class})).
    *
-   * @param type the expected value type
+   * @param type     the expected value type
    * @param position the value position
    * @return the value if the value is not found or null.
    */
@@ -1688,10 +1690,10 @@ public interface Tuple {
   @GenIgnore
   List<Class<?>> types();
 
-    /**
-     * @return A String containing the {@link Object#toString} value of each element,
-     * separated by a comma (,) character
-     */
+  /**
+   * @return A String containing the {@link Object#toString} value of each element,
+   * separated by a comma (,) character
+   */
   default String deepToString() {
     StringBuilder sb = new StringBuilder();
     sb.append("[");
