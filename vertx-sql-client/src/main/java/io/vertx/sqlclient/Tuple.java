@@ -231,7 +231,7 @@ public interface Tuple {
   static Tuple of(Object elt1, Object... elts) {
     ArrayTuple tuple = new ArrayTuple(1 + elts.length);
     tuple.addValue(elt1);
-    for (Object elt : elts) {
+    for (Object elt: elts) {
       tuple.addValue(elt);
     }
     return tuple;
@@ -652,7 +652,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Boolean[] booleanArray = new Boolean[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         booleanArray[i] = (Boolean) array[i];
       }
       return booleanArray;
@@ -702,7 +702,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Short[] shortArray = new Short[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         shortArray[i] = ((Number) array[i]).shortValue();
       }
       return shortArray;
@@ -752,7 +752,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Integer[] integerArray = new Integer[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         integerArray[i] = ((Number) array[i]).intValue();
       }
       return integerArray;
@@ -802,7 +802,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Long[] longArray = new Long[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         longArray[i] = ((Number) array[i]).longValue();
       }
       return longArray;
@@ -852,7 +852,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Float[] floatArray = new Float[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         floatArray[i] = ((Number) array[i]).floatValue();
       }
       return floatArray;
@@ -902,7 +902,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Double[] doubleArray = new Double[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         doubleArray[i] = ((Number) array[i]).doubleValue();
       }
       return doubleArray;
@@ -949,7 +949,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Numeric[] doubleArray = new Numeric[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         doubleArray[i] = Numeric.create((Number) array[i]);
       }
       return doubleArray;
@@ -988,7 +988,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       String[] stringArray = new String[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         stringArray[i] = (String) array[i];
       }
       return stringArray;
@@ -1011,7 +1011,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       JsonObject[] jsonObjectArray = new JsonObject[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         jsonObjectArray[i] = (JsonObject) array[i];
       }
       return jsonObjectArray;
@@ -1034,7 +1034,7 @@ public interface Tuple {
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       JsonArray[] jsonObjectArray = new JsonArray[array.length];
-      for (int i = 0; i < array.length; i++) {
+      for (int i = 0;i < array.length;i++) {
         jsonObjectArray[i] = (JsonArray) array[i];
       }
       return jsonObjectArray;
