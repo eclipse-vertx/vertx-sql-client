@@ -30,11 +30,15 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
 
   public PgTransactionTest() {
     connector = handler -> {
-      if (pool == null) {
-        pool = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions().setMaxSize(1));
-      }
-      pool.begin(handler);
+      pool().begin(handler);
     };
+  }
+
+  private PgPool pool() {
+    if (pool == null) {
+      pool = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions().setMaxSize(1));
+    }
+    return pool;
   }
 
   @Test
@@ -133,6 +137,25 @@ public class PgTransactionTest extends PgClientTestBase<Transaction> {
           async.complete();
         }));
       }));
+    }));
+  }
+
+  @Test
+  public void testLongTransaction(TestContext ctx) {
+    Async async = ctx.async(2);
+    pool().getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.exceptionHandler(err -> {
+        PgException pgErr = (PgException) err;
+        ctx.assertEquals("25P03", pgErr.getCode());
+        async.countDown();
+      });
+      conn.closeHandler(v2 -> {
+        async.countDown();
+      });
+      Transaction tx = conn.begin();
+      tx.query("set idle_in_transaction_session_timeout = 500")
+        .execute(ctx.asyncAssertSuccess(v -> {
+        }));
     }));
   }
 }
