@@ -19,14 +19,23 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListTuple implements TupleInternal {
 
-  private final List<Object> list;
+  private final List<Object> list = new ArrayList<>();
 
+  /**
+   * <p>if we get a fixed-size or read-only list(like {@link java.util.Arrays.ArrayList} or {@link java.util.Collections.SingletonList})
+   * which have not override {@link java.util.AbstractList#add(Object)}
+   * or {@link java.util.AbstractList#set(int, Object)} that defined in {@link java.util.AbstractList},
+   * we can create a {@link ArrayList} to involve the {@param list}
+   * to make the {@link #setValue(int, Object)} or {@link #addValue(Object)} work correctly
+   * <p/>
+   */
   public ListTuple(List<Object> list) {
-    this.list = list;
+    this.list.addAll(list);
   }
 
   @Override
