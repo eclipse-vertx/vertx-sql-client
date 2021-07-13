@@ -103,6 +103,15 @@ public class PgSocketConnection extends SocketConnectionBase {
     return dbMetaData;
   }
 
+  @Override
+  protected void handleException(Throwable t) {
+    if (t instanceof PgException) {
+      reportException(t);
+    } else {
+      super.handleException(t);
+    }
+  }
+
   void upgradeToSSLConnection(Handler<AsyncResult<Void>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     Promise<Void> upgradePromise = Promise.promise();
