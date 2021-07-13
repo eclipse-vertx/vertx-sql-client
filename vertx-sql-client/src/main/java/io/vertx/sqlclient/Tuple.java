@@ -282,7 +282,7 @@ public interface Tuple {
     } else if (val instanceof Number) {
       return ((Number) val).shortValue();
     } else if (val instanceof Enum<?>) {
-      return (short) ((Enum<?>) val).ordinal();
+      return (short)((Enum<?>) val).ordinal();
     } else {
       return (Short) val; // Throw CCE
     }
@@ -324,7 +324,7 @@ public interface Tuple {
     } else if (val instanceof Number) {
       return ((Number) val).longValue();
     } else if (val instanceof Enum<?>) {
-      return (long) ((Enum<?>) val).ordinal();
+      return (long)((Enum<?>) val).ordinal();
     } else {
       return (Long) val; // Throw CCE
     }
@@ -345,7 +345,7 @@ public interface Tuple {
     } else if (val instanceof Number) {
       return ((Number) val).floatValue();
     } else if (val instanceof Enum<?>) {
-      return (float) ((Enum<?>) val).ordinal();
+      return (float)((Enum<?>) val).ordinal();
     } else {
       return (Float) val; // Throw CCE
     }
@@ -366,7 +366,7 @@ public interface Tuple {
     } else if (val instanceof Number) {
       return ((Number) val).doubleValue();
     } else if (val instanceof Enum<?>) {
-      return (double) ((Enum<?>) val).ordinal();
+      return (double)((Enum<?>) val).ordinal();
     } else {
       return (Double) val; // Throw CCE
     }
@@ -555,7 +555,7 @@ public interface Tuple {
     } else if (val instanceof OffsetTime) {
       return (OffsetTime) val;
     } else if (val instanceof OffsetDateTime) {
-      return ((OffsetDateTime) val).toOffsetTime();
+      return ((OffsetDateTime)val).toOffsetTime();
     } else {
       return (OffsetTime) val; // Throw CCE
     }
@@ -695,7 +695,7 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (short) elt.ordinal();
+          arr[i] = (short)elt.ordinal();
         }
       }
       return arr;
@@ -795,7 +795,7 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (long) elt.ordinal();
+          arr[i] = (long)elt.ordinal();
         }
       }
       return arr;
@@ -845,7 +845,7 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (float) elt.ordinal();
+          arr[i] = (float)elt.ordinal();
         }
       }
       return arr;
@@ -895,7 +895,7 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (double) elt.ordinal();
+          arr[i] = (double)elt.ordinal();
         }
       }
       return arr;
@@ -1662,7 +1662,7 @@ public interface Tuple {
    * <p>The type can be one of the types returned by the row (e.g {@code String.class}) or an array
    * of the type (e.g {@code String[].class})).
    *
-   * @param type     the expected value type
+   * @param type the expected value type
    * @param position the value position
    * @return the value if the value is not found or null.
    */
@@ -1690,10 +1690,10 @@ public interface Tuple {
   @GenIgnore
   List<Class<?>> types();
 
-  /**
-   * @return A String containing the {@link Object#toString} value of each element,
-   * separated by a comma (,) character
-   */
+    /**
+     * @return A String containing the {@link Object#toString} value of each element,
+     * separated by a comma (,) character
+     */
   default String deepToString() {
     StringBuilder sb = new StringBuilder();
     sb.append("[");
