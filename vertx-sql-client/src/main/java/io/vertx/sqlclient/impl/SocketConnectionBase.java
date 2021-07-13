@@ -97,6 +97,8 @@ public abstract class SocketConnectionBase implements Connection {
       try {
         handleMessage(msg);
       } catch (Exception e) {
+        //maybe we should invoke the callback by msg to let the invoker know what happened?
+
         handleException(e);
       }
     });
@@ -275,7 +277,7 @@ public abstract class SocketConnectionBase implements Connection {
   protected void handleMessage(Object msg) {
     if (msg instanceof CommandResponse) {
       inflight--;
-      CommandResponse resp =(CommandResponse) msg;
+      CommandResponse resp = (CommandResponse) msg;
       resp.fire();
       checkPending();
     } else if (msg instanceof InvalidCachedStatementEvent) {

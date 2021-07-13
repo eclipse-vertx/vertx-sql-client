@@ -9,7 +9,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 
 /**
- * @author: tk (rivers.boat.snow at gmail dot com)
+ * @author: tk (rivers.boat.snow@gmail.com)
  * @date: 2021/7/13
  */
 public class ListTupleTest {
