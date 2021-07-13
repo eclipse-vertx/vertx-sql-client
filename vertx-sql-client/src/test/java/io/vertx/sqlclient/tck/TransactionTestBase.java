@@ -39,9 +39,9 @@ import io.vertx.sqlclient.Tuple;
 public abstract class TransactionTestBase {
 
   protected static class Result {
-    public final SqlClient client;
+    public final SqlConnection client;
     public final Transaction tx;
-    public Result(SqlClient client, Transaction tx) {
+    public Result(SqlConnection client, Transaction tx) {
       this.client = client;
       this.tx = tx;
     }

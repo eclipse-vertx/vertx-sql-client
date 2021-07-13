@@ -61,7 +61,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   public void handleClosed() {
     Handler<Void> handler = closeHandler;
     if (handler != null) {
-      context.runOnContext(handler);
+      context.emit(handler);
     }
   }
 
@@ -81,9 +81,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   public void handleException(Throwable err) {
     Handler<Throwable> handler = exceptionHandler;
     if (handler != null) {
-      context.runOnContext(v -> {
-        handler.handle(err);
-      });
+      context.emit(err, handler);
     } else {
       err.printStackTrace();
     }
