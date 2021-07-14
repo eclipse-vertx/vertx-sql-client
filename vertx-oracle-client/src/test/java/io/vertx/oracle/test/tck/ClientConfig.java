@@ -10,13 +10,11 @@
  */
 package io.vertx.oracle.test.tck;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.oracle.OracleConnectOptions;
-import io.vertx.oracle.OracleConnection;
 import io.vertx.oracle.OraclePool;
+import io.vertx.oracle.impl.OracleConnectionFactory;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -29,19 +27,21 @@ public enum ClientConfig {
     @Override
     Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
       return new Connector<>() {
+
+        private OracleConnectionFactory factory;
+
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          OracleConnection.connect(vertx, new OracleConnectOptions(options.toJson()), ar -> {
-            if (ar.succeeded()) {
-              handler.handle(Future.succeededFuture(ar.result()));
-            } else {
-              handler.handle(Future.failedFuture(ar.cause()));
-            }
-          });
+          factory = new OracleConnectionFactory((VertxInternal) vertx, new OracleConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1), null, null);
+          Context context = vertx.getOrCreateContext();
+          factory.connect(context).onComplete(handler);
         }
 
         @Override
         public void close() {
+          if (factory != null) {
+            factory.close(Promise.promise());
+          }
         }
       };
     }
@@ -51,8 +51,8 @@ public enum ClientConfig {
     @Override
     Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
       OraclePool pool = OraclePool
-        .pool(vertx, new OracleConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1));
-      return new Connector<SqlConnection>() {
+        .pool(vertx, new OracleConnectOptions(options.toJson()), new PoolOptions().setMaxSize(5));
+      return new Connector<>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
           pool.getConnection(ar -> {

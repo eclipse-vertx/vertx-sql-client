@@ -10,57 +10,151 @@
  */
 package io.vertx.oracle.impl;
 
-import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracle.OracleConnectOptions;
 import io.vertx.oracle.OraclePool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.PoolBase;
+import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.SqlClientBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
-public class OraclePoolImpl extends PoolBase<OraclePoolImpl> implements OraclePool {
+import java.util.function.Function;
+
+public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements OraclePool {
 
   private final OracleConnectionFactory factory;
+  private final VertxInternal vertx;
+  private Closeable onClose;
 
-  public static OraclePoolImpl create(VertxInternal vertx, boolean closeVertx, OracleConnectOptions connectOptions,
-    PoolOptions poolOptions) {
-    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), connectOptions);
+  public static OraclePoolImpl create(VertxInternal vertx, boolean closeVertx,
+    OracleConnectOptions connectOptions,
+    PoolOptions poolOptions, QueryTracer tracer) {
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     @SuppressWarnings("rawtypes") ClientMetrics metrics = vertxMetrics != null ?
       vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql",
         connectOptions.getMetricsName()) :
       null;
-    OraclePoolImpl pool = new OraclePoolImpl(vertx, new OracleConnectionFactory(vertx, connectOptions), tracer,
-      metrics, poolOptions);
-    pool.init();
-    CloseFuture closeFuture = pool.closeFuture();
+
+    OracleConnectionFactory factory = new OracleConnectionFactory(vertx, connectOptions, poolOptions, tracer, metrics);
+    OraclePoolImpl pool = new OraclePoolImpl(vertx, factory, metrics, tracer);
     if (closeVertx) {
-      closeFuture.future().onComplete(ar -> vertx.close());
+      pool.onClose(completion -> vertx.close());
     } else {
       ContextInternal ctx = vertx.getContext();
       if (ctx != null) {
-        ctx.addCloseHook(closeFuture);
+        ctx.addCloseHook(completion -> pool.close().onComplete(completion));
       } else {
-        vertx.addCloseHook(closeFuture);
+        vertx.addCloseHook(completion -> pool.close().onComplete(completion));
       }
     }
     return pool;
   }
 
-  public OraclePoolImpl(VertxInternal vertx, OracleConnectionFactory factory, QueryTracer tracer,
-    ClientMetrics metrics, PoolOptions poolOptions) {
-    super(vertx, factory, tracer, metrics, 1, poolOptions);
+  public OraclePoolImpl(VertxInternal vertx, OracleConnectionFactory factory, ClientMetrics metrics,
+    QueryTracer tracer) {
+    super(tracer, metrics);
     this.factory = factory;
+    this.vertx = vertx;
   }
 
-  @SuppressWarnings("rawtypes")
+  private void onClose(Closeable closeable) {
+    this.onClose = closeable;
+  }
+
   @Override
-  protected SqlConnectionImpl wrap(ContextInternal context, Connection conn) {
-    return new OracleConnectionImpl(factory, context, conn, tracer, metrics);
+  protected ContextInternal context() {
+    return vertx.getOrCreateContext();
+  }
+
+  @Override
+  public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
+    getConnection().onComplete(handler);
+  }
+
+  @Override
+  public Future<SqlConnection> getConnection() {
+    ContextInternal ctx = vertx.getOrCreateContext();
+    return getConnectionInternal(ctx);
+  }
+
+  private Future<SqlConnection> getConnectionInternal(ContextInternal ctx) {
+    return factory.connect(ctx)
+      .map(c -> {
+        SqlConnectionImpl<?> connection = new SqlConnectionImpl<>(ctx, factory, c, tracer, metrics);
+        c.init(connection);
+        return connection;
+      });
+  }
+
+  @Override
+  public Pool connectHandler(Handler<SqlConnection> handler) {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
+
+  @Override
+  public Pool connectionProvider(
+    Function<Context, Future<SqlConnection>> provider) {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
+
+  @Override
+  public int size() {
+    return 0;
+  }
+
+  @Override
+  protected <T> PromiseInternal<T> promise() {
+    return vertx.promise();
+  }
+
+  @Override
+  protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
+    return vertx.promise(handler);
+  }
+
+  @Override
+  public void close(Handler<AsyncResult<Void>> handler) {
+    Promise<Void> promise = Promise.promise();
+    factory.close(promise);
+    promise.future().onComplete(handler).compose(x -> {
+      Promise<Void> p = Promise.promise();
+      if (onClose != null) {
+        onClose.close(p);
+      } else {
+        p.complete();
+      }
+      return p.future();
+    });
+  }
+
+  @Override
+  public Future<Void> close() {
+    final Promise<Void> promise = vertx.promise();
+    factory.close(promise);
+
+    return promise.future().compose(x -> {
+      Promise<Void> p = Promise.promise();
+      if (onClose != null) {
+        onClose.close(p);
+      } else {
+        p.complete();
+      }
+      return p.future();
+    });
+  }
+
+  @Override
+  public <R> Future<R> schedule(ContextInternal contextInternal, CommandBase<R> commandBase) {
+    ContextInternal ctx = vertx.getOrCreateContext();
+    return getConnectionInternal(ctx)
+      .flatMap(conn -> ((SqlConnectionImpl<?>) conn).schedule(ctx, commandBase).eventually(r -> conn.close()));
   }
 }

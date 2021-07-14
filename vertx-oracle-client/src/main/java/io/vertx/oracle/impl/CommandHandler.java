@@ -13,6 +13,7 @@ package io.vertx.oracle.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.oracle.OracleConnectOptions;
 import io.vertx.oracle.impl.commands.*;
 import io.vertx.sqlclient.impl.Connection;
@@ -37,6 +38,11 @@ public class CommandHandler implements Connection {
   }
 
   @Override
+  public SocketAddress server() {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
+
+  @Override
   public void init(Holder holder) {
     this.holder = holder;
   }
@@ -44,6 +50,11 @@ public class CommandHandler implements Connection {
   @Override
   public boolean isSsl() {
     return options.isSsl();
+  }
+
+  @Override
+  public boolean isValid() {
+    return true;
   }
 
   @Override

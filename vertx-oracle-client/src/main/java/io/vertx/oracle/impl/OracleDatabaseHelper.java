@@ -23,8 +23,13 @@ public class OracleDatabaseHelper {
     OracleDataSource oracleDataSource =
       getOrHandleSQLException(oracle.jdbc.pool.OracleDataSource::new);
 
-    runOrHandleSQLException(() ->
-      oracleDataSource.setURL(composeJdbcUrl(options)));
+    if (options.getUrl() != null) {
+      runOrHandleSQLException(() ->
+        oracleDataSource.setURL(options.getUrl()));
+    } else {
+      runOrHandleSQLException(() ->
+        oracleDataSource.setURL(composeJdbcUrl(options)));
+    }
     configureStandardOptions(oracleDataSource, options);
     configureExtendedOptions(oracleDataSource, options);
     configureJdbcDefaults(oracleDataSource);

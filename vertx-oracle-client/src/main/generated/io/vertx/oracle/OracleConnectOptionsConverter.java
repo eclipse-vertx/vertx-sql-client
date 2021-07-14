@@ -66,6 +66,11 @@ public class OracleConnectOptionsConverter {
             obj.setMaxRows(((Number)member.getValue()).intValue());
           }
           break;
+        case "metricsEnabled":
+          if (member.getValue() instanceof Boolean) {
+            obj.setMetricsEnabled((Boolean)member.getValue());
+          }
+          break;
         case "queryTimeout":
           if (member.getValue() instanceof Number) {
             obj.setQueryTimeout(((Number)member.getValue()).intValue());
@@ -116,6 +121,11 @@ public class OracleConnectOptionsConverter {
             obj.setTrustStoreType((String)member.getValue());
           }
           break;
+        case "url":
+          if (member.getValue() instanceof String) {
+            obj.setUrl((String)member.getValue());
+          }
+          break;
         case "walletLocation":
           if (member.getValue() instanceof String) {
             obj.setWalletLocation((String)member.getValue());
@@ -159,6 +169,7 @@ public class OracleConnectOptionsConverter {
       json.put("keyStoreType", obj.getKeyStoreType());
     }
     json.put("maxRows", obj.getMaxRows());
+    json.put("metricsEnabled", obj.isMetricsEnabled());
     json.put("queryTimeout", obj.getQueryTimeout());
     json.put("readOnly", obj.isReadOnly());
     if (obj.getResultSetConcurrency() != null) {
@@ -184,6 +195,9 @@ public class OracleConnectOptionsConverter {
     }
     if (obj.getTrustStoreType() != null) {
       json.put("trustStoreType", obj.getTrustStoreType());
+    }
+    if (obj.getUrl() != null) {
+      json.put("url", obj.getUrl());
     }
     if (obj.getWalletLocation() != null) {
       json.put("walletLocation", obj.getWalletLocation());
