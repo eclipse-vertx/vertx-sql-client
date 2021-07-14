@@ -11,7 +11,6 @@
 package io.vertx.oracle.test;
 
 import io.vertx.oracle.OracleConnectOptions;
-import io.vertx.oracle.OracleConnection;
 import io.vertx.oracle.OraclePool;
 import io.vertx.oracle.test.junit.OracleRule;
 import io.vertx.sqlclient.*;
@@ -107,8 +106,9 @@ public class OraclePoolTest extends OracleTestBase {
     rows.forEach(row -> System.out.printf("[%d] %s : %d%n", row.get(Integer.class, 0), row.get(String.class, 1),
       row.get(Integer.class, 2)));
 
-    System.out.println("Ping");
-    System.out.println(await(((OracleConnection) connection).ping()));
+    // TODO Reimplement ping
+//    System.out.println("Ping");
+//    System.out.println(await(((OracleConnection) connection).ping()));
 
     await(connection.close());
   }

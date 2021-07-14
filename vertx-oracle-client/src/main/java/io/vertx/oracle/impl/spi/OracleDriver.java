@@ -11,23 +11,45 @@
 package io.vertx.oracle.impl.spi;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracle.OracleConnectOptions;
 import io.vertx.oracle.OraclePool;
+import io.vertx.oracle.impl.OracleConnectionFactory;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
+
+import java.util.List;
 
 public class OracleDriver implements Driver {
 
   @Override
-  public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
-    return OraclePool.pool(wrap(options), poolOptions);
+  public Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases,
+    PoolOptions options) {
+    // TODO Handle list
+    if (vertx == null) {
+      return OraclePool.pool(wrap(databases.get(0)), options);
+    }
+    return OraclePool.pool(vertx, wrap(databases.get(0)), options);
   }
 
   @Override
-  public Pool createPool(Vertx vertx, SqlConnectOptions options, PoolOptions poolOptions) {
-    return OraclePool.pool(vertx, wrap(options), poolOptions);
+  public ConnectionFactory createConnectionFactory(Vertx vertx,
+    SqlConnectOptions database) {
+    OracleConnectOptions options = wrap(database);
+    VertxInternal vi = (VertxInternal) vertx;
+    VertxMetrics vertxMetrics = vi.metricsSPI();
+    @SuppressWarnings("rawtypes") ClientMetrics metrics = vertxMetrics != null ?
+      vertxMetrics.createClientMetrics(database.getSocketAddress(), "sql",
+        database.getMetricsName()) :
+      null;
+    QueryTracer tracer = new QueryTracer(vi.tracer(), database);
+    return new OracleConnectionFactory(vi, options, new PoolOptions(), tracer, metrics);
   }
 
   @Override
