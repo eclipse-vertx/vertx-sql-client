@@ -31,10 +31,12 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   private final int desiredPacketSize;
+  private final boolean ssl;
 
   public MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
     super(vertx, options);
     desiredPacketSize = options.getPacketSize();
+    ssl = options.isSsl();
   }
 
   @Override
@@ -44,7 +46,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected void configureNetClientOptions(NetClientOptions netClientOptions) {
-    // currently no-op
+    netClientOptions.setSsl(false);
   }
 
   @Override
@@ -55,8 +57,12 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
         MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, desiredPacketSize, false, 0, sql -> true, 1, context);
         conn.init();
         return conn;
-      }).flatMap(conn -> Future.<Void>future(promise -> conn.sendPreLoginMessage(false, promise))
-        .flatMap(v -> Future.future(promise -> conn.sendLoginMessage(username, password, database, properties, promise))));
+      })
+      .compose(conn -> conn.sendPreLoginMessage(ssl).compose(encryptionLevel -> {
+          // TODO inspect negociated encryption level
+          return conn.sendLoginMessage(username, password, database, properties);
+        })
+      );
   }
 
   @Override

@@ -13,12 +13,14 @@ package io.vertx.mssqlclient.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
+import io.vertx.mssqlclient.impl.command.PreLoginResponse;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -34,7 +36,7 @@ class MSSQLSocketConnection extends SocketConnectionBase {
 
   private final int packetSize;
 
-  public MSSQLDatabaseMetadata databaseMetadata;
+  private MSSQLDatabaseMetadata databaseMetadata;
 
   MSSQLSocketConnection(NetSocketInternal socket,
                         int packetSize,
@@ -47,14 +49,14 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     this.packetSize = packetSize;
   }
 
-  void sendPreLoginMessage(boolean ssl, Handler<AsyncResult<Void>> completionHandler) {
+  Future<Byte> sendPreLoginMessage(boolean ssl) {
     PreLoginCommand cmd = new PreLoginCommand(ssl);
-    schedule(context, cmd).onSuccess(this::setDatabaseMetadata).<Void>mapEmpty().onComplete(completionHandler);
+    return schedule(context, cmd).onSuccess(resp -> setDatabaseMetadata(resp.metadata())).map(PreLoginResponse::encryptionLevel);
   }
 
-  void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<AsyncResult<Connection>> completionHandler) {
+  Future<Connection> sendLoginMessage(String username, String password, String database, Map<String, String> properties) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    schedule(context, cmd).onComplete(completionHandler);
+    return schedule(context, cmd);
   }
 
   @Override
