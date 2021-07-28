@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 import java.time.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -148,7 +149,17 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   @Test
   @Repeat(100)
   public void testEncodeOffsetDateTime(TestContext ctx) {
-    OffsetDateTime now = LocalDateTime.now().atOffset(ZoneOffset.ofHoursMinutes(-3, -15));
+    /*
+    Starting from Java 11, LocalDateTime.now() can have microseconds precision.
+    But the test database defines the test_datetimeoffset column with scale of 5.
+
+    Therefore, in order to get consistent behavior between Java 8 and Java 11,
+    we erase the nanoOfSecond value obtained from the clock with a random number
+    which has at most tens of microseconds precision.
+     */
+    int nanoOfSecond = ThreadLocalRandom.current().nextInt(100_000) * 10_000;
+    OffsetDateTime now = LocalDateTime.now().withNano(nanoOfSecond)
+      .atOffset(ZoneOffset.ofHoursMinutes(-3, -15));
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetimeoffset", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetimeoffset")
         .returns(Tuple::getValue, Row::getValue, now)
