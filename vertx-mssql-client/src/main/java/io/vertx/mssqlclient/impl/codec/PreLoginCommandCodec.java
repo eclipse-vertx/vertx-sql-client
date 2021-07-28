@@ -17,7 +17,7 @@ import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.mssqlclient.impl.command.PreLoginResponse;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_NOT_SUP;
+import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_OFF;
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_ON;
 import static io.vertx.mssqlclient.impl.codec.MessageType.PRE_LOGIN;
 
@@ -45,7 +45,7 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
 
     encodeOptionOffset(content, encryptionOptionIndex, content.writerIndex());
     encodeOptionLength(content, encryptionOptionIndex, 1);
-    content.writeByte(cmd.sslRequired() ? ENCRYPT_ON : ENCRYPT_NOT_SUP);
+    content.writeByte(cmd.sslRequired() ? ENCRYPT_ON : ENCRYPT_OFF);
 
     tdsMessageCodec.encoder().writeTdsMessage(PRE_LOGIN, content);
   }

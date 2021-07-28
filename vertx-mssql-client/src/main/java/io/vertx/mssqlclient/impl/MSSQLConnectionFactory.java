@@ -21,6 +21,7 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -60,7 +61,12 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
       })
       .compose(conn -> conn.sendPreLoginMessage(ssl).compose(encryptionLevel -> {
           // TODO inspect negociated encryption level
-          return conn.sendLoginMessage(username, password, database, properties);
+          SSLHelper sslHelper = new SSLHelper(options.setTrustAll(true), options.getKeyCertOptions(), options.getTrustOptions()).setApplicationProtocols(options.getApplicationLayerProtocols());
+          return conn.enableSsl(sslHelper).compose(v -> {
+            Future<Connection> connectionFuture = conn.sendLoginMessage(username, password, database, properties);
+            conn.disableSsl();
+            return connectionFuture;
+          });
         })
       );
   }
