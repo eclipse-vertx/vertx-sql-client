@@ -11,12 +11,10 @@
 
 package io.vertx.mssqlclient.impl;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.*;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.ssl.SslHandler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -28,6 +26,7 @@ import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
+import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.mssqlclient.impl.command.PreLoginResponse;
 import io.vertx.sqlclient.impl.Connection;
@@ -39,11 +38,6 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import static io.vertx.mssqlclient.MSSQLConnectOptions.MAX_PACKET_SIZE;
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
-import static io.vertx.mssqlclient.impl.codec.MessageType.PRE_LOGIN;
-import static io.vertx.mssqlclient.impl.codec.TdsPacket.PACKET_HEADER_SIZE;
 import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 
 class MSSQLSocketConnection extends SocketConnectionBase {
@@ -76,7 +70,7 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     pipeline.addFirst("handshaker", new SslHandshakeCompletionHandler(p));
     p.addListener(future -> {
       if (future.isSuccess()) {
-        pipeline.remove("prelogin-handshake-handler");
+        pipeline.removeFirst();
         promise.complete();
       } else {
         promise.fail(future.cause());
@@ -86,8 +80,8 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     SslHandler sslHandler = new SslHandler(helper.createEngine(context.owner(), socket.remoteAddress(), null, false));
     sslHandler.setHandshakeTimeout(helper.getSslHandshakeTimeout(), helper.getSslHandshakeTimeoutUnit());
 
-    pipeline.addFirst("prelogin-handshake-handler", new MyHandler(sslHandler));
-    pipeline.addAfter("prelogin-handshake-handler", "ssl", sslHandler);
+    pipeline.addFirst("tds-ssl-handshake-codec", new TdsSslHandshakeCodec());
+    pipeline.addAfter("tds-ssl-handshake-codec", "ssl", sslHandler);
 
     return promise.future();
   }
@@ -137,84 +131,5 @@ class MSSQLSocketConnection extends SocketConnectionBase {
 
   private void setDatabaseMetadata(MSSQLDatabaseMetadata metadata) {
     this.databaseMetadata = metadata;
-  }
-
-  private static class MyHandler extends CombinedChannelDuplexHandler<LengthFieldBasedFrameDecoder, ChannelOutboundHandlerAdapter> {
-
-    private final SslHandler sslHandler;
-
-    public MyHandler(SslHandler sslHandler) {
-      this.sslHandler = sslHandler;
-      init(new LengthFieldBasedFrameDecoder(MAX_PACKET_SIZE, 2, 2, -4, 0) {
-        @Override
-        protected Object decode(ChannelHandlerContext ctx, ByteBuf in) throws Exception {
-          ByteBuf byteBuf = (ByteBuf) super.decode(ctx, in);
-          if (byteBuf == null) {
-            return null;
-          }
-
-          short type = in.getUnsignedByte(0);
-          short status = in.getUnsignedByte(1);
-          int length = in.getUnsignedShort(2);
-
-          return byteBuf.slice(PACKET_HEADER_SIZE, length - PACKET_HEADER_SIZE);
-        }
-      }, new ChannelOutboundHandlerAdapter() {
-
-        private ByteBufAllocator alloc;
-        private CompositeByteBuf accumulator;
-
-        @Override
-        public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-          alloc = ctx.alloc();
-        }
-
-        @Override
-        public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-          if (accumulator != null) {
-            accumulator.release();
-          }
-        }
-
-        @Override
-        public void read(ChannelHandlerContext ctx) throws Exception {
-          super.read(ctx);
-        }
-
-        @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-          if (msg instanceof ByteBuf) {
-            ByteBuf byteBuf = (ByteBuf) msg;
-            accumulate(byteBuf);
-            promise.setSuccess();
-          } else {
-            super.write(ctx, msg, promise);
-          }
-        }
-
-        private void accumulate(ByteBuf byteBuf) {
-          if (accumulator == null) {
-            accumulator = alloc.compositeBuffer();
-          }
-          accumulator.addComponent(true, byteBuf.retainedSlice());
-        }
-
-        @Override
-        public void flush(ChannelHandlerContext ctx) throws Exception {
-          if (accumulator != null) {
-            ByteBuf header = alloc.ioBuffer(8);
-            header.writeByte(PRE_LOGIN);
-            header.writeByte(NORMAL | END_OF_MESSAGE);
-            header.writeShort(PACKET_HEADER_SIZE + accumulator.writerIndex());
-            header.writeZero(4);
-            ctx.write(header, ctx.voidPromise());
-            ctx.writeAndFlush(accumulator, ctx.voidPromise());
-            accumulator = null;
-          } else {
-            ctx.flush();
-          }
-        }
-      });
-    }
   }
 }
