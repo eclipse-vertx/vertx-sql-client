@@ -21,13 +21,14 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+
+import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
@@ -52,23 +53,30 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
-    Future<NetSocket> fut = netClient.connect(server);
-    return fut
-      .map(so -> {
-        MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, desiredPacketSize, false, 0, sql -> true, 1, context);
-        conn.init();
-        return conn;
-      })
-      .compose(conn -> conn.sendPreLoginMessage(ssl).compose(encryptionLevel -> {
-          // TODO inspect negociated encryption level
-          SSLHelper sslHelper = new SSLHelper(options.setTrustAll(true), options.getKeyCertOptions(), options.getTrustOptions()).setApplicationProtocols(options.getApplicationLayerProtocols());
-          return conn.enableSsl(sslHelper).compose(v -> {
-            Future<Connection> connectionFuture = conn.sendLoginMessage(username, password, database, properties);
-            conn.disableSsl();
-            return connectionFuture;
-          });
-        })
+    return netClient.connect(server)
+      .map(so -> createSocketConnection(so, context))
+      .compose(conn -> conn.sendPreLoginMessage(ssl)
+        .compose(encryptionLevel -> login(conn, username, password, database, encryptionLevel, context))
       );
+  }
+
+  private MSSQLSocketConnection createSocketConnection(NetSocket so, EventLoopContext context) {
+    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, desiredPacketSize, false, 0, sql -> true, 1, context);
+    conn.init();
+    return conn;
+  }
+
+  private Future<Connection> login(MSSQLSocketConnection conn, String username, String password, String database, Byte encryptionLevel, EventLoopContext context) {
+    if (ssl && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
+      return context.failedFuture("The client is configured for encryption but the server does not support it");
+    }
+    Future<Void> future;
+    if (encryptionLevel != ENCRYPT_NOT_SUP) {
+      future = conn.enableSsl(encryptionLevel, options);
+    } else {
+      future = context.succeededFuture();
+    }
+    return future.compose(v -> conn.sendLoginMessage(username, password, database, properties));
   }
 
   @Override
