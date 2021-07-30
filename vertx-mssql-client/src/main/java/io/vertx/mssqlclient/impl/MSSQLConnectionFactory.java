@@ -33,12 +33,12 @@ import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   private final int desiredPacketSize;
-  private final boolean ssl;
+  private final boolean clientConfigSsl;
 
   public MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
     super(vertx, options);
     desiredPacketSize = options.getPacketSize();
-    ssl = options.isSsl();
+    clientConfigSsl = options.isSsl();
   }
 
   @Override
@@ -55,7 +55,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
   protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
     return netClient.connect(server)
       .map(so -> createSocketConnection(so, context))
-      .compose(conn -> conn.sendPreLoginMessage(ssl)
+      .compose(conn -> conn.sendPreLoginMessage(clientConfigSsl)
         .compose(encryptionLevel -> login(conn, username, password, database, encryptionLevel, context))
       );
   }
@@ -67,12 +67,12 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   private Future<Connection> login(MSSQLSocketConnection conn, String username, String password, String database, Byte encryptionLevel, EventLoopContext context) {
-    if (ssl && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
+    if (clientConfigSsl && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
       return context.failedFuture("The client is configured for encryption but the server does not support it");
     }
     Future<Void> future;
     if (encryptionLevel != ENCRYPT_NOT_SUP) {
-      future = conn.enableSsl(encryptionLevel, options);
+      future = conn.enableSsl(clientConfigSsl, encryptionLevel, (MSSQLConnectOptions) options);
     } else {
       future = context.succeededFuture();
     }

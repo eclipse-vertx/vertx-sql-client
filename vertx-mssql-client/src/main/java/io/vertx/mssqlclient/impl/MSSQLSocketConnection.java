@@ -22,13 +22,13 @@ import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
+import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.mssqlclient.impl.command.PreLoginResponse;
-import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -57,12 +57,12 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     this.packetSize = packetSize;
   }
 
-  Future<Byte> sendPreLoginMessage(boolean ssl) {
-    PreLoginCommand cmd = new PreLoginCommand(ssl);
+  Future<Byte> sendPreLoginMessage(boolean clientConfigSsl) {
+    PreLoginCommand cmd = new PreLoginCommand(clientConfigSsl);
     return schedule(context, cmd).onSuccess(resp -> setDatabaseMetadata(resp.metadata())).map(PreLoginResponse::encryptionLevel);
   }
 
-  Future<Void> enableSsl(byte encryptionLevel, SqlConnectOptions options) {
+  Future<Void> enableSsl(boolean clientConfigSsl, byte encryptionLevel, MSSQLConnectOptions options) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     PromiseInternal<Void> promise = context.promise();
 
@@ -77,8 +77,11 @@ class MSSQLSocketConnection extends SocketConnectionBase {
       }
     });
 
-    // TODO configure options
-    SSLHelper helper = new SSLHelper(options.setTrustAll(true), options.getKeyCertOptions(), options.getTrustOptions()).setApplicationProtocols(options.getApplicationLayerProtocols());
+    if (!clientConfigSsl) {
+      options.setTrustAll(true);
+    }
+
+    SSLHelper helper = new SSLHelper(options, options.getKeyCertOptions(), options.getTrustOptions()).setApplicationProtocols(options.getApplicationLayerProtocols());
     SslHandler sslHandler = new SslHandler(helper.createEngine(context.owner(), socket.remoteAddress(), null, false));
     sslHandler.setHandshakeTimeout(helper.getSslHandshakeTimeout(), helper.getSslHandshakeTimeoutUnit());
 
