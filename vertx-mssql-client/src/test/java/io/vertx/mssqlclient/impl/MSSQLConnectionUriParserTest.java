@@ -247,4 +247,34 @@ public class MSSQLConnectionUriParserTest {
     uri = "sqlserver://username:dddd@127.0.0.1:3306/!dbname";
     actualParsedResult = parse(uri);
   }
+
+  @Test
+  public void testParsingUserInfoContainAsterisk(){
+    uri = "sqlserver://user*name:dd*dd@127.0.0.1:1234/dbname";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("user", "user*name")
+      .put("password", "dd*dd")
+      .put("host", "127.0.0.1")
+      .put("port", 1234)
+      .put("database", "dbname");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingSchemaContainAsterisk(){
+    uri = "sqlserver://username:dddd@127.0.0.1:1234/*dbname";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("user", "username")
+      .put("password", "dddd")
+      .put("host", "127.0.0.1")
+      .put("port", 1234)
+      .put("database", "*dbname");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
 }
