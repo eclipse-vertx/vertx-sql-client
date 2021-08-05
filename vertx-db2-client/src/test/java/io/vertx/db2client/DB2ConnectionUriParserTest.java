@@ -239,4 +239,33 @@ public class DB2ConnectionUriParserTest {
       actualParsedResult = parse(uri);
   }
 
+  @Test
+  public void testParsingUserInfoContainAsterisk(){
+    uri = "db2://user*name:dd*dd@127.0.0.1:1234/dbname";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("user", "user*name")
+      .put("password", "dd*dd")
+      .put("host", "127.0.0.1")
+      .put("port", 1234)
+      .put("database", "dbname");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingSchemaContainAsterisk(){
+    uri = "db2://username:dddd@127.0.0.1:1234/*dbname";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("user", "username")
+      .put("password", "dddd")
+      .put("host", "127.0.0.1")
+      .put("port", 1234)
+      .put("database", "*dbname");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
 }
