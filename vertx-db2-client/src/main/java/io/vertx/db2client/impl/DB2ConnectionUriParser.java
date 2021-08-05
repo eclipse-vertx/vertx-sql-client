@@ -29,18 +29,18 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * This is a parser for parsing connection URIs of DB2.
- * 
+ *
  * @see <a href=
  *      "https://www.ibm.com/support/knowledgecenter/SSEPGG_9.7.0/com.ibm.db2.luw.apdv.java.doc/src/tpc/imjcc_r0052342.html">DB2
  *      official doc</a>
  */
 public class DB2ConnectionUriParser {
-  
+
   private static final String SCHEME_DESIGNATOR_REGEX = "(db2)://"; // URI scheme designator
-  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // username and password
+  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!*]+(:[a-zA-Z0-9\\-._~%!*]*)?)@)?"; // username and password
   private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or host name
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
-  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!]+))?"; // database name
+  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
   private static final String FULL_URI_REGEX = "^" // regex start
