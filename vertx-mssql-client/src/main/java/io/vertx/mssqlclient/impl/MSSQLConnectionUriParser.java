@@ -29,10 +29,10 @@ import static java.lang.String.format;
  */
 public class MSSQLConnectionUriParser {
   private static final String SCHEME_DESIGNATOR_REGEX = "(sqlserver)://"; // URI scheme designator
-  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]*)?)@)?"; // user name and password
+  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!*]+(:[a-zA-Z0-9\\-._~%!*]*)?)@)?"; // user name and password
   private static final String NET_LOCATION_REGEX = "(?<netloc>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)?"; // ip v4/v6 address, host, domain socket address
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
-  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!]+))?"; // database name
+  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
   private static final String FULL_URI_REGEX = "^" // regex start
