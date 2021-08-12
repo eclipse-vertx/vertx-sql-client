@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
-package io.vertx.oracleclient.impl.spi;
+package io.vertx.oracleclient.spi;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.VertxInternal;

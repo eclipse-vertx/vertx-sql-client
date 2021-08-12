@@ -1,1 +1,1 @@
-io.vertx.oracleclient.impl.spi.OracleDriver
+io.vertx.oracleclient.spi.OracleDriver
