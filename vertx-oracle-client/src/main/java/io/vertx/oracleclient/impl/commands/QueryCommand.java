@@ -40,8 +40,7 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
     this.collector = collector;
   }
 
-  protected OracleResponse<R> decode(Statement statement, boolean returnedResultSet, boolean returnedKeys,
-    List<Integer> out) throws SQLException {
+  protected OracleResponse<R> decode(Statement statement, boolean returnedResultSet, boolean returnedKeys) throws SQLException {
 
     final OracleResponse<R> response = new OracleResponse<>(statement.getUpdateCount());
     if (returnedResultSet) {
@@ -64,10 +63,6 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
       if (returnedKeys) {
         decodeReturnedKeys(statement, response);
       }
-    }
-
-    if (out.size() > 0) {
-      decodeOutput((CallableStatement) statement, out, response);
     }
 
     return response;
@@ -170,30 +165,6 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
     }
 
     return collector.finisher().apply(container);
-  }
-
-  private void decodeOutput(CallableStatement cs, List<Integer> out, OracleResponse<R> output) throws SQLException {
-    BiConsumer<C, Row> accumulator = collector.accumulator();
-
-    // first rowset includes the output results
-    C container = collector.supplier().get();
-
-    // the result is unlabeled
-    Row row = new OracleRow(new RowDesc(Collections.emptyList()));
-    for (Integer idx : out) {
-      if (cs.getObject(idx) instanceof ResultSet) {
-        row.addValue(decodeRawResultSet((ResultSet) cs.getObject(idx)));
-      } else {
-        Object res = convertSqlValue(cs.getObject(idx));
-        row.addValue(res);
-      }
-    }
-
-    accumulator.accept(container, row);
-
-    R result = collector.finisher().apply(container);
-
-    output.outputs(result, null, 1);
   }
 
   private void decodeReturnedKeys(Statement statement, OracleResponse<R> response) throws SQLException {
@@ -374,9 +345,6 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
   private void configureFetch(int fetch, PreparedStatement statement) throws SQLException {
     if (fetch > 0) {
       statement.setFetchSize(fetch);
-      if (options.getFetchDirection() != null) {
-        statement.setFetchDirection(options.getFetchDirection().getType());
-      }
     }
   }
 

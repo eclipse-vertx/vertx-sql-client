@@ -14,7 +14,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.SqlOutParam;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.oracleclient.impl.OracleRow;
 import io.vertx.oracleclient.impl.RowReader;
@@ -130,19 +129,7 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
     for (int i = 0; i < params.size(); i++) {
       // we must convert types (to comply to JDBC)
       Object value = adaptType(conn, params.getValue(i));
-
-      if (value instanceof SqlOutParam) {
-        SqlOutParam outValue = (SqlOutParam) value;
-
-        if (outValue.in()) {
-          ps.setObject(i + 1, adaptType(conn, outValue.value()));
-        }
-
-        ((CallableStatement) ps)
-          .registerOutParameter(i + 1, outValue.type());
-      } else {
-        ps.setObject(i + 1, value);
-      }
+      ps.setObject(i + 1, value);
     }
   }
 

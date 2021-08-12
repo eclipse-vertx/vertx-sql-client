@@ -61,7 +61,7 @@ public class SimpleQueryCommand<C, R> extends QueryCommand<C, R> {
       return execute(ps, context)
         .compose(mayBeResult -> {
           try {
-            return Future.succeededFuture(decode(ref, mayBeResult, false, Collections.emptyList()));
+            return Future.succeededFuture(decode(ref, mayBeResult, false));
           } catch (SQLException throwables) {
             return Future.failedFuture(throwables);
           } finally {

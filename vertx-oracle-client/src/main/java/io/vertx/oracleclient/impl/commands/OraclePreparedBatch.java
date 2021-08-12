@@ -14,7 +14,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.SqlOutParam;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
@@ -96,11 +95,7 @@ public class OraclePreparedBatch<C, R> extends QueryCommand<C, R> {
       // we must convert types (to comply to JDBC)
       Object value = adaptType(conn, params.getValue(i));
 
-      if (value instanceof SqlOutParam) {
-        throw new SQLException("{out} parameters are not supported in batch mode");
-      } else {
-        ps.setObject(i + 1, value);
-      }
+      ps.setObject(i + 1, value);
     }
   }
 

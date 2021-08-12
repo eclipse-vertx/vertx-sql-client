@@ -30,21 +30,6 @@ public abstract class AbstractCommand<T> extends CommandBase<T> {
   public abstract Future<T> execute(OracleConnection conn, Context context);
 
   protected void applyStatementOptions(Statement statement) throws SQLException {
-    if (options != null) {
-      if (options.getQueryTimeout() > 0) {
-        statement.setQueryTimeout(options.getQueryTimeout());
-      }
-      if (options.getFetchDirection() != null) {
-        //noinspection MagicConstant
-        statement.setFetchDirection(options.getFetchDirection().getType());
-      }
-      if (options.getFetchSize() != 0) {
-        statement.setFetchSize(options.getFetchSize());
-      }
-      if (options.getMaxRows() > 0) {
-        statement.setMaxRows(options.getMaxRows());
-      }
-    }
   }
 
 }
