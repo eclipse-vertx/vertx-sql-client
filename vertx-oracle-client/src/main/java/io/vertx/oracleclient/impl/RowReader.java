@@ -13,6 +13,7 @@ package io.vertx.oracleclient.impl;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RowReader implements Flow.Subscriber<Row> {
 
   private final Flow.Publisher<Row> publisher;
-  private final Context context;
+  private final ContextInternal context;
   private final RowDesc description;
   private final QueryResultHandler<RowSet<Row>> handler;
   private volatile Flow.Subscription subscription;
@@ -46,7 +47,7 @@ public class RowReader implements Flow.Subscriber<Row> {
 
   public RowReader(Flow.Publisher<Row> publisher, RowDesc description, Promise<Void> promise,
     QueryResultHandler<RowSet<Row>> handler,
-    Context context) {
+    ContextInternal context) {
     this.publisher = publisher;
     this.description = description;
     this.subscriptionPromise = promise;
@@ -54,9 +55,9 @@ public class RowReader implements Flow.Subscriber<Row> {
     this.context = context;
   }
 
-  public static Future<RowReader> create(Flow.Publisher<Row> publisher, Context context,
+  public static Future<RowReader> create(Flow.Publisher<Row> publisher, ContextInternal context,
     QueryResultHandler<RowSet<Row>> handler, RowDesc description) {
-    Promise<Void> promise = Promise.promise();
+    Promise<Void> promise = context.promise();
     RowReader reader = new RowReader(publisher, description, promise, handler, context);
     reader.subscribe();
     return promise.future().map(reader);
@@ -64,22 +65,22 @@ public class RowReader implements Flow.Subscriber<Row> {
 
   public Future<Void> read(int fetchSize) {
     if (subscription == null) {
-      return Future.failedFuture(new IllegalStateException("Not subscribed"));
+      return context.failedFuture(new IllegalStateException("Not subscribed"));
     }
     if (completed) {
-      return Future.succeededFuture();
+      return context.succeededFuture();
     }
     if (failed != null) {
-      return Future.failedFuture(failed);
+      return context.failedFuture(failed);
     }
     if (wip.compareAndSet(false, true)) {
       toRead.set(fetchSize);
       collector = new OracleRowSet(description);
-      readPromise = Promise.promise();
+      readPromise = context.promise();
       subscription.request(fetchSize);
       return readPromise.future();
     } else {
-      return Future.failedFuture(new IllegalStateException("Read already in progress"));
+      return context.failedFuture(new IllegalStateException("Read already in progress"));
     }
   }
 

@@ -10,9 +10,9 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.oracleclient.impl.OracleRow;
@@ -48,7 +48,7 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
   }
 
   @Override
-  public Future<OracleResponse<R>> execute(OracleConnection conn, Context context) {
+  public Future<OracleResponse<R>> execute(OracleConnection conn, ContextInternal context) {
     Future<PreparedStatement> future = prepare(command, conn, false, context); // TODO returnAutoGenerateKeys
     return future
       .flatMap(ps -> {
@@ -56,7 +56,7 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
           fillStatement(ps, conn);
         } catch (SQLException throwables) {
           Helper.closeQuietly(ps);
-          return Future.failedFuture(throwables);
+          return context.failedFuture(throwables);
         }
 
         return createRowReader(ps, context)
@@ -69,7 +69,7 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
 
   }
 
-  public Future<RowReader> createRowReader(PreparedStatement sqlStatement, Context context) {
+  public Future<RowReader> createRowReader(PreparedStatement sqlStatement, ContextInternal context) {
     OraclePreparedStatement oraclePreparedStatement =
       unwrapOraclePreparedStatement(sqlStatement);
     try {
@@ -88,11 +88,11 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
               context,
               (QueryResultHandler<RowSet<Row>>) command.resultHandler(), description);
           } catch (SQLException e) {
-            return Future.failedFuture(e);
+            return context.failedFuture(e);
           }
         });
     } catch (SQLException throwables) {
-      return Future.failedFuture(throwables);
+      return context.failedFuture(throwables);
     }
   }
 

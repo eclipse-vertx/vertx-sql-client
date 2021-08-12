@@ -12,6 +12,7 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.sqlclient.impl.command.TxCommand;
@@ -34,7 +35,7 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
   }
 
   @Override
-  public Future<R> execute(OracleConnection conn, Context context) {
+  public Future<R> execute(OracleConnection conn, ContextInternal context) {
     if (op.kind == TxCommand.Kind.BEGIN) {
       return begin(conn, context)
         .map(x -> op.result);
@@ -49,7 +50,7 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
     }
   }
 
-  private Future<Void> begin(OracleConnection conn, Context context) {
+  private Future<Void> begin(OracleConnection conn, ContextInternal context) {
     int isolation = Helper.getOrHandleSQLException(conn::getTransactionIsolation);
     String isolationLevel;
     switch (isolation) {
@@ -71,31 +72,31 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
       return Helper.first(publisher, context)
         .map(x -> null);
     } catch (SQLException e) {
-      return Future.failedFuture(e);
+      return context.failedFuture(e);
     }
   }
 
-  private Future<Void> commit(OracleConnection conn, Context context) {
+  private Future<Void> commit(OracleConnection conn, ContextInternal context) {
     try {
       if (conn.getAutoCommit()) {
-        return Future.succeededFuture();
+        return context.succeededFuture();
       } else {
         return Helper.first(conn.commitAsyncOracle(), context);
       }
     } catch (SQLException e) {
-      return Future.failedFuture(e);
+      return context.failedFuture(e);
     }
   }
 
-  private Future<Void> rollback(OracleConnection conn, Context context) {
+  private Future<Void> rollback(OracleConnection conn, ContextInternal context) {
     try {
       if (conn.getAutoCommit()) {
-        return Future.succeededFuture();
+        return context.succeededFuture();
       } else {
         return Helper.first(conn.rollbackAsyncOracle(), context);
       }
     } catch (SQLException e) {
-      return Future.failedFuture(e);
+      return context.failedFuture(e);
     }
   }
 }

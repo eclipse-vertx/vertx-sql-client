@@ -14,6 +14,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
+import io.vertx.core.impl.ContextInternal;
 import oracle.jdbc.OraclePreparedStatement;
 
 import java.sql.*;
@@ -43,19 +44,15 @@ public class Helper {
     }
   }
 
-  public static <T> Future<T> contextualize(CompletionStage<T> stage, Context context) {
-    Promise<T> future = Promise.promise();
-
-    stage.whenComplete((r, f) ->
-      context.runOnContext(x -> {
-        if (f != null) {
-          future.fail(f);
-        } else {
-          future.complete(r);
-        }
-      })
-    );
-
+  public static <T> Future<T> contextualize(CompletionStage<T> stage, ContextInternal context) {
+    Promise<T> future = context.promise();
+    stage.whenComplete((r, f) -> {
+      if (f != null) {
+        future.fail(f);
+      } else {
+        future.complete(r);
+      }
+    });
     return future.future();
   }
 
@@ -116,8 +113,8 @@ public class Helper {
     }
   }
 
-  public static <T> Future<T> first(Flow.Publisher<T> publisher, Context context) {
-    Promise<T> promise = Promise.promise();
+  public static <T> Future<T> first(Flow.Publisher<T> publisher, ContextInternal context) {
+    Promise<T> promise = context.promise();
     publisher.subscribe(new Flow.Subscriber<>() {
       volatile Flow.Subscription subscription;
 
@@ -142,14 +139,14 @@ public class Helper {
       public void onComplete() {
         // Use tryComplete as the completion signal can be sent even if we cancelled.
         // Also for Publisher<Void> we would get in this case.
-        context.runOnContext(x -> promise.tryComplete(null));
+        promise.tryComplete(null);
       }
     });
     return promise.future();
   }
 
-  public static <T> Future<List<T>> collect(Flow.Publisher<T> publisher, Context context) {
-    Promise<List<T>> promise = Promise.promise();
+  public static <T> Future<List<T>> collect(Flow.Publisher<T> publisher, ContextInternal context) {
+    Promise<List<T>> promise = context.promise();
     publisher.subscribe(new Flow.Subscriber<>() {
       final List<T> list = new ArrayList<>();
 
@@ -170,7 +167,7 @@ public class Helper {
 
       @Override
       public void onComplete() {
-        context.runOnContext(x -> promise.complete(list));
+        promise.complete(list);
       }
     });
     return promise.future();

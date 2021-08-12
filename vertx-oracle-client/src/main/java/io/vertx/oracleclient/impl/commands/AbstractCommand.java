@@ -10,8 +10,8 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import oracle.jdbc.OracleConnection;
@@ -27,7 +27,7 @@ public abstract class AbstractCommand<T> extends CommandBase<T> {
     this.options = options;
   }
 
-  public abstract Future<T> execute(OracleConnection conn, Context context);
+  public abstract Future<T> execute(OracleConnection conn, ContextInternal context);
 
   protected void applyStatementOptions(Statement statement) throws SQLException {
   }

@@ -10,8 +10,8 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import oracle.jdbc.OracleConnection;
 
@@ -23,7 +23,7 @@ public class PingCommand extends AbstractCommand<Integer> {
   }
 
   @Override
-  public Future<Integer> execute(OracleConnection conn, Context context) {
+  public Future<Integer> execute(OracleConnection conn, ContextInternal context) {
     return context.executeBlocking(p -> {
         int result;
         try {

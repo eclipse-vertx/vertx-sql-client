@@ -10,8 +10,8 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.sqlclient.Row;
@@ -19,7 +19,6 @@ import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.stream.Collector;
 
 public class SimpleQueryCommand<C, R> extends QueryCommand<C, R> {
@@ -32,11 +31,11 @@ public class SimpleQueryCommand<C, R> extends QueryCommand<C, R> {
     this.sql = sql;
   }
 
-  private Future<Boolean> execute(OraclePreparedStatement sqlStatement, Context context) {
+  private Future<Boolean> execute(OraclePreparedStatement sqlStatement, ContextInternal context) {
     try {
       return Helper.first(sqlStatement.executeAsyncOracle(), context);
     } catch (SQLException throwables) {
-      return Future.failedFuture(throwables);
+      return context.failedFuture(throwables);
     }
   }
 
@@ -52,7 +51,7 @@ public class SimpleQueryCommand<C, R> extends QueryCommand<C, R> {
   }
 
   @Override
-  public Future<OracleResponse<R>> execute(OracleConnection conn, Context context) {
+  public Future<OracleResponse<R>> execute(OracleConnection conn, ContextInternal context) {
     OraclePreparedStatement ps = null;
     try {
       ps = (OraclePreparedStatement) conn.prepareStatement(sql);
@@ -61,16 +60,16 @@ public class SimpleQueryCommand<C, R> extends QueryCommand<C, R> {
       return execute(ps, context)
         .compose(mayBeResult -> {
           try {
-            return Future.succeededFuture(decode(ref, mayBeResult, false));
+            return context.succeededFuture(decode(ref, mayBeResult, false));
           } catch (SQLException throwables) {
-            return Future.failedFuture(throwables);
+            return context.failedFuture(throwables);
           } finally {
             closeQuietly(ref);
           }
         });
     } catch (SQLException e) {
       closeQuietly(ps);
-      return Future.failedFuture(e);
+      return context.failedFuture(e);
     }
   }
 }

@@ -93,7 +93,7 @@ public class CommandHandler implements Connection {
     } else if (commandBase instanceof PingCommand) {
       return (Future<R>) handle((PingCommand) commandBase);
     } else {
-      return Future.failedFuture("Not yet implemented " + commandBase);
+      return context.failedFuture("Not yet implemented " + commandBase);
     }
   }
 
