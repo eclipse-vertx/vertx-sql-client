@@ -59,6 +59,7 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
         break;
       case TRANSACTION_SERIALIZABLE:
         isolationLevel = "SERIALIZABLE";
+        break;
       default:
         throw new IllegalArgumentException("Invalid isolation level: " + isolation);
     }
