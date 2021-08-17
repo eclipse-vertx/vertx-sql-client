@@ -8,6 +8,8 @@ scalability and low overhead.
 
 * todo
 
+WARNING: this module is in tech preview
+
 == Usage
 
 To use the Reactive Oracle Client add the following dependency to the _dependencies_ section of your build descriptor:
