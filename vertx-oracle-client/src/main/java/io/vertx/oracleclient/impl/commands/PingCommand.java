@@ -12,14 +12,13 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.oracleclient.OracleConnectOptions;
 import oracle.jdbc.OracleConnection;
 
 import java.sql.SQLException;
 
 public class PingCommand extends AbstractCommand<Integer> {
-  public PingCommand(OracleConnectOptions options) {
-    super(options);
+
+  public PingCommand() {
   }
 
   @Override

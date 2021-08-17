@@ -15,6 +15,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.oracleclient.OracleConnectOptions;
+import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.impl.commands.*;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PreparedStatement;
@@ -108,6 +109,7 @@ public class CommandHandler implements Connection {
   }
 
   private Future<PreparedStatement> handle(io.vertx.sqlclient.impl.command.PrepareStatementCommand command) {
+    OraclePrepareOptions options = command.options() instanceof OraclePrepareOptions ? (OraclePrepareOptions) command.options() : null;
     PrepareStatementCommand action = new PrepareStatementCommand(options, command.sql());
     return action.execute(connection, context);
   }
@@ -136,7 +138,7 @@ public class CommandHandler implements Connection {
   }
 
   private <R> Future<R> handle(TxCommand<R> command) {
-    OracleTransactionCommand<R> action = new OracleTransactionCommand<>(command, options);
+    OracleTransactionCommand<R> action = new OracleTransactionCommand<>(command);
     return action.execute(connection, context);
   }
 }

@@ -15,6 +15,7 @@ import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.oracleclient.OracleConnectOptions;
+import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.sqlclient.impl.PreparedStatement;
 import oracle.jdbc.OracleConnection;
 
@@ -23,10 +24,11 @@ import java.sql.Statement;
 
 public class PrepareStatementCommand extends AbstractCommand<PreparedStatement> {
 
+  private final OraclePrepareOptions options;
   private final String sql;
 
-  public PrepareStatementCommand(OracleConnectOptions options, String sql) {
-    super(options);
+  public PrepareStatementCommand(OraclePrepareOptions options, String sql) {
+    this.options = options;
     this.sql = sql;
   }
 

@@ -238,7 +238,7 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   private PrepareStatementCommand prepareCommand(ExtendedQueryCommand<?> queryCmd, boolean cache, boolean sendParameterTypes) {
-    PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), cache, sendParameterTypes ? queryCmd.parameterTypes() : null);
+    PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), null, cache, sendParameterTypes ? queryCmd.parameterTypes() : null);
     prepareCmd.handler = ar -> {
       paused = false;
       if (ar.succeeded()) {

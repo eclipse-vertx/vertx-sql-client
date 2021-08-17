@@ -47,6 +47,14 @@ public interface SqlClient {
   PreparedQuery<RowSet<Row>> preparedQuery(String sql);
 
   /**
+   * Create a prepared query, one of the {@link PreparedQuery#execute} or {@link PreparedQuery#executeBatch}
+   * methods must be called to execute the query.
+   *
+   * @return the prepared query
+   */
+  PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options);
+
+  /**
    * Close the client and release the associated resources.
    *
    * @param handler the completion handler
@@ -57,5 +65,5 @@ public interface SqlClient {
    * Like {@link #close(Handler)} but returns a {@code Future} of the asynchronous result
    */
   Future<Void> close();
-  
+
 }

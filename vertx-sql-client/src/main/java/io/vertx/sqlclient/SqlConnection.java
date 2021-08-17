@@ -48,6 +48,20 @@ public interface SqlConnection extends SqlClient {
   Future<PreparedStatement> prepare(String sql);
 
   /**
+   * Create a prepared statement using the given {@code sql} string.
+   *
+   * @param sql the sql
+   * @param handler the handler notified with the prepared query asynchronously
+   */
+  @Fluent
+  SqlConnection prepare(String sql, PrepareOptions options, Handler<AsyncResult<PreparedStatement>> handler);
+
+  /**
+   * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
+   */
+  Future<PreparedStatement> prepare(String sql, PrepareOptions options);
+
+  /**
    * Set an handler called with connection errors.
    *
    * @param handler the handler
@@ -89,7 +103,7 @@ public interface SqlConnection extends SqlClient {
    * @param handler the completion handler
    */
   void close(Handler<AsyncResult<Void>> handler);
-  
+
   /**
    * @return The static metadata about the backend database server for this connection
    */

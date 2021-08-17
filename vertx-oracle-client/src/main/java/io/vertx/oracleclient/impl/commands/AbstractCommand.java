@@ -21,12 +21,6 @@ import java.sql.Statement;
 
 public abstract class AbstractCommand<T> extends CommandBase<T> {
 
-  protected final OracleConnectOptions options;
-
-  protected AbstractCommand(OracleConnectOptions options) {
-    this.options = options;
-  }
-
   public abstract Future<T> execute(OracleConnection conn, ContextInternal context);
 
   protected void applyStatementOptions(Statement statement) throws SQLException {

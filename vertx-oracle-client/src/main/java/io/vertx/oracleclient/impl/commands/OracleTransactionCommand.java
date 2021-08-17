@@ -10,10 +10,8 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.sqlclient.impl.command.TxCommand;
 import oracle.jdbc.OracleConnection;
@@ -29,8 +27,7 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
 
   private final TxCommand<R> op;
 
-  public OracleTransactionCommand(TxCommand<R> op, OracleConnectOptions options) {
-    super(options);
+  public OracleTransactionCommand(TxCommand<R> op) {
     this.op = op;
   }
 
