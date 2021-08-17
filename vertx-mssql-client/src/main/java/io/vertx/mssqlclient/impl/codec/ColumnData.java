@@ -46,6 +46,11 @@ public final class ColumnData implements ColumnDescriptor {
   }
 
   @Override
+  public String typeName() {
+    return dataType.toString();
+  }
+
+  @Override
   public JDBCType jdbcType() {
     return dataType.jdbcType(metadata);
   }

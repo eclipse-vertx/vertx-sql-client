@@ -38,13 +38,20 @@ public class RowDesc {
       public String name() {
         return colName;
       }
+
       @Override
       public JDBCType jdbcType() {
         return JDBCType.OTHER;
       }
+
       @Override
       public boolean isArray() {
         return false;
+      }
+
+      @Override
+      public String typeName() {
+        return null;
       }
     }).collect(Collectors.toList()));
   }

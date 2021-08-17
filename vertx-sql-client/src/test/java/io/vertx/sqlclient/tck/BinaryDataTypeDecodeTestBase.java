@@ -14,6 +14,7 @@ package io.vertx.sqlclient.tck;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 import org.junit.Test;
 
 import java.sql.JDBCType;
@@ -91,18 +92,15 @@ public abstract class BinaryDataTypeDecodeTestBase extends DataTypeTestBase {
       conn
         .preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 1")
         .execute(ctx.asyncAssertSuccess(result -> {
-        ctx.assertEquals(1, result.size());
-        Row row = result.iterator().next();
-        ctx.assertEquals(expected, row.getValue(0));
-        ctx.assertEquals(expected, row.getValue(columnName));
-        ctx.assertEquals(jdbcType, result.columnDescriptors().get(0).jdbcType());
-//        ctx.assertEquals(expected, row.get(clazz, 0));
-//        ColumnChecker.checkColumn(0, columnName)
-//          .returns(Tuple::getValue, Row::getValue, expected)
-//          .returns(byIndexGetter, byNameGetter, expected)
-//          .forRow(row);
-        conn.close();
-      }));
+          ctx.assertEquals(1, result.size());
+          Row row = result.iterator().next();
+          ctx.assertEquals(expected, row.getValue(0));
+          ctx.assertEquals(expected, row.getValue(columnName));
+          ColumnDescriptor columnDescriptor = result.columnDescriptors().get(0);
+          ctx.assertEquals(jdbcType, columnDescriptor.jdbcType());
+          verifyTypeName(ctx, columnDescriptor);
+          conn.close();
+        }));
     }));
   }
 
