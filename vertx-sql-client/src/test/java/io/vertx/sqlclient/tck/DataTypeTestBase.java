@@ -16,6 +16,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 import org.junit.After;
 import org.junit.Before;
 
@@ -50,5 +51,9 @@ public abstract class DataTypeTestBase {
   public void tearDown(TestContext ctx) {
     connector.close();
     vertx.close(ctx.asyncAssertSuccess());
+  }
+
+  protected void verifyTypeName(TestContext ctx, ColumnDescriptor columnDescriptor) {
+    ctx.assertNotNull(columnDescriptor);
   }
 }

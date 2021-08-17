@@ -16,6 +16,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.tck.BinaryDataTypeDecodeTestBase;
 import org.junit.*;
 import org.junit.rules.TestName;
@@ -119,5 +120,10 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   @Override
   public void testToJsonObject(TestContext ctx) {
     super.testToJsonObject(ctx);
+  }
+
+  @Override
+  protected void verifyTypeName(TestContext ctx, ColumnDescriptor columnDescriptor) {
+    ctx.assertNull(columnDescriptor.typeName());
   }
 }
