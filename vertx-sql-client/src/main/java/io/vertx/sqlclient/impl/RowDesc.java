@@ -20,6 +20,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 
 import java.sql.JDBCType;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,8 @@ import java.util.stream.Collectors;
  */
 
 public class RowDesc {
+
+  public static final RowDesc EMPTY = new RowDesc(Collections.emptyList(), Collections.emptyList());
 
   private final List<String> columnNames;
   private final List<ColumnDescriptor> columnDescriptors;

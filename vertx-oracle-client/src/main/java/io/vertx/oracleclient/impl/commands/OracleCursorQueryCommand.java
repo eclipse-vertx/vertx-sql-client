@@ -15,11 +15,13 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.Helper;
+import io.vertx.oracleclient.impl.OracleColumnDesc;
 import io.vertx.oracleclient.impl.OracleRow;
 import io.vertx.oracleclient.impl.RowReader;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -77,8 +79,7 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
       return Helper.first(publisher, context)
         .compose(ors -> {
           try {
-            RowDesc description = createDescription(ors);
-
+            RowDesc description = OracleColumnDesc.rowDesc(ors.getMetaData());
             List<String> types = new ArrayList<>();
             for (int i = 1; i <= ors.getMetaData().getColumnCount(); i++) {
               types.add(ors.getMetaData().getColumnClassName(i));
@@ -94,17 +95,6 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
     } catch (SQLException throwables) {
       return context.failedFuture(throwables);
     }
-  }
-
-  private static RowDesc createDescription(OracleResultSet ors) throws SQLException {
-    List<String> columnNames = new ArrayList<>();
-    RowDesc desc = new RowDesc(columnNames);
-    ResultSetMetaData metaData = ors.getMetaData();
-    int cols = metaData.getColumnCount();
-    for (int i = 1; i <= cols; i++) {
-      columnNames.add(metaData.getColumnLabel(i));
-    }
-    return desc;
   }
 
   private static Row transform(List<String> ors, RowDesc desc, oracle.jdbc.OracleRow or) throws SQLException {

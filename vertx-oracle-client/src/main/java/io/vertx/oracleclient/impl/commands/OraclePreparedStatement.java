@@ -10,14 +10,13 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
+import io.vertx.oracleclient.impl.OracleColumnDesc;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class OraclePreparedStatement implements io.vertx.sqlclient.impl.PreparedStatement {
 
@@ -26,19 +25,15 @@ public class OraclePreparedStatement implements io.vertx.sqlclient.impl.Prepared
   private final ParamDesc paramDesc;
 
   public OraclePreparedStatement(String sql, java.sql.PreparedStatement preparedStatement) throws SQLException {
-
-    List<String> columnNames = new ArrayList<>();
     ResultSetMetaData metaData = preparedStatement.getMetaData();
+    RowDesc rowDesc;
     if (metaData != null) {
-      // Not a SELECT
-      int cols = metaData.getColumnCount();
-      for (int i = 1; i <= cols; i++) {
-        columnNames.add(metaData.getColumnLabel(i));
-      }
+      rowDesc = OracleColumnDesc.rowDesc(metaData);
+    } else {
+      rowDesc = RowDesc.EMPTY;
     }
-
     this.sql = sql;
-    this.rowDesc = new RowDesc(columnNames);
+    this.rowDesc = rowDesc;
     this.paramDesc = new ParamDesc();
   }
 
