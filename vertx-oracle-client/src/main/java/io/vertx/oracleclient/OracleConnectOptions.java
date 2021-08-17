@@ -19,8 +19,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 @DataObject(generateConverter = true)
 public class OracleConnectOptions extends SqlConnectOptions {
 
-  private String schema;
-
   // Support TNS_ADMIN (tnsnames.ora, ojdbc.properties).
   private String tnsAdmin;
 
@@ -120,15 +118,6 @@ public class OracleConnectOptions extends SqlConnectOptions {
 
   public OracleConnectOptions setIdleTimeout(int idleTimeout) {
     this.idleTimeout = idleTimeout;
-    return this;
-  }
-
-  public String getSchema() {
-    return schema;
-  }
-
-  public OracleConnectOptions setSchema(String schema) {
-    this.schema = schema;
     return this;
   }
 }
