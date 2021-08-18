@@ -21,6 +21,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
@@ -94,6 +95,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
 
   QueryResultBuilder<T, R, L> executeExtendedQuery(CommandScheduler scheduler,
                                                    PreparedStatement preparedStatement,
+                                                   PrepareOptions options,
                                                    boolean autoCommit,
                                                    Tuple arguments,
                                                    int fetch,
@@ -122,6 +124,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     }
     ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createQuery(
       preparedStatement.sql(),
+      options,
       preparedStatement,
       arguments,
       fetch,
@@ -134,7 +137,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return handler;
   }
 
-  void executeExtendedQuery(CommandScheduler scheduler, String sql, boolean autoCommit, Tuple arguments, PromiseInternal<L> promise) {
+  void executeExtendedQuery(CommandScheduler scheduler, String sql, PrepareOptions options, boolean autoCommit, Tuple arguments, PromiseInternal<L> promise) {
     ContextInternal context = (ContextInternal) promise.context();
     Object payload;
     if (tracer != null) {
@@ -150,16 +153,18 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
       metric = null;
     }
     QueryResultBuilder handler = this.createHandler(promise, payload, metric);
-    ExtendedQueryCommand cmd = createExtendedQueryCommand(sql, autoCommit, arguments, handler);
+    ExtendedQueryCommand cmd = createExtendedQueryCommand(sql, options, autoCommit, arguments, handler);
     scheduler.schedule(context, cmd).onComplete(handler);
   }
 
   private ExtendedQueryCommand<T> createExtendedQueryCommand(String sql,
+                                                             PrepareOptions options,
                                                              boolean autoCommit,
                                                              Tuple tuple,
                                                              QueryResultBuilder<T, R, L> handler) {
     return ExtendedQueryCommand.createQuery(
       sql,
+      options,
       null,
       tuple,
       autoCommit,
@@ -168,11 +173,12 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
   }
 
   void executeBatchQuery(CommandScheduler scheduler,
+                         PrepareOptions options,
                          PreparedStatement preparedStatement,
                          boolean autoCommit,
                          List<Tuple> batch,
                          PromiseInternal<L> promise) {
-    ContextInternal context = (ContextInternal) promise.context();
+    ContextInternal context = promise.context();
     Object payload;
     if (tracer != null) {
       payload = tracer.sendRequest(context, preparedStatement.sql(), batch);
@@ -194,12 +200,12 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
         return;
       }
     }
-    ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createBatch(preparedStatement.sql(), preparedStatement, batch, autoCommit, collector, handler);
+    ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createBatch(preparedStatement.sql(), options, preparedStatement, batch, autoCommit, collector, handler);
     scheduler.schedule(context, cmd).onComplete(handler);
   }
 
-  void executeBatchQuery(CommandScheduler scheduler, String sql, boolean autoCommit, List<Tuple> batch, PromiseInternal<L> promise) {
-    ContextInternal context = (ContextInternal) promise.context();
+  void executeBatchQuery(CommandScheduler scheduler, String sql, PrepareOptions options, boolean autoCommit, List<Tuple> batch, PromiseInternal<L> promise) {
+    ContextInternal context = promise.context();
     Object payload;
     if (tracer != null) {
       payload = tracer.sendRequest(context, sql, batch);
@@ -214,14 +220,15 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
       metric = null;
     }
     QueryResultBuilder handler = createHandler(promise, payload, metric);
-    ExtendedQueryCommand<T> cmd = createBatchQueryCommand(sql, autoCommit, batch, handler);
+    ExtendedQueryCommand<T> cmd = createBatchQueryCommand(sql, options, autoCommit, batch, handler);
     scheduler.schedule(context, cmd).onComplete(handler);
   }
 
   private ExtendedQueryCommand<T> createBatchQueryCommand(String sql,
+                                                          PrepareOptions options,
                                                           boolean autoCommit,
                                                           List<Tuple> argsList,
                                                           QueryResultBuilder<T, R, L> handler) {
-    return ExtendedQueryCommand.createBatch(sql, null, argsList, autoCommit, collector, handler);
+    return ExtendedQueryCommand.createBatch(sql, options, null, argsList, autoCommit, collector, handler);
   }
 }

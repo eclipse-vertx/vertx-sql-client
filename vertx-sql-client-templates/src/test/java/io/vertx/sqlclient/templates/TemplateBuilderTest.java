@@ -3,6 +3,7 @@ package io.vertx.sqlclient.templates;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.Row;
@@ -27,6 +28,10 @@ public class TemplateBuilderTest {
     }
     @Override
     public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
+      throw new UnsupportedOperationException();
+    }
+    @Override
+    public PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options) {
       throw new UnsupportedOperationException();
     }
     @Override

@@ -20,6 +20,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
@@ -48,8 +49,8 @@ class PreparedStatementImpl implements PreparedStatement {
     return new PreparedStatementImpl(conn, tracer, metrics, context, ps, autoCommit);
   }
 
-  static PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, String sql, boolean autoCommit) {
-    return new PreparedStatementImpl(conn, tracer, metrics, context, sql, autoCommit);
+  static PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, PrepareOptions options, String sql, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, tracer, metrics, context, sql, options, autoCommit);
   }
 
   private final Connection conn;
@@ -57,6 +58,7 @@ class PreparedStatementImpl implements PreparedStatement {
   private final ClientMetrics metrics;
   private final ContextInternal context;
   private final String sql;
+  private final PrepareOptions options;
   private Promise<io.vertx.sqlclient.impl.PreparedStatement> promise;
   private Future<io.vertx.sqlclient.impl.PreparedStatement> future;
   private final boolean autoCommit;
@@ -68,6 +70,7 @@ class PreparedStatementImpl implements PreparedStatement {
     this.metrics = metrics;
     this.context = context;
     this.sql = null;
+    this.options = null;
     this.promise = null;
     this.future = Future.succeededFuture(ps);
     this.autoCommit = autoCommit;
@@ -78,14 +81,20 @@ class PreparedStatementImpl implements PreparedStatement {
                                 ClientMetrics metrics,
                                 ContextInternal context,
                                 String sql,
+                                PrepareOptions options,
                                 boolean autoCommit) {
     this.conn = conn;
     this.tracer = tracer;
     this.metrics = metrics;
     this.context = context;
     this.sql = sql;
+    this.options = options;
     this.promise = Promise.promise();
     this.autoCommit = autoCommit;
+  }
+
+  PrepareOptions options() {
+    return options;
   }
 
   @Override
@@ -98,17 +107,17 @@ class PreparedStatementImpl implements PreparedStatement {
     return new PreparedStatementQuery<>(builder);
   }
 
-  void withPreparedStatement(Tuple args, Handler<AsyncResult<io.vertx.sqlclient.impl.PreparedStatement>> handler) {
+  void withPreparedStatement(PrepareOptions options, Tuple args, Handler<AsyncResult<io.vertx.sqlclient.impl.PreparedStatement>> handler) {
     if (context == Vertx.currentContext()) {
       if (future == null) {
         // Lazy statement;
-        PrepareStatementCommand prepare = new PrepareStatementCommand(sql, true, args.types());
+        PrepareStatementCommand prepare = new PrepareStatementCommand(sql, options, true, args.types());
         conn.schedule(context, prepare).onComplete(promise);
         future = promise.future();
       }
       future.onComplete(handler);
     } else {
-      context.runOnContext(v -> withPreparedStatement(args, handler));
+      context.runOnContext(v -> withPreparedStatement(options, args, handler));
     }
   }
 
@@ -118,11 +127,12 @@ class PreparedStatementImpl implements PreparedStatement {
                                            boolean suspended,
                                            QueryExecutor<R, ?, F> builder,
                                            PromiseInternal<F> p) {
-    withPreparedStatement(args, ar -> {
+    withPreparedStatement(options, args, ar -> {
       if (ar.succeeded()) {
         builder.executeExtendedQuery(
           conn,
           ar.result(),
+          options,
           autoCommit,
           args,
           fetch,
@@ -138,9 +148,9 @@ class PreparedStatementImpl implements PreparedStatement {
   <R, F extends SqlResult<R>> void executeBatch(List<Tuple> argsList,
                                                 QueryExecutor<R, ?, F> builder,
                                                 PromiseInternal<F> p) {
-    withPreparedStatement(argsList.get(0), ar -> {
+    withPreparedStatement(options, argsList.get(0), ar -> {
       if (ar.succeeded()) {
-        builder.executeBatchQuery(conn, ar.result(), autoCommit, argsList, p);
+        builder.executeBatchQuery(conn, options, ar.result(), autoCommit, argsList, p);
       } else {
         p.fail(ar.cause());
       }

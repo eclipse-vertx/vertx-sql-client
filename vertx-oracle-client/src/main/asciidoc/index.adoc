@@ -1,0 +1,135 @@
+= Reactive Oracle Client
+:PREPARED_PARAMS: `?`
+
+The Reactive Oracle Client is a client for Oracle with a straightforward API focusing on
+scalability and low overhead.
+
+*Features*
+
+* todo
+
+WARNING: this module is in tech preview
+
+== Usage
+
+To use the Reactive Oracle Client add the following dependency to the _dependencies_ section of your build descriptor:
+
+* Maven (in your `pom.xml`):
+
+[source,xml]
+----
+<dependency>
+  <groupId>${maven.groupId}</groupId>
+  <artifactId>${maven.artifactId}</artifactId>
+  <version>${maven.version}</version>
+</dependency>
+----
+* Gradle (in your `build.gradle` file):
+
+[source,groovy]
+----
+dependencies {
+  compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
+}
+----
+
+== Getting started
+
+Here is the simplest way to connect, query and disconnect
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#gettingStarted()}
+----
+
+== Connecting to Oracle
+
+Most of the time you will use a pool to connect to Oracle:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#connecting01}
+----
+
+The pooled client uses a connection pool and any operation will borrow a connection from the pool
+to execute the operation and release it to the pool.
+
+If you are running with Vert.x you can pass it your Vertx instance:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#connecting02}
+----
+
+You need to release the pool when you don't need it anymore:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#connecting03}
+----
+
+When you need to execute several operations on the same connection, you need to use a client
+{@link io.vertx.sqlclient.SqlConnection connection}.
+
+You can easily get one from the pool:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#connecting04}
+----
+
+Once you are done with the connection you must close it to release it to the pool, so it can be reused.
+
+== Configuration
+
+There are several alternatives for you to configure the client.
+
+=== Data Object
+
+A simple way to configure the client is to specify a `OracleConnectOptions` data object.
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
+----
+
+== Connect retries
+
+You can configure the client to retry when a connection fails to be established.
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#reconnectAttempts}
+----
+
+include::queries.adoc[leveloffset=1]
+
+include::connections.adoc[]
+
+include::transactions.adoc[]
+
+include::cursor.adoc[]
+
+== Tracing queries
+
+include::tracing.adoc[]
+
+== Collector queries
+
+You can use Java collectors with the query API:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#collector01Example(io.vertx.sqlclient.SqlClient)}
+----
+
+The collector processing must not keep a reference on the {@link io.vertx.sqlclient.Row} as
+there is a single row used for processing the entire set.
+
+The Java `Collectors` provides many interesting predefined collectors, for example you can
+create easily create a string directly from the row set:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
+----

@@ -16,8 +16,11 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        profile: [PostgreSQL-9,PostgreSQL-10,PostgreSQL-11,MySQL-8.0,MySQL-5.6,MySQL-5.7,MariaDB-10.4,MSSQL-2017-latest,MSSQL-2019-latest,DB2-11.5,SQL-templates]
-        jdk: [8]
+        profile: [PostgreSQL-9,PostgreSQL-10,PostgreSQL-11,MySQL-8.0,MySQL-5.6,MySQL-5.7,MariaDB-10.4,MSSQL-2017-latest,MSSQL-2019-latest,DB2-11.5,Oracle-18,SQL-templates]
+        jdk: [8, 11]
+        exclude:
+          - profile: Oracle-18
+            jdk: 8
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -28,7 +31,7 @@ jobs:
         with:
           java-version: ${{ matrix.jdk }}
       - name: Run tests
-        run: mvn -s .github/maven-ci-settings.xml -q clean verify -B -DskipDefault -P ${{ matrix.profile }}
+        run: mvn -s .github/maven-ci-settings.xml clean verify -B -DskipDefault -P ${{ matrix.profile }}
   Deploy:
     name: Deploy to OSSRH
     if: ${{ github.repository_owner == 'eclipse-vertx' && (github.event_name == 'push' || github.event_name == 'schedule') }}
