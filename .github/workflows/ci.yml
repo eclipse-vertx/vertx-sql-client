@@ -46,7 +46,7 @@ jobs:
       - name: Install JDK
         uses: joschi/setup-jdk@v2
         with:
-          java-version: 8
+          java-version: 11
       - name: Get project version
         run: echo "PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:evaluate -Dexpression=project.version -B | grep -v '\[')" >> $GITHUB_ENV
       - name: Maven deploy
