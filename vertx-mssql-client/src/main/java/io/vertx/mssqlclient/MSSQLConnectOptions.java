@@ -20,6 +20,7 @@ import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -368,6 +369,16 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   @Override
   public MSSQLConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
     return (MSSQLConnectOptions) super.setTracingPolicy(tracingPolicy);
+  }
+
+  @Override
+  public MSSQLConnectOptions setSsl(boolean ssl) {
+    return (MSSQLConnectOptions) super.setSsl(ssl);
+  }
+
+  @Override
+  public MSSQLConnectOptions setNonProxyHosts(List<String> nonProxyHosts) {
+    return (MSSQLConnectOptions) super.setNonProxyHosts(nonProxyHosts);
   }
 
   /**
