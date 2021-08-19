@@ -18,6 +18,13 @@ import io.netty.handler.ssl.SslHandler;
 
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_OFF;
 
+/**
+ * A channel handler which listens to the {@code LOGIN_SENT} user event.
+ * <p>
+ * This event is triggered by the {@link InitCommandCodec} after the login packet has been sent to the server.
+ * This handler removes the {@link SslHandler} from the pipeline if the client and the server agreed to encrypt the login packet only.
+ * In this case, further traffic (including the login response) will be unencrypted.
+ */
 public class TdsLoginSentCompletionHandler extends ChannelInboundHandlerAdapter {
 
   private final SslHandler sslHandler;

@@ -48,6 +48,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected void configureNetClientOptions(NetClientOptions netClientOptions) {
+    // Always start unencrypted, the connection will be upgraded if client and server agree
     netClientOptions.setSsl(false);
   }
 
@@ -74,8 +75,10 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     }
     Future<Void> future;
     if (encryptionLevel != ENCRYPT_NOT_SUP) {
+      // Start connection encryption ...
       future = conn.enableSsl(clientConfigSsl, encryptionLevel, (MSSQLConnectOptions) options);
     } else {
+      // ... unless the client did not require encryption and the server does not support it
       future = context.succeededFuture();
     }
     return future.compose(v -> conn.sendLoginMessage(username, password, database, properties));

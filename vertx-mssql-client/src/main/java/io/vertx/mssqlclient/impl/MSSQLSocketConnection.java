@@ -63,13 +63,19 @@ class MSSQLSocketConnection extends SocketConnectionBase {
   }
 
   Future<Void> enableSsl(boolean clientConfigSsl, byte encryptionLevel, MSSQLConnectOptions options) {
+    // While handshaking, MS SQL requires to encapsulate SSL traffic in TDS packets
+    // So it is not possible to rely on the NetSocket.upgradeToSsl method
+    // Instead, we need a custom channel pipeline configuration
+
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     PromiseInternal<Void> promise = context.promise();
 
+    // 1. Install the SSL handshake completion handler
     ChannelPromise p = pipeline.newPromise();
     pipeline.addFirst("handshaker", new SslHandshakeCompletionHandler(p));
     p.addListener(future -> {
       if (future.isSuccess()) {
+        // Handshaking successful, remove the codec that manages encapsulation of SSL traffic in TDS packets
         pipeline.removeFirst();
         promise.complete();
       } else {
@@ -78,16 +84,23 @@ class MSSQLSocketConnection extends SocketConnectionBase {
     });
 
     if (!clientConfigSsl) {
+      // Do not perform hostname validation if the client did not require encryption
       options.setTrustAll(true);
     }
 
+    // 2. Create and setup an SSLHelper and SSLHandler
     SSLHelper helper = new SSLHelper(options, options.getKeyCertOptions(), options.getTrustOptions()).setApplicationProtocols(options.getApplicationLayerProtocols());
     SslHandler sslHandler = new SslHandler(helper.createEngine(context.owner(), socket.remoteAddress(), null, false));
     sslHandler.setHandshakeTimeout(helper.getSslHandshakeTimeout(), helper.getSslHandshakeTimeoutUnit());
 
+    // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
     TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
+
+    // 4. TdsLoginSentCompletionHandler removes the SSLHandler after login packet has been sent if full encryption is not required
     TdsLoginSentCompletionHandler tdsLoginSentCompletionHandler = new TdsLoginSentCompletionHandler(sslHandler, encryptionLevel);
 
+    // 5. Add the handlers to the pipeline
+    // The SSLHandler must be the last one added because as soon as it is, it starts handshaking
     pipeline.addFirst("tds-ssl-handshake-codec", tdsSslHandshakeCodec);
     pipeline.addAfter("tds-ssl-handshake-codec", "tds-login-sent-handler", tdsLoginSentCompletionHandler);
     pipeline.addAfter("tds-login-sent-handler", "ssl", sslHandler);
