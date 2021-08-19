@@ -68,7 +68,9 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   private Future<Connection> login(MSSQLSocketConnection conn, String username, String password, String database, Byte encryptionLevel, EventLoopContext context) {
     if (clientConfigSsl && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
-      return context.failedFuture("The client is configured for encryption but the server does not support it");
+      Promise<Void> closePromise = context.promise();
+      conn.close(null, closePromise);
+      return closePromise.future().transform(v -> context.failedFuture("The client is configured for encryption but the server does not support it"));
     }
     Future<Void> future;
     if (encryptionLevel != ENCRYPT_NOT_SUP) {
