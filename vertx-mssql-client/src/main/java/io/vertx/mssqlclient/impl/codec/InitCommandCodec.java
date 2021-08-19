@@ -25,6 +25,8 @@ import static java.nio.charset.StandardCharsets.UTF_16LE;
 
 class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
 
+  static final Object LOGIN_SENT = new Object();
+
   InitCommandCodec(TdsMessageCodec tdsMessageCodec, InitCommand cmd) {
     super(tdsMessageCodec, cmd);
   }
@@ -181,6 +183,8 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     content.setIntLE(startIdx, content.writerIndex() - startIdx);
 
     tdsMessageCodec.encoder().writeTdsMessage(TDS7_LOGIN, content);
+
+    tdsMessageCodec.chctx().pipeline().fireUserEventTriggered(LOGIN_SENT);
   }
 
   /*
