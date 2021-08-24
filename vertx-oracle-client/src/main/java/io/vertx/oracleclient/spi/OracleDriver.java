@@ -12,6 +12,7 @@ package io.vertx.oracleclient.spi;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
@@ -27,6 +28,8 @@ import io.vertx.sqlclient.spi.Driver;
 import java.util.List;
 
 public class OracleDriver implements Driver {
+
+  private static final String ACCEPT_URI_REGEX = "oracle:(thin|oci):.*";
 
   @Override
   public Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases,
@@ -65,4 +68,18 @@ public class OracleDriver implements Driver {
     }
   }
 
+  @Override
+  public boolean acceptsUri(String connectionUri) {
+    return connectionUri.matches(ACCEPT_URI_REGEX);
+  }
+  
+  @Override
+  public <T extends SqlConnectOptions> T getConnectOptions(String connectionUri) {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
+  
+  @Override
+  public <T extends SqlConnectOptions> T getConnectOptions(String connectionUri, JsonObject json) {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
 }

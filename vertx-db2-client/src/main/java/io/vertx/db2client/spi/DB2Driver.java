@@ -17,6 +17,7 @@ package io.vertx.db2client.spi;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Pool;
 import io.vertx.db2client.impl.DB2ConnectionFactory;
@@ -29,6 +30,8 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 import java.util.List;
 
 public class DB2Driver implements Driver {
+
+  private static final String ACCEPT_URI_REGEX = "(db2)://.*";
 
   @Override
   public DB2Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
@@ -47,5 +50,23 @@ public class DB2Driver implements Driver {
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
     return new DB2ConnectionFactory((VertxInternal) vertx, DB2ConnectOptions.wrap(database));
+  }
+  
+  @Override
+  public boolean acceptsUri(String uri) {
+    return uri.matches(ACCEPT_URI_REGEX);
+  }
+  
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T extends SqlConnectOptions> T getConnectOptions(String connectionUri) {
+    return (T) DB2ConnectOptions.fromUri(connectionUri);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T extends SqlConnectOptions> T getConnectOptions(String connectionUri, JsonObject json) {
+    DB2ConnectOptions fromUri = DB2ConnectOptions.fromUri(connectionUri);
+    return (T) new DB2ConnectOptions(fromUri.toJson().mergeIn(json));
   }
 }

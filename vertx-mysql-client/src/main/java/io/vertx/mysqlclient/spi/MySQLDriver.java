@@ -15,20 +15,23 @@
  */
 package io.vertx.mysqlclient.spi;
 
+import java.util.List;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.mysqlclient.impl.MySQLConnectionFactory;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.spi.ConnectionFactory;
-
-import java.util.List;
+import io.vertx.sqlclient.spi.Driver;
 
 public class MySQLDriver implements Driver {
+
+  private static final String ACCEPT_URI_REGEX = "(mysql|mariadb)://.*";
 
   @Override
   public MySQLPool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
@@ -43,5 +46,23 @@ public class MySQLDriver implements Driver {
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
     return new MySQLConnectionFactory((VertxInternal) vertx, MySQLConnectOptions.wrap(database));
+  }
+
+  @Override
+  public boolean acceptsUri(String connectionUri) {
+    return connectionUri.matches(ACCEPT_URI_REGEX);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T extends SqlConnectOptions> T getConnectOptions(String connectionUri) {
+    return (T) MySQLConnectOptions.fromUri(connectionUri);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T extends SqlConnectOptions> T getConnectOptions(String connectionUri, JsonObject json) {
+    MySQLConnectOptions fromUri = MySQLConnectOptions.fromUri(connectionUri);
+    return (T) new MySQLConnectOptions(fromUri.toJson().mergeIn(json));
   }
 }

@@ -16,14 +16,15 @@
  */
 package io.vertx.sqlclient.spi;
 
+import java.util.List;
+
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 
-import java.util.List;
-
-/**
+/**<
  * An entry point to the Vertx Reactive SQL Client
  * Every driver must implement this interface.
  */
@@ -52,5 +53,32 @@ public interface Driver {
    * @return true if the driver accepts the {@code connectOptions}, false otherwise
    */
   boolean acceptsOptions(SqlConnectOptions connectOptions);
-
+  
+  /**
+   * @param connectionUri a connection URI
+   * @return true if the driver accepts the {@code uri}, false otherwise
+   */
+  boolean acceptsUri(String connectionUri);
+  
+  /**
+   * Returns a specific {@link SqlConnectOptions} instance corresponding to the {@code uri}.
+   * 
+   * @param <T> the expected type of {@code SqlConnectOptions}
+   * @param connectionUri a connection URI
+   * @return connect options specific to the driver
+   * @throws IllegalArgumentException if the driver does not accept the {@code uri}
+   */
+  <T extends SqlConnectOptions> T getConnectOptions(String connectionUri);
+  
+  /**
+   * Returns a specific {@link SqlConnectOptions} instance corresponding to the {@code uri} and 
+   * initialized with {@code json}.
+   * 
+   * @param <T> the expected type of {@code SqlConnectOptions}
+   * @param connectionUri a connection URI
+   * @param json a json
+   * @return connect options specific to the driver
+   * @throws IllegalArgumentException if the driver does not accept the {@code uri}
+   */
+  <T extends SqlConnectOptions> T getConnectOptions(String connectionUri, JsonObject json);
 }

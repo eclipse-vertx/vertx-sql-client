@@ -15,20 +15,23 @@
  */
 package io.vertx.mssqlclient.spi;
 
+import java.util.List;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.spi.ConnectionFactory;
-
-import java.util.List;
+import io.vertx.sqlclient.spi.Driver;
 
 public class MSSQLDriver implements Driver {
+
+  private static final String ACCEPT_URI_REGEX = "(sqlserver)://.*";
 
   @Override
   public MSSQLPool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
@@ -43,5 +46,23 @@ public class MSSQLDriver implements Driver {
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
     return new MSSQLConnectionFactory((VertxInternal) vertx, MSSQLConnectOptions.wrap(database));
+  }
+
+  @Override
+  public boolean acceptsUri(String connectionUri) {
+    return connectionUri.matches(ACCEPT_URI_REGEX);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T extends SqlConnectOptions> T getConnectOptions(String connectionUri) {
+    return (T) MSSQLConnectOptions.fromUri(connectionUri);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T extends SqlConnectOptions> T getConnectOptions(String connectionUri, JsonObject json) {
+    MSSQLConnectOptions fromUri = MSSQLConnectOptions.fromUri(connectionUri);
+    return (T) new MSSQLConnectOptions(fromUri.toJson().mergeIn(json));
   }
 }
