@@ -122,6 +122,40 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.bsc.maven</groupId>
+        <artifactId>maven-processor-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>generate-sources</id>
+            <configuration>
+              <optionMap>
+                <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/connections.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/cursor.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/queries.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/tracing.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/transactions.adoc,${asciidoc.dir}/*.adoc</docgen.source>
+              </optionMap>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <!-- Override sources to use custom descriptor to have all adoc files -->
+          <execution>
+            <id>package-sources</id>
+            <configuration>
+              <descriptors>
+                <descriptor>${project.basedir}/../assembly/sources.xml</descriptor>
+              </descriptors>
+              <descriptorRefs>
+                <descriptorRef>none</descriptorRef>
+              </descriptorRefs>
+              <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
   <!-- Java 8 => use Maven Toolchain to compile this module with JDK 11
