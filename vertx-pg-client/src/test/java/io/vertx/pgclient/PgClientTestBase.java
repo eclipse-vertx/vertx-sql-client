@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
@@ -32,6 +33,7 @@ import org.junit.Test;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -137,6 +139,28 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
             async.complete();
           }));
         }));
+      });
+    }));
+  }
+
+  @Test
+  public void testDeleteReturningBatch(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        List<Tuple> batch = Arrays.asList(
+          Tuple.of(14, "SomeMessage1"),
+          Tuple.of(15, "SomeMessage2"));
+        client
+          .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2)")
+          .executeBatch(batch)
+          .compose(res -> client.query("DELETE FROM Test RETURNING id")
+            .collecting(Collectors.toMap(row -> row.getInteger(0), row -> "whatever"))
+            .execute()).onComplete(ctx.asyncAssertSuccess(res -> {
+            ctx.assertEquals(2, res.size());
+            ctx.assertEquals(new HashSet<>(Arrays.asList(14, 15)), res.value().keySet());
+            async.complete();
+          }));
       });
     }));
   }

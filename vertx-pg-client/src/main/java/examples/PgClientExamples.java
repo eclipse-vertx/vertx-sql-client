@@ -659,33 +659,36 @@ public class PgClientExamples {
     });
   }
 
-  public void returning(SqlClient client) {
+  public void insertReturning(SqlClient client) {
     client
       .preparedQuery("INSERT INTO color (color_name) VALUES ($1), ($2), ($3) RETURNING color_id")
-      .execute(Tuple.of("white", "red", "blue"), ar -> {
-      if (ar.succeeded()) {
-        RowSet<Row> rows = ar.result();
-        System.out.println(rows.rowCount());
+      .execute(Tuple.of("white", "red", "blue"))
+      .onSuccess(rows -> {
         for (Row row : rows) {
           System.out.println("generated key: " + row.getInteger("color_id"));
         }
-      } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
-      }
     });
+  }
+
+  public void deleteReturning(SqlClient client) {
+    client
+      .query("DELETE FROM color RETURNING color_name")
+      .execute()
+      .onSuccess(rows -> {
+        for (Row row : rows) {
+          System.out.println("deleted color: " + row.getString("color_name"));
+        }
+      });
   }
 
   public void batchReturning(SqlClient client) {
     client
       .preparedQuery("INSERT INTO color (color_name) VALUES ($1) RETURNING color_id")
-      .executeBatch(Arrays.asList(Tuple.of("white"), Tuple.of("red"), Tuple.of("blue")),ar -> {
-        if (ar.succeeded()) {
-          for (RowSet<Row> rows = ar.result();rows.next() != null;rows = rows.next()) {
-            Integer colorId = rows.iterator().next().getInteger("color_id");
-            System.out.println("generated key: " + colorId);
-          }
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
+      .executeBatch(Arrays.asList(Tuple.of("white"), Tuple.of("red"), Tuple.of("blue")))
+      .onSuccess(res -> {
+        for (RowSet<Row> rows = res;rows.next() != null;rows = rows.next()) {
+          Integer colorId = rows.iterator().next().getInteger("color_id");
+          System.out.println("generated key: " + colorId);
         }
       });
   }
