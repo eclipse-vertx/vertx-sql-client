@@ -54,11 +54,32 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
 
     /**
      * @return True if the SQL is a query (e.g. SELECT or WITH), false otherwise
-     * @throws IllegalArgumentException if the passed in SQL value is null
+     * @throws IllegalArgumentException if the passed in SQL value is null or is commented out
      */
     public static boolean isQuery(String sql) {
       if (sql != null) {
         String trimmedLower = sql.trim().toLowerCase();
+        
+        //Remove any comments at the start
+        while (trimmedLower.startsWith("/*")) {          
+          int count = 1;
+          int position = trimmedLower.indexOf("/*")+2;
+          while (count != 0) {
+
+            if (trimmedLower.indexOf("/*",position) > 0 && trimmedLower.indexOf("/*",position) < trimmedLower.indexOf("*/",position)) {
+              count++;
+              position = trimmedLower.indexOf("/*",position)+2;
+            }
+            else if ((trimmedLower.indexOf("*/",position) > 0 && trimmedLower.indexOf("/*",position) < 0) || trimmedLower.indexOf("*/",position) < trimmedLower.indexOf("/*",position)) {
+              count--;
+              position = trimmedLower.indexOf("*/",position)+2;
+            }
+            else { //Only possible if there are no more /* or */ in which case the whole string is a comment
+              throw new IllegalArgumentException("SQLState.NO_TOKENS_IN_SQL_TEXT");
+            }        
+          }
+          trimmedLower = trimmedLower.substring(position).trim();
+        }
         return trimmedLower.startsWith("select")
                 || trimmedLower.startsWith("with")
                 || trimmedLower.startsWith("values");
