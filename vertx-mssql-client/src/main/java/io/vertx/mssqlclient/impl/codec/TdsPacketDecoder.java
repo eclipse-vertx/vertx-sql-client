@@ -31,9 +31,9 @@ public class TdsPacketDecoder extends LengthFieldBasedFrameDecoder {
       return null;
     }
 
-    short type = in.getUnsignedByte(0);
-    short status = in.getUnsignedByte(1);
-    int length = in.getUnsignedShort(2);
+    short type = byteBuf.getUnsignedByte(0);
+    short status = byteBuf.getUnsignedByte(1);
+    int length = byteBuf.getUnsignedShort(2);
 
     ByteBuf data = byteBuf.slice(PACKET_HEADER_SIZE, length - PACKET_HEADER_SIZE);
 
