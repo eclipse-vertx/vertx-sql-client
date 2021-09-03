@@ -47,7 +47,7 @@ public class TdsSslHandshakeCodec extends CombinedChannelDuplexHandler<ChannelIn
         return null;
       }
 
-      int length = in.getUnsignedShort(2);
+      int length = byteBuf.getUnsignedShort(2);
 
       return byteBuf.slice(PACKET_HEADER_SIZE, length - PACKET_HEADER_SIZE);
     }
