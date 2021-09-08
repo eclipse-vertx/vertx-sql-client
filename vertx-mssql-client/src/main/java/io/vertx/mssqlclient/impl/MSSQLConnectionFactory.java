@@ -54,11 +54,28 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
+    return connectOrRedirect(server, username, password, database, context, 0);
+  }
+
+  private Future<Connection> connectOrRedirect(SocketAddress server, String username, String password, String database, EventLoopContext context, int redirections) {
+    if (redirections > 1) {
+      return context.failedFuture("The client can be redirected only once");
+    }
     return netClient.connect(server)
       .map(so -> createSocketConnection(so, context))
       .compose(conn -> conn.sendPreLoginMessage(clientConfigSsl)
         .compose(encryptionLevel -> login(conn, username, password, database, encryptionLevel, context))
-      );
+      )
+      .compose(connBase -> {
+        MSSQLSocketConnection conn = (MSSQLSocketConnection) connBase;
+        SocketAddress alternateServer = conn.getAlternateServer();
+        if (alternateServer == null) {
+          return context.succeededFuture(conn);
+        }
+        Promise<Void> closePromise = context.promise();
+        conn.close(null, closePromise);
+        return closePromise.future().transform(v -> connectOrRedirect(alternateServer, username, password, database, context, redirections + 1));
+      });
   }
 
   private MSSQLSocketConnection createSocketConnection(NetSocket so, EventLoopContext context) {
