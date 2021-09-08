@@ -173,10 +173,16 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
       case DTC_DEFECT:
         tdsMessageCodec.setTransactionDescriptor(0);
         break;
+      case ROUTING:
+        handleRouting(payload);
+        break;
       default:
         break;
     }
     payload.readerIndex(startPos + totalLength);
+  }
+
+  protected void handleRouting(ByteBuf payload) {
   }
 
   protected void handleDecodingComplete() {
