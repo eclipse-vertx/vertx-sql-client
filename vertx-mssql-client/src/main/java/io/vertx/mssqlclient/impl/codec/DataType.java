@@ -146,10 +146,7 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readIntLE(), ChronoUnit.DAYS);
-      long nanoOfDay = NANOSECONDS.convert(Math.round(byteBuf.readIntLE() * (3 + 1D / 3)), MILLISECONDS);
-      LocalTime localTime = LocalTime.ofNanoOfDay(nanoOfDay);
-      return LocalDateTime.of(localDate, localTime);
+      return decodeDateValue(byteBuf);
     }
   },
   FLT8(0x3E) {
@@ -392,7 +389,32 @@ public enum DataType {
     }
   },
   MONEYN(0x6E),
-  DATETIMN(0x6F),
+  DATETIMN(0x6F) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      Metadata metadata = new Metadata();
+      metadata.scale = byteBuf.readByte();
+      return metadata;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.TIMESTAMP;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      byte length = byteBuf.readByte();
+      if (length == 0) return null;
+
+      return decodeDateValue(byteBuf);
+    }
+
+    @Override
+    public String paramDefinition(Object value) {
+      return "datetime";
+    }
+  },
   DATEN(0x28) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
@@ -753,6 +775,13 @@ public enum DataType {
     public String toString() {
       return "Metadata{" + "length=" + length + ", precision=" + precision + ", scale=" + scale + '}';
     }
+  }
+
+  public LocalDateTime decodeDateValue(ByteBuf byteBuf) {
+    LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readIntLE(), ChronoUnit.DAYS);
+    long nanoOfDay = NANOSECONDS.convert(Math.round(byteBuf.readIntLE() * (3 + 1D / 3)), MILLISECONDS);
+    LocalTime localTime = LocalTime.ofNanoOfDay(nanoOfDay);
+    return LocalDateTime.of(localDate, localTime);
   }
 
   public Metadata decodeMetadata(ByteBuf byteBuf) {
