@@ -24,6 +24,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
+import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
@@ -33,6 +34,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.command.CompositeCommand;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
@@ -177,6 +179,52 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
     private void executeBatch(List<Tuple> batch, PromiseInternal<R> promise) {
       builder.executeBatchQuery(SqlClientBase.this, sql, options, autoCommit, batch, promise);
+    }
+  }
+
+  @Override
+  public void group(Handler<SqlClient> block) {
+    GroupingClient grouping = new GroupingClient(tracer, metrics);
+    block.handle(grouping);
+    schedule(context(), grouping.composite);
+  }
+
+  private class GroupingClient extends SqlClientBase<GroupingClient> {
+
+    private CompositeCommand composite = new CompositeCommand();
+
+    public GroupingClient(QueryTracer tracer, ClientMetrics metrics) {
+      super(tracer, metrics);
+    }
+
+    @Override
+    public void close(Handler<AsyncResult<Void>> handler) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Future<Void> close() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected ContextInternal context() {
+      return SqlClientBase.this.context();
+    }
+
+    @Override
+    protected <T> PromiseInternal<T> promise() {
+      return SqlClientBase.this.promise();
+    }
+
+    @Override
+    protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
+      return SqlClientBase.this.promise(handler);
+    }
+
+    @Override
+    public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
+      return composite.add(context, cmd);
     }
   }
 }
