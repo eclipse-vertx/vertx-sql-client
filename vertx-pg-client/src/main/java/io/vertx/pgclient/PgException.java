@@ -27,6 +27,26 @@ import io.vertx.core.json.Json;
  */
 public class PgException extends RuntimeException {
 
+  private static String formatMessage(String errorMessage, String severity, String code) {
+    StringBuilder sb = new StringBuilder();
+    if (severity != null) {
+      sb.append(severity).append(":");
+    }
+    if (errorMessage != null) {
+      if (sb.length() > 0) {
+        sb.append(' ');
+      }
+      sb.append(errorMessage);
+    }
+    if (code != null) {
+      if (sb.length() > 0) {
+        sb.append(' ');
+      }
+      sb.append('(').append(code).append(')');
+    }
+    return sb.toString();
+  }
+
   private final String errorMessage;
   private final String severity;
   private final String code;
@@ -46,6 +66,7 @@ public class PgException extends RuntimeException {
   private final String constraint;
 
   public PgException(String errorMessage, String severity, String code, String detail) {
+    super(formatMessage(errorMessage, severity, code));
     this.errorMessage = errorMessage;
     this.severity = severity;
     this.code = code;
@@ -66,8 +87,9 @@ public class PgException extends RuntimeException {
   }
 
   public PgException(String errorMessage, String severity, String code, String detail, String hint, String position,
-      String internalPosition, String internalQuery, String where, String file, String line, String routine,
-      String schema, String table, String column, String dataType, String constraint) {
+                     String internalPosition, String internalQuery, String where, String file, String line, String routine,
+                     String schema, String table, String column, String dataType, String constraint) {
+    super(formatMessage(errorMessage, severity, code));
     this.errorMessage = errorMessage;
     this.severity = severity;
     this.code = code;
@@ -89,7 +111,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return the primary human-readable error message
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'M' field</a>)
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'M' field</a>)
    */
   public String getErrorMessage() {
     // getErrorMessage() avoids name clash with RuntimeException#getMessage()
@@ -98,7 +120,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return the severity: ERROR, FATAL, or PANIC, or a localized translation of one of these
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'S' field</a>)
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'S' field</a>)
    */
   public String getSeverity() {
     return severity;
@@ -106,9 +128,9 @@ public class PgException extends RuntimeException {
 
   /**
    * @return the SQLSTATE code for the error
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'S' field</a>,
-   *     <a href="https://www.postgresql.org/docs/current/errcodes-appendix.html">value list</a>),
-   *     it is never localized
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'S' field</a>,
+   * <a href="https://www.postgresql.org/docs/current/errcodes-appendix.html">value list</a>),
+   * it is never localized
    */
   public String getCode() {
     return code;
@@ -116,8 +138,8 @@ public class PgException extends RuntimeException {
 
   /**
    * @return an optional secondary error message carrying more detail about the problem
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'D' field</a>),
-   *     a newline indicates paragraph break.
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'D' field</a>),
+   * a newline indicates paragraph break.
    */
   public String getDetail() {
     return detail;
@@ -125,8 +147,8 @@ public class PgException extends RuntimeException {
 
   /**
    * @return an optional suggestion (advice) what to do about the problem
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'H' field</a>),
-   *     a newline indicates paragraph break.
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'H' field</a>),
+   * a newline indicates paragraph break.
    */
   public String getHint() {
     return hint;
@@ -134,8 +156,8 @@ public class PgException extends RuntimeException {
 
   /**
    * @return a decimal ASCII integer, indicating an error cursor position as an index into the original
-   *     query string. (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'P' field</a>).
-   *     The first character has index 1, and positions are measured in characters not bytes.
+   * query string. (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'P' field</a>).
+   * The first character has index 1, and positions are measured in characters not bytes.
    */
   public String getPosition() {
     return position;
@@ -143,9 +165,9 @@ public class PgException extends RuntimeException {
 
   /**
    * @return an indication of the context in which the error occurred
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'W' field</a>).
-   *     Presently this includes a call stack traceback of active procedural language functions and
-   *     internally-generated queries. The trace is one entry per line, most recent first.
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'W' field</a>).
+   * Presently this includes a call stack traceback of active procedural language functions and
+   * internally-generated queries. The trace is one entry per line, most recent first.
    */
   public String getWhere() {
     return where;
@@ -153,7 +175,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return file name of the source-code location where the error was reported
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'F' field</a>).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'F' field</a>).
    */
   public String getFile() {
     return file;
@@ -161,7 +183,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return line number of the source-code location where the error was reported
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'L' field</a>).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'L' field</a>).
    */
   public String getLine() {
     return line;
@@ -169,7 +191,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return name of the source-code routine reporting the error
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'R' field</a>).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'R' field</a>).
    */
   public String getRoutine() {
     return routine;
@@ -177,8 +199,8 @@ public class PgException extends RuntimeException {
 
   /**
    * @return if the error was associated with a specific database object, the name of the schema containing
-   *     that object, if any
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'s' field</a>).
+   * that object, if any
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'s' field</a>).
    */
   public String getSchema() {
     return schema;
@@ -186,7 +208,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return if the error was associated with a specific table, the name of the table
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'t' field</a>).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'t' field</a>).
    */
   public String getTable() {
     return table;
@@ -194,7 +216,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return if the error was associated with a specific table column, the name of the column
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'c' field</a>).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'c' field</a>).
    */
   public String getColumn() {
     return column;
@@ -202,7 +224,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return if the error was associated with a specific data type, the name of the data type
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'d' field</a>).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'d' field</a>).
    */
   public String getDataType() {
     return dataType;
@@ -210,7 +232,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return if the error was associated with a specific constraint, the name of the constraint
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'n' field</a>).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'n' field</a>).
    */
   public String getConstraint() {
     return constraint;
@@ -218,8 +240,8 @@ public class PgException extends RuntimeException {
 
   /**
    * @return a decimal ASCII integer, indicating an error cursor position
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'p' field</a>)
-   *     as an index into the internally generated command (see 'q' field).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'p' field</a>)
+   * as an index into the internally generated command (see 'q' field).
    */
   public String getInternalPosition() {
     return internalPosition;
@@ -227,7 +249,7 @@ public class PgException extends RuntimeException {
 
   /**
    * @return the text of a failed internally-generated command
-   *     (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'q' field</a>).
+   * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'q' field</a>).
    */
   public String getInternalQuery() {
     return internalQuery;
@@ -237,36 +259,5 @@ public class PgException extends RuntimeException {
     if (value != null) {
       stringBuffer.append(", \"").append(key).append("\": ").append(Json.encode(value));
     }
-  }
-
-  /**
-   * A serialized JsonObject of all non-null error message fields.
-   */
-  @Override
-  public String getMessage() {
-    StringBuffer sb = new StringBuffer();
-    append(sb, "message", getErrorMessage());
-    append(sb, "severity", getSeverity());
-    append(sb, "code", getCode());
-    append(sb, "detail", getDetail());
-    append(sb, "hint", getHint());
-    append(sb, "position", getPosition());
-    append(sb, "internalPosition", getInternalPosition());
-    append(sb, "internalQuery", getInternalQuery());
-    append(sb, "where", getWhere());
-    append(sb, "file", getFile());
-    append(sb, "line", getLine());
-    append(sb, "routine", getRoutine());
-    append(sb, "schema", getSchema());
-    append(sb, "table", getTable());
-    append(sb, "column", getColumn());
-    append(sb, "dataType", getDataType());
-    append(sb, "constraint", getConstraint());
-    if (sb.length() == 0) {
-      return "{}";
-    }
-    sb.append(" }");
-    sb.setCharAt(0, '{');  // replace leading comma
-    return sb.toString();
   }
 }
