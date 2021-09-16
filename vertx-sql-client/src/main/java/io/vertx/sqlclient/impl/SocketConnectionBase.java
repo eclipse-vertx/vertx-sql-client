@@ -40,6 +40,7 @@ import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 /**
@@ -177,7 +178,14 @@ public abstract class SocketConnectionBase implements Connection {
     }
     cmd.handler = handler;
     if (status == Status.CONNECTED) {
-      pending.add(cmd);
+      if (cmd instanceof CompositeCommand) {
+        CompositeCommand composite = (CompositeCommand) cmd;
+        List<CommandBase<?>> commands = composite.commands();
+        pending.addAll(commands);
+        composite.handler.handle(Future.succeededFuture());
+      } else {
+        pending.add(cmd);
+      }
       checkPending();
     } else {
       cmd.fail(new NoStackTraceThrowable("Connection is not active now, current status: " + status));

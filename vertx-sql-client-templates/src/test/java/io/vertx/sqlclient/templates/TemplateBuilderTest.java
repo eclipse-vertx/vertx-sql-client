@@ -7,6 +7,7 @@ import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.templates.impl.SqlTemplate;
@@ -35,6 +36,10 @@ public class TemplateBuilderTest {
     }
     @Override
     public Future<Void> close() {
+      throw new UnsupportedOperationException();
+    }
+    @Override
+    public void group(Handler<SqlClient> block) {
       throw new UnsupportedOperationException();
     }
   }
