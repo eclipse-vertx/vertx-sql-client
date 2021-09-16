@@ -12,7 +12,9 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
+import io.vertx.mssqlclient.impl.MSSQLSocketConnection;
 import io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket;
 import io.vertx.mssqlclient.impl.utils.Utils;
 import io.vertx.sqlclient.impl.Connection;
@@ -21,7 +23,9 @@ import io.vertx.sqlclient.impl.command.InitCommand;
 import java.util.Map;
 
 import static io.vertx.mssqlclient.impl.codec.MessageType.TDS7_LOGIN;
+import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedShortLengthString;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
+import static java.util.Locale.ENGLISH;
 
 class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
 
@@ -206,5 +210,25 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
   @Override
   protected void handleLoginAck() {
     result = cmd.connection();
+  }
+
+  @Override
+  protected void handleRouting(ByteBuf payload) {
+    MSSQLSocketConnection conn = (MSSQLSocketConnection) this.result;
+    if (conn == null) {
+      throw new IllegalStateException("Routing ENVCHANGE token MUST be sent after the LOGINACK token in the login response");
+    }
+    if (payload.readUnsignedShortLE() <= 5) {
+      throw new IllegalStateException("RoutingDataValueLength too short");
+    }
+    if (payload.readUnsignedByte() != 0) {
+      throw new IllegalStateException("Protocol MUST be 0, specifying TCP-IP protocol");
+    }
+    int port;
+    if ((port = payload.readUnsignedShortLE()) == 0) {
+      throw new IllegalStateException("ProtocolProperty value of zero is not allowed when Protocol is TCP-IP");
+    }
+    String host = readUnsignedShortLengthString(payload);
+    conn.setAlternateServer(SocketAddress.inetSocketAddress(port, host.toLowerCase(ENGLISH)));
   }
 }
