@@ -15,221 +15,415 @@
   ~ limitations under the License.
   ~
   --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
-  <modelVersion>4.0.0</modelVersion>
-
-  <parent>
-    <groupId>io.vertx</groupId>
-    <artifactId>vertx-ext-parent</artifactId>
-    <version>38</version>
-  </parent>
-
-  <artifactId>vertx-sql-client-parent</artifactId>
-  <version>4.1.4-SNAPSHOT</version>
-  <packaging>pom</packaging>
-
-  <name>Vertx SQL Client parent</name>
-  <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
-  <description>The Reactive SQL Client parent</description>
-
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
-
-  <scm>
-    <connection>scm:git:git@github.com:eclipse-vertx/vertx-sql-client.git</connection>
-    <developerConnection>scm:git:git@github.com:eclipse-vertx/vertx-sql-client.git</developerConnection>
-    <url>git@github.com:eclipse-vertx/vertx-sql-client.git</url>
-  </scm>
-
-  <properties>
-    <stack.version>4.1.4-SNAPSHOT</stack.version>
-    <doc.skip>true</doc.skip>
-    <jmh.version>1.19</jmh.version>
-    <docs.dir>${project.basedir}/src/main/docs</docs.dir>
-    <generated.dir>${project.basedir}/src/main/generated</generated.dir>
-    <connection.uri/>
-    <tls.connection.uri/>
-    <unix.socket.directory/>
-    <unix.socket.port/>
-    <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
-    <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
-    <source.skip>true</source.skip>
-    <testcontainers.version>1.15.2</testcontainers.version>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
+      
+    <modelVersion>4.0.0</modelVersion>
+      
+    <parent>
+            
         <groupId>io.vertx</groupId>
-        <artifactId>vertx-dependencies</artifactId>
-        <version>${stack.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
+            
+        <artifactId>vertx-ext-parent</artifactId>
+            
+        <version>38</version>
+          
+    </parent>
+      
+    <artifactId>vertx-sql-client-parent</artifactId>
+      
+    <version>4.1.4</version>
+      
+    <packaging>pom</packaging>
+      
+    <name>Vertx SQL Client parent</name>
+      
+    <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
+      
+    <description>The Reactive SQL Client parent</description>
+      
+    <licenses>
+            
+        <license>
+                  
+            <name>The Apache Software License, Version 2.0</name>
+                  
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+                  
+            <distribution>repo</distribution>
+                
+        </license>
+          
+    </licenses>
+      
+    <scm>
+            
+        <connection>scm:git:git@github.com:eclipse-vertx/vertx-sql-client.git</connection>
+            
+        <developerConnection>scm:git:git@github.com:eclipse-vertx/vertx-sql-client.git</developerConnection>
+            
+        <url>git@github.com:eclipse-vertx/vertx-sql-client.git</url>
+          
+    </scm>
+      
+    <properties>
+            
+        <stack.version>4.1.4</stack.version>
+            
+        <doc.skip>true</doc.skip>
+            
+        <jmh.version>1.19</jmh.version>
+            
+        <docs.dir>${project.basedir}/src/main/docs</docs.dir>
+            
+        <generated.dir>${project.basedir}/src/main/generated</generated.dir>
+            
+        <connection.uri/>
+            
+        <tls.connection.uri/>
+            
+        <unix.socket.directory/>
+            
+        <unix.socket.port/>
+            
+        <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
+            
+        <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
+            
+        <source.skip>true</source.skip>
+            
+        <testcontainers.version>1.15.2</testcontainers.version>
+          
+    </properties>
+      
+    <dependencyManagement>
+            
+        <dependencies>
+                  
+            <dependency>
+                        
+                <groupId>io.vertx</groupId>
+                        
+                <artifactId>vertx-dependencies</artifactId>
+                        
+                <version>${stack.version}</version>
+                        
+                <type>pom</type>
+                        
+                <scope>import</scope>
+                      
+            </dependency>
+                
+        </dependencies>
+          
+    </dependencyManagement>
+      
+    <dependencies>
+            
+        <!-- Testing purposes -->
+            
+        <dependency>
+                  
+            <groupId>junit</groupId>
+                  
+            <artifactId>junit</artifactId>
+                  
+            <version>4.13.1</version>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.vertx</groupId>
+                  
+            <artifactId>vertx-unit</artifactId>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.netty</groupId>
+                  
+            <artifactId>netty-transport-native-epoll</artifactId>
+                  
+            <classifier>linux-x86_64</classifier>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+            
+        <dependency>
+                  
+            <groupId>io.netty</groupId>
+                  
+            <artifactId>netty-transport-native-kqueue</artifactId>
+                  
+            <classifier>osx-x86_64</classifier>
+                  
+            <scope>test</scope>
+                
+        </dependency>
+          
     </dependencies>
-  </dependencyManagement>
-
-  <dependencies>
-
-    <!-- Testing purposes -->
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.13.1</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-unit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-transport-native-epoll</artifactId>
-      <classifier>linux-x86_64</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-transport-native-kqueue</artifactId>
-      <classifier>osx-x86_64</classifier>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
-
-  <profiles>
-    <profile>
-      <id>default</id>
-      <activation>
-        <property>
-          <name>skipDefault</name>
-          <value>!true</value>
-        </property>
-      </activation>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-pg-client</module>
-        <module>vertx-mysql-client</module>
-        <module>vertx-mssql-client</module>
-        <module>vertx-db2-client</module>
-        <module>vertx-sql-client-templates</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>PostgreSQL-9</id>
-      <properties>
-        <embedded.postgres.version>9.6</embedded.postgres.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-pg-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>PostgreSQL-10</id>
-      <properties>
-        <embedded.postgres.version>10.6</embedded.postgres.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-pg-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>PostgreSQL-11</id>
-      <properties>
-        <embedded.postgres.version>11.5</embedded.postgres.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-pg-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>MySQL-8.0</id>
-      <properties>
-        <testing.mysql.database.server>mysql</testing.mysql.database.server>
-        <testing.mysql.database.version>8.0</testing.mysql.database.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-mysql-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>MySQL-5.6</id>
-      <properties>
-        <testing.mysql.database.server>mysql</testing.mysql.database.server>
-        <testing.mysql.database.version>5.6</testing.mysql.database.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-mysql-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>MySQL-5.7</id>
-      <properties>
-        <testing.mysql.database.server>mysql</testing.mysql.database.server>
-        <testing.mysql.database.version>5.7</testing.mysql.database.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-mysql-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>MariaDB-10.4</id>
-      <properties>
-        <testing.mysql.database.server>mariadb</testing.mysql.database.server>
-        <testing.mysql.database.version>10.4</testing.mysql.database.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-mysql-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>MSSQL-2017-latest</id>
-      <properties>
-        <mssql-container.version>2017-latest</mssql-container.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-mssql-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>MSSQL-2019-latest</id>
-      <properties>
-        <mssql-container.version>2019-latest</mssql-container.version>
-      </properties>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-mssql-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>DB2-11.5</id>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-db2-client</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>SQL-templates</id>
-      <modules>
-        <module>vertx-sql-client</module>
-        <module>vertx-pg-client</module>
-        <module>vertx-mysql-client</module>
-        <module>vertx-sql-client-templates</module>
-      </modules>
-    </profile>
-  </profiles>
-
+      
+    <profiles>
+            
+        <profile>
+                  
+            <id>default</id>
+                  
+            <activation>
+                        
+                <property>
+                              
+                    <name>skipDefault</name>
+                              
+                    <value>!true</value>
+                            
+                </property>
+                      
+            </activation>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-pg-client</module>
+                        
+                <module>vertx-mysql-client</module>
+                        
+                <module>vertx-mssql-client</module>
+                        
+                <module>vertx-db2-client</module>
+                        
+                <module>vertx-sql-client-templates</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>PostgreSQL-9</id>
+                  
+            <properties>
+                        
+                <embedded.postgres.version>9.6</embedded.postgres.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-pg-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>PostgreSQL-10</id>
+                  
+            <properties>
+                        
+                <embedded.postgres.version>10.6</embedded.postgres.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-pg-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>PostgreSQL-11</id>
+                  
+            <properties>
+                        
+                <embedded.postgres.version>11.5</embedded.postgres.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-pg-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>MySQL-8.0</id>
+                  
+            <properties>
+                        
+                <testing.mysql.database.server>mysql</testing.mysql.database.server>
+                        
+                <testing.mysql.database.version>8.0</testing.mysql.database.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-mysql-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>MySQL-5.6</id>
+                  
+            <properties>
+                        
+                <testing.mysql.database.server>mysql</testing.mysql.database.server>
+                        
+                <testing.mysql.database.version>5.6</testing.mysql.database.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-mysql-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>MySQL-5.7</id>
+                  
+            <properties>
+                        
+                <testing.mysql.database.server>mysql</testing.mysql.database.server>
+                        
+                <testing.mysql.database.version>5.7</testing.mysql.database.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-mysql-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>MariaDB-10.4</id>
+                  
+            <properties>
+                        
+                <testing.mysql.database.server>mariadb</testing.mysql.database.server>
+                        
+                <testing.mysql.database.version>10.4</testing.mysql.database.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-mysql-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>MSSQL-2017-latest</id>
+                  
+            <properties>
+                        
+                <mssql-container.version>2017-latest</mssql-container.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-mssql-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>MSSQL-2019-latest</id>
+                  
+            <properties>
+                        
+                <mssql-container.version>2019-latest</mssql-container.version>
+                      
+            </properties>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-mssql-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>DB2-11.5</id>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-db2-client</module>
+                      
+            </modules>
+                
+        </profile>
+            
+        <profile>
+                  
+            <id>SQL-templates</id>
+                  
+            <modules>
+                        
+                <module>vertx-sql-client</module>
+                        
+                <module>vertx-pg-client</module>
+                        
+                <module>vertx-mysql-client</module>
+                        
+                <module>vertx-sql-client-templates</module>
+                      
+            </modules>
+                
+        </profile>
+          
+    </profiles>
+    
 </project>
