@@ -26,6 +26,7 @@ import io.vertx.core.*;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.impl.SqlClientInternal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -218,6 +219,20 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
           async.complete();
         }));
       }));
+    }));
+  }
+
+  @Test
+  public void testGrouping(TestContext ctx) {
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      ((SqlClientInternal)conn).group(client -> {
+        client.query("SHOW TIME ZONE").execute(ctx.asyncAssertSuccess(res -> {
+          ctx.assertEquals(1, res.size());
+          Row row = res.iterator().next();
+          ctx.assertEquals("PST8PDT", row.getString(0));
+        }));
+        conn.query("SET TIME ZONE 'PST8PDT'").execute(ctx.asyncAssertSuccess());
+      });
     }));
   }
 }
