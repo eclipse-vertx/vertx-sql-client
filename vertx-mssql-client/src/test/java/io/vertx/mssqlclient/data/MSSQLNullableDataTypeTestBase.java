@@ -56,6 +56,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
       ctx.assertEquals(null, row.getValue("test_varchar"));
       ctx.assertEquals(null, row.getValue("test_date"));
       ctx.assertEquals(null, row.getValue("test_time"));
+      ctx.assertEquals(null, row.getValue("test_datetime"));
       ctx.assertEquals(null, row.getValue("test_datetime2"));
       ctx.assertEquals(null, row.getValue("test_datetimeoffset"));
       ctx.assertEquals(null, row.getValue("test_binary"));
@@ -183,6 +184,15 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
 
   @Test
   public void testDecodeNullDateTime(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_datetime", row -> {
+      ColumnChecker.checkColumn(0, "test_datetime")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullDateTime2(TestContext ctx) {
     testDecodeNullValue(ctx, "test_datetime2", row -> {
       ColumnChecker.checkColumn(0, "test_datetime2")
         .returnsNull()

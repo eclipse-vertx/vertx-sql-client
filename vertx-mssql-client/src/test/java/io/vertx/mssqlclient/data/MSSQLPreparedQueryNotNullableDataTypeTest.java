@@ -135,6 +135,24 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   @Repeat(100)
   public void testEncodeDateTime(TestContext ctx) {
     LocalDateTime now = LocalDateTime.now();
+    // Reduce accuracy since datatype accuracy is rounded to increments of .000, .003, or .007 seconds
+    int nanoOfDay = (int) Math.round(Math.round((now.getNano()/1000000d)/3.333333)*3.333333)*1000000;
+    LocalDateTime convertedNow = now.withNano(nanoOfDay);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime", now, row -> {
+      ColumnChecker.checkColumn(0, "test_datetime")
+        .returns(Tuple::getValue, Row::getValue, convertedNow)
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, convertedNow)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, convertedNow.toLocalDate())
+        .returns(Tuple::getLocalTime, Row::getLocalTime, convertedNow.toLocalTime())
+        .returns(LocalDateTime.class, convertedNow)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  @Repeat(100)
+  public void testEncodeDateTime2(TestContext ctx) {
+    LocalDateTime now = LocalDateTime.now();
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime2", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetime2")
         .returns(Tuple::getValue, Row::getValue, now)
