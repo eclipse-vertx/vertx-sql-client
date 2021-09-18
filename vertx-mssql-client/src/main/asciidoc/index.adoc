@@ -165,6 +165,8 @@ Currently, the client supports the following SQL Server types:
 * NCHAR/NVARCHAR(`java.lang.String`)
 * DATE(`java.time.LocalDate`)
 * TIME(`java.time.LocalTime`)
+* SMALLDATETIME(`java.time.LocalDateTime`)
+* DATETIME(`java.time.LocalDateTime`)
 * DATETIME2(`java.time.LocalDateTime`)
 * DATETIMEOFFSET(`java.time.OffsetDateTime`)
 * BINARY/VARBINARY(`io.vertx.core.buffer.Buffer`)
