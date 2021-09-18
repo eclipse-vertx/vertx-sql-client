@@ -115,7 +115,27 @@ public enum DataType {
       return byteBuf.readIntLE();
     }
   },
-  DATETIM4(0x3A),
+  DATETIM4(0x3A) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      return null;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.TIMESTAMP;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      return decodeUnsignedShortDateValue(byteBuf);
+    }
+
+    @Override
+    public String paramDefinition(Object value) {
+      return "smalldatetime";
+    }
+  },
   FLT4(0x3B) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {

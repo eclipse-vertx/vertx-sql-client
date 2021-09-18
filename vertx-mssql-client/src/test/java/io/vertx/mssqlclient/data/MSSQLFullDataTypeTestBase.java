@@ -40,6 +40,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
       ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue("test_date"));
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
+      ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 0), row.getValue("test_smalldatetime"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2), row.getValue("test_datetime"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2), row.getValue("test_datetime2"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row.getValue("test_datetimeoffset"));
@@ -155,6 +156,19 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
         .returns(Tuple::getValue, Row::getValue, LocalTime.of(18, 45, 2))
         .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 2))
         .returns(LocalTime.class, LocalTime.of(18, 45, 2))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeSmallDateTime(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_smalldatetime", row -> {
+      ColumnChecker.checkColumn(0, "test_smalldatetime")
+        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(2019, 1, 1, 18, 45, 0))
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(2019, 1, 1, 18, 45, 0))
+        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(2019, 1, 1))
+        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 0))
+        .returns(LocalDateTime.class, LocalDateTime.of(2019, 1, 1, 18, 45, 0))
         .forRow(row);
     });
   }
