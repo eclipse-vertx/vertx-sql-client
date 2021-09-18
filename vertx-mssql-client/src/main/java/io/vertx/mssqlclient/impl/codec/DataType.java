@@ -146,7 +146,7 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeDateValue(byteBuf);
+      return decodeIntLEDateValue(byteBuf);
     }
   },
   FLT8(0x3E) {
@@ -407,7 +407,13 @@ public enum DataType {
       byte length = byteBuf.readByte();
       if (length == 0) return null;
 
-      return decodeDateValue(byteBuf);
+      if (length == 8) {
+        return decodeIntLEDateValue(byteBuf);
+      } else if (length == 4) {
+        return decodeUnsignedShortDateValue(byteBuf);
+      } else {
+        throw new UnsupportedOperationException("Invalid length for date " + name());
+      }
     }
 
     @Override
@@ -777,10 +783,16 @@ public enum DataType {
     }
   }
 
-  public LocalDateTime decodeDateValue(ByteBuf byteBuf) {
+  public LocalDateTime decodeIntLEDateValue(ByteBuf byteBuf) {
     LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readIntLE(), ChronoUnit.DAYS);
     long nanoOfDay = NANOSECONDS.convert(Math.round(byteBuf.readIntLE() * (3 + 1D / 3)), MILLISECONDS);
     LocalTime localTime = LocalTime.ofNanoOfDay(nanoOfDay);
+    return LocalDateTime.of(localDate, localTime);
+  }
+
+  public LocalDateTime decodeUnsignedShortDateValue(ByteBuf byteBuf) {
+    LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readUnsignedShortLE(), ChronoUnit.DAYS);
+    LocalTime localTime = LocalTime.ofSecondOfDay(byteBuf.readUnsignedShortLE() * 60L);
     return LocalDateTime.of(localDate, localTime);
   }
 
