@@ -155,7 +155,7 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
     final int nanosPerSecond = 1000000000;
     LocalDateTime now = LocalDateTime.now();
 
-    // Reduce accuracy since datatype accuracy is rounded to increments of .000, .003, or .007 seconds
+    // Reduce accuracy since datatype accuracy is rounded to increments of .000, .003, or .007 seconds   210000000
     int nanoOfDay = (int) Math.round(Math.round((now.getNano()/1000000d)/3.333333)*3.333333)*1000000;
     int secondOfDay = now.getSecond();
 
