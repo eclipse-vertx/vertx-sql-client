@@ -243,6 +243,20 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
     });
   }
 
+  @Test
+  public void testEncodeMoney(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_money", "€12.1234", row -> {
+      checkNumber(row, "test_money", new BigDecimal("12.1234"));
+    });
+  }
+
+  @Test
+  public void testEncodeSmallMoney(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_smallmoney", "€12.12", row -> {
+      checkNumber(row, "test_smallmoney", new BigDecimal("12.12"));
+    });
+  }
+
   @Override
   protected void testDecodeValue(TestContext ctx, boolean isNull, String columnName, Consumer<Row> checker) {
     testPreparedQueryDecodeGeneric(ctx, "not_nullable_datatype", columnName, "1", checker);
