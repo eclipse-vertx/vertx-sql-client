@@ -19,6 +19,8 @@ import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
 import java.time.*;
@@ -152,7 +154,27 @@ public enum DataType {
       return byteBuf.readFloatLE();
     }
   },
-  MONEY(0x3C),
+  MONEY(0x3C) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      return null;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      ByteBuffer bb = ByteBuffer.allocate(8);
+      bb.order(ByteOrder.BIG_ENDIAN);
+      bb.putInt(byteBuf.readIntLE());
+      bb.putInt(byteBuf.readIntLE());
+
+      return new BigInteger(bb.array()).longValue()/10000d;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.DECIMAL;
+    }
+  },
   DATETIME(0x3D) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
@@ -185,7 +207,22 @@ public enum DataType {
       return byteBuf.readDoubleLE();
     }
   },
-  MONEY4(0x7A),
+  MONEY4(0x7A){
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      return null;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      return byteBuf.readIntLE();
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.DECIMAL;
+    }
+  },
   INT8(0x7F) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
@@ -408,7 +445,28 @@ public enum DataType {
       } else throw new IllegalArgumentException();
     }
   },
-  MONEYN(0x6E),
+  MONEYN(0x6E) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      Metadata metadata = new Metadata();
+      metadata.scale = byteBuf.readByte();
+      return metadata;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      int length = byteBuf.readByte();
+      if (length == 0) return null;
+      if (length == 4) return MONEY4.decodeValue(byteBuf, metadata); //byteBuf.readIntLE()/100d;
+      if (length == 8) return MONEY.decodeValue(byteBuf, metadata);
+      throw new IllegalArgumentException("Invalid length: " + length);
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.DECIMAL;
+    }
+  },
   DATETIMN(0x6F) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
