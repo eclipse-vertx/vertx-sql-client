@@ -19,6 +19,7 @@ import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -167,7 +168,7 @@ public enum DataType {
       bb.putInt(byteBuf.readIntLE());
       bb.putInt(byteBuf.readIntLE());
 
-      return new BigInteger(bb.array()).longValue()/10000d;
+      return new BigDecimal(new BigInteger(bb.array())).divide(new BigDecimal("10000"), 4, RoundingMode.UP);
     }
 
     @Override
@@ -215,7 +216,7 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return byteBuf.readIntLE();
+      return new BigDecimal(byteBuf.readIntLE()).divide(new BigDecimal("10000"), 2, RoundingMode.UP);
     }
 
     @Override
@@ -457,7 +458,7 @@ public enum DataType {
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
       int length = byteBuf.readByte();
       if (length == 0) return null;
-      if (length == 4) return MONEY4.decodeValue(byteBuf, metadata); //byteBuf.readIntLE()/100d;
+      if (length == 4) return MONEY4.decodeValue(byteBuf, metadata);
       if (length == 8) return MONEY.decodeValue(byteBuf, metadata);
       throw new IllegalArgumentException("Invalid length: " + length);
     }
