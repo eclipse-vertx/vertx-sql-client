@@ -133,11 +133,39 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
 
   @Test
   @Repeat(100)
-  public void testEncodeDateTime(TestContext ctx) {
+  public void testEncodeSmallDateTime(TestContext ctx) {
     LocalDateTime now = LocalDateTime.now();
+    // Seconds are rounded to the nearest minute
+    int roundedUpMinute = (int) Math.floor(now.getSecond()/30.0);
+    LocalDateTime convertedNow = now.withSecond(0).withNano(0).withMinute(now.getMinute() + roundedUpMinute);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_smalldatetime", now, row -> {
+      ColumnChecker.checkColumn(0, "test_smalldatetime")
+        .returns(Tuple::getValue, Row::getValue, convertedNow)
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, convertedNow)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, convertedNow.toLocalDate())
+        .returns(Tuple::getLocalTime, Row::getLocalTime, convertedNow.toLocalTime())
+        .returns(LocalDateTime.class, convertedNow)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  @Repeat(100)
+  public void testEncodeDateTime(TestContext ctx) {
+    final int nanosPerSecond = 1000000000;
+    LocalDateTime now = LocalDateTime.now();
+
     // Reduce accuracy since datatype accuracy is rounded to increments of .000, .003, or .007 seconds
     int nanoOfDay = (int) Math.round(Math.round((now.getNano()/1000000d)/3.333333)*3.333333)*1000000;
-    LocalDateTime convertedNow = now.withNano(nanoOfDay);
+    int secondOfDay = now.getSecond();
+
+    // If nanoseconds is rounded up to one second
+    if (nanoOfDay == nanosPerSecond) {
+      nanoOfDay = 0;
+      secondOfDay++;
+    }
+
+    LocalDateTime convertedNow = now.withNano(nanoOfDay).withSecond(secondOfDay);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetime")
         .returns(Tuple::getValue, Row::getValue, convertedNow)
