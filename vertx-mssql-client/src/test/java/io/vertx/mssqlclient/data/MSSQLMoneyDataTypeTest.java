@@ -16,39 +16,38 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.math.BigDecimal;
+
 @RunWith(VertxUnitRunner.class)
 public class MSSQLMoneyDataTypeTest extends MSSQLDataTypeTestBase {
 
-  public static final String MAX_MONEY_STRING = "922337203685477.5807";
-  public static final double MAX_MONEY = Double.parseDouble(MAX_MONEY_STRING);
-
   @Test
   public void testQueryLargeMoney(TestContext ctx) {
-    testQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", MAX_MONEY_STRING, MAX_MONEY);
+    testQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", "922337203685477.5807", new BigDecimal("922337203685477.5807"));
   }
 
   @Test
   public void testQueryLargeNegativeMoney(TestContext ctx) {
-    testQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", String.format("-%s", MAX_MONEY_STRING), -MAX_MONEY);
+    testQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", "-922337203685477.5807", new BigDecimal("-922337203685477.5807"));
   }
 
   @Test
   public void testQueryMoneyWithCurrency(TestContext ctx) {
-    testQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", "$12.34", 12.34d);
+    testQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", "$12.3456", new BigDecimal("12.3456"));
   }
 
   @Test
   public void testPreparedQueryLargeMoney(TestContext ctx) {
-    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", MAX_MONEY_STRING, MAX_MONEY);
+    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", "922337203685477.5807", new BigDecimal("922337203685477.5807"));
   }
 
   @Test
   public void testPreparedQueryLargeNegativeMoney(TestContext ctx) {
-    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", String.format("-%s", MAX_MONEY_STRING), -MAX_MONEY);
+    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", "-922337203685477.5807", new BigDecimal("-922337203685477.5807"));
   }
 
   @Test
   public void testPreparedQueryMoneyWithCurrency(TestContext ctx) {
-    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", "$12.34", 12.34d);
+    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_money", "MONEY", "$12.3456", new BigDecimal("12.3456"));
   }
 }
