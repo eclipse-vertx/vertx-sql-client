@@ -163,12 +163,10 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      ByteBuffer bb = ByteBuffer.allocate(8);
-      bb.order(ByteOrder.BIG_ENDIAN);
-      bb.putInt(byteBuf.readIntLE());
-      bb.putInt(byteBuf.readIntLE());
-
-      return new BigDecimal(new BigInteger(bb.array())).divide(new BigDecimal("10000"), 4, RoundingMode.UP);
+      long highBits = (long) byteBuf.readIntLE() << 32;
+      long lowBits = byteBuf.readIntLE() & 0xFFFFFFFFL;
+      BigInteger bigInteger = BigInteger.valueOf(highBits | lowBits);
+      return new BigDecimal(bigInteger).divide(new BigDecimal("10000"), 4, RoundingMode.UP);
     }
 
     @Override
