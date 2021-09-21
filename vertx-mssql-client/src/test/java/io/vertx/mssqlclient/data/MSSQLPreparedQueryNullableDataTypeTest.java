@@ -387,6 +387,16 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
     testEncodeBufferValue(ctx, columnName, value, value);
   }
 
+  @Test
+  public void testEncodeNullMoney(TestContext ctx) {
+    testEncodeNumber(ctx, "test_money", new BigDecimal("123.1313"));
+  }
+
+  @Test
+  public void testEncodeNullSmallMoney(TestContext ctx) {
+    testEncodeNumber(ctx, "test_smallmoney", new BigDecimal("123.13"));
+  }
+
   private void testEncodeBufferValue(TestContext ctx, String columnName, Object value, Object expected) {
     Object param = value == null ? NullValue.Buffer : value;
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", columnName, param, row -> {

@@ -46,6 +46,8 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row.getValue("test_datetimeoffset"));
       ctx.assertEquals(Buffer.buffer("hello world").appendBytes(new byte[20 - "hello world".length()]), row.getValue("test_binary"));
       ctx.assertEquals(Buffer.buffer("big apple"), row.getValue("test_varbinary"));
+      ctx.assertEquals(new BigDecimal("12.3456"), row.getValue("test_money"));
+      ctx.assertEquals(new BigDecimal("12.34"), row.getValue("test_smallmoney"));
     });
   }
 
@@ -234,6 +236,20 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
         .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("big apple"))
         .returns(Buffer.class, Buffer.buffer("big apple"))
         .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeMoney(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_money", row -> {
+      checkNumber(row, "test_money", new BigDecimal("12.3456"));
+    });
+  }
+
+  @Test
+  public void testDecodeSmallMoney(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_smallmoney", row -> {
+      checkNumber(row, "test_smallmoney", new BigDecimal("12.34"));
     });
   }
 

@@ -62,6 +62,8 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
       ctx.assertEquals(null, row.getValue("test_datetimeoffset"));
       ctx.assertEquals(null, row.getValue("test_binary"));
       ctx.assertEquals(null, row.getValue("test_varbinary"));
+      ctx.assertEquals(null, row.getValue("test_money"));
+      ctx.assertEquals(null, row.getValue("test_smallmoney"));
     });
   }
 
@@ -232,6 +234,24 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullVarBinary(TestContext ctx) {
     testDecodeNullValue(ctx, "test_varbinary", row -> {
       ColumnChecker.checkColumn(0, "test_varbinary")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullMoney(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_money", row -> {
+      ColumnChecker.checkColumn(0, "test_money")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullSmallMoney(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_smallmoney", row -> {
+      ColumnChecker.checkColumn(0, "test_smallmoney")
         .returnsNull()
         .forRow(row);
     });
