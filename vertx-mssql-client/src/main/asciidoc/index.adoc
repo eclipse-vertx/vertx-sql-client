@@ -170,8 +170,8 @@ Currently, the client supports the following SQL Server types:
 * DATETIME2(`java.time.LocalDateTime`)
 * DATETIMEOFFSET(`java.time.OffsetDateTime`)
 * BINARY/VARBINARY(`io.vertx.core.buffer.Buffer`)
-* MONEY (`java.lang.Double`)
-* SMALLMONEY (`java.lang.Float`)
+* MONEY (`{@link java.math.BigDecimal}`)
+* SMALLMONEY (`{@link java.math.BigDecimal}`)
 
 Tuple decoding uses the above types when storing values.
 
