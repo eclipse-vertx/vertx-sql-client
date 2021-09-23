@@ -21,10 +21,6 @@ jobs:
         exclude:
           - profile: Oracle-18
             jdk: 8
-          - profile: MSSQL-2017-latest
-            jdk: 17
-          - profile: MSSQL-2019-latest
-            jdk: 17
           - profile: DB2-11.5
             jdk: 17
       fail-fast: false
