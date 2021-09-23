@@ -30,6 +30,7 @@ import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
+import org.testcontainers.utility.DockerImageName;
 
 public class DB2Resource extends ExternalResource {
 
@@ -45,7 +46,7 @@ public class DB2Resource extends ExternalResource {
     private boolean started = false;
     private boolean isDb2OnZ = false;
     private DB2ConnectOptions options;
-    private final Db2Container instance = new Db2Container()
+    private final Db2Container instance = new Db2Container(DockerImageName.parse("ibmcom/db2").withTag("11.5.6.0"))
             .acceptLicense()
             .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()))
             .withUsername("vertx")
