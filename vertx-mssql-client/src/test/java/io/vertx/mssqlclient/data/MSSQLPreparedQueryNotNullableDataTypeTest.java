@@ -121,7 +121,9 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   @Test
   @Repeat(100)
   public void testEncodeTime(TestContext ctx) {
-    LocalTime now = LocalTime.now();
+    // Make sure the number of significant digits matches the column precision
+    int nanoOfSecond = 1_000 * ThreadLocalRandom.current().nextInt(1_000_000);
+    LocalTime now = LocalTime.now().withNano(nanoOfSecond);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_time", now, row -> {
       ColumnChecker.checkColumn(0, "test_time")
         .returns(Tuple::getValue, Row::getValue, now)
@@ -134,7 +136,9 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   @Test
   @Repeat(100)
   public void testEncodeDateTime(TestContext ctx) {
-    LocalDateTime now = LocalDateTime.now();
+    // Make sure the number of significant digits matches the column precision
+    int nanoOfSecond = 100 * ThreadLocalRandom.current().nextInt(10_000_000);
+    LocalDateTime now = LocalDateTime.now().withNano(nanoOfSecond);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime2", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetime2")
         .returns(Tuple::getValue, Row::getValue, now)
@@ -149,14 +153,7 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   @Test
   @Repeat(100)
   public void testEncodeOffsetDateTime(TestContext ctx) {
-    /*
-    Starting from Java 11, LocalDateTime.now() can have microseconds precision.
-    But the test database defines the test_datetimeoffset column with scale of 5.
-
-    Therefore, in order to get consistent behavior between Java 8 and Java 11,
-    we erase the nanoOfSecond value obtained from the clock with a random number
-    which has at most tens of microseconds precision.
-     */
+    // Make sure the number of significant digits matches the column precision
     int nanoOfSecond = ThreadLocalRandom.current().nextInt(100_000) * 10_000;
     OffsetDateTime now = LocalDateTime.now().withNano(nanoOfSecond)
       .atOffset(ZoneOffset.ofHoursMinutes(-3, -15));
