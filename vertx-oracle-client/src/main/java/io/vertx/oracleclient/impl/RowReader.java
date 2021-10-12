@@ -10,55 +10,54 @@
  */
 package io.vertx.oracleclient.impl;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.RowDesc;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
 
-public class RowReader implements Flow.Subscriber<Row> {
+public class RowReader<R, A> implements Flow.Subscriber<Row> {
 
   private final Flow.Publisher<Row> publisher;
   private final ContextInternal context;
   private final RowDesc description;
-  private final QueryResultHandler<RowSet<Row>> handler;
+  private final QueryResultHandler<R> handler;
   private volatile Flow.Subscription subscription;
   private final Promise<Void> subscriptionPromise;
   private Promise<Void> readPromise;
   private volatile boolean completed;
   private volatile Throwable failed;
-  private volatile OracleRowSet collector;
+  private final Collector<Row, A, R> collector;
+  private A accumulator;
+  private int count;
   private final AtomicInteger toRead = new AtomicInteger();
 
   private final AtomicBoolean wip = new AtomicBoolean();
 
-  public RowReader(Flow.Publisher<Row> publisher, RowDesc description, Promise<Void> promise,
-    QueryResultHandler<RowSet<Row>> handler,
+  public RowReader(Flow.Publisher<Row> publisher, Collector<Row, A, R> collector, RowDesc description, Promise<Void> promise,
+    QueryResultHandler<R> handler,
     ContextInternal context) {
     this.publisher = publisher;
     this.description = description;
     this.subscriptionPromise = promise;
     this.handler = handler;
     this.context = context;
+    this.collector = collector;
   }
 
-  public static Future<RowReader> create(Flow.Publisher<Row> publisher, ContextInternal context,
-    QueryResultHandler<RowSet<Row>> handler, RowDesc description) {
+  public static <R> Future<RowReader<R, ?>> create(Flow.Publisher<Row> publisher,
+                                                Collector<Row, ?, R> collector,
+                                                ContextInternal context,
+                                                QueryResultHandler<R> handler,
+                                                RowDesc description) {
     Promise<Void> promise = context.promise();
-    RowReader reader = new RowReader(publisher, description, promise, handler, context);
+    RowReader<R, ?> reader = new RowReader<>(publisher, collector, description, promise, handler, context);
     reader.subscribe();
     return promise.future().map(reader);
   }
@@ -75,7 +74,8 @@ public class RowReader implements Flow.Subscriber<Row> {
     }
     if (wip.compareAndSet(false, true)) {
       toRead.set(fetchSize);
-      collector = new OracleRowSet(description);
+      accumulator = collector.supplier().get();
+      count = 0;
       readPromise = context.promise();
       subscription.request(fetchSize);
       return readPromise.future();
@@ -96,10 +96,12 @@ public class RowReader implements Flow.Subscriber<Row> {
 
   @Override
   public void onNext(Row item) {
-    collector.add(item);
+    collector.accumulator().accept(accumulator, item);
+    count++;
     if (toRead.decrementAndGet() == 0 && wip.compareAndSet(true, false)) {
+      R result = collector.finisher().apply(accumulator);
       try {
-        handler.handleResult(collector.rowCount(), collector.size(), description, collector, null);
+        handler.handleResult(count, count, description, result, null);
       } catch (Exception e) {
         e.printStackTrace();
       }
@@ -120,71 +122,6 @@ public class RowReader implements Flow.Subscriber<Row> {
     if (wip.compareAndSet(true, false)) {
       completed = true;
       context.runOnContext(x -> readPromise.complete(null));
-    }
-  }
-
-  private class OracleRowSet implements RowSet<Row> {
-
-    private final List<Row> rows = new ArrayList<>();
-    private final RowDesc desc;
-
-    private OracleRowSet(RowDesc desc) {
-      this.desc = desc;
-    }
-
-    @Override
-    public RowIterator<Row> iterator() {
-      Iterator<Row> iterator = rows.iterator();
-      return new RowIterator<>() {
-        @Override
-        public boolean hasNext() {
-          return iterator.hasNext();
-        }
-
-        @Override
-        public Row next() {
-          return iterator.next();
-        }
-      };
-    }
-
-    @Override
-    public int rowCount() {
-      return rows.size();
-    }
-
-    @Override
-    public List<String> columnsNames() {
-      return desc.columnNames();
-    }
-
-    @Override
-    public List<ColumnDescriptor> columnDescriptors() {
-      return desc.columnDescriptor();
-    }
-
-    @Override
-    public int size() {
-      return rows.size();
-    }
-
-    @Override
-    public <V> V property(PropertyKind<V> propertyKind) {
-      return null; // TODO
-    }
-
-    @Override
-    public RowSet<Row> value() {
-      return this;
-    }
-
-    @Override
-    public RowSet<Row> next() {
-      return null;
-    }
-
-    public void add(Row item) {
-      rows.add(item);
     }
   }
 }

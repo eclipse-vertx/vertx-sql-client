@@ -19,10 +19,7 @@ import io.vertx.oracleclient.impl.OracleColumnDesc;
 import io.vertx.oracleclient.impl.OracleRow;
 import io.vertx.oracleclient.impl.RowReader;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.desc.ColumnDescriptor;
-import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import oracle.jdbc.OracleConnection;
@@ -71,7 +68,7 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
 
   }
 
-  public Future<RowReader> createRowReader(PreparedStatement sqlStatement, ContextInternal context) {
+  public Future<RowReader<R, ?>> createRowReader(PreparedStatement sqlStatement, ContextInternal context) {
     OraclePreparedStatement oraclePreparedStatement =
       unwrapOraclePreparedStatement(sqlStatement);
     try {
@@ -86,8 +83,9 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
             }
             return RowReader.create(ors.publisherOracle(
               or -> Helper.getOrHandleSQLException(() -> transform(types, description, or))),
+              command.collector(),
               context,
-              (QueryResultHandler<RowSet<Row>>) command.resultHandler(), description);
+              command.resultHandler(), description);
           } catch (SQLException e) {
             return context.failedFuture(e);
           }
