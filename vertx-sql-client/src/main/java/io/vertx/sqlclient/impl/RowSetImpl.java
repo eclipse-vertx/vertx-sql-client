@@ -27,9 +27,9 @@ import java.util.NoSuchElementException;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
+public class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
 
-  static Collector<Row, RowSetImpl<Row>, RowSet<Row>> COLLECTOR = Collector.of(
+  public static Collector<Row, RowSetImpl<Row>, RowSet<Row>> COLLECTOR = Collector.of(
     RowSetImpl::new,
     (set, row) -> {
       set.list.add(row);
@@ -49,7 +49,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
     );
   }
 
-  static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl) rs;
+  public static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl) rs;
 
   static <U> Function<RowSet<U>, RowSetImpl<U>> factory() {
     return rs -> (RowSetImpl) rs;

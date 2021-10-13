@@ -19,28 +19,34 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.sqlclient.PrepareOptions;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
+import java.util.function.Function;
+import java.util.stream.Collector;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBase<C> {
+public abstract class SqlConnectionBase<C extends SqlClient, R extends SqlResultBase<RowSet<Row>>> extends SqlClientBase<C> {
 
   protected final ContextInternal context;
   protected final ConnectionFactory factory;
   protected final Connection conn;
+  private final Function<RowSet<Row>, R> rowFactory;
+  private final Collector<Row, ?, RowSet<Row>> rowCollector;
 
-  protected SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  protected SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics, Function<RowSet<Row>, R> rowFactory, Collector<Row, ?, RowSet<Row>> rowCollector) {
     super(tracer, metrics);
     this.context = context;
     this.factory = factory;
     this.conn = conn;
+    this.rowFactory = rowFactory;
+    this.rowCollector = rowCollector;
   }
 
   public ConnectionFactory factory() {
@@ -62,10 +68,10 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
   public Future<PreparedStatement> prepare(String sql, PrepareOptions options) {
     return schedule(context, new PrepareStatementCommand(sql, options, true))
       .compose(
-      cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, cr, autoCommit())),
+      cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, cr, autoCommit(), rowFactory, rowCollector)),
       err -> {
         if (conn.isIndeterminatePreparedStatementError(err)) {
-          return Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, options, sql, autoCommit()));
+          return Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, options, sql, autoCommit(), rowFactory, rowCollector));
         } else {
           return Future.failedFuture(err);
         }

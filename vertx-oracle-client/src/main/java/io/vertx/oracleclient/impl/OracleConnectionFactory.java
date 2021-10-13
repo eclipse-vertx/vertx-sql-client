@@ -69,7 +69,7 @@ public class OracleConnectionFactory implements ConnectionFactory {
     ContextInternal ic  = (ContextInternal) context;
     return connect(ic)
       .map(c -> {
-        SqlConnectionImpl connection = new SqlConnectionImpl(ic, this, c, tracer, metrics);
+        SqlConnectionImpl connection = new SqlConnectionImpl(ic, this, c, tracer, metrics, RowReader.OracleRowSet.FACTORY, RowReader.OracleRowSet.COLLECTOR);
         c.init(connection);
         return connection;
       });

@@ -30,25 +30,29 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class CursorImpl implements Cursor {
+public class CursorImpl<R extends SqlResultBase<RowSet<Row>>> implements Cursor {
 
   private final Connection conn;
   private final QueryTracer tracer;
   private final ClientMetrics metrics;
-  private final PreparedStatementImpl ps;
+  private final PreparedStatementImpl<R> ps;
   private final ContextInternal context;
   private final boolean autoCommit;
   private final TupleInternal params;
+  private final Function<RowSet<Row>, R> factory;
+  private final Collector<Row, ?, RowSet<Row>> collector;
 
   private String id;
   private boolean closed;
-  private QueryResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
+  private QueryResultBuilder<RowSet<Row>, R, RowSet<Row>> result;
 
-  CursorImpl(PreparedStatementImpl ps, Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, boolean autoCommit, TupleInternal params) {
+  CursorImpl(PreparedStatementImpl ps, Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, boolean autoCommit, TupleInternal params, Function<RowSet<Row>, R> factory, Collector<Row, ?, RowSet<Row>> collector) {
     this.ps = ps;
     this.conn = conn;
     this.tracer = tracer;
@@ -56,6 +60,8 @@ public class CursorImpl implements Cursor {
     this.context = context;
     this.autoCommit = autoCommit;
     this.params = params;
+    this.factory = factory;
+    this.collector = collector;
   }
 
   @Override
@@ -80,7 +86,7 @@ public class CursorImpl implements Cursor {
     ps.withPreparedStatement(ps.options(), params, ar -> {
       if (ar.succeeded()) {
         PreparedStatement preparedStatement = ar.result();
-        QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+        QueryExecutor<RowSet<Row>, R, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, factory, collector);
         if (id == null) {
           id = UUID.randomUUID().toString();
           this.result = builder.executeExtendedQuery(conn, preparedStatement, ps.options(), autoCommit, params, count, id, false, promise);

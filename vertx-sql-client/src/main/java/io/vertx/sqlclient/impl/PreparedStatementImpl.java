@@ -43,14 +43,14 @@ import java.util.stream.Collector;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PreparedStatementImpl implements PreparedStatement {
+class PreparedStatementImpl<R extends SqlResultBase<RowSet<Row>>> implements PreparedStatement {
 
-  static PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
-    return new PreparedStatementImpl(conn, tracer, metrics, context, ps, autoCommit);
+  static <R> PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit, Function<RowSet<Row>, R> factory, Collector<Row, ?, RowSet<Row>> collector) {
+    return new PreparedStatementImpl(conn, tracer, metrics, context, ps, autoCommit, factory, collector);
   }
 
-  static PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, PrepareOptions options, String sql, boolean autoCommit) {
-    return new PreparedStatementImpl(conn, tracer, metrics, context, sql, options, autoCommit);
+  static <R> PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, PrepareOptions options, String sql, boolean autoCommit, Function<RowSet<Row>, R> factory, Collector<Row, ?, RowSet<Row>> collector) {
+    return new PreparedStatementImpl(conn, tracer, metrics, context, sql, options, autoCommit, factory, collector);
   }
 
   private final Connection conn;
@@ -63,12 +63,16 @@ class PreparedStatementImpl implements PreparedStatement {
   private Future<io.vertx.sqlclient.impl.PreparedStatement> future;
   private final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
+  private final Function<RowSet<Row>, R> factory;
+  private final Collector<Row, ?, RowSet<Row>> collector;
 
-  private PreparedStatementImpl(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  private PreparedStatementImpl(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit, Function<RowSet<Row>, R> factory, Collector<Row, ?, RowSet<Row>> collector) {
     this.conn = conn;
     this.tracer = tracer;
     this.metrics = metrics;
     this.context = context;
+    this.factory = factory;
+    this.collector = collector;
     this.sql = null;
     this.options = null;
     this.promise = null;
@@ -82,13 +86,15 @@ class PreparedStatementImpl implements PreparedStatement {
                                 ContextInternal context,
                                 String sql,
                                 PrepareOptions options,
-                                boolean autoCommit) {
+                                boolean autoCommit, Function<RowSet<Row>, R> factory, Collector<Row, ?, RowSet<Row>> collector) {
     this.conn = conn;
     this.tracer = tracer;
     this.metrics = metrics;
     this.context = context;
     this.sql = sql;
     this.options = options;
+    this.factory = factory;
+    this.collector = collector;
     this.promise = Promise.promise();
     this.autoCommit = autoCommit;
   }
@@ -99,11 +105,11 @@ class PreparedStatementImpl implements PreparedStatement {
 
   @Override
   public PreparedQuery<RowSet<Row>> query() {
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(
+    QueryExecutor<RowSet<Row>, R, RowSet<Row>> builder = new QueryExecutor<>(
       tracer,
       metrics,
-      RowSetImpl.FACTORY,
-      RowSetImpl.COLLECTOR);
+      factory,
+      collector);
     return new PreparedStatementQuery<>(builder);
   }
 
@@ -163,7 +169,7 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   private Cursor cursor(TupleInternal args) {
-    return new CursorImpl(this, conn, tracer, metrics, context, autoCommit, args);
+    return new CursorImpl(this, conn, tracer, metrics, context, autoCommit, args, factory, collector);
   }
 
   @Override

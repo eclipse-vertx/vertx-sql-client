@@ -20,8 +20,8 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.sqlclient.PrepareOptions;
-import io.vertx.sqlclient.PreparedStatement;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
@@ -31,17 +31,20 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
+import java.util.function.Function;
+import java.util.stream.Collector;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBase<C> implements SqlConnection, Connection.Holder {
+public class SqlConnectionImpl<C extends SqlConnection, R extends SqlResultBase<RowSet<Row>>> extends SqlConnectionBase<C, R> implements SqlConnection, Connection.Holder {
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
   protected TransactionImpl tx;
 
-  public SqlConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, tracer, metrics);
+  public SqlConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics, Function<RowSet<Row>, R> rowFactory, Collector<Row, ?, RowSet<Row>> rowCollector) {
+    super(context, factory, conn, tracer, metrics, rowFactory, rowCollector);
   }
 
   @Override

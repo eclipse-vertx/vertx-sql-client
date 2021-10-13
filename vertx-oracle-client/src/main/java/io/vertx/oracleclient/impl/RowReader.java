@@ -21,6 +21,8 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.impl.RowSetImpl;
+import io.vertx.sqlclient.impl.SqlResultBase;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -28,6 +30,8 @@ import java.util.List;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Collector;
 
 public class RowReader implements Flow.Subscriber<Row> {
 
@@ -123,7 +127,17 @@ public class RowReader implements Flow.Subscriber<Row> {
     }
   }
 
-  private class OracleRowSet implements RowSet<Row> {
+  static class OracleRowSet extends SqlResultBase<RowSet<Row>> implements RowSet<Row> {
+
+    public static Function<RowSet<Row>, OracleRowSet> FACTORY = rs -> (OracleRowSet) rs;
+    public static Collector<Row, OracleRowSet, RowSet<Row>> COLLECTOR = Collector.of(
+      () -> new OracleRowSet(null),
+      (set, row) -> {
+        set.rows.add(row);
+      },
+      (set1, set2) -> null, // Shall not be invoked as this is sequential
+      (set) -> set
+    );
 
     private final List<Row> rows = new ArrayList<>();
     private final RowDesc desc;

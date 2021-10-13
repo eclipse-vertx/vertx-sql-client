@@ -24,12 +24,14 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.RowSetImpl;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
-public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> implements DB2Connection {
+public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl, RowSetImpl<Row>> implements DB2Connection {
 
   public static Future<DB2Connection> connect(Vertx vertx, DB2ConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
@@ -44,7 +46,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
   }
 
   public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, tracer, metrics);
+    super(context, factory, conn, tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
   }
 
   @Override

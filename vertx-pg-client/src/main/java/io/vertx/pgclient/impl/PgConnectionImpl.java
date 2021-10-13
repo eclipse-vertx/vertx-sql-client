@@ -21,8 +21,10 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotification;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.impl.RowSetImpl;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -32,7 +34,7 @@ import io.vertx.core.Vertx;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
-public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implements PgConnection  {
+public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl, RowSetImpl<Row>> implements PgConnection  {
 
   public static Future<PgConnection> connect(ContextInternal context, PgConnectOptions options) {
     if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
@@ -52,7 +54,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   private volatile Handler<PgNotification> notificationHandler;
 
   public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, tracer, metrics);
+    super(context, factory, conn, tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
   }
 
   @Override

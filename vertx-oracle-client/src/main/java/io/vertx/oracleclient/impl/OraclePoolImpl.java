@@ -88,7 +88,7 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
   private Future<SqlConnection> getConnectionInternal(ContextInternal ctx) {
     return factory.connect(ctx)
       .map(c -> {
-        SqlConnectionImpl<?> connection = new SqlConnectionImpl<>(ctx, factory, c, tracer, metrics);
+        SqlConnectionImpl<?, RowReader.OracleRowSet> connection = new SqlConnectionImpl<>(ctx, factory, c, tracer, metrics, RowReader.OracleRowSet.FACTORY, RowReader.OracleRowSet.COLLECTOR);
         c.init(connection);
         return connection;
       });
@@ -155,6 +155,6 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
   public <R> Future<R> schedule(ContextInternal contextInternal, CommandBase<R> commandBase) {
     ContextInternal ctx = vertx.getOrCreateContext();
     return getConnectionInternal(ctx)
-      .flatMap(conn -> ((SqlConnectionImpl<?>) conn).schedule(ctx, commandBase).eventually(r -> conn.close()));
+      .flatMap(conn -> ((SqlConnectionImpl<?, RowReader.OracleRowSet>) conn).schedule(ctx, commandBase).eventually(r -> conn.close()));
   }
 }
