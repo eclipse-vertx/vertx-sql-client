@@ -1,18 +1,12 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
 package io.vertx.sqlclient.templates;
@@ -28,13 +22,13 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlResult;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -174,5 +168,103 @@ public class PgClientTest extends PgTemplateTestBase {
       ctx.assertEquals(true, row.getBoolean(1));
       ctx.assertEquals("hello world", row.getString(2));
     }));
+  }
+
+  @Test
+  public void testInsertJsonObject(TestContext ctx) {
+    connection.query("DROP TABLE IF EXISTS distributors").execute(ctx.asyncAssertSuccess(dropped -> {
+      connection.query("CREATE TABLE distributors(name VARCHAR(40), attrs JSONB)").execute(ctx.asyncAssertSuccess(created -> {
+
+        MyObject value = new MyObject();
+        value.setName("foo");
+
+        Attributes attributes = new Attributes();
+        Instant createdOn = Instant.now();
+        attributes.setCreatedOn(createdOn);
+        List<String> stringAttributes = Arrays.asList("foo", "bar", "baz");
+        attributes.setStringAttributes(stringAttributes);
+        value.setAttributes(attributes);
+
+        SqlTemplate
+          .forQuery(connection, "INSERT INTO distributors (name,attrs) VALUES(#{name},#{attributes})")
+          .mapFrom(MyObject.class)
+          .execute(value, ctx.asyncAssertSuccess(inserted -> {
+            connection.query("SELECT name, attrs FROM distributors").execute(ctx.asyncAssertSuccess(rows -> {
+              ctx.verify(v -> {
+                assertEquals(1, rows.size());
+                Row row = rows.iterator().next();
+                assertEquals("foo", row.getValue("name"));
+                Object object = row.getValue("attrs");
+                assertTrue(object instanceof JsonObject);
+                JsonObject attrs = (JsonObject) object;
+                assertEquals(createdOn, attrs.getInstant("createdOn"));
+                assertEquals(stringAttributes, attrs.getJsonArray("stringAttributes").getList());
+              });
+            }));
+          }));
+      }));
+    }));
+  }
+
+  @SuppressWarnings("unused")
+  private static class MyObject {
+
+    private String name;
+    private Attributes attributes;
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public Attributes getAttributes() {
+      return attributes;
+    }
+
+    public void setAttributes(Attributes attributes) {
+      this.attributes = attributes;
+    }
+
+    @Override
+    public String toString() {
+      return "MyObject{" +
+        "name='" + name + '\'' +
+        ", attributes=" + attributes +
+        '}';
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private static class Attributes {
+
+    private Instant createdOn;
+    private List<String> stringAttributes;
+
+    public Instant getCreatedOn() {
+      return createdOn;
+    }
+
+    public void setCreatedOn(Instant createdOn) {
+      this.createdOn = createdOn;
+    }
+
+    public List<String> getStringAttributes() {
+      return stringAttributes;
+    }
+
+    public void setStringAttributes(List<String> stringAttributes) {
+      this.stringAttributes = stringAttributes;
+    }
+
+    @Override
+    public String toString() {
+      return "Attributes{" +
+        "createdOn=" + createdOn +
+        ", stringAttributes=" + stringAttributes +
+        '}';
+    }
   }
 }
