@@ -22,6 +22,7 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
@@ -52,5 +53,12 @@ public class ClickhouseBinaryConnectionTest extends ConnectionTestBase {
   protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
     ctx.assertTrue(md.majorVersion() >= 20);
     ctx.assertTrue(md.productName().toLowerCase().contains("ClickHouse".toLowerCase()));
+  }
+
+  //No way to test that reliably with latest ClickHouse versions (see InitCommandCodec); 20.11.2.1 and older work fine
+  @Override
+  @Test
+  public void testConnectInvalidDatabase(TestContext ctx) {
+    super.testConnectInvalidDatabase(ctx);
   }
 }

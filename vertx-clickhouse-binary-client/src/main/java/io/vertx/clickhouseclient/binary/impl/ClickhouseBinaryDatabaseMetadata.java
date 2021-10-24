@@ -13,6 +13,7 @@
 
 package io.vertx.clickhouseclient.binary.impl;
 
+import io.vertx.clickhouseclient.binary.ClickhouseConstants;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.nio.charset.Charset;
@@ -61,6 +62,15 @@ public class ClickhouseBinaryDatabaseMetadata implements DatabaseMetadata {
     this.monthDuration = monthDuration;
     this.saturateExtraNanos = saturateExtraNanos;
     this.removeTrailingZerosInFixedStrings = removeTrailingZerosInFixedStrings;
+  }
+
+  public static Charset charset(Map<String, String> props) {
+    String desiredCharset = props.get(ClickhouseConstants.OPTION_STRING_CHARSET);
+    if (desiredCharset == null || "system_default".equals(desiredCharset)) {
+      return Charset.defaultCharset();
+    } else {
+      return Charset.forName(desiredCharset);
+    }
   }
 
   @Override

@@ -100,7 +100,7 @@ public class DatabaseMetadataReader {
     boolean removeTrailingZerosInFixedStringsStr = Boolean.parseBoolean(properties.getOrDefault(ClickhouseConstants.OPTION_REMOVE_TRAILING_ZEROS_WHEN_ENCODE_FIXED_STRINGS, "true"));
     return new ClickhouseBinaryDatabaseMetadata(productName,
       String.format("%d.%d.%d", major, minor, revision),
-      major, minor, revision, patchVersion, displayName, serverZoneId, defaultZoneId, fullClientName, properties, charset(),
+      major, minor, revision, patchVersion, displayName, serverZoneId, defaultZoneId, fullClientName, properties, ClickhouseBinaryDatabaseMetadata.charset(properties),
       Duration.ofDays(daysInYear), Duration.ofDays(daysInQuarter), Duration.ofDays(daysInMonth), saturateExtraNanos, removeTrailingZerosInFixedStringsStr);
   }
 
@@ -112,15 +112,6 @@ public class DatabaseMetadataReader {
       return ZoneId.systemDefault();
     } else {
       return ZoneId.of(defaultZoneId);
-    }
-  }
-
-  private Charset charset() {
-    String desiredCharset = properties.get(ClickhouseConstants.OPTION_STRING_CHARSET);
-    if (desiredCharset == null || "system_default".equals(desiredCharset)) {
-      return Charset.defaultCharset();
-    } else {
-      return Charset.forName(desiredCharset);
     }
   }
 }

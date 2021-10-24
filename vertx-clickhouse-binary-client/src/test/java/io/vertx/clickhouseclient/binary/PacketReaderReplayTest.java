@@ -61,7 +61,8 @@ public class PacketReaderReplayTest {
       "/nullable_low_cardinality_without_compression.yaml",
       "/select_array_of_nullable_string_without_compression.yaml",
       "/select_empty_array_without_compression.yaml",
-      "/ClickhouseBinaryPreparedQueryCachedTest_testConcurrentClose_with_compression.yaml"
+      "/ClickhouseBinaryPreparedQueryCachedTest_testConcurrentClose_with_compression.yaml",
+      "/wrong_db_connection_without_compression.yaml"
     );
     for (String replayFile : replayFiles) {
       boolean compression = replayFile.contains("with_compression");

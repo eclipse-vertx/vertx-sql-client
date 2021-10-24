@@ -69,6 +69,11 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
           LOG.debug("connected to server: " + md);
         }
         completionHandler.handle(CommandResponse.success(null));
+        //ClickHouse 20.11.2.1 and (earlier versions) reports non-existent databases by singular ServerPacketType.EXCEPTION packet.
+        //Latest versions report it by ServerPacketType.HELLO + ServerPacketType.EXCEPTION.
+        //ServerPacketType.EXCEPTION will be handled by ClickhouseBinaryDecoder.decode if inflight.peek() == null
+        //Looks like there is no way to report that to caller reliably (with current wire protocol).
+        //One (unreliable) option is to peek the Exception here
       } else if (packet.getClass() == ClickhouseServerException.class) {
         ClickhouseServerException exc = (ClickhouseServerException)packet;
         completionHandler.handle(CommandResponse.failure(exc));

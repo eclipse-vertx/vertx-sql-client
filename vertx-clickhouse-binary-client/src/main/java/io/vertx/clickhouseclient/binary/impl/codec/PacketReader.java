@@ -27,6 +27,8 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
 import net.jpountz.lz4.LZ4Factory;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +64,18 @@ public class PacketReader {
     this.fullClientName = fullClientName;
     this.properties = properties;
     this.lz4Factory = lz4Factory;
+  }
+
+  public static Boolean hasException(ByteBuf in) {
+    int pos = in.readerIndex();
+    Integer packetTypeCode = ByteBufUtils.readULeb128(in);
+    in.readerIndex(pos);
+    if (packetTypeCode == null) {
+      return null;
+    } else {
+      ServerPacketType pkt = ServerPacketType.fromCode(packetTypeCode);
+      return pkt == ServerPacketType.EXCEPTION;
+    }
   }
 
   public Object receivePacket(ByteBufAllocator alloc, ByteBuf in) {
@@ -213,7 +227,9 @@ public class PacketReader {
 
   private ClickhouseServerException readExceptionBlock(ByteBuf in) {
     if (exceptionReader == null) {
-      exceptionReader = new ClickhouseExceptionReader(md.getStringCharset());
+      //metadata may be null for a login exception
+      Charset charset = md == null ? ClickhouseBinaryDatabaseMetadata.charset(properties) : md.getStringCharset();
+      exceptionReader = new ClickhouseExceptionReader(charset);
     }
     ClickhouseServerException exc = exceptionReader.readFrom(in);
     if (exc != null) {
