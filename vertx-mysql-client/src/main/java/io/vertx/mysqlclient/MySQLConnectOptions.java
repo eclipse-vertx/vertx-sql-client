@@ -33,6 +33,17 @@ import java.util.function.Predicate;
 public class MySQLConnectOptions extends SqlConnectOptions {
 
   /**
+   * @return the {@code options} as MySQL specific connect options
+   */
+  public static MySQLConnectOptions wrap(SqlConnectOptions options) {
+    if (options instanceof MySQLConnectOptions) {
+      return (MySQLConnectOptions) options;
+    } else {
+      return new MySQLConnectOptions(options);
+    }
+  }
+
+  /**
    * Provide a {@link MySQLConnectOptions} configured from a connection URI.
    *
    * @param connectionUri the connection URI to configure from

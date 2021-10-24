@@ -16,19 +16,25 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        profile: [PostgreSQL-9,PostgreSQL-10,PostgreSQL-11,MySQL-8.0,MySQL-5.6,MySQL-5.7,MariaDB-10.4,MSSQL-2017-latest,MSSQL-2019-latest,DB2-11.5,SQL-templates]
-        jdk: [8]
+        profile: [PostgreSQL-9,PostgreSQL-10,PostgreSQL-11,MySQL-8.0,MySQL-5.6,MySQL-5.7,MariaDB-10.4,MSSQL-2017-latest,MSSQL-2019-latest,DB2-11.5,Oracle-18,SQL-templates]
+        jdk: [8, 17]
+        exclude:
+          - profile: Oracle-18
+            jdk: 8
+          - profile: DB2-11.5
+            jdk: 17
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install JDK
-        uses: joschi/setup-jdk@v2
+        uses: actions/setup-java@v2
         with:
           java-version: ${{ matrix.jdk }}
+          distribution: temurin
       - name: Run tests
-        run: mvn -q clean verify -B -DskipDefault -P ${{ matrix.profile }}
+        run: mvn -s .github/maven-ci-settings.xml -q clean verify -B -DskipDefault -P ${{ matrix.profile }}
   Deploy:
     name: Deploy to OSSRH
     if: ${{ github.repository_owner == 'eclipse-vertx' && (github.event_name == 'push' || github.event_name == 'schedule') }}
@@ -41,11 +47,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Install JDK
-        uses: joschi/setup-jdk@v2
+        uses: actions/setup-java@v2
         with:
-          java-version: 8
+          java-version: 11
+          distribution: temurin
       - name: Get project version
         run: echo "PROJECT_VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:evaluate -Dexpression=project.version -B | grep -v '\[')" >> $GITHUB_ENV
       - name: Maven deploy
         if: ${{ endsWith(env.PROJECT_VERSION, '-SNAPSHOT') }}
-        run: mvn deploy -s .travis.maven.settings.xml -DskipTests -B
+        run: mvn deploy -s .github/maven-cd-settings.xml -DskipTests -B

@@ -19,6 +19,7 @@ package io.vertx.pgclient.junit;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -28,6 +29,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+
+import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT;
 
 /**
  * Postgresql test database based on https://www.testcontainers.org
@@ -41,11 +44,11 @@ public class ContainerPgRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
 
-  private PostgreSQLContainer server;
+  private ServerContainer<?> server;
   private PgConnectOptions options;
   private String databaseVersion;
   private boolean ssl;
-
+  private String user = "postgres";
 
   public ContainerPgRule ssl(boolean ssl) {
     this.ssl = ssl;
@@ -60,18 +63,31 @@ public class ContainerPgRule extends ExternalResource {
     return new PoolOptions();
   }
 
+  public ContainerPgRule user(String user) {
+    if (user == null) {
+      throw new NullPointerException();
+    }
+    this.user = user;
+    return this;
+  }
+
   private void initServer(String version) throws Exception {
     File setupFile = getTestResource("resources" + File.separator + "create-postgres.sql");
 
-    server = (PostgreSQLContainer) new PostgreSQLContainer("postgres:" + version)
+    server = new ServerContainer<>("postgres:" + version)
       .withDatabaseName("postgres")
-      .withUsername("postgres")
+      .withUsername(user)
       .withPassword("postgres")
       .withCopyFileToContainer(MountableFile.forHostPath(setupFile.toPath()), "/docker-entrypoint-initdb.d/create-postgres.sql");
     if (ssl) {
       server.withCopyFileToContainer(MountableFile.forHostPath(getTestResource("resources" + File.separator + "server.crt").toPath()), "/server.crt")
         .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("resources" + File.separator + "server.key").toPath()), "/server.key")
         .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("ssl.sh").toPath()), "/docker-entrypoint-initdb.d/ssl.sh");
+    }
+    if (System.getProperties().containsKey("containerFixedPort")) {
+      server.withFixedExposedPort(POSTGRESQL_PORT, POSTGRESQL_PORT);
+    } else {
+      server.withExposedPorts(POSTGRESQL_PORT);
     }
   }
 
@@ -99,10 +115,10 @@ public class ContainerPgRule extends ExternalResource {
     server.start();
 
     return new PgConnectOptions()
-        .setPort(server.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT))
+        .setPort(server.getMappedPort(POSTGRESQL_PORT))
         .setHost(server.getContainerIpAddress())
         .setDatabase("postgres")
-        .setUser("postgres")
+        .setUser(user)
         .setPassword("postgres");
   }
 
@@ -170,4 +186,15 @@ public class ContainerPgRule extends ExternalResource {
     }
   }
 
+  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends PostgreSQLContainer<SELF> {
+
+    public ServerContainer(String dockerImageName) {
+      super(dockerImageName);
+    }
+
+    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+      super.addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
+      return self();
+    }
+  }
 }

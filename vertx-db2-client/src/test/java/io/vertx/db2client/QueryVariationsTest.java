@@ -23,6 +23,23 @@ import io.vertx.sqlclient.Tuple;
 public class QueryVariationsTest extends DB2TestBase {
 
   @Test
+  public void testFetchFirst(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("select message from immutable order by id fetch first 1 rows only").execute(
+        ctx.asyncAssertSuccess(rowSet -> {
+          ctx.assertEquals(1, rowSet.size());
+          ctx.assertEquals(Arrays.asList("MESSAGE"), rowSet.columnsNames());
+          RowIterator<Row> rows = rowSet.iterator();
+          ctx.assertTrue(rows.hasNext());
+          Row row = rows.next();
+          ctx.assertEquals("fortune: No such file or directory", row.getString(0));
+          ctx.assertFalse(rows.hasNext());
+          conn.close();
+        }));
+    }));
+  }
+
+  @Test
   public void testRenamedColumns(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id AS THE_ID," +
@@ -199,6 +216,33 @@ public class QueryVariationsTest extends DB2TestBase {
           .execute(ctx.asyncAssertSuccess(rowSet3 -> {
             // Finally, the sequence should be N+2
             assertSequenceResult(ctx, rowSet3, seqVal -> ctx.assertEquals(startingSeq + 2, seqVal));
+          }));
+        }));
+      }));
+    }));
+  }
+  
+  /**
+   * Test comment in query
+   */
+  @Test
+  public void testComment(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(con -> {
+      con.query("SELECT id,message FROM immutable " +
+          "WHERE message IN " +
+          "(SELECT message FROM immutable WHERE id = '4' OR id = '7') -- comment").execute(
+        ctx.asyncAssertSuccess(rowSet -> {
+        ctx.assertEquals(2, rowSet.size());
+        con.query("SELECT id,message FROM immutable " +
+            "WHERE message IN " +
+            "(SELECT message FROM immutable WHERE id = '4' OR id = '7') /* test comment */").execute(
+          ctx.asyncAssertSuccess(rowSet2 -> {
+          ctx.assertEquals(2, rowSet.size());
+          con.query("/* /* test comment */*/ /* /* Overly */ /*Complicated*/ /* Comment  */*/SELECT id,message FROM immutable " +
+              "WHERE message IN " +
+              "(SELECT message FROM immutable WHERE id = '4' OR id = '7')").execute(
+            ctx.asyncAssertSuccess(rowSet3 -> {
+            ctx.assertEquals(2, rowSet.size());
           }));
         }));
       }));

@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl.command;
 
+import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.impl.PreparedStatement;
 
 import java.util.List;
@@ -24,14 +25,16 @@ import java.util.List;
 public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   private final String sql;
+  private final PrepareOptions options;
   private final boolean managed;
   private final List<Class<?>> parameterTypes;
 
-  public PrepareStatementCommand(String sql, boolean managed) {
-    this(sql, managed, null);
+  public PrepareStatementCommand(String sql, PrepareOptions options, boolean managed) {
+    this(sql, options, managed, null);
   }
 
-  public PrepareStatementCommand(String sql, boolean managed, List<Class<?>> parameterTypes) {
+  public PrepareStatementCommand(String sql, PrepareOptions options, boolean managed, List<Class<?>> parameterTypes) {
+    this.options = options;
     this.sql = sql;
     this.managed = managed;
     this.parameterTypes = parameterTypes;
@@ -39,6 +42,10 @@ public class PrepareStatementCommand extends CommandBase<PreparedStatement> {
 
   public String sql() {
     return sql;
+  }
+
+  public PrepareOptions options() {
+    return options;
   }
 
   /**

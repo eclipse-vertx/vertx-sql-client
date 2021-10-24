@@ -19,11 +19,13 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -31,32 +33,50 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBase<C> {
 
   protected final ContextInternal context;
+  protected final ConnectionFactory factory;
   protected final Connection conn;
 
-  protected SqlConnectionBase(ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  protected SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(tracer, metrics);
     this.context = context;
+    this.factory = factory;
     this.conn = conn;
   }
 
-  public C prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
-    Future<PreparedStatement> fut = prepare(sql);
+  public ConnectionFactory factory() {
+    return factory;
+  }
+
+  public Connection unwrap() {
+    return conn;
+  }
+
+  public C prepare(String sql, PrepareOptions options, Handler<AsyncResult<PreparedStatement>> handler) {
+    Future<PreparedStatement> fut = prepare(sql, options);
     if (handler != null) {
       fut.onComplete(handler);
     }
     return (C)this;
   }
 
-  public Future<PreparedStatement> prepare(String sql) {
-    return schedule(context, new PrepareStatementCommand(sql, true))
+  public Future<PreparedStatement> prepare(String sql, PrepareOptions options) {
+    return schedule(context, new PrepareStatementCommand(sql, options, true))
       .compose(
       cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, cr, autoCommit())),
       err -> {
         if (conn.isIndeterminatePreparedStatementError(err)) {
-          return Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, sql, autoCommit()));
+          return Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, options, sql, autoCommit()));
         } else {
           return Future.failedFuture(err);
         }
       });
+  }
+
+  public C prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler) {
+    return prepare(sql, null, handler);
+  }
+
+  public Future<PreparedStatement> prepare(String sql) {
+    return prepare(sql, (PrepareOptions) null);
   }
 }

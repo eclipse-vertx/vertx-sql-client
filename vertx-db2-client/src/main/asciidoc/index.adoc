@@ -16,7 +16,7 @@ The client is reactive and non blocking, allowing to handle many database connec
 * Prepared queries caching
 * Batch and cursor
 * Row streaming
-* RxJava 1 and RxJava 2
+* RxJava API
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
 * SSL/TLS
@@ -275,6 +275,10 @@ You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].
 
+== Advanced pool configuration
+
+include::pool_config.adoc[]
+
 ifeval::["$lang" == "java"]
-include::override/rxjava2.adoc[]
+include::override/rxjava3.adoc[]
 endif::[]

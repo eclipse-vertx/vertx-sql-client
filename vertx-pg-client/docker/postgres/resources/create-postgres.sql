@@ -360,6 +360,12 @@ INSERT INTO unstable (id, message)
 VALUES (1, 'fortune: No such file or directory');
 -- unstable table for table schema changing testing
 
+-- test transaction with constraint check deferred until commit
+DROP TABLE IF EXISTS deferred_constraints;
+CREATE TABLE deferred_constraints (name varchar(50) primary key, parent varchar(50));
+ALTER TABLE deferred_constraints ADD CONSTRAINT the_parent_key FOREIGN KEY (parent) REFERENCES deferred_constraints(name) DEFERRABLE INITIALLY DEFERRED;
+--
+
 -- table for test ANSI SQL data type codecs
 DROP TABLE IF EXISTS basicdatatype;
 CREATE TABLE basicdatatype

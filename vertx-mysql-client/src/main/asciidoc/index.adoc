@@ -12,7 +12,7 @@ scalability and low overhead.
 * Prepared queries caching
 * Cursor support
 * Row streaming
-* RxJava 1 and RxJava 2
+* RxJava API
 * Direct memory to object without unnecessary copies
 * Complete data type support
 * Stored Procedures support
@@ -668,3 +668,7 @@ Handling MYSQL DATE and TIME data types especially with time zones is tricky the
 
 * MySQL DATETIME data type does not contain time zone info, so what you get is identical to what you set no matter what time zone is in the current session.
 * MySQL TIMESTAMP data type contains time zone info, so when you set or get the value it's always transformed by the server with the timezone set in the current session.
+
+== Advanced pool configuration
+
+include::pool_config.adoc[]

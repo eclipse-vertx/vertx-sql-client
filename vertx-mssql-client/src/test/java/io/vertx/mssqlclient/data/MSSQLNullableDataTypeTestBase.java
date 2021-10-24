@@ -56,10 +56,14 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
       ctx.assertEquals(null, row.getValue("test_varchar"));
       ctx.assertEquals(null, row.getValue("test_date"));
       ctx.assertEquals(null, row.getValue("test_time"));
+      ctx.assertEquals(null, row.getValue("test_smalldatetime"));
+      ctx.assertEquals(null, row.getValue("test_datetime"));
       ctx.assertEquals(null, row.getValue("test_datetime2"));
       ctx.assertEquals(null, row.getValue("test_datetimeoffset"));
       ctx.assertEquals(null, row.getValue("test_binary"));
       ctx.assertEquals(null, row.getValue("test_varbinary"));
+      ctx.assertEquals(null, row.getValue("test_money"));
+      ctx.assertEquals(null, row.getValue("test_smallmoney"));
     });
   }
 
@@ -183,6 +187,24 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
 
   @Test
   public void testDecodeNullDateTime(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_datetime", row -> {
+      ColumnChecker.checkColumn(0, "test_datetime")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullSmallDateTime(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_smalldatetime", row -> {
+      ColumnChecker.checkColumn(0, "test_smalldatetime")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullDateTime2(TestContext ctx) {
     testDecodeNullValue(ctx, "test_datetime2", row -> {
       ColumnChecker.checkColumn(0, "test_datetime2")
         .returnsNull()
@@ -212,6 +234,24 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   public void testDecodeNullVarBinary(TestContext ctx) {
     testDecodeNullValue(ctx, "test_varbinary", row -> {
       ColumnChecker.checkColumn(0, "test_varbinary")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullMoney(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_money", row -> {
+      ColumnChecker.checkColumn(0, "test_money")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeNullSmallMoney(TestContext ctx) {
+    testDecodeNullValue(ctx, "test_smallmoney", row -> {
+      ColumnChecker.checkColumn(0, "test_smallmoney")
         .returnsNull()
         .forRow(row);
     });

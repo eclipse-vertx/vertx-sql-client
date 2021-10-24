@@ -77,15 +77,15 @@ public class CursorImpl implements Cursor {
   @Override
   public synchronized Future<RowSet<Row>> read(int count) {
     PromiseInternal<RowSet<Row>> promise = context.promise();
-    ps.withPreparedStatement(params, ar -> {
+    ps.withPreparedStatement(ps.options(), params, ar -> {
       if (ar.succeeded()) {
         PreparedStatement preparedStatement = ar.result();
         QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
         if (id == null) {
           id = UUID.randomUUID().toString();
-          this.result = builder.executeExtendedQuery(conn, preparedStatement, autoCommit, params, count, id, false, promise);
+          this.result = builder.executeExtendedQuery(conn, preparedStatement, ps.options(), autoCommit, params, count, id, false, promise);
         } else if (this.result.isSuspended()) {
-          this.result = builder.executeExtendedQuery(conn, preparedStatement, autoCommit, params, count, id, true, promise);
+          this.result = builder.executeExtendedQuery(conn, preparedStatement, ps.options(), autoCommit, params, count, id, true, promise);
         } else {
           throw new IllegalStateException();
         }

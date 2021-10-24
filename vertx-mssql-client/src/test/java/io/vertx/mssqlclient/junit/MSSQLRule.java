@@ -11,20 +11,45 @@
 
 package io.vertx.mssqlclient.junit;
 
+import io.vertx.core.impl.Arguments;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.MSSQLServerContainer;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.ZoneId;
 
-public class MSSQLRule extends ExternalResource {
-  private MSSQLServerContainer<?> server;
-  private MSSQLConnectOptions options;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static org.testcontainers.containers.BindMode.READ_ONLY;
+import static org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT;
 
-  public static final MSSQLRule SHARED_INSTANCE = new MSSQLRule();
+public class MSSQLRule extends ExternalResource {
+
+  public static final MSSQLRule SHARED_INSTANCE = new MSSQLRule(false, false);
+
+  private final boolean tls;
+  private final boolean forceEncryption;
+
+  private ServerContainer<?> server;
+  private MSSQLConnectOptions options;
+  private Path conf;
+
+  public MSSQLRule(boolean tls, boolean forceEncryption) {
+    Arguments.require(!forceEncryption || tls, "Cannot force encryption without TLS support");
+    this.tls = tls;
+    this.forceEncryption = forceEncryption;
+  }
 
   @Override
-  protected void before() {
+  protected void before() throws IOException {
     String connectionUri = System.getProperty("connection.uri");
     if (!isNullOrEmpty(connectionUri)) {
       // use an external database for testing
@@ -45,23 +70,46 @@ public class MSSQLRule extends ExternalResource {
     }
   }
 
-  private MSSQLConnectOptions startMSSQL() {
+  private MSSQLConnectOptions startMSSQL() throws IOException {
     String containerVersion = System.getProperty("mssql-container.version");
     if (containerVersion == null || containerVersion.isEmpty()) {
       containerVersion = "2017-latest";
     }
-    server = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
+    server = new ServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
       .acceptLicense()
       .withEnv("TZ", ZoneId.systemDefault().toString())
-      .withInitScript("init.sql")
-      .withExposedPorts(MSSQLServerContainer.MS_SQL_SERVER_PORT);
+      .withInitScript("init.sql");
+    if (System.getProperties().containsKey("containerFixedPort")) {
+      server.withFixedExposedPort(MS_SQL_SERVER_PORT, MS_SQL_SERVER_PORT);
+    } else {
+      server.withExposedPorts(MS_SQL_SERVER_PORT);
+    }
+    if (tls) {
+      conf = createConf();
+      server
+        .withFileSystemBind(conf.toAbsolutePath().toString(), "/var/opt/mssql/mssql.conf", READ_ONLY)
+        .withClasspathResourceMapping("mssql.key", "/etc/ssl/certs/mssql.key", READ_ONLY)
+        .withClasspathResourceMapping("mssql.pem", "/etc/ssl/certs/mssql.pem", READ_ONLY);
+    }
     server.start();
 
     return new MSSQLConnectOptions()
       .setHost(server.getContainerIpAddress())
-      .setPort(server.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT))
+      .setPort(server.getMappedPort(MS_SQL_SERVER_PORT))
       .setUser(server.getUsername())
       .setPassword(server.getPassword());
+  }
+
+  private Path createConf() throws IOException {
+    Path path = Files.createTempFile("mssql.conf", null);
+    URL resource = getClass().getClassLoader().getResource("mssql.conf");
+    try (InputStream is = resource.openStream()) {
+      Files.copy(is, path, REPLACE_EXISTING);
+    }
+    if (forceEncryption) {
+      Files.write(path, "forceencryption = 1".getBytes(StandardCharsets.UTF_8), WRITE, APPEND);
+    }
+    return path;
   }
 
   private void stopMSSQL() {
@@ -72,9 +120,27 @@ public class MSSQLRule extends ExternalResource {
         server = null;
       }
     }
+    if (conf != null) {
+      try {
+        Files.delete(conf);
+      } catch (IOException ignored) {
+      }
+    }
   }
 
   public MSSQLConnectOptions options() {
     return new MSSQLConnectOptions(options);
+  }
+
+  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends MSSQLServerContainer<SELF> {
+
+    public ServerContainer(String dockerImageName) {
+      super(dockerImageName);
+    }
+
+    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+      super.addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
+      return self();
+    }
   }
 }

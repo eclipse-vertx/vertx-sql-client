@@ -12,6 +12,7 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
@@ -25,8 +26,8 @@ import java.util.stream.Collectors;
 
 @Source
 public class MSSQLClientExamples {
-  public void gettingStarted() {
 
+  public void gettingStarted() {
     // Connect options
     MSSQLConnectOptions connectOptions = new MSSQLConnectOptions()
       .setPort(1433)
@@ -276,5 +277,33 @@ public class MSSQLClientExamples {
       .execute(tuple, res -> {
         // ...
       });
+  }
+
+  public void identityColumn(SqlClient client) {
+    client
+      .preparedQuery("INSERT INTO movies (title) OUTPUT INSERTED.id VALUES (@p1)")
+      .execute(Tuple.of("The Man Who Knew Too Much"), res -> {
+        if (res.succeeded()) {
+          Row row = res.result().iterator().next();
+          System.out.println(row.getLong("id"));
+        }
+      });
+  }
+
+  public void setSsl() {
+    // Require encryption for the entire connection
+    MSSQLConnectOptions connectOptions = new MSSQLConnectOptions().setSsl(true);
+  }
+
+  public void disableHostnameValidation() {
+    MSSQLConnectOptions connectOptions = new MSSQLConnectOptions()
+      .setSsl(true)
+      .setTrustAll(true);
+  }
+
+  public void usingTrustOptions() {
+    MSSQLConnectOptions connectOptions = new MSSQLConnectOptions()
+      .setSsl(true)
+      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/server-cert.pem"));
   }
 }

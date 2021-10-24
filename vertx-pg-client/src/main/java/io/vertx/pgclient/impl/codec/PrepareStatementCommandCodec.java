@@ -23,10 +23,12 @@ import java.util.List;
 
 class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, PrepareStatementCommand> {
 
+  private static final byte[] EMPTY_STRING = { 0 };
+
   private PgParamDesc parameterDesc;
   private PgRowDesc rowDesc;
 
-  private long statement;
+  private byte[] statement;
 
   PrepareStatementCommandCodec(PrepareStatementCommand cmd) {
     super(cmd);
@@ -38,7 +40,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
       statement = encoder.nextStatementName();
     } else {
       // Use unnamed prepared statements that don't need to be closed
-      statement = 0L;
+      statement = EMPTY_STRING;
     }
 
     List<Class<?>> parameterTypes = cmd.parameterTypes();

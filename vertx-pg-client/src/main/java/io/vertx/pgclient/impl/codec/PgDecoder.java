@@ -21,6 +21,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.pgclient.impl.util.Util;
 import io.netty.buffer.ByteBuf;
@@ -128,7 +129,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
         break;
       }
       case PgProtocolConstants.MESSAGE_TYPE_ERROR_RESPONSE: {
-        decodeError(in);
+        decodeError(ctx, in);
         break;
       }
       case PgProtocolConstants.MESSAGE_TYPE_NOTICE_RESPONSE: {
@@ -236,14 +237,21 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     inflight.peek().handleReadyForQuery();
   }
 
-  private void decodeError(ByteBuf in) {
+  private void decodeError(ChannelHandlerContext ctx, ByteBuf in) {
     ErrorResponse response = new ErrorResponse();
     decodeErrorOrNotice(response, in);
-    if ("57P01".equals(response.getCode())) {
-      // unsolicited admin_shutdown
-    } else {
-      PgCommandCodec<?, ?> cmd = inflight.peek();
-      cmd.handleErrorResponse(response);
+    switch (response.getCode()) {
+      default:
+        PgCommandCodec<?, ?> cmd = inflight.peek();
+        cmd.handleErrorResponse(response);
+        break;
+        // Unsolicited errors
+      case "57P01":
+        // admin_shutdown
+      case "25P03":
+        // terminating connection due to idle-in-transaction timeout
+        ctx.fireExceptionCaught(response.toException());
+        break;
     }
   }
 

@@ -1,5 +1,6 @@
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Handler;
 import io.vertx.sqlclient.SqlClient;
 
 public interface SqlClientInternal extends SqlClient {
@@ -22,5 +23,14 @@ public interface SqlClientInternal extends SqlClient {
    * @return the index at which the parameter placeholder could be added
    */
   int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current);
+
+  /**
+   * Experimental API not yet exposed.
+   *
+   * <p> Execute the code {@code block} with a client that defers the flush of queries after its execution.
+   *
+   * @param block the block to execute
+   */
+  void group(Handler<SqlClient> block);
 
 }

@@ -12,60 +12,46 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mssqlclient.impl.protocol.datatype.*;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
-import java.math.BigDecimal;
 import java.util.stream.Collector;
 
-import static io.vertx.mssqlclient.impl.protocol.EnvChange.*;
-import static io.vertx.mssqlclient.impl.protocol.datatype.MSSQLDataTypeId.*;
-
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends MSSQLCommandCodec<Boolean, C> {
+
+  protected int rowCount;
   protected RowResultDecoder<?, T> rowResultDecoder;
 
-  QueryCommandBaseCodec(C cmd) {
-    super(cmd);
+  QueryCommandBaseCodec(TdsMessageCodec tdsMessageCodec, C cmd) {
+    super(tdsMessageCodec, cmd);
   }
 
   private static <A, T> T emptyResult(Collector<Row, A, T> collector) {
     return collector.finisher().apply(collector.supplier().get());
   }
 
-  protected void encodeTransactionDescriptor(ByteBuf payload) {
-    payload.writeIntLE(18); // HeaderLength is always 18
-    payload.writeShortLE(0x0002); // HeaderType
-    payload.writeLongLE(encoder.transactionDescriptor);
-    payload.writeIntLE(1);
+  @Override
+  protected void handleRowDesc(MSSQLRowDesc mssqlRowDesc) {
+    rowResultDecoder = new RowResultDecoder<>(cmd.collector(), mssqlRowDesc);
   }
 
-  protected MSSQLRowDesc decodeColmetadataToken(ByteBuf payload) {
-    int columnCount = payload.readUnsignedShortLE();
-
-    ColumnData[] columnDatas = new ColumnData[columnCount];
-
-    for (int i = 0; i < columnCount; i++) {
-      long userType = payload.readUnsignedIntLE();
-      int flags = payload.readUnsignedShortLE();
-      MSSQLDataType dataType = decodeDataTypeMetadata(payload);
-      String columnName = readByteLenVarchar(payload);
-      columnDatas[i] = new ColumnData(userType, flags, dataType, columnName);
-    }
-
-    return new MSSQLRowDesc(columnDatas);
-  }
-
+  @Override
   protected void handleRow(ByteBuf payload) {
     rowResultDecoder.handleRow(rowResultDecoder.desc.columnDatas.length, payload);
   }
 
+  @Override
   protected void handleNbcRow(ByteBuf payload) {
     rowResultDecoder.handleNbcRow(rowResultDecoder.desc.columnDatas.length, payload);
   }
 
-  protected void handleResultSetDone(int affectedRows) {
+  @Override
+  protected void handleAffectedRows(long count) {
+    rowCount += count;
+  }
+
+  protected void handleResultSetDone() {
     this.result = false;
     T result;
     Throwable failure;
@@ -83,102 +69,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
       size = 0;
       rowDesc = null;
     }
-    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result, failure);
-  }
-
-  private MSSQLDataType decodeDataTypeMetadata(ByteBuf payload) {
-    int typeInfo = payload.readUnsignedByte();
-    byte scale;
-    switch (typeInfo) {
-      /*
-       * FixedLen DataType
-       */
-      case INT1TYPE_ID:
-        return FixedLenDataType.INT1TYPE;
-      case INT2TYPE_ID:
-        return FixedLenDataType.INT2TYPE;
-      case INT4TYPE_ID:
-        return FixedLenDataType.INT4TYPE;
-      case INT8TYPE_ID:
-        return FixedLenDataType.INT8TYPE;
-      case FLT4TYPE_ID:
-        return FixedLenDataType.FLT4TYPE;
-      case FLT8TYPE_ID:
-        return FixedLenDataType.FLT8TYPE;
-      case BITTYPE_ID:
-        return FixedLenDataType.BITTYPE;
-      /*
-       * Variable Length Data Type
-       */
-      case NUMERICNTYPE_ID:
-      case DECIMALNTYPE_ID:
-        short decimalTypeSize = payload.readUnsignedByte();
-        byte decimalPrecision = payload.readByte();
-        scale = payload.readByte();
-        return new DecimalDataType(typeInfo, BigDecimal.class, decimalPrecision, scale);
-      case INTNTYPE_ID:
-        byte intNTypeLength = payload.readByte();
-        return IntNDataType.valueOf(intNTypeLength);
-      case FLTNTYPE_ID:
-        byte fltNTypeLength = payload.readByte();
-        return FloatNDataType.valueOf(fltNTypeLength);
-      case BITNTYPE_ID:
-        payload.skipBytes(1); // should only be 1
-        return BitNDataType.BIT_1_DATA_TYPE;
-      case DATETIMETYPE_ID:
-        return FixedLenDataType.DATETIMETYPE;
-      case DATENTYPE_ID:
-        return FixedLenDataType.DATENTYPE;
-      case TIMENTYPE_ID:
-        scale = payload.readByte();
-        return new TimeNDataType(scale);
-      case DATETIME2NTYPE_ID:
-        scale = payload.readByte();
-        return new DateTime2NDataType(scale);
-      case DATETIMEOFFSETNTYPE_ID:
-        scale = payload.readByte();
-        return new DateTimeOffsetNDataType(scale);
-      case BIGCHARTYPE_ID:
-      case BIGVARCHRTYPE_ID:
-      case NCHARTYPE_ID:
-      case NVARCHARTYPE_ID:
-        int size = payload.readUnsignedShortLE();
-        short collateCodepage = payload.readShortLE();
-        short collateFlags = payload.readShortLE();
-        byte collateCharsetId = payload.readByte();
-        return new TextWithCollationDataType(typeInfo, String.class, null);
-      case BIGBINARYTYPE_ID:
-      case BINARYTYPE_ID:
-        return new BinaryDataType(typeInfo, payload.readUnsignedShortLE());
-      case BIGVARBINTYPE_ID:
-      case VARBINARYTYPE_ID:
-        return new VarBinaryDataType(typeInfo, payload.readUnsignedShortLE());
-      default:
-        throw new UnsupportedOperationException("Unsupported type with typeinfo: " + typeInfo);
-    }
-  }
-
-  void handleEnvChangeToken(ByteBuf messageBody) {
-    int totalLength = messageBody.readUnsignedShortLE();
-    int startPos = messageBody.readerIndex();
-    int type = messageBody.readUnsignedByte();
-    switch (type) {
-      case XACT_BEGIN:
-      case DTC_ENLIST:
-        if (messageBody.readUnsignedByte() != 8) {
-          throw new IllegalStateException();
-        }
-        encoder.transactionDescriptor = messageBody.readLongLE();
-        break;
-      case XACT_COMMIT:
-      case XACT_ROLLBACK:
-      case DTC_DEFECT:
-        encoder.transactionDescriptor = 0;
-        break;
-      default:
-        break;
-    }
-    messageBody.readerIndex(startPos + totalLength);
+    cmd.resultHandler().handleResult(rowCount, size, rowDesc, result, failure);
   }
 }
 

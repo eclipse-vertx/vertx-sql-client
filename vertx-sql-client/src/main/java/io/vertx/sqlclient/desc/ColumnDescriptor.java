@@ -34,6 +34,11 @@ public interface ColumnDescriptor {
   boolean isArray();
 
   /**
+   * @return vendor-specific name of the column type, or {@code null} if unknown
+   */
+  String typeName();
+
+  /**
    * @return the most appropriate {@code JDBCType}
    */
   JDBCType jdbcType();

@@ -12,87 +12,55 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.mssqlclient.impl.protocol.MessageStatus;
-import io.vertx.mssqlclient.impl.protocol.MessageType;
-import io.vertx.mssqlclient.impl.protocol.TdsMessage;
+import io.vertx.mssqlclient.impl.MSSQLSocketConnection;
 import io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket;
-import io.vertx.mssqlclient.impl.protocol.token.DataPacketStreamTokenType;
 import io.vertx.mssqlclient.impl.utils.Utils;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.InitCommand;
 
 import java.util.Map;
 
+import static io.vertx.mssqlclient.impl.codec.MessageType.TDS7_LOGIN;
+import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedShortLengthString;
 import static java.nio.charset.StandardCharsets.UTF_16LE;
+import static java.util.Locale.ENGLISH;
 
 class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
-  InitCommandCodec(InitCommand cmd) {
-    super(cmd);
+
+  static final Object LOGIN_SENT = new Object();
+
+  InitCommandCodec(TdsMessageCodec tdsMessageCodec, InitCommand cmd) {
+    super(tdsMessageCodec, cmd);
   }
 
   @Override
-  void encode(TdsMessageEncoder encoder) {
-    super.encode(encoder);
-    sendLoginMessage();
-  }
+  void encode() {
+    ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
-  @Override
-  void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
-    ByteBuf messageBody = message.content();
-    while (messageBody.isReadable()) {
-      DataPacketStreamTokenType tokenType = DataPacketStreamTokenType.valueOf(messageBody.readUnsignedByte());
-      if (tokenType == null) {
-        continue;
-      }
-      switch (tokenType) {
-        //FIXME complete all the logic here
-        case LOGINACK_TOKEN:
-          result = cmd.connection();
-          break;
-        case ERROR_TOKEN:
-          handleErrorToken(messageBody);
-          break;
-        case INFO_TOKEN:
-          break;
-        case ENVCHANGE_TOKEN:
-          break;
-        case DONE_TOKEN:
-          break;
-      }
-    }
-    complete();
-  }
-
-  private void sendLoginMessage() {
-    ChannelHandlerContext chctx = encoder.chctx;
-
-    ByteBuf packet = chctx.alloc().ioBuffer();
-
-    // packet header
-    packet.writeByte(MessageType.TDS7_LOGIN.value());
-    packet.writeByte(MessageStatus.NORMAL.value() | MessageStatus.END_OF_MESSAGE.value());
-    int packetLenIdx = packet.writerIndex();
-    packet.writeShort(0); // set length later
-    packet.writeShort(0x00);
-    packet.writeByte(0x00); // FIXME packet ID
-    packet.writeByte(0x00);
-
-    int startIdx = packet.writerIndex(); // Length
-    packet.writeInt(0x00); // set length later by calculating
-    packet.writeInt(LoginPacket.SQL_SERVER_2017_VERSION); // TDSVersion
-    packet.writeIntLE(LoginPacket.DEFAULT_PACKET_SIZE); // PacketSize
-    packet.writeIntLE(0x00); // ClientProgVer
-    packet.writeIntLE(0x00); // ClientPID
-    packet.writeIntLE(0x00); // ConnectionID
-    packet.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS1
-      | LoginPacket.OPTION_FLAGS1_DUMPLOAD_OFF); // OptionFlags1
-    packet.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS2); // OptionFlags2
-    packet.writeByte(LoginPacket.DEFAULT_TYPE_FLAGS); // TypeFlags
-    packet.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS3); // OptionFlags3
-    packet.writeIntLE(0x00); // ClientTimeZone
-    packet.writeIntLE(0x00); // ClientLCID
+    int startIdx = content.writerIndex(); // Length
+    content.writeInt(0x00); // set length later by calculating
+    content.writeInt(LoginPacket.SQL_SERVER_2017_VERSION); // TDSVersion
+    content.writeIntLE(tdsMessageCodec.encoder().packetSize()); // PacketSize
+    content.writeIntLE(0x00); // ClientProgVer
+    content.writeIntLE(0x00); // ClientPID
+    content.writeIntLE(0x00); // ConnectionID
+    content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS1 |
+      LoginPacket.OPTION_FLAGS1_ORDER_X86 |
+      LoginPacket.OPTION_FLAGS1_CHARSET_ASCII |
+      LoginPacket.OPTION_FLAGS1_FLOAT_IEEE_754 |
+      LoginPacket.OPTION_FLAGS1_USE_DB_OFF |
+      LoginPacket.OPTION_FLAGS1_INIT_DB_FATAL |
+      LoginPacket.OPTION_FLAGS1_SET_LANG_ON
+    ); // OptionFlags1
+    content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS2 |
+      LoginPacket.OPTION_FLAGS2_ODBC_ON
+    ); // OptionFlags2
+    content.writeByte(LoginPacket.DEFAULT_TYPE_FLAGS); // TypeFlags
+    content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS3); // OptionFlags3
+    content.writeIntLE(0x00); // ClientTimeZone
+    content.writeIntLE(0x00); // ClientLCID
 
     /*
       OffsetLength part:
@@ -102,127 +70,125 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
 
     // HostName
     String hostName = Utils.getHostName();
-    int hostNameOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(hostName.length());
+    int hostNameOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(hostName.length());
 
     // UserName
     String userName = cmd.username();
-    int userNameOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(userName.length());
+    int userNameOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(userName.length());
 
     // Password
     String password = cmd.password();
-    int passwordOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(password.length());
+    int passwordOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(password.length());
 
     // AppName
     CharSequence appName = properties.get("appName");
     if (appName == null || appName.length() == 0) {
       appName = MSSQLConnectOptions.DEFAULT_APP_NAME;
     }
-    int appNameOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(appName.length());
+    int appNameOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(appName.length());
 
     // ServerName
     String serverName = cmd.connection().socket().remoteAddress().host();
-    int serverNameOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(serverName.length());
+    int serverNameOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(serverName.length());
 
     // Unused or Extension
-    int unusedOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(0);
+    int unusedOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(0);
 
     // CltIntName
     CharSequence interfaceLibraryName = properties.get("clientInterfaceName");
     if (interfaceLibraryName == null || interfaceLibraryName.length() == 0) {
       interfaceLibraryName = MSSQLConnectOptions.DEFAULT_CLIENT_INTERFACE_NAME;
     }
-    int cltIntNameOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(interfaceLibraryName.length());
+    int cltIntNameOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(interfaceLibraryName.length());
 
     // Language
-    int languageOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(0);
+    int languageOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(0);
 
     // Database
     String database = cmd.database();
-    int databaseOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(database.length());
+    int databaseOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(database.length());
 
     // ClientID
     // 6 BYTE
-    packet.writeIntLE(0x00);
-    packet.writeShortLE(0x00);
+    content.writeIntLE(0x00);
+    content.writeShortLE(0x00);
 
     // SSPI
-    int sspiOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(0x00);
+    int sspiOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(0x00);
 
     // AtchDBFile
-    int atchDbFileOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(0x00);
+    int atchDbFileOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(0x00);
 
     // ChangePassword
-    int changePasswordOffsetLengthIdx = packet.writerIndex();
-    packet.writeShortLE(0x00); // offset
-    packet.writeShortLE(0x00);
+    int changePasswordOffsetLengthIdx = content.writerIndex();
+    content.writeShortLE(0x00); // offset
+    content.writeShortLE(0x00);
 
     // SSPILong
-    packet.writeIntLE(0x00);
+    content.writeIntLE(0x00);
 
     /*
       Data part: note we should set offset by calculation before writing data
      */
-    packet.setShortLE(hostNameOffsetLengthIdx, packet.writerIndex() - startIdx);
-    packet.writeCharSequence(hostName, UTF_16LE);
+    content.setShortLE(hostNameOffsetLengthIdx, content.writerIndex() - startIdx);
+    content.writeCharSequence(hostName, UTF_16LE);
 
-    packet.setShortLE(userNameOffsetLengthIdx, packet.writerIndex() - startIdx);
-    packet.writeCharSequence(userName, UTF_16LE);
+    content.setShortLE(userNameOffsetLengthIdx, content.writerIndex() - startIdx);
+    content.writeCharSequence(userName, UTF_16LE);
 
-    packet.setShortLE(passwordOffsetLengthIdx, packet.writerIndex() - startIdx);
-    writePassword(packet, password);
+    content.setShortLE(passwordOffsetLengthIdx, content.writerIndex() - startIdx);
+    writePassword(content, password);
 
-    packet.setShortLE(appNameOffsetLengthIdx, packet.writerIndex() - startIdx);
-    packet.writeCharSequence(appName, UTF_16LE);
+    content.setShortLE(appNameOffsetLengthIdx, content.writerIndex() - startIdx);
+    content.writeCharSequence(appName, UTF_16LE);
 
-    packet.setShortLE(serverNameOffsetLengthIdx, packet.writerIndex() - startIdx);
-    packet.writeCharSequence(serverName, UTF_16LE);
+    content.setShortLE(serverNameOffsetLengthIdx, content.writerIndex() - startIdx);
+    content.writeCharSequence(serverName, UTF_16LE);
 
-    packet.setShortLE(unusedOffsetLengthIdx, packet.writerIndex() - startIdx);
+    content.setShortLE(unusedOffsetLengthIdx, content.writerIndex() - startIdx);
 
-    packet.setShortLE(cltIntNameOffsetLengthIdx, packet.writerIndex() - startIdx);
-    packet.writeCharSequence(interfaceLibraryName, UTF_16LE);
+    content.setShortLE(cltIntNameOffsetLengthIdx, content.writerIndex() - startIdx);
+    content.writeCharSequence(interfaceLibraryName, UTF_16LE);
 
-    packet.setShortLE(languageOffsetLengthIdx, packet.writerIndex() - startIdx);
+    content.setShortLE(languageOffsetLengthIdx, content.writerIndex() - startIdx);
 
-    packet.setShortLE(databaseOffsetLengthIdx, packet.writerIndex() - startIdx);
-    packet.writeCharSequence(database, UTF_16LE);
+    content.setShortLE(databaseOffsetLengthIdx, content.writerIndex() - startIdx);
+    content.writeCharSequence(database, UTF_16LE);
 
-    packet.setShortLE(sspiOffsetLengthIdx, packet.writerIndex() - startIdx);
+    content.setShortLE(sspiOffsetLengthIdx, content.writerIndex() - startIdx);
 
-    packet.setShortLE(atchDbFileOffsetLengthIdx, packet.writerIndex() - startIdx);
+    content.setShortLE(atchDbFileOffsetLengthIdx, content.writerIndex() - startIdx);
 
-    packet.setShortLE(changePasswordOffsetLengthIdx, packet.writerIndex() - startIdx);
+    content.setShortLE(changePasswordOffsetLengthIdx, content.writerIndex() - startIdx);
 
     // set length
-    packet.setIntLE(startIdx, packet.writerIndex() - startIdx);
+    content.setIntLE(startIdx, content.writerIndex() - startIdx);
 
-    int packetLen = packet.writerIndex() - startIdx + 8;
-    packet.setShort(packetLenIdx, packetLen);
+    tdsMessageCodec.encoder().writeTdsMessage(TDS7_LOGIN, content);
 
-    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
-
+    tdsMessageCodec.chctx().pipeline().fireUserEventTriggered(LOGIN_SENT);
   }
 
   /*
@@ -239,5 +205,30 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
       bytes[i] = (byte) ((b >> 4 | ((b & 0x0F) << 4)) ^ 0xA5);
     }
     payload.writeBytes(bytes);
+  }
+
+  @Override
+  protected void handleLoginAck() {
+    result = cmd.connection();
+  }
+
+  @Override
+  protected void handleRouting(ByteBuf payload) {
+    MSSQLSocketConnection conn = (MSSQLSocketConnection) this.result;
+    if (conn == null) {
+      throw new IllegalStateException("Routing ENVCHANGE token MUST be sent after the LOGINACK token in the login response");
+    }
+    if (payload.readUnsignedShortLE() <= 5) {
+      throw new IllegalStateException("RoutingDataValueLength too short");
+    }
+    if (payload.readUnsignedByte() != 0) {
+      throw new IllegalStateException("Protocol MUST be 0, specifying TCP-IP protocol");
+    }
+    int port;
+    if ((port = payload.readUnsignedShortLE()) == 0) {
+      throw new IllegalStateException("ProtocolProperty value of zero is not allowed when Protocol is TCP-IP");
+    }
+    String host = readUnsignedShortLengthString(payload);
+    conn.setAlternateServer(SocketAddress.inetSocketAddress(port, host.toLowerCase(ENGLISH)));
   }
 }

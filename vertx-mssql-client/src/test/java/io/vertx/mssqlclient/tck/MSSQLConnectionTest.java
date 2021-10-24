@@ -11,14 +11,12 @@
 
 package io.vertx.mssqlclient.tck;
 
-import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -38,32 +36,10 @@ public class MSSQLConnectionTest extends ConnectionTestBase {
     super.tearDown(ctx);
   }
 
-  /*
-    TODO enable the tests when we support simple query
-   */
-  @Ignore
-  @Test
   @Override
-  public void testCloseWithErrorInProgress(TestContext ctx) {
-    super.testCloseWithErrorInProgress(ctx);
-  }
-
-  @Ignore
-  @Test
-  @Override
-  public void testCloseWithQueryInProgress(TestContext ctx) {
-    super.testCloseWithQueryInProgress(ctx);
-  }
-  
-  @Ignore
-  @Test
-  @Override
-  public void testDatabaseMetaData(TestContext ctx) {
-    super.testDatabaseMetaData(ctx);
-  }
-  
-  @Override
-  protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
-    // TODO implement this along with testDatabaseMetaData
+  protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata metadata) {
+    ctx.assertFalse(metadata.fullVersion() == null || metadata.fullVersion().trim().isEmpty());
+    ctx.assertFalse(metadata.productName() == null || metadata.productName().trim().isEmpty());
+    ctx.assertTrue(metadata.majorVersion() > 0);
   }
 }

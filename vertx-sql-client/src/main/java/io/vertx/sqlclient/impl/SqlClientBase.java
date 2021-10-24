@@ -21,8 +21,10 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
+import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
@@ -32,6 +34,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.impl.command.CompositeCommand;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
@@ -68,8 +71,13 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
+    return preparedQuery(sql, null);
+  }
+
+  @Override
+  public PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options) {
     QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-    return new PreparedQueryImpl<>(autoCommit(), false, sql, builder);
+    return new PreparedQueryImpl<>(autoCommit(), false, sql, options, builder);
   }
 
   boolean autoCommit() {
@@ -113,8 +121,12 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
   private class PreparedQueryImpl<T, R extends SqlResult<T>> extends QueryImpl<T, R> implements PreparedQuery<R> {
 
-    private PreparedQueryImpl(boolean autoCommit, boolean singleton, String sql, QueryExecutor<T, ?, R> builder) {
+    private final PrepareOptions options;
+
+    private PreparedQueryImpl(boolean autoCommit, boolean singleton, String sql, PrepareOptions options, QueryExecutor<T, ?, R> builder) {
       super(autoCommit, singleton, sql, builder);
+
+      this.options = options;
     }
 
     @Override
@@ -129,7 +141,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
     @Override
     protected <T2, R2 extends SqlResult<T2>> QueryBase<T2, R2> copy(QueryExecutor<T2, ?, R2> builder) {
-      return new PreparedQueryImpl<>(autoCommit, singleton, sql, builder);
+      return new PreparedQueryImpl<>(autoCommit, singleton, sql, options, builder);
     }
 
     @Override
@@ -138,7 +150,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     private void execute(Tuple arguments, PromiseInternal<R> promise) {
-      builder.executeExtendedQuery(SqlClientBase.this, sql, autoCommit, arguments, promise);
+      builder.executeExtendedQuery(SqlClientBase.this, sql, options, autoCommit, arguments, promise);
     }
 
     @Override
@@ -166,7 +178,53 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     }
 
     private void executeBatch(List<Tuple> batch, PromiseInternal<R> promise) {
-      builder.executeBatchQuery(SqlClientBase.this, sql, autoCommit, batch, promise);
+      builder.executeBatchQuery(SqlClientBase.this, sql, options, autoCommit, batch, promise);
+    }
+  }
+
+  @Override
+  public void group(Handler<SqlClient> block) {
+    GroupingClient grouping = new GroupingClient(tracer, metrics);
+    block.handle(grouping);
+    schedule(context(), grouping.composite);
+  }
+
+  private class GroupingClient extends SqlClientBase<GroupingClient> {
+
+    private CompositeCommand composite = new CompositeCommand();
+
+    public GroupingClient(QueryTracer tracer, ClientMetrics metrics) {
+      super(tracer, metrics);
+    }
+
+    @Override
+    public void close(Handler<AsyncResult<Void>> handler) {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Future<Void> close() {
+      throw new UnsupportedOperationException();
+    }
+
+    @Override
+    protected ContextInternal context() {
+      return SqlClientBase.this.context();
+    }
+
+    @Override
+    protected <T> PromiseInternal<T> promise() {
+      return SqlClientBase.this.promise();
+    }
+
+    @Override
+    protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
+      return SqlClientBase.this.promise(handler);
+    }
+
+    @Override
+    public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
+      return composite.add(context, cmd);
     }
   }
 }

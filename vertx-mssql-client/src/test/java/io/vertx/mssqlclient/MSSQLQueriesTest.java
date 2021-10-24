@@ -16,7 +16,9 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.NullValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,6 +28,10 @@ import org.junit.runner.RunWith;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 @RunWith(VertxUnitRunner.class)
 public class MSSQLQueriesTest extends MSSQLTestBase {
 
@@ -33,32 +39,32 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   public RepeatRule rule = new RepeatRule();
 
   Vertx vertx;
-  MSSQLConnection connnection;
+  MSSQLConnection connection;
 
   @Before
   public void setup(TestContext ctx) {
     vertx = Vertx.vertx();
     options = new MSSQLConnectOptions(MSSQLTestBase.options);
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> this.connnection = conn));
+    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> this.connection = conn));
   }
 
   @After
   public void tearDown(TestContext ctx) {
-    if (connnection != null) {
-      connnection.close(ctx.asyncAssertSuccess());
+    if (connection != null) {
+      connection.close(ctx.asyncAssertSuccess());
     }
     vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testSimpleQueryOrderBy(TestContext ctx) {
-    connnection.query("SELECT message FROM immutable ORDER BY message DESC")
+    connection.query("SELECT message FROM immutable ORDER BY message DESC")
       .execute(ctx.asyncAssertSuccess(rs -> ctx.assertTrue(rs.size() > 1)));
   }
 
   @Test
   public void testPreparedQueryOrderBy(TestContext ctx) {
-    connnection.preparedQuery("SELECT message FROM immutable WHERE id BETWEEN @p1 AND @p2 ORDER BY message DESC")
+    connection.preparedQuery("SELECT message FROM immutable WHERE id BETWEEN @p1 AND @p2 ORDER BY message DESC")
       .execute(Tuple.of(4, 9), ctx.asyncAssertSuccess(rs -> ctx.assertEquals(6, rs.size())));
   }
 
@@ -66,12 +72,67 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   @Repeat(50)
   public void testQueryCurrentTimestamp(TestContext ctx) {
     LocalDateTime start = LocalDateTime.now();
-    connnection.query("SELECT current_timestamp")
+    connection.query("SELECT current_timestamp")
       .execute(ctx.asyncAssertSuccess(rs -> {
         Object value = rs.iterator().next().getValue(0);
         ctx.assertTrue(value instanceof LocalDateTime);
         LocalDateTime localDateTime = (LocalDateTime) value;
         ctx.assertTrue(Math.abs(localDateTime.until(start, ChronoUnit.SECONDS)) < 1);
+      }));
+  }
+
+  @Test
+  public void testCreateTable(TestContext ctx) {
+    connection.query("drop table if exists Basic")
+      .execute(ctx.asyncAssertSuccess(drop -> {
+        connection.preparedQuery("create table Basic (id int, dessimal numeric(19,2), primary key (id))")
+          .execute(ctx.asyncAssertSuccess(create -> {
+            connection.preparedQuery("INSERT INTO Basic (id, dessimal) values (3, @p1)")
+              .execute(Tuple.of(NullValue.BigDecimal), ctx.asyncAssertSuccess());
+          }));
+      }));
+  }
+
+  @Test
+  public void testInsertReturning(TestContext ctx) {
+    connection.preparedQuery("insert into EntityWithIdentity (name) OUTPUT INSERTED.id, INSERTED.name VALUES (@p1)")
+      .execute(Tuple.of("John"), ctx.asyncAssertSuccess(result -> {
+        Row row = result.iterator().next();
+        ctx.assertNotNull(row.getInteger("id"));
+        ctx.assertEquals("John", row.getString("name"));
+      }));
+  }
+
+  @Test
+  public void testQueryNonExisting(TestContext ctx) {
+    connection.preparedQuery("DELETE FROM Fonky.Family")
+      .execute(Tuple.tuple(), ctx.asyncAssertFailure(t -> {
+        ctx.verify(unused -> {
+          assertThat(t, is(instanceOf(MSSQLException.class)));
+        });
+        MSSQLException mssqlException = (MSSQLException) t;
+        ctx.assertEquals(208, mssqlException.number());
+      }));
+  }
+
+  @Test
+  public void testMultiplePacketsDecoding(TestContext ctx) {
+    // Ensure TdsPacketDecoder works well when a single Netty buffer encompasses several TDS Packets
+
+    String sql = "" +
+      "SELECT table_name  AS TABLE_NAME,\n" +
+      "       column_name AS COLUMN_NAME,\n" +
+      "       data_type   AS TYPE_NAME,\n" +
+      "       NULL        AS COLUMN_SIZE,\n" +
+      "       NULL        AS DECIMAL_DIGITS,\n" +
+      "       is_nullable AS IS_NULLABLE,\n" +
+      "       NULL        AS DATA_TYPE\n" +
+      "FROM information_schema.columns\n" +
+      "ORDER BY table_catalog, table_schema, table_name, column_name, ordinal_position";
+
+    connection.preparedQuery(sql)
+      .execute(Tuple.tuple(), ctx.asyncAssertSuccess(rows -> {
+        ctx.assertTrue(rows.size() > 0);
       }));
   }
 }

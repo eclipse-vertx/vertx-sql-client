@@ -40,10 +40,14 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
       ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue("test_date"));
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
+      ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 0), row.getValue("test_smalldatetime"));
+      ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2), row.getValue("test_datetime"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2), row.getValue("test_datetime2"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row.getValue("test_datetimeoffset"));
       ctx.assertEquals(Buffer.buffer("hello world").appendBytes(new byte[20 - "hello world".length()]), row.getValue("test_binary"));
       ctx.assertEquals(Buffer.buffer("big apple"), row.getValue("test_varbinary"));
+      ctx.assertEquals(new BigDecimal("12.3456"), row.getValue("test_money"));
+      ctx.assertEquals(new BigDecimal("12.34"), row.getValue("test_smallmoney"));
     });
   }
 
@@ -159,7 +163,33 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
   }
 
   @Test
+  public void testDecodeSmallDateTime(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_smalldatetime", row -> {
+      ColumnChecker.checkColumn(0, "test_smalldatetime")
+        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(2019, 1, 1, 18, 45, 0))
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(2019, 1, 1, 18, 45, 0))
+        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(2019, 1, 1))
+        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 0))
+        .returns(LocalDateTime.class, LocalDateTime.of(2019, 1, 1, 18, 45, 0))
+        .forRow(row);
+    });
+  }
+
+  @Test
   public void testDecodeDateTime(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_datetime", row -> {
+      ColumnChecker.checkColumn(0, "test_datetime")
+        .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
+        .returns(Tuple::getLocalDate, Row::getLocalDate, LocalDate.of(2019, 1, 1))
+        .returns(Tuple::getLocalTime, Row::getLocalTime, LocalTime.of(18, 45, 2))
+        .returns(LocalDateTime.class, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeDateTime2(TestContext ctx) {
     testDecodeNotNullValue(ctx, "test_datetime2", row -> {
       ColumnChecker.checkColumn(0, "test_datetime2")
         .returns(Tuple::getValue, Row::getValue, LocalDateTime.of(2019, 1, 1, 18, 45, 2))
@@ -206,6 +236,20 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
         .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("big apple"))
         .returns(Buffer.class, Buffer.buffer("big apple"))
         .forRow(row);
+    });
+  }
+
+  @Test
+  public void testDecodeMoney(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_money", row -> {
+      checkNumber(row, "test_money", new BigDecimal("12.3456"));
+    });
+  }
+
+  @Test
+  public void testDecodeSmallMoney(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_smallmoney", row -> {
+      checkNumber(row, "test_smallmoney", new BigDecimal("12.34"));
     });
   }
 

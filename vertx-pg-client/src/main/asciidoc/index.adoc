@@ -14,7 +14,7 @@ The client is reactive and non blocking, allowing to handle many database connec
 * Batch and cursor
 * Row streaming
 * Command pipeling
-* RxJava 1 and RxJava 2
+* RxJava API
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
 * SSL/TLS
@@ -232,11 +232,20 @@ NOTE: SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
 
 include::queries.adoc[leveloffset=1]
 
+== Returning clauses
+
 You can fetch generated keys with a 'RETURNING' clause in your query:
 
 [source,$lang]
 ----
-{@link examples.PgClientExamples#returning(io.vertx.sqlclient.SqlClient)}
+{@link examples.PgClientExamples#insertReturning(io.vertx.sqlclient.SqlClient)}
+----
+
+This works with any SQL as long as there is a `RETURNING` clause:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#deleteReturning(io.vertx.sqlclient.SqlClient)}
 ----
 
 A batch query with a `RETURNING` clause creates a {@link io.vertx.sqlclient.RowSet}
@@ -298,6 +307,7 @@ Currently the client supports the following PostgreSQL types
 * CIRCLE (`io.vertx.pgclient.data.Circle`)
 * TSVECTOR (`java.lang.String`)
 * TSQUERY (`java.lang.String`)
+* INET (`io.vertx.pgclient.data.Inet`)
 
 Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
 
@@ -520,6 +530,10 @@ You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].
 
+== Advanced pool configuration
+
+include::pool_config.adoc[]
+
 ifeval::["$lang" == "java"]
-include::override/rxjava2.adoc[]
+include::override/rxjava3.adoc[]
 endif::[]

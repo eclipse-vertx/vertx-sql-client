@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -19,9 +19,6 @@ public final class LoginPacket {
 
   public static final int SQL_SERVER_2017_VERSION = 0x04000074;  // SQL_SERVER_2012, SQL_SERVER_2014, SQL_SERVER_2016, SQL_SERVER_2017
 
-  public static final int DEFAULT_PACKET_SIZE = 4096;
-
-
   /*
     optionFlags1 = 8 BIT in Least Significant Bit Order
       fByteOrder(1 BIT) default: ORDER_X86
@@ -37,7 +34,7 @@ public final class LoginPacket {
   public static final byte OPTION_FLAGS1_ORDER_X68000 = 0x01;
   public static final byte OPTION_FLAGS1_CHARSET_ASCII = 0x00;
   public static final byte OPTION_FLAGS1_CHARSET_EBCDIC = 0x02;
-  public static final byte OPTION_FALGS1_FLOAT_IEEE_754 = 0x00;
+  public static final byte OPTION_FLAGS1_FLOAT_IEEE_754 = 0x00;
   public static final byte OPTION_FALGS1_FLOAT_VAX = 0x04;
   public static final byte OPTION_FALGS1_ND5000 = 0x08;
   public static final byte OPTION_FLAGS1_DUMPLOAD_ON = 0x00;

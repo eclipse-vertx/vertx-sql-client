@@ -18,6 +18,21 @@ public class GeometricTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestB
     testDecodeGeneric(ctx, "{1.0,2.0,3.0}", "LINE", "Line", Line.class, expected);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testLineInvariantsInvalidConstructorArgs() {
+    new Line(0.0, 0.0, 0.0);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testLineInvariantsInvalidASetter() {
+    new Line(1.0, 0.0, 0.0).setA(0.0);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testLineInvariantsInvalidBSetter() {
+    new Line(0.0, 1.0, 0.0).setB(0.0);
+  }
+
   @Test
   public void testLineSegment(TestContext ctx) {
     LineSegment expected = new LineSegment(new Point(1.0, 1.0), new Point(2.0, 2.0));

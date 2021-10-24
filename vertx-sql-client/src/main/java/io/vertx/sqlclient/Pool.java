@@ -18,13 +18,16 @@
 package io.vertx.sqlclient;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -41,62 +44,57 @@ import java.util.function.Function;
 public interface Pool extends SqlClient {
 
   /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and default {@link PoolOptions}
-   *
-   * @param connectOptions the options used to create the connection pool, such as database hostname
-   * @return the connection pool
-   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
+   * Like {@link #pool(SqlConnectOptions, PoolOptions)} with default options.
    */
   static Pool pool(SqlConnectOptions connectOptions) {
     return pool(connectOptions, new PoolOptions());
   }
 
   /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
-   *
-   * @param connectOptions the options used to create the connection pool, such as database hostname
-   * @param poolOptions the options for creating the pool
-   * @return the connection pool
-   * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
+   * Like {@link #pool(Vertx, SqlConnectOptions, PoolOptions)} with a Vert.x instance created automatically.
    */
-  static Pool pool(SqlConnectOptions connectOptions, PoolOptions poolOptions) {
+  static Pool pool(SqlConnectOptions database, PoolOptions options) {
     List<Driver> candidates = new ArrayList<>(1);
     for (Driver d : ServiceLoader.load(Driver.class)) {
-      if (d.acceptsOptions(connectOptions)) {
+      if (d.acceptsOptions(database)) {
         candidates.add(d);
       }
     }
     if (candidates.size() == 0) {
-      throw new ServiceConfigurationError("No implementations of " + Driver.class + " found that accept connection options " + connectOptions);
+      throw new ServiceConfigurationError("No implementations of " + Driver.class + " found that accept connection options " + database);
     } else if (candidates.size() > 1) {
       throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
     } else {
-      return candidates.get(0).createPool(connectOptions, poolOptions);
+      return candidates.get(0).createPool(null, Collections.singletonList(database), options);
     }
   }
 
   /**
-   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   * Create a connection pool to the {@code database} with the given {@code options}.
+   *
+   * <p> A {@link Driver} will be selected among the drivers found on the classpath returning
+   * {@code true} when {@link Driver#acceptsOptions(SqlConnectOptions)} applied to the first options
+   * of the list.
    *
    * @param vertx the Vertx instance to be used with the connection pool
-   * @param connectOptions the options used to create the connection pool, such as database hostname
-   * @param poolOptions the options for creating the pool
+   * @param database the options used to create the connection pool, such as database hostname
+   * @param options the options for creating the pool
    * @return the connection pool
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
-  static Pool pool(Vertx vertx, SqlConnectOptions connectOptions, PoolOptions poolOptions) {
+  static Pool pool(Vertx vertx, SqlConnectOptions database, PoolOptions options) {
     List<Driver> candidates = new ArrayList<>(1);
     for (Driver d : ServiceLoader.load(Driver.class)) {
-      if (d.acceptsOptions(connectOptions)) {
+      if (d.acceptsOptions(database)) {
         candidates.add(d);
       }
     }
     if (candidates.size() == 0) {
-      throw new ServiceConfigurationError("No implementations of " + Driver.class + " found that accept connection options " + connectOptions);
+      throw new ServiceConfigurationError("No implementations of " + Driver.class + " found that accept connection options " + database);
     } else if (candidates.size() > 1) {
       throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
     } else {
-      return candidates.get(0).createPool(vertx, connectOptions, poolOptions);
+      return candidates.get(0).createPool(vertx, Collections.singletonList(database), options);
     }
   }
 
@@ -210,4 +208,34 @@ public interface Pool extends SqlClient {
    */
   void close(Handler<AsyncResult<Void>> handler);
 
+  /**
+   * Set an handler called when the pool has established a connection to the database.
+   *
+   * <p> This handler allows interactions with the database before the connection is added to the pool.
+   *
+   * <p> When the handler has finished, it must call {@link SqlConnection#close()} to release the connection
+   * to the pool.
+   *
+   * @param handler the handler
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  Pool connectHandler(Handler<SqlConnection> handler);
+
+  /**
+   * Replace the default pool connection provider, the new {@code provider} returns a future connection for a
+   * given {@link Context}.
+   *
+   * <p> A {@link io.vertx.sqlclient.spi.ConnectionFactory} can be used as connection provider.
+   *
+   * @param provider the new connection provider
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  Pool connectionProvider(Function<Context, Future<SqlConnection>> provider);
+
+  /**
+   * @return the current pool size approximation
+   */
+  int size();
 }

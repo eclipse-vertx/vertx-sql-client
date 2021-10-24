@@ -32,6 +32,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.codec.CommonCodec;
 
+import java.net.Inet4Address;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -51,6 +55,8 @@ import static java.util.concurrent.TimeUnit.*;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ *
+ * See also https://www.npgsql.org/doc/dev/type-representations.html
  */
 public class DataTypeCodec {
 
@@ -83,6 +89,7 @@ public class DataTypeCodec {
   private static final LocalDate LOCAL_DATE_EPOCH = LocalDate.of(2000, 1, 1);
   private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
   private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
+  private static final Inet[] empty_inet_array = new Inet[0];
 
   // Sentinel used when an object is refused by the data type
   public static final Object REFUSED_SENTINEL = new Object();
@@ -111,6 +118,7 @@ public class DataTypeCodec {
   private static final IntFunction<Polygon[]> POLYGON_ARRAY_FACTORY = size -> size == 0 ? empty_polygon_array : new Polygon[size];
   private static final IntFunction<Circle[]> CIRCLE_ARRAY_FACTORY = size -> size == 0 ? empty_circle_array : new Circle[size];
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
+  private static final IntFunction<Inet[]> INET_ARRAY_FACTORY = size -> size == 0 ? empty_inet_array : new Inet[size];
 
   private static final java.time.format.DateTimeFormatter TIMETZ_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
@@ -338,6 +346,12 @@ public class DataTypeCodec {
       case TS_VECTOR_ARRAY:
         binaryEncodeArray((String[]) value, DataType.TS_VECTOR, buff);
         break;
+      case INET:
+        binaryEncodeInet((Inet) value, buff);
+        break;
+      case INET_ARRAY:
+        binaryEncodeArray((Inet[]) value, DataType.INET, buff);
+        break;
       default:
         logger.debug("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -467,6 +481,10 @@ public class DataTypeCodec {
         return binaryDecodeTsVector(index, len, buff);
       case TS_VECTOR_ARRAY:
         return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.TS_VECTOR, index, len, buff);
+      case INET:
+        return binaryDecodeInet(index, len, buff);
+      case INET_ARRAY:
+        return binaryDecodeArray(INET_ARRAY_FACTORY, DataType.INET, index, len, buff);
       default:
         logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
@@ -599,6 +617,10 @@ public class DataTypeCodec {
         return textDecodeTsVector(index, len, buff);
       case TS_VECTOR_ARRAY:
         return textDecodeArray(STRING_ARRAY_FACTORY, DataType.TS_VECTOR, index, len, buff);
+      case INET:
+        return textDecodeInet(index, len, buff);
+      case INET_ARRAY:
+        return textDecodeArray(INET_ARRAY_FACTORY, DataType.INET, index, len, buff);
       default:
         return defaultDecodeText(index, len, buff);
     }
@@ -1357,6 +1379,64 @@ public class DataTypeCodec {
     buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
   }
 
+  private static Inet binaryDecodeInet(int index, int len, ByteBuf buff) {
+    byte family = buff.getByte(index);
+    byte netmask = buff.getByte(index + 1);
+    Integer val;
+    int size = buff.getByte(index + 3);
+    byte[] data = new byte[size];
+    buff.getBytes(index + 4, data);
+    InetAddress address;
+    switch (family) {
+      case 2:
+        // IPV4
+        try {
+          address = Inet4Address.getByAddress(data);
+        } catch (UnknownHostException e) {
+          throw new DecoderException(e);
+        }
+        val = netmask == 32 ? null : Byte.toUnsignedInt(netmask);
+        break;
+      case 3:
+        // IPV6
+        try {
+          address = Inet6Address.getByAddress(data);
+        } catch (UnknownHostException e) {
+          throw new DecoderException(e);
+        }
+        val = netmask == -128 ? null : Byte.toUnsignedInt(netmask);
+        break;
+      default:
+        throw new DecoderException("Invalid ip family: " + family);
+    }
+    return new Inet().setAddress(address).setNetmask(val);
+  }
+
+  private static void binaryEncodeInet(Inet value, ByteBuf buff) {
+    InetAddress address = value.getAddress();
+    byte family;
+    byte[] data;
+    int netmask;
+    if (address instanceof Inet6Address) {
+      family = 3;
+      Inet6Address inet6Address = (Inet6Address) address;
+      data = inet6Address.getAddress();
+      netmask = value.getNetmask() == null ? 128 : value.getNetmask();
+    } else if (address instanceof Inet4Address) {
+      family = 2;
+      Inet4Address inet4Address = (Inet4Address) address;
+      data = inet4Address.getAddress();
+      netmask = value.getNetmask() == null ? 32 : value.getNetmask();
+    } else {
+      throw new DecoderException("Invalid inet address");
+    }
+    buff.writeByte(family);
+    buff.writeByte(netmask);
+    buff.writeByte(0); // INET
+    buff.writeByte(data.length);
+    buff.writeBytes(data);
+  }
+
   private static String binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
@@ -1371,6 +1451,31 @@ public class DataTypeCodec {
 
   private static String textDecodeTsQuery(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
+  }
+
+  private static Inet textDecodeInet(int index, int len, ByteBuf buff) {
+    Inet inet = new Inet();
+    int sepIdx = buff.indexOf(index, index + len, (byte) '/');
+    String s;
+    if (sepIdx == -1) {
+      s = textdecodeTEXT(index, len, buff);
+    } else {
+      s = textdecodeTEXT(index, sepIdx - index, buff);
+      String t = textdecodeTEXT(sepIdx + 1, len - ((sepIdx + 1 - index)), buff);
+      try {
+        int netmask = Integer.parseInt(t);
+        inet.setNetmask(netmask);
+      } catch (NumberFormatException e) {
+        throw new DecoderException(e);
+      }
+    }
+    try {
+      InetAddress v = InetAddress.getByName(s);
+      inet.setAddress(v);
+    } catch (UnknownHostException e) {
+      throw new DecoderException(e);
+    }
+    return inet;
   }
 
   /**

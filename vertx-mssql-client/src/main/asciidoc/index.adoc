@@ -1,6 +1,5 @@
 = Reactive MSSQL Client
 :PREPARED_PARAMS: `@1`, `@2`, etc…​
-:batching-unsupported:
 
 The Reactive MSSQL Client is a client for Microsoft SQL Server with a straightforward API focusing on
 scalability and low overhead.
@@ -12,11 +11,13 @@ scalability and low overhead.
 * Built-in connection pooling
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
+* RxJava API
+* SSL/TLS
 
 *Not supported yet*
 
 * Prepared queries caching
-* Batch and cursor
+* Cursor
 * Row streaming
 * Some https://github.com/eclipse-vertx/vertx-sql-client/issues/608#issuecomment-629390027[data types] are not supported
 
@@ -131,6 +132,15 @@ You can configure the client to retry when a connection fails to be established.
 
 include::queries.adoc[leveloffset=1]
 
+== Working with `identity` columns
+
+You can retrieve the value of an `identity` column after inserting new data using the `OUTPUT` clause:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#identityColumn}
+----
+
 include::connections.adoc[]
 
 include::transactions.adoc[]
@@ -155,9 +165,13 @@ Currently, the client supports the following SQL Server types:
 * NCHAR/NVARCHAR(`java.lang.String`)
 * DATE(`java.time.LocalDate`)
 * TIME(`java.time.LocalTime`)
+* SMALLDATETIME(`java.time.LocalDateTime`)
+* DATETIME(`java.time.LocalDateTime`)
 * DATETIME2(`java.time.LocalDateTime`)
 * DATETIMEOFFSET(`java.time.OffsetDateTime`)
 * BINARY/VARBINARY(`io.vertx.core.buffer.Buffer`)
+* MONEY (`{@link java.math.BigDecimal}`)
+* SMALLMONEY (`{@link java.math.BigDecimal}`)
 
 Tuple decoding uses the above types when storing values.
 
@@ -216,3 +230,55 @@ create easily create a string directly from the row set:
 ----
 {@link examples.MSSQLClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
 ----
+
+== Using SSL/TLS
+
+=== Encryption level negotiation
+
+When a connection is established, the client and the server negotiate the encryption level.
+
+The negotiated level depends on the client config in {@link io.vertx.mssqlclient.MSSQLConnectOptions} and the server config:
+
+* no encryption: if `ssl` is set to `false` in client options, and the server does not support encryption
+* encrypt login packet only: if `ssl` is set to `false` in client options, and the server supports encryption
+* encrypt entire connection: if `ssl` is set to `true` in client options, or the server requires encryption
+
+[NOTE]
+====
+The negotiation fails if `ssl` is set to `true` in client options, and the server does not support encryption.
+In this case, the client terminates the connection.
+====
+
+=== Configuration
+
+To configure `ssl` in client options, use the {@link io.vertx.mssqlclient.MSSQLConnectOptions#setSsl} method.
+By default, `ssl` is set to `false`.
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#setSsl}
+----
+
+When `ssl` is set to `false`, the client trusts all server certificates.
+Otherwise, it performs hostname validation.
+
+If `ssl` is set to true in client options, and the server uses a self-signed certificate, hostname validation can be disabled:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#disableHostnameValidation}
+----
+
+Alternatively, the client can be configured to trust the server certificate with {@link io.vertx.core.net.TrustOptions}.
+For example, {@link io.vertx.core.net.PemTrustOptions} can be used if a PEM file contains the server certificate:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#usingTrustOptions}
+----
+
+For further details about SSL support in Vert.x, please refer to the https://vertx.io/docs/vertx-core/java/#ssl[Vert.x Core documentation].
+
+== Advanced pool configuration
+
+include::pool_config.adoc[]

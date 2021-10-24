@@ -16,6 +16,11 @@ public class MSSQLConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MSSQLConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "packetSize":
+          if (member.getValue() instanceof Number) {
+            obj.setPacketSize(((Number)member.getValue()).intValue());
+          }
+          break;
       }
     }
   }
@@ -25,5 +30,6 @@ public class MSSQLConnectOptionsConverter {
   }
 
   public static void toJson(MSSQLConnectOptions obj, java.util.Map<String, Object> json) {
+    json.put("packetSize", obj.getPacketSize());
   }
 }

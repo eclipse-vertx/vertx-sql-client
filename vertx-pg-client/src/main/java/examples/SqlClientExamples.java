@@ -16,13 +16,14 @@
  */
 package examples;
 
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -35,7 +36,6 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 @Source
@@ -328,8 +328,12 @@ public class SqlClientExamples {
               System.out.println("Error: " + err.getMessage());
             });
             stream.endHandler(v -> {
-              tx.commit();
-              System.out.println("End of stream");
+              // Close the stream to release the resources in the database
+              stream.close(closed -> {
+                tx.commit(committed -> {
+                  System.out.println("End of stream");
+                });
+              });
             });
             stream.handler(row -> {
               System.out.println("User: " + row.getString("last_name"));
@@ -342,5 +346,18 @@ public class SqlClientExamples {
 
   public void tracing01(PgConnectOptions options) {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
+  }
+
+  public void poolConfig01(PgConnectOptions server1, PgConnectOptions server2, PgConnectOptions server3, PoolOptions options) {
+    PgPool pool = PgPool.pool(Arrays.asList(server1, server2, server3), options);
+  }
+
+  public void poolConfig02(PgPool pool, String sql) {
+    pool.connectHandler(conn -> {
+      conn.query(sql).execute().onSuccess(res -> {
+        // Release the connection to the pool, ready to be used by the application
+        conn.close();
+      });
+    });
   }
 }
