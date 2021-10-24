@@ -16,8 +16,10 @@ package io.vertx.clickhouseclient.binary.impl;
 import io.vertx.clickhouseclient.binary.impl.codec.columns.ClickhouseColumnReader;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.NullValue;
 
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ClickhouseBinaryRowImpl implements Row {
@@ -99,5 +101,22 @@ public class ClickhouseBinaryRowImpl implements Row {
   @Override
   public void clear() {
     throw new IllegalStateException("not implemented");
+  }
+
+  @Override
+  public List<Class<?>> types() {
+    int len = size();
+    List<Class<?>> types = new ArrayList<>(len);
+    for (int i = 0; i < len; i++) {
+      Object param = getValue(i);
+      if (param instanceof NullValue) {
+        types.add(((NullValue) param).type());
+      } else if (param == null) {
+        types.add(Object.class);
+      } else {
+        types.add(param.getClass());
+      }
+    }
+    return types;
   }
 }

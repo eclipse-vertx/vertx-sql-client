@@ -281,4 +281,14 @@ public class SqlClientExamples {
   public void tracing01(ClickhouseBinaryConnectOptions options) {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
+
+  //TODO smagellan
+  public void poolConfig01(ClickhouseBinaryConnectOptions server1, ClickhouseBinaryConnectOptions server2, ClickhouseBinaryConnectOptions server3, PoolOptions options) {
+    throw new IllegalStateException("TODO smagellan");
+  }
+
+  //TODO smagellan
+  public void poolConfig02(Pool pool, String sql) {
+    throw new IllegalStateException("TODO smagellan");
+  }
 }

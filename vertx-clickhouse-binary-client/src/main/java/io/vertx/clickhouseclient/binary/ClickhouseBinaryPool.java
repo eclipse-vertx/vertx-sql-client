@@ -14,26 +14,31 @@
 package io.vertx.clickhouseclient.binary;
 
 import io.vertx.clickhouseclient.binary.impl.ClickhouseBinaryPoolImpl;
+import io.vertx.clickhouseclient.binary.spi.ClickhouseBinaryDriver;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 
+import java.util.Collections;
+import java.util.List;
+
 @VertxGen
 public interface ClickhouseBinaryPool extends Pool {
-  static ClickhouseBinaryPool pool(ClickhouseBinaryConnectOptions connectOptions, PoolOptions poolOptions) {
-    if (Vertx.currentContext() != null) {
-      throw new IllegalStateException("Running in a Vertx context => use ClickhouseNativePool#pool(Vertx, PgConnectOptions, PoolOptions) instead");
-    }
-    VertxOptions vertxOptions = new VertxOptions();
-    VertxInternal vertx = (VertxInternal) Vertx.vertx(vertxOptions);
-    return ClickhouseBinaryPoolImpl.create(vertx, true, connectOptions, poolOptions);
+  static ClickhouseBinaryPool pool(ClickhouseBinaryConnectOptions database, PoolOptions options) {
+    return pool(null, database, options);
   }
 
-
   static ClickhouseBinaryPool pool(Vertx vertx, ClickhouseBinaryConnectOptions connectOptions, PoolOptions poolOptions) {
-    return ClickhouseBinaryPoolImpl.create((VertxInternal)vertx, false, connectOptions, poolOptions);
+    return ClickhouseBinaryPoolImpl.create((VertxInternal)vertx, Collections.singletonList(connectOptions), poolOptions);
+  }
+
+  static ClickhouseBinaryPool pool(List<ClickhouseBinaryConnectOptions> databases, PoolOptions options) {
+    return pool(null, databases, options);
+  }
+
+  static ClickhouseBinaryPool pool(Vertx vertx, List<ClickhouseBinaryConnectOptions> databases, PoolOptions options) {
+    return new ClickhouseBinaryDriver().createPool(vertx, databases, options);
   }
 }

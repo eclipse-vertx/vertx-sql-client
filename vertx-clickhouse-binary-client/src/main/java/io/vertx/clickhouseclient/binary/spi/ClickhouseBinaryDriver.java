@@ -15,33 +15,30 @@ package io.vertx.clickhouseclient.binary.spi;
 
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnectOptions;
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryPool;
+import io.vertx.clickhouseclient.binary.impl.ClickhouseBinaryConnectionFactory;
+import io.vertx.clickhouseclient.binary.impl.ClickhouseBinaryPoolImpl;
 import io.vertx.core.Vertx;
-import io.vertx.sqlclient.Pool;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
+
+import java.util.List;
 
 public class ClickhouseBinaryDriver implements Driver {
   @Override
-  public Pool createPool(SqlConnectOptions options, PoolOptions poolOptions) {
-    return ClickhouseBinaryPool.pool(wrap(options), poolOptions);
+  public ClickhouseBinaryPool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions poolOptions) {
+    return ClickhouseBinaryPoolImpl.create((VertxInternal) vertx, databases, poolOptions);
   }
 
   @Override
-  public Pool createPool(Vertx vertx, SqlConnectOptions options, PoolOptions poolOptions) {
-    return ClickhouseBinaryPool.pool(vertx, wrap(options), poolOptions);
+  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+    return new ClickhouseBinaryConnectionFactory((VertxInternal) vertx, ClickhouseBinaryConnectOptions.wrap(database));
   }
 
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof ClickhouseBinaryConnectOptions || SqlConnectOptions.class.equals(options.getClass());
-  }
-
-  private static ClickhouseBinaryConnectOptions wrap(SqlConnectOptions options) {
-    if (options instanceof ClickhouseBinaryConnectOptions) {
-      return (ClickhouseBinaryConnectOptions) options;
-    } else {
-      return new ClickhouseBinaryConnectOptions(options);
-    }
   }
 }

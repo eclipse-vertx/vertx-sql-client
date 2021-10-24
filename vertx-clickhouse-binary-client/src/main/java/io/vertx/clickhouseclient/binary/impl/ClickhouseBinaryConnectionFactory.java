@@ -15,8 +15,9 @@ package io.vertx.clickhouseclient.binary.impl;
 
 import io.vertx.clickhouseclient.binary.ClickhouseConstants;
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnectOptions;
+import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
@@ -24,19 +25,21 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.ConnectionFactory;
-import io.vertx.sqlclient.impl.SqlConnectionFactoryBase;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import net.jpountz.lz4.LZ4Factory;
 
-public class ClickhouseBinaryConnectionFactory extends SqlConnectionFactoryBase implements ConnectionFactory {
+public class ClickhouseBinaryConnectionFactory extends ConnectionFactoryBase {
   private static final Logger LOG = LoggerFactory.getLogger(ClickhouseBinaryConnectionFactory.class);
 
   private final LZ4Factory lz4Factory;
 
-  ClickhouseBinaryConnectionFactory(VertxInternal vertx, ClickhouseBinaryConnectOptions options) {
+  public ClickhouseBinaryConnectionFactory(VertxInternal vertx, ClickhouseBinaryConnectOptions options) {
     super(vertx, options);
     this.lz4Factory = lz4FactoryForName(options.getProperties().getOrDefault(ClickhouseConstants.OPTION_COMPRESSOR, "none"));
   }
@@ -69,25 +72,39 @@ public class ClickhouseBinaryConnectionFactory extends SqlConnectionFactoryBase 
   }
 
   @Override
-  protected void doConnectInternal(Promise<Connection> promise) {
-    PromiseInternal<Connection> promiseInternal = (PromiseInternal<Connection>) promise;
-    doConnect(ConnectionFactory.asEventLoopContext(promiseInternal.context())).flatMap(conn -> {
+  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
+    return doConnect(server, context).flatMap(conn -> {
       ClickhouseBinarySocketConnection socket = (ClickhouseBinarySocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
         .map(conn);
-    }).onComplete(promise);
+    });
   }
 
-  private Future<Connection> doConnect(EventLoopContext ctx) {
+  private Future<Connection> doConnect(SocketAddress server, EventLoopContext ctx) {
     Future<NetSocket> soFut;
     try {
-      soFut = netClient.connect(socketAddress, (String) null);
+      soFut = netClient.connect(server, (String) null);
     } catch (Exception e) {
       // Client is closed
       return ctx.failedFuture(e);
     }
     return soFut.map(so -> newSocketConnection(ctx, (NetSocketInternal) so));
+  }
+
+  @Override
+  public Future<SqlConnection> connect(Context context) {
+    ContextInternal contextInternal = (ContextInternal) context;
+    PromiseInternal<SqlConnection> promise = contextInternal.promise();
+    connect(asEventLoopContext(contextInternal))
+      .map(conn -> {
+        QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
+        ClickhouseBinaryConnectionImpl pgConn = new ClickhouseBinaryConnectionImpl(this, contextInternal, conn, tracer, null);
+        conn.init(pgConn);
+        return (SqlConnection)pgConn;
+      })
+      .onComplete(promise);
+    return promise.future();
   }
 
   private ClickhouseBinarySocketConnection newSocketConnection(EventLoopContext ctx, NetSocketInternal socket) {

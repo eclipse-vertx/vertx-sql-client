@@ -114,6 +114,13 @@ public class ClickhouseBinaryColumnDescriptor implements ColumnDescriptor {
     return jdbcType;
   }
 
+  @Override
+  public String typeName() {
+    return unparsedNativeType;
+  }
+
+  //TODO smagellan: remove?
+  @Deprecated
   public String getUnparsedNativeType() {
     return unparsedNativeType;
   }

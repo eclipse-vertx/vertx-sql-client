@@ -13,8 +13,6 @@
 
 package io.vertx.clickhouseclient.binary;
 
-import io.vertx.clickhouseclient.binary.ClickhouseConstants;
-import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnectOptions;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.ClickHouseContainer;
 import org.testcontainers.utility.DockerImageName;

@@ -21,6 +21,14 @@ import io.vertx.sqlclient.SqlConnectOptions;
 @DataObject(generateConverter = true)
 public class ClickhouseBinaryConnectOptions extends SqlConnectOptions {
 
+  public static ClickhouseBinaryConnectOptions wrap(SqlConnectOptions options) {
+    if (options instanceof ClickhouseBinaryConnectOptions) {
+      return (ClickhouseBinaryConnectOptions) options;
+    } else {
+      return new ClickhouseBinaryConnectOptions(options);
+    }
+  }
+
   public static ClickhouseBinaryConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
     JsonObject parsedConfiguration = ClickhouseBinaryConnectionUriParser.parse(connectionUri);
     return new ClickhouseBinaryConnectOptions(parsedConfiguration);

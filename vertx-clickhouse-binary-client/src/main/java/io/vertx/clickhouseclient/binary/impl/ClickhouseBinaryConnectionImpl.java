@@ -17,16 +17,14 @@ import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnectOptions;
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnection;
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
 public class ClickhouseBinaryConnectionImpl extends SqlConnectionImpl<ClickhouseBinaryConnectionImpl> implements ClickhouseBinaryConnection {
-  private final ClickhouseBinaryConnectionFactory factory;
-
   public static Future<ClickhouseBinaryConnection> connect(ContextInternal ctx, ClickhouseBinaryConnectOptions options) {
     ClickhouseBinaryConnectionFactory client;
     try {
@@ -35,19 +33,11 @@ public class ClickhouseBinaryConnectionImpl extends SqlConnectionImpl<Clickhouse
       return ctx.failedFuture(e);
     }
     ctx.addCloseHook(client);
-    QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
-    PromiseInternal<Connection> promise = ctx.promise();
-    client.connect(promise);
-    return promise.future().map(conn -> {
-      ClickhouseBinaryConnectionImpl mySQLConnection = new ClickhouseBinaryConnectionImpl(client, ctx, conn, tracer, null);
-      conn.init(mySQLConnection);
-      return mySQLConnection;
-    });
+    return (Future)client.connect(ctx);
   }
 
-  ClickhouseBinaryConnectionImpl(ClickhouseBinaryConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, conn, tracer, metrics);
-    this.factory = factory;
+  ClickhouseBinaryConnectionImpl(ConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    super(context, factory, conn, tracer, metrics);
   }
 
   @Override
