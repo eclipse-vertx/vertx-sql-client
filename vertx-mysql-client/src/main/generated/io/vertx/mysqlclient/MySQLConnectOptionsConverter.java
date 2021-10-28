@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.impl.JsonUtil;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
 /**
  * Converter and mapper for {@link io.vertx.mysqlclient.MySQLConnectOptions}.
@@ -12,6 +13,9 @@ import java.time.format.DateTimeFormatter;
  */
 public class MySQLConnectOptionsConverter {
 
+
+  private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
+  private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MySQLConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
@@ -43,7 +47,7 @@ public class MySQLConnectOptionsConverter {
           break;
         case "serverRsaPublicKeyValue":
           if (member.getValue() instanceof String) {
-            obj.setServerRsaPublicKeyValue(io.vertx.core.buffer.Buffer.buffer(JsonUtil.BASE64_DECODER.decode((String)member.getValue())));
+            obj.setServerRsaPublicKeyValue(io.vertx.core.buffer.Buffer.buffer(BASE64_DECODER.decode((String)member.getValue())));
           }
           break;
         case "sslMode":
@@ -81,7 +85,7 @@ public class MySQLConnectOptionsConverter {
       json.put("serverRsaPublicKeyPath", obj.getServerRsaPublicKeyPath());
     }
     if (obj.getServerRsaPublicKeyValue() != null) {
-      json.put("serverRsaPublicKeyValue", JsonUtil.BASE64_ENCODER.encodeToString(obj.getServerRsaPublicKeyValue().getBytes()));
+      json.put("serverRsaPublicKeyValue", BASE64_ENCODER.encodeToString(obj.getServerRsaPublicKeyValue().getBytes()));
     }
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());
