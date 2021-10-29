@@ -103,7 +103,7 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
   }
 
   void handleAuthenticationSaslFinal(ByteBuf in) {
-  logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSaslFinal");
+    logger.warn(getClass().getSimpleName() + " should handle message AuthenticationSaslFinal");
   }
 
   void handleAuthenticationClearTextPassword() {
@@ -115,7 +115,7 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
   }
 
   void handleParameterStatus(String key, String value) {
-    logger.warn("Parameter " + key + " changed to " + value);
+    logger.debug("Parameter " + key + " changed to " + value);
   }
 
   /**
