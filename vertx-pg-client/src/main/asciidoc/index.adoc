@@ -232,11 +232,20 @@ NOTE: SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
 
 include::queries.adoc[leveloffset=1]
 
+== Returning clauses
+
 You can fetch generated keys with a 'RETURNING' clause in your query:
 
 [source,$lang]
 ----
-{@link examples.PgClientExamples#returning(io.vertx.sqlclient.SqlClient)}
+{@link examples.PgClientExamples#insertReturning(io.vertx.sqlclient.SqlClient)}
+----
+
+This works with any SQL as long as there is a `RETURNING` clause:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#deleteReturning(io.vertx.sqlclient.SqlClient)}
 ----
 
 A batch query with a `RETURNING` clause creates a {@link io.vertx.sqlclient.RowSet}

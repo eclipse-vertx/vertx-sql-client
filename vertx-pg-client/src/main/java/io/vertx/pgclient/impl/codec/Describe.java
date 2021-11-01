@@ -22,10 +22,10 @@ package io.vertx.pgclient.impl.codec;
  */
 class Describe {
 
-  final long statement;
+  final byte[] statement;
   final String portal;
 
-  Describe(long statement, String portal) {
+  Describe(byte[] statement, String portal) {
     this.statement = statement;
     this.portal = portal;
   }

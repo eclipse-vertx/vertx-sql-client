@@ -37,10 +37,10 @@ import static java.lang.String.format;
  */
 public class PgConnectionUriParser {
   private static final String SCHEME_DESIGNATOR_REGEX = "postgre(s|sql)://"; // URI scheme designator
-  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!]+(:[a-zA-Z0-9\\-._~%!]+)?)@)?"; // user name and password
+  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!*]+(:[a-zA-Z0-9\\-._~%!*]+)?)@)?"; // user name and password
   private static final String NET_LOCATION_REGEX = "(?<netloc>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)?"; // ip v4/v6 address, host, domain socket address TODO multi-host not supported yet
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
-  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!]+))?"; // database name
+  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
   private static final String PARAMS_REGEX = "(\\?(?<params>.*))?"; // parameters
 
   private static final String FULL_URI_REGEX = "^" // regex start

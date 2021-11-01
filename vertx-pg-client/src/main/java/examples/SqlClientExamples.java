@@ -328,8 +328,12 @@ public class SqlClientExamples {
               System.out.println("Error: " + err.getMessage());
             });
             stream.endHandler(v -> {
-              tx.commit();
-              System.out.println("End of stream");
+              // Close the stream to release the resources in the database
+              stream.close(closed -> {
+                tx.commit(committed -> {
+                  System.out.println("End of stream");
+                });
+              });
             });
             stream.handler(row -> {
               System.out.println("User: " + row.getString("last_name"));

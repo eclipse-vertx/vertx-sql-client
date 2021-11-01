@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.sqlclient.templates;
 
 import io.vertx.codegen.annotations.GenIgnore;
@@ -13,6 +24,7 @@ import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.templates.impl.SqlTemplateImpl;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -81,7 +93,14 @@ public interface SqlTemplate<I, R> {
    * @return a new template
    */
   default <T> SqlTemplate<T, R> mapFrom(Class<T> type) {
-    return mapFrom(TupleMapper.mapper(params -> JsonObject.mapFrom(params).getMap()));
+    return mapFrom(TupleMapper.mapper(params -> {
+      JsonObject jsonObject = JsonObject.mapFrom(params);
+      Map<String, Object> map = new LinkedHashMap<>(jsonObject.size());
+      for (String fieldName : jsonObject.fieldNames()) {
+        map.put(fieldName, jsonObject.getValue(fieldName));
+      }
+      return map;
+    }));
   }
 
   /**

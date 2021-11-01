@@ -22,11 +22,11 @@ package io.vertx.pgclient.impl.codec;
  */
 final class Bind {
 
-  final long statement;
+  final byte[] statement;
   final DataType[] paramTypes;
   final PgColumnDesc[] resultColumns;
 
-  Bind(long statement, DataType[] paramTypes, PgColumnDesc[] resultColumns) {
+  Bind(byte[] statement, DataType[] paramTypes, PgColumnDesc[] resultColumns) {
     this.statement = statement;
     this.paramTypes = paramTypes;
     this.resultColumns = resultColumns;

@@ -384,7 +384,7 @@ public class SqlClientExamples {
   }
 
   public void poolConfig01(SqlConnectOptions server1, SqlConnectOptions server2, SqlConnectOptions server3, PoolOptions options) {
-    Pool pool = Pool.pool(Arrays.asList(server1, server2, server3), options);
+    // Not generic
   }
 
   public void poolConfig02(Pool pool, String sql) {

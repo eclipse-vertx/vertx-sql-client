@@ -19,6 +19,7 @@ import io.vertx.core.buffer.Buffer;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
 import java.time.*;
@@ -115,7 +116,27 @@ public enum DataType {
       return byteBuf.readIntLE();
     }
   },
-  DATETIM4(0x3A),
+  DATETIM4(0x3A) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      return null;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.TIMESTAMP;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      return decodeUnsignedShortDateValue(byteBuf);
+    }
+
+    @Override
+    public String paramDefinition(Object value) {
+      return "smalldatetime";
+    }
+  },
   FLT4(0x3B) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
@@ -132,7 +153,25 @@ public enum DataType {
       return byteBuf.readFloatLE();
     }
   },
-  MONEY(0x3C),
+  MONEY(0x3C) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      return null;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      long highBits = (long) byteBuf.readIntLE() << 32;
+      long lowBits = byteBuf.readIntLE() & 0xFFFFFFFFL;
+      BigInteger bigInteger = BigInteger.valueOf(highBits | lowBits);
+      return new BigDecimal(bigInteger).divide(new BigDecimal("10000"), 4, RoundingMode.UP);
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.DECIMAL;
+    }
+  },
   DATETIME(0x3D) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
@@ -146,10 +185,7 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readIntLE(), ChronoUnit.DAYS);
-      long nanoOfDay = NANOSECONDS.convert(Math.round(byteBuf.readIntLE() * (3 + 1D / 3)), MILLISECONDS);
-      LocalTime localTime = LocalTime.ofNanoOfDay(nanoOfDay);
-      return LocalDateTime.of(localDate, localTime);
+      return decodeIntLEDateValue(byteBuf);
     }
   },
   FLT8(0x3E) {
@@ -168,7 +204,22 @@ public enum DataType {
       return byteBuf.readDoubleLE();
     }
   },
-  MONEY4(0x7A),
+  MONEY4(0x7A){
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      return null;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      return new BigDecimal(byteBuf.readIntLE()).divide(new BigDecimal("10000"), 2, RoundingMode.UP);
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.DECIMAL;
+    }
+  },
   INT8(0x7F) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
@@ -391,8 +442,60 @@ public enum DataType {
       } else throw new IllegalArgumentException();
     }
   },
-  MONEYN(0x6E),
-  DATETIMN(0x6F),
+  MONEYN(0x6E) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      Metadata metadata = new Metadata();
+      metadata.scale = byteBuf.readByte();
+      return metadata;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      int length = byteBuf.readByte();
+      if (length == 0) return null;
+      if (length == 4) return MONEY4.decodeValue(byteBuf, metadata);
+      if (length == 8) return MONEY.decodeValue(byteBuf, metadata);
+      throw new IllegalArgumentException("Invalid length: " + length);
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.DECIMAL;
+    }
+  },
+  DATETIMN(0x6F) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      Metadata metadata = new Metadata();
+      metadata.scale = byteBuf.readByte();
+      return metadata;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.TIMESTAMP;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      byte length = byteBuf.readByte();
+      if (length == 0) return null;
+
+      if (length == 8) {
+        return decodeIntLEDateValue(byteBuf);
+      } else if (length == 4) {
+        return decodeUnsignedShortDateValue(byteBuf);
+      } else {
+        throw new UnsupportedOperationException("Invalid length for date " + name());
+      }
+    }
+
+    @Override
+    public String paramDefinition(Object value) {
+      return "datetime";
+    }
+  },
   DATEN(0x28) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
@@ -753,6 +856,19 @@ public enum DataType {
     public String toString() {
       return "Metadata{" + "length=" + length + ", precision=" + precision + ", scale=" + scale + '}';
     }
+  }
+
+  public LocalDateTime decodeIntLEDateValue(ByteBuf byteBuf) {
+    LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readIntLE(), ChronoUnit.DAYS);
+    long nanoOfDay = NANOSECONDS.convert(Math.round(byteBuf.readIntLE() * (3 + 1D / 3)), MILLISECONDS);
+    LocalTime localTime = LocalTime.ofNanoOfDay(nanoOfDay);
+    return LocalDateTime.of(localDate, localTime);
+  }
+
+  public LocalDateTime decodeUnsignedShortDateValue(ByteBuf byteBuf) {
+    LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readUnsignedShortLE(), ChronoUnit.DAYS);
+    LocalTime localTime = LocalTime.ofSecondOfDay(byteBuf.readUnsignedShortLE() * 60L);
+    return LocalDateTime.of(localDate, localTime);
   }
 
   public Metadata decodeMetadata(ByteBuf byteBuf) {

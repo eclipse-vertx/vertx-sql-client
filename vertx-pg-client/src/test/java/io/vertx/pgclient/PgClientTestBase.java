@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
@@ -25,6 +26,7 @@ import io.vertx.core.*;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.impl.SqlClientInternal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +34,7 @@ import org.junit.Test;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -141,6 +144,28 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
     }));
   }
 
+  @Test
+  public void testDeleteReturningBatch(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(client -> {
+      deleteFromTestTable(ctx, client, () -> {
+        List<Tuple> batch = Arrays.asList(
+          Tuple.of(14, "SomeMessage1"),
+          Tuple.of(15, "SomeMessage2"));
+        client
+          .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2)")
+          .executeBatch(batch)
+          .compose(res -> client.query("DELETE FROM Test RETURNING id")
+            .collecting(Collectors.toMap(row -> row.getInteger(0), row -> "whatever"))
+            .execute()).onComplete(ctx.asyncAssertSuccess(res -> {
+            ctx.assertEquals(2, res.size());
+            ctx.assertEquals(new HashSet<>(Arrays.asList(14, 15)), res.value().keySet());
+            async.complete();
+          }));
+      });
+    }));
+  }
+
   static int randomWorld() {
     return 1 + ThreadLocalRandom.current().nextInt(10000);
   }
@@ -194,6 +219,20 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
           async.complete();
         }));
       }));
+    }));
+  }
+
+  @Test
+  public void testGrouping(TestContext ctx) {
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      ((SqlClientInternal)conn).group(client -> {
+        client.query("SHOW TIME ZONE").execute(ctx.asyncAssertSuccess(res -> {
+          ctx.assertEquals(1, res.size());
+          Row row = res.iterator().next();
+          ctx.assertEquals("PST8PDT", row.getString(0));
+        }));
+        conn.query("SET TIME ZONE 'PST8PDT'").execute(ctx.asyncAssertSuccess());
+      });
     }));
   }
 }

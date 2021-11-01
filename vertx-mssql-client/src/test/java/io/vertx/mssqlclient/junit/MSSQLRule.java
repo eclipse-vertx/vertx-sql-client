@@ -11,23 +11,45 @@
 
 package io.vertx.mssqlclient.junit;
 
+import io.vertx.core.impl.Arguments;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.MSSQLServerContainer;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.ZoneId;
 
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.WRITE;
+import static org.testcontainers.containers.BindMode.READ_ONLY;
 import static org.testcontainers.containers.MSSQLServerContainer.MS_SQL_SERVER_PORT;
 
 public class MSSQLRule extends ExternalResource {
+
+  public static final MSSQLRule SHARED_INSTANCE = new MSSQLRule(false, false);
+
+  private final boolean tls;
+  private final boolean forceEncryption;
+
   private ServerContainer<?> server;
   private MSSQLConnectOptions options;
+  private Path conf;
 
-  public static final MSSQLRule SHARED_INSTANCE = new MSSQLRule();
+  public MSSQLRule(boolean tls, boolean forceEncryption) {
+    Arguments.require(!forceEncryption || tls, "Cannot force encryption without TLS support");
+    this.tls = tls;
+    this.forceEncryption = forceEncryption;
+  }
 
   @Override
-  protected void before() {
+  protected void before() throws IOException {
     String connectionUri = System.getProperty("connection.uri");
     if (!isNullOrEmpty(connectionUri)) {
       // use an external database for testing
@@ -48,7 +70,7 @@ public class MSSQLRule extends ExternalResource {
     }
   }
 
-  private MSSQLConnectOptions startMSSQL() {
+  private MSSQLConnectOptions startMSSQL() throws IOException {
     String containerVersion = System.getProperty("mssql-container.version");
     if (containerVersion == null || containerVersion.isEmpty()) {
       containerVersion = "2017-latest";
@@ -62,6 +84,13 @@ public class MSSQLRule extends ExternalResource {
     } else {
       server.withExposedPorts(MS_SQL_SERVER_PORT);
     }
+    if (tls) {
+      conf = createConf();
+      server
+        .withFileSystemBind(conf.toAbsolutePath().toString(), "/var/opt/mssql/mssql.conf", READ_ONLY)
+        .withClasspathResourceMapping("mssql.key", "/etc/ssl/certs/mssql.key", READ_ONLY)
+        .withClasspathResourceMapping("mssql.pem", "/etc/ssl/certs/mssql.pem", READ_ONLY);
+    }
     server.start();
 
     return new MSSQLConnectOptions()
@@ -71,12 +100,30 @@ public class MSSQLRule extends ExternalResource {
       .setPassword(server.getPassword());
   }
 
+  private Path createConf() throws IOException {
+    Path path = Files.createTempFile("mssql.conf", null);
+    URL resource = getClass().getClassLoader().getResource("mssql.conf");
+    try (InputStream is = resource.openStream()) {
+      Files.copy(is, path, REPLACE_EXISTING);
+    }
+    if (forceEncryption) {
+      Files.write(path, "forceencryption = 1".getBytes(StandardCharsets.UTF_8), WRITE, APPEND);
+    }
+    return path;
+  }
+
   private void stopMSSQL() {
     if (server != null) {
       try {
         server.stop();
       } finally {
         server = null;
+      }
+    }
+    if (conf != null) {
+      try {
+        Files.delete(conf);
+      } catch (IOException ignored) {
       }
     }
   }

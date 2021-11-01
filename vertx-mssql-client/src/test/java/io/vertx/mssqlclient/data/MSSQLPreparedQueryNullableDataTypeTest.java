@@ -271,11 +271,53 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   }
 
   @Test
+  public void testEncodeNullSmallDateTime(TestContext ctx) {
+    testEncodeSmallDateTimeValue(ctx, LOCALDATETIME_NULL_VALUE);
+  }
+
+  private void testEncodeSmallDateTimeValue(TestContext ctx, LocalDateTime value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_smalldatetime", value, row -> {
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_smalldatetime");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker.returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, value)
+          .returns(Tuple::getLocalDate, Row::getLocalDate, value.toLocalDate())
+          .returns(Tuple::getLocalTime, Row::getLocalTime, value.toLocalTime())
+          .returns(LocalDateTime.class, value)
+          .forRow(row);
+      }
+    });
+  }
+
+  @Test
   public void testEncodeNullDateTime(TestContext ctx) {
     testEncodeDateTimeValue(ctx, LOCALDATETIME_NULL_VALUE);
   }
 
   private void testEncodeDateTimeValue(TestContext ctx, LocalDateTime value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_datetime", value, row -> {
+      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_datetime");
+      if (value == null) {
+        checker.returnsNull();
+      } else {
+        checker.returns(Tuple::getValue, Row::getValue, value)
+          .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, value)
+          .returns(Tuple::getLocalDate, Row::getLocalDate, value.toLocalDate())
+          .returns(Tuple::getLocalTime, Row::getLocalTime, value.toLocalTime())
+          .returns(LocalDateTime.class, value)
+          .forRow(row);
+      }
+    });
+  }
+
+  @Test
+  public void testEncodeNullDateTime2(TestContext ctx) {
+    testEncodeDateTime2Value(ctx, LOCALDATETIME_NULL_VALUE);
+  }
+
+  private void testEncodeDateTime2Value(TestContext ctx, LocalDateTime value) {
     testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_datetime2", value, row -> {
       ColumnChecker checker = ColumnChecker.checkColumn(0, "test_datetime2");
       if (value == null) {
@@ -343,6 +385,16 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   private void testEncodeBufferValue(TestContext ctx, String columnName, Object value) {
     testEncodeBufferValue(ctx, columnName, value, value);
+  }
+
+  @Test
+  public void testEncodeNullMoney(TestContext ctx) {
+    testEncodeNumber(ctx, "test_money", new BigDecimal("123.1313"));
+  }
+
+  @Test
+  public void testEncodeNullSmallMoney(TestContext ctx) {
+    testEncodeNumber(ctx, "test_smallmoney", new BigDecimal("123.13"));
   }
 
   private void testEncodeBufferValue(TestContext ctx, String columnName, Object value, Object expected) {

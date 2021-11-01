@@ -96,6 +96,8 @@ public interface Tuple {
    * Wrap the provided {@code list} with a tuple.
    * <br/>
    * The list is not copied and is used as store for tuple elements.
+   * <br/>
+   * Note: The list might be modified and users should use {@link #tuple(List)} if the list is unmodifiable
    *
    * @return the list wrapped as a tuple
    */

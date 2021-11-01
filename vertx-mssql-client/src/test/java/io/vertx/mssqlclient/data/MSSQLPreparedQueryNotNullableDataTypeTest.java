@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 import java.time.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -120,7 +121,9 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   @Test
   @Repeat(100)
   public void testEncodeTime(TestContext ctx) {
-    LocalTime now = LocalTime.now();
+    // Make sure the number of significant digits matches the column precision
+    int nanoOfSecond = 1_000 * ThreadLocalRandom.current().nextInt(1_000_000);
+    LocalTime now = LocalTime.now().withNano(nanoOfSecond);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_time", now, row -> {
       ColumnChecker.checkColumn(0, "test_time")
         .returns(Tuple::getValue, Row::getValue, now)
@@ -132,8 +135,56 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
 
   @Test
   @Repeat(100)
-  public void testEncodeDateTime(TestContext ctx) {
+  public void testEncodeSmallDateTime(TestContext ctx) {
     LocalDateTime now = LocalDateTime.now();
+    // Seconds are rounded to the nearest minute
+    int roundedUpMinute = (int) Math.floor(now.getSecond()/30.0);
+    LocalDateTime convertedNow = now.withSecond(0).withNano(0).withMinute(now.getMinute() + roundedUpMinute);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_smalldatetime", now, row -> {
+      ColumnChecker.checkColumn(0, "test_smalldatetime")
+        .returns(Tuple::getValue, Row::getValue, convertedNow)
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, convertedNow)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, convertedNow.toLocalDate())
+        .returns(Tuple::getLocalTime, Row::getLocalTime, convertedNow.toLocalTime())
+        .returns(LocalDateTime.class, convertedNow)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  @Repeat(100)
+  public void testEncodeDateTime(TestContext ctx) {
+    final int nanosPerSecond = 1000000000;
+    LocalDateTime now = LocalDateTime.now();
+
+    // Reduce accuracy since datatype accuracy is rounded to increments of .000, .003, or .007 seconds
+    int nanoOfDay = (int) Math.round(Math.round((now.getNano()/1000000d)/3.333333)*3.333333)*1000000;
+    int secondOfDay = now.getSecond();
+
+    // If nanoseconds is rounded up to one second
+    if (nanoOfDay == nanosPerSecond) {
+      nanoOfDay = 0;
+      secondOfDay++;
+    }
+
+    LocalDateTime convertedNow = now.withNano(nanoOfDay).withSecond(secondOfDay);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime", now, row -> {
+      ColumnChecker.checkColumn(0, "test_datetime")
+        .returns(Tuple::getValue, Row::getValue, convertedNow)
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, convertedNow)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, convertedNow.toLocalDate())
+        .returns(Tuple::getLocalTime, Row::getLocalTime, convertedNow.toLocalTime())
+        .returns(LocalDateTime.class, convertedNow)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  @Repeat(100)
+  public void testEncodeDateTime2(TestContext ctx) {
+    // Make sure the number of significant digits matches the column precision
+    int nanoOfSecond = 100 * ThreadLocalRandom.current().nextInt(10_000_000);
+    LocalDateTime now = LocalDateTime.now().withNano(nanoOfSecond);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime2", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetime2")
         .returns(Tuple::getValue, Row::getValue, now)
@@ -148,7 +199,10 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   @Test
   @Repeat(100)
   public void testEncodeOffsetDateTime(TestContext ctx) {
-    OffsetDateTime now = LocalDateTime.now().atOffset(ZoneOffset.ofHoursMinutes(-3, -15));
+    // Make sure the number of significant digits matches the column precision
+    int nanoOfSecond = ThreadLocalRandom.current().nextInt(100_000) * 10_000;
+    OffsetDateTime now = LocalDateTime.now().withNano(nanoOfSecond)
+      .atOffset(ZoneOffset.ofHoursMinutes(-3, -15));
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetimeoffset", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetimeoffset")
         .returns(Tuple::getValue, Row::getValue, now)
@@ -183,6 +237,20 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
         .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("ninja plumber"))
         .returns(Buffer.class, Buffer.buffer("ninja plumber"))
         .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeMoney(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_money", "€12.1234", row -> {
+      checkNumber(row, "test_money", new BigDecimal("12.1234"));
+    });
+  }
+
+  @Test
+  public void testEncodeSmallMoney(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_smallmoney", "€12.12", row -> {
+      checkNumber(row, "test_smallmoney", new BigDecimal("12.12"));
     });
   }
 

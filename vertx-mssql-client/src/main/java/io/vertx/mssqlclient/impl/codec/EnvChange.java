@@ -14,26 +14,26 @@ package io.vertx.mssqlclient.impl.codec;
 @SuppressWarnings("unused")
 public class EnvChange {
 
-  public static final int DATABASE = 1;
-  public static final int LANGUAGE = 2;
-  public static final int CHARSET = 3;
-  public static final int PACKETSIZE = 4;
-  public static final int SORTLOCALEID = 5;
-  public static final int SORTFLAGS = 6;
-  public static final int SQLCOLLATION = 7;
-  public static final int XACT_BEGIN = 8;
-  public static final int XACT_COMMIT = 9;
-  public static final int XACT_ROLLBACK = 10;
-  public static final int DTC_ENLIST = 11;
-  public static final int DTC_DEFECT = 12;
-  public static final int CHANGE_MIRROR = 13;
-  public static final int UNUSED_14 = 14;
-  public static final int DTC_PROMOTE = 15;
-  public static final int DTC_MGR_ADDR = 16;
-  public static final int XACT_ENDED = 17;
-  public static final int RESET_COMPLETE = 18;
-  public static final int USER_INFO = 19;
-  public static final int ROUTING = 20;
+  public static final short DATABASE = 1;
+  public static final short LANGUAGE = 2;
+  public static final short CHARSET = 3;
+  public static final short PACKETSIZE = 4;
+  public static final short SORTLOCALEID = 5;
+  public static final short SORTFLAGS = 6;
+  public static final short SQLCOLLATION = 7;
+  public static final short XACT_BEGIN = 8;
+  public static final short XACT_COMMIT = 9;
+  public static final short XACT_ROLLBACK = 10;
+  public static final short DTC_ENLIST = 11;
+  public static final short DTC_DEFECT = 12;
+  public static final short CHANGE_MIRROR = 13;
+  public static final short UNUSED_14 = 14;
+  public static final short DTC_PROMOTE = 15;
+  public static final short DTC_MGR_ADDR = 16;
+  public static final short XACT_ENDED = 17;
+  public static final short RESET_COMPLETE = 18;
+  public static final short USER_INFO = 19;
+  public static final short ROUTING = 20;
 
   private EnvChange() {
     // Constants

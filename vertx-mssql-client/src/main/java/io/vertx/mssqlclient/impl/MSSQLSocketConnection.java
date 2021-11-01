@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,14 +12,24 @@
 package io.vertx.mssqlclient.impl;
 
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.ssl.SslHandler;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.mssqlclient.impl.codec.MSSQLCodec;
+import io.vertx.core.net.impl.SSLHelper;
+import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
+import io.vertx.mssqlclient.MSSQLConnectOptions;
+import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
+import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
+import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
+import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
+import io.vertx.mssqlclient.impl.command.PreLoginResponse;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -31,36 +41,85 @@ import java.util.function.Predicate;
 
 import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 
-class MSSQLSocketConnection extends SocketConnectionBase {
+public class MSSQLSocketConnection extends SocketConnectionBase {
 
-  public MSSQLDatabaseMetadata dbMetaData;
+  private final int packetSize;
+
+  private MSSQLDatabaseMetadata databaseMetadata;
+  private SocketAddress alternateServer;
 
   MSSQLSocketConnection(NetSocketInternal socket,
+                        int packetSize,
                         boolean cachePreparedStatements,
                         int preparedStatementCacheSize,
                         Predicate<String> preparedStatementCacheSqlFilter,
                         int pipeliningLimit,
                         EventLoopContext context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    this.packetSize = packetSize;
   }
 
-  // TODO RETURN FUTURE ???
-  // command response should show what capabilities server provides
-  void sendPreLoginMessage(boolean ssl, Handler<AsyncResult<Void>> completionHandler) {
-    PreLoginCommand cmd = new PreLoginCommand(ssl);
-    schedule(context, cmd).onComplete(completionHandler);
+  Future<Byte> sendPreLoginMessage(boolean clientConfigSsl) {
+    PreLoginCommand cmd = new PreLoginCommand(clientConfigSsl);
+    return schedule(context, cmd).onSuccess(resp -> setDatabaseMetadata(resp.metadata())).map(PreLoginResponse::encryptionLevel);
   }
 
-  // TODO RETURN FUTURE ???
-  void sendLoginMessage(String username, String password, String database, Map<String, String> properties, Handler<AsyncResult<Connection>> completionHandler) {
+  Future<Void> enableSsl(boolean clientConfigSsl, byte encryptionLevel, MSSQLConnectOptions options) {
+    // While handshaking, MS SQL requires to encapsulate SSL traffic in TDS packets
+    // So it is not possible to rely on the NetSocket.upgradeToSsl method
+    // Instead, we need a custom channel pipeline configuration
+
+    ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
+    PromiseInternal<Void> promise = context.promise();
+
+    // 1. Install the SSL handshake completion handler
+    ChannelPromise p = pipeline.newPromise();
+    pipeline.addFirst("handshaker", new SslHandshakeCompletionHandler(p));
+    p.addListener(future -> {
+      if (future.isSuccess()) {
+        // Handshaking successful, remove the codec that manages encapsulation of SSL traffic in TDS packets
+        pipeline.removeFirst();
+        promise.complete();
+      } else {
+        promise.fail(future.cause());
+      }
+    });
+
+    if (!clientConfigSsl) {
+      // Do not perform hostname validation if the client did not require encryption
+      options.setTrustAll(true);
+    }
+
+    // 2. Create and setup an SSLHelper and SSLHandler
+    SSLHelper helper = new SSLHelper(options, options.getKeyCertOptions(), options.getTrustOptions()).setApplicationProtocols(options.getApplicationLayerProtocols());
+    SslHandler sslHandler = new SslHandler(helper.createEngine(context.owner(), socket.remoteAddress(), null, false));
+    sslHandler.setHandshakeTimeout(helper.getSslHandshakeTimeout(), helper.getSslHandshakeTimeoutUnit());
+
+    // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
+    TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
+
+    // 4. TdsLoginSentCompletionHandler removes the SSLHandler after login packet has been sent if full encryption is not required
+    TdsLoginSentCompletionHandler tdsLoginSentCompletionHandler = new TdsLoginSentCompletionHandler(sslHandler, encryptionLevel);
+
+    // 5. Add the handlers to the pipeline
+    // The SSLHandler must be the last one added because as soon as it is, it starts handshaking
+    pipeline.addFirst("tds-ssl-handshake-codec", tdsSslHandshakeCodec);
+    pipeline.addAfter("tds-ssl-handshake-codec", "tds-login-sent-handler", tdsLoginSentCompletionHandler);
+    pipeline.addAfter("tds-login-sent-handler", "ssl", sslHandler);
+
+    return promise.future();
+  }
+
+  Future<Connection> sendLoginMessage(String username, String password, String database, Map<String, String> properties) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    schedule(context, cmd).onComplete(completionHandler);
+    return schedule(context, cmd);
   }
 
   @Override
   public void init() {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    MSSQLCodec.initPipeLine(pipeline);
+    pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec(packetSize));
+    pipeline.addBefore("messageCodec", "packetDecoder", new TdsPacketDecoder());
     super.init();
   }
 
@@ -83,6 +142,18 @@ class MSSQLSocketConnection extends SocketConnectionBase {
 
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
-    return dbMetaData;
+    return databaseMetadata;
+  }
+
+  private void setDatabaseMetadata(MSSQLDatabaseMetadata metadata) {
+    this.databaseMetadata = metadata;
+  }
+
+  public SocketAddress getAlternateServer() {
+    return alternateServer;
+  }
+
+  public void setAlternateServer(SocketAddress alternateServer) {
+    this.alternateServer = alternateServer;
   }
 }

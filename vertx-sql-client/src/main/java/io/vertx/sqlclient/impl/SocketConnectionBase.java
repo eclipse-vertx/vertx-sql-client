@@ -40,6 +40,7 @@ import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 /**
@@ -177,7 +178,14 @@ public abstract class SocketConnectionBase implements Connection {
     }
     cmd.handler = handler;
     if (status == Status.CONNECTED) {
-      pending.add(cmd);
+      if (cmd instanceof CompositeCommand) {
+        CompositeCommand composite = (CompositeCommand) cmd;
+        List<CommandBase<?>> commands = composite.commands();
+        pending.addAll(commands);
+        composite.handler.handle(Future.succeededFuture());
+      } else {
+        pending.add(cmd);
+      }
       checkPending();
     } else {
       cmd.fail(new NoStackTraceThrowable("Connection is not active now, current status: " + status));
@@ -238,7 +246,7 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   private PrepareStatementCommand prepareCommand(ExtendedQueryCommand<?> queryCmd, boolean cache, boolean sendParameterTypes) {
-    PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), cache, sendParameterTypes ? queryCmd.parameterTypes() : null);
+    PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), null, cache, sendParameterTypes ? queryCmd.parameterTypes() : null);
     prepareCmd.handler = ar -> {
       paused = false;
       if (ar.succeeded()) {
@@ -322,7 +330,7 @@ public abstract class SocketConnectionBase implements Connection {
     handleClose(null);
   }
 
-  private synchronized void handleException(Throwable t) {
+  protected void handleException(Throwable t) {
     if (t instanceof DecoderException) {
       DecoderException err = (DecoderException) t;
       t = err.getCause();
@@ -330,15 +338,19 @@ public abstract class SocketConnectionBase implements Connection {
     handleClose(t);
   }
 
+  protected void reportException(Throwable t) {
+    synchronized (this) {
+      if (holder != null) {
+        holder.handleException(t);
+      }
+    }
+  }
+
   protected void handleClose(Throwable t) {
     if (status != Status.CLOSED) {
       status = Status.CLOSED;
       if (t != null) {
-        synchronized (this) {
-          if (holder != null) {
-            holder.handleException(t);
-          }
-        }
+        reportException(t);
       }
       Throwable cause = t == null ? new NoStackTraceThrowable(PENDING_CMD_CONNECTION_CORRUPT_MSG) : new VertxException(PENDING_CMD_CONNECTION_CORRUPT_MSG, t);
       CommandBase<?> cmd;

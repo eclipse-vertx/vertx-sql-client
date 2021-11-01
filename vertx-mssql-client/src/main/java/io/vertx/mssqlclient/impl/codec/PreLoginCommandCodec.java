@@ -12,130 +12,82 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
+import io.vertx.mssqlclient.impl.MSSQLDatabaseMetadata;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
-import io.vertx.mssqlclient.impl.protocol.TdsMessage;
-import io.vertx.mssqlclient.impl.protocol.client.prelogin.EncryptionOptionToken;
-import io.vertx.mssqlclient.impl.protocol.client.prelogin.OptionToken;
-import io.vertx.mssqlclient.impl.protocol.client.prelogin.VersionOptionToken;
+import io.vertx.mssqlclient.impl.command.PreLoginResponse;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
-import java.util.List;
-
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
-import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
+import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_OFF;
+import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_ON;
 import static io.vertx.mssqlclient.impl.codec.MessageType.PRE_LOGIN;
 
-class PreLoginCommandCodec extends MSSQLCommandCodec<Void, PreLoginCommand> {
+class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginCommand> {
 
-  PreLoginCommandCodec(PreLoginCommand cmd) {
-    super(cmd);
+  private static final int VERSION = 0x00;
+  private static final int ENCRYPTION = 0x01;
+  private static final int TERMINATOR = 0xFF;
+
+  PreLoginCommandCodec(TdsMessageCodec tdsMessageCodec, PreLoginCommand cmd) {
+    super(tdsMessageCodec, cmd);
   }
 
   @Override
-  void encode(TdsMessageEncoder encoder) {
-    super.encode(encoder);
-    sendPreLoginMessage();
+  void encode() {
+    ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
+
+    int versionOptionIndex = encodeOption(content, VERSION);
+    int encryptionOptionIndex = encodeOption(content, ENCRYPTION);
+    content.writeByte(TERMINATOR);
+
+    encodeOptionOffset(content, versionOptionIndex, content.writerIndex());
+    encodeOptionLength(content, versionOptionIndex, 6);
+    content.writeZero(6);
+
+    encodeOptionOffset(content, encryptionOptionIndex, content.writerIndex());
+    encodeOptionLength(content, encryptionOptionIndex, 1);
+    content.writeByte(cmd.sslRequired() ? ENCRYPT_ON : ENCRYPT_OFF);
+
+    tdsMessageCodec.encoder().writeTdsMessage(PRE_LOGIN, content);
+  }
+
+  private int encodeOption(ByteBuf content, int token) {
+    int start = content.writerIndex();
+    content.writeByte(token);
+    content.writeZero(4);
+    return start;
+  }
+
+  private void encodeOptionOffset(ByteBuf content, int optionIndex, int offset) {
+    content.setShort(optionIndex + 1, offset);
+  }
+
+  private void encodeOptionLength(ByteBuf content, int optionIndex, int length) {
+    content.setShort(optionIndex + 3, length);
   }
 
   @Override
-  void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
-    // nothing to do for now?
-    completionHandler.handle(CommandResponse.success(null));
-  }
-
-  private void sendPreLoginMessage() {
-    ChannelHandlerContext chctx = encoder.chctx;
-
-    ByteBuf packet = chctx.alloc().ioBuffer();
-
-    // packet header
-    packet.writeByte(PRE_LOGIN);
-    packet.writeByte(NORMAL | END_OF_MESSAGE);
-    int packetLenIdx = packet.writerIndex();
-    packet.writeShort(0); // set length later
-    packet.writeShort(0x00);
-    packet.writeByte(0x00); // FIXME packet ID
-    packet.writeByte(0x00);
-
-    // packet data
-    int packetDataStartIdx = packet.writerIndex();
-
-    List<OptionToken> optionTokens = cmd.optionTokens();
-
-    int payloadStartIdx = packet.writerIndex();
-
-    int totalLengthOfOptionsData = 0;
-
-    /*
-      We first predefine positions of the option token offset length,
-      then set the offset lengths by calculating ByteBuf writer indexes diff later.
-     */
-
-    // predefined positions to store the ByteBuf writer index
-    int versionOptionTokenOffsetLengthIdx = 0;
-    int encryptionOptionTokenOffsetLengthIdx = 0;
-
-    // option token header
-    for (OptionToken token : optionTokens) {
-      totalLengthOfOptionsData += token.optionLength();
-      packet.writeByte(token.tokenType());
-      switch (token.tokenType()) {
-        case VersionOptionToken.TYPE:
-          versionOptionTokenOffsetLengthIdx = packet.writerIndex();
-          break;
-        case EncryptionOptionToken.TYPE:
-          encryptionOptionTokenOffsetLengthIdx = packet.writerIndex();
-          break;
-        default:
-          throw new IllegalStateException("Unexpected token type");
-      }
-      packet.writeShort(0x00);
-      packet.writeShort(token.optionLength());
-    }
-
-    // terminator token
-    packet.writeByte(0xFF);
-
-    // option token data
-    for (OptionToken token : optionTokens) {
-      encodeTokenData(token, packet);
-    }
-
-    // calculate Option offset
-    int totalLengthOfPayload = packet.writerIndex() - payloadStartIdx;
-    int offsetStart = totalLengthOfPayload - totalLengthOfOptionsData;
-
-    for (OptionToken token : optionTokens) {
-      switch (token.tokenType()) {
-        case VersionOptionToken.TYPE:
-          packet.setShort(versionOptionTokenOffsetLengthIdx, offsetStart);
-          offsetStart += token.optionLength();
-          break;
-        case EncryptionOptionToken.TYPE:
-          packet.setShort(encryptionOptionTokenOffsetLengthIdx, offsetStart);
-          offsetStart += token.optionLength();
-          break;
-        default:
-          throw new IllegalStateException("Unexpected token type");
-      }
-    }
-
-    int packetLen = packet.writerIndex() - packetDataStartIdx + 8;
-    packet.setShort(packetLenIdx, packetLen);
-
-    chctx.writeAndFlush(packet, encoder.chctx.voidPromise());
-  }
-
-  private void encodeTokenData(OptionToken optionToken, ByteBuf payload) {
-    switch (optionToken.tokenType()) {
-      case VersionOptionToken.TYPE:
-        payload.writeInt(0); // UL_VERSION
-        payload.writeShort(0); // US_BUILD
+  void decode(ByteBuf payload) {
+    MSSQLDatabaseMetadata metadata = null;
+    Byte encryptionLevel = null;
+    while (true) {
+      short optionType = payload.readUnsignedByte();
+      if (optionType == TERMINATOR) {
         break;
-      case EncryptionOptionToken.TYPE:
-        payload.writeByte(((EncryptionOptionToken) optionToken).setting());
-        break;
+      }
+      int offset = payload.readUnsignedShort();
+      payload.skipBytes(2); // length
+      payload.markReaderIndex();
+      payload.readerIndex(offset);
+      if (optionType == VERSION) {
+        int major = payload.readUnsignedByte();
+        int minor = payload.readUnsignedByte();
+        int build = payload.readUnsignedShort();
+        metadata = new MSSQLDatabaseMetadata(String.format("%d.%d.%d", major, minor, build), major, minor);
+      } else if (optionType == ENCRYPTION) {
+        encryptionLevel = payload.readByte();
+      }
+      payload.resetReaderIndex();
     }
+    completionHandler.handle(CommandResponse.success(new PreLoginResponse(metadata, encryptionLevel)));
   }
 }

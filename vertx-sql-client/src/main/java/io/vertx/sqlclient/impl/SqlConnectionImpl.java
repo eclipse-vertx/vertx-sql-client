@@ -20,6 +20,8 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.sqlclient.PrepareOptions;
+import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.Transaction;
@@ -61,7 +63,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   public void handleClosed() {
     Handler<Void> handler = closeHandler;
     if (handler != null) {
-      context.runOnContext(handler);
+      context.emit(handler);
     }
   }
 
@@ -81,9 +83,7 @@ public class SqlConnectionImpl<C extends SqlConnection> extends SqlConnectionBas
   public void handleException(Throwable err) {
     Handler<Throwable> handler = exceptionHandler;
     if (handler != null) {
-      context.runOnContext(v -> {
-        handler.handle(err);
-      });
+      context.emit(err, handler);
     } else {
       err.printStackTrace();
     }

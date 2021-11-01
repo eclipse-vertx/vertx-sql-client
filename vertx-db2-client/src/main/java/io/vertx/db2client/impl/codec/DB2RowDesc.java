@@ -15,13 +15,13 @@
  */
 package io.vertx.db2client.impl.codec;
 
-import java.sql.JDBCType;
-import java.util.ArrayList;
-import java.util.List;
-
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowDesc;
+
+import java.sql.JDBCType;
+import java.util.ArrayList;
+import java.util.List;
 
 class DB2RowDesc extends RowDesc {
 
@@ -70,6 +70,11 @@ class DB2RowDesc extends RowDesc {
     public boolean isArray() {
       // Array don't seem supported for the moment
       return false;
+    }
+
+    @Override
+    public String typeName() {
+      return null;
     }
   }
 }

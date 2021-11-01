@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,22 +11,15 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.mssqlclient.impl.protocol.TdsMessage;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 
 class CloseConnectionCommandCodec extends MSSQLCommandCodec<Void, CloseConnectionCommand> {
-  CloseConnectionCommandCodec(CloseConnectionCommand cmd) {
-    super(cmd);
+  CloseConnectionCommandCodec(TdsMessageCodec tdsMessageCodec, CloseConnectionCommand cmd) {
+    super(tdsMessageCodec, cmd);
   }
 
   @Override
-  void encode(TdsMessageEncoder encoder) {
-    super.encode(encoder);
-    encoder.chctx.channel().close();
-  }
-
-  @Override
-  void decodeMessage(TdsMessage message, TdsMessageEncoder encoder) {
-    // connection has been closed
+  void encode() {
+    tdsMessageCodec.chctx().channel().close();
   }
 }

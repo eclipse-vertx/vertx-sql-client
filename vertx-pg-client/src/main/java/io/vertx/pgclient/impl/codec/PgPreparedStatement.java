@@ -29,7 +29,7 @@ class PgPreparedStatement implements PreparedStatement {
   final PgRowDesc rowDesc;
   final boolean cached;
 
-  PgPreparedStatement(String sql, long statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean cached) {
+  PgPreparedStatement(String sql, byte[] statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean cached) {
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;

@@ -3,10 +3,12 @@ package io.vertx.sqlclient.templates;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.templates.impl.SqlTemplate;
@@ -30,11 +32,19 @@ public class TemplateBuilderTest {
       throw new UnsupportedOperationException();
     }
     @Override
+    public PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options) {
+      throw new UnsupportedOperationException();
+    }
+    @Override
     public void close(Handler<AsyncResult<Void>> handler) {
       throw new UnsupportedOperationException();
     }
     @Override
     public Future<Void> close() {
+      throw new UnsupportedOperationException();
+    }
+    @Override
+    public void group(Handler<SqlClient> block) {
       throw new UnsupportedOperationException();
     }
   }

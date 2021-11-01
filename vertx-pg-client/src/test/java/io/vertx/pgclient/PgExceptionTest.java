@@ -28,16 +28,12 @@ public class PgExceptionTest {
     assertEquals("myCode", pgException.getCode());
     assertEquals("myDetail", pgException.getDetail());
 
-    JsonObject jsonObject = new JsonObject(pgException.getMessage());
-    assertEquals("myMessage", jsonObject.getString("message"));
-    assertEquals("mySeverity", jsonObject.getString("severity"));
-    assertEquals("myCode", jsonObject.getString("code"));
-    assertEquals("myDetail", jsonObject.getString("detail"));
+    assertEquals("mySeverity: myMessage (myCode)", pgException.getMessage());
   }
 
   @Test
   public void nullFieldConstructor() {
-    assertEquals("{}", new PgException(null, null, null, null).getMessage());
+    assertEquals("", new PgException(null, null, null, null).getMessage());
   }
 
   @Test
@@ -49,28 +45,11 @@ public class PgExceptionTest {
     assertEquals("myDetail", pgException.getDetail());
 
     // getMessage() should return a valid JsonObject with all fields
-    JsonObject jsonObject = new JsonObject(pgException.getMessage());
-    assertEquals("myMessage", jsonObject.getString("message"));
-    assertEquals("mySeverity", jsonObject.getString("severity"));
-    assertEquals("myCode", jsonObject.getString("code"));
-    assertEquals("myDetail", jsonObject.getString("detail"));
-    assertEquals("myHint", jsonObject.getString("hint"));
-    assertEquals("myPosition", jsonObject.getString("position"));
-    assertEquals("myInternalPosition", jsonObject.getString("internalPosition"));
-    assertEquals("myInternalQuery", jsonObject.getString("internalQuery"));
-    assertEquals("myWhere", jsonObject.getString("where"));
-    assertEquals("myFile", jsonObject.getString("file"));
-    assertEquals("myLine", jsonObject.getString("line"));
-    assertEquals("myRoutine", jsonObject.getString("routine"));
-    assertEquals("mySchema", jsonObject.getString("schema"));
-    assertEquals("myTable", jsonObject.getString("table"));
-    assertEquals("myColumn", jsonObject.getString("column"));
-    assertEquals("myDataType", jsonObject.getString("dataType"));
-    assertEquals("myConstraint", jsonObject.getString("constraint"));
+    assertEquals("mySeverity: myMessage (myCode)", pgException.getMessage());
   }
 
   @Test
   public void nullErrorResponseConstructor() {
-    assertEquals("{}", ResponseHelper.getEmptyPgException().getMessage());
+    assertEquals("", ResponseHelper.getEmptyPgException().getMessage());
   }
 }

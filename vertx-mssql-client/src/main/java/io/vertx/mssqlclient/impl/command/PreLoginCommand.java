@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,35 +11,17 @@
 
 package io.vertx.mssqlclient.impl.command;
 
-import io.vertx.mssqlclient.impl.protocol.client.prelogin.EncryptionOptionToken;
-import io.vertx.mssqlclient.impl.protocol.client.prelogin.OptionToken;
-import io.vertx.mssqlclient.impl.protocol.client.prelogin.VersionOptionToken;
 import io.vertx.sqlclient.impl.command.CommandBase;
 
-import java.util.ArrayList;
-import java.util.List;
+public class PreLoginCommand extends CommandBase<PreLoginResponse> {
 
-public class PreLoginCommand extends CommandBase<Void> {
-  private final List<OptionToken> optionTokens = new ArrayList<>();
+  private final boolean ssl;
 
   public PreLoginCommand(boolean ssl) {
-    initVersionOptionToken();
-    initEncryptOptionToken(ssl);
+    this.ssl = ssl;
   }
 
-  public List<OptionToken> optionTokens() {
-    return optionTokens;
-  }
-
-  private void initVersionOptionToken() {
-    optionTokens.add(new VersionOptionToken((short) 0, (short) 0, 0, 0));
-  }
-
-  private void initEncryptOptionToken(boolean ssl) {
-    if (ssl) {
-      optionTokens.add(new EncryptionOptionToken(EncryptionOptionToken.ENCRYPT_ON));
-    } else {
-      optionTokens.add(new EncryptionOptionToken(EncryptionOptionToken.ENCRYPT_NOT_SUP));
-    }
+  public boolean sslRequired() {
+    return ssl;
   }
 }

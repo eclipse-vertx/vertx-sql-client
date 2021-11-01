@@ -15,6 +15,7 @@
  */
 package io.vertx.pgclient.tck;
 
+import io.vertx.core.Future;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgException;
@@ -85,6 +86,25 @@ public class PgTransactionTest extends TransactionTestBase {
           PgException pgEx = (PgException) failure;
           // foreign key constraint violation
           ctx.assertEquals("23503", pgEx.getCode());
+        }));
+    }));
+  }
+
+  @Test
+  public void testLongTransaction(TestContext ctx) {
+    Async async = ctx.async(2);
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.client.query("set idle_in_transaction_session_timeout = 500")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(v -> {
+          res.client.exceptionHandler(err -> {
+            PgException pgErr = (PgException) err;
+            ctx.assertEquals("25P03", pgErr.getCode());
+            async.countDown();
+          });
+          res.client.closeHandler(v2 -> {
+            async.countDown();
+          });
         }));
     }));
   }

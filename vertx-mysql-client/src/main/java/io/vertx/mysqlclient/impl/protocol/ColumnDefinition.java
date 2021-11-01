@@ -107,6 +107,11 @@ public final class ColumnDefinition implements ColumnDescriptor {
   }
 
   @Override
+  public String typeName() {
+    return type.toString();
+  }
+
+  @Override
   public JDBCType jdbcType() {
     return type.jdbcType;
   }
