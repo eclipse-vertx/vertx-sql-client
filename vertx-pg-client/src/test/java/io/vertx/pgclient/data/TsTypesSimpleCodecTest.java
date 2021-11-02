@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgConnection;
@@ -24,6 +25,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
         ColumnChecker.checkColumn(0, "TsQuery")
           .returns(Tuple::getString, Row::getString, expected)
           .returns(Tuple::getValue, Row::getValue, expected)
+          .returns( Tuple::getBuffer, Row::getBuffer, Buffer.buffer(expected))
           .returns(String.class, expected)
           .forRow(row);
           async.complete();
@@ -78,6 +80,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
         ColumnChecker.checkColumn(0, "TsVector")
           .returns(Tuple::getString, Row::getString, expected)
           .returns(Tuple::getValue, Row::getValue, expected)
+          .returns( Tuple::getBuffer, Row::getBuffer, Buffer.buffer(expected))
           .returns(String.class, expected)
           .forRow(row);
           async.complete();
@@ -111,6 +114,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
         ColumnChecker.checkColumn(0, "TsVector")
           .returns(Tuple::getString, Row::getString, expected)
           .returns(Tuple::getValue, Row::getValue, expected)
+          .returns( Tuple::getBuffer, Row::getBuffer, Buffer.buffer(expected))
           .returns(String.class, expected)
           .forRow(row);
           async.complete();

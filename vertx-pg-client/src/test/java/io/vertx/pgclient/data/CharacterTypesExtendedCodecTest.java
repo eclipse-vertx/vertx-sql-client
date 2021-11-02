@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -30,6 +31,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             ColumnChecker.checkColumn(0, "Name")
               .returns(Tuple::getValue, Row::getValue, name)
               .returns(Tuple::getString, Row::getString, name)
+		      .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer(name))
               .forRow(row);
             async.complete();
           }));
@@ -59,6 +61,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             ColumnChecker.checkColumn(0, "SingleChar")
               .returns(Tuple::getValue, Row::getValue, singleChar)
               .returns(Tuple::getString, Row::getString, singleChar)
+              .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer(singleChar))
               .forRow(row);
             async.complete();
           }));
@@ -87,6 +90,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             ColumnChecker.checkColumn(0, "FixedChar")
               .returns(Tuple::getValue, Row::getValue, name)
               .returns(Tuple::getString, Row::getString, name)
+              .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer(name))
               .forRow(row);
             async.complete();
           }));
@@ -115,6 +119,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             ColumnChecker.checkColumn(0, "Text")
               .returns(Tuple::getValue, Row::getValue, name)
               .returns(Tuple::getString, Row::getString, name)
+              .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer(name))
               .forRow(row);
             async.complete();
           }));
@@ -143,6 +148,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             ColumnChecker.checkColumn(0, "VarCharacter")
               .returns(Tuple::getValue, Row::getValue, name)
               .returns(Tuple::getString, Row::getString, name)
+              .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer(name))
               .forRow(row);
             async.complete();
           }));

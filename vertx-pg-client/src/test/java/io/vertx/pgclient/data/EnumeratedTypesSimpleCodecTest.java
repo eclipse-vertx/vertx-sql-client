@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -20,6 +21,7 @@ public class EnumeratedTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTest
           ColumnChecker.checkColumn(0, "currentMood")
             .returns(Tuple::getValue, Row::getValue, "ok")
             .returns(Tuple::getString, Row::getString, "ok")
+            .returns( Tuple::getBuffer, Row::getBuffer, Buffer.buffer("ok"))
             .forRow(row);
           async.complete();
         }));

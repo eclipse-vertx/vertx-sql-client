@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -25,6 +26,28 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                        Class<T> type,
                                        T expected) {
     testDecodeGeneric(ctx, data, dataType, columnName, ColumnChecker.getByIndex(type), ColumnChecker.getByName(type), expected);
+  }
+
+  protected <T> void testDecodeGeneric(TestContext ctx,
+	                                     String data,
+	                                     String dataType,
+	                                     String columnName,
+	                                     ColumnChecker.SerializableBiFunction<Tuple, Integer, String> byIndexGetter,
+	                                     ColumnChecker.SerializableBiFunction<Row, String, String> byNameGetter,
+	                                     String expected) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT '" + data + "' :: " + dataType + " \"" + columnName + "\"").execute(ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        Row row = result.iterator().next();
+        ColumnChecker.checkColumn(0, columnName)
+          .returns(Tuple::getValue, Row::getValue, expected)
+          .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer(expected))
+          .returns(byIndexGetter, byNameGetter, expected)
+          .forRow(row);
+          async.complete();
+       }));
+    }));
   }
 
   protected <T> void testDecodeGeneric(TestContext ctx,

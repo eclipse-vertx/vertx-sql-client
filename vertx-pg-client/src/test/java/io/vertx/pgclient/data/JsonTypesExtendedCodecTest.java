@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -104,6 +105,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
             ColumnChecker.checkColumn(3, "String")
               .returns(Tuple::getValue, Row::getValue, "Hello World")
               .returns(Tuple::getString, Row::getString, "Hello World")
+              .returns( Tuple::getBuffer, Row::getBuffer, Buffer.buffer("Hello World"))
               .returns(Tuple::getJson, Row::getJson, "Hello World")
               .returns(String.class, "Hello World")
               .forRow(row);
@@ -199,6 +201,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
               .returns(Tuple::getValue, Row::getValue, "Hello World")
               .returns(Tuple::getJson, Row::getJson, "Hello World")
               .returns(Tuple::getString, Row::getString, "Hello World")
+              .returns( Tuple::getBuffer, Row::getBuffer, Buffer.buffer("Hello World"))
               .returns(String.class, "Hello World")
               .forRow(row);
             ColumnChecker.checkColumn(4, "BooleanTrue")

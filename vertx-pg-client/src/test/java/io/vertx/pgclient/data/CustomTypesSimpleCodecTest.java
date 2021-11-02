@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -21,6 +22,7 @@ public class CustomTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase
           ColumnChecker.checkColumn(0, "city")
             .returns(Tuple::getValue, Row::getValue, expected)
             .returns(Tuple::getString, Row::getString, expected)
+            .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer(expected))
             .forRow(row);
           async.complete();
         }));

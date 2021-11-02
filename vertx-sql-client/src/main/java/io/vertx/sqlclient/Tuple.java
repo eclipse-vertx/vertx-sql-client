@@ -588,6 +588,8 @@ public interface Tuple {
       return Buffer.buffer((ByteBuf) val);
     } else if (val instanceof byte[]) {
       return Buffer.buffer((byte[]) val);
+    } else if (val instanceof String) {
+	    return Buffer.buffer((String) val);
     } else {
       return (Buffer) val; // Throw CCE
     }
