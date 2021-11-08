@@ -55,6 +55,11 @@ public class ContainerPgRule extends ExternalResource {
     return this;
   }
 
+  public ContainerPgRule setPostgresVersion(String databaseVersion) {
+    this.databaseVersion = databaseVersion;
+    return this;
+  }
+
   public PgConnectOptions options() {
     return new PgConnectOptions(options);
   }
@@ -166,7 +171,9 @@ public class ContainerPgRule extends ExternalResource {
       return;
     }
 
-    this.databaseVersion =  getPostgresVersion();
+    if (this.databaseVersion == null) {
+      this.databaseVersion = getPostgresVersion();
+    }
     options = startServer(databaseVersion);
   }
 

@@ -111,6 +111,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
+  public static final boolean DEFAULT_SHOULD_QUERY_SERVER_TYPE = false;
   public static final Map<String, String> DEFAULT_PROPERTIES;
 
   static {
@@ -123,6 +124,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+  private boolean shouldQueryServerType = DEFAULT_SHOULD_QUERY_SERVER_TYPE;
   private SslMode sslMode = DEFAULT_SSLMODE;
 
   public PgConnectOptions() {
@@ -225,6 +227,13 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   /**
+   * @return the value of current shouldQueryServerType
+   */
+  public boolean getShouldQueryServerType() {
+    return shouldQueryServerType;
+  }
+
+  /**
    * Set {@link SslMode} for the client, this option can be used to provide different levels of secure protection.
    *
    * @param sslmode the value of sslmode
@@ -232,6 +241,19 @@ public class PgConnectOptions extends SqlConnectOptions {
    */
   public PgConnectOptions setSslMode(SslMode sslmode) {
     this.sslMode = sslmode;
+    return this;
+  }
+
+  /**
+   * Set whether the client should query server type,
+   * In positive case, connection should issue implementation specific query
+   * to read {@link io.vertx.sqlclient.ServerType} of host being connected to
+   *
+   * @param shouldQueryServerType the value of shouldQueryServerType
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PgConnectOptions setShouldQueryServerType(boolean shouldQueryServerType) {
+    this.shouldQueryServerType = shouldQueryServerType;
     return this;
   }
 
@@ -464,6 +486,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);
+    this.setShouldQueryServerType(DEFAULT_SHOULD_QUERY_SERVER_TYPE);
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
   }
 
@@ -493,6 +516,7 @@ public class PgConnectOptions extends SqlConnectOptions {
 
     if (pipeliningLimit != that.pipeliningLimit) return false;
     if (sslMode != that.sslMode) return false;
+    if (shouldQueryServerType != that.shouldQueryServerType) return false;
 
     return true;
   }
@@ -502,6 +526,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     int result = super.hashCode();
     result = 31 * result + pipeliningLimit;
     result = 31 * result + sslMode.hashCode();
+    result = 31 * result + (shouldQueryServerType ? 1 : 0);
     return result;
   }
 

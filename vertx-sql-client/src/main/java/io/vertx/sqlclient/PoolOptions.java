@@ -69,6 +69,11 @@ public class PoolOptions {
    */
   public static final TimeUnit DEFAULT_CONNECTION_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
+  /**
+   * Default server requirement in the pool
+   */
+  public static final ServerRequirement DEFAULT_SERVER_REQUIREMENT = ServerRequirement.ANY;
+
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
@@ -76,6 +81,7 @@ public class PoolOptions {
   private int poolCleanerPeriod = DEFAULT_POOL_CLEANER_PERIOD;
   private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
   private TimeUnit connectionTimeoutUnit = DEFAULT_CONNECTION_TIMEOUT_TIME_UNIT;
+  private ServerRequirement serverRequirement = DEFAULT_SERVER_REQUIREMENT;
 
   public PoolOptions() {
   }
@@ -89,6 +95,7 @@ public class PoolOptions {
     maxWaitQueueSize = other.maxWaitQueueSize;
     idleTimeout = other.idleTimeout;
     idleTimeoutUnit = other.idleTimeoutUnit;
+    serverRequirement = other.serverRequirement;
   }
 
   /**
@@ -215,11 +222,29 @@ public class PoolOptions {
    * Set the amount of time a client will wait for a connection from the pool. If the time is exceeded
    * without a connection available, an exception is provided.
    *
-   * @param timeout the pool connection idle time unitq
+   * @param timeout the pool connection idle time unit
    * @return a reference to this, so the API can be used fluently
    */
   public PoolOptions setConnectionTimeout(int timeout) {
     this.connectionTimeout = timeout;
+    return this;
+  }
+
+  /**
+   * @return the pool connection server requirement. See {@link #setServerRequirement(ServerRequirement)}
+   */
+  public ServerRequirement getServerRequirement() {
+    return serverRequirement;
+  }
+
+  /**
+   * Set the server requirement
+   *
+   * @param serverRequirement the pool connection server requirement
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setServerRequirement(ServerRequirement serverRequirement) {
+    this.serverRequirement = serverRequirement;
     return this;
   }
 

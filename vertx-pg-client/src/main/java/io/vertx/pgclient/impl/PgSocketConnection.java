@@ -28,6 +28,7 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.PgCodec;
+import io.vertx.sqlclient.ServerType;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.*;
 import io.vertx.sqlclient.impl.command.*;
@@ -35,6 +36,8 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
 import java.util.function.Predicate;
+
+import static io.vertx.sqlclient.ServerType.UNDEFINED;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -45,6 +48,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   public int processId;
   public int secretKey;
   public PgDatabaseMetadata dbMetaData;
+  public ServerType serverType = UNDEFINED;
 
   public PgSocketConnection(NetSocketInternal socket,
                             boolean cachePreparedStatements,

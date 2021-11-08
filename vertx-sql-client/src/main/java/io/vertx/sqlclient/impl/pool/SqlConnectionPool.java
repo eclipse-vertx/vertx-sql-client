@@ -116,7 +116,7 @@ public class SqlConnectionPool {
       Future<SqlConnection> future = connectionProvider.apply(context);
       future.onComplete(ar -> {
         if (ar.succeeded()) {
-          SqlConnectionImpl res = (SqlConnectionImpl) ar.result();
+          SqlConnectionImpl<?> res = (SqlConnectionImpl<?>) ar.result();
           Connection conn = res.unwrap();
           if (conn.isValid()) {
             PooledConnection pooled = new PooledConnection(res.factory(), conn, listener);
