@@ -49,15 +49,6 @@ public class PgConnectionTest extends PgConnectionTestBase {
   }
 
   @Test
-  public void testPrimary(TestContext ctx) {
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW transaction_read_only;").execute(ctx.asyncAssertSuccess(pgRowSet -> {
-        ctx.assertEquals("off", pgRowSet.iterator().next().getString("transaction_read_only"));
-      }));
-    }));
-  }
-
-  @Test
   public void testBatchUpdate(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {

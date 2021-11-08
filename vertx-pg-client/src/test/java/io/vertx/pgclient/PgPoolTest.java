@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collector;
 
-import static io.vertx.sqlclient.ServerRequirement.*;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
