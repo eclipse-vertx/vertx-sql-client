@@ -11,8 +11,20 @@
 
 package io.vertx.sqlclient;
 
+/**
+ * Indicates a particular property of a session
+ */
 public enum ServerType {
+  /**
+   * No certain properties are known about server yet (default)
+   */
   UNDEFINED,
+  /**
+   * Server is in hot standby mode, usually but not necessary such server allows read-write connections
+   */
   PRIMARY,
+  /**
+   * Server is in hot standby mode, only read-only connections are allowed
+   */
   REPLICA
 }

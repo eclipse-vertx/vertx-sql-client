@@ -48,6 +48,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   public int processId;
   public int secretKey;
   public PgDatabaseMetadata dbMetaData;
+  // TODO: consider defining getter on SocketConnectionBase
   public ServerType serverType = UNDEFINED;
 
   public PgSocketConnection(NetSocketInternal socket,

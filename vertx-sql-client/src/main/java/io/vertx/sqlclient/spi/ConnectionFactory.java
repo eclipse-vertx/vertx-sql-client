@@ -67,6 +67,23 @@ public interface ConnectionFactory extends Closeable {
     }
   }
 
+  /**
+   * {@link ServerType} of a host to which particular factory opens connections is usually not known
+   * upon factory construction. First opportunity to reveal such server property is available when
+   * first {@link io.vertx.sqlclient.impl.SocketConnectionBase} is made. For instance Postgres 14 and newer
+   * has dedicated `GUC_REPORT` mechanism that reports a property `in_hot_standby` when connection being established.
+   * If there is no server-sent status mechanism available implementation specific `SHOW xxx` command could be used.
+   *
+   * If connection was established and its server type appeared to be mot compatible with requested one
+   * then the connection is closed right away and next factory is probed. If all factories are probed and no
+   * connection with desired server type found, IllegalStateException is thrown.
+   *
+   * @param factories list of factories to filter based on server type requirement
+   * @param serverType requirement for the host being connected through a factory
+   * @return a connection factory that load balances connections
+   * to a subset of hosts which satisfying requested server type
+   * @throws IllegalStateException when no suitable connection could be established
+   */
   static ConnectionFactory constrainedSelector(List<ConnectionFactory> factories, ServerType serverType) {
     return new ConnectionFactory() {
       private int idx = 0;
@@ -107,6 +124,24 @@ public interface ConnectionFactory extends Closeable {
     };
   }
 
+  /**
+   * {@link ServerType} of a host to which particular factory opens connections is usually not known
+   * upon factory construction. First opportunity to reveal such server property is available when
+   * first {@link io.vertx.sqlclient.impl.SocketConnectionBase} is made. For instance Postgres 14 and newer
+   * has dedicated `GUC_REPORT` mechanism that reports a property `in_hot_standby` when connection being established.
+   * If there is no server-sent status mechanism available implementation specific `SHOW xxx` command could be used.
+   *
+   * Upon first connection to host its server type is examinated and corresponding factory is marked either
+   * prioritized one or fallback. Connection factory is returned no matter of underlying host type.
+   * After all factories were probed, subsequent requests are optimistically fulfilled by the subset of prioritized
+   * factories. If prioritized factory could not establish the connection, fallback is made to a "fallback" factory.
+   * If a "fallback" factory fails as well, next pair of factories is chosen in round-robin manner.
+   *
+   * @param factories list of factories to filter based on server type requirement
+   * @param serverType preferred property of the host being connected through a factory
+   * @return a connection factory that load balances connections
+   * to a subset of hosts with bias towards requested server type
+   */
   static ConnectionFactory prioritySelector(List<ConnectionFactory> factories, ServerType serverType) {
     return new ConnectionFactory() {
       private int idx = 0;
@@ -161,9 +196,9 @@ public interface ConnectionFactory extends Closeable {
 
 
   /**
-   * Server type could be updated asynchronously for instance, in Postgres case
+   * Server type could be updated asynchronously: for instance, in Postgres case
    * server type can be reported as ParamStatus message in response to explicit 'SHOW xxx' command
-   * as well as in response to Simple/Extended query in case of GUC_REPORT.
+   * as well as in response to Simple/Extended query if dedicated GUC_REPORT is supported.
    * Given that, there could be situations when concurrent write to particular factory's serverType is happening
    * when this method is being called or just after this method has returned.
    * Users should be aware that serverType nature is dynamic.

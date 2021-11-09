@@ -181,6 +181,9 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     return promise.future();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public ServerType getServerType() {
     return serverType;

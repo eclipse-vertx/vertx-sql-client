@@ -246,7 +246,7 @@ public class PgConnectOptions extends SqlConnectOptions {
 
   /**
    * Set whether the client should query server type,
-   * In positive case, connection should issue implementation specific query
+   * If true, connection should issue implementation specific query
    * to read {@link io.vertx.sqlclient.ServerType} of host being connected to
    *
    * @param shouldQueryServerType the value of shouldQueryServerType
