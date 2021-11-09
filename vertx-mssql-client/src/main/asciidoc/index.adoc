@@ -1,5 +1,5 @@
 = Reactive MSSQL Client
-:PREPARED_PARAMS: `@1`, `@2`, etc…​
+:PREPARED_PARAMS: `@p1`, `@p2`, etc…​
 
 The Reactive MSSQL Client is a client for Microsoft SQL Server with a straightforward API focusing on
 scalability and low overhead.
