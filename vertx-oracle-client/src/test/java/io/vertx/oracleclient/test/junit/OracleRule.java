@@ -12,6 +12,7 @@ package io.vertx.oracleclient.test.junit;
 
 import io.vertx.oracleclient.OracleConnectOptions;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
@@ -36,7 +37,7 @@ public class OracleRule extends ExternalResource {
     ORACLE_DB = new GenericContainer<>(image)
       .withEnv("ORACLE_PASSWORD", PASSWORD)
       .withExposedPorts(PORT)
-      .withFileSystemBind("src/test/resources/tck", "/container-entrypoint-initdb.d")
+      .withClasspathResourceMapping("tck/import.sql", "/container-entrypoint-initdb.d/import.sql", BindMode.READ_ONLY)
       .withLogConsumer(of -> System.out.print("[ORACLE] " + of.getUtf8String()))
       .waitingFor(
         Wait.forLogMessage(".*DATABASE IS READY TO USE!.*\\n", 1)
