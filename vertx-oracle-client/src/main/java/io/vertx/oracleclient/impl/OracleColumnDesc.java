@@ -39,7 +39,16 @@ public class OracleColumnDesc implements ColumnDescriptor {
   public OracleColumnDesc(ResultSetMetaData md, int idx) throws SQLException {
     this.name = md.getColumnLabel(idx);
     this.typeName = md.getColumnTypeName(idx);
-    this.type = JDBCType.valueOf(md.getColumnType(idx));
+    this.type = find(md.getColumnType(idx));
+  }
+
+  private static JDBCType find(int vendorTypeNumber) {
+    for (JDBCType jdbcType : JDBCType.values()) {
+      if (jdbcType.getVendorTypeNumber() == vendorTypeNumber) {
+        return jdbcType;
+      }
+    }
+    return JDBCType.OTHER;
   }
 
   @Override
@@ -49,7 +58,7 @@ public class OracleColumnDesc implements ColumnDescriptor {
 
   @Override
   public boolean isArray() {
-    return false;
+    return type == JDBCType.ARRAY;
   }
 
   @Override

@@ -15,8 +15,8 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
+import io.vertx.oracleclient.impl.OracleColumnDesc;
 import io.vertx.oracleclient.impl.OracleRow;
-import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -25,9 +25,6 @@ import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
@@ -102,7 +99,7 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
 
     BiConsumer<C, Row> accumulator = collector.accumulator();
 
-    RowDesc desc = new RowDesc(Collections.emptyList());
+    RowDesc desc = RowDesc.EMPTY;
     C container = collector.supplier().get();
     for (int result : returnedBatchResult) {
       Row row = new OracleRow(desc);
@@ -123,19 +120,14 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
   private void decodeResultSet(ResultSet rs, OracleResponse<R> response) throws SQLException {
     BiConsumer<C, Row> accumulator = collector.accumulator();
 
-    List<String> columnNames = new ArrayList<>();
-    RowDesc desc = new RowDesc(columnNames);
     C container = collector.supplier().get();
     int size = 0;
     ResultSetMetaData metaData = rs.getMetaData();
-    int cols = metaData.getColumnCount();
-    for (int i = 1; i <= cols; i++) {
-      columnNames.add(metaData.getColumnLabel(i));
-    }
+    RowDesc desc = OracleColumnDesc.rowDesc(metaData);
     while (rs.next()) {
       size++;
       Row row = new OracleRow(desc);
-      for (int i = 1; i <= cols; i++) {
+      for (int i = 1; i <= metaData.getColumnCount(); i++) {
         Object res = convertSqlValue(rs.getObject(i));
         row.addValue(res);
       }
@@ -144,30 +136,6 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
 
     response
       .push(collector.finisher().apply(container), desc, size);
-  }
-
-  private R decodeRawResultSet(ResultSet rs) throws SQLException {
-    BiConsumer<C, Row> accumulator = collector.accumulator();
-
-    List<String> columnNames = new ArrayList<>();
-    RowDesc desc = new RowDesc(columnNames);
-    C container = collector.supplier().get();
-
-    ResultSetMetaData metaData = rs.getMetaData();
-    int cols = metaData.getColumnCount();
-    for (int i = 1; i <= cols; i++) {
-      columnNames.add(metaData.getColumnLabel(i));
-    }
-    while (rs.next()) {
-      Row row = new OracleRow(desc);
-      for (int i = 1; i <= cols; i++) {
-        Object res = convertSqlValue(rs.getObject(i));
-        row.addValue(res);
-      }
-      accumulator.accept(container, row);
-    }
-
-    return collector.finisher().apply(container);
   }
 
   private void decodeReturnedKeys(Statement statement, OracleResponse<R> response) throws SQLException {
@@ -180,11 +148,7 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
       if (metaData != null) {
         int cols = metaData.getColumnCount();
         if (cols > 0) {
-          List<String> keysColumnNames = new ArrayList<>();
-          RowDesc keysDesc = new RowDesc(keysColumnNames);
-          for (int i = 1; i <= cols; i++) {
-            keysColumnNames.add(metaData.getColumnLabel(i));
-          }
+          RowDesc keysDesc = OracleColumnDesc.rowDesc(metaData);
 
           if (keysRS.next()) {
             keys = new OracleRow(keysDesc);
