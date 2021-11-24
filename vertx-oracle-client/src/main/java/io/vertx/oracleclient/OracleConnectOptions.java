@@ -14,6 +14,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.oracleclient.impl.OracleConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.Map;
@@ -40,6 +41,18 @@ public class OracleConnectOptions extends SqlConnectOptions {
   public OracleConnectOptions(JsonObject json) {
     super(json);
     OracleConnectOptionsConverter.fromJson(json, this);
+  }
+
+  /**
+   * Provide a {@link OracleConnectOptions} configured from a connection URI.
+   *
+   * @param connectionUri the connection URI to configure from
+   * @return a {@link OracleConnectOptions} parsed from the connection URI
+   * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
+   */
+  public static OracleConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
+    JsonObject parsedConfiguration = OracleConnectionUriParser.parse(connectionUri);
+    return new OracleConnectOptions(parsedConfiguration);
   }
 
   // Oracle-specific options
