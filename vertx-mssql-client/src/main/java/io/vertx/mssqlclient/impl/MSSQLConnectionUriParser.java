@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -35,14 +35,14 @@ public class MSSQLConnectionUriParser {
   private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
-  private static final String FULL_URI_REGEX = "^" // regex start
+  private static final Pattern FULL_URI_REGEX = Pattern.compile("^" // regex start
     + SCHEME_DESIGNATOR_REGEX
     + USER_INFO_REGEX
     + NET_LOCATION_REGEX
     + PORT_REGEX
     + DATABASE_REGEX
     + ATTRIBUTES_REGEX
-    + "$"; // regex end
+    + "$"); // regex end
 
   public static JsonObject parse(String connectionUri) {
     // if we get any exception during the parsing, then we throw an IllegalArgumentException.
@@ -57,8 +57,7 @@ public class MSSQLConnectionUriParser {
 
   // execute the parsing process and store options in the configuration
   private static void doParse(String connectionUri, JsonObject configuration) {
-    Pattern pattern = Pattern.compile(FULL_URI_REGEX);
-    Matcher matcher = pattern.matcher(connectionUri);
+    Matcher matcher = FULL_URI_REGEX.matcher(connectionUri);
 
     if (matcher.matches()) {
       // parse the user and password

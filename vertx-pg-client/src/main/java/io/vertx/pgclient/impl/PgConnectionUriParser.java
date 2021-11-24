@@ -16,8 +16,8 @@
  */
 package io.vertx.pgclient.impl;
 
-import io.vertx.pgclient.SslMode;
 import io.vertx.core.json.JsonObject;
+import io.vertx.pgclient.SslMode;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -43,14 +43,14 @@ public class PgConnectionUriParser {
   private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
   private static final String PARAMS_REGEX = "(\\?(?<params>.*))?"; // parameters
 
-  private static final String FULL_URI_REGEX = "^" // regex start
+  private static final Pattern FULL_URI_REGEX = Pattern.compile("^" // regex start
     + SCHEME_DESIGNATOR_REGEX
     + USER_INFO_REGEX
     + NET_LOCATION_REGEX
     + PORT_REGEX
     + DATABASE_REGEX
     + PARAMS_REGEX
-    + "$"; // regex end
+    + "$"); // regex end
 
   public static JsonObject parse(String connectionUri) {
     // if we get any exception during the parsing, then we throw an IllegalArgumentException.
@@ -65,8 +65,7 @@ public class PgConnectionUriParser {
 
   // execute the parsing process and store options in the configuration
   private static void doParse(String connectionUri, JsonObject configuration) {
-    Pattern pattern = Pattern.compile(FULL_URI_REGEX);
-    Matcher matcher = pattern.matcher(connectionUri);
+    Matcher matcher = FULL_URI_REGEX.matcher(connectionUri);
 
     if (matcher.matches()) {
       // parse the user and password
