@@ -27,6 +27,7 @@ import io.vertx.pgclient.data.Circle;
 import io.vertx.pgclient.data.Inet;
 import io.vertx.pgclient.data.Line;
 import io.vertx.pgclient.data.LineSegment;
+import io.vertx.pgclient.data.Money;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.data.Interval;
@@ -63,8 +64,8 @@ public enum DataType {
   FLOAT8_ARRAY(1022, true, Double[].class, Number[].class, JDBCType.DOUBLE, Tuple::getArrayOfDoubles),
   NUMERIC(1700, false, Numeric.class, Number.class, JDBCType.NUMERIC, Tuple::getNumeric),
   NUMERIC_ARRAY(1231, false, Numeric[].class, Number[].class, JDBCType.NUMERIC, Tuple::getArrayOfNumerics),
-  MONEY(790, true, Object.class, null),
-  MONEY_ARRAY(791, true, Object[].class, null),
+  MONEY(790, true, Money.class, null),
+  MONEY_ARRAY(791, true, Money[].class, null),
   BIT(1560, true, Object.class, JDBCType.BIT),
   BIT_ARRAY(1561, true, Object[].class, JDBCType.BIT),
   VARBIT(1562, true, Object.class, JDBCType.OTHER),

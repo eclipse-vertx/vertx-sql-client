@@ -215,6 +215,12 @@ The *Reactive Postgres Client* currently supports the following data types
 |`io.vertx.pgclient.data.Inet[]`
 |&#10004;
 
+|`MONEY`
+|`io.vertx.pgclient.data.Money`
+|&#10004;
+|`io.vertx.pgclient.data.Money[]`
+|&#10004;
+
 |`PATH`
 |`i.r.p.data.Path`
 |&#10004;
