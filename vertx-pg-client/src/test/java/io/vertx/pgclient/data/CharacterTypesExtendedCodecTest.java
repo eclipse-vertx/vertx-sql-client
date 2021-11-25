@@ -9,9 +9,10 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
+
   @Test
   public void testDecodeName(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::NAME \"Name\"", new String[]{"What is my name ?"}, Tuple::getString);
+    testDecode(ctx, "SELECT 'What is my name ?'::NAME", Tuple::getString, "What is my name ?");
   }
 
   @Test
@@ -37,10 +38,9 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     }));
   }
 
-
   @Test
   public void testDecodeChar(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::CHAR \"SingleChar\"", new String[]{"A"}, Tuple::getString);
+    testDecode(ctx, "SELECT 'A'::CHAR", Tuple::getString, "A");
   }
 
   @Test
@@ -68,7 +68,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
 
   @Test
   public void testDecodeFixedChar(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::CHAR(3) \"FixedChar\"", new String[]{"YES"}, Tuple::getString);
+    testDecode(ctx, "SELECT 'YES'::CHAR(3)", Tuple::getString, "YES");
   }
 
   @Test
@@ -96,7 +96,7 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
 
   @Test
   public void testDecodeText(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::TEXT \"Text\"", new String[]{"Hello World"}, Tuple::getString);
+    testDecode(ctx, "SELECT 'Hello World'::TEXT", Tuple::getString, "Hello World");
   }
 
   @Test
@@ -123,8 +123,8 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   }
 
   @Test
-  public void testDecodeVarCharacter(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::VARCHAR \"VarCharacter\"", new String[]{"Great!"}, Tuple::getString);
+  public void testDecodeVarchar(TestContext ctx) {
+    testDecode(ctx, "SELECT 'Great!'::VARCHAR", Tuple::getString, "Great!");
   }
 
   @Test
@@ -171,8 +171,8 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   }
 
   @Test
-  public void testDecodeStringArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::TEXT[]\"Text\"", new String[][]{new String[]{"Knock, knock.Who’s there?very long pause….Java."}}, Tuple::getArrayOfStrings);
+  public void testDecodeTextArray(TestContext ctx) {
+    testDecode(ctx, "SELECT '{ \"Knock, knock.Who’s there?very long pause... Java.\" }'::TEXT[]", Tuple::getArrayOfStrings, (Object) new String[] {"Knock, knock.Who’s there?very long pause... Java."});
   }
 
   @Test

@@ -15,7 +15,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 
-public class MoneyTypeSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
+public class MonetaryTypeSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
 
   @Test
   public void testMoney(TestContext ctx) {

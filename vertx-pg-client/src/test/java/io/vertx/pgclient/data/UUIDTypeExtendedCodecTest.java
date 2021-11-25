@@ -11,9 +11,10 @@ import org.junit.Test;
 import java.util.UUID;
 
 public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
+
   @Test
   public void testDecodeUUID(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::UUID \"uuid\"", new UUID[]{uuid}, Tuple::getUUID);
+    testDecode(ctx, "SELECT '" + uuid + "'::UUID", Tuple::getUUID, uuid);
   }
 
   @Test
@@ -41,7 +42,7 @@ public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBas
 
   @Test
   public void testDecodeUUIDArray(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::UUID[] \"UUID\"", new UUID[][]{new UUID[]{uuid}}, Tuple::getArrayOfUUIDs);
+    testDecode(ctx, "SELECT '{ " + uuid + " }'::UUID[]", Tuple::getArrayOfUUIDs, (Object)(new UUID[] { uuid }));
   }
 
   @Test
