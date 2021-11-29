@@ -14,9 +14,12 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.sqlclient.Tuple;
 import oracle.jdbc.OraclePreparedStatement;
 
+import java.math.BigDecimal;
 import java.sql.*;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -27,20 +30,11 @@ import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
 
 public class Helper {
 
-  public static <T> Future<T> completeOrFail(ThrowingSupplier<T> supplier) {
-    try {
-      return Future.succeededFuture(supplier.getOrThrow());
-    } catch (SQLException throwables) {
-      return Future.failedFuture(throwables);
-    }
-  }
-
-  public static void closeQuietly(Statement ps) {
-    if (ps != null) {
+  public static void closeQuietly(AutoCloseable autoCloseable) {
+    if (autoCloseable != null) {
       try {
-        ps.close();
-      } catch (SQLException throwables) {
-        // ignore me.
+        autoCloseable.close();
+      } catch (Exception ignore) {
       }
     }
   }
@@ -172,6 +166,106 @@ public class Helper {
       }
     });
     return promise.future();
+  }
+
+  public static Object convertSqlValue(Object value) throws SQLException {
+    if (value == null) {
+      return null;
+    }
+
+    // valid json types are just returned as is
+    if (value instanceof Boolean || value instanceof String || value instanceof byte[]) {
+      return value;
+    }
+
+    // numeric values
+    if (value instanceof Number) {
+      if (value instanceof BigDecimal) {
+        BigDecimal d = (BigDecimal) value;
+        if (d.scale() == 0) {
+          return ((BigDecimal) value).toBigInteger();
+        } else {
+          // we might loose precision here
+          return ((BigDecimal) value).doubleValue();
+        }
+      }
+
+      return value;
+    }
+
+    // JDBC temporal values
+
+    if (value instanceof Time) {
+      return ((Time) value).toLocalTime();
+    }
+
+    if (value instanceof Date) {
+      return ((Date) value).toLocalDate();
+    }
+
+    if (value instanceof Timestamp) {
+      return ((Timestamp) value).toInstant().atOffset(ZoneOffset.UTC);
+    }
+
+    // large objects
+    if (value instanceof Clob) {
+      Clob c = (Clob) value;
+      try {
+        // result might be truncated due to downcasting to int
+        return c.getSubString(1, (int) c.length());
+      } finally {
+        try {
+          c.free();
+        } catch (AbstractMethodError | SQLFeatureNotSupportedException e) {
+          // ignore since it is an optional feature since 1.6 and non existing before 1.6
+        }
+      }
+    }
+
+    if (value instanceof Blob) {
+      Blob b = (Blob) value;
+      try {
+        // result might be truncated due to downcasting to int
+        return b.getBytes(1, (int) b.length());
+      } finally {
+        try {
+          b.free();
+        } catch (AbstractMethodError | SQLFeatureNotSupportedException e) {
+          // ignore since it is an optional feature since 1.6 and non existing before 1.6
+        }
+      }
+    }
+
+    // arrays
+    if (value instanceof Array) {
+      Array a = (Array) value;
+      try {
+        Object arr = a.getArray();
+        if (arr != null) {
+          int len = java.lang.reflect.Array.getLength(arr);
+          Object[] castedArray = new Object[len];
+          for (int i = 0; i < len; i++) {
+            castedArray[i] = convertSqlValue(java.lang.reflect.Array.get(arr, i));
+          }
+          return castedArray;
+        }
+      } finally {
+        a.free();
+      }
+    }
+
+    // RowId
+    if (value instanceof RowId) {
+      return ((RowId) value).getBytes();
+    }
+
+    // Struct
+    if (value instanceof Struct) {
+      return Tuple.of(((Struct) value).getAttributes());
+    }
+
+    // fallback to String
+    return value.toString();
   }
 
   /**
