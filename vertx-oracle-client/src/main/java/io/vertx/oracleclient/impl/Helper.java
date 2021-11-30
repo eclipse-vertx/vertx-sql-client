@@ -10,7 +10,6 @@
  */
 package io.vertx.oracleclient.impl;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
@@ -23,6 +22,8 @@ import java.util.List;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Flow;
 import java.util.function.Supplier;
+
+import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
 
 public class Helper {
 
@@ -132,7 +133,7 @@ public class Helper {
 
       @Override
       public void onError(Throwable throwable) {
-        promise.fail(throwable);
+        promise.fail(sanitize(throwable));
       }
 
       @Override
@@ -162,7 +163,7 @@ public class Helper {
 
       @Override
       public void onError(Throwable throwable) {
-        context.runOnContext(x -> promise.fail(throwable));
+        promise.fail(sanitize(throwable));
       }
 
       @Override
