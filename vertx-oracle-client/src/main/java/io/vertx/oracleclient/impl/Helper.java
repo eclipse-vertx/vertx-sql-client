@@ -52,22 +52,6 @@ public class Helper {
   }
 
   /**
-   * Returns a {@code PreparedStatement}
-   * {@linkplain Wrapper#unwrap(Class) unwrapped} as an
-   * {@code OraclePreparedStatement}, or throws an {@code R2dbcException} if it
-   * does not wrap or implement the Oracle JDBC interface.
-   *
-   * @param preparedStatement A JDBC prepared statement
-   * @return An Oracle JDBC prepared statement
-   * @throws VertxException If an Oracle JDBC prepared statement is not wrapped.
-   */
-  public static OraclePreparedStatement unwrapOraclePreparedStatement(
-    PreparedStatement preparedStatement) {
-    return getOrHandleSQLException(() ->
-      preparedStatement.unwrap(OraclePreparedStatement.class));
-  }
-
-  /**
    * Returns the specified {@code supplier}'s output, or throws a
    * {@link VertxException} if the function throws a {@link SQLException}. This
    * method serves to improve code readability. For instance:

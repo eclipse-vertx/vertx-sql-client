@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.concurrent.Flow;
 
 import static io.vertx.oracleclient.impl.Helper.convertSqlValue;
-import static io.vertx.oracleclient.impl.Helper.unwrapOraclePreparedStatement;
 
 public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
   private final ExtendedQueryCommand<R> command;
@@ -86,11 +85,9 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
       .mapEmpty();
   }
 
-  public Future<RowReader<R, ?>> createRowReader(PreparedStatement sqlStatement, ContextInternal context) {
-    OraclePreparedStatement oraclePreparedStatement =
-      unwrapOraclePreparedStatement(sqlStatement);
+  public Future<RowReader<R, ?>> createRowReader(OraclePreparedStatement ps, ContextInternal context) {
     try {
-      Flow.Publisher<OracleResultSet> publisher = oraclePreparedStatement.executeQueryAsyncOracle();
+      Flow.Publisher<OracleResultSet> publisher = ps.executeQueryAsyncOracle();
       return Helper.first(publisher, context)
         .compose(ors -> {
           try {
