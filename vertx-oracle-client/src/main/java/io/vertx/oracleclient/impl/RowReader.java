@@ -12,18 +12,28 @@ package io.vertx.oracleclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.oracleclient.impl.commands.OraclePreparedQuery;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.RowDesc;
+import oracle.jdbc.OracleResultSet;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Flow;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collector;
 
-public class RowReader<R, A> implements Flow.Subscriber<Row> {
+import static io.vertx.oracleclient.impl.Helper.convertSqlValue;
 
+public class RowReader<R, A> implements Flow.Subscriber<Row>, Function<oracle.jdbc.OracleRow, Row> {
+
+  private final List<String> types;
   private final Flow.Publisher<Row> publisher;
   private final ContextInternal context;
   private final RowDesc description;
@@ -40,24 +50,26 @@ public class RowReader<R, A> implements Flow.Subscriber<Row> {
 
   private final AtomicBoolean wip = new AtomicBoolean();
 
-  public RowReader(Flow.Publisher<Row> publisher, Collector<Row, A, R> collector, RowDesc description, Promise<Void> promise,
-    QueryResultHandler<R> handler,
-    ContextInternal context) {
-    this.publisher = publisher;
-    this.description = description;
-    this.subscriptionPromise = promise;
+  public RowReader(OracleResultSet ors, Collector<Row, A, R> collector, Promise<Void> subscriptionPromise, QueryResultHandler<R> handler, ContextInternal context) throws SQLException {
+    int cols = ors.getMetaData().getColumnCount();
+    types = new ArrayList<>(cols);
+    for (int i = 1; i <= cols; i++) {
+      types.add(ors.getMetaData().getColumnClassName(i));
+    }
+    this.publisher = ors.publisherOracle(this);
+    this.description = OracleColumnDesc.rowDesc(ors.getMetaData());
+    this.subscriptionPromise = subscriptionPromise;
     this.handler = handler;
     this.context = context;
     this.collector = collector;
   }
 
-  public static <R> Future<RowReader<R, ?>> create(Flow.Publisher<Row> publisher,
-                                                Collector<Row, ?, R> collector,
-                                                ContextInternal context,
-                                                QueryResultHandler<R> handler,
-                                                RowDesc description) {
+  public static <R> Future<RowReader<R, ?>> create(OracleResultSet ors,
+                                                   Collector<Row, ?, R> collector,
+                                                   ContextInternal context,
+                                                   QueryResultHandler<R> handler) throws SQLException {
     Promise<Void> promise = context.promise();
-    RowReader<R, ?> reader = new RowReader<>(publisher, collector, description, promise, handler, context);
+    RowReader<R, ?> reader = new RowReader<>(ors, collector, promise, handler, context);
     reader.subscribe();
     return promise.future().map(reader);
   }
@@ -122,6 +134,32 @@ public class RowReader<R, A> implements Flow.Subscriber<Row> {
     if (wip.compareAndSet(true, false)) {
       completed = true;
       context.runOnContext(x -> readPromise.complete(null));
+    }
+  }
+
+  @Override
+  public Row apply(oracle.jdbc.OracleRow oracleRow) {
+    try {
+      return transform(types, description, oracleRow);
+    } catch (SQLException e) {
+      throw new VertxException(e);
+    }
+  }
+
+  private static Row transform(List<String> ors, RowDesc desc, oracle.jdbc.OracleRow or) throws SQLException {
+    Row row = new OracleRow(desc);
+    for (int i = 1; i <= desc.columnNames().size(); i++) {
+      Object res = convertSqlValue(or.getObject(i, getType(ors.get(i - 1))));
+      row.addValue(res);
+    }
+    return row;
+  }
+
+  private static Class<?> getType(String cn) {
+    try {
+      return OraclePreparedQuery.class.getClassLoader().loadClass(cn);
+    } catch (ClassNotFoundException e) {
+      return null;
     }
   }
 }
