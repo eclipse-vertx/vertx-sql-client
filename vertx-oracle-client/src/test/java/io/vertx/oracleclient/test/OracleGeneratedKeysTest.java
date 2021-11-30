@@ -14,6 +14,7 @@ package io.vertx.oracleclient.test;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.oracleclient.OracleClient;
 import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.test.junit.OracleRule;
@@ -91,7 +92,7 @@ public class OracleGeneratedKeysTest extends OracleTestBase {
     pool.withConnection(conn -> {
       return conn.preparedQuery(INSERT, supplier.get()).execute(Tuple.of("john", 3));
     }, ctx.asyncAssertSuccess(rows -> ctx.verify(v -> {
-      checks.accept(rows.property(OraclePool.GENERATED_KEYS));
+      checks.accept(rows.property(OracleClient.GENERATED_KEYS));
     })));
   }
 
