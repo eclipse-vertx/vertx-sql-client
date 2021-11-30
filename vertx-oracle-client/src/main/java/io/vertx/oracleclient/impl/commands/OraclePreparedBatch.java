@@ -12,7 +12,6 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.sqlclient.Row;
@@ -33,7 +32,7 @@ public class OraclePreparedBatch<C, R> extends QueryCommand<C, R> {
   private final ExtendedQueryCommand<R> query;
   private final List<Tuple> listParams;
 
-  public OraclePreparedBatch(OracleConnectOptions options, ExtendedQueryCommand<R> query, Collector<Row, C, R> collector, List<Tuple> listParams) {
+  public OraclePreparedBatch(ExtendedQueryCommand<R> query, Collector<Row, C, R> collector, List<Tuple> listParams) {
     super(new ResultDecoder<>(collector));
     this.query = query;
     this.listParams = listParams;

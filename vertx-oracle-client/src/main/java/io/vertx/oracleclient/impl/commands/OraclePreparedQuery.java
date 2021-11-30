@@ -10,7 +10,6 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Row;
@@ -28,7 +27,7 @@ public class OraclePreparedQuery<C, R> extends QueryCommand<C, R> {
   private final ExtendedQueryCommand<R> query;
   private final Tuple params;
 
-  public OraclePreparedQuery(OracleConnectOptions options, ExtendedQueryCommand<R> query, Collector<Row, C, R> collector, Tuple params) {
+  public OraclePreparedQuery(ExtendedQueryCommand<R> query, Collector<Row, C, R> collector, Tuple params) {
     super(new ResultDecoder<>(collector));
     this.query = query;
     this.params = params;

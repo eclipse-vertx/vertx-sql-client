@@ -10,7 +10,6 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.sqlclient.Row;
 
@@ -23,7 +22,7 @@ public class SimpleQueryCommand<C, R> extends QueryCommand<C, R> {
 
   private final String sql;
 
-  public SimpleQueryCommand(OracleConnectOptions options, String sql, Collector<Row, C, R> collector) {
+  public SimpleQueryCommand(String sql, Collector<Row, C, R> collector) {
     super(new ResultDecoder<>(collector));
     this.sql = sql;
   }

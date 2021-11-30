@@ -12,7 +12,6 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.oracleclient.impl.OracleColumnDesc;
@@ -41,7 +40,7 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
   private final ExtendedQueryCommand<R> command;
   private final Tuple params;
 
-  public OracleCursorQueryCommand(OracleConnectOptions options, ExtendedQueryCommand<R> command, Tuple params) {
+  public OracleCursorQueryCommand(ExtendedQueryCommand<R> command, Tuple params) {
     super(null);
     this.command = command;
     this.params = params;
