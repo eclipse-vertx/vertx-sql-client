@@ -38,7 +38,6 @@ public interface OraclePool extends Pool {
    */
   PropertyKind<Boolean> OUTPUT = PropertyKind.create("callable-statement-output", Boolean.class);
 
-
   static OraclePool pool(OracleConnectOptions connectOptions, PoolOptions poolOptions) {
     if (Vertx.currentContext() != null) {
       throw new IllegalStateException(
@@ -60,6 +59,17 @@ public interface OraclePool extends Pool {
     return OraclePoolImpl.create((VertxInternal) vertx, false, connectOptions, poolOptions, tracer);
   }
 
-  // TODO No option version
+  /**
+   * Like {@link #pool(OracleConnectOptions, PoolOptions)} but connection options are created from the provided {@code connectionUri}.
+   */
+  static OraclePool pool(String connectionUri, PoolOptions poolOptions) {
+    return pool(OracleConnectOptions.fromUri(connectionUri), poolOptions);
+  }
 
+  /**
+   * Like {@link #pool(String, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  static OraclePool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
+    return pool(vertx, OracleConnectOptions.fromUri(connectionUri), poolOptions);
+  }
 }

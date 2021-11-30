@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -17,13 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePool;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigDecimal;
@@ -33,7 +27,9 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Source
+@SuppressWarnings("unused")
 public class OracleClientExamples {
+
   public void gettingStarted() {
 
     // Connect options
@@ -86,6 +82,18 @@ public class OracleClientExamples {
     pool.getConnection(ar -> {
       // Handling your connection
     });
+  }
+
+  public void configureFromUri(Vertx vertx) {
+
+    // Connection URI
+    String connectionUri = "oracle:thin:scott/tiger@myhost:1521:orcl";
+
+    // Pool Options
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+
+    // Create the pool from the connection URI
+    OraclePool pool = OraclePool.pool(connectionUri, poolOptions);
   }
 
   public void connecting01() {
