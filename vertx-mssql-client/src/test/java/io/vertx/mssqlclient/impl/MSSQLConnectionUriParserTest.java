@@ -79,6 +79,19 @@ public class MSSQLConnectionUriParserTest {
     assertEquals(expectedParsedResult, actualParsedResult);
   }
 
+  @Test
+  public void testParsingPasswordWithCircumflex() {
+    uri = "sqlserver://user:secr^t@localhost";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("user", "user")
+      .put("password", "secr^t")
+      .put("host", "localhost");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void testParsingPasswordWithoutUser() {
     uri = "sqlserver://:secret@localhost";
