@@ -18,8 +18,6 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.oracleclient.impl.OraclePoolImpl;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PropertyKind;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
@@ -27,16 +25,6 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
  */
 @VertxGen
 public interface OraclePool extends Pool {
-
-  /**
-   * The property to be used to retrieve the generated keys
-   */
-  PropertyKind<Row> GENERATED_KEYS = PropertyKind.create("generated-keys", Row.class);
-
-  /**
-   * The property to be used to retrieve the output of the callable statement
-   */
-  PropertyKind<Boolean> OUTPUT = PropertyKind.create("callable-statement-output", Boolean.class);
 
   static OraclePool pool(OracleConnectOptions connectOptions, PoolOptions poolOptions) {
     if (Vertx.currentContext() != null) {

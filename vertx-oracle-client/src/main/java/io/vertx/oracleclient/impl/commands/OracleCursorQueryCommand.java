@@ -11,109 +11,58 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.oracleclient.OracleConnectOptions;
+import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.impl.Helper;
-import io.vertx.oracleclient.impl.OracleColumnDesc;
-import io.vertx.oracleclient.impl.OracleRow;
 import io.vertx.oracleclient.impl.RowReader;
-import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.jdbc.OracleResultSet;
 
-import java.sql.*;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.Flow;
-
-import static io.vertx.oracleclient.impl.Helper.unwrapOraclePreparedStatement;
 
 public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
   private final ExtendedQueryCommand<R> command;
   private final Tuple params;
 
-  public OracleCursorQueryCommand(OracleConnectOptions options, ExtendedQueryCommand<R> command, Tuple params) {
-    super(options, null);
+  public OracleCursorQueryCommand(ExtendedQueryCommand<R> command, Tuple params) {
+    super(null);
     this.command = command;
     this.params = params;
   }
 
   @Override
-  public Future<OracleResponse<R>> execute(OracleConnection conn, ContextInternal context) {
-    Future<PreparedStatement> future = prepare(command, conn, false, context); // TODO returnAutoGenerateKeys
-    return future
-      .flatMap(ps -> {
-        try {
-          fillStatement(ps, conn);
-        } catch (SQLException throwables) {
-          Helper.closeQuietly(ps);
-          return context.failedFuture(throwables);
-        }
-
-        return createRowReader(ps, context)
-          .compose(rr -> rr.read(command.fetch()))
-          .map(x -> (OracleResponse<R>) null)
-          .onComplete(ar ->
-            Helper.closeQuietly(ps)
-          );
-      });
-
+  protected OraclePrepareOptions prepareOptions() {
+    PrepareOptions prepareOptions = command.options();
+    return prepareOptions instanceof OraclePrepareOptions ? (OraclePrepareOptions) prepareOptions : null;
   }
 
-  public Future<RowReader<R, ?>> createRowReader(PreparedStatement sqlStatement, ContextInternal context) {
-    OraclePreparedStatement oraclePreparedStatement =
-      unwrapOraclePreparedStatement(sqlStatement);
-    try {
-      Flow.Publisher<OracleResultSet> publisher = oraclePreparedStatement.executeQueryAsyncOracle();
-      return Helper.first(publisher, context)
-        .compose(ors -> {
-          try {
-            RowDesc description = OracleColumnDesc.rowDesc(ors.getMetaData());
-            List<String> types = new ArrayList<>();
-            for (int i = 1; i <= ors.getMetaData().getColumnCount(); i++) {
-              types.add(ors.getMetaData().getColumnClassName(i));
-            }
-            return RowReader.create(ors.publisherOracle(
-              or -> Helper.getOrHandleSQLException(() -> transform(types, description, or))),
-              command.collector(),
-              context,
-              command.resultHandler(), description);
-          } catch (SQLException e) {
-            return context.failedFuture(e);
-          }
-        });
-    } catch (SQLException throwables) {
-      return context.failedFuture(throwables);
+  @Override
+  protected String query() {
+    return command.sql();
+  }
+
+  @Override
+  protected void applyStatementOptions(Statement statement) throws SQLException {
+    String cursorId = command.cursorId();
+    if (cursorId != null) {
+      statement.setCursorName(cursorId);
+    }
+
+    int fetch = command.fetch();
+    if (fetch > 0) {
+      statement.setFetchSize(fetch);
     }
   }
 
-  private static Row transform(List<String> ors, RowDesc desc, oracle.jdbc.OracleRow or) throws SQLException {
-    Row row = new OracleRow(desc);
-    for (int i = 1; i <= desc.columnNames().size(); i++) {
-      Object res = QueryCommand.convertSqlValue(or.getObject(i, getType(ors.get(i - 1))));
-      row.addValue(res);
-    }
-    return row;
-  }
-
-  private static Class<?> getType(String cn) {
-    try {
-      return OraclePreparedQuery.class.getClassLoader().loadClass(cn);
-    } catch (ClassNotFoundException e) {
-      return null;
-    }
-  }
-
-  private void fillStatement(PreparedStatement ps, Connection conn) throws SQLException {
-
+  @Override
+  protected void fillStatement(PreparedStatement ps, Connection conn) throws SQLException {
     for (int i = 0; i < params.size(); i++) {
       // we must convert types (to comply to JDBC)
       Object value = adaptType(conn, params.getValue(i));
@@ -121,29 +70,20 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
     }
   }
 
-  private Object adaptType(Connection conn, Object value) throws SQLException {
-    // we must convert types (to comply to JDBC)
-
-    if (value instanceof LocalTime) {
-      // -> java.sql.Time
-      LocalTime time = (LocalTime) value;
-      return Time.valueOf(time);
-    } else if (value instanceof LocalDate) {
-      // -> java.sql.Date
-      LocalDate date = (LocalDate) value;
-      return Date.valueOf(date);
-    } else if (value instanceof Instant) {
-      // -> java.sql.Timestamp
-      Instant timestamp = (Instant) value;
-      return Timestamp.from(timestamp);
-    } else if (value instanceof Buffer) {
-      // -> java.sql.Blob
-      Buffer buffer = (Buffer) value;
-      Blob blob = conn.createBlob();
-      blob.setBytes(1, buffer.getBytes());
-      return blob;
+  @Override
+  protected Future<OracleResponse<R>> doExecute(OraclePreparedStatement ps, ContextInternal context, boolean returnAutoGeneratedKeys) {
+    Flow.Publisher<OracleResultSet> publisher;
+    try {
+      publisher = ps.executeQueryAsyncOracle();
+    } catch (SQLException e) {
+      return context.failedFuture(e);
     }
-
-    return value;
+    return Helper.first(publisher, context).compose(ors -> {
+      try {
+        return RowReader.create(ors, command.collector(), context, command.resultHandler());
+      } catch (SQLException e) {
+        return context.failedFuture(e);
+      }
+    }).compose(rr -> rr.read(command.fetch())).mapEmpty();
   }
 }
