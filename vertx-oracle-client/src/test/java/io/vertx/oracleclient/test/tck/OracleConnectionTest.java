@@ -39,55 +39,6 @@ public class OracleConnectionTest extends ConnectionTestBase {
   }
 
   @Test
-  public void testConnect(TestContext ctx) {
-    Async async = ctx.async();
-    connect(ctx.asyncAssertSuccess(conn -> async.complete()));
-  }
-
-  @Test
-  public void testConnectInvalidDatabase(TestContext ctx) {
-    Async async = ctx.async();
-    options.setDatabase("invalidDatabase");
-    connect(ctx.asyncAssertFailure(err -> {
-      ctx.assertTrue(err.getMessage().contains("ORA-12514"));
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidPassword(TestContext ctx) {
-    Async async = ctx.async();
-    options.setPassword("invalidPassword");
-    connect(ctx.asyncAssertFailure(err -> {
-      ctx.assertTrue(err.getMessage().contains("ORA-01017"));
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidUsername(TestContext ctx) {
-    Async async = ctx.async();
-    options.setUser("invalidUsername");
-    connect(ctx.asyncAssertFailure(err -> {
-      ctx.assertTrue(err.getMessage().contains("ORA-01017"));
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testClose(TestContext ctx) {
-    Async closedAsync = ctx.async();
-    Async closeAsync = ctx.async();
-    connect(ctx.asyncAssertSuccess(conn -> {
-      conn.closeHandler(v -> {
-        closedAsync.complete();
-      });
-      conn.close(ctx.asyncAssertSuccess(v -> closeAsync.complete()));
-    }));
-    closedAsync.await();
-  }
-
-  @Test
   public void testCloseWithErrorInProgress(TestContext ctx) {
     Async async = ctx.async(2);
     connect(ctx.asyncAssertSuccess(conn -> {
@@ -113,19 +64,6 @@ public class OracleConnectionTest extends ConnectionTestBase {
       conn.close();
     }));
     async.await();
-  }
-
-  @Test
-  public void testDatabaseMetaData(TestContext ctx) {
-    connect(ctx.asyncAssertSuccess(conn -> {
-      DatabaseMetadata md = conn.databaseMetadata();
-      ctx.assertNotNull(md, "DatabaseMetadata should not be null");
-      ctx.assertNotNull(md.productName(), "Database product name should not be null");
-      ctx.assertNotNull(md.fullVersion(), "Database full version string should not be null");
-      ctx.assertTrue(md.majorVersion() >= 1, "Expected DB major version to be >= 1 but was " + md.majorVersion());
-      ctx.assertTrue(md.minorVersion() >= 0, "Expected DB minor version to be >= 0 but was " + md.minorVersion());
-      validateDatabaseMetaData(ctx, md);
-    }));
   }
 
   @Override
