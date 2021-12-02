@@ -10,13 +10,13 @@
  */
 package io.vertx.oracleclient.test.tck;
 
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,32 +38,16 @@ public class OracleConnectionTest extends ConnectionTestBase {
     super.tearDown(ctx);
   }
 
+  @Override
   @Test
+  @Ignore("Does not work with this client because commands are executed immediately, not queued")
   public void testCloseWithErrorInProgress(TestContext ctx) {
-    Async async = ctx.async(2);
-    connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(err -> async.countDown()));
-      conn.closeHandler(v -> async.countDown());
-      conn.close();
-    }));
-    async.await();
   }
 
+  @Override
   @Test
+  @Ignore("Does not work with this client because commands are executed immediately, not queued")
   public void testCloseWithQueryInProgress(TestContext ctx) {
-    Async async = ctx.async(2);
-    connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, message from immutable").execute(ctx.asyncAssertFailure(result -> {
-        ctx.assertEquals(2, async.count());
-        async.countDown();
-      }));
-      conn.closeHandler(v -> {
-        ctx.assertEquals(1, async.count());
-        async.countDown();
-      });
-      conn.close();
-    }));
-    async.await();
   }
 
   @Override
