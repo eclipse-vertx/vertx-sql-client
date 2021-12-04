@@ -32,7 +32,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
   ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
     super(cmd);
     if (cmd.fetch() > 0 && statement.isCursorOpen) {
-      // restore the state we need for decoding fetch response
+      // restore the state we need for decoding fetch response based on the prepared statement
       columnDefinitions = statement.rowDesc.columnDefinitions();
     }
   }
@@ -42,7 +42,10 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     super.encode(encoder);
 
     if (statement.isCursorOpen) {
-      decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
+      if (decoder == null) {
+        // restore the state we need for decoding if column definitions are not included in the fetch response
+        decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
+      }
       sendStatementFetchCommand(statement.statementId, cmd.fetch());
     } else {
       Tuple params = cmd.params();
@@ -96,8 +99,6 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
             // need to reset packet number so that we can send a fetch request
             sequenceId = 0;
             // send fetch after cursor opened
-            decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
-
             statement.isCursorOpen = true;
 
             sendStatementFetchCommand(statement.statementId, cmd.fetch());
