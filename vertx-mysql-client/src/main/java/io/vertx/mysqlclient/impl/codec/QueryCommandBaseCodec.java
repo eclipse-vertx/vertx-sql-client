@@ -94,7 +94,8 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected void handleResultsetColumnDefinitionsDecodingCompleted() {
     commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-    decoder = new RowResultDecoder<>(cmd.collector(), /*cmd.isSingleton()*/ new MySQLRowDesc(columnDefinitions, format));
+    MySQLRowDesc mySQLRowDesc = new MySQLRowDesc(columnDefinitions, format); // use the column definitions if provided by execute or fetch response instead of prepare response
+    decoder = new RowResultDecoder<>(cmd.collector(), mySQLRowDesc);
   }
 
   protected void handleRows(ByteBuf payload, int payloadLength) {
