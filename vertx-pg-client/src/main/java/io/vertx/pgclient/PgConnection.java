@@ -19,6 +19,7 @@ package io.vertx.pgclient;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.PgConnectionImpl;
+import io.vertx.sqlclient.ServerType;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.codegen.annotations.Fluent;

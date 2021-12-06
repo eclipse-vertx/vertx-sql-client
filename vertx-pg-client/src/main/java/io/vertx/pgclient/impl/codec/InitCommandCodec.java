@@ -27,6 +27,9 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
 
+import static io.vertx.sqlclient.ServerType.PRIMARY;
+import static io.vertx.sqlclient.ServerType.REPLICA;
+
 class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
 
   private PgEncoder encoder;
@@ -86,6 +89,9 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
     }
     if(key.equals("server_version")) {
       ((PgSocketConnection)cmd.connection()).dbMetaData = new PgDatabaseMetadata(value);
+    }
+    if(key.equals("in_hot_standby")) {
+      ((PgSocketConnection)cmd.connection()).serverType = "off".equalsIgnoreCase(value) ? PRIMARY : REPLICA;
     }
   }
 

@@ -55,6 +55,11 @@ public class PoolOptionsConverter {
             obj.setPoolCleanerPeriod(((Number)member.getValue()).intValue());
           }
           break;
+        case "serverRequirement":
+          if (member.getValue() instanceof String) {
+            obj.setServerRequirement(io.vertx.sqlclient.ServerRequirement.valueOf((String)member.getValue()));
+          }
+          break;
       }
     }
   }
@@ -75,5 +80,8 @@ public class PoolOptionsConverter {
     json.put("maxSize", obj.getMaxSize());
     json.put("maxWaitQueueSize", obj.getMaxWaitQueueSize());
     json.put("poolCleanerPeriod", obj.getPoolCleanerPeriod());
+    if (obj.getServerRequirement() != null) {
+      json.put("serverRequirement", obj.getServerRequirement().name());
+    }
   }
 }

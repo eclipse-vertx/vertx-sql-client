@@ -28,6 +28,7 @@ import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.*;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.ServerRequirement;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
@@ -71,8 +72,12 @@ public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
     int pipeliningLimit = pipelined ? baseConnectOptions.getPipeliningLimit() : 1;
     PgPoolImpl pool = new PgPoolImpl(vx, baseConnectOptions, tracer, metrics, pipeliningLimit, poolOptions);
     PgDriver driver = new PgDriver();
-    List<ConnectionFactory> lst = servers.stream().map(options -> driver.createConnectionFactory(vx, options)).collect(Collectors.toList());
-    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
+    List<ConnectionFactory> lst = servers.stream()
+      .map(options -> driver.createConnectionFactory(vx, PgConnectOptions.wrap(options)
+        .setShouldQueryServerType(poolOptions.getServerRequirement() != ServerRequirement.ANY))
+      )
+      .collect(Collectors.toList());
+    ConnectionFactory factory = ConnectionFactory.selector(lst, poolOptions.getServerRequirement());
     pool.connectionProvider(factory::connect);
     pool.init();
     CloseFuture closeFuture = pool.closeFuture();

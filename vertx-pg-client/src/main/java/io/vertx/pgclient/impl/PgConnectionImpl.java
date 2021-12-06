@@ -21,6 +21,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotification;
+import io.vertx.sqlclient.ServerType;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;

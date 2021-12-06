@@ -25,6 +25,11 @@ public class PgConnectOptionsConverter {
             obj.setPipeliningLimit(((Number)member.getValue()).intValue());
           }
           break;
+        case "shouldQueryServerType":
+          if (member.getValue() instanceof Boolean) {
+            obj.setShouldQueryServerType((Boolean)member.getValue());
+          }
+          break;
         case "sslMode":
           if (member.getValue() instanceof String) {
             obj.setSslMode(io.vertx.pgclient.SslMode.valueOf((String)member.getValue()));
@@ -42,6 +47,7 @@ public class PgConnectOptionsConverter {
 
   public static void toJson(PgConnectOptions obj, java.util.Map<String, Object> json) {
     json.put("pipeliningLimit", obj.getPipeliningLimit());
+    json.put("shouldQueryServerType", obj.getShouldQueryServerType());
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());
     }
