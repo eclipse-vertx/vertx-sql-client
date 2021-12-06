@@ -11,15 +11,13 @@
 package io.vertx.oracleclient.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePool;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.SqlClientBase;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
@@ -28,45 +26,22 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Function;
 
-public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements OraclePool {
+public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements OraclePool, Closeable {
 
   private final OracleConnectionFactory factory;
   private final VertxInternal vertx;
-  private Closeable onClose;
+  private final CloseFuture closeFuture;
 
-  public static OraclePoolImpl create(VertxInternal vertx, boolean closeVertx,
-    OracleConnectOptions connectOptions,
-    PoolOptions poolOptions, QueryTracer tracer) {
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
-    @SuppressWarnings("rawtypes") ClientMetrics metrics = vertxMetrics != null ?
-      vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql",
-        connectOptions.getMetricsName()) :
-      null;
-
-    OracleConnectionFactory factory = new OracleConnectionFactory(vertx, connectOptions, poolOptions, tracer, metrics);
-    OraclePoolImpl pool = new OraclePoolImpl(vertx, factory, metrics, tracer);
-    if (closeVertx) {
-      pool.onClose(completion -> vertx.close());
-    } else {
-      ContextInternal ctx = vertx.getContext();
-      if (ctx != null) {
-        ctx.addCloseHook(completion -> pool.close().onComplete(completion));
-      } else {
-        vertx.addCloseHook(completion -> pool.close().onComplete(completion));
-      }
-    }
-    return pool;
-  }
-
-  public OraclePoolImpl(VertxInternal vertx, OracleConnectionFactory factory, ClientMetrics metrics,
-    QueryTracer tracer) {
+  public OraclePoolImpl(VertxInternal vertx, OracleConnectionFactory factory, ClientMetrics metrics, QueryTracer tracer, CloseFuture closeFuture) {
     super(tracer, metrics);
     this.factory = factory;
     this.vertx = vertx;
+    this.closeFuture = closeFuture;
   }
 
-  private void onClose(Closeable closeable) {
-    this.onClose = closeable;
+  @Override
+  public void close(Promise<Void> completion) {
+    factory.close(completion);
   }
 
   @Override
@@ -122,33 +97,12 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
 
   @Override
   public void close(Handler<AsyncResult<Void>> handler) {
-    Promise<Void> promise = Promise.promise();
-    factory.close(promise);
-    promise.future().onComplete(handler).compose(x -> {
-      Promise<Void> p = Promise.promise();
-      if (onClose != null) {
-        onClose.close(p);
-      } else {
-        p.complete();
-      }
-      return p.future();
-    });
+    closeFuture.close(context().promise(handler));
   }
 
   @Override
   public Future<Void> close() {
-    final Promise<Void> promise = vertx.promise();
-    factory.close(promise);
-
-    return promise.future().compose(x -> {
-      Promise<Void> p = Promise.promise();
-      if (onClose != null) {
-        onClose.close(p);
-      } else {
-        p.complete();
-      }
-      return p.future();
-    });
+    return closeFuture.close();
   }
 
   @Override

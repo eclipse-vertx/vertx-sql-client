@@ -21,6 +21,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.pgclient.impl.PgPoolOptions;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Pool;
@@ -124,7 +125,7 @@ public interface PgPool extends Pool {
    * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, List<PgConnectOptions> databases, PoolOptions poolOptions) {
-    return new PgDriver().createPool(vertx, databases, poolOptions);
+    return (PgPool) PgDriver.INSTANCE.createPool(vertx, databases, poolOptions);
   }
 
   /**
@@ -197,7 +198,7 @@ public interface PgPool extends Pool {
    * Like {@link #client(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, List<PgConnectOptions> databases, PoolOptions options) {
-    return new PgDriver().createClient(vertx, databases, options);
+    return PgDriver.INSTANCE.createPool(vertx, databases, new PgPoolOptions(options).setPipelined(true));
   }
 
   /**

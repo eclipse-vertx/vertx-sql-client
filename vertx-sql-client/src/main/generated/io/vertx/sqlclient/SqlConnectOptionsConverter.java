@@ -75,6 +75,8 @@ public class SqlConnectOptionsConverter {
             obj.setUser((String)member.getValue());
           }
           break;
+        case "usingDomainSocket":
+          break;
       }
     }
   }
@@ -107,5 +109,6 @@ public class SqlConnectOptionsConverter {
     if (obj.getUser() != null) {
       json.put("user", obj.getUser());
     }
+    json.put("usingDomainSocket", obj.isUsingDomainSocket());
   }
 }

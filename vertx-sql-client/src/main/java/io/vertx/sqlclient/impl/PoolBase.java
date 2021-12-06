@@ -60,7 +60,8 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
                   QueryTracer tracer,
                   ClientMetrics metrics,
                   int pipeliningLimit,
-                  PoolOptions poolOptions) {
+                  PoolOptions poolOptions,
+                  CloseFuture closeFuture) {
     super(tracer, metrics);
 
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
@@ -69,7 +70,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     this.timerID = -1L;
     this.vertx = vertx;
     this.pool = new SqlConnectionPool(baseConnectOptions, connectOptionsProvider, ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
-    this.closeFuture = new CloseFuture();
+    this.closeFuture = closeFuture;
   }
 
   public P init() {
@@ -103,10 +104,6 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
       });
     }
     pool.checkExpired();
-  }
-
-  public CloseFuture closeFuture() {
-    return closeFuture;
   }
 
   @Override

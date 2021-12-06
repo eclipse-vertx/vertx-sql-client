@@ -55,9 +55,8 @@ public class PoolMultiTest {
   @Test
   public void testAsyncLoadBalancing(TestContext ctx) {
     PgPool pool = PgPool.pool(vertx, new PoolOptions().setMaxSize(5));
-    PgDriver driver = new PgDriver();
-    ConnectionFactory provider1 = driver.createConnectionFactory(vertx, db1.options());
-    ConnectionFactory provider2 = driver.createConnectionFactory(vertx, db2.options());
+    ConnectionFactory provider1 = PgDriver.INSTANCE.createConnectionFactory(vertx, db1.options());
+    ConnectionFactory provider2 = PgDriver.INSTANCE.createConnectionFactory(vertx, db2.options());
     pool.connectionProvider(new Function<Context, Future<SqlConnection>>() {
       int idx = 0;
       @Override

@@ -11,12 +11,14 @@
 package io.vertx.oracleclient.spi;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.impl.OracleConnectionFactory;
+import io.vertx.oracleclient.impl.OraclePoolImpl;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -28,14 +30,24 @@ import java.util.List;
 
 public class OracleDriver implements Driver {
 
+  public static final OracleDriver INSTANCE = new OracleDriver();
+
   @Override
-  public Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases,
-    PoolOptions options) {
-    // TODO Handle list
-    if (vertx == null) {
-      return OraclePool.pool(wrap(databases.get(0)), options);
-    }
-    return OraclePool.pool(vertx, wrap(databases.get(0)), options);
+  public Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases,
+                      PoolOptions options, CloseFuture closeFuture) {
+    VertxInternal vx = (VertxInternal) vertx;
+    ContextInternal context = vx.getOrCreateContext();
+    OracleConnectOptions database = wrap(databases.get(0));
+    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(vx.tracer(), database);
+    VertxMetrics vertxMetrics = vx.metricsSPI();
+    @SuppressWarnings("rawtypes") ClientMetrics metrics = vertxMetrics != null ?
+      vertxMetrics.createClientMetrics(database.getSocketAddress(), "sql",
+        database.getMetricsName()) :
+      null;
+    OracleConnectionFactory factory = new OracleConnectionFactory(vx, database, options, tracer, metrics);
+    OraclePoolImpl pool = new OraclePoolImpl(vx, factory, metrics, tracer, closeFuture);
+    closeFuture.add(pool);
+    return pool;
   }
 
   @Override

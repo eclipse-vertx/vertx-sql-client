@@ -16,23 +16,41 @@
 package io.vertx.mysqlclient.spi;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.mysqlclient.impl.MySQLConnectionFactory;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MySQLDriver implements Driver {
 
+  public static final MySQLDriver INSTANCE = new MySQLDriver();
+
   @Override
-  public MySQLPool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
-    return MySQLPoolImpl.create((VertxInternal) vertx, databases, options);
+  public MySQLPool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+    VertxInternal vx = (VertxInternal) vertx;
+    MySQLConnectOptions baseConnectOptions = MySQLConnectOptions.wrap(databases.get(0));
+    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), baseConnectOptions);
+    VertxMetrics vertxMetrics = vx.metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
+    MySQLPoolImpl pool = new MySQLPoolImpl(vx, baseConnectOptions, null, tracer, metrics, options, closeFuture);
+    pool.init();
+    List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
+    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
+    pool.connectionProvider(factory::connect);
+    closeFuture.add(factory);
+    return pool;
   }
 
   @Override
