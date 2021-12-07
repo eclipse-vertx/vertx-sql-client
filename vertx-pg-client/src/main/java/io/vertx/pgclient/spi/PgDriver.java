@@ -15,6 +15,7 @@ import io.vertx.pgclient.impl.PgPoolOptions;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
@@ -36,13 +37,13 @@ public class PgDriver implements Driver {
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
     boolean pipelinedPool = options instanceof PgPoolOptions && ((PgPoolOptions) options).isPipelined();
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    PgPoolImpl pool = new PgPoolImpl(vx, baseConnectOptions, tracer, metrics, pipeliningLimit, options, closeFuture);
+    PoolImpl pool = new PoolImpl(vx, this, baseConnectOptions, null, tracer, metrics, pipeliningLimit, options, closeFuture);
     List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vx, o)).collect(Collectors.toList());
     ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
     pool.connectionProvider(factory::connect);
     pool.init();
     closeFuture.add(factory);
-    return pool;
+    return new PgPoolImpl(pool);
   }
 
   @Override

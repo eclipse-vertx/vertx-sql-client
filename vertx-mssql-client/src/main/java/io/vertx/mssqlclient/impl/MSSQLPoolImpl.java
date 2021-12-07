@@ -11,30 +11,13 @@
 
 package io.vertx.mssqlclient.impl;
 
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
-import io.vertx.mssqlclient.spi.MSSQLDriver;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
-
-import java.util.function.Supplier;
 
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
 
-  public MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, CloseFuture closeFuture) {
-    super(vertx, MSSQLDriver.INSTANCE, baseConnectOptions, connectOptionsProvider, tracer, metrics, 1, poolOptions, closeFuture);
-  }
-
-  @Override
-  public MSSQLPool connectHandler(Handler<SqlConnection> handler) {
-    return (MSSQLPool) super.connectHandler(handler);
+  public MSSQLPoolImpl(Pool delegate) {
+    super(delegate);
   }
 }

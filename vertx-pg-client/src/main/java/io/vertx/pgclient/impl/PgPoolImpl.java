@@ -17,16 +17,9 @@
 
 package io.vertx.pgclient.impl;
 
-import io.vertx.core.Handler;
-import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.*;
-import io.vertx.pgclient.spi.PgDriver;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 /**
  * Todo :
@@ -39,13 +32,7 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
  */
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
-  public PgPoolImpl(VertxInternal vertx, PgConnectOptions baseConnectOptions, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions, CloseFuture closeFuture) {
-    super(vertx, PgDriver.INSTANCE, baseConnectOptions, null, tracer, metrics, pipeliningLimit, poolOptions, closeFuture);
+  public PgPoolImpl(Pool delegate) {
+    super(delegate);
   }
-
-  @Override
-  public PgPool connectHandler(Handler<SqlConnection> handler) {
-    return (PgPool) super.connectHandler(handler);
-  }
-
 }

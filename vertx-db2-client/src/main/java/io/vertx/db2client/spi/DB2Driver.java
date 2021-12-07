@@ -30,6 +30,7 @@ import io.vertx.db2client.impl.Db2PoolOptions;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
@@ -51,13 +52,13 @@ public class DB2Driver implements Driver {
     boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    DB2PoolImpl pool = new DB2PoolImpl(vx, pipeliningLimit, options, baseConnectOptions, null, tracer, metrics, closeFuture);
+    PoolImpl pool = new PoolImpl(vx, this, baseConnectOptions, null, tracer, metrics, pipeliningLimit, options, closeFuture);
     pool.init();
     List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
     ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
     pool.connectionProvider(factory::connect);
     closeFuture.add(factory);
-    return pool;
+    return new DB2PoolImpl(pool);
   }
 
   @Override

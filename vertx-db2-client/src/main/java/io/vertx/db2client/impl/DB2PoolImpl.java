@@ -15,30 +15,13 @@
  */
 package io.vertx.db2client.impl;
 
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Pool;
-import io.vertx.db2client.spi.DB2Driver;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
-
-import java.util.function.Supplier;
 
 public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
 
-  public DB2PoolImpl(VertxInternal vertx, int pipeliningLimit, PoolOptions poolOptions, DB2ConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, CloseFuture closeFuture) {
-    super(vertx, DB2Driver.INSTANCE, baseConnectOptions, connectOptionsProvider, tracer, metrics, pipeliningLimit, poolOptions, closeFuture);
-  }
-
-  @Override
-  public DB2Pool connectHandler(Handler<SqlConnection> handler) {
-    return (DB2Pool) super.connectHandler(handler);
+  public DB2PoolImpl(Pool delegate) {
+    super(delegate);
   }
 }

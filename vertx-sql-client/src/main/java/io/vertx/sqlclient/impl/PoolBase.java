@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (C) 2019,2020 IBM Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,220 +12,80 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
-
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.*;
-import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.PrepareOptions;
+import io.vertx.sqlclient.PreparedQuery;
+import io.vertx.sqlclient.Query;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
-import io.vertx.sqlclient.spi.Driver;
 
-import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
+public class PoolBase<P extends Pool> implements Pool {
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- */
-public abstract class PoolBase<P extends Pool> extends SqlClientBase implements Pool, Closeable {
+  private final Pool delegate;
 
-  private final VertxInternal vertx;
-  private final SqlConnectionPool pool;
-  private final CloseFuture closeFuture;
-  private final long idleTimeout;
-  private final long connectionTimeout;
-  private final long cleanerPeriod;
-  private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
-  private long timerID;
-  private volatile Function<Context, Future<SqlConnection>> connectionProvider;
-
-  public PoolBase(VertxInternal vertx,
-                  Driver driver,
-                  SqlConnectOptions baseConnectOptions,
-                  Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
-                  QueryTracer tracer,
-                  ClientMetrics metrics,
-                  int pipeliningLimit,
-                  PoolOptions poolOptions,
-                  CloseFuture closeFuture) {
-    super(driver, tracer, metrics);
-
-    this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
-    this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
-    this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
-    this.timerID = -1L;
-    this.vertx = vertx;
-    this.pool = new SqlConnectionPool(baseConnectOptions, connectOptionsProvider, ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize());
-    this.closeFuture = closeFuture;
-  }
-
-  public P init() {
-    closeFuture.add(this);
-    if (idleTimeout > 0 && cleanerPeriod > 0) {
-      synchronized (this) {
-        timerID = vertx.setTimer(cleanerPeriod, id -> {
-          checkExpired();
-        });
-      }
-    }
-    return (P) this;
-  }
-
-  public P connectionProvider(Function<Context, Future<SqlConnection>> connectionProvider) {
-    if (connectionProvider == null) {
-      throw new NullPointerException();
-    }
-    this.connectionProvider = connectionProvider;
-    return (P) this;
-  }
-
-  private void checkExpired() {
-    synchronized (this) {
-      if (timerID == -1) {
-        // Cancelled
-        return;
-      }
-      timerID = vertx.setTimer(cleanerPeriod, id -> {
-        checkExpired();
-      });
-    }
-    pool.checkExpired();
-  }
-
-  @Override
-  protected <T> PromiseInternal<T> promise() {
-    return vertx.promise();
-  }
-
-  protected ContextInternal context() {
-    return vertx.getOrCreateContext();
-  }
-
-  @Override
-  protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
-    return vertx.promise(handler);
+  public PoolBase(Pool delegate) {
+    this.delegate = delegate;
   }
 
   @Override
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
-    Future<SqlConnection> fut = getConnection();
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
+    delegate.getConnection(handler);
   }
 
   @Override
   public Future<SqlConnection> getConnection() {
-    ContextInternal current = vertx.getOrCreateContext();
-    Object metric;
-    if (metrics != null) {
-      metric = metrics.enqueueRequest();
-    } else {
-      metric = null;
-    }
-    Promise<SqlConnectionPool.PooledConnection> promise = current.promise();
-    acquire(current, connectionTimeout, promise);
-    if (metrics != null) {
-      promise.future().onComplete(ar -> {
-        metrics.dequeueRequest(metric);
-      });
-    }
-    return promise.future().map(conn -> {
-      SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn, tracer, metrics);
-      conn.init(wrapper);
-      return wrapper;
-    });
+    return delegate.getConnection();
   }
 
   @Override
-  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
-    Object metric;
-    if (metrics != null) {
-      metric = metrics.enqueueRequest();
-    } else {
-      metric = null;
-    }
-    Future<R> fut = pool.execute(context, cmd);
-    if (metrics != null) {
-      fut.onComplete(ar -> {
-        if (metrics != null) {
-          metrics.dequeueRequest(metric);
-        }
-      });
-    }
-    return fut;
-  }
-
-  private void acquire(ContextInternal context, long timeout, Handler<AsyncResult<SqlConnectionPool.PooledConnection>> completionHandler) {
-    pool.acquire(context, timeout, completionHandler);
+  public Query<RowSet<Row>> query(String sql) {
+    return delegate.query(sql);
   }
 
   @Override
-  public void close(Promise<Void> completion) {
-    doClose().onComplete(completion);
-  }
-
-  @Override
-  public Future<Void> close() {
-    Promise<Void> promise = vertx.promise();
-    closeFuture.close(promise);
-    return promise.future();
+  public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
+    return delegate.preparedQuery(sql);
   }
 
   @Override
   public void close(Handler<AsyncResult<Void>> handler) {
-    closeFuture.close(vertx.promise(handler));
+    delegate.close(handler);
   }
 
   @Override
-  public Pool connectHandler(Handler<SqlConnection> handler) {
-    if (handler != null) {
-      connectionInitializer = conn -> {
-        ContextInternal current = vertx.getContext();
-        SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn, tracer, metrics);
-        conn.init(wrapper);
-        current.dispatch(wrapper, handler);
-      };
-    } else {
-      connectionInitializer = null;
-    }
-    return this;
+  public P connectHandler(Handler<SqlConnection> handler) {
+    delegate.connectHandler(handler);
+    return (P) this;
   }
 
-  private Future<Void> doClose() {
-    synchronized (this) {
-      if (timerID >= 0) {
-        vertx.cancelTimer(timerID);
-        timerID = -1;
-      }
-    }
-    return pool.close().onComplete(v -> {
-      if (metrics != null) {
-        metrics.close();
-      }
-    });
+  @Override
+  public P connectionProvider(Function<Context, Future<SqlConnection>> provider) {
+    delegate.connectionProvider(provider);
+    return (P) this;
   }
 
+  @Override
   public int size() {
-    return pool.size();
+    return delegate.size();
   }
 
-  public void check(Handler<AsyncResult<List<Integer>>> handler) {
-    pool.check(handler);
+  @Override
+  public PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options) {
+    return delegate.preparedQuery(sql, options);
+  }
+
+  @Override
+  public Future<Void> close() {
+    return delegate.close();
   }
 }

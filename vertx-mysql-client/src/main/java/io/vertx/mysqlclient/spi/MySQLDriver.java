@@ -29,6 +29,7 @@ import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
@@ -48,13 +49,13 @@ public class MySQLDriver implements Driver {
     QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    MySQLPoolImpl pool = new MySQLPoolImpl(vx, baseConnectOptions, null, tracer, metrics, options, closeFuture);
+    PoolImpl pool = new PoolImpl(vx, this, baseConnectOptions, null, tracer, metrics, 1, options, closeFuture);
     pool.init();
     List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
     ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
     pool.connectionProvider(factory::connect);
     closeFuture.add(factory);
-    return pool;
+    return new MySQLPoolImpl(pool);
   }
 
   @Override

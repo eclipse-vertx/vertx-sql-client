@@ -11,30 +11,13 @@
 
 package io.vertx.mysqlclient.impl;
 
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.mysqlclient.spi.MySQLDriver;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
-
-import java.util.function.Supplier;
 
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
 
-  public MySQLPoolImpl(VertxInternal vertx, MySQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, CloseFuture closeFuture) {
-    super(vertx, MySQLDriver.INSTANCE, baseConnectOptions, connectOptionsProvider, tracer, metrics, 1, poolOptions, closeFuture);
-  }
-
-  @Override
-  public MySQLPool connectHandler(Handler<SqlConnection> handler) {
-    return (MySQLPool) super.connectHandler(handler);
+  public MySQLPoolImpl(Pool delegate) {
+    super(delegate);
   }
 }
