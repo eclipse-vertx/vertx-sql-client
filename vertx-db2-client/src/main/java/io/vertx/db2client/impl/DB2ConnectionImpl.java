@@ -24,6 +24,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
+import io.vertx.db2client.spi.DB2Driver;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
@@ -44,7 +45,7 @@ public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> impl
   }
 
   public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, tracer, metrics);
+    super(context, factory, conn, DB2Driver.INSTANCE, tracer, metrics);
   }
 
   @Override

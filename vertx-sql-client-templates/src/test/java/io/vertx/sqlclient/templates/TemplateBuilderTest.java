@@ -3,19 +3,27 @@ package io.vertx.sqlclient.templates;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.impl.CloseFuture;
+import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.SqlClientInternal;
+import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.templates.impl.SqlTemplate;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -23,6 +31,30 @@ import static org.junit.Assert.assertEquals;
 public class TemplateBuilderTest {
 
   private abstract static class FakeClient implements SqlClientInternal {
+    @Override
+    public Driver driver() {
+      return new Driver() {
+        @Override
+        public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
+          return FakeClient.this.appendQueryPlaceholder(queryBuilder, index, current);
+        }
+        @Override
+        public Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+          throw new UnsupportedOperationException();
+        }
+        @Override
+        public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+          throw new UnsupportedOperationException();
+        }
+        @Override
+        public boolean acceptsOptions(SqlConnectOptions connectOptions) {
+          throw new UnsupportedOperationException();
+        }
+      };
+    }
+
+    protected abstract int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current);
+
     @Override
     public Query<RowSet<Row>> query(String sql) {
       throw new UnsupportedOperationException();

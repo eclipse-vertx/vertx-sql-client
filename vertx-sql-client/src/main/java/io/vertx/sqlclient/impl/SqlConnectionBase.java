@@ -26,6 +26,7 @@ import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.core.*;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.Driver;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -36,8 +37,8 @@ public abstract class SqlConnectionBase<C extends SqlClient> extends SqlClientBa
   protected final ConnectionFactory factory;
   protected final Connection conn;
 
-  protected SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(tracer, metrics);
+  protected SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, Driver driver, QueryTracer tracer, ClientMetrics metrics) {
+    super(driver, tracer, metrics);
     this.context = context;
     this.factory = factory;
     this.conn = conn;

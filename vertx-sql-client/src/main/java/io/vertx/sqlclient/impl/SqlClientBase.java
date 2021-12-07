@@ -36,6 +36,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.command.CompositeCommand;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
 import java.util.function.Function;
@@ -43,18 +44,14 @@ import java.util.stream.Collector;
 
 public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInternal, CommandScheduler {
 
+  protected final Driver driver;
   protected final QueryTracer tracer;
   protected final ClientMetrics metrics;
 
-  public SqlClientBase(QueryTracer tracer, ClientMetrics metrics) {
+  public SqlClientBase(Driver driver, QueryTracer tracer, ClientMetrics metrics) {
+    this.driver = driver;
     this.tracer = tracer;
     this.metrics = metrics;
-  }
-
-  @Override
-  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
-    queryBuilder.append("?");
-    return current;
   }
 
   protected abstract ContextInternal context();
@@ -62,6 +59,11 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
   protected abstract <T> PromiseInternal<T> promise();
 
   protected abstract <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler);
+
+  @Override
+  public Driver driver() {
+    return driver;
+  }
 
   @Override
   public Query<RowSet<Row>> query(String sql) {
@@ -184,7 +186,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
   @Override
   public void group(Handler<SqlClient> block) {
-    GroupingClient grouping = new GroupingClient(tracer, metrics);
+    GroupingClient grouping = new GroupingClient();
     block.handle(grouping);
     schedule(context(), grouping.composite);
   }
@@ -193,8 +195,8 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
 
     private CompositeCommand composite = new CompositeCommand();
 
-    public GroupingClient(QueryTracer tracer, ClientMetrics metrics) {
-      super(tracer, metrics);
+    public GroupingClient() {
+      super(SqlClientBase.this.driver, SqlClientBase.this.tracer, SqlClientBase.this.metrics);
     }
 
     @Override

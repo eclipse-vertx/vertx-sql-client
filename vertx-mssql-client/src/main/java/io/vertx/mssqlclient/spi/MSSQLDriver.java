@@ -62,4 +62,10 @@ public class MSSQLDriver implements Driver {
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
     return new MSSQLConnectionFactory((VertxInternal) vertx, MSSQLConnectOptions.wrap(database));
   }
+
+  @Override
+  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
+    queryBuilder.append('@').append('P').append(1 + index);
+    return index;
+  }
 }

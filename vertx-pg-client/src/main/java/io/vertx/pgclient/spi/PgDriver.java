@@ -50,4 +50,10 @@ public class PgDriver implements Driver {
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
     return new PgConnectionFactory((VertxInternal) vertx, PgConnectOptions.wrap(database));
   }
+
+  @Override
+  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
+    queryBuilder.append('$').append(1 + index);
+    return index;
+  }
 }

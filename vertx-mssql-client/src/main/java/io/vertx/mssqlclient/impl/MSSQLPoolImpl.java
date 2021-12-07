@@ -19,6 +19,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
+import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -33,13 +34,7 @@ import java.util.function.Supplier;
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
 
   public MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, CloseFuture closeFuture) {
-    super(vertx, baseConnectOptions, connectOptionsProvider, tracer, metrics, 1, poolOptions, closeFuture);
-  }
-
-  @Override
-  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
-    queryBuilder.append('@').append('P').append(1 + index);
-    return index;
+    super(vertx, MSSQLDriver.INSTANCE, baseConnectOptions, connectOptionsProvider, tracer, metrics, 1, poolOptions, closeFuture);
   }
 
   @Override

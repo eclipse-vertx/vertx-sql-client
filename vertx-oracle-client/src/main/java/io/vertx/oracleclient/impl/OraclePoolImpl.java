@@ -17,6 +17,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.oracleclient.OraclePool;
+import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.SqlClientBase;
@@ -33,7 +34,7 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
   private final CloseFuture closeFuture;
 
   public OraclePoolImpl(VertxInternal vertx, OracleConnectionFactory factory, ClientMetrics metrics, QueryTracer tracer, CloseFuture closeFuture) {
-    super(tracer, metrics);
+    super(OracleDriver.INSTANCE, tracer, metrics);
     this.factory = factory;
     this.vertx = vertx;
     this.closeFuture = closeFuture;
@@ -63,7 +64,7 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
   private Future<SqlConnection> getConnectionInternal(ContextInternal ctx) {
     return factory.connect(ctx)
       .map(c -> {
-        SqlConnectionImpl<?> connection = new SqlConnectionImpl<>(ctx, factory, c, tracer, metrics);
+        SqlConnectionImpl<?> connection = new SqlConnectionImpl<>(ctx, factory, c, OracleDriver.INSTANCE, tracer, metrics);
         c.init(connection);
         return connection;
       });

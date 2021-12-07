@@ -31,6 +31,7 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
 import java.util.function.Function;
@@ -55,6 +56,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
 
   public PoolBase(VertxInternal vertx,
+                  Driver driver,
                   SqlConnectOptions baseConnectOptions,
                   Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
                   QueryTracer tracer,
@@ -62,7 +64,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
                   int pipeliningLimit,
                   PoolOptions poolOptions,
                   CloseFuture closeFuture) {
-    super(tracer, metrics);
+    super(driver, tracer, metrics);
 
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());

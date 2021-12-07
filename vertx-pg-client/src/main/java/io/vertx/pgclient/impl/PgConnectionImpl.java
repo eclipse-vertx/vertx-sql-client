@@ -21,6 +21,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotification;
+import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SqlConnectionImpl;
@@ -52,13 +53,7 @@ public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implem
   private volatile Handler<PgNotification> notificationHandler;
 
   public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, tracer, metrics);
-  }
-
-  @Override
-  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
-    queryBuilder.append('$').append(1 + index);
-    return index;
+    super(context, factory, conn, PgDriver.INSTANCE, tracer, metrics);
   }
 
   @Override

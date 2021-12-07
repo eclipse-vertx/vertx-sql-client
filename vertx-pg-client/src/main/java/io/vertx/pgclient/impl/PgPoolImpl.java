@@ -23,6 +23,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.*;
+import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
@@ -43,13 +44,7 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
   public PgPoolImpl(VertxInternal vertx, PgConnectOptions baseConnectOptions, QueryTracer tracer, ClientMetrics metrics, int pipeliningLimit, PoolOptions poolOptions, CloseFuture closeFuture) {
-    super(vertx, baseConnectOptions, null, tracer, metrics, pipeliningLimit, poolOptions, closeFuture);
-  }
-
-  @Override
-  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
-    queryBuilder.append('$').append(1 + index);
-    return index;
+    super(vertx, PgDriver.INSTANCE, baseConnectOptions, null, tracer, metrics, pipeliningLimit, poolOptions, closeFuture);
   }
 
   @Override

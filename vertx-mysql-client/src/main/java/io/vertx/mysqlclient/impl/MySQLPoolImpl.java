@@ -19,6 +19,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
+import io.vertx.mysqlclient.spi.MySQLDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -33,7 +34,7 @@ import java.util.function.Supplier;
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
 
   public MySQLPoolImpl(VertxInternal vertx, MySQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, CloseFuture closeFuture) {
-    super(vertx, baseConnectOptions, connectOptionsProvider, tracer, metrics, 1, poolOptions, closeFuture);
+    super(vertx, MySQLDriver.INSTANCE, baseConnectOptions, connectOptionsProvider, tracer, metrics, 1, poolOptions, closeFuture);
   }
 
   @Override
