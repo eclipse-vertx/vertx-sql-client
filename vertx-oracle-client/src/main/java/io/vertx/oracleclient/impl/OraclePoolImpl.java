@@ -21,13 +21,13 @@ import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.SqlClientBase;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Function;
 
-public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements OraclePool, Closeable {
+public class OraclePoolImpl extends SqlClientBase implements OraclePool, Closeable {
 
   private final OracleConnectionFactory factory;
   private final VertxInternal vertx;
@@ -64,7 +64,7 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
   private Future<SqlConnection> getConnectionInternal(ContextInternal ctx) {
     return factory.connect(ctx)
       .map(c -> {
-        SqlConnectionImpl<?> connection = new SqlConnectionImpl<>(ctx, factory, c, OracleDriver.INSTANCE, tracer, metrics);
+        SqlConnectionBase<?> connection = new SqlConnectionBase<>(ctx, factory, c, OracleDriver.INSTANCE, tracer, metrics);
         c.init(connection);
         return connection;
       });
@@ -110,6 +110,6 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
   public <R> Future<R> schedule(ContextInternal contextInternal, CommandBase<R> commandBase) {
     ContextInternal ctx = vertx.getOrCreateContext();
     return getConnectionInternal(ctx)
-      .flatMap(conn -> ((SqlConnectionImpl<?>) conn).schedule(ctx, commandBase).eventually(r -> conn.close()));
+      .flatMap(conn -> ((SqlConnectionBase<?>) conn).schedule(ctx, commandBase).eventually(r -> conn.close()));
   }
 }

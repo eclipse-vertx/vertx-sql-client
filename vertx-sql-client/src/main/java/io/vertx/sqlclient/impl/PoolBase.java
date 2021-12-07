@@ -43,7 +43,7 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implements Pool, Closeable {
+public abstract class PoolBase<P extends Pool> extends SqlClientBase implements Pool, Closeable {
 
   private final VertxInternal vertx;
   private final SqlConnectionPool pool;
@@ -147,7 +147,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
       });
     }
     return promise.future().map(conn -> {
-      SqlConnectionImpl wrapper = wrap(current, conn.factory(), conn);
+      SqlConnectionBase wrapper = wrap(current, conn.factory(), conn);
       conn.init(wrapper);
       return wrapper;
     });
@@ -176,7 +176,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     pool.acquire(context, timeout, completionHandler);
   }
 
-  protected abstract SqlConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection conn);
+  protected abstract SqlConnectionBase wrap(ContextInternal context, ConnectionFactory factory, Connection conn);
 
   @Override
   public void close(Promise<Void> completion) {
@@ -200,7 +200,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase<P> implemen
     if (handler != null) {
       connectionInitializer = conn -> {
         ContextInternal current = vertx.getContext();
-        SqlConnectionImpl wrapper = wrap(current, conn.factory(), conn);
+        SqlConnectionBase wrapper = wrap(current, conn.factory(), conn);
         conn.init(wrapper);
         current.dispatch(wrapper, handler);
       };

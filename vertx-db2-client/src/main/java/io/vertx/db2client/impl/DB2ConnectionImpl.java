@@ -26,11 +26,11 @@ import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.db2client.spi.DB2Driver;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
-public class DB2ConnectionImpl extends SqlConnectionImpl<DB2ConnectionImpl> implements DB2Connection {
+public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> implements DB2Connection {
 
   public static Future<DB2Connection> connect(Vertx vertx, DB2ConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();

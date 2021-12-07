@@ -25,7 +25,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
@@ -38,7 +37,7 @@ public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool 
   }
 
   @Override
-  protected SqlConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection conn) {
+  protected MySQLConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection conn) {
     return new MySQLConnectionImpl(context, factory, conn, tracer, metrics);
   }
 

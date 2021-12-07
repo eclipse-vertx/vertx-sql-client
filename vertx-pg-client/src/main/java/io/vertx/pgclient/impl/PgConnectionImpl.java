@@ -24,7 +24,7 @@ import io.vertx.pgclient.PgNotification;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -33,7 +33,7 @@ import io.vertx.core.Vertx;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
-public class PgConnectionImpl extends SqlConnectionImpl<PgConnectionImpl> implements PgConnection  {
+public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
   public static Future<PgConnection> connect(ContextInternal context, PgConnectOptions options) {
     if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {

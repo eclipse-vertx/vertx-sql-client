@@ -33,7 +33,7 @@ import io.vertx.core.net.impl.pool.PoolWaiter;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -116,7 +116,7 @@ public class SqlConnectionPool {
       Future<SqlConnection> future = connectionProvider.apply(context);
       future.onComplete(ar -> {
         if (ar.succeeded()) {
-          SqlConnectionImpl res = (SqlConnectionImpl) ar.result();
+          SqlConnectionBase res = (SqlConnectionBase) ar.result();
           Connection conn = res.unwrap();
           if (conn.isValid()) {
             PooledConnection pooled = new PooledConnection(res.factory(), conn, listener);

@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInternal, CommandScheduler {
+public abstract class SqlClientBase implements SqlClientInternal, CommandScheduler {
 
   protected final Driver driver;
   protected final QueryTracer tracer;
@@ -191,7 +191,7 @@ public abstract class SqlClientBase<C extends SqlClient> implements SqlClientInt
     schedule(context(), grouping.composite);
   }
 
-  private class GroupingClient extends SqlClientBase<GroupingClient> {
+  private class GroupingClient extends SqlClientBase {
 
     private CompositeCommand composite = new CompositeCommand();
 

@@ -21,7 +21,7 @@ import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import oracle.jdbc.OracleConnection;
@@ -70,7 +70,7 @@ public class OracleConnectionFactory implements ConnectionFactory {
     ContextInternal ic  = (ContextInternal) context;
     return connect(ic)
       .map(c -> {
-        SqlConnectionImpl connection = new SqlConnectionImpl(ic, this, c, OracleDriver.INSTANCE, tracer, metrics);
+        SqlConnectionBase connection = new SqlConnectionBase(ic, this, c, OracleDriver.INSTANCE, tracer, metrics);
         c.init(connection);
         return connection;
       });

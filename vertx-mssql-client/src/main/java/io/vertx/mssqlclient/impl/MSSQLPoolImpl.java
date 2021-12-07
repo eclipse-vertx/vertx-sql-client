@@ -25,7 +25,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
@@ -38,7 +37,7 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
   }
 
   @Override
-  protected SqlConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection connection) {
+  protected MSSQLConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection connection) {
     return new MSSQLConnectionImpl(context, factory, connection, tracer, metrics);
   }
 
