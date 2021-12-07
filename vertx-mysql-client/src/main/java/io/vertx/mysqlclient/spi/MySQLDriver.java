@@ -17,15 +17,19 @@ package io.vertx.mysqlclient.spi;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.mysqlclient.impl.MySQLConnectionFactory;
+import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -61,5 +65,10 @@ public class MySQLDriver implements Driver {
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
     return new MySQLConnectionFactory((VertxInternal) vertx, MySQLConnectOptions.wrap(database));
+  }
+
+  @Override
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    return new MySQLConnectionImpl(context, factory, conn, tracer, metrics);
   }
 }

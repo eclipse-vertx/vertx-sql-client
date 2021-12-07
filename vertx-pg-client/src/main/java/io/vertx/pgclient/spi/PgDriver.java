@@ -2,16 +2,20 @@ package io.vertx.pgclient.spi;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.impl.PgConnectionFactory;
+import io.vertx.pgclient.impl.PgConnectionImpl;
 import io.vertx.pgclient.impl.PgPoolImpl;
 import io.vertx.pgclient.impl.PgPoolOptions;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -55,5 +59,10 @@ public class PgDriver implements Driver {
   public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
     queryBuilder.append('$').append(1 + index);
     return index;
+  }
+
+  @Override
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn, tracer, metrics);
   }
 }

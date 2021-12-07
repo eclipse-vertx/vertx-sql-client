@@ -36,7 +36,7 @@ import io.vertx.sqlclient.spi.Driver;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnection, Connection.Holder {
+public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal {
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;

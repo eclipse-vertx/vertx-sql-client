@@ -30,7 +30,6 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
@@ -147,7 +146,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase implements 
       });
     }
     return promise.future().map(conn -> {
-      SqlConnectionBase wrapper = wrap(current, conn.factory(), conn);
+      SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn, tracer, metrics);
       conn.init(wrapper);
       return wrapper;
     });
@@ -176,8 +175,6 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase implements 
     pool.acquire(context, timeout, completionHandler);
   }
 
-  protected abstract SqlConnectionBase wrap(ContextInternal context, ConnectionFactory factory, Connection conn);
-
   @Override
   public void close(Promise<Void> completion) {
     doClose().onComplete(completion);
@@ -200,7 +197,7 @@ public abstract class PoolBase<P extends Pool> extends SqlClientBase implements 
     if (handler != null) {
       connectionInitializer = conn -> {
         ContextInternal current = vertx.getContext();
-        SqlConnectionBase wrapper = wrap(current, conn.factory(), conn);
+        SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn, tracer, metrics);
         conn.init(wrapper);
         current.dispatch(wrapper, handler);
       };

@@ -14,7 +14,6 @@ package io.vertx.mssqlclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
@@ -23,10 +22,8 @@ import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.function.Supplier;
 
@@ -34,11 +31,6 @@ public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool 
 
   public MSSQLPoolImpl(VertxInternal vertx, MSSQLConnectOptions baseConnectOptions, Supplier<Future<SqlConnectOptions>> connectOptionsProvider, QueryTracer tracer, ClientMetrics metrics, PoolOptions poolOptions, CloseFuture closeFuture) {
     super(vertx, MSSQLDriver.INSTANCE, baseConnectOptions, connectOptionsProvider, tracer, metrics, 1, poolOptions, closeFuture);
-  }
-
-  @Override
-  protected MSSQLConnectionImpl wrap(ContextInternal context, ConnectionFactory factory, Connection connection) {
-    return new MSSQLConnectionImpl(context, factory, connection, tracer, metrics);
   }
 
   @Override
