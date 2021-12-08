@@ -104,6 +104,7 @@ public class SharedPoolTest extends PgTestBase {
   public void testPartialClose(TestContext ctx) {
     int maxSize = 8;
     int instances = maxSize * 4;
+    Async async = ctx.async();
     vertx.deployVerticle(new AbstractVerticle() {
       @Override
       public void start() {
@@ -127,6 +128,7 @@ public class SharedPoolTest extends PgTestBase {
                 .onComplete(ctx.asyncAssertSuccess(res2 -> {
                   int num2 = res1.iterator().next().getInteger(0);
                   ctx.assertEquals(num1, num2);
+                  async.complete();
                 }));
             }));
         }));
