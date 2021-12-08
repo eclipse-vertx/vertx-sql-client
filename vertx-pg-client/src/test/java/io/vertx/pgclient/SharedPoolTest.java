@@ -69,6 +69,7 @@ public class SharedPoolTest extends PgTestBase {
     int instances = maxSize * 4;
     Async latch = ctx.async(instances);
     AtomicReference<String> deployment = new AtomicReference<>();
+    Async async = ctx.async();
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() {
@@ -82,7 +83,7 @@ public class SharedPoolTest extends PgTestBase {
     vertx.undeploy(deployment.get())
       .compose(v -> PgConnection.connect(vertx, options))
       .compose(conn -> waitUntilConnCountIs(conn, 10, 1)
-      ).onComplete(ctx.asyncAssertSuccess());
+      ).onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
   }
 
   private Future<Void> waitUntilConnCountIs(SqlConnection conn, int remaining, int expectedCount) {
