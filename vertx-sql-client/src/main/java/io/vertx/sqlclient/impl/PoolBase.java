@@ -29,11 +29,13 @@ import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
 
-public class PoolBase<P extends Pool> implements Pool {
+public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
 
   private final VertxInternal vertx;
   private final CloseFuture closeFuture;
@@ -43,6 +45,16 @@ public class PoolBase<P extends Pool> implements Pool {
     this.vertx = vertx;
     this.closeFuture = closeFuture;
     this.delegate = delegate;
+  }
+
+  @Override
+  public Driver driver() {
+    return ((SqlClientInternal)delegate).driver();
+  }
+
+  @Override
+  public void group(Handler<SqlClient> block) {
+
   }
 
   @Override
