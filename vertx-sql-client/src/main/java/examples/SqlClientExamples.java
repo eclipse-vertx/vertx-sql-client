@@ -21,6 +21,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Pool;
@@ -423,5 +424,13 @@ public class SqlClientExamples {
           .setName("my-pool"));
       }
     }, new DeploymentOptions().setInstances(4));
+  }
+
+  public static void poolSharing3(Vertx vertx, SqlConnectOptions database, int maxSize) {
+    Pool pool = Pool.pool(database, new PoolOptions()
+      .setMaxSize(maxSize)
+      .setShared(true)
+      .setName("my-pool")
+      .setEventLoopSize(4));
   }
 }

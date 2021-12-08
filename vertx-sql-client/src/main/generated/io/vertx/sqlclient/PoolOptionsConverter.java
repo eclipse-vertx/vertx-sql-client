@@ -30,6 +30,11 @@ public class PoolOptionsConverter {
             obj.setConnectionTimeoutUnit(java.util.concurrent.TimeUnit.valueOf((String)member.getValue()));
           }
           break;
+        case "eventLoopSize":
+          if (member.getValue() instanceof Number) {
+            obj.setEventLoopSize(((Number)member.getValue()).intValue());
+          }
+          break;
         case "idleTimeout":
           if (member.getValue() instanceof Number) {
             obj.setIdleTimeout(((Number)member.getValue()).intValue());
@@ -78,6 +83,7 @@ public class PoolOptionsConverter {
     if (obj.getConnectionTimeoutUnit() != null) {
       json.put("connectionTimeoutUnit", obj.getConnectionTimeoutUnit().name());
     }
+    json.put("eventLoopSize", obj.getEventLoopSize());
     json.put("idleTimeout", obj.getIdleTimeout());
     if (obj.getIdleTimeoutUnit() != null) {
       json.put("idleTimeoutUnit", obj.getIdleTimeoutUnit().name());

@@ -18,6 +18,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.impl.Arguments;
 import io.vertx.core.json.JsonObject;
 
@@ -77,6 +78,11 @@ public class PoolOptions {
    */
   public static final String DEFAULT_NAME = "__vertx.DEFAULT";
 
+  /**
+   * Default pool event loop size = 0 (reuse current event-loop)
+   */
+  public static final int DEFAULT_EVENT_LOOP_SIZE = 0;
+
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
@@ -86,6 +92,7 @@ public class PoolOptions {
   private TimeUnit connectionTimeoutUnit = DEFAULT_CONNECTION_TIMEOUT_TIME_UNIT;
   private boolean shared = DEFAULT_SHARED_POOL;
   private String name = DEFAULT_NAME;
+  private int eventLoopSize = DEFAULT_EVENT_LOOP_SIZE;
 
   public PoolOptions() {
   }
@@ -101,6 +108,7 @@ public class PoolOptions {
     idleTimeoutUnit = other.idleTimeoutUnit;
     shared= other.shared;
     name = other.name;
+    eventLoopSize = other.eventLoopSize;
   }
 
   /**
@@ -271,6 +279,33 @@ public class PoolOptions {
   public PoolOptions setName(String name) {
     Objects.requireNonNull(name, "Pool name cannot be null");
     this.name = name;
+    return this;
+  }
+
+  /**
+   * @return the max number of event-loop a pool will use, the default value is {@code 0} which implies
+   * to reuse the current event-loop
+   */
+  public int getEventLoopSize() {
+    return eventLoopSize;
+  }
+
+  /**
+   * Set the number of event-loop the pool use.
+   *
+   * <ul>
+   *   <li>when the size is {@code 0}, the client pool will use the current event-loop</li>
+   *   <li>otherwise the client will create and use its own event loop</li>
+   * </ul>
+   *
+   * The default size is {@code 0}.
+   *
+   * @param eventLoopSize  the new size
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setEventLoopSize(int eventLoopSize) {
+    Arguments.require(eventLoopSize >= 0, "poolEventLoopSize must be >= 0");
+    this.eventLoopSize = eventLoopSize;
     return this;
   }
 

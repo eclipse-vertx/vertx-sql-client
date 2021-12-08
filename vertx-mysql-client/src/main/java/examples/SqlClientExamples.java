@@ -345,7 +345,7 @@ public class SqlClientExamples {
   }
 
   public void poolSharing1(Vertx vertx, MySQLConnectOptions database, int maxSize) {
-    Pool pool = MySQLPool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    MySQLPool pool = MySQLPool.pool(database, new PoolOptions().setMaxSize(maxSize));
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() throws Exception {
@@ -356,7 +356,7 @@ public class SqlClientExamples {
 
   public void poolSharing2(Vertx vertx, MySQLConnectOptions database, int maxSize) {
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      Pool pool;
+      MySQLPool pool;
       @Override
       public void start() {
         // Get or create a shared pool
@@ -368,5 +368,13 @@ public class SqlClientExamples {
           .setName("my-pool"));
       }
     }, new DeploymentOptions().setInstances(4));
+  }
+
+  public static void poolSharing3(Vertx vertx, MySQLConnectOptions database, int maxSize) {
+    MySQLPool pool = MySQLPool.pool(database, new PoolOptions()
+      .setMaxSize(maxSize)
+      .setShared(true)
+      .setName("my-pool")
+      .setEventLoopSize(4));
   }
 }

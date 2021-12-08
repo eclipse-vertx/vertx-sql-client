@@ -361,7 +361,7 @@ public class SqlClientExamples {
   }
 
   public void poolSharing1(Vertx vertx, DB2ConnectOptions database, int maxSize) {
-    Pool pool = DB2Pool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    DB2Pool pool = DB2Pool.pool(database, new PoolOptions().setMaxSize(maxSize));
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() throws Exception {
@@ -372,7 +372,7 @@ public class SqlClientExamples {
 
   public void poolSharing2(Vertx vertx, DB2ConnectOptions database, int maxSize) {
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      Pool pool;
+      DB2Pool pool;
       @Override
       public void start() {
         // Get or create a shared pool
@@ -384,5 +384,13 @@ public class SqlClientExamples {
           .setName("my-pool"));
       }
     }, new DeploymentOptions().setInstances(4));
+  }
+
+  public static void poolSharing3(Vertx vertx, DB2ConnectOptions database, int maxSize) {
+    DB2Pool pool = DB2Pool.pool(database, new PoolOptions()
+      .setMaxSize(maxSize)
+      .setShared(true)
+      .setName("my-pool")
+      .setEventLoopSize(4));
   }
 }

@@ -360,7 +360,7 @@ public class SqlClientExamples {
   }
 
   public void poolSharing1(Vertx vertx, MSSQLConnectOptions database, int maxSize) {
-    Pool pool = MSSQLPool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    MSSQLPool pool = MSSQLPool.pool(database, new PoolOptions().setMaxSize(maxSize));
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() throws Exception {
@@ -371,7 +371,7 @@ public class SqlClientExamples {
 
   public void poolSharing2(Vertx vertx, MSSQLConnectOptions database, int maxSize) {
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      Pool pool;
+      MSSQLPool pool;
       @Override
       public void start() {
         // Get or create a shared pool
@@ -383,5 +383,13 @@ public class SqlClientExamples {
           .setName("my-pool"));
       }
     }, new DeploymentOptions().setInstances(4));
+  }
+
+  public static void poolSharing3(Vertx vertx, MSSQLConnectOptions database, int maxSize) {
+    MSSQLPool pool = MSSQLPool.pool(database, new PoolOptions()
+      .setMaxSize(maxSize)
+      .setShared(true)
+      .setName("my-pool")
+      .setEventLoopSize(4));
   }
 }

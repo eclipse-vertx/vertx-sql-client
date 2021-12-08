@@ -364,7 +364,7 @@ public class SqlClientExamples {
   }
 
   public void poolSharing1(Vertx vertx, PgConnectOptions database, int maxSize) {
-    Pool pool = PgPool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    PgPool pool = PgPool.pool(database, new PoolOptions().setMaxSize(maxSize));
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() throws Exception {
@@ -375,7 +375,7 @@ public class SqlClientExamples {
 
   public void poolSharing2(Vertx vertx, PgConnectOptions database, int maxSize) {
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      Pool pool;
+      PgPool pool;
       @Override
       public void start() {
         // Get or create a shared pool
@@ -387,5 +387,13 @@ public class SqlClientExamples {
           .setName("my-pool"));
       }
     }, new DeploymentOptions().setInstances(4));
+  }
+
+  public static void poolSharing3(Vertx vertx, PgConnectOptions database, int maxSize) {
+    PgPool pool = PgPool.pool(database, new PoolOptions()
+      .setMaxSize(maxSize)
+      .setShared(true)
+      .setName("my-pool")
+      .setEventLoopSize(4));
   }
 }

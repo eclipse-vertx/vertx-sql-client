@@ -18,3 +18,10 @@ a lease to this pool. The resources are disposed after all leases have been clos
 
 By default, a pool reuses the current event-loop when it needs to create a TCP connection. The shared pool will
 therefore randomly use event-loops of verticles using it.
+
+You can assign a number of event loop a pool will use independently of the context using it
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#poolSharing3}
+----
