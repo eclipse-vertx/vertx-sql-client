@@ -109,6 +109,10 @@ The {@link io.vertx.db2client.DB2Pool} allows you to create a pool or a pooled c
 - pool operations are not pipelined, only connection client are pipelined
 - pooled client operations are pipelined
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 == Configuration
 
 There are several alternatives for you to configure the client.

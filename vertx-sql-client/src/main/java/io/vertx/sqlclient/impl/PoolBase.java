@@ -19,6 +19,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
@@ -31,9 +35,13 @@ import java.util.function.Function;
 
 public class PoolBase<P extends Pool> implements Pool {
 
+  private final VertxInternal vertx;
+  private final CloseFuture closeFuture;
   private final Pool delegate;
 
-  public PoolBase(Pool delegate) {
+  public PoolBase(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
+    this.vertx = vertx;
+    this.closeFuture = closeFuture;
     this.delegate = delegate;
   }
 
@@ -55,11 +63,6 @@ public class PoolBase<P extends Pool> implements Pool {
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
     return delegate.preparedQuery(sql);
-  }
-
-  @Override
-  public void close(Handler<AsyncResult<Void>> handler) {
-    delegate.close(handler);
   }
 
   @Override
@@ -85,7 +88,16 @@ public class PoolBase<P extends Pool> implements Pool {
   }
 
   @Override
+  public void close(Handler<AsyncResult<Void>> handler) {
+    ContextInternal closingCtx = vertx.getOrCreateContext();
+    closeFuture.close(handler != null ? closingCtx.promise(handler) : null);
+  }
+
+  @Override
   public Future<Void> close() {
-    return delegate.close();
+    ContextInternal closingCtx = vertx.getOrCreateContext();
+    PromiseInternal<Void> promise = closingCtx.promise();
+    closeFuture.close(promise);
+    return promise.future();
   }
 }

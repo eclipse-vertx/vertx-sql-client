@@ -83,7 +83,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
         });
       }
     }
-    return (Pool) this;
+    return this;
   }
 
   public Pool connectionProvider(Function<Context, Future<SqlConnection>> connectionProvider) {
@@ -91,7 +91,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
       throw new NullPointerException();
     }
     this.connectionProvider = connectionProvider;
-    return (Pool) this;
+    return this;
   }
 
   private void checkExpired() {

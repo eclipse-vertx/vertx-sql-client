@@ -92,6 +92,10 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 === Unix Domain Socket
 
 Sometimes for simplicity, security or performance reasons, it is required to connect via a https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_socket[Unix Domain Socket].

@@ -11,13 +11,15 @@
 
 package io.vertx.mssqlclient.impl;
 
+import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;
 
 public class MSSQLPoolImpl extends PoolBase<MSSQLPoolImpl> implements MSSQLPool {
 
-  public MSSQLPoolImpl(Pool delegate) {
-    super(delegate);
+  public MSSQLPoolImpl(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
+    super(vertx, closeFuture, delegate);
   }
 }

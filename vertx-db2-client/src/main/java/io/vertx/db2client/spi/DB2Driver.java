@@ -41,24 +41,36 @@ import java.util.stream.Collectors;
 
 public class DB2Driver implements Driver {
 
+  private static final String SHARED_CLIENT_KEY = "__vertx.shared.db2client";
+
   public static final DB2Driver INSTANCE = new DB2Driver();
 
   @Override
   public DB2Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
+    PoolImpl pool;
+    if (options.isShared()) {
+      pool = vx.createSharedClient(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, cf));
+    } else {
+      pool = newPoolImpl(vx, databases, options, closeFuture);
+    }
+    return new DB2PoolImpl(vx, closeFuture, pool);
+  }
+
+  private PoolImpl newPoolImpl(VertxInternal vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     DB2ConnectOptions baseConnectOptions = DB2ConnectOptions.wrap(databases.get(0));
-    QueryTracer tracer = vx.tracer() == null ? null : new QueryTracer(vx.tracer(), baseConnectOptions);
-    VertxMetrics vertxMetrics = vx.metricsSPI();
+    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
+    VertxMetrics vertxMetrics = vertx.metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
     boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    PoolImpl pool = new PoolImpl(vx, this, baseConnectOptions, null, tracer, metrics, pipeliningLimit, options, closeFuture);
-    pool.init();
+    PoolImpl pool = new PoolImpl(vertx, this, baseConnectOptions, null, tracer, metrics, pipeliningLimit, options, closeFuture);
     List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
     ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
     pool.connectionProvider(factory::connect);
+    pool.init();
     closeFuture.add(factory);
-    return new DB2PoolImpl(pool);
+    return pool;
   }
 
   @Override

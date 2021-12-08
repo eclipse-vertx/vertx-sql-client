@@ -103,6 +103,10 @@ The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled cli
 - pool operations are not pipelined, only connection client are pipelined
 - pooled client operations are pipelined
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 == Unix domain sockets
 
 Sometimes you want to improve performance via Unix domain socket connection, we achieve this with Vert.x Native transports.

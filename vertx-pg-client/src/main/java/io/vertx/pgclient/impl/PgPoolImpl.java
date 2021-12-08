@@ -17,6 +17,8 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.pgclient.*;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;
@@ -32,7 +34,7 @@ import io.vertx.sqlclient.impl.PoolBase;
  */
 public class PgPoolImpl extends PoolBase<PgPoolImpl> implements PgPool {
 
-  public PgPoolImpl(Pool delegate) {
-    super(delegate);
+  public PgPoolImpl(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
+    super(vertx, closeFuture, delegate);
   }
 }

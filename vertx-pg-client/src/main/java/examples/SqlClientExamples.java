@@ -16,6 +16,8 @@
  */
 package examples;
 
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
@@ -359,5 +361,31 @@ public class SqlClientExamples {
         conn.close();
       });
     });
+  }
+
+  public void poolSharing1(Vertx vertx, PgConnectOptions database, int maxSize) {
+    Pool pool = PgPool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      @Override
+      public void start() throws Exception {
+        // Use the pool
+      }
+    }, new DeploymentOptions().setInstances(4));
+  }
+
+  public void poolSharing2(Vertx vertx, PgConnectOptions database, int maxSize) {
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      Pool pool;
+      @Override
+      public void start() {
+        // Get or create a shared pool
+        // this actually creates a lease to the pool
+        // when the verticle is undeployed, the lease will be released automaticaly
+        pool = PgPool.pool(database, new PoolOptions()
+          .setMaxSize(maxSize)
+          .setShared(true)
+          .setName("my-pool"));
+      }
+    }, new DeploymentOptions().setInstances(4));
   }
 }

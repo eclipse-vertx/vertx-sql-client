@@ -11,13 +11,15 @@
 
 package io.vertx.mysqlclient.impl;
 
+import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;
 
 public class MySQLPoolImpl extends PoolBase<MySQLPoolImpl> implements MySQLPool {
 
-  public MySQLPoolImpl(Pool delegate) {
-    super(delegate);
+  public MySQLPoolImpl(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
+    super(vertx, closeFuture, delegate);
   }
 }

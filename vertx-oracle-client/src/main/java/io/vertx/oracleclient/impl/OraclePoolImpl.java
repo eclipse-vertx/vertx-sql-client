@@ -27,7 +27,7 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Function;
 
-public class OraclePoolImpl extends SqlClientBase implements OraclePool, Closeable {
+public class OraclePoolImpl extends SqlClientBase implements OraclePool {
 
   private final OracleConnectionFactory factory;
   private final VertxInternal vertx;
@@ -38,11 +38,6 @@ public class OraclePoolImpl extends SqlClientBase implements OraclePool, Closeab
     this.factory = factory;
     this.vertx = vertx;
     this.closeFuture = closeFuture;
-  }
-
-  @Override
-  public void close(Promise<Void> completion) {
-    factory.close(completion);
   }
 
   @Override

@@ -50,9 +50,19 @@ public class PoolOptionsConverter {
             obj.setMaxWaitQueueSize(((Number)member.getValue()).intValue());
           }
           break;
+        case "name":
+          if (member.getValue() instanceof String) {
+            obj.setName((String)member.getValue());
+          }
+          break;
         case "poolCleanerPeriod":
           if (member.getValue() instanceof Number) {
             obj.setPoolCleanerPeriod(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "shared":
+          if (member.getValue() instanceof Boolean) {
+            obj.setShared((Boolean)member.getValue());
           }
           break;
       }
@@ -74,6 +84,10 @@ public class PoolOptionsConverter {
     }
     json.put("maxSize", obj.getMaxSize());
     json.put("maxWaitQueueSize", obj.getMaxWaitQueueSize());
+    if (obj.getName() != null) {
+      json.put("name", obj.getName());
+    }
     json.put("poolCleanerPeriod", obj.getPoolCleanerPeriod());
+    json.put("shared", obj.isShared());
   }
 }

@@ -30,6 +30,8 @@ import java.util.List;
 
 public class OracleDriver implements Driver {
 
+  private static final String SHARED_CLIENT_KEY = "__vertx.shared.oracleclient";
+
   public static final OracleDriver INSTANCE = new OracleDriver();
 
   @Override
@@ -44,10 +46,18 @@ public class OracleDriver implements Driver {
       vertxMetrics.createClientMetrics(database.getSocketAddress(), "sql",
         database.getMetricsName()) :
       null;
-    OracleConnectionFactory factory = new OracleConnectionFactory(vx, database, options, tracer, metrics);
-    OraclePoolImpl pool = new OraclePoolImpl(vx, factory, metrics, tracer, closeFuture);
-    closeFuture.add(pool);
-    return pool;
+    OracleConnectionFactory factory;
+    if (options.isShared()) {
+      factory = vx.createSharedClient(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> {
+        OracleConnectionFactory connectionFactory = new OracleConnectionFactory(vx, database, options, tracer, metrics);
+        cf.add(connectionFactory);
+        return connectionFactory;
+      });
+    } else {
+      factory = new OracleConnectionFactory(vx, database, options, tracer, metrics);
+      closeFuture.add(factory);
+    }
+    return new OraclePoolImpl(vx, factory, metrics, tracer, closeFuture);
   }
 
   @Override

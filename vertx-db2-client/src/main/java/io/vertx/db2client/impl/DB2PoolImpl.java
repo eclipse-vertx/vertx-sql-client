@@ -15,13 +15,15 @@
  */
 package io.vertx.db2client.impl;
 
+import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.impl.VertxInternal;
 import io.vertx.db2client.DB2Pool;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;
 
 public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
 
-  public DB2PoolImpl(Pool delegate) {
-    super(delegate);
+  public DB2PoolImpl(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
+    super(vertx, closeFuture, delegate);
   }
 }
