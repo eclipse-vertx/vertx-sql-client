@@ -311,6 +311,10 @@ public class SqlConnectOptions extends NetClientOptions {
     return this;
   }
 
+  public boolean isUsingDomainSocket() {
+    return false;
+  }
+
   @Override
   public JsonObject toJson() {
     JsonObject json = super.toJson();

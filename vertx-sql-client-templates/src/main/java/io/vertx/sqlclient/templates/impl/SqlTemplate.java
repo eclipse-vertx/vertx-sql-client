@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,7 +29,7 @@ public class SqlTemplate implements Function<Integer, String> {
       if (it.hasNext()) {
         String val = it.next();
         int idx = mapping.indexOf(val);
-        int actual = client.appendQueryPlaceholder(builder, idx == -1 ? mapping.size() : idx, mapping.size());
+        int actual = client.driver().appendQueryPlaceholder(builder, idx == -1 ? mapping.size() : idx, mapping.size());
         if (idx == -1 || actual != idx) {
           mapping.add(val);
         }

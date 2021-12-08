@@ -17,21 +17,16 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
-public class MSSQLConnectionImpl extends SqlConnectionImpl<MSSQLConnectionImpl> implements MSSQLConnection {
+public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> implements MSSQLConnection {
 
   public MSSQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, tracer, metrics);
-  }
-
-  @Override
-  public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
-    queryBuilder.append('@').append('P').append(1 + index);
-    return index;
+    super(context, factory, conn, MSSQLDriver.INSTANCE, tracer, metrics);
   }
 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {

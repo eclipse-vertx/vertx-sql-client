@@ -80,6 +80,10 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 == Configuration
 
 There are several alternatives for you to configure the client.

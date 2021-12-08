@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (C) 2017 Julien Viet
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,18 +12,26 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 package io.vertx.db2client.impl;
 
-import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.VertxInternal;
-import io.vertx.db2client.DB2Pool;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.impl.PoolBase;
+import io.vertx.sqlclient.PoolOptions;
 
-public class DB2PoolImpl extends PoolBase<DB2PoolImpl> implements DB2Pool {
+public class Db2PoolOptions extends PoolOptions {
 
-  public DB2PoolImpl(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
-    super(vertx, closeFuture, delegate);
+  public Db2PoolOptions(PoolOptions other) {
+    super(other);
+  }
+
+  private boolean pipelined;
+
+  public boolean isPipelined() {
+    return pipelined;
+  }
+
+  public Db2PoolOptions setPipelined(boolean pipelined) {
+    this.pipelined = pipelined;
+    return this;
   }
 }

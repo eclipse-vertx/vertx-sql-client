@@ -30,8 +30,6 @@ public class PgConnectOptionsConverter {
             obj.setSslMode(io.vertx.pgclient.SslMode.valueOf((String)member.getValue()));
           }
           break;
-        case "usingDomainSocket":
-          break;
       }
     }
   }
@@ -45,6 +43,5 @@ public class PgConnectOptionsConverter {
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());
     }
-    json.put("usingDomainSocket", obj.isUsingDomainSocket());
   }
 }

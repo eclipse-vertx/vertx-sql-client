@@ -96,7 +96,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, List<MySQLConnectOptions> databases, PoolOptions options) {
-    return new MySQLDriver().createPool(vertx, databases, options);
+    return (MySQLPool) MySQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
 
   @Override

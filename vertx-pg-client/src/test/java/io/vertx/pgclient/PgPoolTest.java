@@ -453,7 +453,7 @@ public class PgPoolTest extends PgPoolTestBase {
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
       PgConnectOptions options = new PgConnectOptions(this.options).setPort(8080).setHost("localhost");
-      ConnectionFactory factory = new PgDriver().createConnectionFactory(vertx, options);
+      ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, options);
       PgPool pool = createPool(options, new PoolOptions().setMaxSize(1));
       pool.connectionProvider(context -> {
         Future<SqlConnection> fut = factory.connect(context);

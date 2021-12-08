@@ -279,6 +279,11 @@ For example, {@link io.vertx.core.net.PemTrustOptions} can be used if a PEM file
 
 For further details about SSL support in Vert.x, please refer to the https://vertx.io/docs/vertx-core/java/#ssl[Vert.x Core documentation].
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 == Advanced pool configuration
 
 include::pool_config.adoc[]
+

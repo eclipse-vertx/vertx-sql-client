@@ -18,13 +18,12 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.impl.Arguments;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 /**
  * The options for configuring a connection pool.
@@ -69,6 +68,21 @@ public class PoolOptions {
    */
   public static final TimeUnit DEFAULT_CONNECTION_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
 
+  /**
+   * Default shared pool config = {@code false}
+   */
+  public static final boolean DEFAULT_SHARED_POOL = false;
+
+  /**
+   * Actual name of anonymous shared pool = {@code __vertx.DEFAULT}
+   */
+  public static final String DEFAULT_NAME = "__vertx.DEFAULT";
+
+  /**
+   * Default pool event loop size = 0 (reuse current event-loop)
+   */
+  public static final int DEFAULT_EVENT_LOOP_SIZE = 0;
+
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
@@ -76,6 +90,9 @@ public class PoolOptions {
   private int poolCleanerPeriod = DEFAULT_POOL_CLEANER_PERIOD;
   private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
   private TimeUnit connectionTimeoutUnit = DEFAULT_CONNECTION_TIMEOUT_TIME_UNIT;
+  private boolean shared = DEFAULT_SHARED_POOL;
+  private String name = DEFAULT_NAME;
+  private int eventLoopSize = DEFAULT_EVENT_LOOP_SIZE;
 
   public PoolOptions() {
   }
@@ -89,6 +106,9 @@ public class PoolOptions {
     maxWaitQueueSize = other.maxWaitQueueSize;
     idleTimeout = other.idleTimeout;
     idleTimeoutUnit = other.idleTimeoutUnit;
+    shared= other.shared;
+    name = other.name;
+    eventLoopSize = other.eventLoopSize;
   }
 
   /**
@@ -215,11 +235,77 @@ public class PoolOptions {
    * Set the amount of time a client will wait for a connection from the pool. If the time is exceeded
    * without a connection available, an exception is provided.
    *
-   * @param timeout the pool connection idle time unitq
+   * @param timeout the pool connection idle time unit
    * @return a reference to this, so the API can be used fluently
    */
   public PoolOptions setConnectionTimeout(int timeout) {
     this.connectionTimeout = timeout;
+    return this;
+  }
+
+  /**
+   * @return whether the pool is shared
+   */
+  public boolean isShared() {
+    return shared;
+  }
+
+  /**
+   * Set to {@code true} to share the pool.
+   *
+   * <p> There can be multiple shared pools distinguished by {@link #getName()}, when no specific
+   * name is set, the {@link #DEFAULT_NAME} is used.
+   *
+   * @param shared {@code true} to use a shared pool
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setShared(boolean shared) {
+    this.shared = shared;
+    return this;
+  }
+
+  /**
+   * @return the pool name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * Set the pool name, used when the pool shared, otherwise ignored.
+   * @param name the new name
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setName(String name) {
+    Objects.requireNonNull(name, "Pool name cannot be null");
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * @return the max number of event-loop a pool will use, the default value is {@code 0} which implies
+   * to reuse the current event-loop
+   */
+  public int getEventLoopSize() {
+    return eventLoopSize;
+  }
+
+  /**
+   * Set the number of event-loop the pool use.
+   *
+   * <ul>
+   *   <li>when the size is {@code 0}, the client pool will use the current event-loop</li>
+   *   <li>otherwise the client will create and use its own event loop</li>
+   * </ul>
+   *
+   * The default size is {@code 0}.
+   *
+   * @param eventLoopSize  the new size
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setEventLoopSize(int eventLoopSize) {
+    Arguments.require(eventLoopSize >= 0, "poolEventLoopSize must be >= 0");
+    this.eventLoopSize = eventLoopSize;
     return this;
   }
 
