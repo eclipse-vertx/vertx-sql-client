@@ -111,7 +111,7 @@ public abstract class SimpleQueryTestBase {
   public void testInsert(TestContext ctx) {
     Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever');").execute(ctx.asyncAssertSuccess(r1 -> {
+      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever')").execute(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
         async.complete();
       }));
@@ -134,7 +134,7 @@ public abstract class SimpleQueryTestBase {
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
+      conn.query("TRUNCATE TABLE mutable").execute(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));

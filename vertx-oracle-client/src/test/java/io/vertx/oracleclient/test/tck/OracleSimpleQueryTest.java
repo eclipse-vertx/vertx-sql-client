@@ -28,26 +28,4 @@ public class OracleSimpleQueryTest extends SimpleQueryTestBase {
   protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
   }
-
-  @Override
-  public void cleanTestTable(TestContext ctx) {
-    connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("TRUNCATE TABLE mutable").execute(result -> {
-        conn.close();
-      });
-    }));
-  }
-
-  @Test
-  public void testInsert(TestContext ctx) {
-    Async async = ctx.async();
-    this.connector.connect(ctx.asyncAssertSuccess((conn) -> {
-      conn.query("INSERT INTO mutable (id, val) VALUES (1, 'Whatever')").execute(ctx.asyncAssertSuccess((r1) -> {
-        ctx.assertEquals(1, r1.rowCount());
-        async.complete();
-      }));
-    }));
-    async.await();
-  }
-
 }
