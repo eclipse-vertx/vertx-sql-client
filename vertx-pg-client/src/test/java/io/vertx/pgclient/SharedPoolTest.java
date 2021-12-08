@@ -13,12 +13,14 @@ package io.vertx.pgclient;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnection;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,14 +81,23 @@ public class SharedPoolTest extends PgTestBase {
     latch.awaitSuccess(20_000);
     vertx.undeploy(deployment.get())
       .compose(v -> PgConnection.connect(vertx, options))
-      .compose(conn -> conn.query(COUNT_CONNECTIONS_QUERY)
-        .execute().compose(res -> {
-          int num = res.iterator().next().getInteger(0);
-          return conn.close().map(num);
-        })
-      ).onComplete(ctx.asyncAssertSuccess(num -> {
-        ctx.assertEquals(1, num);
-      }));
+      .compose(conn -> waitUntilConnCountIs(conn, 10, 1)
+      ).onComplete(ctx.asyncAssertSuccess());
+  }
+
+  private Future<Void> waitUntilConnCountIs(SqlConnection conn, int remaining, int expectedCount) {
+    if (remaining > 0) {
+      return conn.query(COUNT_CONNECTIONS_QUERY).execute().compose(res -> {
+        int num = res.iterator().next().getInteger(0);
+        if (num == expectedCount) {
+          return Future.succeededFuture();
+        } else {
+          return waitUntilConnCountIs(conn, remaining - 1, expectedCount);
+        }
+      });
+    } else {
+      return Future.failedFuture("Could not count");
+    }
   }
 
   @Test
