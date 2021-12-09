@@ -17,9 +17,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.Tuple;
 import oracle.sql.TIMESTAMPTZ;
 
-import java.math.BigDecimal;
 import java.sql.*;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -157,23 +155,7 @@ public class Helper {
       return null;
     }
 
-    // valid json types are just returned as is
-    if (value instanceof Boolean || value instanceof String || value instanceof byte[]) {
-      return value;
-    }
-
-    // numeric values
-    if (value instanceof Number) {
-      if (value instanceof BigDecimal) {
-        BigDecimal d = (BigDecimal) value;
-        if (d.scale() == 0) {
-          return ((BigDecimal) value).toBigInteger();
-        } else {
-          // we might loose precision here
-          return ((BigDecimal) value).doubleValue();
-        }
-      }
-
+    if (value instanceof Boolean || value instanceof String || value instanceof byte[] || value instanceof Number) {
       return value;
     }
 
@@ -188,7 +170,7 @@ public class Helper {
     }
 
     if (value instanceof Timestamp) {
-      return ((Timestamp) value).toInstant().atOffset(ZoneOffset.UTC);
+      return ((Timestamp) value).toLocalDateTime();
     }
 
     if (value instanceof TIMESTAMPTZ) {
