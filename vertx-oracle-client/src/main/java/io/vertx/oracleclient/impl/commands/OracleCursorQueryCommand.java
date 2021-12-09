@@ -15,7 +15,6 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.oracleclient.impl.RowReader;
-import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import oracle.jdbc.OraclePreparedStatement;
@@ -39,8 +38,7 @@ public class OracleCursorQueryCommand<C, R> extends QueryCommand<C, R> {
 
   @Override
   protected OraclePrepareOptions prepareOptions() {
-    PrepareOptions prepareOptions = command.options();
-    return prepareOptions instanceof OraclePrepareOptions ? (OraclePrepareOptions) prepareOptions : null;
+    return OraclePrepareOptions.createFrom(command.options());
   }
 
   @Override

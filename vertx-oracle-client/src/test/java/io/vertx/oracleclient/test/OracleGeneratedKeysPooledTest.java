@@ -18,10 +18,10 @@ import io.vertx.sqlclient.SqlClient;
 
 import java.util.function.Function;
 
-public class OracleGeneratedKeysTest extends OracleGeneratedKeysTestBase {
+public class OracleGeneratedKeysPooledTest extends OracleGeneratedKeysTestBase {
 
   @Override
   protected <T> void withSqlClient(Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler) {
-    pool.withConnection(function::apply, handler);
+    function.apply(pool).onComplete(handler);
   }
 }
