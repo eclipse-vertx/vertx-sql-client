@@ -189,4 +189,11 @@ public class OracleConnectOptions extends SqlConnectOptions {
     OracleConnectOptionsConverter.toJson(this, json);
     return json;
   }
+
+  @Override
+  public OracleConnectOptions merge(JsonObject other) {
+    JsonObject json = toJson();
+    json.mergeIn(other);
+    return new OracleConnectOptions(json);
+  }
 }

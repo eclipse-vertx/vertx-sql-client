@@ -13,14 +13,22 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.NetClientOptionsConverter;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.sqlclient.spi.Driver;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 import java.util.function.Predicate;
 
 /**
@@ -28,6 +36,34 @@ import java.util.function.Predicate;
  */
 @DataObject(generateConverter = true)
 public class SqlConnectOptions extends NetClientOptions {
+
+  /**
+   * Provide a {@link SqlConnectOptions} subclass configured from {@code connectionUri}.
+   *
+   * <p> This tries to locate among the available databases implementations the one matching the connection URI protocol, e.g
+   * this returns {@code PgConnectOptions} for an URI that starts with {@code postgresql://}.
+   *
+   * @param connectionUri the connection URI to configure from
+   * @return a {@link SqlConnectOptions} parsed from the connection URI
+   * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
+   * @throws ServiceConfigurationError when a database for the {@code connectionUri} could not be found
+   */
+  public static SqlConnectOptions fromUri(String connectionUri) throws IllegalArgumentException, ServiceConfigurationError {
+    List<SqlConnectOptions> candidates = new ArrayList<>(1);
+    for (Driver d : ServiceLoader.load(Driver.class)) {
+      SqlConnectOptions options = d.parseConnectionUri(connectionUri);
+      if (options != null) {
+        candidates.add(options);
+      }
+    }
+    if (candidates.size() == 0) {
+      throw new ServiceConfigurationError("No implementations of " + Driver.class + " found that accept connection uri " + connectionUri);
+    } else if (candidates.size() > 1) {
+      throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
+    } else {
+      return candidates.get(0);
+    }
+  }
 
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE = 256;
@@ -326,5 +362,17 @@ public class SqlConnectOptions extends NetClientOptions {
    * Initialize with the default options.
    */
   protected void init() {
+  }
+
+  /**
+   * Returns new options created after this object and merged with the {@code other} json config.
+   *
+   * @param other the other JSON object
+   * @return new options created after this object and merged with the {@code other} json config
+   */
+  public SqlConnectOptions merge(JsonObject other) {
+    JsonObject json = toJson();
+    json.mergeIn(other);
+    return new SqlConnectOptions(json);
   }
 }

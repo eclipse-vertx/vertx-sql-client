@@ -14,10 +14,12 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.OracleConnectionFactory;
+import io.vertx.oracleclient.impl.OracleConnectionUriParser;
 import io.vertx.oracleclient.impl.OraclePoolImpl;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -72,6 +74,12 @@ public class OracleDriver implements Driver {
       null;
     QueryTracer tracer = new QueryTracer(vi.tracer(), database);
     return new OracleConnectionFactory(vi, options, new PoolOptions(), tracer, metrics);
+  }
+
+  @Override
+  public OracleConnectOptions parseConnectionUri(String uri) {
+    JsonObject conf = OracleConnectionUriParser.parse(uri, false);
+    return conf == null ? null : new OracleConnectOptions(conf);
   }
 
   @Override

@@ -36,6 +36,7 @@ import static java.lang.String.format;
  * @author Billy Yuan <billy112487983@gmail.com>
  */
 public class PgConnectionUriParser {
+
   private static final String SCHEME_DESIGNATOR_REGEX = "postgre(s|sql)://"; // URI scheme designator
   private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!*]+(:[a-zA-Z0-9\\-._~%!*]+)?)@)?"; // user name and password
   private static final String NET_LOCATION_REGEX = "(?<netloc>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)?"; // ip v4/v6 address, host, domain socket address TODO multi-host not supported yet
@@ -43,21 +44,30 @@ public class PgConnectionUriParser {
   private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
   private static final String PARAMS_REGEX = "(\\?(?<params>.*))?"; // parameters
 
-  private static final Pattern FULL_URI_REGEX = Pattern.compile("^" // regex start
+  private static final Pattern SCHEME_DESIGNATOR_PATTERN = Pattern.compile("^" + SCHEME_DESIGNATOR_REGEX);
+  private static final Pattern FULL_URI_PATTERN = Pattern.compile("^"
     + SCHEME_DESIGNATOR_REGEX
     + USER_INFO_REGEX
     + NET_LOCATION_REGEX
     + PORT_REGEX
     + DATABASE_REGEX
     + PARAMS_REGEX
-    + "$"); // regex end
+    + "$");
 
   public static JsonObject parse(String connectionUri) {
-    // if we get any exception during the parsing, then we throw an IllegalArgumentException.
+    return parse(connectionUri, true);
+  }
+
+  public static JsonObject parse(String connectionUri, boolean exact) {
     try {
-      JsonObject configuration = new JsonObject();
-      doParse(connectionUri, configuration);
-      return configuration;
+      Matcher matcher = SCHEME_DESIGNATOR_PATTERN.matcher(connectionUri);
+      if (matcher.find() || exact) {
+        JsonObject configuration = new JsonObject();
+        doParse(connectionUri, configuration);
+        return configuration;
+      } else {
+        return null;
+      }
     } catch (Exception e) {
       throw new IllegalArgumentException("Cannot parse invalid connection URI: " + connectionUri, e);
     }
@@ -65,7 +75,7 @@ public class PgConnectionUriParser {
 
   // execute the parsing process and store options in the configuration
   private static void doParse(String connectionUri, JsonObject configuration) {
-    Matcher matcher = FULL_URI_REGEX.matcher(connectionUri);
+    Matcher matcher = FULL_URI_PATTERN.matcher(connectionUri);
 
     if (matcher.matches()) {
       // parse the user and password

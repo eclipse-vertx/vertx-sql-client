@@ -268,4 +268,11 @@ public class DB2ConnectionUriParserTest {
 
     assertEquals(expectedParsedResult, actualParsedResult);
   }
+
+  @Test
+  public void testPartialMatching(){
+    uri = "not_db2://username:dddd@127.0.0.1:1234/*dbname";
+    actualParsedResult = parse(uri, false);
+    assertNull(actualParsedResult);
+  }
 }

@@ -307,4 +307,11 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   public int hashCode() {
     return Objects.hash(pipeliningLimit);
   }
+
+  @Override
+  public DB2ConnectOptions merge(JsonObject other) {
+    JsonObject json = toJson();
+    json.mergeIn(other);
+    return new DB2ConnectOptions(json);
+  }
 }

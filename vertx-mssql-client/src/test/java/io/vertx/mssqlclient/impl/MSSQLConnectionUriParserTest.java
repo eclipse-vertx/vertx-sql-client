@@ -19,6 +19,7 @@ import java.net.URLEncoder;
 
 import static io.vertx.mssqlclient.impl.MSSQLConnectionUriParser.parse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class MSSQLConnectionUriParserTest {
   private String uri;
@@ -289,5 +290,12 @@ public class MSSQLConnectionUriParserTest {
       .put("database", "*dbname");
 
     assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testPartialMatching(){
+    uri = "not_sqlserver://username:dddd@127.0.0.1:1234/*dbname";
+    actualParsedResult = parse(uri, false);
+    assertNull(actualParsedResult);
   }
 }
