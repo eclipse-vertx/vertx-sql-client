@@ -76,19 +76,55 @@ CREATE TABLE mutable
 -- Collector API testing
 CREATE TABLE test_collector
 (
-    id           INT,
-    test_int_2   SMALLINT,
-    test_int_4   INT,
-    test_int_8   clob,
-    test_float   FLOAT,
-    test_double  NUMBER,
-    test_varchar VARCHAR(20)
+  id           INT,
+  test_int_2   SMALLINT,
+  test_int_4   INT,
+  test_int_8   CLOB,
+  test_float   FLOAT,
+  test_double  NUMBER,
+  test_varchar VARCHAR(20)
 );
 
 INSERT INTO test_collector
 VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
 INSERT INTO test_collector
 VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
+
+CREATE TABLE basicdatatype
+(
+  id           INT,
+  test_int_2   SMALLINT,
+  test_int_4   INT,
+  test_int_8   NUMBER(19),
+  test_float_4 FLOAT(23),
+  test_numeric NUMBER(5, 2),
+  test_decimal DECIMAL,
+  test_char    CHAR(8),
+  test_varchar VARCHAR(20),
+  test_date    DATE
+);
+INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_numeric,
+                          test_decimal, test_char, test_varchar, test_date)
+VALUES (1, 32767, 2147483647, 9223372036854775807, 3.40282E38, 999.99,
+        12345, 'testchar', 'testvarchar', TO_DATE('2019-01-01', 'YYYY-MM-DD'));
+INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_numeric,
+                          test_decimal, test_char, test_varchar, test_date)
+VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '999.99',
+        '12345', 'testchar', 'testvarchar', TO_DATE('2019-01-01', 'YYYY-MM-DD'));
+INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_numeric,
+                          test_decimal, test_char, test_varchar, test_date)
+VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+/*
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
 
 -- Don't forget to commit...
 COMMIT;

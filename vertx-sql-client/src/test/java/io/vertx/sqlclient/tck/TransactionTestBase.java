@@ -1,40 +1,28 @@
 /*
- * Copyright (C) 2020 IBM Corporation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.sqlclient.tck;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-
-import io.vertx.core.Future;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.TransactionRollbackException;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public abstract class TransactionTestBase {
 
@@ -102,7 +90,7 @@ public abstract class TransactionTestBase {
 
   protected void cleanTestTable(TestContext ctx) {
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
+      res.client.query("TRUNCATE TABLE mutable").execute(ctx.asyncAssertSuccess(result -> {
         res.tx.commit(ctx.asyncAssertSuccess());
       }));
     }));
@@ -145,7 +133,7 @@ public abstract class TransactionTestBase {
   public void testCommitWithPreparedQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.preparedQuery(statement("INSERT INTO mutable (id, val) VALUES (", ",", ");"))
+      res.client.preparedQuery(statement("INSERT INTO mutable (id, val) VALUES (", ",", ")"))
         .execute(Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
           res.tx.commit(ctx.asyncAssertSuccess(v1 -> {
@@ -165,7 +153,7 @@ public abstract class TransactionTestBase {
   public void testCommitWithQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("INSERT INTO mutable (id, val) VALUES (14, 'test message2');")
+      res.client.query("INSERT INTO mutable (id, val) VALUES (14, 'test message2')")
         .execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
           res.tx.commit(ctx.asyncAssertSuccess(v1 -> {
