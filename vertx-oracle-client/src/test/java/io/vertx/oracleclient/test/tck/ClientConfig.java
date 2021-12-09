@@ -32,7 +32,7 @@ public enum ClientConfig {
 
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          factory = new OracleConnectionFactory((VertxInternal) vertx, new OracleConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1), null, null);
+          factory = new OracleConnectionFactory((VertxInternal) vertx, new OracleConnectOptions(options), new PoolOptions().setMaxSize(1), null, null);
           Context context = vertx.getOrCreateContext();
           factory.connect(context).onComplete(handler);
         }
@@ -51,7 +51,7 @@ public enum ClientConfig {
     @Override
     Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
       OraclePool pool = OraclePool
-        .pool(vertx, new OracleConnectOptions(options.toJson()), new PoolOptions().setMaxSize(5));
+        .pool(vertx, new OracleConnectOptions(options), new PoolOptions().setMaxSize(5));
       return new Connector<>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
