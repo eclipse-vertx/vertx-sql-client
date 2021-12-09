@@ -109,8 +109,7 @@ public class CommandHandler implements Connection {
   }
 
   private Future<PreparedStatement> handle(io.vertx.sqlclient.impl.command.PrepareStatementCommand command) {
-    OraclePrepareOptions options = command.options() instanceof OraclePrepareOptions ? (OraclePrepareOptions) command.options() : null;
-    PrepareStatementCommand action = new PrepareStatementCommand(options, command.sql());
+    PrepareStatementCommand action = new PrepareStatementCommand(OraclePrepareOptions.createFrom(command.options()), command.sql());
     return action.execute(connection, context);
   }
 

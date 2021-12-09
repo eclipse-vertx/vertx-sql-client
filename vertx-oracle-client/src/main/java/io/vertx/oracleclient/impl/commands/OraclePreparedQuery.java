@@ -14,7 +14,6 @@ import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.impl.Helper;
-import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
@@ -40,8 +39,7 @@ public class OraclePreparedQuery<C, R> extends QueryCommand<C, R> {
 
   @Override
   protected OraclePrepareOptions prepareOptions() {
-    PrepareOptions prepareOptions = query.options();
-    return prepareOptions instanceof OraclePrepareOptions ? (OraclePrepareOptions) prepareOptions : null;
+    return OraclePrepareOptions.createFrom(query.options());
   }
 
   @Override
