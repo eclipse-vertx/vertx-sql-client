@@ -4,12 +4,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.impl.PgConnectionFactory;
 import io.vertx.pgclient.impl.PgConnectionImpl;
+import io.vertx.pgclient.impl.PgConnectionUriParser;
 import io.vertx.pgclient.impl.PgPoolImpl;
 import io.vertx.pgclient.impl.PgPoolOptions;
 import io.vertx.sqlclient.PoolOptions;
@@ -56,6 +58,12 @@ public class PgDriver implements Driver {
     pool.init();
     closeFuture.add(factory);
     return pool;
+  }
+
+  @Override
+  public PgConnectOptions parseConnectionUri(String uri) {
+    JsonObject conf = PgConnectionUriParser.parse(uri, false);
+    return conf == null ? null : new PgConnectOptions(conf);
   }
 
   @Override

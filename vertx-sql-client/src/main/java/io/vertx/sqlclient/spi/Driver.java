@@ -111,6 +111,11 @@ public interface Driver {
   ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database);
 
   /**
+   * @return {@code true} if the driver accepts the {@code connectOptions}, {@code false} otherwise
+   */
+  SqlConnectOptions parseConnectionUri(String uri);
+
+  /**
    * @return true if the driver accepts the {@code connectOptions}, false otherwise
    */
   boolean acceptsOptions(SqlConnectOptions connectOptions);

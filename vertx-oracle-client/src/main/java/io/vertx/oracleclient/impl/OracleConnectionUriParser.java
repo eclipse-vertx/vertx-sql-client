@@ -27,20 +27,29 @@ public class OracleConnectionUriParser {
   private static final String PORT_REGEX = ":(?<port>\\d+)"; // port
   private static final String SID = ":(?<sid>[a-zA-Z0-9\\-._~%!*]+)"; // sid name
 
-  private static final Pattern FULL_URI_REGEX = Pattern.compile("^" // regex start
+  private static final Pattern SCHEME_DESIGNATOR_PATTERN = Pattern.compile("^" + SCHEME_DESIGNATOR_REGEX);
+  private static final Pattern FULL_URI_PATTERN = Pattern.compile("^"
     + SCHEME_DESIGNATOR_REGEX
     + USER_INFO_REGEX
     + NET_LOCATION_REGEX
     + PORT_REGEX
     + SID
-    + "$"); // regex end
+    + "$");
 
   public static JsonObject parse(String connectionUri) {
-    // if we get any exception during the parsing, then we throw an IllegalArgumentException.
+    return parse(connectionUri, true);
+  }
+
+  public static JsonObject parse(String connectionUri, boolean exact) {
     try {
-      JsonObject configuration = new JsonObject();
-      doParse(connectionUri, configuration);
-      return configuration;
+      Matcher matcher = SCHEME_DESIGNATOR_PATTERN.matcher(connectionUri);
+      if (matcher.find() || exact) {
+        JsonObject configuration = new JsonObject();
+        doParse(connectionUri, configuration);
+        return configuration;
+      } else {
+        return null;
+      }
     } catch (Exception e) {
       throw new IllegalArgumentException("Cannot parse invalid connection URI: " + connectionUri, e);
     }
@@ -48,7 +57,7 @@ public class OracleConnectionUriParser {
 
   // execute the parsing process and store options in the configuration
   private static void doParse(String connectionUri, JsonObject configuration) {
-    Matcher matcher = FULL_URI_REGEX.matcher(connectionUri);
+    Matcher matcher = FULL_URI_PATTERN.matcher(connectionUri);
 
     if (matcher.matches()) {
       // parse the user and password

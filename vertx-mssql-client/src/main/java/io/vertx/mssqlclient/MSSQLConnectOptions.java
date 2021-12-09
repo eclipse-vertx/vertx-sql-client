@@ -400,4 +400,11 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     MSSQLConnectOptionsConverter.toJson(this, json);
     return json;
   }
+
+  @Override
+  public MSSQLConnectOptions merge(JsonObject other) {
+    JsonObject json = toJson();
+    json.mergeIn(other);
+    return new MSSQLConnectOptions(json);
+  }
 }

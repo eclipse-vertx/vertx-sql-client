@@ -19,12 +19,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
+import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -68,6 +70,12 @@ public class MSSQLDriver implements Driver {
     pool.init();
     closeFuture.add(factory);
     return pool;
+  }
+
+  @Override
+  public MSSQLConnectOptions parseConnectionUri(String uri) {
+    JsonObject conf = MSSQLConnectionUriParser.parse(uri, false);
+    return conf == null ? null : new MSSQLConnectOptions(conf);
   }
 
   @Override

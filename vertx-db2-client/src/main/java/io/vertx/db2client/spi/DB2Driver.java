@@ -19,12 +19,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Pool;
 import io.vertx.db2client.impl.DB2ConnectionFactory;
 import io.vertx.db2client.impl.DB2ConnectionImpl;
+import io.vertx.db2client.impl.DB2ConnectionUriParser;
 import io.vertx.db2client.impl.DB2PoolImpl;
 import io.vertx.db2client.impl.Db2PoolOptions;
 import io.vertx.sqlclient.PoolOptions;
@@ -71,6 +73,12 @@ public class DB2Driver implements Driver {
     pool.init();
     closeFuture.add(factory);
     return pool;
+  }
+
+  @Override
+  public DB2ConnectOptions parseConnectionUri(String uri) {
+    JsonObject conf = DB2ConnectionUriParser.parse(uri, false);
+    return conf == null ? null : new DB2ConnectOptions(conf);
   }
 
   @Override

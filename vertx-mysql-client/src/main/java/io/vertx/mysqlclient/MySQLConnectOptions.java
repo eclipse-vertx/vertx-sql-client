@@ -604,4 +604,11 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public boolean isUsingDomainSocket() {
     return this.getHost().startsWith("/");
   }
+
+  @Override
+  public MySQLConnectOptions merge(JsonObject other) {
+    JsonObject json = toJson();
+    json.mergeIn(other);
+    return new MySQLConnectOptions(json);
+  }
 }

@@ -19,12 +19,14 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.mysqlclient.impl.MySQLConnectionFactory;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
+import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.mysqlclient.impl.MySQLPoolImpl;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -68,6 +70,12 @@ public class MySQLDriver implements Driver {
     pool.init();
     closeFuture.add(factory);
     return pool;
+  }
+
+  @Override
+  public MySQLConnectOptions parseConnectionUri(String uri) {
+    JsonObject conf = MySQLConnectionUriParser.parse(uri, false);
+    return conf == null ? null : new MySQLConnectOptions(conf);
   }
 
   @Override

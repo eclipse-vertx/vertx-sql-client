@@ -35,6 +35,10 @@ public class TemplateBuilderTest {
     public Driver driver() {
       return new Driver() {
         @Override
+        public SqlConnectOptions parseConnectionUri(String uri) {
+          throw new UnsupportedOperationException();
+        }
+        @Override
         public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
           return FakeClient.this.appendQueryPlaceholder(queryBuilder, index, current);
         }

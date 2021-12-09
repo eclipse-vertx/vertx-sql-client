@@ -16,16 +16,21 @@
  */
 package io.vertx.pgclient;
 
+import io.vertx.core.json.JsonObject;
+import io.vertx.sqlclient.SqlConnectOptions;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ServiceConfigurationError;
+
+import static org.junit.Assert.fail;
 
 /**
  * @author Billy Yuan <billy112487983@gmail.com>
  */
-public class PgConnectOptionsProviderTest {
+public class PgConnectOptionsTest {
   private String connectionUri;
   private PgConnectOptions expectedConfiguration;
   private PgConnectOptions actualConfiguration;
@@ -212,6 +217,47 @@ public class PgConnectOptionsProviderTest {
   public void testInvalidUri5() {
     connectionUri = "postgresql://user@localhost?port=1234&port";
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+  }
+
+  @Test
+  public void testMerge() {
+    PgConnectOptions options = new PgConnectOptions();
+    options.setUser("the-user");
+    options.setPassword("the-password");
+    options.setReconnectAttempts(3);
+    JsonObject conf = new JsonObject();
+    conf.put("database", "the-database");
+    conf.put("host", "the-host");
+    conf.put("port", 1234);
+    conf.put("port", 1234);
+    conf.put("pipeliningLimit", 5);
+    conf.put("reconnectInterval", 10);
+    options = options.merge(conf);
+    Assert.assertEquals("the-user", options.getUser());
+    Assert.assertEquals("the-password", options.getPassword());
+    Assert.assertEquals("the-database", options.getDatabase());
+    Assert.assertEquals("the-host", options.getHost());
+    Assert.assertEquals(1234, options.getPort());
+    Assert.assertEquals(5, options.getPipeliningLimit());
+    Assert.assertEquals(10, options.getReconnectInterval());
+    Assert.assertEquals(3, options.getReconnectAttempts());
+  }
+
+  @Test
+  public void testGeneric() {
+    PgConnectOptions options = (PgConnectOptions) SqlConnectOptions.fromUri("postgresql://myhost:5433");
+    Assert.assertEquals("myhost", options.getHost());
+    Assert.assertEquals(5433, options.getPort());
+    try {
+      SqlConnectOptions.fromUri("postgresql://username:password@loc//dbname");
+      fail();
+    } catch (IllegalArgumentException ignore) {
+    }
+    try {
+      SqlConnectOptions.fromUri("whatever://myhost:5433");
+      fail();
+    } catch (ServiceConfigurationError ignore) {
+    }
   }
 
   private static void assertEquals(PgConnectOptions expectedConfiguration, PgConnectOptions actualConfiguration) {

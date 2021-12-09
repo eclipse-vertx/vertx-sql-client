@@ -43,16 +43,25 @@ public class DB2ConnectionUriParser {
   private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
-  private static final Pattern FULL_URI_REGEX = Pattern.compile("^" // regex start
+  private static final Pattern SCHEME_DESIGNATOR_PATTERN = Pattern.compile("^" + SCHEME_DESIGNATOR_REGEX);
+  private static final Pattern FULL_URI_PATTERN = Pattern.compile("^"
     + SCHEME_DESIGNATOR_REGEX + USER_INFO_REGEX + NET_LOCATION_REGEX + PORT_REGEX + DATABASE_REGEX + ATTRIBUTES_REGEX
-    + "$"); // regex end
+    + "$");
 
   public static JsonObject parse(String connectionUri) {
-    // if we get any exception during the parsing, then we throw an IllegalArgumentException.
+    return parse(connectionUri, true);
+  }
+
+  public static JsonObject parse(String connectionUri, boolean exact) {
     try {
-      JsonObject configuration = new JsonObject();
-      doParse(connectionUri, configuration);
-      return configuration;
+      Matcher matcher = SCHEME_DESIGNATOR_PATTERN.matcher(connectionUri);
+      if (matcher.find() || exact) {
+        JsonObject configuration = new JsonObject();
+        doParse(connectionUri, configuration);
+        return configuration;
+      } else {
+        return null;
+      }
     } catch (Exception e) {
       throw new IllegalArgumentException("Cannot parse invalid connection URI: " + connectionUri, e);
     }
@@ -60,7 +69,7 @@ public class DB2ConnectionUriParser {
 
   // execute the parsing process and store options in the configuration
   private static void doParse(String connectionUri, JsonObject configuration) {
-    Matcher matcher = FULL_URI_REGEX.matcher(connectionUri);
+    Matcher matcher = FULL_URI_PATTERN.matcher(connectionUri);
 
     if (matcher.matches()) {
       // parse the user and password
@@ -79,7 +88,7 @@ public class DB2ConnectionUriParser {
       parseAttributes(matcher.group("attributes"), configuration);
 
     } else {
-      throw new IllegalArgumentException("Wrong syntax of connection URI. Must match pattern: " + FULL_URI_REGEX);
+      throw new IllegalArgumentException("Wrong syntax of connection URI. Must match pattern: " + FULL_URI_PATTERN);
     }
   }
 
