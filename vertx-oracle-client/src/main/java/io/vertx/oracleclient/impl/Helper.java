@@ -15,7 +15,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.Tuple;
-import oracle.jdbc.OraclePreparedStatement;
+import oracle.sql.TIMESTAMPTZ;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -189,6 +189,10 @@ public class Helper {
 
     if (value instanceof Timestamp) {
       return ((Timestamp) value).toInstant().atOffset(ZoneOffset.UTC);
+    }
+
+    if (value instanceof TIMESTAMPTZ) {
+      return ((TIMESTAMPTZ) value).toZonedDateTime().toOffsetDateTime();
     }
 
     // large objects
