@@ -44,7 +44,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
       conn
         .query("SELECT \"SmallSerial\" FROM \"NumericDataType\" WHERE \"id\" = 1").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          ctx.assertEquals(1, result.rowCount());
+          ctx.assertEquals(0, result.rowCount());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "SmallSerial")
             .returns(Tuple::getValue, Row::getValue, (short) 1)
@@ -68,7 +68,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
       conn
         .query("SELECT \"Serial\" FROM \"NumericDataType\" WHERE \"id\" = 1").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          ctx.assertEquals(1, result.rowCount());
+          ctx.assertEquals(0, result.rowCount());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "Serial")
             .returns(Tuple::getValue, Row::getValue, 1)
@@ -92,7 +92,7 @@ public class NumericTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBas
       conn
         .query("SELECT \"BigSerial\" FROM \"NumericDataType\" WHERE \"id\" = 1").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
-          ctx.assertEquals(1, result.rowCount());
+          ctx.assertEquals(0, result.rowCount());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "BigSerial")
             .returns(Tuple::getValue, Row::getValue, 1L)

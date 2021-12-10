@@ -20,7 +20,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addShort((short) 32767), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Short")
               .returns(Tuple::getValue, Row::getValue, (short) 32767)
@@ -72,7 +72,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addInteger(Integer.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Integer")
               .returns(Tuple::getValue, Row::getValue, Integer.MAX_VALUE)
@@ -127,7 +127,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addLong(Long.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Long")
               .returns(Tuple::getValue, Row::getValue, Long.MAX_VALUE)
@@ -182,7 +182,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addFloat(Float.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Float")
               .returns(Tuple::getValue, Row::getValue, Float.MAX_VALUE)
@@ -237,7 +237,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addDouble(Double.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Double")
               .returns(Tuple::getValue, Row::getValue, Double.MAX_VALUE)
@@ -292,7 +292,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "SmallSerial")
               .returns(Tuple::getValue, Row::getValue, (short) 1)
@@ -344,7 +344,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Serial")
               .returns(Tuple::getValue, Row::getValue, 1)
@@ -399,7 +399,7 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "BigSerial")
               .returns(Tuple::getValue, Row::getValue, 1L)

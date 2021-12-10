@@ -74,7 +74,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
             JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");

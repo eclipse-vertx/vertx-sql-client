@@ -18,7 +18,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
           p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "currentMood")
               .returns(Tuple::getValue, Row::getValue, "ok")

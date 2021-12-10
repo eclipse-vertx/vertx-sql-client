@@ -20,7 +20,7 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
             .addString("postgraduate")
             .addString("postgres:*"), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "TsQuery")
               .returns(Tuple::getBoolean, Row::getBoolean, Boolean.TRUE)
@@ -41,7 +41,7 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
           p.query().execute(Tuple.tuple()
             .addString("postgraduate"), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             String expected = "'postgradu':1";
             ColumnChecker.checkColumn(0, "TsVector")
@@ -64,7 +64,7 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
             .addString("postgraduate")
             .addString("a fat cat sat on a mat and ate a fat rat"), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             String[] expected = new String[]{"'postgradu':1", "'ate':9 'cat':3 'fat':2,11 'mat':7 'rat':12 'sat':4"};
             ColumnChecker.checkColumn(0, "TsVector")
@@ -87,7 +87,7 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
           p.query().execute(Tuple.tuple()
             .addString("Fat:ab & Cats"), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             String expected = "'fat':AB & 'cat'";
             ColumnChecker.checkColumn(0, "TsQuery")
@@ -110,7 +110,7 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
             .addString("Fat:ab & Cats")
             .addString("super:*"), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             String[] expected = new String[]{"'fat':AB & 'cat'", "'super':*"};
             ColumnChecker.checkColumn(0, "TsQuery")

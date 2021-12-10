@@ -379,7 +379,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addValue(interval), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             ColumnChecker.checkColumn(0, "Interval")
               .returns(Tuple::getValue, Row::getValue, interval)
@@ -610,7 +610,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
-            ctx.assertEquals(1, result.rowCount());
+            ctx.assertEquals(0, result.rowCount());
             Row row = result.iterator().next();
             checker.forRow(row);
             async.complete();
