@@ -21,7 +21,6 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.pgclient.impl.util.Util;
 import io.netty.buffer.ByteBuf;
@@ -387,13 +386,26 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   private CommandCompleteProcessor processor = new CommandCompleteProcessor();
 
   static class CommandCompleteProcessor implements ByteProcessor {
+    private static final byte[] SELECT = new byte[]{'S', 'E', 'L', 'E', 'C', 'T'};
+    private static final int MIN_READABLE_BYTES_OF_SELECT = 9;
     private static final byte SPACE = 32;
     private int rows;
     boolean afterSpace;
     int parse(ByteBuf in) {
       afterSpace = false;
       rows = 0;
-      in.forEachByte(in.readerIndex(), in.readableBytes() - 1, this);
+      int readerIndex = in.readerIndex();
+      int readableBytes = in.readableBytes();
+      if (readableBytes >= MIN_READABLE_BYTES_OF_SELECT && in.getByte(readerIndex) == SELECT[0]) {
+        boolean isSelect = true;
+        for (int i = 1; i < SELECT.length; i++) {
+          isSelect = SELECT[i] == in.getByte(readerIndex + i);
+        }
+        if (isSelect) {
+          return rows;
+        }
+      }
+      in.forEachByte(readerIndex, readableBytes - 1, this);
       return rows;
     }
     @Override
