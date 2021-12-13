@@ -167,7 +167,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   public boolean isIndeterminatePreparedStatementError(Throwable error) {
     if (error instanceof PgException) {
       String code = ((PgException) error).getCode();
-      return "42P18".equals(code) || "42804".equals(code);
+      return "42P18".equals(code) || "42804".equals(code) || "42P08".equals(code);
     }
     return false;
   }
