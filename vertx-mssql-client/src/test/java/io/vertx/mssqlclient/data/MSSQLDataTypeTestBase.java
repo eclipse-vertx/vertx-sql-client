@@ -50,6 +50,7 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
       tupleMethods.add(Tuple::getLocalDate);
       tupleMethods.add(Tuple::getLocalTime);
       tupleMethods.add(Tuple::getLocalDateTime);
+      tupleMethods.add(Tuple::getUUID);
 
       tupleMethods.add(getByIndex(BigDecimal.class));
       return tupleMethods;
@@ -68,6 +69,7 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
       rowMethods.add(Row::getLocalDate);
       rowMethods.add(Row::getLocalTime);
       rowMethods.add(Row::getLocalDateTime);
+      rowMethods.add(Row::getUUID);
 
       rowMethods.add(getByName(BigDecimal.class));
 

@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTestBase {
@@ -39,6 +40,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
   protected static final LocalDateTime LOCALDATETIME_NULL_VALUE = null;
   protected static final OffsetDateTime OFFSETDATETIME_NULL_VALUE = null;
   protected static final Buffer BUFFER_NULL_VALUE = null;
+  protected static final UUID UUID_NULL_VALUE = null;
 
   @Test
   public void testDecodeNullAllColumns(TestContext ctx) {
@@ -64,6 +66,7 @@ public abstract class MSSQLNullableDataTypeTestBase extends MSSQLFullDataTypeTes
       ctx.assertEquals(null, row.getValue("test_varbinary"));
       ctx.assertEquals(null, row.getValue("test_money"));
       ctx.assertEquals(null, row.getValue("test_smallmoney"));
+      ctx.assertEquals(null, row.getValue("test_uuid"));
     });
   }
 

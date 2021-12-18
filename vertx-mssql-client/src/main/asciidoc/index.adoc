@@ -172,6 +172,7 @@ Currently, the client supports the following SQL Server types:
 * BINARY/VARBINARY(`io.vertx.core.buffer.Buffer`)
 * MONEY (`{@link java.math.BigDecimal}`)
 * SMALLMONEY (`{@link java.math.BigDecimal}`)
+* GUID (`{@link java.util.UUID}`)
 
 Tuple decoding uses the above types when storing values.
 
