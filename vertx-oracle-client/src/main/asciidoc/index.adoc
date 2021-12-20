@@ -99,7 +99,7 @@ A simple way to configure the client is to specify a {@link io.vertx.oracleclien
 
 === Connection URI
 
-Apart from configuring with a {@link io.vertx.oracleclient.OracleConnectOptions} data object, ww also provide you with an alternative way to connect when you want to configure with a connection URI:
+Apart from configuring with a {@link io.vertx.oracleclient.OracleConnectOptions} data object, we also provide you with an alternative way to connect when you want to configure with a connection URI:
 
 [source,$lang]
 ----
