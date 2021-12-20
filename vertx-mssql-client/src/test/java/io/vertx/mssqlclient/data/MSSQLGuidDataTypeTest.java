@@ -22,11 +22,6 @@ import org.junit.runner.RunWith;
 public class MSSQLGuidDataTypeTest extends MSSQLDataTypeTestBase {
 
   @Test
-  public void test() {
-    
-  }
-  
-  @Test
   public void testQueryGuid(TestContext ctx) {
     testQueryDecodeGenericWithoutTable(ctx, "test_guid", "UNIQUEIDENTIFIER", "'bda9b971-57a8-4216-877b-5cd24b9bb47f'", UUID.fromString("bda9b971-57a8-4216-877b-5cd24b9bb47f"));
   }
