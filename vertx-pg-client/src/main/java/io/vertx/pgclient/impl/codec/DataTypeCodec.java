@@ -20,16 +20,16 @@ package io.vertx.pgclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.Json;
-import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
-import io.vertx.pgclient.data.*;
-import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.pgclient.data.*;
+import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.net.Inet4Address;
@@ -50,7 +50,7 @@ import java.util.function.IntFunction;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -91,6 +91,8 @@ public class DataTypeCodec {
   private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
   private static final Inet[] empty_inet_array = new Inet[0];
   private static final Money[] empty_money_array = new Money[0];
+  private static final PgSQLXML[] empty_pgsqlxml_array = new PgSQLXML[0];
+
 
   // Sentinel used when an object is refused by the data type
   public static final Object REFUSED_SENTINEL = new Object();
@@ -107,7 +109,7 @@ public class DataTypeCodec {
   private static final IntFunction<OffsetTime[]> OFFSETTIME_ARRAY_FACTORY = size -> size == 0 ? empty_offset_time_array : new OffsetTime[size];
   private static final IntFunction<LocalDateTime[]> LOCALDATETIME_ARRAY_FACTORY = size -> size == 0 ? empty_local_date_time_array : new LocalDateTime[size];
   private static final IntFunction<OffsetDateTime[]> OFFSETDATETIME_ARRAY_FACTORY = size -> size == 0 ? empty_offset_date_time_array : new OffsetDateTime[size];
-  private static final IntFunction<Buffer[]> BUFFER_ARRAY_FACTORY =size -> size == 0 ? empty_buffer_array : new Buffer[size];
+  private static final IntFunction<Buffer[]> BUFFER_ARRAY_FACTORY = size -> size == 0 ? empty_buffer_array : new Buffer[size];
   private static final IntFunction<UUID[]> UUID_ARRAY_FACTORY = size -> size == 0 ? empty_uuid_array : new UUID[size];
   private static final IntFunction<Object[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Object[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
@@ -121,20 +123,18 @@ public class DataTypeCodec {
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
   private static final IntFunction<Inet[]> INET_ARRAY_FACTORY = size -> size == 0 ? empty_inet_array : new Inet[size];
   private static final IntFunction<Money[]> MONEY_ARRAY_FACTORY = size -> size == 0 ? empty_money_array : new Money[size];
-
+  private static final IntFunction<PgSQLXML[]> PGSQLXML_ARRAY_FACTORY = size -> size == 0 ? empty_pgsqlxml_array : new PgSQLXML[size];
   private static final java.time.format.DateTimeFormatter TIMETZ_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
     .append(ISO_LOCAL_TIME)
     .appendOffset("+HH:mm", "00:00")
     .toFormatter();
-
   private static final java.time.format.DateTimeFormatter TIMESTAMP_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
     .append(ISO_LOCAL_DATE)
     .appendLiteral(' ')
     .append(ISO_LOCAL_TIME)
     .toFormatter();
-
   private static final java.time.format.DateTimeFormatter TIMESTAMPTZ_FORMAT = new DateTimeFormatterBuilder()
     .append(TIMESTAMP_FORMAT)
     .appendOffset("+HH:mm", "00:00")
@@ -360,6 +360,12 @@ public class DataTypeCodec {
       case MONEY_ARRAY:
         binaryEncodeArray((Money[]) value, DataType.MONEY, buff);
         break;
+      case XML:
+        binaryEncodePgXMLSQL((PgSQLXML) value, buff);
+        break;
+      case XML_ARRAY:
+        binaryEncodeArray((PgSQLXML[]) value, DataType.XML, buff);
+        break;
       default:
         logger.debug("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -497,6 +503,10 @@ public class DataTypeCodec {
         return binaryDecodeMoney(index, len, buff);
       case MONEY_ARRAY:
         return binaryDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
+      case XML:
+        return binaryDecodePgXMLSQL(index, len, buff);
+      case XML_ARRAY:
+        return binaryDecodeArray(PGSQLXML_ARRAY_FACTORY, DataType.XML, index, len, buff);
       default:
         logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
@@ -637,6 +647,10 @@ public class DataTypeCodec {
         return textDecodeMoney(index, len, buff);
       case MONEY_ARRAY:
         return textDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
+      case XML:
+        return textDecodePgSQLXML(index, len, buff);
+      case XML_ARRAY:
+        return textDecodeArray(PGSQLXML_ARRAY_FACTORY, DataType.XML, index, len, buff);
       default:
         return defaultDecodeText(index, len, buff);
     }
@@ -669,7 +683,7 @@ public class DataTypeCodec {
   }
 
   private static Boolean textDecodeBOOL(int index, int len, ByteBuf buff) {
-    if(buff.getByte(index) == 't') {
+    if (buff.getByte(index) == 't') {
       return Boolean.TRUE;
     } else {
       return Boolean.FALSE;
@@ -770,7 +784,7 @@ public class DataTypeCodec {
 
   private static LineSegment textDecodeLseg(int index, int len, ByteBuf buff) {
     // Lseg representation: [p1,p2]
-    int idxOfPointsSeparator = buff.indexOf(index, index+len, (byte) ')') + 1;
+    int idxOfPointsSeparator = buff.indexOf(index, index + len, (byte) ')') + 1;
     int lenOfP1 = idxOfPointsSeparator - index - 1;
     Point p1 = textDecodePOINT(index + 1, lenOfP1, buff);
     Point p2 = textDecodePOINT(idxOfPointsSeparator + 1, len - lenOfP1 - 3, buff);
@@ -779,7 +793,7 @@ public class DataTypeCodec {
 
   private static Box textDecodeBox(int index, int len, ByteBuf buff) {
     // Box representation: p1,p2
-    int idxOfPointsSeparator = buff.indexOf(index, index+len, (byte) ')') + 1;
+    int idxOfPointsSeparator = buff.indexOf(index, index + len, (byte) ')') + 1;
     int lenOfUpperRightCornerPoint = idxOfPointsSeparator - index;
     Point upperRightCorner = textDecodePOINT(index, lenOfUpperRightCornerPoint, buff);
     Point lowerLeftCorner = textDecodePOINT(idxOfPointsSeparator + 1, len - lenOfUpperRightCornerPoint - 1, buff);
@@ -905,7 +919,7 @@ public class DataTypeCodec {
               : Integer.parseInt(timeChunk.substring(sidx));
           } else {
             // seconds with microseconds
-            seconds =  isNeg ? -Integer.parseInt(timeChunk.substring(sidx).substring(0, m))
+            seconds = isNeg ? -Integer.parseInt(timeChunk.substring(sidx).substring(0, m))
               : Integer.parseInt(timeChunk.substring(sidx).substring(0, m));
             microseconds = isNeg ? -Integer.parseInt(timeChunk.substring(sidx).substring(m + 1))
               : Integer.parseInt(timeChunk.substring(sidx).substring(m + 1));
@@ -989,7 +1003,6 @@ public class DataTypeCodec {
   private static String textDecodeNAME(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
-
 
   private static void binaryEncodeNAME(String value, ByteBuf buff) {
     String s = String.valueOf(value);
@@ -1466,7 +1479,7 @@ public class DataTypeCodec {
 
   private static Money binaryDecodeMoney(int index, int len, ByteBuf buff) {
     long value = binaryDecodeINT8(index, len, buff);
-    return new Money(value / 100, Math.abs(((int)value % 100)));
+    return new Money(value / 100, Math.abs(((int) value % 100)));
   }
 
   private static String binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
@@ -1475,6 +1488,19 @@ public class DataTypeCodec {
 
   private static void binaryEncodeTsQuery(String value, ByteBuf buff) {
     buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
+  }
+
+  private static PgSQLXML binaryDecodePgXMLSQL(int index, int len, ByteBuf buff) {
+    return new PgSQLXML(buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString());
+  }
+
+  private static void binaryEncodePgXMLSQL(PgSQLXML value, ByteBuf buff) {
+    buff.writeCharSequence(value.toString(), StandardCharsets.UTF_8);
+  }
+
+  private static PgSQLXML textDecodePgSQLXML(int index, int len, ByteBuf buff) {
+      String s = textDecodeVARCHAR(index, len, buff);
+      return new PgSQLXML(s);
   }
 
   private static String textDecodeTsVector(int index, int len, ByteBuf buff) {
@@ -1535,7 +1561,7 @@ public class DataTypeCodec {
    * Decode the specified {@code buff} formatted as an hex string starting at the buffer readable index
    * with the specified {@code length} to a {@link Buffer}.
    *
-   * @param len the hex string length
+   * @param len  the hex string length
    * @param buff the byte buff to read from
    * @return the decoded value as a Buffer
    */
@@ -1551,7 +1577,7 @@ public class DataTypeCodec {
   }
 
   private static byte decodeHexChar(byte ch) {
-    return (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
+    return (byte) (((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
   }
 
   private static boolean isHexFormat(int index, int len, ByteBuf buff) {
@@ -1619,7 +1645,7 @@ public class DataTypeCodec {
     return array;
   }
 
-  private static <T> void binaryEncodeArray(T[] values, DataType type, ByteBuf buff){
+  private static <T> void binaryEncodeArray(T[] values, DataType type, ByteBuf buff) {
     int startIndex = buff.writerIndex();
     buff.writeInt(1);             // ndim
     buff.writeInt(0);             // dataoffset
@@ -1681,7 +1707,7 @@ public class DataTypeCodec {
         // Some escaping - improve that later...
         String s = buff.toString(index + 1, len - 2, StandardCharsets.UTF_8);
         StringBuilder sb = new StringBuilder();
-        for (int i = 0;i < s.length();i++) {
+        for (int i = 0; i < s.length(); i++) {
           char c = s.charAt(i);
           if (c == '\\') {
             c = s.charAt(++i);
@@ -1696,7 +1722,7 @@ public class DataTypeCodec {
     }
   }
 
-  private static <T> void textEncodeArray(T[] values, DataType type, ByteBuf buff){
+  private static <T> void textEncodeArray(T[] values, DataType type, ByteBuf buff) {
     buff.writeByte('{');
     int len = values.length;
     for (int i = 0; i < len; i++) {

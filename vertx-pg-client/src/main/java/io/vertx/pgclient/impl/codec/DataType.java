@@ -22,18 +22,9 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.pgclient.data.Box;
-import io.vertx.pgclient.data.Circle;
-import io.vertx.pgclient.data.Inet;
-import io.vertx.pgclient.data.Line;
-import io.vertx.pgclient.data.LineSegment;
-import io.vertx.pgclient.data.Money;
+import io.vertx.pgclient.data.*;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.pgclient.data.Interval;
-import io.vertx.pgclient.data.Path;
-import io.vertx.pgclient.data.Point;
-import io.vertx.pgclient.data.Polygon;
 import io.vertx.core.buffer.Buffer;
 
 import java.sql.JDBCType;
@@ -105,8 +96,8 @@ public enum DataType {
   JSON_ARRAY(199, true, Object[].class, JDBCType.OTHER, Tuple::getArrayOfJsons),
   JSONB(3802, true, Object.class, JDBCType.OTHER, Tuple::getJson),
   JSONB_ARRAY(3807, true, Object[].class, JDBCType.OTHER, Tuple::getArrayOfJsons),
-  XML(142, true, Object.class, JDBCType.OTHER),
-  XML_ARRAY(143, true, Object[].class, JDBCType.OTHER),
+  XML(142, true, Object.class, JDBCType.SQLXML),
+  XML_ARRAY(143, true, Object[].class, JDBCType.SQLXML),
   POINT(600, true, Point.class, JDBCType.OTHER),
   POINT_ARRAY(1017, true, Point[].class, JDBCType.OTHER),
   LINE(628, true, Line.class, JDBCType.OTHER),
@@ -229,5 +220,8 @@ public enum DataType {
     encodingTypeToDataType.put(Polygon[].class, POLYGON_ARRAY);
     encodingTypeToDataType.put(Circle.class, CIRCLE);
     encodingTypeToDataType.put(Circle[].class, CIRCLE_ARRAY);
+
+    encodingTypeToDataType.put(PgSQLXML.class, XML);
+    encodingTypeToDataType.put(PgSQLXML[].class, XML_ARRAY);
   }
 }
