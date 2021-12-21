@@ -26,6 +26,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -240,7 +241,56 @@ public enum DataType {
   NUMERIC(0x3F),
 
   // Variable-Length Data Types https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-tds/ce3183a6-9d89-47e8-a02f-de5a1a1303de
-  GUID(0x24),
+  GUID(0x24) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readByte();
+      return metadata;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      if (metadata.length == 16) return JDBCType.CHAR;
+      throw new IllegalArgumentException("Invalid length: " + metadata.length);
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      int length = byteBuf.readByte();
+      if (length == 0) return null;
+      if (length == 16) {
+        long first = byteBuf.readIntLE() & 0xFFFFFFFF;
+        long second = byteBuf.readShortLE() & 0xFFFF;
+        long third = byteBuf.readShortLE() & 0xFFFF;
+        long lsb = byteBuf.readLong();
+        return new UUID((first << 32) + (second << 16) + third, lsb);
+      }
+      throw new IllegalArgumentException("Invalid length: " + length);
+    }
+
+    @Override
+    public String paramDefinition(Object value) {
+      return "uniqueidentifier";
+    }
+
+    @Override
+    public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
+      writeParamDescription(byteBuf, name, out, id);
+      UUID uValue;
+      if (value instanceof UUID) {
+        uValue = (UUID) value;
+      } else throw new IllegalArgumentException(value.getClass().getName());
+      byteBuf.writeByte(16); // actual length
+      byteBuf.writeByte(16); // actual length
+      
+      long msb = uValue.getMostSignificantBits();
+      byteBuf.writeIntLE((int) (msb >> 32));
+      byteBuf.writeShortLE((short) (msb >> 16));
+      byteBuf.writeShortLE((short) (msb));
+      byteBuf.writeLong(uValue.getLeastSignificantBits());
+    }
+  },
   INTN(0x26) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
@@ -913,6 +963,7 @@ public enum DataType {
     typesByValueClass.put(LocalTime.class, TIMEN);
     typesByValueClass.put(LocalDateTime.class, DATETIME2N);
     typesByValueClass.put(OffsetDateTime.class, DATETIMEOFFSETN);
+    typesByValueClass.put(UUID.class, GUID);
     typesByValueClass.put(Buffer.class, BIGVARBINARY);
   }
 

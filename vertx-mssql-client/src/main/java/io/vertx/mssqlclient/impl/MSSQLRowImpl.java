@@ -77,6 +77,8 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getOffsetDateTime(position));
     } else if (type == Buffer.class) {
       return type.cast(getBuffer(position));
+    } else if (type == UUID.class) {
+      return type.cast(getValue(position));
     } else if (type == Object.class) {
       return type.cast(getValue(position));
     } else if (type.isEnum()) {
@@ -93,7 +95,7 @@ public class MSSQLRowImpl extends ArrayTuple implements Row {
 
   @Override
   public UUID getUUID(int pos) {
-    throw new UnsupportedOperationException();
+    return get(UUID.class, pos);
   }
 
   @Override
