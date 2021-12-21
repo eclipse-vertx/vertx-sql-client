@@ -20,6 +20,7 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.time.*;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
@@ -99,6 +100,17 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       checkNumber(row, "test_numeric", new BigDecimal("999.99"));
     });
   }
+  
+
+  @Test
+  public void testDecodeUuid(TestContext ctx) {
+    testDecodeNotNullValue(ctx, "test_uuid", row -> {
+      ColumnChecker.checkColumn(0, "test_uuid")
+        .returns(Tuple::getValue, Row::getValue, UUID.fromString("e2d1f163-40a7-480b-b1a6-07faaef8e01b"))
+        .returns(Tuple::getUUID, Row::getUUID, UUID.fromString("e2d1f163-40a7-480b-b1a6-07faaef8e01b"))
+        .forRow(row);
+    });
+  }  
 
   @Test
   public void testDecodeDecimal(TestContext ctx) {
