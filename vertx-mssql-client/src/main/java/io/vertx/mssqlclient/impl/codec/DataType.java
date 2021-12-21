@@ -251,7 +251,7 @@ public enum DataType {
 
     @Override
     public JDBCType jdbcType(Metadata metadata) {
-      if (metadata.length == 16) return JDBCType.CHAR;
+      if (metadata.length == 16) return JDBCType.OTHER;
       throw new IllegalArgumentException("Invalid length: " + metadata.length);
     }
 
@@ -283,7 +283,7 @@ public enum DataType {
       } else throw new IllegalArgumentException(value.getClass().getName());
       byteBuf.writeByte(16); // actual length
       byteBuf.writeByte(16); // actual length
-      
+
       long msb = uValue.getMostSignificantBits();
       byteBuf.writeIntLE((int) (msb >> 32));
       byteBuf.writeShortLE((short) (msb >> 16));
