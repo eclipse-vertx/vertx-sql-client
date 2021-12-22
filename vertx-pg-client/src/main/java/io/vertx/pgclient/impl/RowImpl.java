@@ -111,8 +111,6 @@ public class RowImpl extends ArrayTuple implements Row {
         return type.cast(getArrayOfIntervals(position));
       } else if (componentType == Box.class) {
         return type.cast(getArrayOfBoxs(position));
-      } else if (componentType == PgSQLXML.class) {
-        return type.cast(getArrayOfPgXMLSQLs(position));
       } else if (componentType == Object.class) {
         return type.cast(getJsonArray_(position));
       } else if (componentType.isEnum()) {
@@ -169,8 +167,6 @@ public class RowImpl extends ArrayTuple implements Row {
         return type.cast(getJson(position));
       } else if (type == JsonArray.class) {
         return type.cast(getJson(position));
-      } else if (type == PgSQLXML.class) {
-        return type.cast(getPgSQLXML(position));
       } else if (type == Object.class) {
         return type.cast(getValue(position));
       } else if (type.isEnum()) {
@@ -210,10 +206,6 @@ public class RowImpl extends ArrayTuple implements Row {
 
   private Interval getInterval(int pos) {
     return (Interval) getValue(pos);
-  }
-
-  private PgSQLXML getPgSQLXML(int pos) {
-    return (PgSQLXML) getValue(pos);
   }
 
   private Object getEnum(Class enumType, int pos) {
@@ -269,10 +261,6 @@ public class RowImpl extends ArrayTuple implements Row {
 
   private Interval[] getArrayOfIntervals(int pos) {
     return (Interval[]) getValue(pos);
-  }
-
-  private PgSQLXML[] getArrayOfPgXMLSQLs(int pos) {
-    return (PgSQLXML[]) getValue(pos);
   }
 
   private Object[] getArrayOfEnums(Class enumType, int pos) {

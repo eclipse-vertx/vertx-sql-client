@@ -55,13 +55,17 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- *
+ * <p>
  * See also https://www.npgsql.org/doc/dev/type-representations.html
  */
 public class DataTypeCodec {
 
+  // Sentinel used when an object is refused by the data type
+  public static final Object REFUSED_SENTINEL = new Object();
+  // 4714-11-24 00:00:00 BC
+  public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC",
+    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.ROOT));
   private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
-
   private static final String[] empty_string_array = new String[0];
   private static final LocalDate[] empty_local_date_array = new LocalDate[0];
   private static final LocalTime[] empty_local_time_array = new LocalTime[0];
@@ -88,15 +92,11 @@ public class DataTypeCodec {
   private static final Double[] empty_double_array = new Double[0];
   private static final LocalDate LOCAL_DATE_EPOCH = LocalDate.of(2000, 1, 1);
   private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
+  // 294277-01-09 04:00:54.775807
+  public static final LocalDateTime LDT_PLUS_INFINITY = LOCAL_DATE_TIME_EPOCH.plus(Long.MAX_VALUE, ChronoUnit.MICROS);
   private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
   private static final Inet[] empty_inet_array = new Inet[0];
   private static final Money[] empty_money_array = new Money[0];
-  private static final PgSQLXML[] empty_pgsqlxml_array = new PgSQLXML[0];
-
-
-  // Sentinel used when an object is refused by the data type
-  public static final Object REFUSED_SENTINEL = new Object();
-
   private static final IntFunction<Boolean[]> BOOLEAN_ARRAY_FACTORY = size -> size == 0 ? empty_boolean_array : new Boolean[size];
   private static final IntFunction<Short[]> SHORT_ARRAY_FACTORY = size -> size == 0 ? empty_short_array : new Short[size];
   private static final IntFunction<Integer[]> INTEGER_ARRAY_FACTORY = size -> size == 0 ? empty_integer_array : new Integer[size];
@@ -123,7 +123,6 @@ public class DataTypeCodec {
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
   private static final IntFunction<Inet[]> INET_ARRAY_FACTORY = size -> size == 0 ? empty_inet_array : new Inet[size];
   private static final IntFunction<Money[]> MONEY_ARRAY_FACTORY = size -> size == 0 ? empty_money_array : new Money[size];
-  private static final IntFunction<PgSQLXML[]> PGSQLXML_ARRAY_FACTORY = size -> size == 0 ? empty_pgsqlxml_array : new PgSQLXML[size];
   private static final java.time.format.DateTimeFormatter TIMETZ_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
     .append(ISO_LOCAL_TIME)
@@ -277,13 +276,13 @@ public class DataTypeCodec {
         binaryEncodeArray((UUID[]) value, DataType.UUID, buff);
         break;
       case JSON:
-        binaryEncodeJSON((Object) value, buff);
+        binaryEncodeJSON(value, buff);
         break;
       case JSON_ARRAY:
         binaryEncodeArray((Object[]) value, DataType.JSON, buff);
         break;
       case JSONB:
-        binaryEncodeJSONB((Object) value, buff);
+        binaryEncodeJSONB(value, buff);
         break;
       case JSONB_ARRAY:
         binaryEncodeArray((Object[]) value, DataType.JSONB, buff);
@@ -361,10 +360,10 @@ public class DataTypeCodec {
         binaryEncodeArray((Money[]) value, DataType.MONEY, buff);
         break;
       case XML:
-        binaryEncodePgXMLSQL((PgSQLXML) value, buff);
+        binaryEncodeXML((String) value, buff);
         break;
       case XML_ARRAY:
-        binaryEncodeArray((PgSQLXML[]) value, DataType.XML, buff);
+        binaryEncodeArray((String[]) value, DataType.XML, buff);
         break;
       default:
         logger.debug("Data type " + id + " does not support binary encoding");
@@ -504,9 +503,9 @@ public class DataTypeCodec {
       case MONEY_ARRAY:
         return binaryDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
       case XML:
-        return binaryDecodePgXMLSQL(index, len, buff);
+        return binaryDecodeXML(index, len, buff);
       case XML_ARRAY:
-        return binaryDecodeArray(PGSQLXML_ARRAY_FACTORY, DataType.XML, index, len, buff);
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.XML, index, len, buff);
       default:
         logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
@@ -648,9 +647,9 @@ public class DataTypeCodec {
       case MONEY_ARRAY:
         return textDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
       case XML:
-        return textDecodePgSQLXML(index, len, buff);
+        return textDecodeXML(index, len, buff);
       case XML_ARRAY:
-        return textDecodeArray(PGSQLXML_ARRAY_FACTORY, DataType.XML, index, len, buff);
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.XML, index, len, buff);
       default:
         return defaultDecodeText(index, len, buff);
     }
@@ -876,7 +875,7 @@ public class DataTypeCodec {
     int years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0, microseconds = 0;
     final List<String> chunks = new ArrayList<>(7);
     int idx = 0;
-    for (;;) {
+    for (; ; ) {
       int newIdx = value.indexOf(' ', idx);
       if (newIdx == -1) {
         chunks.add(value.substring(idx));
@@ -909,11 +908,11 @@ public class DataTypeCodec {
       boolean isNeg = timeChunk.charAt(0) == '-';
       if (isNeg) timeChunk = timeChunk.substring(1);
       int sidx = 0;
-      for (;;) {
+      for (; ; ) {
         int newIdx = timeChunk.indexOf(':', sidx);
         if (newIdx == -1) {
           int m = timeChunk.substring(sidx).indexOf('.');
-          if(m == -1) {
+          if (m == -1) {
             // seconds without microseconds
             seconds = isNeg ? -Integer.parseInt(timeChunk.substring(sidx))
               : Integer.parseInt(timeChunk.substring(sidx));
@@ -927,7 +926,7 @@ public class DataTypeCodec {
           break;
         }
         // hours
-        if(sidx == 0) {
+        if (sidx == 0) {
           hours = isNeg ? -Integer.parseInt(timeChunk.substring(sidx, newIdx))
             : Integer.parseInt(timeChunk.substring(sidx, newIdx));
         } else {
@@ -1081,12 +1080,6 @@ public class DataTypeCodec {
     CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return OffsetTime.parse(cs, TIMETZ_FORMAT);
   }
-
-  // 294277-01-09 04:00:54.775807
-  public static final LocalDateTime LDT_PLUS_INFINITY = LOCAL_DATE_TIME_EPOCH.plus(Long.MAX_VALUE, ChronoUnit.MICROS);
-  // 4714-11-24 00:00:00 BC
-  public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC",
-      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.ROOT));
 
   private static void binaryEncodeTIMESTAMP(LocalDateTime value, ByteBuf buff) {
     if (value.compareTo(LDT_PLUS_INFINITY) >= 0) {
@@ -1490,17 +1483,16 @@ public class DataTypeCodec {
     buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
   }
 
-  private static PgSQLXML binaryDecodePgXMLSQL(int index, int len, ByteBuf buff) {
-    return new PgSQLXML(buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString());
+  private static String binaryDecodeXML(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
-  private static void binaryEncodePgXMLSQL(PgSQLXML value, ByteBuf buff) {
-    buff.writeCharSequence(value.toString(), StandardCharsets.UTF_8);
+  private static void binaryEncodeXML(String value, ByteBuf buff) {
+    buff.writeCharSequence(value, StandardCharsets.UTF_8);
   }
 
-  private static PgSQLXML textDecodePgSQLXML(int index, int len, ByteBuf buff) {
-      String s = textDecodeVARCHAR(index, len, buff);
-      return new PgSQLXML(s);
+  private static String textDecodeXML(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
   private static String textDecodeTsVector(int index, int len, ByteBuf buff) {
