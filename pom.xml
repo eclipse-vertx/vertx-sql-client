@@ -30,7 +30,7 @@
       
     <artifactId>vertx-sql-client-parent</artifactId>
       
-    <version>3.9.12-SNAPSHOT</version>
+    <version>3.9.12</version>
       
     <packaging>pom</packaging>
       
@@ -66,7 +66,7 @@
       
     <properties>
             
-        <stack.version>3.9.12-SNAPSHOT</stack.version>
+        <stack.version>3.9.12</stack.version>
             
         <doc.skip>true</doc.skip>
             
