@@ -103,6 +103,10 @@ The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled cli
 - pool operations are not pipelined, only connection client are pipelined
 - pooled client operations are pipelined
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 == Unix domain sockets
 
 Sometimes you want to improve performance via Unix domain socket connection, we achieve this with Vert.x Native transports.
@@ -308,6 +312,7 @@ Currently the client supports the following PostgreSQL types
 * TSVECTOR (`java.lang.String`)
 * TSQUERY (`java.lang.String`)
 * INET (`io.vertx.pgclient.data.Inet`)
+* MONEY (`io.vertx.pgclient.data.Money`)
 
 Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
 

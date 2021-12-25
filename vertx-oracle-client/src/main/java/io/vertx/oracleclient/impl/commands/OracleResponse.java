@@ -10,7 +10,7 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.oracleclient.OraclePool;
+import io.vertx.oracleclient.OracleClient;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -69,20 +69,20 @@ public class OracleResponse<R> {
       for (RS<R> rs : this.rs) {
         handler.handleResult(update, rs.size, rs.desc, rs.holder, null);
         if (ids != null) {
-          handler.addProperty(OraclePool.GENERATED_KEYS, ids);
+          handler.addProperty(OracleClient.GENERATED_KEYS, ids);
         }
       }
     }
     if (output != null) {
       for (RS<R> rs : this.output) {
         handler.handleResult(update, rs.size, null, rs.holder, null);
-        handler.addProperty(OraclePool.OUTPUT, true);
+        handler.addProperty(OracleClient.OUTPUT, true);
       }
     }
     if (rs == null && output == null) {
       handler.handleResult(update, -1, null, empty, null);
       if (ids != null) {
-        handler.addProperty(OraclePool.GENERATED_KEYS, ids);
+        handler.addProperty(OracleClient.GENERATED_KEYS, ids);
       }
     }
   }

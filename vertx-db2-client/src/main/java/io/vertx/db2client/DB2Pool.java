@@ -21,6 +21,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.db2client.impl.Db2PoolOptions;
 import io.vertx.db2client.spi.DB2Driver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -105,7 +106,7 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static DB2Pool pool(Vertx vertx, List<DB2ConnectOptions> databases, PoolOptions options) {
-    return new DB2Driver().createPool(vertx, databases, options);
+    return (DB2Pool) DB2Driver.INSTANCE.createPool(vertx, databases, options);
   }
 
   /**
@@ -174,7 +175,7 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, List<DB2ConnectOptions> databases, PoolOptions options) {
-    return new DB2Driver().createClient(vertx, databases, options);
+    return DB2Driver.INSTANCE.createPool(vertx, databases, new Db2PoolOptions(options).setPipelined(true));
   }
 
   @Override

@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.db2client.DB2ConnectOptions;
@@ -356,5 +358,39 @@ public class SqlClientExamples {
         conn.close();
       });
     });
+  }
+
+  public void poolSharing1(Vertx vertx, DB2ConnectOptions database, int maxSize) {
+    DB2Pool pool = DB2Pool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      @Override
+      public void start() throws Exception {
+        // Use the pool
+      }
+    }, new DeploymentOptions().setInstances(4));
+  }
+
+  public void poolSharing2(Vertx vertx, DB2ConnectOptions database, int maxSize) {
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      DB2Pool pool;
+      @Override
+      public void start() {
+        // Get or create a shared pool
+        // this actually creates a lease to the pool
+        // when the verticle is undeployed, the lease will be released automaticaly
+        pool = DB2Pool.pool(database, new PoolOptions()
+          .setMaxSize(maxSize)
+          .setShared(true)
+          .setName("my-pool"));
+      }
+    }, new DeploymentOptions().setInstances(4));
+  }
+
+  public static void poolSharing3(Vertx vertx, DB2ConnectOptions database, int maxSize) {
+    DB2Pool pool = DB2Pool.pool(database, new PoolOptions()
+      .setMaxSize(maxSize)
+      .setShared(true)
+      .setName("my-pool")
+      .setEventLoopSize(4));
   }
 }

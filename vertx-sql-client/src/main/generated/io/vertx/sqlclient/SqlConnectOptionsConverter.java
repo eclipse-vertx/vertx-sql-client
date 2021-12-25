@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.impl.JsonUtil;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
 /**
  * Converter and mapper for {@link io.vertx.sqlclient.SqlConnectOptions}.
@@ -12,6 +13,9 @@ import java.time.format.DateTimeFormatter;
  */
 public class SqlConnectOptionsConverter {
 
+
+  private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
+  private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, SqlConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
@@ -71,6 +75,8 @@ public class SqlConnectOptionsConverter {
             obj.setUser((String)member.getValue());
           }
           break;
+        case "usingDomainSocket":
+          break;
       }
     }
   }
@@ -103,5 +109,6 @@ public class SqlConnectOptionsConverter {
     if (obj.getUser() != null) {
       json.put("user", obj.getUser());
     }
+    json.put("usingDomainSocket", obj.isUsingDomainSocket());
   }
 }

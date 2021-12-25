@@ -102,7 +102,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
       if (ar.succeeded()) {
         promise.complete(ar.result());
       } else {
-        if (remainingAttempts >= 0) {
+        if (remainingAttempts > 0) {
           ctx.owner().setTimer(reconnectInterval, id -> {
             doConnectWithRetry(server, username, password, database, promise, remainingAttempts - 1);
           });

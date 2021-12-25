@@ -104,13 +104,12 @@ public class CommandHandler implements Connection {
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   private <R> Future<Boolean> handle(io.vertx.sqlclient.impl.command.SimpleQueryCommand command) {
-    QueryCommand<?, R> action = new SimpleQueryCommand<>(options, command.sql(), command.collector());
+    QueryCommand<?, R> action = new SimpleQueryCommand<>(command.sql(), command.collector());
     return handle(action, command.resultHandler());
   }
 
   private Future<PreparedStatement> handle(io.vertx.sqlclient.impl.command.PrepareStatementCommand command) {
-    OraclePrepareOptions options = command.options() instanceof OraclePrepareOptions ? (OraclePrepareOptions) command.options() : null;
-    PrepareStatementCommand action = new PrepareStatementCommand(options, command.sql());
+    PrepareStatementCommand action = new PrepareStatementCommand(OraclePrepareOptions.createFrom(command.options()), command.sql());
     return action.execute(connection, context);
   }
 
@@ -124,15 +123,15 @@ public class CommandHandler implements Connection {
 
   private <R> Future<Boolean> handle(ExtendedQueryCommand<R> command) {
     if (command.cursorId() != null) {
-      QueryCommand<?, R> cmd = new OracleCursorQueryCommand<>(options, command, command.params());
+      QueryCommand<?, R> cmd = new OracleCursorQueryCommand<>(command, command.params());
       return cmd.execute(connection, context)
         .map(false);
     }
 
     QueryCommand<?, R> action =
       command.isBatch() ?
-        new OraclePreparedBatch<>(options, command, command.collector(), command.paramsList())
-        : new OraclePreparedQuery<>(options, command, command.collector(), command.params());
+        new OraclePreparedBatch<>(command, command.collector(), command.paramsList())
+        : new OraclePreparedQuery<>(command, command.collector(), command.params());
 
     return handle(action, command.resultHandler());
   }

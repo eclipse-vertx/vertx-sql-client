@@ -508,4 +508,11 @@ public class PgConnectOptions extends SqlConnectOptions {
   public boolean isUsingDomainSocket() {
     return this.getHost().startsWith("/");
   }
+
+  @Override
+  public PgConnectOptions merge(JsonObject other) {
+    JsonObject json = toJson();
+    json.mergeIn(other);
+    return new PgConnectOptions(json);
+  }
 }

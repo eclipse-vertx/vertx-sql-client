@@ -11,10 +11,14 @@
 package io.vertx.oracleclient;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.oracleclient.impl.OracleConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
+
+import java.util.Map;
+import java.util.function.Predicate;
 
 @DataObject(generateConverter = true)
 public class OracleConnectOptions extends SqlConnectOptions {
@@ -22,47 +26,36 @@ public class OracleConnectOptions extends SqlConnectOptions {
   // Support TNS_ADMIN (tnsnames.ora, ojdbc.properties).
   private String tnsAdmin;
 
-  private int connectTimeout;
-  private int idleTimeout;
-
-
-  private TracingPolicy tracingPolicy;
-
-  public OracleConnectOptions(JsonObject toJson) {
-    super(toJson);
-    // TODO Copy
+  public OracleConnectOptions() {
   }
 
-  public OracleConnectOptions() {
-
+  public OracleConnectOptions(OracleConnectOptions other) {
+    super(other);
+    this.tnsAdmin = other.tnsAdmin;
   }
 
   public OracleConnectOptions(SqlConnectOptions options) {
     super(options);
-    // TODO Copy
   }
 
-  // TODO...
-
-  /**
-   * @return the tracing policy
-   */
-  public TracingPolicy getTracingPolicy() {
-    return tracingPolicy;
+  public OracleConnectOptions(JsonObject json) {
+    super(json);
+    OracleConnectOptionsConverter.fromJson(json, this);
   }
 
   /**
-   * Set the tracing policy for the client behavior when Vert.x has tracing enabled.
+   * Provide a {@link OracleConnectOptions} configured from a connection URI.
    *
-   * @param tracingPolicy the tracing policy
-   * @return a reference to this, so the API can be used fluently
+   * @param connectionUri the connection URI to configure from
+   * @return a {@link OracleConnectOptions} parsed from the connection URI
+   * @throws IllegalArgumentException when the {@code connectionUri} is in an invalid format
    */
-  public OracleConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
-    this.tracingPolicy = tracingPolicy;
-    return this;
+  public static OracleConnectOptions fromUri(String connectionUri) throws IllegalArgumentException {
+    JsonObject parsedConfiguration = OracleConnectionUriParser.parse(connectionUri);
+    return new OracleConnectOptions(parsedConfiguration);
   }
 
-  // Oracle specifics
+  // Oracle-specific options
 
   public String getTnsAdmin() {
     return tnsAdmin;
@@ -73,51 +66,134 @@ public class OracleConnectOptions extends SqlConnectOptions {
     return this;
   }
 
+  // Non-specific options
+
   @Override
-  public OracleConnectOptions setPort(int port) {
-    super.setPort(port);
-    return this;
+  public String getHost() {
+    return super.getHost();
   }
 
   @Override
   public OracleConnectOptions setHost(String host) {
-    super.setHost(host);
-    return this;
+    return (OracleConnectOptions) super.setHost(host);
   }
 
   @Override
-  public OracleConnectOptions setDatabase(String db) {
-    super.setDatabase(db);
-    return this;
+  public int getPort() {
+    return super.getPort();
+  }
+
+  @Override
+  public OracleConnectOptions setPort(int port) {
+    return (OracleConnectOptions) super.setPort(port);
+  }
+
+  @Override
+  public String getUser() {
+    return super.getUser();
   }
 
   @Override
   public OracleConnectOptions setUser(String user) {
-    super.setUser(user);
-    return this;
+    return (OracleConnectOptions) super.setUser(user);
   }
 
   @Override
-  public OracleConnectOptions setPassword(String pwd) {
-    super.setPassword(pwd);
-    return this;
+  public String getPassword() {
+    return super.getPassword();
   }
 
-  public int getConnectTimeout() {
-    return connectTimeout;
+  @Override
+  public OracleConnectOptions setPassword(String password) {
+    return (OracleConnectOptions) super.setPassword(password);
   }
 
-  public OracleConnectOptions setConnectTimeout(int connectTimeout) {
-    this.connectTimeout = connectTimeout;
-    return this;
+  @Override
+  public String getDatabase() {
+    return super.getDatabase();
   }
 
-  public int getIdleTimeout() {
-    return idleTimeout;
+  @Override
+  public OracleConnectOptions setDatabase(String database) {
+    return (OracleConnectOptions) super.setDatabase(database);
   }
 
-  public OracleConnectOptions setIdleTimeout(int idleTimeout) {
-    this.idleTimeout = idleTimeout;
-    return this;
+  @Override
+  public boolean getCachePreparedStatements() {
+    return super.getCachePreparedStatements();
+  }
+
+  @Override
+  public OracleConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
+    return (OracleConnectOptions) super.setCachePreparedStatements(cachePreparedStatements);
+  }
+
+  @Override
+  public int getPreparedStatementCacheMaxSize() {
+    return super.getPreparedStatementCacheMaxSize();
+  }
+
+  @Override
+  public OracleConnectOptions setPreparedStatementCacheMaxSize(int preparedStatementCacheMaxSize) {
+    return (OracleConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
+  }
+
+  @Override
+  public Predicate<String> getPreparedStatementCacheSqlFilter() {
+    return super.getPreparedStatementCacheSqlFilter();
+  }
+
+  @Override
+  public OracleConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
+    return (OracleConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);
+  }
+
+  @Override
+  public OracleConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
+    return (OracleConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
+  }
+
+  @Override
+  public Map<String, String> getProperties() {
+    return super.getProperties();
+  }
+
+  @Override
+  public OracleConnectOptions setProperties(Map<String, String> properties) {
+    return (OracleConnectOptions) super.setProperties(properties);
+  }
+
+  @Override
+  public OracleConnectOptions addProperty(String key, String value) {
+    return (OracleConnectOptions) super.addProperty(key, value);
+  }
+
+  @Override
+  public SocketAddress getSocketAddress() {
+    return super.getSocketAddress();
+  }
+
+  @Override
+  public TracingPolicy getTracingPolicy() {
+    return super.getTracingPolicy();
+  }
+
+  @Override
+  public OracleConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
+    return (OracleConnectOptions) super.setTracingPolicy(tracingPolicy);
+  }
+
+  @Override
+  public JsonObject toJson() {
+    JsonObject json = super.toJson();
+    OracleConnectOptionsConverter.toJson(this, json);
+    return json;
+  }
+
+  @Override
+  public OracleConnectOptions merge(JsonObject other) {
+    JsonObject json = toJson();
+    json.mergeIn(other);
+    return new OracleConnectOptions(json);
   }
 }

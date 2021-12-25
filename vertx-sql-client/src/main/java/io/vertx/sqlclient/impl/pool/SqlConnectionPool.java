@@ -17,23 +17,20 @@
 
 package io.vertx.sqlclient.impl.pool;
 
+import io.netty.channel.EventLoop;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.net.impl.pool.ConnectResult;
 import io.vertx.core.net.impl.pool.Lease;
 import io.vertx.core.net.impl.pool.ConnectionPool;
-import io.vertx.core.net.impl.pool.PoolConnection;
 import io.vertx.core.net.impl.pool.PoolConnector;
 import io.vertx.core.net.impl.pool.PoolWaiter;
-import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -53,10 +50,6 @@ import java.util.function.Supplier;
  */
 public class SqlConnectionPool {
 
-  private static final Logger log = LoggerFactory.getLogger(SqlConnectionPool.class);
-
-  private final SqlConnectOptions baseConnectOptions;
-  private final Supplier<Future<SqlConnectOptions>> connectOptionsProvider;
   private final Function<Context, Future<SqlConnection>> connectionProvider;
   private final VertxInternal vertx;
   private final ConnectionPool<PooledConnection> pool;
@@ -65,23 +58,20 @@ public class SqlConnectionPool {
   private final long idleTimeout;
   private final int maxSize;
 
-  public SqlConnectionPool(SqlConnectOptions baseConnectOptions,
-                           Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
-                           Function<Context, Future<SqlConnection>> connectionProvider,
+  public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
                            Supplier<Handler<PooledConnection>> hook,
                            VertxInternal vertx,
                            long idleTimeout,
                            int maxSize,
                            int pipeliningLimit,
-                           int maxWaitQueueSize) {
+                           int maxWaitQueueSize,
+                           int eventLoopSize) {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
     if (pipeliningLimit < 1) {
       throw new IllegalArgumentException("Pipelining limit must be > 0");
     }
-    this.baseConnectOptions = baseConnectOptions;
-    this.connectOptionsProvider = connectOptionsProvider;
     this.pool = ConnectionPool.pool(connector, new int[] { maxSize }, maxWaitQueueSize);
     this.vertx = vertx;
     this.pipeliningLimit = pipeliningLimit;
@@ -90,24 +80,20 @@ public class SqlConnectionPool {
     this.hook = hook;
     this.connectionProvider = connectionProvider;
 
-    if (pipeliningLimit > 1) {
-      pool.connectionSelector((waiter, list) -> {
-        PoolConnection<PooledConnection> selected = null;
-        int size = list.size();
-        for (int i = 0;i < size;i++) {
-          PoolConnection<PooledConnection> conn = list.get(i);
-          if (conn.concurrency() > 0) {
-            if (selected == null) {
-              selected = conn;
-            } else if (conn.get().inflight < selected.get().inflight) {
-              selected = conn;
-            }
-          }
+    if (eventLoopSize > 0) {
+      EventLoop[] loops = new EventLoop[maxSize];
+      for (int i = 0;i < maxSize;i++) {
+        loops[i] = vertx.nettyEventLoopGroup().next();
+      }
+      pool.contextProvider(new Function<ContextInternal, EventLoopContext>() {
+        int idx = 0;
+        @Override
+        public EventLoopContext apply(ContextInternal contextInternal) {
+          EventLoop loop = loops[idx++];
+          return vertx.createEventLoopContext(loop, null, Thread.currentThread().getContextClassLoader());
         }
-        return selected;
       });
     }
-
   }
 
   private final PoolConnector<PooledConnection> connector = new PoolConnector<PooledConnection>() {
@@ -116,7 +102,7 @@ public class SqlConnectionPool {
       Future<SqlConnection> future = connectionProvider.apply(context);
       future.onComplete(ar -> {
         if (ar.succeeded()) {
-          SqlConnectionImpl res = (SqlConnectionImpl) ar.result();
+          SqlConnectionBase res = (SqlConnectionBase) ar.result();
           Connection conn = res.unwrap();
           if (conn.isValid()) {
             PooledConnection pooled = new PooledConnection(res.factory(), conn, listener);

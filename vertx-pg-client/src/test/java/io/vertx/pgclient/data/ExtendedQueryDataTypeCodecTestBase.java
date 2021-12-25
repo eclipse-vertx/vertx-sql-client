@@ -63,4 +63,39 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
         }));
     }));
   }
+
+  protected <T> void testDecode(TestContext ctx, String sql, BiFunction<Row, Integer, T> getter, T... expected) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery(sql).execute(
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(result.size(), 1);
+          Iterator<Row> it = result.iterator();
+          Row row = it.next();
+          ctx.assertEquals(row.size(), expected.length);
+          for (int idx = 0;idx < expected.length;idx++) {
+            compare(ctx, expected[idx], getter.apply(row, idx));
+            compare(ctx, expected[idx], row.getValue(idx));
+          }
+          async.complete();
+        }));
+    }));
+  }
+
+  protected <T> void testEncode(TestContext ctx, String sql, Tuple tuple, String... expected) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery(sql).execute(tuple,
+        ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(result.size(), 1);
+          Iterator<Row> it = result.iterator();
+          Row row = it.next();
+          ctx.assertEquals(row.size(), expected.length);
+          for (int idx = 0;idx < expected.length;idx++) {
+            compare(ctx, expected[idx], row.getString(idx));
+          }
+          async.complete();
+        }));
+    }));
+  }
 }

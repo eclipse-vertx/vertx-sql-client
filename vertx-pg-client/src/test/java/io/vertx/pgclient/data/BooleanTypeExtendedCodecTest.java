@@ -9,9 +9,10 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
+
   @Test
   public void testDecodeBoolean(TestContext ctx) {
-    testGeneric(ctx, "SELECT $1::BOOLEAN \"Boolean\"", new Boolean[]{true}, Tuple::getBoolean);
+    testDecode(ctx, "SELECT true", Tuple::getBoolean, true);
   }
 
   @Test
@@ -38,14 +39,12 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
   }
 
   @Test
-  public void testBooleanArray(TestContext ctx) {
-    testGeneric(ctx,
-      "SELECT c FROM (VALUES ($1 :: BOOL[])) AS t (c)",
-      new Boolean[][]{new Boolean[]{true, null, false}}, Tuple::getArrayOfBooleans);
+  public void testDecodeBooleanArray(TestContext ctx) {
+    testDecode(ctx, "SELECT '{ true, false }'::BOOL[]", Tuple::getArrayOfBooleans, (Object)(new Boolean[] { true, false }));
   }
 
   @Test
-  public void testDecodeBooleanArray(TestContext ctx) {
+  public void testDecodeBooleanArray_(TestContext ctx) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT \"Boolean\" FROM \"ArrayDataType\" WHERE \"id\" = $1",

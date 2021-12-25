@@ -10,7 +10,6 @@
  */
 package io.vertx.oracleclient.test;
 
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.*;
@@ -22,7 +21,7 @@ import java.util.List;
 public class OraclePoolTest extends OracleTestBase {
 
   @Rule
-  public OracleRule oracle;
+  public OracleRule oracle = OracleRule.SHARED_INSTANCE;
 
   static final String DROP_TABLE = "DROP TABLE fruits";
   static final String CREATE_TABLE = "CREATE TABLE fruits (" +
@@ -33,12 +32,7 @@ public class OraclePoolTest extends OracleTestBase {
 
   @Test
   public void test() {
-    OraclePool pool = OraclePool.pool(vertx, new OracleConnectOptions()
-        .setHost(OracleRule.getDatabaseHost())
-        .setPort(OracleRule.getDatabasePort())
-        .setUser(OracleRule.getUser())
-        .setPassword(OracleRule.getPassword())
-        .setDatabase(OracleRule.getDatabase()),
+    OraclePool pool = OraclePool.pool(vertx, oracle.options(),
       new PoolOptions().setMaxSize(1)
     );
 

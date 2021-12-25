@@ -138,8 +138,9 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   public void testEncodeSmallDateTime(TestContext ctx) {
     LocalDateTime now = LocalDateTime.now();
     // Seconds are rounded to the nearest minute
-    int roundedUpMinute = (int) Math.floor(now.getSecond()/30.0);
-    LocalDateTime convertedNow = now.withSecond(0).withNano(0).withMinute(now.getMinute() + roundedUpMinute);
+    int roundedUpMinute = now.getSecond() < 30 ? 0 : 1;
+    int plusMinutes = now.getMinute() + roundedUpMinute;
+    LocalDateTime convertedNow = now.withSecond(0).withNano(0).withMinute(0).plusMinutes(plusMinutes);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_smalldatetime", now, row -> {
       ColumnChecker.checkColumn(0, "test_smalldatetime")
         .returns(Tuple::getValue, Row::getValue, convertedNow)

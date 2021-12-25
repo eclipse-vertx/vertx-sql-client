@@ -36,7 +36,7 @@ public enum ClientConfig {
       return new Connector<PgConnection>() {
         @Override
         public void connect(Handler<AsyncResult<PgConnection>> handler) {
-          PgConnection.connect(vertx, new PgConnectOptions(options.toJson()), ar -> {
+          PgConnection.connect(vertx, new PgConnectOptions(options), ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {
@@ -54,7 +54,7 @@ public enum ClientConfig {
   POOLED() {
     @Override
     Connector<SqlClient> connect(Vertx vertx, SqlConnectOptions options) {
-      PgPool pool = PgPool.pool(vertx, new PgConnectOptions(options.toJson()), new PoolOptions().setMaxSize(1));
+      PgPool pool = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions().setMaxSize(1));
       return new Connector<SqlClient>() {
         @Override
         public void connect(Handler<AsyncResult<SqlClient>> handler) {

@@ -54,19 +54,7 @@ public interface Pool extends SqlClient {
    * Like {@link #pool(Vertx, SqlConnectOptions, PoolOptions)} with a Vert.x instance created automatically.
    */
   static Pool pool(SqlConnectOptions database, PoolOptions options) {
-    List<Driver> candidates = new ArrayList<>(1);
-    for (Driver d : ServiceLoader.load(Driver.class)) {
-      if (d.acceptsOptions(database)) {
-        candidates.add(d);
-      }
-    }
-    if (candidates.size() == 0) {
-      throw new ServiceConfigurationError("No implementations of " + Driver.class + " found that accept connection options " + database);
-    } else if (candidates.size() > 1) {
-      throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
-    } else {
-      return candidates.get(0).createPool(null, Collections.singletonList(database), options);
-    }
+    return pool(null, database, options);
   }
 
   /**

@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
 import java.time.*;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -140,6 +141,27 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
     });
   }
 
+
+  @Test
+  public void testEncodeUuid(TestContext ctx) {
+    UUID value = UUID.fromString("90765de2-63a5-4d21-82b3-189e72181608");
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_uuid", value, row -> {
+      ColumnChecker.checkColumn(0, "test_uuid")
+        .returns(Tuple::getValue, Row::getValue, value)
+        .returns(Tuple::getUUID, Row::getUUID, value)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeNullUuid(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_uuid", UUID_NULL_VALUE, row -> {
+      ColumnChecker.checkColumn(0, "test_uuid")
+        .returnsNull()
+        .forRow(row);
+    });
+  }
+  
   @Test
   public void testEncodeBit(TestContext ctx) {
     testEncodeBitValue(ctx, false);

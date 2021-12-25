@@ -9,7 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
+import io.vertx.ext.unit.Async;
 import org.junit.Test;
 
 import io.vertx.core.Vertx;
@@ -43,68 +46,33 @@ public abstract class DriverTestBase {
   }
 
   @Test
-  public void testRejectsOtherOptions(TestContext ctx) {
+  public void testRejectsOtherOptions() {
     assertFalse(getDriver().acceptsOptions(new BogusOptions()));
   }
 
   @Test
-  public void testCreatePoolFromDriver01(TestContext ctx) {
-    Pool p = getDriver().createPool(null, Collections.singletonList(defaultOptions()), new PoolOptions());
-    p.getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
-  }
-
-  @Test
-  public void testCreatePoolFromDriver02(TestContext ctx) {
-    Pool p = getDriver().createPool(null, Collections.singletonList(new SqlConnectOptions(defaultOptions())), new PoolOptions());
-    p.getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
-  }
-
-  @Test
-  public void testCreatePoolFromDriver03(TestContext ctx) {
-    Pool p = getDriver().createPool(null, Collections.singletonList(defaultOptions()), new PoolOptions().setMaxSize(1));
-    p.getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
-  }
-
-  @Test
-  public void testCreatePoolFromDriver04(TestContext ctx) {
-    Pool p = getDriver().createPool(Vertx.vertx(), Collections.singletonList(defaultOptions()), new PoolOptions().setMaxSize(1));
-    p.getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
+  public void testCreatePoolFromDriver(TestContext ctx) {
+    testCreatePoolWithVertx(ctx, vertx -> getDriver().createPool(vertx, Collections.singletonList(defaultOptions()), new PoolOptions().setMaxSize(1)));
   }
 
   @Test
   public void testCreatePool01(TestContext ctx) {
-    Pool.pool(defaultOptions()).getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
+    testCreatePool(ctx, () -> Pool.pool(defaultOptions()));
   }
 
   @Test
   public void testCreatePool02(TestContext ctx) {
-    Pool.pool(new SqlConnectOptions(defaultOptions()), new PoolOptions()).getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
+    testCreatePool(ctx, () -> Pool.pool(new SqlConnectOptions(defaultOptions()), new PoolOptions()));
   }
 
   @Test
   public void testCreatePool03(TestContext ctx) {
-    Pool.pool(defaultOptions(), new PoolOptions().setMaxSize(1)).getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
+    testCreatePool(ctx, () -> Pool.pool(defaultOptions(), new PoolOptions().setMaxSize(1)));
   }
 
   @Test
   public void testCreatePool04(TestContext ctx) {
-    Pool.pool(Vertx.vertx(), defaultOptions(), new PoolOptions()).getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
+    testCreatePoolWithVertx(ctx, vertx -> Pool.pool(Vertx.vertx(), defaultOptions(), new PoolOptions()));
   }
 
   @Test
@@ -118,9 +86,34 @@ public abstract class DriverTestBase {
           .setDatabase(defaults.getDatabase())
           .setUser(defaults.getUser())
           .setPassword(defaults.getPassword());
-    Pool.pool(opts).getConnection(ctx.asyncAssertSuccess(ar -> {
-      ar.close();
-    }));
+    testCreatePool(ctx, () -> Pool.pool(opts));
+  }
+
+  private void testCreatePoolWithVertx(TestContext ctx, Function<Vertx, Pool> fact) {
+    Vertx vertx = Vertx.vertx();
+    try {
+      Async async = ctx.async();
+      Pool pool = fact.apply(vertx);
+      pool.getConnection(ctx.asyncAssertSuccess(ar -> {
+        ar.close(ctx.asyncAssertSuccess(v -> async.complete()));
+      }));
+      async.await(20_000);
+    } finally {
+      vertx.close();
+    }
+  }
+
+  private void testCreatePool(TestContext ctx, Supplier<Pool> fact) {
+    Pool pool = fact.get();
+    try {
+      Async async = ctx.async();
+      pool.getConnection(ctx.asyncAssertSuccess(ar -> {
+        ar.close(ctx.asyncAssertSuccess(v -> async.complete()));
+      }));
+      async.await(20_000);
+    } finally {
+      pool.close();
+    }
   }
 
   @Test(expected = ServiceConfigurationError.class)

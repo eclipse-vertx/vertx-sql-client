@@ -90,6 +90,7 @@ public class DataTypeCodec {
   private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
   private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
   private static final Inet[] empty_inet_array = new Inet[0];
+  private static final Money[] empty_money_array = new Money[0];
 
   // Sentinel used when an object is refused by the data type
   public static final Object REFUSED_SENTINEL = new Object();
@@ -119,6 +120,7 @@ public class DataTypeCodec {
   private static final IntFunction<Circle[]> CIRCLE_ARRAY_FACTORY = size -> size == 0 ? empty_circle_array : new Circle[size];
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
   private static final IntFunction<Inet[]> INET_ARRAY_FACTORY = size -> size == 0 ? empty_inet_array : new Inet[size];
+  private static final IntFunction<Money[]> MONEY_ARRAY_FACTORY = size -> size == 0 ? empty_money_array : new Money[size];
 
   private static final java.time.format.DateTimeFormatter TIMETZ_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
@@ -352,6 +354,12 @@ public class DataTypeCodec {
       case INET_ARRAY:
         binaryEncodeArray((Inet[]) value, DataType.INET, buff);
         break;
+      case MONEY:
+        binaryEncodeMoney((Money) value, buff);
+        break;
+      case MONEY_ARRAY:
+        binaryEncodeArray((Money[]) value, DataType.MONEY, buff);
+        break;
       default:
         logger.debug("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -485,6 +493,10 @@ public class DataTypeCodec {
         return binaryDecodeInet(index, len, buff);
       case INET_ARRAY:
         return binaryDecodeArray(INET_ARRAY_FACTORY, DataType.INET, index, len, buff);
+      case MONEY:
+        return binaryDecodeMoney(index, len, buff);
+      case MONEY_ARRAY:
+        return binaryDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
       default:
         logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
@@ -621,6 +633,10 @@ public class DataTypeCodec {
         return textDecodeInet(index, len, buff);
       case INET_ARRAY:
         return textDecodeArray(INET_ARRAY_FACTORY, DataType.INET, index, len, buff);
+      case MONEY:
+        return textDecodeMoney(index, len, buff);
+      case MONEY_ARRAY:
+        return textDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
       default:
         return defaultDecodeText(index, len, buff);
     }
@@ -1437,6 +1453,22 @@ public class DataTypeCodec {
     buff.writeBytes(data);
   }
 
+  private static void binaryEncodeMoney(Money money, ByteBuf buff) {
+    long integerPart = money.getIntegerPart();
+    long value;
+    if (integerPart >= 0) {
+      value = money.getIntegerPart() * 100 + money.getDecimalPart();
+    } else {
+      value = money.getIntegerPart() * 100 - money.getDecimalPart();
+    }
+    binaryEncodeINT8(value, buff);
+  }
+
+  private static Money binaryDecodeMoney(int index, int len, ByteBuf buff) {
+    long value = binaryDecodeINT8(index, len, buff);
+    return new Money(value / 100, Math.abs(((int)value % 100)));
+  }
+
   private static String binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
@@ -1476,6 +1508,27 @@ public class DataTypeCodec {
       throw new DecoderException(e);
     }
     return inet;
+  }
+
+  private static Money textDecodeMoney(int index, int len, ByteBuf buff) {
+    String s = textDecodeVARCHAR(index, len, buff);
+    s = s.substring(1);
+    long integerPart = 0;
+    int decimalPart = 0;
+    int idx = 0;
+    char c;
+    while (idx < s.length() && (c = s.charAt(idx++)) != '.') {
+      if (c >= '0' && c <= '9') {
+        integerPart = integerPart * 10 + (c - '0');
+      }
+    }
+    while (idx < s.length()) {
+      c = s.charAt(idx++);
+      if (c >= '0' && c <= '9') {
+        decimalPart = decimalPart * 10 + (c - '0');
+      }
+    }
+    return new Money(integerPart, decimalPart);
   }
 
   /**

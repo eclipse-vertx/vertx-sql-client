@@ -92,6 +92,10 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 === Unix Domain Socket
 
 Sometimes for simplicity, security or performance reasons, it is required to connect via a https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_socket[Unix Domain Socket].
@@ -474,7 +478,7 @@ create easily create a string directly from the row set:
 
 == MySQL Stored Procedure
 
-You can run stored procedures in queries. The result will be retrieved from the server following the https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_command_phase_sp.html[MySQL protocol] without any magic here.
+You can run stored procedures in queries. The result will be retrieved from the server following the https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_command_phase_sp.html[MySQL protocol] without any magic here.
 
 [source,$lang]
 ----
@@ -534,7 +538,7 @@ More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[V
 == MySQL utility command
 
 Sometimes you want to use MySQL utility commands and we provide support for this.
-More information can be found in the https://dev.mysql.com/doc/dev/mysql-server/8.0.12/page_protocol_command_phase_utility.html[MySQL utility commands].
+More information can be found in the https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_command_phase_utility.html[MySQL utility commands].
 
 === COM_PING
 

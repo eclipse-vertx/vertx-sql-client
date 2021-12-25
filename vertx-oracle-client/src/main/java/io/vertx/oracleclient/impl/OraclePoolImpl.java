@@ -11,62 +11,33 @@
 package io.vertx.oracleclient.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePool;
+import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.SqlClientBase;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Function;
 
-public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements OraclePool {
+public class OraclePoolImpl extends SqlClientBase implements OraclePool {
 
   private final OracleConnectionFactory factory;
   private final VertxInternal vertx;
-  private Closeable onClose;
+  private final CloseFuture closeFuture;
 
-  public static OraclePoolImpl create(VertxInternal vertx, boolean closeVertx,
-    OracleConnectOptions connectOptions,
-    PoolOptions poolOptions, QueryTracer tracer) {
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
-    @SuppressWarnings("rawtypes") ClientMetrics metrics = vertxMetrics != null ?
-      vertxMetrics.createClientMetrics(connectOptions.getSocketAddress(), "sql",
-        connectOptions.getMetricsName()) :
-      null;
-
-    OracleConnectionFactory factory = new OracleConnectionFactory(vertx, connectOptions, poolOptions, tracer, metrics);
-    OraclePoolImpl pool = new OraclePoolImpl(vertx, factory, metrics, tracer);
-    if (closeVertx) {
-      pool.onClose(completion -> vertx.close());
-    } else {
-      ContextInternal ctx = vertx.getContext();
-      if (ctx != null) {
-        ctx.addCloseHook(completion -> pool.close().onComplete(completion));
-      } else {
-        vertx.addCloseHook(completion -> pool.close().onComplete(completion));
-      }
-    }
-    return pool;
-  }
-
-  public OraclePoolImpl(VertxInternal vertx, OracleConnectionFactory factory, ClientMetrics metrics,
-    QueryTracer tracer) {
-    super(tracer, metrics);
+  public OraclePoolImpl(VertxInternal vertx, OracleConnectionFactory factory, ClientMetrics metrics, QueryTracer tracer, CloseFuture closeFuture) {
+    super(OracleDriver.INSTANCE, tracer, metrics);
     this.factory = factory;
     this.vertx = vertx;
-  }
-
-  private void onClose(Closeable closeable) {
-    this.onClose = closeable;
+    this.closeFuture = closeFuture;
   }
 
   @Override
@@ -88,7 +59,7 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
   private Future<SqlConnection> getConnectionInternal(ContextInternal ctx) {
     return factory.connect(ctx)
       .map(c -> {
-        SqlConnectionImpl<?> connection = new SqlConnectionImpl<>(ctx, factory, c, tracer, metrics);
+        SqlConnectionBase<?> connection = new SqlConnectionBase<>(ctx, factory, c, OracleDriver.INSTANCE, tracer, metrics);
         c.init(connection);
         return connection;
       });
@@ -122,39 +93,18 @@ public class OraclePoolImpl extends SqlClientBase<OraclePoolImpl> implements Ora
 
   @Override
   public void close(Handler<AsyncResult<Void>> handler) {
-    Promise<Void> promise = Promise.promise();
-    factory.close(promise);
-    promise.future().onComplete(handler).compose(x -> {
-      Promise<Void> p = Promise.promise();
-      if (onClose != null) {
-        onClose.close(p);
-      } else {
-        p.complete();
-      }
-      return p.future();
-    });
+    closeFuture.close(context().promise(handler));
   }
 
   @Override
   public Future<Void> close() {
-    final Promise<Void> promise = vertx.promise();
-    factory.close(promise);
-
-    return promise.future().compose(x -> {
-      Promise<Void> p = Promise.promise();
-      if (onClose != null) {
-        onClose.close(p);
-      } else {
-        p.complete();
-      }
-      return p.future();
-    });
+    return closeFuture.close();
   }
 
   @Override
   public <R> Future<R> schedule(ContextInternal contextInternal, CommandBase<R> commandBase) {
     ContextInternal ctx = vertx.getOrCreateContext();
     return getConnectionInternal(ctx)
-      .flatMap(conn -> ((SqlConnectionImpl<?>) conn).schedule(ctx, commandBase).eventually(r -> conn.close()));
+      .flatMap(conn -> ((SqlConnectionBase<?>) conn).schedule(ctx, commandBase).eventually(r -> conn.close()));
   }
 }

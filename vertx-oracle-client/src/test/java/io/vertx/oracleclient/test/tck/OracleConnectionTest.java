@@ -10,13 +10,13 @@
  */
 package io.vertx.oracleclient.test.tck;
 
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -38,94 +38,16 @@ public class OracleConnectionTest extends ConnectionTestBase {
     super.tearDown(ctx);
   }
 
+  @Override
   @Test
-  public void testConnect(TestContext ctx) {
-    Async async = ctx.async();
-    connect(ctx.asyncAssertSuccess(conn -> async.complete()));
-  }
-
-  @Test
-  public void testConnectInvalidDatabase(TestContext ctx) {
-    Async async = ctx.async();
-    options.setDatabase("invalidDatabase");
-    connect(ctx.asyncAssertFailure(err -> {
-      ctx.assertTrue(err.getMessage().contains("ORA-12514"));
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidPassword(TestContext ctx) {
-    Async async = ctx.async();
-    options.setPassword("invalidPassword");
-    connect(ctx.asyncAssertFailure(err -> {
-      ctx.assertTrue(err.getMessage().contains("ORA-01017"));
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testConnectInvalidUsername(TestContext ctx) {
-    Async async = ctx.async();
-    options.setUser("invalidUsername");
-    connect(ctx.asyncAssertFailure(err -> {
-      ctx.assertTrue(err.getMessage().contains("ORA-01017"));
-      async.complete();
-    }));
-  }
-
-  @Test
-  public void testClose(TestContext ctx) {
-    Async closedAsync = ctx.async();
-    Async closeAsync = ctx.async();
-    connect(ctx.asyncAssertSuccess(conn -> {
-      conn.closeHandler(v -> {
-        closedAsync.complete();
-      });
-      conn.close(ctx.asyncAssertSuccess(v -> closeAsync.complete()));
-    }));
-    closedAsync.await();
-  }
-
-  @Test
+  @Ignore("Does not work with this client because commands are executed immediately, not queued")
   public void testCloseWithErrorInProgress(TestContext ctx) {
-    Async async = ctx.async(2);
-    connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(err -> async.countDown()));
-      conn.closeHandler(v -> async.countDown());
-      conn.close();
-    }));
-    async.await();
   }
 
+  @Override
   @Test
+  @Ignore("Does not work with this client because commands are executed immediately, not queued")
   public void testCloseWithQueryInProgress(TestContext ctx) {
-    Async async = ctx.async(2);
-    connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, message from immutable").execute(ctx.asyncAssertFailure(result -> {
-        ctx.assertEquals(2, async.count());
-        async.countDown();
-      }));
-      conn.closeHandler(v -> {
-        ctx.assertEquals(1, async.count());
-        async.countDown();
-      });
-      conn.close();
-    }));
-    async.await();
-  }
-
-  @Test
-  public void testDatabaseMetaData(TestContext ctx) {
-    connect(ctx.asyncAssertSuccess(conn -> {
-      DatabaseMetadata md = conn.databaseMetadata();
-      ctx.assertNotNull(md, "DatabaseMetadata should not be null");
-      ctx.assertNotNull(md.productName(), "Database product name should not be null");
-      ctx.assertNotNull(md.fullVersion(), "Database full version string should not be null");
-      ctx.assertTrue(md.majorVersion() >= 1, "Expected DB major version to be >= 1 but was " + md.majorVersion());
-      ctx.assertTrue(md.minorVersion() >= 0, "Expected DB minor version to be >= 0 but was " + md.minorVersion());
-      validateDatabaseMetaData(ctx, md);
-    }));
   }
 
   @Override

@@ -12,84 +12,79 @@ package io.vertx.oracleclient.test.junit;
 
 import io.vertx.oracleclient.OracleConnectOptions;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
+import java.io.IOException;
 import java.time.Duration;
 
 public class OracleRule extends ExternalResource {
+
+  public static final OracleRule SHARED_INSTANCE = new OracleRule();
 
   static final String IMAGE = "gvenzl/oracle-xe";
   static final String PASSWORD = "vertx";
   static final int PORT = 1521;
 
-  static final GenericContainer<?> ORACLE_DB;
+  private GenericContainer<?> server;
+  private OracleConnectOptions options;
 
-  static {
-    String containerVersion = System.getProperty("oracle-container.version");
-    if (containerVersion == null || containerVersion.isEmpty()) {
-      containerVersion = "18-slim";
+  @Override
+  protected void before() throws IOException {
+    if (server == null) {
+      options = startOracle();
     }
+  }
+
+  private boolean isNullOrEmpty(String s) {
+    return s == null || s.isEmpty();
+  }
+
+  @Override
+  protected void after() {
+    if (this != SHARED_INSTANCE) {
+      stopOracle();
+    }
+  }
+
+  private OracleConnectOptions startOracle() throws IOException {
+    String containerVersion = System.getProperty("oracle-container.version");
+    containerVersion = isNullOrEmpty(containerVersion) ? "18-slim" : containerVersion;
 
     String image = IMAGE + ":" + containerVersion;
 
-    ORACLE_DB = new GenericContainer<>(image)
+    server = new GenericContainer<>(image)
       .withEnv("ORACLE_PASSWORD", PASSWORD)
       .withExposedPorts(PORT)
-      .withFileSystemBind("src/test/resources/tck", "/container-entrypoint-initdb.d")
+      .withClasspathResourceMapping("tck/import.sql", "/container-entrypoint-initdb.d/import.sql", BindMode.READ_ONLY)
       .withLogConsumer(of -> System.out.print("[ORACLE] " + of.getUtf8String()))
       .waitingFor(
         Wait.forLogMessage(".*DATABASE IS READY TO USE!.*\\n", 1)
       )
       .withStartupTimeout(Duration.ofMinutes(15));
 
-    ORACLE_DB.start();
-  }
+    server.start();
 
-  public static String getPassword() {
-    return PASSWORD;
-  }
-
-  public static String getUser() {
-    return "sys as sysdba";
-  }
-
-  public static String getDatabaseHost() {
-    return ORACLE_DB.getHost();
-  }
-
-  public static int getDatabasePort() {
-    return ORACLE_DB.getMappedPort(1521);
-  }
-
-  public static String getDatabase() {
-    return "xe";
-  }
-
-  private OracleConnectOptions options;
-
-  public static final OracleRule SHARED_INSTANCE = new OracleRule();
-
-  public synchronized OracleConnectOptions getOptions() throws Exception {
     return new OracleConnectOptions()
-      .setPort(getDatabasePort())
-      .setHost(getDatabaseHost())
-      .setUser(getUser())
-      .setPassword(getPassword())
-      .setDatabase(getDatabase());
+      .setHost(server.getContainerIpAddress())
+      .setPort(server.getMappedPort(PORT))
+      .setUser("sys as sysdba")
+      .setPassword(PASSWORD)
+      .setDatabase("xe");
+  }
+
+  private void stopOracle() {
+    if (server != null) {
+      try {
+        server.stop();
+      } finally {
+        server = null;
+      }
+    }
   }
 
   public OracleConnectOptions options() {
     return new OracleConnectOptions(options);
-  }
-
-  @Override
-  protected void before() throws Throwable {
-    options = getOptions();
-  }
-
-  @Override
-  protected void after() {
-
   }
 }

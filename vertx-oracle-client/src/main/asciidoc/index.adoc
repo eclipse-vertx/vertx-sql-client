@@ -80,17 +80,30 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 == Configuration
 
 There are several alternatives for you to configure the client.
 
 === Data Object
 
-A simple way to configure the client is to specify a `OracleConnectOptions` data object.
+A simple way to configure the client is to specify a {@link io.vertx.oracleclient.OracleConnectOptions} data object.
 
 [source,$lang]
 ----
 {@link examples.OracleClientExamples#configureFromDataObject(io.vertx.core.Vertx)}
+----
+
+=== Connection URI
+
+Apart from configuring with a {@link io.vertx.oracleclient.OracleConnectOptions} data object, we also provide you with an alternative way to connect when you want to configure with a connection URI:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#configureFromUri(io.vertx.core.Vertx)}
 ----
 
 == Connect retries
@@ -103,6 +116,27 @@ You can configure the client to retry when a connection fails to be established.
 ----
 
 include::queries.adoc[leveloffset=1]
+
+== Retrieving generated key values
+
+When executing `INSERT` queries, you can retrieve the generated key values.
+
+The values are returned as a {@link io.vertx.sqlclient.Row} instance.
+This instance is accessible by invoking {@link io.vertx.sqlclient.SqlResult#property SqlResult.property(kind)} using the {@link io.vertx.oracleclient.OracleClient#GENERATED_KEYS} property kind.
+
+The key values can be retrieved by column name:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#retrieveGeneratedKeyByName}
+----
+
+Or, they can be retrieved by column index:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#retrieveGeneratedKeyByIndex}
+----
 
 include::connections.adoc[]
 

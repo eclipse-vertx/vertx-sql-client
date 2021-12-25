@@ -1,5 +1,5 @@
 = Reactive MSSQL Client
-:PREPARED_PARAMS: `@1`, `@2`, etc…​
+:PREPARED_PARAMS: `@p1`, `@p2`, etc…​
 
 The Reactive MSSQL Client is a client for Microsoft SQL Server with a straightforward API focusing on
 scalability and low overhead.
@@ -172,6 +172,7 @@ Currently, the client supports the following SQL Server types:
 * BINARY/VARBINARY(`io.vertx.core.buffer.Buffer`)
 * MONEY (`{@link java.math.BigDecimal}`)
 * SMALLMONEY (`{@link java.math.BigDecimal}`)
+* GUID (`{@link java.util.UUID}`)
 
 Tuple decoding uses the above types when storing values.
 
@@ -279,6 +280,11 @@ For example, {@link io.vertx.core.net.PemTrustOptions} can be used if a PEM file
 
 For further details about SSL support in Vert.x, please refer to the https://vertx.io/docs/vertx-core/java/#ssl[Vert.x Core documentation].
 
+== Pool sharing
+
+include::pool_sharing.adoc[]
+
 == Advanced pool configuration
 
 include::pool_config.adoc[]
+

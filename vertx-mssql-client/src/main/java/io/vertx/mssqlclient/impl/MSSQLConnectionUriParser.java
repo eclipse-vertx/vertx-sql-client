@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -28,28 +28,38 @@ import static java.lang.String.format;
  * The format is defined by the client in an idiomatic way: sqlserver://[user[:[password]]@]host[:port][/database][?attribute1=value1&attribute2=value2...
  */
 public class MSSQLConnectionUriParser {
+
   private static final String SCHEME_DESIGNATOR_REGEX = "(sqlserver)://"; // URI scheme designator
-  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!*]+(:[a-zA-Z0-9\\-._~%!*]*)?)@)?"; // user name and password
+  private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!*]+(:[a-zA-Z0-9\\-._~%!*^]*)?)@)?"; // user name and password
   private static final String NET_LOCATION_REGEX = "(?<netloc>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)?"; // ip v4/v6 address, host, domain socket address
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
   private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
-  private static final String FULL_URI_REGEX = "^" // regex start
+  private static final Pattern SCHEME_DESIGNATOR_PATTERN = Pattern.compile("^" + SCHEME_DESIGNATOR_REGEX);
+  private static final Pattern FULL_URI_PATTERN = Pattern.compile("^"
     + SCHEME_DESIGNATOR_REGEX
     + USER_INFO_REGEX
     + NET_LOCATION_REGEX
     + PORT_REGEX
     + DATABASE_REGEX
     + ATTRIBUTES_REGEX
-    + "$"; // regex end
+    + "$");
 
   public static JsonObject parse(String connectionUri) {
-    // if we get any exception during the parsing, then we throw an IllegalArgumentException.
+    return parse(connectionUri, true);
+  }
+
+  public static JsonObject parse(String connectionUri, boolean exact) {
     try {
-      JsonObject configuration = new JsonObject();
-      doParse(connectionUri, configuration);
-      return configuration;
+      Matcher matcher = SCHEME_DESIGNATOR_PATTERN.matcher(connectionUri);
+      if (matcher.find() || exact) {
+        JsonObject configuration = new JsonObject();
+        doParse(connectionUri, configuration);
+        return configuration;
+      } else {
+        return null;
+      }
     } catch (Exception e) {
       throw new IllegalArgumentException("Cannot parse invalid connection URI: " + connectionUri, e);
     }
@@ -57,8 +67,7 @@ public class MSSQLConnectionUriParser {
 
   // execute the parsing process and store options in the configuration
   private static void doParse(String connectionUri, JsonObject configuration) {
-    Pattern pattern = Pattern.compile(FULL_URI_REGEX);
-    Matcher matcher = pattern.matcher(connectionUri);
+    Matcher matcher = FULL_URI_PATTERN.matcher(connectionUri);
 
     if (matcher.matches()) {
       // parse the user and password

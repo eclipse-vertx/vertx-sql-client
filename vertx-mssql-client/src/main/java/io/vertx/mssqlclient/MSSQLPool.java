@@ -94,7 +94,7 @@ public interface MSSQLPool extends Pool {
    * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MSSQLPool pool(Vertx vertx, List<MSSQLConnectOptions> databases, PoolOptions options) {
-    return new MSSQLDriver().createPool(vertx, databases, options);
+    return (MSSQLPool) MSSQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
 
   @Override
