@@ -14,6 +14,9 @@
 package examples;
 
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnectOptions;
+import io.vertx.clickhouseclient.binary.ClickhouseBinaryPool;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
@@ -290,5 +293,39 @@ public class SqlClientExamples {
   //TODO smagellan
   public void poolConfig02(Pool pool, String sql) {
     throw new IllegalStateException("TODO smagellan");
+  }
+
+  public void poolSharing1(Vertx vertx, ClickhouseBinaryConnectOptions database, int maxSize) {
+    ClickhouseBinaryPool pool = ClickhouseBinaryPool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      @Override
+      public void start() throws Exception {
+        // Use the pool
+      }
+    }, new DeploymentOptions().setInstances(4));
+  }
+
+  public void poolSharing2(Vertx vertx, ClickhouseBinaryConnectOptions database, int maxSize) {
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      ClickhouseBinaryPool pool;
+      @Override
+      public void start() {
+        // Get or create a shared pool
+        // this actually creates a lease to the pool
+        // when the verticle is undeployed, the lease will be released automaticaly
+        pool = ClickhouseBinaryPool.pool(database, new PoolOptions()
+          .setMaxSize(maxSize)
+          .setShared(true)
+          .setName("my-pool"));
+      }
+    }, new DeploymentOptions().setInstances(4));
+  }
+
+  public static void poolSharing3(Vertx vertx, ClickhouseBinaryConnectOptions database, int maxSize) {
+    ClickhouseBinaryPool pool = ClickhouseBinaryPool.pool(database, new PoolOptions()
+      .setMaxSize(maxSize)
+      .setShared(true)
+      .setName("my-pool")
+      .setEventLoopSize(4));
   }
 }

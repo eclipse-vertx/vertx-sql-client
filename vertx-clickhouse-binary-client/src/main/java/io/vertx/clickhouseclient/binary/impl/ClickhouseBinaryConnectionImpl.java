@@ -15,16 +15,17 @@ package io.vertx.clickhouseclient.binary.impl;
 
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnectOptions;
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnection;
+import io.vertx.clickhouseclient.binary.spi.ClickhouseBinaryDriver;
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionImpl;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
-public class ClickhouseBinaryConnectionImpl extends SqlConnectionImpl<ClickhouseBinaryConnectionImpl> implements ClickhouseBinaryConnection {
+public class ClickhouseBinaryConnectionImpl extends SqlConnectionBase<ClickhouseBinaryConnectionImpl> implements ClickhouseBinaryConnection {
   public static Future<ClickhouseBinaryConnection> connect(ContextInternal ctx, ClickhouseBinaryConnectOptions options) {
     ClickhouseBinaryConnectionFactory client;
     try {
@@ -37,7 +38,7 @@ public class ClickhouseBinaryConnectionImpl extends SqlConnectionImpl<Clickhouse
   }
 
   ClickhouseBinaryConnectionImpl(ConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, tracer, metrics);
+    super(context, factory, conn, ClickhouseBinaryDriver.INSTANCE, tracer, metrics);
   }
 
   @Override

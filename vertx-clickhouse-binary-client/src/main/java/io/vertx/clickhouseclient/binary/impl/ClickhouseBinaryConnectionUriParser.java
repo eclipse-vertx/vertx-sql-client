@@ -25,6 +25,10 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 
 public class ClickhouseBinaryConnectionUriParser {
   public static JsonObject parse(String connectionUri) {
+    return parse(connectionUri, true);
+  }
+
+  public static JsonObject parse(String connectionUri, boolean exact) {
     try {
       JsonObject configuration = new JsonObject();
       URI location = URI.create(connectionUri);

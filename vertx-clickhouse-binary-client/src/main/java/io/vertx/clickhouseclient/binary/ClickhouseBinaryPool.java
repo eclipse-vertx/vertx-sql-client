@@ -13,11 +13,9 @@
 
 package io.vertx.clickhouseclient.binary;
 
-import io.vertx.clickhouseclient.binary.impl.ClickhouseBinaryPoolImpl;
 import io.vertx.clickhouseclient.binary.spi.ClickhouseBinaryDriver;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 
@@ -30,8 +28,8 @@ public interface ClickhouseBinaryPool extends Pool {
     return pool(null, database, options);
   }
 
-  static ClickhouseBinaryPool pool(Vertx vertx, ClickhouseBinaryConnectOptions connectOptions, PoolOptions poolOptions) {
-    return ClickhouseBinaryPoolImpl.create((VertxInternal)vertx, Collections.singletonList(connectOptions), poolOptions);
+  static ClickhouseBinaryPool pool(Vertx vertx, ClickhouseBinaryConnectOptions database, PoolOptions options) {
+    return pool(vertx, Collections.singletonList(database), options);
   }
 
   static ClickhouseBinaryPool pool(List<ClickhouseBinaryConnectOptions> databases, PoolOptions options) {
@@ -39,6 +37,6 @@ public interface ClickhouseBinaryPool extends Pool {
   }
 
   static ClickhouseBinaryPool pool(Vertx vertx, List<ClickhouseBinaryConnectOptions> databases, PoolOptions options) {
-    return new ClickhouseBinaryDriver().createPool(vertx, databases, options);
+    return (ClickhouseBinaryPool) ClickhouseBinaryDriver.INSTANCE.createPool(vertx, databases, options);
   }
 }
