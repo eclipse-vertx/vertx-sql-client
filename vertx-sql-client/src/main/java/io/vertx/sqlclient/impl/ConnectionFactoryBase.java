@@ -32,6 +32,8 @@ import java.util.function.Predicate;
  */
 public abstract class ConnectionFactoryBase implements ConnectionFactory {
 
+  public static final String NATIVE_TRANSPORT_REQUIRED = "The Vertx instance must use a native transport in order to connect to connect through domain sockets";
+
   protected final VertxInternal vertx;
   protected final NetClient netClient;
   protected final Map<String, String> properties;
@@ -54,6 +56,12 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   private final long reconnectInterval;
 
   protected ConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
+
+    // check we can do domain sockets
+    if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
+      throw new IllegalArgumentException(NATIVE_TRANSPORT_REQUIRED);
+    }
+
     this.vertx = vertx;
     this.properties = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
     this.server = options.getSocketAddress();
