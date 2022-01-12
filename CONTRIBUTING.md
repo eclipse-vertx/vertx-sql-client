@@ -17,7 +17,7 @@ The goal of this document is to create a contribution process that:
 
 # Logging Issues
 
-Log an issue for any problem you might have. When in doubt, log an issue, any additional policies about what to include will be provided in the responses. The only exception is security disclosures which should be sent [privately](vertx-enquiries@googlegroups.com).
+Log an issue for any problem you might have. When in doubt, log an issue, any additional policies about what to include will be provided in the responses. The only exception is security disclosures which should be sent [privately](mailto:vertx-enquiries@googlegroups.com).
 
 Committers may direct you to another repository, ask for additional clarifications, and add appropriate info before the issue is addressed.
 
