@@ -763,9 +763,7 @@ public enum DataType {
     public Metadata decodeMetadata(ByteBuf byteBuf) {
       Metadata metadata = new Metadata();
       metadata.length = byteBuf.readUnsignedShortLE();
-      byteBuf.skipBytes(2); // skip collate codepage
-      byteBuf.skipBytes(2); // skip collate flags
-      byteBuf.skipBytes(1); // skip collate charset id
+      byteBuf.skipBytes(5); // skip collation
       return metadata;
     }
 
@@ -819,9 +817,7 @@ public enum DataType {
     public Metadata decodeMetadata(ByteBuf byteBuf) {
       Metadata metadata = new Metadata();
       metadata.length = byteBuf.readUnsignedShortLE();
-      byteBuf.skipBytes(2); // skip collate codepage
-      byteBuf.skipBytes(2); // skip collate flags
-      byteBuf.skipBytes(1); // skip collate charset id
+      byteBuf.skipBytes(5); // skip collation
       return metadata;
     }
 
