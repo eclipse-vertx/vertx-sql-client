@@ -161,7 +161,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
         .forRow(row);
     });
   }
-  
+
   @Test
   public void testEncodeBit(TestContext ctx) {
     testEncodeBitValue(ctx, false);
@@ -198,33 +198,32 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   }
 
   private void testEncodeCharValue(TestContext ctx, String value) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_char", value, row -> {
-      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_char");
-      if (value == null) {
-        checker.returnsNull();
-      } else {
-        checker
-          .returns(Tuple::getValue, Row::getValue, value)
-          .returns(Tuple::getString, Row::getString, value)
-          .returns(String.class, value);
-      }
-      checker.forRow(row);
-    });
+    testEncodeVarCharValue(ctx, "test_char", value);
   }
 
   @Test
   public void testEncodeVarChar(TestContext ctx) {
-    testEncodeVarCharValue(ctx, "testedvarchar");
+    testEncodeVarCharValue(ctx, "test_varchar", "testedvarchar");
   }
 
   @Test
   public void testEncodeNullVarChar(TestContext ctx) {
-    testEncodeVarCharValue(ctx, STRING_NULL_VALUE);
+    testEncodeVarCharValue(ctx, "test_varchar", STRING_NULL_VALUE);
   }
 
-  private void testEncodeVarCharValue(TestContext ctx, String value) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_varchar", value, row -> {
-      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_varchar");
+  @Test
+  public void testEncodeVarCharMax(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "test_varchar_max", "testedvarchar");
+  }
+
+  @Test
+  public void testEncodeNullVarCharMax(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "test_varchar_max", STRING_NULL_VALUE);
+  }
+
+  private void testEncodeVarCharValue(TestContext ctx, String columnName, String value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", columnName, value, row -> {
+      ColumnChecker checker = ColumnChecker.checkColumn(0, columnName);
       if (value == null) {
         checker.returnsNull();
       } else {

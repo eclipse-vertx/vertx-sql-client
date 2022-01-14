@@ -39,6 +39,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(true, row.getValue("test_boolean"));
       ctx.assertEquals("testchar", row.getValue("test_char"));
       ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
+      ctx.assertEquals("testvarcharmax", row.getValue("test_varchar_max"));
       ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue("test_date"));
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 0), row.getValue("test_smalldatetime"));
@@ -100,7 +101,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       checkNumber(row, "test_numeric", new BigDecimal("999.99"));
     });
   }
-  
+
 
   @Test
   public void testDecodeUuid(TestContext ctx) {
@@ -110,7 +111,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
         .returns(Tuple::getUUID, Row::getUUID, UUID.fromString("e2d1f163-40a7-480b-b1a6-07faaef8e01b"))
         .forRow(row);
     });
-  }  
+  }
 
   @Test
   public void testDecodeDecimal(TestContext ctx) {
