@@ -18,11 +18,13 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.mssqlclient.junit.MSSQLRule;
+import io.vertx.sqlclient.Row;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.net.ssl.SSLHandshakeException;
+import java.util.Locale;
 
 public abstract class MSSQLEncryptionTestBase {
 
@@ -68,7 +70,9 @@ public abstract class MSSQLEncryptionTestBase {
       conn.query("SELECT encrypt_option FROM sys.dm_exec_connections WHERE session_id = @@SPID")
         .execute(ctx.asyncAssertSuccess(rows -> {
           ctx.assertEquals(1, rows.size());
-          ctx.assertEquals(expected, Boolean.parseBoolean(rows.iterator().next().getString("encrypt_option")));
+          Row row = rows.iterator().next();
+          String encryptOption = row.getString("encrypt_option");
+          ctx.assertEquals(String.valueOf(expected), encryptOption.toLowerCase(Locale.ENGLISH));
         }));
     }));
   }
