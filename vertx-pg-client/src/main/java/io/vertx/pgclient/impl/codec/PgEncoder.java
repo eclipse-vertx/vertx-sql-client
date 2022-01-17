@@ -253,7 +253,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     int totalLengthPosition = out.writerIndex();
     out.writeInt(0); // message length -> will be set later
 
-    Util.writeCStringUTF8(out, msg.mecanism);
+    Util.writeCStringUTF8(out, msg.mechanism);
     int msgPosition = out.writerIndex();
     out.writeInt(0);
     out.writeCharSequence(msg.message, UTF_8);
