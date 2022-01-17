@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.VertxException;
 
 import java.nio.charset.Charset;
 
@@ -46,18 +47,21 @@ public enum Encoding {
 
   private static final int UTF8_IN_TDSCOLLATION = 0x4000000;
 
-  public static Encoding readFrom(ByteBuf byteBuf) {
+  public static Charset readCharsetFrom(ByteBuf byteBuf) {
     int info = byteBuf.readIntLE(); // 4 bytes, contains: LCID ColFlags Version
     int sortId = byteBuf.readUnsignedByte(); // 1 byte, contains: SortId
-    Encoding result;
+    Encoding encoding;
     if (UTF8_IN_TDSCOLLATION == (info & UTF8_IN_TDSCOLLATION)) {
-      result = Encoding.UTF8;
+      encoding = Encoding.UTF8;
     } else if (sortId == 0) {
-      result = WindowsLocale.forLangId(info & 0x0000FFFF).encoding;
+      encoding = WindowsLocale.forLangId(info & 0x0000FFFF).encoding;
     } else {
-      result = SortOrder.forId(sortId).encoding;
+      encoding = SortOrder.forId(sortId).encoding;
     }
-    return result;
+    if (encoding.charset == null) {
+      throw new VertxException("Unsupported encoding: " + encoding);
+    }
+    return encoding.charset;
   }
 
   @Override

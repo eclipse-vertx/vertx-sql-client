@@ -20,6 +20,7 @@ import io.vertx.core.buffer.Buffer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.sql.JDBCType;
 import java.time.*;
@@ -761,10 +762,7 @@ public enum DataType {
   BIGVARCHAR(0xA7) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      Metadata metadata = new Metadata();
-      metadata.length = byteBuf.readUnsignedShortLE();
-      byteBuf.skipBytes(5); // skip collation
-      return metadata;
+      return decodeCharacterMetadata(byteBuf, null);
     }
 
     @Override
@@ -774,10 +772,7 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      int length = byteBuf.readUnsignedShortLE();
-      // CHARBIN_NULL
-      if (length == 65535) return null;
-      return byteBuf.readCharSequence(length, StandardCharsets.UTF_8);
+      return decodeCharacterValue(byteBuf, metadata);
     }
   },
   BIGBINARY(0xAD) {
@@ -799,26 +794,23 @@ public enum DataType {
   BIGCHAR(0xAF) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return BIGVARCHAR.decodeMetadata(byteBuf);
+      return decodeCharacterMetadata(byteBuf, null);
     }
 
     @Override
     public JDBCType jdbcType(Metadata metadata) {
-      return BIGVARCHAR.jdbcType(metadata);
+      return JDBCType.CHAR;
     }
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return BIGVARCHAR.decodeValue(byteBuf, metadata);
+      return decodeCharacterValue(byteBuf, metadata);
     }
   },
   NVARCHAR(0xE7) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      Metadata metadata = new Metadata();
-      metadata.length = byteBuf.readUnsignedShortLE();
-      byteBuf.skipBytes(5); // skip collation
-      return metadata;
+      return decodeCharacterMetadata(byteBuf, StandardCharsets.UTF_16LE);
     }
 
     @Override
@@ -828,10 +820,7 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      int length = byteBuf.readUnsignedShortLE();
-      // CHARBIN_NULL
-      if (length == 65535) return null;
-      return byteBuf.readCharSequence(length, StandardCharsets.UTF_16LE);
+      return decodeCharacterValue(byteBuf, metadata);
     }
 
     @Override
@@ -847,24 +836,24 @@ public enum DataType {
       byteBuf.writeByte(0x04);
       byteBuf.writeByte(0xd0);
       byteBuf.writeByte(0x00);
-      byteBuf.writeByte(0x34); // Collation for param definitions TODO always this value?
+      byteBuf.writeByte(0x34); // Collation for param definitions
       writeUnsignedShortLengthString(byteBuf, value instanceof Enum ? ((Enum<?>) value).name() : value.toString());
     }
   },
   NCHAR(0xEF) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return NVARCHAR.decodeMetadata(byteBuf);
+      return decodeCharacterMetadata(byteBuf, StandardCharsets.UTF_16LE);
     }
 
     @Override
     public JDBCType jdbcType(Metadata metadata) {
-      return NVARCHAR.jdbcType(metadata);
+      return JDBCType.CHAR;
     }
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return NVARCHAR.decodeValue(byteBuf, metadata);
+      return decodeCharacterValue(byteBuf, metadata);
     }
   },
   XML(0xF1),
@@ -882,9 +871,12 @@ public enum DataType {
   }
 
   public static class Metadata {
+    private static final int LENGTH_FLAG_PLP = 0xFFFF;
+
     private int length;
     private byte precision;
     private byte scale;
+    private Charset charset;
 
     public int length() {
       return length;
@@ -898,20 +890,49 @@ public enum DataType {
       return scale;
     }
 
+    public Charset charset() {
+      return charset;
+    }
+
     @Override
     public String toString() {
-      return "Metadata{" + "length=" + length + ", precision=" + precision + ", scale=" + scale + '}';
+      return "Metadata{" +
+        "length=" + length +
+        ", precision=" + precision +
+        ", scale=" + scale +
+        ", charset=" + charset +
+        '}';
     }
   }
 
-  public LocalDateTime decodeIntLEDateValue(ByteBuf byteBuf) {
+  private static Metadata decodeCharacterMetadata(ByteBuf byteBuf, Charset charset) {
+    Metadata metadata = new Metadata();
+    metadata.length = byteBuf.readUnsignedShortLE();
+    if (charset != null) {
+      metadata.charset = charset;
+      byteBuf.skipBytes(5);
+    } else {
+      metadata.charset = Encoding.readCharsetFrom(byteBuf);
+    }
+    return metadata;
+  }
+
+  private static CharSequence decodeCharacterValue(ByteBuf byteBuf, Metadata metadata) {
+    if (metadata.length == Metadata.LENGTH_FLAG_PLP) {
+      throw new UnsupportedOperationException("PLP not implemented yet");
+    }
+    int length = byteBuf.readUnsignedShortLE();
+    return length == 0xFFFF ? null : byteBuf.readCharSequence(length, metadata.charset);
+  }
+
+  private static LocalDateTime decodeIntLEDateValue(ByteBuf byteBuf) {
     LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readIntLE(), ChronoUnit.DAYS);
     long nanoOfDay = NANOSECONDS.convert(Math.round(byteBuf.readIntLE() * (3 + 1D / 3)), MILLISECONDS);
     LocalTime localTime = LocalTime.ofNanoOfDay(nanoOfDay);
     return LocalDateTime.of(localDate, localTime);
   }
 
-  public LocalDateTime decodeUnsignedShortDateValue(ByteBuf byteBuf) {
+  private static LocalDateTime decodeUnsignedShortDateValue(ByteBuf byteBuf) {
     LocalDate localDate = START_DATE_DATETIME.plus(byteBuf.readUnsignedShortLE(), ChronoUnit.DAYS);
     LocalTime localTime = LocalTime.ofSecondOfDay(byteBuf.readUnsignedShortLE() * 60L);
     return LocalDateTime.of(localDate, localTime);
