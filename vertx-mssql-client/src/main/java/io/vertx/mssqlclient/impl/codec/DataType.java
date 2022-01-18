@@ -28,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -871,8 +872,6 @@ public enum DataType {
   }
 
   public static class Metadata {
-    private static final int LENGTH_FLAG_PLP = 0xFFFF;
-
     private int length;
     private byte precision;
     private byte scale;
@@ -917,12 +916,27 @@ public enum DataType {
     return metadata;
   }
 
-  private static CharSequence decodeCharacterValue(ByteBuf byteBuf, Metadata metadata) {
-    if (metadata.length == Metadata.LENGTH_FLAG_PLP) {
-      throw new UnsupportedOperationException("PLP not implemented yet");
+  private static Object decodeCharacterValue(ByteBuf byteBuf, Metadata metadata) {
+    Object result;
+    if (metadata.length == 0xFFFF) { // PLP (partially length-prefixed)
+      long payloadLength = byteBuf.readLongLE();
+      if (payloadLength == 0xFFFFFFFFFFFFFFFFL) { // PLP null
+        result = null;
+      } else {
+        Stream.Builder<ByteBuf> byteBufs = Stream.builder();
+        for (int chunkSize = (int) byteBuf.readUnsignedIntLE(); chunkSize > 0; chunkSize = (int) byteBuf.readUnsignedIntLE()) {
+          int readerIndex = byteBuf.readerIndex();
+          byteBufs.add(byteBuf.slice(readerIndex, chunkSize));
+          byteBuf.readerIndex(readerIndex + chunkSize);
+        }
+        ByteBuf wrapped = Unpooled.wrappedBuffer(byteBufs.build().toArray(ByteBuf[]::new));
+        result = wrapped.toString(metadata.charset);
+      }
+    } else { // Length-prefixed
+      int length = byteBuf.readUnsignedShortLE();
+      result = length == 0xFFFF ? null : byteBuf.readCharSequence(length, metadata.charset);
     }
-    int length = byteBuf.readUnsignedShortLE();
-    return length == 0xFFFF ? null : byteBuf.readCharSequence(length, metadata.charset);
+    return result;
   }
 
   private static LocalDateTime decodeIntLEDateValue(ByteBuf byteBuf) {
