@@ -826,19 +826,36 @@ public enum DataType {
 
     @Override
     public String paramDefinition(Object value) {
-      return "nvarchar(4000)";
+      String val = stringRepresentation(value);
+      return val != null && val.length() > 4000 ? "nvarchar(max)" : "nvarchar(4000)";
+    }
+
+    private String stringRepresentation(Object value) {
+      return value == null ? null : value.getClass().isEnum() ? ((Enum<?>) value).name() : value.toString();
     }
 
     @Override
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
       writeParamDescription(byteBuf, name, out, id);
-      byteBuf.writeShortLE(8000); // maximal length
-      byteBuf.writeByte(0x09);
-      byteBuf.writeByte(0x04);
-      byteBuf.writeByte(0xd0);
-      byteBuf.writeByte(0x00);
-      byteBuf.writeByte(0x34); // Collation for param definitions
-      writeUnsignedShortLengthString(byteBuf, value instanceof Enum ? ((Enum<?>) value).name() : value.toString());
+      String val = stringRepresentation(value);
+      if (val.length() > 4000) {
+        byteBuf.writeShortLE(0xFFFF);
+        writeCollation(byteBuf);
+        byteBuf.writeLongLE(val.length() * 2L);
+        byteBuf.writeIntLE(val.length() * 2);
+        byteBuf.writeCharSequence(val, StandardCharsets.UTF_16LE);
+        byteBuf.writeIntLE(0);
+      } else {
+        byteBuf.writeShortLE(8000);
+        writeCollation(byteBuf);
+        byteBuf.writeShortLE(val.length() * 2);
+        byteBuf.writeCharSequence(val, StandardCharsets.UTF_16LE);
+      }
+    }
+
+    private void writeCollation(ByteBuf byteBuf) {
+      byteBuf.writeInt(0x0904d000);
+      byteBuf.writeByte(0x34);
     }
   },
   NCHAR(0xEF) {
