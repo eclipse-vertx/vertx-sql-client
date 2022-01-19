@@ -36,11 +36,6 @@ public class ByteBufUtils {
     return buffer.readCharSequence(length * 2, UTF_16LE).toString();
   }
 
-  public static void writeUnsignedShortLengthString(ByteBuf buffer, String value) {
-    buffer.writeShortLE(value.length() * 2);
-    buffer.writeCharSequence(value, UTF_16LE);
-  }
-
   public static long readUnsignedInt40LE(ByteBuf buffer) {
     long low = buffer.readUnsignedIntLE();
     short high = buffer.readUnsignedByte();

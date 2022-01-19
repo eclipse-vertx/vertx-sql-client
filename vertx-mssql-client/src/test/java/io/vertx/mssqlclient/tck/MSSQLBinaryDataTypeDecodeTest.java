@@ -11,6 +11,7 @@
 
 package io.vertx.mssqlclient.tck;
 
+import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.tck.BinaryDataTypeDecodeTestBase;
@@ -48,5 +49,10 @@ public class MSSQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   @Override
   protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
+  }
+
+  @Override
+  public void testChar(TestContext ctx) {
+    testDecodeGeneric(ctx, "test_char", String.class, JDBCType.CHAR, "testchar");
   }
 }

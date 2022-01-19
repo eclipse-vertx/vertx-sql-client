@@ -108,6 +108,17 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   }
 
   @Test
+  public void testEncodeVarCharMax(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_varchar_max", "testedvarchar", row -> {
+      ColumnChecker.checkColumn(0, "test_varchar_max")
+        .returns(Tuple::getValue, Row::getValue, "testedvarchar")
+        .returns(Tuple::getString, Row::getString, "testedvarchar")
+        .returns(String.class, "testedvarchar")
+        .forRow(row);
+    });
+  }
+
+  @Test
   public void testEncodeDate(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_date", LocalDate.of(1999, 12, 31), row -> {
       ColumnChecker.checkColumn(0, "test_date")
