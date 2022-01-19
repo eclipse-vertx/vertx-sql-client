@@ -171,22 +171,16 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
 
     // Reduce accuracy since datatype accuracy is rounded to increments of .000, .003, or .007 seconds
     int nanoOfDay = (int) Math.round(Math.round((now.getNano()/1000000d)/3.333333)*3.333333)*1000000;
-    int secondOfDay = now.getSecond();
 
-    // If nanoseconds is rounded up to one second
-    if (nanoOfDay == nanosPerSecond) {
-      nanoOfDay = 0;
-      secondOfDay++;
-    }
+    LocalDateTime expected = nanoOfDay == nanosPerSecond ? now.withNano(0).plusSeconds(1) : now.withNano(nanoOfDay);
 
-    LocalDateTime convertedNow = now.withNano(nanoOfDay).withSecond(secondOfDay);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetime")
-        .returns(Tuple::getValue, Row::getValue, convertedNow)
-        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, convertedNow)
-        .returns(Tuple::getLocalDate, Row::getLocalDate, convertedNow.toLocalDate())
-        .returns(Tuple::getLocalTime, Row::getLocalTime, convertedNow.toLocalTime())
-        .returns(LocalDateTime.class, convertedNow)
+        .returns(Tuple::getValue, Row::getValue, expected)
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+        .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+        .returns(LocalDateTime.class, expected)
         .forRow(row);
     });
   }
