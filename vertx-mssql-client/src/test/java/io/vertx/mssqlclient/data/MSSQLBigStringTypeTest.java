@@ -26,7 +26,7 @@ public class MSSQLBigStringTypeTest extends MSSQLDataTypeTestBase {
   public void testPreparedQueryEncode(TestContext ctx) {
     StringBuilder sb = new StringBuilder(10000);
     while (sb.length() < 10000) {
-      sb.append("ae $ € iou y éè %û* <> '");
+      sb.append("ae $ \u20AC iou y \u00E9\u00E8 %\u00FB* <> '");
     }
     String bigString = sb.toString();
 

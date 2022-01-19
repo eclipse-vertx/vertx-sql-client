@@ -243,8 +243,9 @@ public enum WindowsLocale {
 
   public static WindowsLocale forLangId(int langId) {
     WindowsLocale windowsLocale = windowsLocalesByLangId.get(langId);
-    if (windowsLocale == null)
+    if (windowsLocale == null) {
       throw new IllegalArgumentException("Unknown Windows locale: " + Integer.toHexString(langId));
+    }
     return windowsLocale;
   }
 

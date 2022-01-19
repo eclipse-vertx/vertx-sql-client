@@ -942,9 +942,8 @@ public enum DataType {
       } else {
         Stream.Builder<ByteBuf> byteBufs = Stream.builder();
         for (int chunkSize = (int) byteBuf.readUnsignedIntLE(); chunkSize > 0; chunkSize = (int) byteBuf.readUnsignedIntLE()) {
-          int readerIndex = byteBuf.readerIndex();
-          byteBufs.add(byteBuf.slice(readerIndex, chunkSize));
-          byteBuf.readerIndex(readerIndex + chunkSize);
+          byteBufs.add(byteBuf.slice(byteBuf.readerIndex(), chunkSize));
+          byteBuf.skipBytes(chunkSize);
         }
         ByteBuf wrapped = Unpooled.wrappedBuffer(byteBufs.build().toArray(ByteBuf[]::new));
         result = wrapped.toString(metadata.charset);

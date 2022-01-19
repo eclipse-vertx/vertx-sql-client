@@ -59,7 +59,7 @@ public enum Encoding {
       encoding = SortOrder.forId(sortId).encoding;
     }
     if (encoding.charset == null) {
-      throw new VertxException("Unsupported encoding: " + encoding);
+      throw new VertxException("Unsupported encoding: " + encoding + ". Verify if your JVM supports it.");
     }
     return encoding.charset;
   }

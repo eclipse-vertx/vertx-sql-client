@@ -158,7 +158,9 @@ public enum SortOrder {
 
   public static SortOrder forId(int id) {
     SortOrder sortOrder = sortOrdersById.get(id);
-    if (sortOrder == null) throw new IllegalArgumentException("Unknown sort order: " + id);
+    if (sortOrder == null) {
+      throw new IllegalArgumentException("Unknown sort order: " + id);
+    }
     return sortOrder;
   }
 
