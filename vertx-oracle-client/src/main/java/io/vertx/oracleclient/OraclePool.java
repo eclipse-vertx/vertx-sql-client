@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,12 +11,17 @@
 package io.vertx.oracleclient;
 
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnection;
 
 import java.util.Collections;
+import java.util.function.Function;
 
 /**
  * Represents a pool of connection to interact with an Oracle database.
@@ -48,4 +53,10 @@ public interface OraclePool extends Pool {
   static OraclePool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
     return pool(vertx, OracleConnectOptions.fromUri(connectionUri), poolOptions);
   }
+
+  @Override
+  OraclePool connectHandler(Handler<SqlConnection> handler);
+
+  @Override
+  OraclePool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 }
