@@ -1,3 +1,15 @@
+CREATE TABLE World
+(
+  id           INTEGER           NOT NULL,
+  randomNumber INTEGER DEFAULT 0 NOT NULL,
+  PRIMARY KEY (id)
+);
+
+INSERT INTO World (id, randomNumber)
+SELECT Rownum r, dbms_random.value
+FROM dual
+CONNECT BY Rownum <= 100;
+
 -- Fortune Table
 CREATE TABLE Fortune
 (
