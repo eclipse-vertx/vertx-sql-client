@@ -62,6 +62,7 @@ import static java.util.concurrent.TimeUnit.*;
 public class DataTypeCodec {
 
   private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
+
   private static final String[] empty_string_array = new String[0];
   private static final LocalDate[] empty_local_date_array = new LocalDate[0];
   private static final LocalTime[] empty_local_time_array = new LocalTime[0];
@@ -107,7 +108,7 @@ public class DataTypeCodec {
   private static final IntFunction<OffsetTime[]> OFFSETTIME_ARRAY_FACTORY = size -> size == 0 ? empty_offset_time_array : new OffsetTime[size];
   private static final IntFunction<LocalDateTime[]> LOCALDATETIME_ARRAY_FACTORY = size -> size == 0 ? empty_local_date_time_array : new LocalDateTime[size];
   private static final IntFunction<OffsetDateTime[]> OFFSETDATETIME_ARRAY_FACTORY = size -> size == 0 ? empty_offset_date_time_array : new OffsetDateTime[size];
-  private static final IntFunction<Buffer[]> BUFFER_ARRAY_FACTORY = size -> size == 0 ? empty_buffer_array : new Buffer[size];
+  private static final IntFunction<Buffer[]> BUFFER_ARRAY_FACTORY =size -> size == 0 ? empty_buffer_array : new Buffer[size];
   private static final IntFunction<UUID[]> UUID_ARRAY_FACTORY = size -> size == 0 ? empty_uuid_array : new UUID[size];
   private static final IntFunction<Object[]> JSON_ARRAY_FACTORY = size -> size == 0 ? empty_json_array : new Object[size];
   private static final IntFunction<Numeric[]> NUMERIC_ARRAY_FACTORY = size -> size == 0 ? empty_numeric_array : new Numeric[size];
@@ -121,17 +122,20 @@ public class DataTypeCodec {
   private static final IntFunction<Interval[]> INTERVAL_ARRAY_FACTORY = size -> size == 0 ? empty_interval_array : new Interval[size];
   private static final IntFunction<Inet[]> INET_ARRAY_FACTORY = size -> size == 0 ? empty_inet_array : new Inet[size];
   private static final IntFunction<Money[]> MONEY_ARRAY_FACTORY = size -> size == 0 ? empty_money_array : new Money[size];
+
   private static final java.time.format.DateTimeFormatter TIMETZ_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
     .append(ISO_LOCAL_TIME)
     .appendOffset("+HH:mm", "00:00")
     .toFormatter();
+
   private static final java.time.format.DateTimeFormatter TIMESTAMP_FORMAT = new DateTimeFormatterBuilder()
     .parseCaseInsensitive()
     .append(ISO_LOCAL_DATE)
     .appendLiteral(' ')
     .append(ISO_LOCAL_TIME)
     .toFormatter();
+
   private static final java.time.format.DateTimeFormatter TIMESTAMPTZ_FORMAT = new DateTimeFormatterBuilder()
     .append(TIMESTAMP_FORMAT)
     .appendOffset("+HH:mm", "00:00")
@@ -680,7 +684,7 @@ public class DataTypeCodec {
   }
 
   private static Boolean textDecodeBOOL(int index, int len, ByteBuf buff) {
-    if (buff.getByte(index) == 't') {
+    if(buff.getByte(index) == 't') {
       return Boolean.TRUE;
     } else {
       return Boolean.FALSE;
@@ -781,7 +785,7 @@ public class DataTypeCodec {
 
   private static LineSegment textDecodeLseg(int index, int len, ByteBuf buff) {
     // Lseg representation: [p1,p2]
-    int idxOfPointsSeparator = buff.indexOf(index, index + len, (byte) ')') + 1;
+    int idxOfPointsSeparator = buff.indexOf(index, index+len, (byte) ')') + 1;
     int lenOfP1 = idxOfPointsSeparator - index - 1;
     Point p1 = textDecodePOINT(index + 1, lenOfP1, buff);
     Point p2 = textDecodePOINT(idxOfPointsSeparator + 1, len - lenOfP1 - 3, buff);
@@ -790,7 +794,7 @@ public class DataTypeCodec {
 
   private static Box textDecodeBox(int index, int len, ByteBuf buff) {
     // Box representation: p1,p2
-    int idxOfPointsSeparator = buff.indexOf(index, index + len, (byte) ')') + 1;
+    int idxOfPointsSeparator = buff.indexOf(index, index+len, (byte) ')') + 1;
     int lenOfUpperRightCornerPoint = idxOfPointsSeparator - index;
     Point upperRightCorner = textDecodePOINT(index, lenOfUpperRightCornerPoint, buff);
     Point lowerLeftCorner = textDecodePOINT(idxOfPointsSeparator + 1, len - lenOfUpperRightCornerPoint - 1, buff);
@@ -873,7 +877,7 @@ public class DataTypeCodec {
     int years = 0, months = 0, days = 0, hours = 0, minutes = 0, seconds = 0, microseconds = 0;
     final List<String> chunks = new ArrayList<>(7);
     int idx = 0;
-    for (; ; ) {
+    for (;;) {
       int newIdx = value.indexOf(' ', idx);
       if (newIdx == -1) {
         chunks.add(value.substring(idx));
@@ -906,17 +910,17 @@ public class DataTypeCodec {
       boolean isNeg = timeChunk.charAt(0) == '-';
       if (isNeg) timeChunk = timeChunk.substring(1);
       int sidx = 0;
-      for (; ; ) {
+      for (;;) {
         int newIdx = timeChunk.indexOf(':', sidx);
         if (newIdx == -1) {
           int m = timeChunk.substring(sidx).indexOf('.');
-          if (m == -1) {
+          if(m == -1) {
             // seconds without microseconds
             seconds = isNeg ? -Integer.parseInt(timeChunk.substring(sidx))
               : Integer.parseInt(timeChunk.substring(sidx));
           } else {
             // seconds with microseconds
-            seconds = isNeg ? -Integer.parseInt(timeChunk.substring(sidx).substring(0, m))
+            seconds =  isNeg ? -Integer.parseInt(timeChunk.substring(sidx).substring(0, m))
               : Integer.parseInt(timeChunk.substring(sidx).substring(0, m));
             microseconds = isNeg ? -Integer.parseInt(timeChunk.substring(sidx).substring(m + 1))
               : Integer.parseInt(timeChunk.substring(sidx).substring(m + 1));
@@ -924,7 +928,7 @@ public class DataTypeCodec {
           break;
         }
         // hours
-        if (sidx == 0) {
+        if(sidx == 0) {
           hours = isNeg ? -Integer.parseInt(timeChunk.substring(sidx, newIdx))
             : Integer.parseInt(timeChunk.substring(sidx, newIdx));
         } else {
@@ -1000,6 +1004,7 @@ public class DataTypeCodec {
   private static String textDecodeNAME(int index, int len, ByteBuf buff) {
     return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
+
 
   private static void binaryEncodeNAME(String value, ByteBuf buff) {
     String s = String.valueOf(value);
@@ -1476,7 +1481,7 @@ public class DataTypeCodec {
 
   private static Money binaryDecodeMoney(int index, int len, ByteBuf buff) {
     long value = binaryDecodeINT8(index, len, buff);
-    return new Money(value / 100, Math.abs(((int) value % 100)));
+    return new Money(value / 100, Math.abs(((int)value % 100)));
   }
 
   private static String binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
@@ -1557,7 +1562,7 @@ public class DataTypeCodec {
    * Decode the specified {@code buff} formatted as an hex string starting at the buffer readable index
    * with the specified {@code length} to a {@link Buffer}.
    *
-   * @param len  the hex string length
+   * @param len the hex string length
    * @param buff the byte buff to read from
    * @return the decoded value as a Buffer
    */
@@ -1573,7 +1578,7 @@ public class DataTypeCodec {
   }
 
   private static byte decodeHexChar(byte ch) {
-    return (byte) (((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
+    return (byte)(((ch & 0x1F) + ((ch >> 6) * 0x19) - 0x10) & 0x0F);
   }
 
   private static boolean isHexFormat(int index, int len, ByteBuf buff) {
@@ -1641,7 +1646,7 @@ public class DataTypeCodec {
     return array;
   }
 
-  private static <T> void binaryEncodeArray(T[] values, DataType type, ByteBuf buff) {
+  private static <T> void binaryEncodeArray(T[] values, DataType type, ByteBuf buff){
     int startIndex = buff.writerIndex();
     buff.writeInt(1);             // ndim
     buff.writeInt(0);             // dataoffset
@@ -1703,7 +1708,7 @@ public class DataTypeCodec {
         // Some escaping - improve that later...
         String s = buff.toString(index + 1, len - 2, StandardCharsets.UTF_8);
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
+        for (int i = 0;i < s.length();i++) {
           char c = s.charAt(i);
           if (c == '\\') {
             c = s.charAt(++i);
@@ -1718,7 +1723,7 @@ public class DataTypeCodec {
     }
   }
 
-  private static <T> void textEncodeArray(T[] values, DataType type, ByteBuf buff) {
+  private static <T> void textEncodeArray(T[] values, DataType type, ByteBuf buff){
     buff.writeByte('{');
     int len = values.length;
     for (int i = 0; i < len; i++) {
