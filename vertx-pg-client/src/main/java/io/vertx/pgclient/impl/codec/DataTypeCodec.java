@@ -24,12 +24,13 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.pgclient.data.*;
-import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
+import io.vertx.pgclient.data.*;
+import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.net.Inet4Address;
@@ -50,21 +51,16 @@ import java.util.function.IntFunction;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
+import static java.util.concurrent.TimeUnit.*;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- * <p>
+ *
  * See also https://www.npgsql.org/doc/dev/type-representations.html
  */
 public class DataTypeCodec {
 
-  // Sentinel used when an object is refused by the data type
-  public static final Object REFUSED_SENTINEL = new Object();
-  // 4714-11-24 00:00:00 BC
-  public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC",
-    DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.ROOT));
   private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
   private static final String[] empty_string_array = new String[0];
   private static final LocalDate[] empty_local_date_array = new LocalDate[0];
@@ -92,11 +88,13 @@ public class DataTypeCodec {
   private static final Double[] empty_double_array = new Double[0];
   private static final LocalDate LOCAL_DATE_EPOCH = LocalDate.of(2000, 1, 1);
   private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
-  // 294277-01-09 04:00:54.775807
-  public static final LocalDateTime LDT_PLUS_INFINITY = LOCAL_DATE_TIME_EPOCH.plus(Long.MAX_VALUE, ChronoUnit.MICROS);
   private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
   private static final Inet[] empty_inet_array = new Inet[0];
   private static final Money[] empty_money_array = new Money[0];
+
+  // Sentinel used when an object is refused by the data type
+  public static final Object REFUSED_SENTINEL = new Object();
+
   private static final IntFunction<Boolean[]> BOOLEAN_ARRAY_FACTORY = size -> size == 0 ? empty_boolean_array : new Boolean[size];
   private static final IntFunction<Short[]> SHORT_ARRAY_FACTORY = size -> size == 0 ? empty_short_array : new Short[size];
   private static final IntFunction<Integer[]> INTEGER_ARRAY_FACTORY = size -> size == 0 ? empty_integer_array : new Integer[size];
@@ -276,13 +274,13 @@ public class DataTypeCodec {
         binaryEncodeArray((UUID[]) value, DataType.UUID, buff);
         break;
       case JSON:
-        binaryEncodeJSON(value, buff);
+        binaryEncodeJSON((Object) value, buff);
         break;
       case JSON_ARRAY:
         binaryEncodeArray((Object[]) value, DataType.JSON, buff);
         break;
       case JSONB:
-        binaryEncodeJSONB(value, buff);
+        binaryEncodeJSONB((Object) value, buff);
         break;
       case JSONB_ARRAY:
         binaryEncodeArray((Object[]) value, DataType.JSONB, buff);
@@ -1080,6 +1078,12 @@ public class DataTypeCodec {
     CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
     return OffsetTime.parse(cs, TIMETZ_FORMAT);
   }
+
+  // 294277-01-09 04:00:54.775807
+  public static final LocalDateTime LDT_PLUS_INFINITY = LOCAL_DATE_TIME_EPOCH.plus(Long.MAX_VALUE, ChronoUnit.MICROS);
+  // 4714-11-24 00:00:00 BC
+  public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC",
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.ROOT));
 
   private static void binaryEncodeTIMESTAMP(LocalDateTime value, ByteBuf buff) {
     if (value.compareTo(LDT_PLUS_INFINITY) >= 0) {
