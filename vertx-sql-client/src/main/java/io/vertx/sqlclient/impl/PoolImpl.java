@@ -25,15 +25,14 @@ import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
 
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -52,11 +51,11 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
+  private volatile Function<Connection, Future<Void>> afterAcquire;
+  private volatile Function<Connection, Future<Void>> beforeRecycle;
 
   public PoolImpl(VertxInternal vertx,
                   Driver driver,
-                  SqlConnectOptions baseConnectOptions,
-                  Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
                   QueryTracer tracer,
                   ClientMetrics metrics,
                   int pipeliningLimit,
@@ -69,7 +68,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, afterAcquire, beforeRecycle, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
   }
 
@@ -91,6 +90,11 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     }
     this.connectionProvider = connectionProvider;
     return this;
+  }
+
+  public void cachingHooks(Function<Connection, Future<Void>> afterAcquire, Function<Connection, Future<Void>> beforeRecycle) {
+    this.afterAcquire = Objects.requireNonNull(afterAcquire);
+    this.beforeRecycle = Objects.requireNonNull(beforeRecycle);
   }
 
   private void checkExpired() {
