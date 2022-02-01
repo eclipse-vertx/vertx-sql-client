@@ -7,11 +7,11 @@ scalability and low overhead.
 *Features*
 
 * Event driven
+* Built-in connection pooling
 * Java 8 Date and Time
 
 *Not supported yet*
 
-* Built-in connection pooling
 * RxJava API
 * Prepared queries caching
 * Cursor
