@@ -21,6 +21,8 @@ import io.vertx.oracleclient.impl.OracleConnectionImpl;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 
+import java.util.Objects;
+
 import static io.vertx.oracleclient.OracleConnectOptions.fromUri;
 
 /**
@@ -37,10 +39,8 @@ public interface OracleConnection extends SqlConnection {
    * @param handler the handler called with the connection or the failure
    */
   static void connect(Vertx vertx, OracleConnectOptions connectOptions, Handler<AsyncResult<OracleConnection>> handler) {
-    Future<OracleConnection> fut = OracleConnectionImpl.connect(vertx, connectOptions);
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
+    Objects.requireNonNull(handler);
+    OracleConnectionImpl.connect(vertx, connectOptions).onComplete(handler);
   }
 
   /**
