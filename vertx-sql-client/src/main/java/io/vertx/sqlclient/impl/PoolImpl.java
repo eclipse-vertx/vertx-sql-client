@@ -32,7 +32,6 @@ import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -223,9 +222,5 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
 
   public int size() {
     return pool.size();
-  }
-
-  public void check(Handler<AsyncResult<List<Integer>>> handler) {
-    pool.check(handler);
   }
 }
