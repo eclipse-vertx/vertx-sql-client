@@ -36,7 +36,6 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.core.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -149,13 +148,10 @@ public class SqlConnectionPool {
       if (ar.succeeded()) {
         Lease<PooledConnection> lease = ar.result();
         PooledConnection pooled = lease.get();
-        pooled.inflight++;
-        pooled.num++;
         pooled.schedule(context, cmd)
           .onComplete(promise)
           .onComplete(v -> {
             pooled.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
-            pooled.inflight--;
             lease.recycle();
           });
       } else {
@@ -231,8 +227,6 @@ public class SqlConnectionPool {
     private Holder holder;
     private Lease<PooledConnection> lease;
     public long expirationTimestamp;
-    private int inflight;
-    private int num;
     private boolean initialized;
     private Handler<AsyncResult<PooledConnection>> continuation;
 
@@ -355,15 +349,5 @@ public class SqlConnectionPool {
     public int getSecretKey() {
       return conn.getSecretKey();
     }
-  }
-
-  public void check(Handler<AsyncResult<List<Integer>>> handler) {
-    List<Integer> list = new ArrayList<>();
-    pool.evict(pred -> {
-      list.add(pred.num);
-      return false;
-    }, ar -> {
-      handler.handle(Future.succeededFuture(list));
-    });
   }
 }
