@@ -14,6 +14,7 @@ import io.vertx.oracleclient.OracleConnectOptions;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
@@ -27,12 +28,16 @@ public class OracleRule extends ExternalResource {
   static final String PASSWORD = "vertx";
   static final int PORT = 1521;
 
-  private GenericContainer<?> server;
+  private ServerContainer<?> server;
   private OracleConnectOptions options;
 
   @Override
   protected void before() throws IOException {
-    if (server == null) {
+    String connectionUri = System.getProperty("connection.uri");
+    if (!isNullOrEmpty(connectionUri)) {
+      // use an external database for testing
+      options = OracleConnectOptions.fromUri(connectionUri);
+    } else if (server == null) {
       options = startOracle();
     }
   }
@@ -43,7 +48,7 @@ public class OracleRule extends ExternalResource {
 
   @Override
   protected void after() {
-    if (this != SHARED_INSTANCE) {
+    if (isNullOrEmpty(System.getProperty("connection.uri")) || this != SHARED_INSTANCE) {
       stopOracle();
     }
   }
@@ -54,7 +59,7 @@ public class OracleRule extends ExternalResource {
 
     String image = IMAGE + ":" + containerVersion;
 
-    server = new GenericContainer<>(image)
+    server = new ServerContainer<>(image)
       .withEnv("ORACLE_PASSWORD", PASSWORD)
       .withExposedPorts(PORT)
       .withClasspathResourceMapping("tck/import.sql", "/container-entrypoint-initdb.d/import.sql", BindMode.READ_ONLY)
@@ -63,6 +68,9 @@ public class OracleRule extends ExternalResource {
         Wait.forLogMessage(".*DATABASE IS READY TO USE!.*\\n", 1)
       )
       .withStartupTimeout(Duration.ofMinutes(15));
+    if (System.getProperties().containsKey("containerFixedPort")) {
+      server.withFixedExposedPort(PORT, PORT);
+    }
 
     server.start();
 
@@ -86,5 +94,17 @@ public class OracleRule extends ExternalResource {
 
   public OracleConnectOptions options() {
     return new OracleConnectOptions(options);
+  }
+
+  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends GenericContainer<SELF> {
+
+    public ServerContainer(String dockerImageName) {
+      super(dockerImageName);
+    }
+
+    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+      super.addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
+      return self();
+    }
   }
 }
