@@ -17,3 +17,21 @@ Nevertheless, you can force the usage of the standard Oracle port (1521) with a 
 ----
 mvn test -DcontainerFixedPort
 ----
+
+==== Testing with an external database
+
+You can start an external database:
+
+[source,bash]
+----
+docker run -t -i -p 1521:1521 -e ORACLE_PASSWORD=vertx gvenzl/oracle-xe:18-slim
+----
+
+Then run tests against it:
+
+[source,bash]
+----
+mvn test -Dconnection.uri=oracle:thin:system/vertx@127.0.0.1:1521:xe
+----
+
+* `connection.uri`: configure the client to connect to the specified database

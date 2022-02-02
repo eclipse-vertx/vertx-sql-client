@@ -33,7 +33,11 @@ public class OracleRule extends ExternalResource {
 
   @Override
   protected void before() throws IOException {
-    if (server == null) {
+    String connectionUri = System.getProperty("connection.uri");
+    if (!isNullOrEmpty(connectionUri)) {
+      // use an external database for testing
+      options = OracleConnectOptions.fromUri(connectionUri);
+    } else if (server == null) {
       options = startOracle();
     }
   }
@@ -44,7 +48,7 @@ public class OracleRule extends ExternalResource {
 
   @Override
   protected void after() {
-    if (this != SHARED_INSTANCE) {
+    if (isNullOrEmpty(System.getProperty("connection.uri")) || this != SHARED_INSTANCE) {
       stopOracle();
     }
   }
