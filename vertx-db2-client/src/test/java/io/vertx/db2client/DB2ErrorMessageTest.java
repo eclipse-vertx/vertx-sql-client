@@ -32,6 +32,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   public void testConnectInvalidDatabase(TestContext ctx) {
     options.setDatabase("DB_DOES_NOT_EXIST");
     DB2Connection.connect(vertx, options, ctx.asyncAssertFailure(err -> {
+      err.printStackTrace(System.out);
       ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
       DB2Exception ex = (DB2Exception) err;
       assertContains(ctx, ex.getMessage(), "provided was not found", "The connection was closed by the database server");
@@ -275,6 +276,18 @@ public class DB2ErrorMessageTest extends DB2TestBase {
             assertContains(ctx, ex.getMessage(), "of type 'TABLE' already exists");
             ctx.assertEquals(SqlCode.OBJECT_ALREADY_EXISTS, ex.getErrorCode());
           }));
+      }));
+    }
+    
+    //This test has to be run manually, I haven't found a good way to automate stopping a DB2 connection that doesn't end gracefully
+    //To run this, uncomment @Test and use mvn test -Dtest=DB2ErrorMessageTest#testInflightCommandsFailWhenConnectionClosed 
+    //During the 60 second wait call 'docker kill <container_id>', docker stop will end gracefully, so it has to be docker kill.
+    //@Test 
+    public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn1 -> {
+        conn1.query("CALL dbms_alert.sleep(60)").execute(ctx.asyncAssertFailure(t -> {
+          ctx.assertEquals("Failed to read any response from the server, the underlying connection may have been lost unexpectedly.", t.getMessage());
+        }));
       }));
     }
   }
