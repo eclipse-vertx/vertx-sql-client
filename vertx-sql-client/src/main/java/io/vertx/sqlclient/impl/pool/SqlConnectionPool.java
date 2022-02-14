@@ -65,6 +65,9 @@ public class SqlConnectionPool {
     if (pipeliningLimit < 1) {
       throw new IllegalArgumentException("Pipelining limit must be > 0");
     }
+    if (afterAcquire != null && beforeRecycle == null) {
+      throw new IllegalArgumentException("afterAcquire and beforeRecycle hooks must be both not null");
+    }
     this.pool = ConnectionPool.pool(connector, new int[]{maxSize}, maxWaitQueueSize);
     this.vertx = vertx;
     this.pipeliningLimit = pipeliningLimit;
@@ -73,9 +76,6 @@ public class SqlConnectionPool {
     this.hook = hook;
     this.connectionProvider = connectionProvider;
     this.afterAcquire = afterAcquire;
-    if (afterAcquire != null && beforeRecycle == null) {
-      throw new NullPointerException();
-    }
     this.beforeRecycle = beforeRecycle;
 
     if (eventLoopSize > 0) {
@@ -175,23 +175,38 @@ public class SqlConnectionPool {
         }
         if (ar.succeeded()) {
           Lease<PooledConnection> lease = ar.result();
-          PooledConnection pooled = lease.get();
-          pooled.lease = lease;
-          if (!pooled.initialized) {
-            Handler<PooledConnection> connectionHandler = hook.get();
-            if (connectionHandler != null) {
-              pooled.continuation = handler;
-              connectionHandler.handle(pooled);
-              return;
-            } else {
-              pooled.initialized = true;
-            }
+          if (afterAcquire != null) {
+            afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
+              if (ar2.succeeded()) {
+                handle(lease);
+              } else {
+                // Should we do some cleanup ?
+                handler.handle(Future.failedFuture(ar.cause()));
+              }
+            });
+          } else {
+            handle(lease);
           }
-          cachingHook(afterAcquire, lease.get().conn).map(pooled).onComplete(handler);
         } else {
           handler.handle(Future.failedFuture(ar.cause()));
         }
       }
+      private void handle(Lease<PooledConnection> lease) {
+        PooledConnection pooled = lease.get();
+        pooled.lease = lease;
+        if (!pooled.initialized) {
+          Handler<PooledConnection> connectionHandler = hook.get();
+          if (connectionHandler != null) {
+            pooled.continuation = handler;
+            connectionHandler.handle(pooled);
+            return;
+          } else {
+            pooled.initialized = true;
+          }
+        }
+        handler.handle(Future.succeededFuture(pooled));
+      }
+
       @Override
       public void onEnqueue(PoolWaiter<PooledConnection> waiter) {
         if (timeout > 0L && timerID == -1L) {
@@ -216,10 +231,6 @@ public class SqlConnectionPool {
     }
     PoolRequest request = new PoolRequest();
     pool.acquire(context, request, 0, request);
-  }
-
-  private static Future<Void> cachingHook(Function<Connection, Future<Void>> hook, Connection conn) {
-    return hook == null ? Future.succeededFuture() : hook.apply(conn);
   }
 
   public Future<Void> close() {
@@ -310,17 +321,24 @@ public class SqlConnectionPool {
           initialized = true;
           Handler<AsyncResult<PooledConnection>> c = continuation;
           continuation = null;
-          cachingHook(afterAcquire, lease.get().conn).map(this).onComplete(c);
+          promise.complete();
+          c.handle(Future.succeededFuture(this));
           return;
         }
-        Lease<PooledConnection> l = this.lease;
-        cachingHook(beforeRecycle, l.get().conn).onComplete(ar -> {
-          this.lease = null;
-          this.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
-          l.recycle();
-          promise.complete();
-        });
+        if (beforeRecycle == null) {
+          cleanup(promise);
+        } else {
+          beforeRecycle.apply(lease.get().conn).onComplete(ar -> cleanup(promise));
+        }
       }
+    }
+
+    private void cleanup(Promise<Void> promise) {
+      Lease<PooledConnection> l = this.lease;
+      this.lease = null;
+      this.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
+      l.recycle();
+      promise.complete();
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @RunWith(VertxUnitRunner.class)
@@ -223,16 +224,18 @@ public class OraclePoolTest extends OracleTestBase {
 
   @Test
   public void testConnectionHook(TestContext ctx) {
-    Async async = ctx.async();
+    AtomicInteger hookCount = new AtomicInteger();
     Handler<SqlConnection> hook = f -> {
-      vertx.setTimer(1000, id -> {
+      ctx.assertEquals(1, hookCount.incrementAndGet());
+      vertx.setTimer(100, id -> {
         f.close();
       });
     };
     OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      ctx.assertEquals(1, hookCount.get());
       conn.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
-        async.complete();
+        conn.close(ctx.asyncAssertSuccess());
       }));
     }));
   }
