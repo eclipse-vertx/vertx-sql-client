@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -22,6 +22,17 @@ import java.util.function.Predicate;
 
 @DataObject(generateConverter = true)
 public class OracleConnectOptions extends SqlConnectOptions {
+
+  /**
+   * @return the {@code options} as Oracle specific connect options
+   */
+  public static OracleConnectOptions wrap(SqlConnectOptions options) {
+    if (options instanceof OracleConnectOptions) {
+      return (OracleConnectOptions) options;
+    } else {
+      return new OracleConnectOptions(options);
+    }
+  }
 
   // Support TNS_ADMIN (tnsnames.ora, ojdbc.properties).
   private String tnsAdmin;

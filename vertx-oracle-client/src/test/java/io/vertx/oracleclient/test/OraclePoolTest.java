@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -10,101 +10,230 @@
  */
 package io.vertx.oracleclient.test;
 
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.*;
-import org.junit.Rule;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
 
+@RunWith(VertxUnitRunner.class)
 public class OraclePoolTest extends OracleTestBase {
 
-  @Rule
-  public OracleRule oracle = OracleRule.SHARED_INSTANCE;
+  @ClassRule
+  public static OracleRule oracle = OracleRule.SHARED_INSTANCE;
 
-  static final String DROP_TABLE = "DROP TABLE fruits";
-  static final String CREATE_TABLE = "CREATE TABLE fruits (" +
-    "id integer PRIMARY KEY, " +
-    "name VARCHAR(100), " +
-    "quantity INTEGER)";
-  static final String INSERT = "INSERT INTO fruits (id, name, quantity) VALUES (?, ?, ?)";
+  private OracleConnectOptions options;
+  private Set<OraclePool> pools;
 
-  @Test
-  public void test() {
-    OraclePool pool = OraclePool.pool(vertx, oracle.options(),
-      new PoolOptions().setMaxSize(1)
-    );
-
-    SqlConnection connection = await(pool.getConnection());
-    System.out.println(connection);
-
-    System.out.println(
-      "metadata: " + connection.databaseMetadata().fullVersion() + " " + connection.databaseMetadata()
-        .productName());
-
-    try {
-      await(connection.query(DROP_TABLE).execute());
-    } catch (Exception ignored) {
-
-    }
-
-    await(connection.query(CREATE_TABLE).execute());
-
-    await(connection.prepare(INSERT)
-      .flatMap(ps -> ps.query().execute(Tuple.of(1, "apple", 10))));
-    await(connection.prepare(INSERT)
-      .flatMap(ps -> ps.query().execute(Tuple.of(2, "pear", 5))));
-    await(connection.prepare(INSERT)
-      .flatMap(ps -> ps.query().execute(Tuple.of(3, "mango", 3))));
-
-    RowSet<Row> rows = await(connection.query("SELECT * FROM fruits").execute());
-    rows.forEach(row -> System.out.printf("[%d] %s : %d%n", row.get(Integer.class, 0), row.get(String.class, 1),
-      row.get(Integer.class, 2)));
-
-    RowSet<Row> res = await(connection.query("SELECT * FROM fruits WHERE id = 1").execute());
-    System.out.println("Select one : " + res.iterator().next().get(String.class, 1));
-
-    // Batch
-    System.out.println("Batch insert:");
-    RowSet<Row> set = await(connection.preparedQuery(INSERT)
-      .executeBatch(List.of(
-        Tuple.of(4, "pineapple", 1),
-        Tuple.of(5, "kiwi", 2),
-        Tuple.of(6, "orange", 3),
-        Tuple.of(7, "strawberry", 20)
-      )));
-
-    System.out.println(set.size());
-
-    rows = await(connection.query("SELECT * FROM fruits").execute());
-    rows.forEach(row -> System.out.printf("[%d] %s : %d%n", row.get(Integer.class, 0), row.get(String.class, 1),
-      row.get(Integer.class, 2)));
-
-    System.out.println("Transaction:");
-    await(connection.begin()
-      .flatMap(tx ->
-        connection.prepare(INSERT).flatMap(ps -> ps.query().execute(Tuple.of(20, "olive", 200)))
-          .flatMap(x -> tx.commit())
-          .eventually(x -> tx.rollback())
-      ));
-
-    await(connection.begin()
-      .flatMap(tx ->
-        connection.prepare(INSERT).flatMap(ps -> ps.query().execute(Tuple.of(23, "nope", -2)))
-          .flatMap(x -> tx.rollback())
-          .eventually(x -> tx.rollback())
-      ));
-
-    rows = await(connection.query("SELECT * FROM fruits").execute());
-    rows.forEach(row -> System.out.printf("[%d] %s : %d%n", row.get(Integer.class, 0), row.get(String.class, 1),
-      row.get(Integer.class, 2)));
-
-    // TODO Reimplement ping
-//    System.out.println("Ping");
-//    System.out.println(await(((OracleConnection) connection).ping()));
-
-    await(connection.close());
+  @Before
+  public void setUp() throws Exception {
+    options = oracle.options();
+    pools = Collections.synchronizedSet(new HashSet<>());
   }
 
+  @After
+  public void tearDown(TestContext ctx) throws Exception {
+    if (!pools.isEmpty()) {
+      Async async = ctx.async(pools.size());
+      for (OraclePool pool : pools) {
+        pool.close(ar -> {
+          async.countDown();
+        });
+      }
+      async.await();
+    }
+  }
+
+  private OraclePool createPool(OracleConnectOptions connectOptions, int size) {
+    return createPool(connectOptions, new PoolOptions().setMaxSize(size));
+  }
+
+  private OraclePool createPool(OracleConnectOptions connectOptions, PoolOptions poolOptions) {
+    OracleConnectOptions co = new OracleConnectOptions(connectOptions);
+    PoolOptions po = new PoolOptions(poolOptions);
+    OraclePool pool = OraclePool.pool(vertx, co, po);
+    pools.add(pool);
+    return pool;
+  }
+
+  @Test
+  public void testPool(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    OraclePool pool = createPool(options, 40);
+    for (int i = 0; i < num; i++) {
+      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+        conn.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(rows -> {
+          ctx.assertEquals(100, rows.size());
+          conn.close();
+          async.countDown();
+        }));
+      }));
+    }
+  }
+
+  @Test
+  public void testQuery(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    OraclePool pool = createPool(options, 40);
+    for (int i = 0; i < num; i++) {
+      pool.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(100, rows.size());
+        async.countDown();
+      }));
+    }
+  }
+
+  @Test
+  public void testQueryWithParams(TestContext ctx) {
+    int num = 2;
+    Async async = ctx.async(num);
+    OraclePool pool = createPool(options, 1);
+    for (int i = 0; i < num; i++) {
+      PreparedQuery<RowSet<Row>> preparedQuery = pool.preparedQuery("SELECT id, randomnumber FROM WORLD WHERE id=?");
+      preparedQuery.execute(Tuple.of(i + 1), ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        async.countDown();
+      }));
+    }
+  }
+
+  @Test
+  public void testUpdate(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    OraclePool pool = createPool(options, 4);
+    for (int i = 0; i < num; i++) {
+      pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.rowCount());
+        async.countDown();
+      }));
+    }
+  }
+
+  @Test
+  public void testUpdateWithParams(TestContext ctx) {
+    int num = 1000;
+    Async async = ctx.async(num);
+    OraclePool pool = createPool(options, 4);
+    for (int i = 0; i < num; i++) {
+      pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = ?").execute(Tuple.of(9), ar -> {
+        if (ar.succeeded()) {
+          RowSet<Row> result = ar.result();
+          ctx.assertEquals(1, result.rowCount());
+        } else {
+          ctx.assertEquals("closed", ar.cause().getMessage());
+        }
+        async.countDown();
+      });
+    }
+  }
+
+  @Test
+  public void testWithConnection(TestContext ctx) {
+    Async async = ctx.async(10);
+    OraclePool pool = createPool(options, 1);
+    Function<SqlConnection, Future<RowSet<Row>>> success = conn -> conn.query("SELECT 1 FROM DUAL").execute();
+    Function<SqlConnection, Future<RowSet<Row>>> failure = conn -> conn.query("SELECT 1 FROM does_not_exist").execute();
+    for (int i = 0; i < 10; i++) {
+      if (i % 2 == 0) {
+        pool.withConnection(success, ctx.asyncAssertSuccess(v -> async.countDown()));
+      } else {
+        pool.withConnection(failure, ctx.asyncAssertFailure(v -> async.countDown()));
+      }
+    }
+  }
+
+  @Test
+  public void testAuthFailure(TestContext ctx) {
+    Async async = ctx.async();
+    OraclePool pool = createPool(new OracleConnectOptions(options).setPassword("wrong"), 1);
+    pool.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertFailure(v2 -> {
+      async.complete();
+    }));
+  }
+
+  @Test
+  public void testRunWithExisting(TestContext ctx) {
+    Async async = ctx.async();
+    vertx.runOnContext(v -> {
+      try {
+        OraclePool.pool(options, new PoolOptions());
+        ctx.fail();
+      } catch (IllegalStateException ignore) {
+        async.complete();
+      }
+    });
+  }
+
+  @Test
+  public void testRunStandalone(TestContext ctx) {
+    Async async = ctx.async();
+    OraclePool pool = createPool(new OracleConnectOptions(options), new PoolOptions());
+    pool.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(v -> {
+      async.complete();
+    }));
+    async.await(4000);
+  }
+
+  @Test
+  public void testMaxWaitQueueSize(TestContext ctx) {
+    Async async = ctx.async();
+    OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
+    pool.getConnection(ctx.asyncAssertSuccess(v -> {
+      pool.getConnection(ctx.asyncAssertFailure(err -> {
+        async.complete();
+      }));
+    }));
+    async.await(4000000);
+  }
+
+  // This test check that when using pooled connections, the preparedQuery pool operation
+  // will actually use the same connection for the prepare and the query commands
+  @Test
+  public void testConcurrentMultipleConnection(TestContext ctx) {
+    OraclePool pool = createPool(new OracleConnectOptions(this.options).setCachePreparedStatements(true), 2);
+    int numRequests = 2;
+    Async async = ctx.async(numRequests);
+    for (int i = 0; i < numRequests; i++) {
+      pool.preparedQuery("SELECT * FROM Fortune WHERE id=?").execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+        ctx.assertEquals(1, results.size());
+        Tuple row = results.iterator().next();
+        ctx.assertEquals(1, row.getInteger(0));
+        ctx.assertEquals("fortune: No such file or directory", row.getString(1));
+        async.countDown();
+      }));
+    }
+  }
+
+  @Test
+  public void testConnectionHook(TestContext ctx) {
+    Async async = ctx.async();
+    Handler<SqlConnection> hook = f -> {
+      vertx.setTimer(1000, id -> {
+        f.close();
+      });
+    };
+    OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
+        async.complete();
+      }));
+    }));
+  }
 }

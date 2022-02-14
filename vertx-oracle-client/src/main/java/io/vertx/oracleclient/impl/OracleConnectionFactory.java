@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -15,19 +15,14 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.spi.OracleDriver;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.OracleDataSource;
 
-import java.util.concurrent.CompletionStage;
+import java.sql.SQLException;
 
 import static io.vertx.oracleclient.impl.OracleDatabaseHelper.createDataSource;
 
@@ -35,44 +30,32 @@ public class OracleConnectionFactory implements ConnectionFactory {
 
   private final OracleConnectOptions options;
   private final OracleDataSource datasource;
-  private final PoolOptions poolOptions;
-  private final VertxInternal vertx;
-  private final QueryTracer tracer;
-  private final ClientMetrics metrics;
 
-  public OracleConnectionFactory(VertxInternal vertx, OracleConnectOptions options,
-    PoolOptions poolOptions, QueryTracer tracer, ClientMetrics metrics) {
-    this.vertx = vertx;
+  public OracleConnectionFactory(VertxInternal vertx, OracleConnectOptions options) {
     this.options = options;
-    this.poolOptions = poolOptions;
     this.datasource = createDataSource(options);
-    this.tracer = tracer;
-    this.metrics = metrics;
   }
 
-  public OracleConnectOptions options() {
-    return options;
-  }
-
-  public Future<Connection> connect(ContextInternal context) {
-    CompletionStage<OracleConnection> stage = Helper
-      .getOrHandleSQLException(() -> datasource.createConnectionBuilder().buildAsyncOracle());
-    return Helper.contextualize(stage, context)
-      .map(c -> new CommandHandler(context, options, c));
-  }
-
+  @Override
   public void close(Promise<Void> promise) {
     promise.complete();
   }
 
   @Override
   public Future<SqlConnection> connect(Context context) {
-    ContextInternal ic  = (ContextInternal) context;
-    return connect(ic)
-      .map(c -> {
-        SqlConnectionBase connection = new SqlConnectionBase(ic, this, c, OracleDriver.INSTANCE, tracer, metrics);
-        c.init(connection);
-        return connection;
-      });
+    ContextInternal ctx = (ContextInternal) context;
+    QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
+    return context.<OracleConnection>executeBlocking(prom -> {
+      try {
+        prom.complete(datasource.createConnectionBuilder().build());
+      } catch (SQLException e) {
+        prom.fail(e);
+      }
+    }).map(ora -> {
+      CommandHandler conn = new CommandHandler((ContextInternal) context, options, ora);
+      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn, tracer, null);
+      conn.init(msConn);
+      return msConn;
+    });
   }
 }

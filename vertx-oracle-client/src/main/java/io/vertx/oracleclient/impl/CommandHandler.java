@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,6 +12,7 @@ package io.vertx.oracleclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.oracleclient.OracleConnectOptions;
@@ -25,6 +26,8 @@ import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.TxCommand;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import oracle.jdbc.OracleConnection;
+
+import java.sql.SQLException;
 
 public class CommandHandler implements Connection {
   private final OracleConnection connection;
@@ -78,6 +81,34 @@ public class CommandHandler implements Connection {
   @Override
   public int getSecretKey() {
     throw new UnsupportedOperationException();
+  }
+
+  public Future<Void> afterAcquire() {
+    if (Vertx.currentContext() != context) {
+      throw new IllegalArgumentException();
+    }
+    return context.executeBlocking(prom -> {
+      try {
+        connection.beginRequest();
+        prom.complete();
+      } catch (SQLException e) {
+        prom.fail(e);
+      }
+    }, false);
+  }
+
+  public Future<Void> beforeRecycle() {
+    if (Vertx.currentContext() != context) {
+      throw new IllegalArgumentException();
+    }
+    return context.executeBlocking(prom -> {
+      try {
+        connection.endRequest();
+        prom.complete();
+      } catch (SQLException e) {
+        prom.fail(e);
+      }
+    }, false);
   }
 
   @SuppressWarnings("unchecked")

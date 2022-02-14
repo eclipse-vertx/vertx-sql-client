@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -20,7 +20,6 @@ import oracle.sql.TIMESTAMPTZ;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Flow;
 import java.util.function.Supplier;
 
@@ -35,18 +34,6 @@ public class Helper {
       } catch (Exception ignore) {
       }
     }
-  }
-
-  public static <T> Future<T> contextualize(CompletionStage<T> stage, ContextInternal context) {
-    Promise<T> future = context.promise();
-    stage.whenComplete((r, f) -> {
-      if (f != null) {
-        future.fail(f);
-      } else {
-        future.complete(r);
-      }
-    });
-    return future.future();
   }
 
   /**

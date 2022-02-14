@@ -34,8 +34,8 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
-import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -63,7 +63,7 @@ public class MSSQLDriver implements Driver {
     QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    PoolImpl pool = new PoolImpl(vertx, this, baseConnectOptions, null, tracer, metrics, 1, options, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, closeFuture);
     List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
     ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
     pool.connectionProvider(factory::connect);

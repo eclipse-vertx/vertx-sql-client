@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -10,11 +10,13 @@
  */
 package io.vertx.oracleclient.test.tck;
 
-import io.vertx.core.*;
-import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.oracleclient.OracleConnectOptions;
+import io.vertx.oracleclient.OracleConnection;
 import io.vertx.oracleclient.OraclePool;
-import io.vertx.oracleclient.impl.OracleConnectionFactory;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -28,20 +30,19 @@ public enum ClientConfig {
     Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
       return new Connector<>() {
 
-        private OracleConnectionFactory factory;
-
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          factory = new OracleConnectionFactory((VertxInternal) vertx, new OracleConnectOptions(options), new PoolOptions().setMaxSize(1), null, null);
-          Context context = vertx.getOrCreateContext();
-          factory.connect(context).onComplete(handler);
+          OracleConnection.connect(vertx, new OracleConnectOptions(options), ar -> {
+            if (ar.succeeded()) {
+              handler.handle(Future.succeededFuture(ar.result()));
+            } else {
+              handler.handle(Future.failedFuture(ar.cause()));
+            }
+          });
         }
 
         @Override
         public void close() {
-          if (factory != null) {
-            factory.close(Promise.promise());
-          }
         }
       };
     }
