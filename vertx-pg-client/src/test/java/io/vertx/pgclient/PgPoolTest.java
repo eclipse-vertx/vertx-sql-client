@@ -17,18 +17,25 @@
 
 package io.vertx.pgclient;
 
+import io.netty.channel.EventLoop;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
+import io.vertx.pgclient.impl.PgSocketConnection;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -212,6 +219,29 @@ public class PgPoolTest extends PgPoolTestBase {
       }
       pool.close();
     }
+  }
+
+  @Test
+  public void testEventLoopSize(TestContext ctx) {
+    int num = VertxOptions.DEFAULT_EVENT_LOOP_POOL_SIZE;
+    int size = num * 2;
+    PgPool pool = PgPool.pool(options, new PoolOptions().setMaxSize(size).setEventLoopSize(2));
+    Set<EventLoop> eventLoops = Collections.synchronizedSet(new HashSet<>());
+    Async async = ctx.async(size);
+    for (int i = 0;i < size;i++) {
+      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+        PgSocketConnection c = (PgSocketConnection) ((SqlConnectionInternal) conn).unwrap().unwrap();
+        EventLoop eventLoop = ((ContextInternal) c.context()).nettyEventLoop();
+        eventLoops.add(eventLoop);
+        async.countDown();
+      }));
+    }
+    try {
+      async.await();
+    } finally {
+      pool.close();
+    }
+    ctx.assertEquals(2, eventLoops.size());
   }
 
   @Test

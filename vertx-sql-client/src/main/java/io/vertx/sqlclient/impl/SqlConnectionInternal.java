@@ -13,4 +13,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.SqlConnection;
 
 public interface SqlConnectionInternal extends SqlConnection, Connection.Holder {
+
+  Connection unwrap();
+
 }

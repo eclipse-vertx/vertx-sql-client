@@ -79,8 +79,8 @@ public class SqlConnectionPool {
     this.beforeRecycle = beforeRecycle;
 
     if (eventLoopSize > 0) {
-      EventLoop[] loops = new EventLoop[maxSize];
-      for (int i = 0; i < maxSize; i++) {
+      EventLoop[] loops = new EventLoop[eventLoopSize];
+      for (int i = 0;i < eventLoopSize;i++) {
         loops[i] = vertx.nettyEventLoopGroup().next();
       }
       pool.contextProvider(new Function<ContextInternal, EventLoopContext>() {
@@ -89,6 +89,9 @@ public class SqlConnectionPool {
         @Override
         public EventLoopContext apply(ContextInternal contextInternal) {
           EventLoop loop = loops[idx++];
+          if (idx == loops.length) {
+            idx = 0;
+          }
           return vertx.createEventLoopContext(loop, null, Thread.currentThread().getContextClassLoader());
         }
       });
@@ -356,6 +359,11 @@ public class SqlConnectionPool {
     @Override
     public int getSecretKey() {
       return conn.getSecretKey();
+    }
+
+    @Override
+    public Connection unwrap() {
+      return conn;
     }
   }
 }
