@@ -10,6 +10,7 @@
  */
 package io.vertx.oracleclient.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -30,6 +31,7 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class OracleDriver implements Driver {
@@ -55,14 +57,12 @@ public class OracleDriver implements Driver {
     QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, closeFuture);
+    Function<Connection, Future<Void>> afterAcquire = conn -> ((CommandHandler) conn).afterAcquire();
+    Function<Connection, Future<Void>> beforeRecycle = conn -> ((CommandHandler) conn).beforeRecycle();
+    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, afterAcquire, beforeRecycle, closeFuture);
     List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
     ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
     pool.connectionProvider(factory::connect);
-    pool.cachingHooks(
-      conn -> ((CommandHandler) conn).afterAcquire(),
-      conn -> ((CommandHandler) conn).beforeRecycle()
-    );
     pool.init();
     closeFuture.add(factory);
     return pool;

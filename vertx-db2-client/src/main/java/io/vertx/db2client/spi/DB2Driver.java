@@ -62,7 +62,7 @@ public class DB2Driver implements Driver {
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
     boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, null, null, closeFuture);
     List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
     ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
     pool.connectionProvider(factory::connect);
