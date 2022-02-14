@@ -56,4 +56,9 @@ public interface Connection extends CommandScheduler  {
     void handleException(Throwable err);
 
   }
+
+  default Connection unwrap() {
+    return this;
+  }
+
 }

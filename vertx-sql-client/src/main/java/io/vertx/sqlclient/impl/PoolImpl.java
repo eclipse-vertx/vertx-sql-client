@@ -51,8 +51,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
-  private volatile Function<Connection, Future<Void>> afterAcquire;
-  private volatile Function<Connection, Future<Void>> beforeRecycle;
 
   public PoolImpl(VertxInternal vertx,
                   Driver driver,
@@ -60,6 +58,8 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   ClientMetrics metrics,
                   int pipeliningLimit,
                   PoolOptions poolOptions,
+                  Function<Connection, Future<Void>> afterAcquire,
+                  Function<Connection, Future<Void>> beforeRecycle,
                   CloseFuture closeFuture) {
     super(driver, tracer, metrics);
 
@@ -90,11 +90,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     }
     this.connectionProvider = connectionProvider;
     return this;
-  }
-
-  public void cachingHooks(Function<Connection, Future<Void>> afterAcquire, Function<Connection, Future<Void>> beforeRecycle) {
-    this.afterAcquire = Objects.requireNonNull(afterAcquire);
-    this.beforeRecycle = Objects.requireNonNull(beforeRecycle);
   }
 
   private void checkExpired() {

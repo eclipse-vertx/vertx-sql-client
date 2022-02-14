@@ -85,7 +85,7 @@ public class CommandHandler implements Connection {
 
   public Future<Void> afterAcquire() {
     if (Vertx.currentContext() != context) {
-      throw new IllegalArgumentException();
+      throw new IllegalStateException();
     }
     return context.executeBlocking(prom -> {
       try {
@@ -99,7 +99,7 @@ public class CommandHandler implements Connection {
 
   public Future<Void> beforeRecycle() {
     if (Vertx.currentContext() != context) {
-      throw new IllegalArgumentException();
+      throw new IllegalStateException();
     }
     return context.executeBlocking(prom -> {
       try {
