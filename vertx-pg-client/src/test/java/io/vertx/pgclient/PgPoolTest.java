@@ -425,18 +425,32 @@ public class PgPoolTest extends PgPoolTestBase {
   }
 
   @Test
-  public void testConnectionHook(TestContext ctx) {
-    Async async = ctx.async();
+  public void testConnectionHook1(TestContext ctx) {
+    Async async = ctx.async(2);
     Handler<SqlConnection> hook = f -> {
       vertx.setTimer(1000, id -> {
-        f.close();
+        f.close().onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
       });
     };
     PgPool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
-        async.complete();
+        async.countDown();
       }));
+    }));
+  }
+
+  @Test
+  public void testConnectionHook2(TestContext ctx) {
+    Async async = ctx.async(2);
+    Handler<SqlConnection> hook = f -> {
+      vertx.setTimer(1000, id -> {
+        f.close().onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
+      });
+    };
+    PgPool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
+    pool.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
+      async.countDown();
     }));
   }
 
