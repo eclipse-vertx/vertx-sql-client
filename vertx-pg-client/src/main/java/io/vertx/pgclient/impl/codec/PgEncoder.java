@@ -65,9 +65,20 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   private ChannelHandlerContext ctx;
   private ByteBuf out;
   private final HexSequence psSeq = new HexSequence(); // used for generating named prepared statement name
+  boolean closeSent;
 
   PgEncoder(ArrayDeque<PgCommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
+  }
+
+
+  @Override
+  public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+    if (!closeSent) {
+      CloseConnectionCommand cmd = CloseConnectionCommand.INSTANCE;
+      PgCommandCodec<?, ?> codec = wrap(cmd);
+      codec.encode(this);
+    }
   }
 
   @Override

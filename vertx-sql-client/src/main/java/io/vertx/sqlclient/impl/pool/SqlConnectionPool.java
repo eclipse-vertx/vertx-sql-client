@@ -29,6 +29,7 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Todo :
@@ -233,7 +234,22 @@ public class SqlConnectionPool {
 
   public Future<Void> close() {
     Promise<Void> promise = vertx.promise();
-    pool.close(ar -> promise.complete());
+    pool.close(ar1 -> {
+      if (ar1.succeeded()) {
+        List<Future> results = ar1
+          .result()
+          .stream()
+          .map(connection -> connection
+            .compose(pooled -> Future.<Void>future(p -> pooled.conn.close(pooled, p))))
+          .collect(Collectors.toList());
+        CompositeFuture
+          .join(results)
+          .<Void>mapEmpty()
+          .onComplete(promise);
+      } else {
+        promise.fail(ar1.cause());
+      }
+    });
     return promise.future();
   }
 
