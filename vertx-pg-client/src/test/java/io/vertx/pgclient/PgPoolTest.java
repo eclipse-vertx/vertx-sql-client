@@ -29,12 +29,12 @@ import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.pgclient.impl.PgSocketConnection;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -80,6 +80,20 @@ public class PgPoolTest extends PgPoolTestBase {
     PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
     pools.add(pool);
     return pool;
+  }
+
+  @Test
+  public void testClosePool(TestContext ctx) {
+    Async async = ctx.async();
+    PgPool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.close(ctx.asyncAssertSuccess(v1 -> {
+        pool.close(v2 -> {
+          async.complete();
+        });
+      }));
+    }));
+    async.await(4000000);
   }
 
   @Test
@@ -165,7 +179,9 @@ public class PgPoolTest extends PgPoolTestBase {
     PgPool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
     pool.getConnection(ctx.asyncAssertSuccess(v -> {
       pool.getConnection(ctx.asyncAssertFailure(err -> {
-        async.complete();
+        v.close(ctx.asyncAssertSuccess(vv -> {
+          async.complete();
+        }));
       }));
     }));
     async.await(4000000);
@@ -356,9 +372,13 @@ public class PgPoolTest extends PgPoolTestBase {
 
   @Test
   public void testPoolConnectTimeout(TestContext ctx) {
+    Async async = ctx.async(2);
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    List<ProxyServer.Connection> connections = Collections.synchronizedList(new ArrayList<>());
     proxy.proxyHandler(conn -> {
       // Ignore connection
+      connections.add(conn);
+      async.countDown();
     });
 
     // Start proxy
@@ -378,7 +398,11 @@ public class PgPoolTest extends PgPoolTestBase {
     pool
       .getConnection(ctx.asyncAssertFailure(err -> {
         ctx.assertTrue(System.currentTimeMillis() - now > 900);
+        async.countDown();
       }));
+
+    async.awaitSuccess(20_000);
+    connections.forEach(conn -> conn.clientSocket().close());
   }
 
   @Test
