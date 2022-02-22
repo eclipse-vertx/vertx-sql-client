@@ -22,9 +22,9 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
+import io.vertx.sqlclient.impl.HexSequence;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.StringLongSequence;
 import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
 import io.vertx.sqlclient.impl.command.CloseStatementCommand;
@@ -35,7 +35,6 @@ import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.util.ArrayDeque;
-import java.util.List;
 import java.util.Map;
 
 import static io.vertx.pgclient.impl.util.Util.writeCString;
@@ -63,7 +62,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   private ChannelHandlerContext ctx;
   private ByteBuf out;
   private PgDecoder dec;
-  private final StringLongSequence psSeq = new StringLongSequence(); // used for generating named prepared statement name
+  private final HexSequence psSeq = new HexSequence(); // used for generating named prepared statement name
 
   PgEncoder(PgDecoder dec, ArrayDeque<PgCommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
@@ -188,17 +187,13 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
-  void writeClosePreparedStatement(long statementName) {
+  void writeClosePreparedStatement(byte[] statementName) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(CLOSE);
     out.writeInt(0);
     out.writeByte('S'); // 'S' to close a prepared statement or 'P' to close a portal
-    if (statementName == 0) {
-      out.writeByte(0);
-    } else {
-      out.writeLong(statementName);
-    }
+    out.writeBytes(statementName);
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
@@ -301,9 +296,9 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     int pos = out.writerIndex();
     out.writeByte(DESCRIBE);
     out.writeInt(0);
-    if (describe.statement != 0) {
+    if (describe.statement.length > 1) {
       out.writeByte('S');
-      out.writeLong(describe.statement);
+      out.writeBytes(describe.statement);
     } else if (describe.portal != null) {
       out.writeByte('P');
       Util.writeCStringUTF8(out, describe.portal);
@@ -314,16 +309,12 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos- 1);
   }
 
-  void writeParse(String sql, long statement, DataType[] parameterTypes) {
+  void writeParse(String sql, byte[] statement, DataType[] parameterTypes) {
     ensureBuffer();
     int pos = out.writerIndex();
     out.writeByte(PARSE);
     out.writeInt(0);
-    if (statement == 0) {
-      out.writeByte(0);
-    } else {
-      out.writeLong(statement);
-    }
+    out.writeBytes(statement);
     Util.writeCStringUTF8(out, sql);
     if (parameterTypes == null) {
       // Let pg figure out
@@ -385,11 +376,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
       out.writeCharSequence(portal, UTF_8);
     }
     out.writeByte(0);
-    if (bind.statement == 0) {
-      out.writeByte(0);
-    } else {
-      out.writeLong(bind.statement);
-    }
+    out.writeBytes(bind.statement);
     int paramLen = paramValues.size();
     out.writeShort(paramLen);
     // Parameter formats
@@ -437,7 +424,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     }
   }
 
-  long nextStatementName() {
+  byte[] nextStatementName() {
     return psSeq.next();
   }
 
