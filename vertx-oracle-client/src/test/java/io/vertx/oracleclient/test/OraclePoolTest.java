@@ -12,6 +12,8 @@ package io.vertx.oracleclient.test;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -238,5 +240,49 @@ public class OraclePoolTest extends OracleTestBase {
         conn.close(ctx.asyncAssertSuccess());
       }));
     }));
+  }
+
+  @Test
+  public void testDirectQueryFromDuplicatedContext(TestContext ctx) {
+    OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1));
+    Async async = ctx.async();
+    vertx.runOnContext(v1 -> {
+      ContextInternal current = (ContextInternal) Vertx.currentContext();
+      pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertTrue(Vertx.currentContext() == current);
+        ContextInternal duplicated = current.duplicate();
+        duplicated.runOnContext(v2 -> {
+          pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertTrue(Vertx.currentContext() == duplicated);
+            async.complete();
+          }));
+        });
+      }));
+    });
+  }
+
+  @Test
+  public void testQueryFromDuplicatedContext(TestContext ctx) {
+    OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1));
+    Async async = ctx.async();
+    vertx.runOnContext(v1 -> {
+      ContextInternal current = (ContextInternal) Vertx.currentContext();
+      pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertTrue(Vertx.currentContext() == current);
+        ContextInternal duplicated = current.duplicate();
+        duplicated.runOnContext(v2 -> {
+          pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+            ctx.assertTrue(Vertx.currentContext() == duplicated);
+            conn.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res2 -> {
+              ctx.assertTrue(Vertx.currentContext() == duplicated);
+              conn.close(ctx.asyncAssertSuccess(v -> {
+                ctx.assertTrue(Vertx.currentContext() == duplicated);
+                async.complete();
+              }));
+            }));
+          }));
+        });
+      }));
+    });
   }
 }
