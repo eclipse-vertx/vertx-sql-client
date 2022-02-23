@@ -12,8 +12,8 @@ package io.vertx.oracleclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
@@ -84,31 +84,29 @@ public class CommandHandler implements Connection {
   }
 
   public Future<Void> afterAcquire() {
-    if (Vertx.currentContext() != context) {
-      throw new IllegalStateException();
-    }
-    return context.executeBlocking(prom -> {
+    PromiseInternal<Void> promise = context.owner().promise();
+    context.executeBlocking(prom -> {
       try {
         connection.beginRequest();
         prom.complete();
       } catch (SQLException e) {
         prom.fail(e);
       }
-    }, false);
+    }, false, promise);
+    return promise.future();
   }
 
   public Future<Void> beforeRecycle() {
-    if (Vertx.currentContext() != context) {
-      throw new IllegalStateException();
-    }
-    return context.executeBlocking(prom -> {
+    PromiseInternal<Void> promise = context.owner().promise();
+    context.executeBlocking(prom -> {
       try {
         connection.endRequest();
         prom.complete();
       } catch (SQLException e) {
         prom.fail(e);
       }
-    }, false);
+    }, false, promise);
+    return promise.future();
   }
 
   @SuppressWarnings("unchecked")
