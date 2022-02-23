@@ -23,11 +23,10 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-sql-client-parent</artifactId>
-    <version>4.2.5</version>
+    <version>4.2.6-SNAPSHOT</version>
   </parent>
 
   <artifactId>vertx-oracle-client</artifactId>
-  <version>4.2.5.1</version>
 
   <name>Vertx Oracle Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
