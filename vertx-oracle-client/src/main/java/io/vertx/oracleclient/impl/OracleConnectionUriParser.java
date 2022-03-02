@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -10,133 +10,384 @@
  */
 package io.vertx.oracleclient.impl;
 
+import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonObject;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static java.lang.Integer.parseInt;
+import static io.vertx.oracleclient.ServerMode.of;
 
 public class OracleConnectionUriParser {
 
-  private static final String SCHEME_DESIGNATOR_REGEX = "oracle:thin:"; // URI scheme designator
-  private static final String USER_INFO_REGEX = "(?<userinfo>[a-zA-Z0-9\\-._~%!*&&[^/]]+/[a-zA-Z0-9\\-._~%!*&&[^/]]+)?"; // username and password
-  private static final String NET_LOCATION_REGEX = "@(?<netloc>([0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+))";
-  private static final String PORT_REGEX = ":(?<port>\\d+)"; // port
-  private static final String SID = ":(?<sid>[a-zA-Z0-9\\-._~%!*]+)"; // sid name
-
-  private static final Pattern SCHEME_DESIGNATOR_PATTERN = Pattern.compile("^" + SCHEME_DESIGNATOR_REGEX);
-  private static final Pattern FULL_URI_PATTERN = Pattern.compile("^"
-    + SCHEME_DESIGNATOR_REGEX
-    + USER_INFO_REGEX
-    + NET_LOCATION_REGEX
-    + PORT_REGEX
-    + SID
-    + "$");
+  public static final String SCHEME = "oracle:thin:";
+  public static final String TCPS_PROTOCOL = "tcps://";
+  public static final String TCP_PROTOCOL = "tcp://";
 
   public static JsonObject parse(String connectionUri) {
     return parse(connectionUri, true);
   }
 
   public static JsonObject parse(String connectionUri, boolean exact) {
+    if (connectionUri == null) {
+      if (exact) {
+        throw new NullPointerException("connectionUri is null");
+      }
+      return null;
+    }
+    if (!connectionUri.startsWith(SCHEME)) {
+      if (exact) {
+        throw new IllegalArgumentException("Invalid scheme: " + connectionUri);
+      }
+      return null;
+    }
+    JsonObject configuration = new JsonObject();
+    RuntimeException caught;
     try {
-      Matcher matcher = SCHEME_DESIGNATOR_PATTERN.matcher(connectionUri);
-      if (matcher.find() || exact) {
-        JsonObject configuration = new JsonObject();
-        doParse(connectionUri, configuration);
-        return configuration;
-      } else {
+      ParsingStage stage = ParsingStage.initial(connectionUri, configuration);
+      do {
+        stage = stage.doParse();
+      } while (stage != null);
+      return configuration;
+    } catch (RuntimeException e) {
+      caught = e;
+    }
+    IllegalArgumentException exception = new IllegalArgumentException("Cannot parse invalid connection URI: " + connectionUri);
+    if (caught != null) {
+      exception.initCause(caught);
+    }
+    throw exception;
+  }
+
+  private static abstract class ParsingStage {
+
+    final String connectionUri;
+    final int beginIdx;
+    final JsonObject configuration;
+
+    ParsingStage(String connectionUri, int beginIdx, JsonObject configuration) {
+      this.connectionUri = connectionUri;
+      this.beginIdx = beginIdx;
+      this.configuration = configuration;
+    }
+
+    static ParsingStage initial(String connectionUri, JsonObject configuration) {
+      return new UserAndPassword(connectionUri, SCHEME.length(), configuration);
+    }
+
+    abstract ParsingStage doParse();
+
+    ParsingStage hostOrIpV6(int i) {
+      return connectionUri.charAt(i) == '[' ? new Ipv6(connectionUri, i + 1, configuration) : new Host(connectionUri, i, configuration);
+    }
+
+    ParsingStage afterHost(int i) {
+      if (i == connectionUri.length()) {
+        throw new VertxException("Missing service name or service id", true);
+      }
+      char c = connectionUri.charAt(i);
+      if (c == ',') {
+        throw new VertxException("URLs with multiple hosts are not supported yet", true);
+      }
+      if (c == '/') {
+        return new ServiceName(connectionUri, i + 1, configuration);
+      }
+      if (c == ':') {
+        return portOrServiceId(i + 1);
+      }
+      throw new VertxException("Invalid content after host", true);
+    }
+
+    ParsingStage portOrServiceId(int i) {
+      int j = i;
+      for (; j < connectionUri.length(); j++) {
+        char c = connectionUri.charAt(j);
+        if (c == ',' || c == ':' || c == '/' || c == '?') {
+          break;
+        }
+        if (Character.getType(c) != Character.DECIMAL_DIGIT_NUMBER) {
+          return new ServiceId(connectionUri, i, configuration);
+        }
+      }
+      if (i == j) {
+        throw new VertxException("Empty port or service id", true);
+      }
+      return new Port(connectionUri, i, j, configuration);
+    }
+
+    static class UserAndPassword extends ParsingStage {
+
+      UserAndPassword(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
+
+      @Override
+      ParsingStage doParse() {
+        int i = connectionUri.indexOf('@', beginIdx);
+        if (i < beginIdx) {
+          throw new VertxException("Did not find '@' sign", true);
+        }
+        if (i == beginIdx) {
+          return new Protocol(connectionUri, beginIdx + 1, configuration);
+        }
+        String userInfo = connectionUri.substring(beginIdx, i);
+        String[] split = userInfo.split(userInfo.indexOf('/') >= 0 ? "/" : ":");
+        if (split.length != 2) {
+          throw new VertxException("User and password must be provided or omitted", true);
+        }
+        String user = split[0];
+        if (user.isEmpty()) {
+          throw new VertxException("User is missing", true);
+        }
+        String password = split[1];
+        if (password.isEmpty()) {
+          throw new VertxException("Password is missing", true);
+        }
+        configuration.put("user", decodeUrl(user));
+        configuration.put("password", decodeUrl(password));
+
+        return new Protocol(connectionUri, i + 1, configuration);
+      }
+    }
+
+    static class Protocol extends ParsingStage {
+
+      Protocol(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
+
+      @Override
+      ParsingStage doParse() {
+        int i;
+        if (connectionUri.startsWith(TCPS_PROTOCOL, beginIdx)) {
+          configuration.put("ssl", true);
+          i = beginIdx + TCPS_PROTOCOL.length();
+        } else if (connectionUri.startsWith(TCP_PROTOCOL, beginIdx)) {
+          i = beginIdx + TCP_PROTOCOL.length();
+        } else {
+          i = beginIdx;
+        }
+        return hostOrIpV6(i);
+      }
+    }
+
+    static class Ipv6 extends ParsingStage {
+
+      Ipv6(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
+
+      @Override
+      ParsingStage doParse() {
+        int i = connectionUri.indexOf(']', beginIdx);
+        if (i < beginIdx) {
+          throw new VertxException("Did not find ']' sign", true);
+        }
+        if (i == beginIdx) {
+          throw new VertxException("Empty IPv6 address", true);
+        }
+        configuration.put("host", connectionUri.substring(beginIdx, i));
+        return afterHost(i + 1);
+      }
+    }
+
+    static class Host extends ParsingStage {
+
+      Host(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
+
+      @Override
+      ParsingStage doParse() {
+        int j = beginIdx;
+        for (; j < connectionUri.length(); j++) {
+          char c = connectionUri.charAt(j);
+          if (c == ',' || c == ':' || c == '/' || c == '?') {
+            break;
+          }
+        }
+        if (beginIdx == j) {
+          throw new VertxException("Empty host", true);
+        }
+        configuration.put("host", decodeUrl(connectionUri.substring(beginIdx, j)));
+        return afterHost(j);
+      }
+    }
+
+    static class Port extends ParsingStage {
+
+      final int endIdx;
+
+      Port(String connectionUri, int beginIdx, int endIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+        this.endIdx = endIdx;
+      }
+
+      @Override
+      ParsingStage doParse() {
+        long port = Long.parseLong(connectionUri.substring(beginIdx, endIdx));
+        if (port > 65535 || port <= 0) {
+          throw new VertxException("The port can only range in 1-65535", true);
+        }
+        configuration.put("port", port);
+        if (endIdx == connectionUri.length()) {
+          throw new VertxException("Missing service name or service id");
+        }
+        char c = connectionUri.charAt(endIdx);
+        if (c == ',') {
+          throw new VertxException("URLs with multiple hosts are not supported yet", true);
+        }
+        if (c == ':') {
+          return new ServiceId(connectionUri, endIdx + 1, configuration);
+        }
+        if (c == '/') {
+          return new ServiceName(connectionUri, endIdx + 1, configuration);
+        }
+        throw new IllegalStateException();
+      }
+    }
+
+    static class ServiceId extends ParsingStage {
+
+      ServiceId(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
+
+      @Override
+      ParsingStage doParse() {
+        int i;
+        if (beginIdx == connectionUri.length() || (i = connectionUri.indexOf('?', beginIdx)) == beginIdx) {
+          throw new VertxException("Empty service id", true);
+        }
+        if (i >= 0) {
+          configuration.put("serviceId", decodeUrl(connectionUri.substring(beginIdx, i)));
+          return new ConnectionProps(connectionUri, i + 1, configuration);
+        }
+        configuration.put("serviceId", decodeUrl(connectionUri.substring(beginIdx)));
         return null;
       }
-    } catch (Exception e) {
-      throw new IllegalArgumentException("Cannot parse invalid connection URI: " + connectionUri, e);
     }
-  }
 
-  // execute the parsing process and store options in the configuration
-  private static void doParse(String connectionUri, JsonObject configuration) {
-    Matcher matcher = FULL_URI_PATTERN.matcher(connectionUri);
+    static class ServiceName extends ParsingStage {
 
-    if (matcher.matches()) {
-      // parse the user and password
-      parseUserAndPassword(matcher.group("userinfo"), configuration);
+      ServiceName(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
 
-      // parse the IP address/host/unix domainSocket address
-      parseNetLocation(matcher.group("netloc"), configuration);
-
-      // parse the port
-      parsePort(matcher.group("port"), configuration);
-
-      // parse the sid name
-      parseSID(matcher.group("sid"), configuration);
-
-    } else {
-      throw new IllegalArgumentException("Wrong syntax of connection URI");
+      @Override
+      ParsingStage doParse() {
+        int i = beginIdx;
+        for (; i < connectionUri.length(); i++) {
+          char c = connectionUri.charAt(i);
+          if (c == ':' || c == '/' || c == '?') {
+            break;
+          }
+        }
+        if (beginIdx == i) {
+          throw new VertxException("Empty service name", true);
+        }
+        configuration.put("serviceName", decodeUrl(connectionUri.substring(beginIdx, i)));
+        if (i == connectionUri.length()) {
+          return null;
+        }
+        char c = connectionUri.charAt(i);
+        if (c == ':') {
+          return new ServerMode(connectionUri, i + 1, configuration);
+        }
+        if (c == '/') {
+          return new InstanceName(connectionUri, i + 1, configuration);
+        }
+        if (c == '?') {
+          return new ConnectionProps(connectionUri, i + 1, configuration);
+        }
+        throw new IllegalStateException();
+      }
     }
-  }
 
-  private static void parseUserAndPassword(String userInfo, JsonObject configuration) {
-    if (userInfo == null || userInfo.isEmpty()) {
-      return;
-    }
-    String[] split = userInfo.split("/");
-    if (split.length != 2) {
-      throw new IllegalArgumentException("User and password must be provided or omitted");
-    }
-    String user = split[0];
-    if (user.isEmpty()) {
-      throw new IllegalArgumentException("User is missing");
-    }
-    String password = split[1];
-    if (password.isEmpty()) {
-      throw new IllegalArgumentException("Password is missing");
-    }
-    configuration.put("user", decodeUrl(user));
-    configuration.put("password", decodeUrl(password));
-  }
+    static class ServerMode extends ParsingStage {
 
-  private static void parseNetLocation(String hostInfo, JsonObject configuration) {
-    if (hostInfo == null || hostInfo.isEmpty()) {
-      return;
-    }
-    parseNetLocationValue(decodeUrl(hostInfo), configuration);
-  }
+      ServerMode(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
 
-  private static void parsePort(String portInfo, JsonObject configuration) {
-    if (portInfo == null || portInfo.isEmpty()) {
-      return;
+      @Override
+      ParsingStage doParse() {
+        int i = beginIdx;
+        for (; i < connectionUri.length(); i++) {
+          char c = connectionUri.charAt(i);
+          if (c == '/' || c == '?') {
+            break;
+          }
+        }
+        if (beginIdx == i) {
+          throw new VertxException("Empty server mode", true);
+        }
+        io.vertx.oracleclient.ServerMode mode = of(decodeUrl(connectionUri.substring(beginIdx, i)));
+        if (mode == null) {
+          throw new VertxException("Invalid server mode", true);
+        }
+        configuration.put("serverMode", mode.toString());
+        if (i == connectionUri.length()) {
+          return null;
+        }
+        char c = connectionUri.charAt(i);
+        if (c == '/') {
+          return new InstanceName(connectionUri, i + 1, configuration);
+        }
+        if (c == '?') {
+          return new ConnectionProps(connectionUri, i + 1, configuration);
+        }
+        throw new IllegalStateException();
+      }
     }
-    int port;
-    try {
-      port = parseInt(decodeUrl(portInfo));
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException("The port must be a valid integer");
-    }
-    if (port > 65535 || port <= 0) {
-      throw new IllegalArgumentException("The port can only range in 1-65535");
-    }
-    configuration.put("port", port);
-  }
 
-  private static void parseSID(String sidInfo, JsonObject configuration) {
-    if (sidInfo == null || sidInfo.isEmpty()) {
-      return;
-    }
-    configuration.put("database", decodeUrl(sidInfo));
-  }
+    static class InstanceName extends ParsingStage {
 
-  private static void parseNetLocationValue(String hostValue, JsonObject configuration) {
-    if (isRegardedAsIpv6Address(hostValue)) {
-      configuration.put("host", hostValue.substring(1, hostValue.length() - 1));
-    } else {
-      configuration.put("host", hostValue);
-    }
-  }
+      InstanceName(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
 
-  private static boolean isRegardedAsIpv6Address(String hostAddress) {
-    return hostAddress.startsWith("[") && hostAddress.endsWith("]");
+      @Override
+      ParsingStage doParse() {
+        if (beginIdx == connectionUri.length()) {
+          throw new VertxException("Empty instance name", true);
+        }
+        int i = connectionUri.indexOf('?', beginIdx);
+        if (i > 0) {
+          configuration.put("instanceName", decodeUrl(connectionUri.substring(beginIdx, i)));
+          return new ConnectionProps(connectionUri, i + 1, configuration);
+        }
+        configuration.put("instanceName", decodeUrl(connectionUri.substring(beginIdx)));
+        return null;
+      }
+    }
+
+    static class ConnectionProps extends ParsingStage {
+
+      ConnectionProps(String connectionUri, int beginIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+      }
+
+      @Override
+      ParsingStage doParse() {
+        if (beginIdx == connectionUri.length()) {
+          throw new VertxException("Empty connection properties", true);
+        }
+        JsonObject properties = new JsonObject();
+        for (String prop : connectionUri.substring(beginIdx).split("&")) {
+          if (prop.isEmpty()) {
+            throw new VertxException("Empty connection property", true);
+          }
+          String[] split = prop.split("=");
+          if (split.length != 2) {
+            throw new VertxException("Connection property without value: " + prop, true);
+          }
+          properties.put(decodeUrl(split[0]), decodeUrl(split[1]));
+        }
+        configuration.put("properties", properties);
+        return null;
+      }
+    }
   }
 
   private static String decodeUrl(String url) {

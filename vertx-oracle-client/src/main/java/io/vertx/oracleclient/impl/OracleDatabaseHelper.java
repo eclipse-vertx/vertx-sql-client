@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,11 +11,19 @@
 package io.vertx.oracleclient.impl;
 
 import io.vertx.oracleclient.OracleConnectOptions;
+import io.vertx.oracleclient.ServerMode;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.OracleDataSource;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.Optional;
+
 import static io.vertx.oracleclient.impl.Helper.getOrHandleSQLException;
 import static io.vertx.oracleclient.impl.Helper.runOrHandleSQLException;
+import static io.vertx.oracleclient.impl.OracleConnectionUriParser.SCHEME;
+import static io.vertx.oracleclient.impl.OracleConnectionUriParser.TCPS_PROTOCOL;
 
 public class OracleDatabaseHelper {
 
@@ -42,17 +50,46 @@ public class OracleDatabaseHelper {
    * @return An Oracle Connection JDBC URL
    */
   private static String composeJdbcUrl(OracleConnectOptions options) {
-    String serviceName = options.getDatabase();
+    StringBuilder url = new StringBuilder("jdbc:").append(SCHEME).append("@");
+    if (options.isSsl()) {
+      url.append(TCPS_PROTOCOL);
+    }
     String host = options.getHost();
+    if (host.indexOf(':') >= 0) { // IPv6 address
+      url.append("[").append(host).append("]");
+    } else {
+      url.append(encodeUrl(host));
+    }
     int port = options.getPort();
-    boolean isTcps = options.isSsl();
-
-    return String.format("jdbc:oracle:thin:@%s%s%s%s",
-      Boolean.TRUE.equals(isTcps) ? "tcps:" : "",
-      host,
-      port > 0 ? (":" + port) : "",
-      serviceName != null ? ("/" + serviceName) : "");
-
+    if (port > 0) {
+      url.append(":").append(port);
+    }
+    String serviceId = options.getServiceId();
+    if (serviceId != null) {
+      url.append(":").append(encodeUrl(serviceId));
+    } else {
+      String database = Optional.ofNullable(options.getServiceName()).orElse(options.getDatabase());
+      if (database != null) {
+        url.append("/").append(encodeUrl(database));
+        if (options.getServerMode() == ServerMode.SHARED) {
+          url.append(":").append(ServerMode.SHARED);
+        }
+      }
+    }
+    Map<String, String> properties = options.getProperties();
+    if (properties != null && !properties.isEmpty()) {
+      url.append("?");
+      boolean first = true;
+      for (Map.Entry<String, String> entry : properties.entrySet()) {
+        if (first) {
+          first = false;
+        } else {
+          url.append("&");
+        }
+        url.append(encodeUrl(entry.getKey())).append("=").append(encodeUrl(entry.getValue()));
+      }
+    }
+    return url.toString();
   }
 
   /**
@@ -143,5 +180,9 @@ public class OracleDatabaseHelper {
     // TODO: Disable the result set cache? This is needed to support the
     //  SERIALIZABLE isolation level, which requires result set caching to be
     //  disabled.
+  }
+
+  private static String encodeUrl(String url) {
+    return URLEncoder.encode(url, StandardCharsets.UTF_8);
   }
 }

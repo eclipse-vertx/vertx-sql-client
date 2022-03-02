@@ -34,6 +34,12 @@ public class OracleConnectOptions extends SqlConnectOptions {
     }
   }
 
+  public static final String DEFAULT_HOST = "localhost";
+  public static final int DEFAULT_PORT = 1521;
+  public static final String DEFAULT_USER = "";
+  public static final String DEFAULT_PASSWORD = "";
+  public static final String DEFAULT_DATABASE = "";
+
   private String serviceId;
   private String serviceName;
   private ServerMode serverMode;
@@ -288,6 +294,15 @@ public class OracleConnectOptions extends SqlConnectOptions {
     JsonObject json = super.toJson();
     OracleConnectOptionsConverter.toJson(this, json);
     return json;
+  }
+
+  @Override
+  protected void init() {
+    this.setHost(DEFAULT_HOST);
+    this.setPort(DEFAULT_PORT);
+    this.setUser(DEFAULT_USER);
+    this.setPassword(DEFAULT_PASSWORD);
+    this.setDatabase(DEFAULT_DATABASE);
   }
 
   @Override
