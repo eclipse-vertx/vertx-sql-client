@@ -34,6 +34,16 @@ public class OracleConnectOptions extends SqlConnectOptions {
     }
   }
 
+  public static final String DEFAULT_HOST = "localhost";
+  public static final int DEFAULT_PORT = 1521;
+  public static final String DEFAULT_USER = "";
+  public static final String DEFAULT_PASSWORD = "";
+  public static final String DEFAULT_DATABASE = "";
+
+  private String serviceId;
+  private String serviceName;
+  private ServerMode serverMode;
+  private String instanceName;
   // Support TNS_ADMIN (tnsnames.ora, ojdbc.properties).
   private String tnsAdmin;
 
@@ -42,6 +52,10 @@ public class OracleConnectOptions extends SqlConnectOptions {
 
   public OracleConnectOptions(OracleConnectOptions other) {
     super(other);
+    this.serviceId = other.serviceId;
+    this.serviceName = other.serviceName;
+    this.serverMode = other.serverMode;
+    this.instanceName = other.instanceName;
     this.tnsAdmin = other.tnsAdmin;
   }
 
@@ -67,6 +81,80 @@ public class OracleConnectOptions extends SqlConnectOptions {
   }
 
   // Oracle-specific options
+
+  /**
+   * @return the Oracle service identifier (SID)
+   */
+  public String getServiceId() {
+    return serviceId;
+  }
+
+  /**
+   * Set the Oracle service identifier (SID).
+   * If set, the client will build an Oracle connection URL using SID instead of the EZConnect format.
+   *
+   * @param serviceId the service identifier
+   * @return a reference to this, so the API can be used fluently
+   */
+  public OracleConnectOptions setServiceId(String serviceId) {
+    this.serviceId = serviceId;
+    return this;
+  }
+
+  /**
+   * @return the Oracle service name
+   */
+  public String getServiceName() {
+    return serviceName;
+  }
+
+  /**
+   * Set the Oracle service name.
+   * If set, the client will build an Oracle connection URL in the EZConnect format.
+   *
+   * @param serviceName the Oracle service name
+   * @return a reference to this, so the API can be used fluently
+   */
+  public OracleConnectOptions setServiceName(String serviceName) {
+    this.serviceName = serviceName;
+    return this;
+  }
+
+  /**
+   * @return the server connection mode
+   */
+  public ServerMode getServerMode() {
+    return serverMode;
+  }
+
+  /**
+   * Set the server connection mode.
+   *
+   * @param serverMode the connection mode
+   * @return a reference to this, so the API can be used fluently
+   */
+  public OracleConnectOptions setServerMode(ServerMode serverMode) {
+    this.serverMode = serverMode;
+    return this;
+  }
+
+  /**
+   * @return the Oracle instance name
+   */
+  public String getInstanceName() {
+    return instanceName;
+  }
+
+  /**
+   * Set the Oracle instance name.
+   *
+   * @param instanceName the instance name
+   * @return a reference to this, so the API can be used fluently
+   */
+  public OracleConnectOptions setInstanceName(String instanceName) {
+    this.instanceName = instanceName;
+    return this;
+  }
 
   public String getTnsAdmin() {
     return tnsAdmin;
@@ -124,6 +212,13 @@ public class OracleConnectOptions extends SqlConnectOptions {
     return super.getDatabase();
   }
 
+  /**
+   * Set the database name.
+   * If set, the client will build an Oracle connection URL in the EZConnect format using the {@code database} value as service name.
+   *
+   * @param database the database name to specify
+   * @return a reference to this, so the API can be used fluently
+   */
   @Override
   public OracleConnectOptions setDatabase(String database) {
     return (OracleConnectOptions) super.setDatabase(database);
@@ -199,6 +294,15 @@ public class OracleConnectOptions extends SqlConnectOptions {
     JsonObject json = super.toJson();
     OracleConnectOptionsConverter.toJson(this, json);
     return json;
+  }
+
+  @Override
+  protected void init() {
+    this.setHost(DEFAULT_HOST);
+    this.setPort(DEFAULT_PORT);
+    this.setUser(DEFAULT_USER);
+    this.setPassword(DEFAULT_PASSWORD);
+    this.setDatabase(DEFAULT_DATABASE);
   }
 
   @Override
