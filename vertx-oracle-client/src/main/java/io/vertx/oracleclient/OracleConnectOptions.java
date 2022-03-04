@@ -44,7 +44,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
   private String serviceName;
   private ServerMode serverMode;
   private String instanceName;
-  // Support TNS_ADMIN (tnsnames.ora, ojdbc.properties).
+  private String tnsAlias;
   private String tnsAdmin;
 
   public OracleConnectOptions() {
@@ -56,6 +56,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
     this.serviceName = other.serviceName;
     this.serverMode = other.serverMode;
     this.instanceName = other.instanceName;
+    this.tnsAlias = other.tnsAlias;
     this.tnsAdmin = other.tnsAdmin;
   }
 
@@ -156,10 +157,37 @@ public class OracleConnectOptions extends SqlConnectOptions {
     return this;
   }
 
+  /**
+   * @return name of the alias configured in the {@code tnsnames.ora} file
+   */
+  public String getTnsAlias() {
+    return tnsAlias;
+  }
+
+  /**
+   * Set the name of an alias configured in the {@code tnsnames.ora} file.
+   *
+   * @param tnsAlias the instance name
+   * @return a reference to this, so the API can be used fluently
+   */
+  public OracleConnectOptions setTnsAlias(String tnsAlias) {
+    this.tnsAlias = tnsAlias;
+    return this;
+  }
+
+  /**
+   * @return the path of the directory that contains the {@code tnsnames.ora} file
+   */
   public String getTnsAdmin() {
     return tnsAdmin;
   }
 
+  /**
+   * Set the path of the directory that contains the {@code tnsnames.ora} file.
+   *
+   * @param tnsAdmin path of the directory
+   * @return a reference to this, so the API can be used fluently
+   */
   public OracleConnectOptions setTnsAdmin(String tnsAdmin) {
     this.tnsAdmin = tnsAdmin;
     return this;

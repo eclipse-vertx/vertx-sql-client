@@ -114,6 +114,17 @@ public class ValidOracleConnectionUriParsingTest {
           .put("serviceName", "orcl")
           .put("host", "::1")
           .put("serverMode", "dedicated")},
+      {"uri with TNSNames alias and TNS ADMIN short prop", "oracle:thin:@prod_db?TNS_ADMIN=/work/tns",
+        new JsonObject()
+          .put("tnsAlias", "prod_db")
+          .put("tnsAdmin", "/work/tns")},
+      {"uri with TNSNames alias", "oracle:thin:@prod_db",
+        new JsonObject()
+          .put("tnsAlias", "prod_db")},
+      {"uri with TNSNames alias with prop", "oracle:thin:@prod_db?key=val",
+        new JsonObject()
+          .put("properties", new JsonObject().put("key", "val"))
+          .put("tnsAlias", "prod_db")},
     };
     return params;
   }

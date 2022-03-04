@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 import static io.vertx.oracleclient.ServerMode.of;
+import static oracle.jdbc.OracleConnection.CONNECTION_PROPERTY_TNS_ADMIN;
 
 public class OracleConnectionUriParser {
 
@@ -86,6 +87,22 @@ public class OracleConnectionUriParser {
       }
       if (connectionUri.charAt(i) == '(') {
         throw new VertxException("TNS URL Format is not supported", true);
+      }
+      if (configuration.containsKey("user")) {
+        return hostOrIpV6(i);
+      }
+      j = connectionUri.lastIndexOf('?');
+      if (j < i) j = connectionUri.length();
+      boolean invalidChar = false;
+      for (int k = i; k < j; k++) {
+        char c = connectionUri.charAt(k);
+        if (c == ',' || c == '/' || c == ':') {
+          invalidChar = true;
+          break;
+        }
+      }
+      if (!invalidChar) {
+        return new TnsAlias(connectionUri, i, j, configuration);
       }
       return hostOrIpV6(i);
     }
@@ -160,6 +177,25 @@ public class OracleConnectionUriParser {
         configuration.put("password", decodeUrl(password));
 
         return afterAtSign(i + 1);
+      }
+    }
+
+    static class TnsAlias extends ParsingStage {
+
+      final int endIdx;
+
+      TnsAlias(String connectionUri, int beginIdx, int endIdx, JsonObject configuration) {
+        super(connectionUri, beginIdx, configuration);
+        this.endIdx = endIdx;
+      }
+
+      @Override
+      ParsingStage doParse() {
+        if (beginIdx == endIdx) {
+          throw new VertxException("Empty TNS alias", true);
+        }
+        configuration.put("tnsAlias", decodeUrl(connectionUri.substring(beginIdx, endIdx)));
+        return endIdx == connectionUri.length() ? null : new ConnectionProps(connectionUri, endIdx + 1, configuration);
       }
     }
 
@@ -401,9 +437,17 @@ public class OracleConnectionUriParser {
           if (split.length != 2) {
             throw new VertxException("Connection property without value: " + prop, true);
           }
-          properties.put(decodeUrl(split[0]), decodeUrl(split[1]));
+          String key = decodeUrl(split[0]);
+          String value = decodeUrl(split[1]);
+          if (key.equalsIgnoreCase("TNS_ADMIN") || key.equalsIgnoreCase(CONNECTION_PROPERTY_TNS_ADMIN)) {
+            configuration.put("tnsAdmin", value);
+          } else {
+            properties.put(key, value);
+          }
         }
-        configuration.put("properties", properties);
+        if (!properties.isEmpty()) {
+          configuration.put("properties", properties);
+        }
         return null;
       }
     }
