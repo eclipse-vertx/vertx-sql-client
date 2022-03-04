@@ -76,19 +76,6 @@ public class OracleDatabaseHelper {
         }
       }
     }
-    Map<String, String> properties = options.getProperties();
-    if (properties != null && !properties.isEmpty()) {
-      url.append("?");
-      boolean first = true;
-      for (Map.Entry<String, String> entry : properties.entrySet()) {
-        if (first) {
-          first = false;
-        } else {
-          url.append("&");
-        }
-        url.append(encodeUrl(entry.getKey())).append("=").append(encodeUrl(entry.getValue()));
-      }
-    }
     return url.toString();
   }
 
@@ -96,10 +83,15 @@ public class OracleDatabaseHelper {
    * Configures an {@code OracleDataSource}.
    *
    * @param oracleDataSource An data source to configure
-   * @param options          OracleConnectOptions options. Not null.
+   * @param options OracleConnectOptions options. Not null.
    */
-  private static void configureStandardOptions(
-    OracleDataSource oracleDataSource, OracleConnectOptions options) {
+  private static void configureStandardOptions(OracleDataSource oracleDataSource, OracleConnectOptions options) {
+    Map<String, String> properties = options.getProperties();
+    if (properties != null && !properties.isEmpty()) {
+      for (Map.Entry<String, String> entry : properties.entrySet()) {
+        runOrHandleSQLException(() -> oracleDataSource.setConnectionProperty(entry.getKey(), entry.getValue()));
+      }
+    }
 
     String user = options.getUser();
     if (user != null) {
@@ -108,16 +100,13 @@ public class OracleDatabaseHelper {
 
     CharSequence password = options.getPassword();
     if (password != null) {
-      runOrHandleSQLException(() ->
-        oracleDataSource.setPassword(password.toString()));
+      runOrHandleSQLException(() -> oracleDataSource.setPassword(password.toString()));
     }
 
     int connectTimeout = options.getConnectTimeout();
     if (connectTimeout > 0) {
-      runOrHandleSQLException(() ->
-        oracleDataSource.setLoginTimeout(connectTimeout));
+      runOrHandleSQLException(() -> oracleDataSource.setLoginTimeout(connectTimeout));
     }
-
   }
 
   private static void configureExtendedOptions(
