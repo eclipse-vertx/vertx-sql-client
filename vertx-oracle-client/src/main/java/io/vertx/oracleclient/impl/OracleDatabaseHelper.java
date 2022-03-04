@@ -22,6 +22,7 @@ import java.util.Optional;
 
 import static io.vertx.oracleclient.impl.Helper.getOrHandleSQLException;
 import static io.vertx.oracleclient.impl.Helper.runOrHandleSQLException;
+import static oracle.jdbc.OracleConnection.CONNECTION_PROPERTY_TNS_ADMIN;
 
 public class OracleDatabaseHelper {
 
@@ -49,6 +50,10 @@ public class OracleDatabaseHelper {
    */
   private static String composeJdbcUrl(OracleConnectOptions options) {
     StringBuilder url = new StringBuilder("jdbc:oracle:thin:@");
+    String tnsAlias = options.getTnsAlias();
+    if (tnsAlias != null) {
+      return url.append(tnsAlias).toString();
+    }
     if (options.isSsl()) {
       url.append("tcps://");
     }
@@ -107,16 +112,10 @@ public class OracleDatabaseHelper {
     }
   }
 
-  private static void configureExtendedOptions(
-    OracleDataSource oracleDataSource, OracleConnectOptions options) {
-
-    // Handle the short form of the TNS_ADMIN option
+  private static void configureExtendedOptions(OracleDataSource oracleDataSource, OracleConnectOptions options) {
     String tnsAdmin = options.getTnsAdmin();
     if (tnsAdmin != null) {
-      // Configure using the long form: oracle.net.tns_admin
-      runOrHandleSQLException(() ->
-        oracleDataSource.setConnectionProperty(
-          OracleConnection.CONNECTION_PROPERTY_TNS_ADMIN, tnsAdmin));
+      runOrHandleSQLException(() -> oracleDataSource.setConnectionProperty(CONNECTION_PROPERTY_TNS_ADMIN, tnsAdmin));
     }
 
     // TODO Iterate over the other properties.

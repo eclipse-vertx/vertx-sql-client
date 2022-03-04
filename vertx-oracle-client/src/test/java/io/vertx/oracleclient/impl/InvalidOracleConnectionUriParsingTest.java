@@ -11,6 +11,7 @@
 
 package io.vertx.oracleclient.impl;
 
+import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -73,6 +74,7 @@ public class InvalidOracleConnectionUriParsingTest {
           assertNotNull(e.getCause());
           assertTrue(e.getCause().getMessage().toLowerCase(ENGLISH).contains("tns url"));
         }),
+      testData("uri with empty TNSNames alias", "oracle:thin:@?key=val"),
     };
     return params;
   }
@@ -96,8 +98,8 @@ public class InvalidOracleConnectionUriParsingTest {
   @Test
   public void shouldFailToParseInvalidUri() {
     try {
-      OracleConnectionUriParser.parse(connectionUri);
-      fail("Should fail to parse: " + connectionUri);
+      JsonObject conf = OracleConnectionUriParser.parse(connectionUri);
+      fail(String.format("Should fail to parse: %s\n%s", connectionUri, conf.encodePrettily()));
     } catch (Exception e) {
       if (connectionUri == null) {
         assertThat(e, is(instanceOf(NullPointerException.class)));
