@@ -22,8 +22,6 @@ import java.util.Optional;
 
 import static io.vertx.oracleclient.impl.Helper.getOrHandleSQLException;
 import static io.vertx.oracleclient.impl.Helper.runOrHandleSQLException;
-import static io.vertx.oracleclient.impl.OracleConnectionUriParser.SCHEME;
-import static io.vertx.oracleclient.impl.OracleConnectionUriParser.TCPS_PROTOCOL;
 
 public class OracleDatabaseHelper {
 
@@ -50,9 +48,9 @@ public class OracleDatabaseHelper {
    * @return An Oracle Connection JDBC URL
    */
   private static String composeJdbcUrl(OracleConnectOptions options) {
-    StringBuilder url = new StringBuilder("jdbc:").append(SCHEME).append("@");
+    StringBuilder url = new StringBuilder("jdbc:oracle:thin:@");
     if (options.isSsl()) {
-      url.append(TCPS_PROTOCOL);
+      url.append("tcps://");
     }
     String host = options.getHost();
     if (host.indexOf(':') >= 0) { // IPv6 address

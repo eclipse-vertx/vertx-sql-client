@@ -15,14 +15,13 @@ import io.vertx.core.json.JsonObject;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import static io.vertx.oracleclient.ServerMode.of;
 
 public class OracleConnectionUriParser {
 
-  public static final String SCHEME = "oracle:thin:";
-  public static final String TCPS_PROTOCOL = "tcps://";
-  public static final String TCP_PROTOCOL = "tcp://";
+  private static final String SCHEME = "oracle:thin:";
 
   public static JsonObject parse(String connectionUri) {
     return parse(connectionUri, true);
@@ -77,6 +76,20 @@ public class OracleConnectionUriParser {
 
     abstract ParsingStage doParse();
 
+    ParsingStage afterAtSign(int i) {
+      if (i == connectionUri.length()) {
+        throw new VertxException("Empty net location", true);
+      }
+      int j = connectionUri.indexOf("://", i);
+      if (j >= i) {
+        return new Protocol(connectionUri, i, j, configuration);
+      }
+      if (connectionUri.charAt(i) == '(') {
+        throw new VertxException("TNS URL Format is not supported", true);
+      }
+      return hostOrIpV6(i);
+    }
+
     ParsingStage hostOrIpV6(int i) {
       return connectionUri.charAt(i) == '[' ? new Ipv6(connectionUri, i + 1, configuration) : new Host(connectionUri, i, configuration);
     }
@@ -128,7 +141,7 @@ public class OracleConnectionUriParser {
           throw new VertxException("Did not find '@' sign", true);
         }
         if (i == beginIdx) {
-          return new Protocol(connectionUri, beginIdx + 1, configuration);
+          return afterAtSign(beginIdx + 1);
         }
         String userInfo = connectionUri.substring(beginIdx, i);
         String[] split = userInfo.split(userInfo.indexOf('/') >= 0 ? "/" : ":");
@@ -146,28 +159,34 @@ public class OracleConnectionUriParser {
         configuration.put("user", decodeUrl(user));
         configuration.put("password", decodeUrl(password));
 
-        return new Protocol(connectionUri, i + 1, configuration);
+        return afterAtSign(i + 1);
       }
     }
 
     static class Protocol extends ParsingStage {
 
-      Protocol(String connectionUri, int beginIdx, JsonObject configuration) {
+      final int endIdx;
+
+      Protocol(String connectionUri, int beginIdx, int endIdx, JsonObject configuration) {
         super(connectionUri, beginIdx, configuration);
+        this.endIdx = endIdx;
       }
 
       @Override
       ParsingStage doParse() {
-        int i;
-        if (connectionUri.startsWith(TCPS_PROTOCOL, beginIdx)) {
-          configuration.put("ssl", true);
-          i = beginIdx + TCPS_PROTOCOL.length();
-        } else if (connectionUri.startsWith(TCP_PROTOCOL, beginIdx)) {
-          i = beginIdx + TCP_PROTOCOL.length();
-        } else {
-          i = beginIdx;
+        if (beginIdx == endIdx) {
+          throw new VertxException("Empty protocol", true);
         }
-        return hostOrIpV6(i);
+        String protocol = connectionUri.substring(beginIdx, endIdx).toLowerCase(Locale.ROOT);
+        if (protocol.equals("ldap") || protocol.equals("ldaps")) {
+          throw new VertxException("LDAP Syntax is not supported", true);
+        }
+        if (protocol.equals("tcps")) {
+          configuration.put("ssl", true);
+        } else if (!protocol.equals("tcp")) {
+          throw new VertxException("Unsupported protocol", true);
+        }
+        return hostOrIpV6(endIdx + 3);
       }
     }
 
