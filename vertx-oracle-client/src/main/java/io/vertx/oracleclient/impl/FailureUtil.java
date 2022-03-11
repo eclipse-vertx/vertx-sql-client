@@ -11,7 +11,7 @@
 
 package io.vertx.oracleclient.impl;
 
-import io.vertx.core.VertxException;
+import io.vertx.oracleclient.OracleException;
 import oracle.jdbc.OracleDatabaseException;
 
 import java.sql.SQLException;
@@ -24,7 +24,7 @@ public class FailureUtil {
       Throwable cause = se.getCause();
       if (cause instanceof OracleDatabaseException) {
         OracleDatabaseException oae = (OracleDatabaseException) cause;
-        return new VertxException(oae.toString(), true);
+        return new OracleException(oae.toString(), true);
       }
     }
     return t;
