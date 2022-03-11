@@ -14,6 +14,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.oracleclient.OracleException;
 import io.vertx.sqlclient.Tuple;
 import oracle.sql.TIMESTAMPTZ;
 
@@ -64,7 +65,7 @@ public class Helper {
     try {
       return supplier.getOrThrow();
     } catch (SQLException sqlException) {
-      throw new VertxException(sqlException);
+      throw new OracleException(sqlException);
     }
   }
 
@@ -73,7 +74,7 @@ public class Helper {
     try {
       runnable.runOrThrow();
     } catch (SQLException sqlException) {
-      throw new VertxException(sqlException);
+      throw new OracleException(sqlException);
     }
   }
 
