@@ -13,6 +13,7 @@ package io.vertx.oracleclient.test;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.oracleclient.OracleException;
 import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.PoolOptions;
@@ -41,6 +42,7 @@ public class OracleErrorSimpleTest extends OracleTestBase {
   @Test
   public void testMetadata(TestContext ctx) {
     pool.withConnection(conn -> conn.query("DROP TABLE u_dont_exist").execute(), ctx.asyncAssertFailure(t -> {
+      assertTrue(t.getClass().getName(), t instanceof OracleException);
       assertEquals(0, t.getStackTrace().length);
       assertTrue(t.getMessage().contains("ORA-00942") && t.getMessage().contains("u_dont_exist"));
     }));
