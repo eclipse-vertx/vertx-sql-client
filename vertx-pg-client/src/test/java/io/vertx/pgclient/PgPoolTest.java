@@ -302,7 +302,13 @@ public class PgPoolTest extends PgPoolTestBase {
     ctx.assertTrue(elapsed < 2000, "Was expecting pipelined latency " + elapsed + " < 2000");
   }
 
-/*  @Test
+  @Test
+  public void testCannotAcquireConnectionOnPipelinedPool(TestContext ctx) {
+    PgPool pool = (PgPool) PgPool.client(options, new PoolOptions().setMaxSize(1));
+    pool.getConnection(ctx.asyncAssertFailure());
+  }
+
+  /*  @Test
   public void testPipeliningDistribution(TestContext ctx) {
     int num = 10;
     SqlClient pool = PgPool.client(options.setPipeliningLimit(512), new PoolOptions().setMaxSize(num));
