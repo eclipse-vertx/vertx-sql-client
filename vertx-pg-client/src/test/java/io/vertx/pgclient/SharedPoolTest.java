@@ -51,9 +51,10 @@ public class SharedPoolTest extends PgTestBase {
     int maxSize = 8;
     int instances = maxSize * 4;
     vertx.deployVerticle(() -> new AbstractVerticle() {
+      PgPool pool;
       @Override
       public void start() {
-        PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
+        pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
         pool
           .query("SELECT pg_sleep(0.5);SELECT count(*) FROM pg_stat_activity WHERE application_name LIKE '%vertx%'")
           .execute(ctx.asyncAssertSuccess(rows -> {
@@ -71,9 +72,10 @@ public class SharedPoolTest extends PgTestBase {
     AtomicReference<String> deployment = new AtomicReference<>();
     Async async = ctx.async();
     vertx.deployVerticle(() -> new AbstractVerticle() {
+      PgPool pool;
       @Override
       public void start() {
-        PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
+        pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
         pool
           .query("SELECT 1")
           .execute(ctx.asyncAssertSuccess(res -> latch.countDown()));
@@ -107,9 +109,10 @@ public class SharedPoolTest extends PgTestBase {
     int instances = maxSize * 4;
     Async async = ctx.async();
     vertx.deployVerticle(new AbstractVerticle() {
+      PgPool pool;
       @Override
       public void start() {
-        PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
+        pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
         vertx.deployVerticle(() -> new AbstractVerticle() {
           @Override
           public void start(Promise<Void> startPromise) {
