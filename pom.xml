@@ -25,7 +25,7 @@
   </parent>
 
   <artifactId>vertx-sql-client-parent</artifactId>
-  <version>4.2.6</version>
+  <version>4.2.7-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Vertx SQL Client parent</name>
@@ -47,7 +47,7 @@
   </scm>
 
   <properties>
-    <stack.version>4.2.6</stack.version>
+    <stack.version>4.2.7-SNAPSHOT</stack.version>
     <doc.skip>true</doc.skip>
     <jmh.version>1.19</jmh.version>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
