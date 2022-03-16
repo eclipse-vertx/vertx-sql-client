@@ -40,12 +40,10 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
     int startIdx = content.writerIndex(); // Length
-    content.writeInt(0x00); // set length later by calculating
+    content.writeZero(4); // set length later by calculating
     content.writeInt(LoginPacket.SQL_SERVER_2017_VERSION); // TDSVersion
     content.writeIntLE(tdsMessageCodec.encoder().packetSize()); // PacketSize
-    content.writeIntLE(0x00); // ClientProgVer
-    content.writeIntLE(0x00); // ClientPID
-    content.writeIntLE(0x00); // ConnectionID
+    content.writeZero(12); // ClientProgVer + ClientPID + ConnectionID
     content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS1 |
       LoginPacket.OPTION_FLAGS1_ORDER_X86 |
       LoginPacket.OPTION_FLAGS1_CHARSET_ASCII |
@@ -59,8 +57,7 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     ); // OptionFlags2
     content.writeByte(LoginPacket.DEFAULT_TYPE_FLAGS); // TypeFlags
     content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS3); // OptionFlags3
-    content.writeIntLE(0x00); // ClientTimeZone
-    content.writeIntLE(0x00); // ClientLCID
+    content.writeZero(8); // ClientTimeZone + ClientLCID
 
     /*
       OffsetLength part:
@@ -71,19 +68,19 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     // HostName
     String hostName = Utils.getHostName();
     int hostNameOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
+    content.writeZero(2); // offset
     content.writeShortLE(hostName.length());
 
     // UserName
     String userName = cmd.username();
     int userNameOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
+    content.writeZero(2); // offset
     content.writeShortLE(userName.length());
 
     // Password
     String password = cmd.password();
     int passwordOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
+    content.writeZero(2); // offset
     content.writeShortLE(password.length());
 
     // AppName
@@ -92,19 +89,18 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
       appName = MSSQLConnectOptions.DEFAULT_APP_NAME;
     }
     int appNameOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
+    content.writeZero(2); // offset
     content.writeShortLE(appName.length());
 
     // ServerName
     String serverName = cmd.connection().socket().remoteAddress().host();
     int serverNameOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
+    content.writeZero(2); // offset
     content.writeShortLE(serverName.length());
 
     // Unused or Extension
     int unusedOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
-    content.writeShortLE(0);
+    content.writeZero(4);
 
     // CltIntName
     CharSequence interfaceLibraryName = properties.get("clientInterfaceName");
@@ -112,42 +108,37 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
       interfaceLibraryName = MSSQLConnectOptions.DEFAULT_CLIENT_INTERFACE_NAME;
     }
     int cltIntNameOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
+    content.writeZero(2); // offset
     content.writeShortLE(interfaceLibraryName.length());
 
     // Language
     int languageOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
-    content.writeShortLE(0);
+    content.writeZero(4);
 
     // Database
     String database = cmd.database();
     int databaseOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
+    content.writeZero(2); // offset
     content.writeShortLE(database.length());
 
     // ClientID
     // 6 BYTE
-    content.writeIntLE(0x00);
-    content.writeShortLE(0x00);
+    content.writeZero(6);
 
     // SSPI
     int sspiOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
-    content.writeShortLE(0x00);
+    content.writeZero(4);
 
     // AtchDBFile
     int atchDbFileOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
-    content.writeShortLE(0x00);
+    content.writeZero(4);
 
     // ChangePassword
     int changePasswordOffsetLengthIdx = content.writerIndex();
-    content.writeShortLE(0x00); // offset
-    content.writeShortLE(0x00);
+    content.writeZero(4);
 
     // SSPILong
-    content.writeIntLE(0x00);
+    content.writeZero(4);
 
     /*
       Data part: note we should set offset by calculation before writing data
