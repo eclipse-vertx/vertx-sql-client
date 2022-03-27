@@ -11,6 +11,7 @@
 
 package io.vertx.mysqlclient;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -24,16 +25,20 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLPipeliningTest extends MySQLTestBase {
   Vertx vertx;
   MySQLConnectOptions options;
+  AtomicInteger orderCheckCounter;
 
   @Before
   public void setup(TestContext ctx) {
     vertx = Vertx.vertx();
     options = new MySQLConnectOptions(MySQLTestBase.options);
+    options.setPipeliningLimit(64);
+    orderCheckCounter = new AtomicInteger(0);
     cleanTestTable(ctx);
   }
 
@@ -43,98 +48,91 @@ public class MySQLPipeliningTest extends MySQLTestBase {
   }
 
   @Test
-  public void testContinuousSimpleQuery(TestContext ctx) {
-    options.setPipeliningLimit(64);
-    AtomicInteger orderCheckCounter = new AtomicInteger(0);
+  public void testContinuousSimpleQueryUsingConn(TestContext ctx) {
     MySQLConnection.connect(vertx, options)
-      .onComplete(ctx.asyncAssertSuccess(conn -> {
-        Async latch = ctx.async(1000);
-        for (int i = 0; i < 1000; i++) {
-          final int currentIter = i;
-          conn.query("SELECT " + currentIter).execute().onComplete(ctx.asyncAssertSuccess(res -> {
-            ctx.assertEquals(1, res.size());
-            Row row = res.iterator().next();
-            ctx.assertEquals(1, row.size());
-            ctx.assertEquals(currentIter, row.getInteger(0));
-            ctx.assertEquals(currentIter, orderCheckCounter.getAndIncrement());
-            latch.countDown();
-          }));
-        }
-      }));
+      .onComplete(ctx.asyncAssertSuccess(conn -> testSequentialQuery(ctx, currentIter -> conn.query("SELECT " + currentIter).execute())));
   }
 
   @Test
-  public void testContinuousOneShotPreparedQuery(TestContext ctx) {
+  public void testContinuousSimpleQueryUsingPoolWithSingleConn(TestContext ctx) {
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(1));
+    testSequentialQuery(ctx, currentIter -> client.query("SELECT " + currentIter).execute());
+  }
+
+  @Test
+  public void testContinuousSimpleQueryUsingPool(TestContext ctx) {
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(8));
+    testSequentialQuery(ctx, currentIter -> client.query("SELECT " + currentIter).execute());
+  }
+
+  @Test
+  public void testContinuousOneShotPreparedQueryUsingConn(TestContext ctx) {
     // one-shot preparedQuery auto closing
-    options.setPipeliningLimit(64);
     options.setCachePreparedStatements(false);
-    AtomicInteger orderCheckCounter = new AtomicInteger(0);
     MySQLConnection.connect(vertx, options)
-      .onComplete(ctx.asyncAssertSuccess(conn -> {
-        Async latch = ctx.async(2000);
-        for (int i = 0; i < 2000; i++) {
-          final int currentIter = i;
-          conn.preparedQuery("SELECT " + currentIter).execute().onComplete(ctx.asyncAssertSuccess(res -> {
-            ctx.assertEquals(1, res.size());
-            Row row = res.iterator().next();
-            ctx.assertEquals(1, row.size());
-            ctx.assertEquals(currentIter, row.getInteger(0));
-            ctx.assertEquals(currentIter, orderCheckCounter.getAndIncrement());
-            latch.countDown();
-          }));
-        }
-      }));
+      .onComplete(ctx.asyncAssertSuccess(conn -> testSequentialQuery(ctx, currentIter -> conn.preparedQuery("SELECT " + currentIter).execute())));
   }
 
   @Test
-  public void testContinuousOneShotCachedPreparedQueryWithSameSql(TestContext ctx) {
-    options.setPipeliningLimit(64);
-    options.setCachePreparedStatements(true);
-    AtomicInteger orderCheckCounter = new AtomicInteger(0);
-    MySQLConnection.connect(vertx, options)
-      .onComplete(ctx.asyncAssertSuccess(conn -> {
-        Async latch = ctx.async(2000);
-        for (int i = 0; i < 2000; i++) {
-          final int currentIter = i;
-          conn.preparedQuery("SELECT ?").execute(Tuple.of(currentIter)).onComplete(ctx.asyncAssertSuccess(res -> {
-            ctx.assertEquals(1, res.size());
-            Row row = res.iterator().next();
-            ctx.assertEquals(1, row.size());
-            ctx.assertEquals(currentIter, row.getInteger(0));
-            ctx.assertEquals(currentIter, orderCheckCounter.getAndIncrement());
-            latch.countDown();
-          }));
-        }
-      }));
+  public void testContinuousOneShotPreparedQueryUsingPoolWithSingleConn(TestContext ctx) {
+    // one-shot preparedQuery auto closing
+    options.setCachePreparedStatements(false);
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(1));
+    testSequentialQuery(ctx, currentIter -> client.preparedQuery("SELECT " + currentIter).execute());
   }
 
   @Test
-  public void testContinuousOneShotCachedPreparedQueryWithDifferentSql(TestContext ctx) {
-    // cache eviction auto closing
-    options.setPipeliningLimit(64);
+  public void testContinuousOneShotPreparedQueryUsingPool(TestContext ctx) {
+    // one-shot preparedQuery auto closing
+    options.setCachePreparedStatements(false);
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(8));
+    testSequentialQuery(ctx, currentIter -> client.preparedQuery("SELECT " + currentIter).execute());
+  }
+
+  @Test
+  public void testContinuousOneShotCachedPreparedQueryWithSameSqlUsingConn(TestContext ctx) {
     options.setCachePreparedStatements(true);
-    AtomicInteger orderCheckCounter = new AtomicInteger(0);
     MySQLConnection.connect(vertx, options)
-      .onComplete(ctx.asyncAssertSuccess(conn -> {
-        Async latch = ctx.async(2000);
-        for (int i = 0; i < 2000; i++) {
-          final int currentIter = i;
-          conn.preparedQuery("SELECT " + currentIter).execute().onComplete(ctx.asyncAssertSuccess(res -> {
-            ctx.assertEquals(1, res.size());
-            Row row = res.iterator().next();
-            ctx.assertEquals(1, row.size());
-            ctx.assertEquals(currentIter, row.getInteger(0));
-            ctx.assertEquals(currentIter, orderCheckCounter.getAndIncrement());
-            latch.countDown();
-          }));
-        }
-      }));
+      .onComplete(ctx.asyncAssertSuccess(conn -> testSequentialQuery(ctx, currentIter -> conn.preparedQuery("SELECT ?").execute(Tuple.of(currentIter)))));
+  }
+
+  @Test
+  public void testContinuousOneShotCachedPreparedQueryWithSameSqlUsingPoolWithSingleConn(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(1));
+    testSequentialQuery(ctx, currentIter -> client.preparedQuery("SELECT ?").execute(Tuple.of(currentIter)));
+  }
+
+  @Test
+  public void testContinuousOneShotCachedPreparedQueryWithSameSqlUsingPool(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(8));
+    testSequentialQuery(ctx, currentIter -> client.preparedQuery("SELECT ?").execute(Tuple.of(currentIter)));
+  }
+
+  @Test
+  public void testContinuousOneShotCachedPreparedQueryWithDifferentSqlUsingConn(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    MySQLConnection.connect(vertx, options)
+      .onComplete(ctx.asyncAssertSuccess(conn -> testSequentialQuery(ctx, currentIter -> conn.preparedQuery("SELECT " + currentIter).execute())));
+  }
+
+  @Test
+  public void testContinuousOneShotCachedPreparedQueryWithDifferentSqlUsingPoolWithSingleConn(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(1));
+    testSequentialQuery(ctx, currentIter -> client.preparedQuery("SELECT " + currentIter).execute());
+  }
+
+  @Test
+  public void testContinuousOneShotCachedPreparedQueryWithDifferentSqlUsingPool(TestContext ctx) {
+    options.setCachePreparedStatements(true);
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(8));
+    testSequentialQuery(ctx, currentIter -> client.preparedQuery("SELECT " + currentIter).execute());
   }
 
   @Test
   public void testPrepareAndExecuteWithDifferentSql(TestContext ctx) {
-    options.setPipeliningLimit(64);
-    AtomicInteger orderCheckCounter = new AtomicInteger(0);
     MySQLConnection.connect(vertx, options)
       .onComplete(ctx.asyncAssertSuccess(conn -> {
         Async latch = ctx.async(1000);
@@ -142,11 +140,7 @@ public class MySQLPipeliningTest extends MySQLTestBase {
           final int currentIter = i;
           conn.prepare("SELECT " + currentIter).onComplete(ctx.asyncAssertSuccess(ps -> {
             ps.query().execute().onComplete(ctx.asyncAssertSuccess(res -> {
-              ctx.assertEquals(1, res.size());
-              Row row = res.iterator().next();
-              ctx.assertEquals(1, row.size());
-              ctx.assertEquals(currentIter, row.getInteger(0));
-              ctx.assertEquals(currentIter, orderCheckCounter.getAndIncrement());
+              checkQueryResult(ctx, res, currentIter, orderCheckCounter);
               ps.close(ctx.asyncAssertSuccess(v -> {
                 latch.countDown();
               }));
@@ -157,99 +151,126 @@ public class MySQLPipeliningTest extends MySQLTestBase {
   }
 
   @Test
-  public void testOneShotPreparedBatchQuery(TestContext ctx) {
-    options.setPipeliningLimit(64);
+  public void testOneShotPreparedBatchQueryConn(TestContext ctx) {
     MySQLConnection.connect(vertx, options)
       .onComplete(ctx.asyncAssertSuccess(conn -> {
-        List<Tuple> batchParams = new ArrayList<>();
-        Async latch = ctx.async(1000);
-        for (int i = 0; i < 1000; i++) {
-          batchParams.add(Tuple.of(i));
-        }
-        conn.preparedQuery("SELECT ?")
-          .executeBatch(batchParams)
-          .onComplete(ctx.asyncAssertSuccess(res -> {
-            for (int i = 0; i < 1000; i++) {
-              ctx.assertEquals(1, res.size());
-              Row row = res.iterator().next();
-              ctx.assertEquals(1, row.size());
-              ctx.assertEquals(i, row.getInteger(0));
-              latch.countDown();
-              res = res.next();
-            }
-            conn.close();
-        }));
+        testOneShotPreparedBatchQuery(ctx, conn);
       }));
   }
 
   @Test
-  public void testOneShotPreparedBatchInsert(TestContext ctx) {
-    options.setPipeliningLimit(64);
+  public void testOneShotPreparedBatchQueryPool(TestContext ctx) {
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(8));
+    testOneShotPreparedBatchQuery(ctx, client);
+  }
+
+  private void testOneShotPreparedBatchQuery(TestContext ctx, SqlClient client) {
+    List<Tuple> batchParams = new ArrayList<>();
     Async latch = ctx.async(1000);
+    for (int i = 0; i < 1000; i++) {
+      batchParams.add(Tuple.of(i));
+    }
+    client.preparedQuery("SELECT ?")
+      .executeBatch(batchParams)
+      .onComplete(ctx.asyncAssertSuccess(res -> {
+        for (int i = 0; i < 1000; i++) {
+          ctx.assertEquals(1, res.size());
+          Row row = res.iterator().next();
+          ctx.assertEquals(1, row.size());
+          ctx.assertEquals(i, row.getInteger(0));
+          latch.countDown();
+          res = res.next();
+        }
+        client.close();
+      }));
+  }
+
+  @Test
+  public void testOneShotPreparedBatchInsertConn(TestContext ctx) {
     MySQLConnection.connect(vertx, options)
       .onComplete(ctx.asyncAssertSuccess(conn -> {
-        List<Tuple> batchParams = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
-          batchParams.add(Tuple.of(i, String.format("val-%d", i)));
-        }
-        conn.preparedQuery("INSERT INTO mutable(id, val) VALUES (?, ?)")
-          .executeBatch(batchParams)
-          .onComplete(ctx.asyncAssertSuccess(res -> {
-            for (int i = 0; i < 1000; i++) {
-              ctx.assertEquals(1, res.rowCount());
-              res = res.next();
-              latch.countDown();
-            }
+        testOneShotPreparedBatchInsert(ctx, conn);
+      }));
+  }
 
-            conn.query("SELECT id, val FROM mutable")
-              .execute()
-              .onComplete(ctx.asyncAssertSuccess(res2-> {
-                ctx.assertEquals(1000, res2.size());
-                int i = 0;
-                for (Row row : res2) {
-                  ctx.assertEquals(2, row.size());
-                  ctx.assertEquals(i, row.getInteger(0));
-                  ctx.assertEquals(String.format("val-%d", i), row.getString(1));
-                  i++;
-                }
-                conn.close();
-              }));
+  @Test
+  public void testOneShotPreparedBatchInsertPool(TestContext ctx) {
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(8));
+    testOneShotPreparedBatchInsert(ctx, client);
+  }
+
+  private void testOneShotPreparedBatchInsert(TestContext ctx, SqlClient client) {
+    Async latch = ctx.async(1000);
+    List<Tuple> batchParams = new ArrayList<>();
+    for (int i = 0; i < 1000; i++) {
+      batchParams.add(Tuple.of(i, String.format("val-%d", i)));
+    }
+    client.preparedQuery("INSERT INTO mutable(id, val) VALUES (?, ?)")
+      .executeBatch(batchParams)
+      .onComplete(ctx.asyncAssertSuccess(res -> {
+        for (int i = 0; i < 1000; i++) {
+          ctx.assertEquals(1, res.rowCount());
+          res = res.next();
+          latch.countDown();
+        }
+
+        client.query("SELECT id, val FROM mutable")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals(1000, res2.size());
+            int i = 0;
+            for (Row row : res2) {
+              ctx.assertEquals(2, row.size());
+              ctx.assertEquals(i, row.getInteger(0));
+              ctx.assertEquals(String.format("val-%d", i), row.getString(1));
+              i++;
+            }
+            client.close();
           }));
       }));
   }
 
   @Test
-  public void testBatchInsertException(TestContext ctx) {
-    options.setPipeliningLimit(64);
+  public void testBatchInsertExceptionConn(TestContext ctx) {
     MySQLConnection.connect(vertx, options)
       .onComplete(ctx.asyncAssertSuccess(conn -> {
-        List<Tuple> batchParams = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
-          batchParams.add(Tuple.of(i, String.format("val-%d", i)));
-        }
-        batchParams.add(501, Tuple.of(500, "error")); // primary key violation error occurs in the 501st iteration
+        testBatchInsertException(ctx, conn);
+      }));
+  }
 
-        conn.preparedQuery("INSERT INTO mutable(id, val) VALUES (?, ?)")
-          .executeBatch(batchParams)
-          .onComplete(ctx.asyncAssertFailure(error -> {
-            ctx.assertEquals(MySQLBatchException.class, error.getClass());
-            MySQLBatchException mySQLBatchException = (MySQLBatchException) error;
-            ctx.assertTrue(mySQLBatchException.getIterationError().containsKey(501));
+  @Test
+  public void testBatchInsertExceptionPool(TestContext ctx) {
+    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(8));
+    testBatchInsertException(ctx, client);
+  }
 
-            // all the param will be executed
-            conn.query("SELECT id, val FROM mutable")
-              .execute()
-              .onComplete(ctx.asyncAssertSuccess(res2-> {
-                ctx.assertEquals(1000, res2.size());
-                int i = 0;
-                for (Row row : res2) {
-                  ctx.assertEquals(2, row.size());
-                  ctx.assertEquals(i, row.getInteger(0));
-                  ctx.assertEquals(String.format("val-%d", i), row.getString(1));
-                  i++;
-                }
-                conn.close();
-              }));
+  private void testBatchInsertException(TestContext ctx, SqlClient client) {
+    List<Tuple> batchParams = new ArrayList<>();
+    for (int i = 0; i < 1000; i++) {
+      batchParams.add(Tuple.of(i, String.format("val-%d", i)));
+    }
+    batchParams.add(501, Tuple.of(500, "error")); // primary key violation error occurs in the 501st iteration
+
+    client.preparedQuery("INSERT INTO mutable(id, val) VALUES (?, ?)")
+      .executeBatch(batchParams)
+      .onComplete(ctx.asyncAssertFailure(error -> {
+        ctx.assertEquals(MySQLBatchException.class, error.getClass());
+        MySQLBatchException mySQLBatchException = (MySQLBatchException) error;
+        ctx.assertTrue(mySQLBatchException.getIterationError().containsKey(501));
+
+        // all the param will be executed
+        client.query("SELECT id, val FROM mutable")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals(1000, res2.size());
+            int i = 0;
+            for (Row row : res2) {
+              ctx.assertEquals(2, row.size());
+              ctx.assertEquals(i, row.getInteger(0));
+              ctx.assertEquals(String.format("val-%d", i), row.getString(1));
+              i++;
+            }
+            client.close();
           }));
       }));
   }
@@ -260,5 +281,25 @@ public class MySQLPipeliningTest extends MySQLTestBase {
         conn.close();
       }));
     }));
+  }
+
+  private void testSequentialQuery(TestContext ctx, Function<Integer, Future<RowSet<Row>>> resultExecution) {
+    Async latch = ctx.async(1000);
+    Future<RowSet<Row>> fut = Future.succeededFuture();
+    for (int i = 0; i < 1000; i++) {
+      final int currentIter = i;
+      fut = fut.flatMap(res -> resultExecution.apply(currentIter)).onComplete(ctx.asyncAssertSuccess(res -> {
+        checkQueryResult(ctx, res, currentIter, orderCheckCounter);
+        latch.countDown();
+      }));
+    }
+  }
+
+  private void checkQueryResult(TestContext ctx, RowSet<Row> result, int currentIter, AtomicInteger orderCheckCounter) {
+    ctx.assertEquals(1, result.size());
+    Row row = result.iterator().next();
+    ctx.assertEquals(1, row.size());
+    ctx.assertEquals(currentIter, row.getInteger(0));
+    ctx.assertEquals(currentIter, orderCheckCounter.getAndIncrement());
   }
 }

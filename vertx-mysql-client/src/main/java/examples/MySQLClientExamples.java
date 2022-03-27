@@ -11,6 +11,7 @@
 
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -45,7 +46,7 @@ public class MySQLClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    MySQLPool client = MySQLPool.pool(connectOptions, poolOptions);
+    SqlClient client = MySQLPool.client(connectOptions, poolOptions);
 
     // A simple query
     client
@@ -210,6 +211,22 @@ public class MySQLClientExamples {
         System.out.println("Something went wrong " + ar.cause().getMessage());
       }
     });
+  }
+
+  public void poolVersusPooledClient(Vertx vertx, String sql, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+
+    // Pooled client
+    connectOptions.setPipeliningLimit(64);
+    SqlClient pooledClient = MySQLPool.client(vertx, connectOptions, poolOptions);
+
+    // Pipelined
+    Future<RowSet<Row>> res1 = pooledClient.query(sql).execute();
+
+    // Connection pool
+    MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
+
+    // Not pipelined
+    Future<RowSet<Row>> res2 = pool.query(sql).execute();
   }
 
   public void connectWithUnixDomainSocket(Vertx vertx) {
