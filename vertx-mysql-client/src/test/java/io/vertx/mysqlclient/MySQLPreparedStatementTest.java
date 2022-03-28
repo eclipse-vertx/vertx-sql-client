@@ -173,4 +173,34 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testPreparedStatementCleaned(TestContext ctx) {
+    Assume.assumeFalse(MySQLTestBase.rule.isUsingMySQL5_6() || MySQLTestBase.rule.isUsingMariaDB());
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions(options)
+      .setUser("root")
+      .setPassword("password")
+      .setCachePreparedStatements(false);
+    Async async = ctx.async();
+    MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res1 -> {
+        ctx.assertEquals(0, res1.size());
+        conn.preparedQuery("INSERT INTO duplicate_test VALUES (?)").execute(Tuple.of(1), ctx.asyncAssertFailure(failure -> {
+          if (!(failure instanceof MySQLException)) {
+            ctx.fail(failure);
+            return;
+          }
+          MySQLException e = (MySQLException) failure;
+          ctx.assertEquals(1062, e.getErrorCode());
+          ctx.assertEquals("23000", e.getSqlState());
+          conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals(0, res2.size());
+            conn.close(ctx.asyncAssertSuccess(v -> {
+              async.complete();
+            }));
+          }));
+        }));
+      }));
+    }));
+  }
 }

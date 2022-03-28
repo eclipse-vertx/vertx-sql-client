@@ -35,6 +35,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
       OkPacket okPacket = decodeOkPacketPayload(payload);
       handleSingleResultsetDecodingCompleted(okPacket.serverStatusFlags(), okPacket.affectedRows(), okPacket.lastInsertId());
     } else if (firstByte == ERROR_PACKET_HEADER) {
+      closePreparedStatement();
       handleErrorPacketPayload(payload);
     } else {
       handleResultsetColumnCountPacketBody(payload);
@@ -43,12 +44,15 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
 
   @Override
   protected void handleAllResultsetDecodingCompleted() {
-    // Close prepare statement
+    closePreparedStatement();
+    super.handleAllResultsetDecodingCompleted();
+  }
+
+  private void closePreparedStatement() {
     MySQLPreparedStatement ps = (MySQLPreparedStatement) this.cmd.ps;
     if (ps.closeAfterUsage) {
       sendCloseStatementCommand(ps);
     }
-    super.handleAllResultsetDecodingCompleted();
   }
 
   private void sendCloseStatementCommand(MySQLPreparedStatement statement) {
