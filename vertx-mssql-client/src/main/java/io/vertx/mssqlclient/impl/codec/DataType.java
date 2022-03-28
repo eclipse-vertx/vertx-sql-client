@@ -283,8 +283,7 @@ public enum DataType {
       if (value instanceof UUID) {
         uValue = (UUID) value;
       } else throw new IllegalArgumentException(value.getClass().getName());
-      byteBuf.writeByte(16); // actual length
-      byteBuf.writeByte(16); // actual length
+      writeParamSize(byteBuf, 16, 16);
 
       long msb = uValue.getMostSignificantBits();
       byteBuf.writeIntLE((int) (msb >> 32));
@@ -331,23 +330,19 @@ public enum DataType {
       writeParamDescription(byteBuf, name, out, id);
       if (value instanceof Byte) {
         Byte bValue = (Byte) value;
-        byteBuf.writeByte(1); // max length
-        byteBuf.writeByte(1); // actual length
+        writeParamSize(byteBuf, 1, 1);
         byteBuf.writeByte(bValue);
       } else if (value instanceof Short) {
         Short sValue = (Short) value;
-        byteBuf.writeByte(2); // max length
-        byteBuf.writeByte(2); // actual length
+        writeParamSize(byteBuf, 2, 2);
         byteBuf.writeShortLE(sValue);
       } else if (value instanceof Integer) {
         Integer iValue = (Integer) value;
-        byteBuf.writeByte(4); // max length
-        byteBuf.writeByte(4); // actual length
+        writeParamSize(byteBuf, 4, 4);
         byteBuf.writeIntLE(iValue);
       } else if (value instanceof Long) {
         Long lValue = (Long) value;
-        byteBuf.writeByte(8); // max length
-        byteBuf.writeByte(8); // actual length
+        writeParamSize(byteBuf, 8, 8);
         byteBuf.writeLongLE(lValue);
       } else throw new IllegalArgumentException(value.getClass().getName());
     }
@@ -381,8 +376,7 @@ public enum DataType {
     @Override
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
       writeParamDescription(byteBuf, name, out, BITN.id);
-      byteBuf.writeByte(1); // max length
-      byteBuf.writeByte(1); // actual length
+      writeParamSize(byteBuf, 1, 1);
       byteBuf.writeBoolean((Boolean) value);
     }
   },
@@ -423,8 +417,7 @@ public enum DataType {
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
       BigDecimal bigDecimal = (BigDecimal) value;
       writeParamDescription(byteBuf, name, out, id);
-      byteBuf.writeByte(17); // maximum length
-      byteBuf.writeByte(38); // maximum precision
+      writeParamSize(byteBuf, 17, 38);
       int sign = bigDecimal.signum() < 0 ? 0 : 1;
       byte[] bytes = (sign == 0 ? bigDecimal.negate() : bigDecimal).unscaledValue().toByteArray();
       byteBuf.writeByte(Math.max(0, bigDecimal.scale()));
@@ -483,13 +476,11 @@ public enum DataType {
       writeParamDescription(byteBuf, name, out, id);
       if (value instanceof Float) {
         Float fValue = (Float) value;
-        byteBuf.writeByte(4); // max length
-        byteBuf.writeByte(4); // actual length
+        writeParamSize(byteBuf, 4, 4);
         byteBuf.writeFloatLE(fValue);
       } else if (value instanceof Double) {
         Double dValue = (Double) value;
-        byteBuf.writeByte(8); // max length
-        byteBuf.writeByte(8); // actual length
+        writeParamSize(byteBuf, 8, 8);
         byteBuf.writeDoubleLE(dValue);
       } else throw new IllegalArgumentException();
     }
@@ -606,8 +597,7 @@ public enum DataType {
     @Override
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
       writeParamDescription(byteBuf, name, out, id);
-      byteBuf.writeByte(7); // scale
-      byteBuf.writeByte(5); // length
+      writeParamSize(byteBuf, 7, 5);
       writeUnsignedInt40LE(byteBuf, hundredsOfNanos((LocalTime) value));
     }
   },
@@ -642,8 +632,7 @@ public enum DataType {
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
       LocalDateTime localDateTime = (LocalDateTime) value;
       writeParamDescription(byteBuf, name, out, id);
-      byteBuf.writeByte(7); // scale
-      byteBuf.writeByte(8); // length
+      writeParamSize(byteBuf, 7, 8);
       writeUnsignedInt40LE(byteBuf, hundredsOfNanos(localDateTime.toLocalTime()));
       byteBuf.writeMediumLE(daysFromStartDate(localDateTime.toLocalDate()));
     }
@@ -680,8 +669,7 @@ public enum DataType {
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
       OffsetDateTime offsetDateTime = (OffsetDateTime) value;
       writeParamDescription(byteBuf, name, out, id);
-      byteBuf.writeByte(7); // scale
-      byteBuf.writeByte(10); // length
+      writeParamSize(byteBuf, 7, 10);
       int offsetMinutes = offsetDateTime.getOffset().getTotalSeconds() / 60;
       LocalDateTime localDateTime = offsetDateTime.toLocalDateTime().minusMinutes(offsetMinutes);
       writeUnsignedInt40LE(byteBuf, hundredsOfNanos(localDateTime.toLocalTime()));
@@ -1037,8 +1025,11 @@ public enum DataType {
 
   private static void writeParamDescription(ByteBuf buffer, String name, boolean out, int id) {
     writeByteLengthString(buffer, name);
-    buffer.writeByte(out ? 1 : 0);
-    buffer.writeByte(id);
+    buffer.writeShort((out ? 1 : 0) << 8 | id & 0xFF);
+  }
+
+  private static void writeParamSize(ByteBuf buffer, int i, int j) {
+    buffer.writeShort(i << 8 | j & 0xFF);
   }
 
   private static LocalDate decodeLocalDate(ByteBuf byteBuf, int length) {
