@@ -114,7 +114,6 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
-    int initialCapabilitiesFlags = initCapabilitiesFlags(database);
     Future<NetSocket> fut = netClient.connect(server);
     return fut.flatMap(so -> {
       MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
