@@ -11,6 +11,7 @@
 package io.vertx.oracleclient.impl;
 
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
@@ -18,10 +19,21 @@ import io.vertx.oracleclient.OracleException;
 import io.vertx.sqlclient.Tuple;
 import oracle.sql.TIMESTAMPTZ;
 
-import java.sql.*;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Struct;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
@@ -331,5 +343,35 @@ public class Helper {
      * @return A cached copy of this row.
      */
     JdbcRow copy();
+  }
+
+  @FunctionalInterface
+  public interface SQLBlockingCodeHandler<T> extends Handler<Promise<T>> {
+
+    void doHandle(Promise<T> promise) throws SQLException;
+
+    @Override
+    default void handle(Promise<T> promise) {
+      try {
+        doHandle(promise);
+      } catch (SQLException e) {
+        promise.tryFail(new OracleException(e));
+      }
+    }
+  }
+
+  @FunctionalInterface
+  public interface SQLFutureMapper<T, U> extends Function<T, Future<U>> {
+
+    Future<U> doApply(T t) throws SQLException;
+
+    @Override
+    default Future<U> apply(T t) {
+      try {
+        return doApply(t);
+      } catch (SQLException e) {
+        return Future.failedFuture(new OracleException(e));
+      }
+    }
   }
 }
