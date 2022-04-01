@@ -13,7 +13,6 @@ package io.vertx.oracleclient.impl.commands;
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.impl.Helper;
-import io.vertx.oracleclient.impl.Helper.SQLBlockingCodeHandler;
 import io.vertx.oracleclient.impl.Helper.SQLFutureMapper;
 import io.vertx.sqlclient.impl.command.TxCommand;
 import oracle.jdbc.OracleConnection;
@@ -21,6 +20,7 @@ import oracle.jdbc.OraclePreparedStatement;
 
 import java.util.concurrent.Flow;
 
+import static io.vertx.oracleclient.impl.Helper.executeBlocking;
 import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 import static io.vertx.sqlclient.impl.command.TxCommand.Kind.COMMIT;
 import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
@@ -48,7 +48,7 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
   }
 
   private Future<Void> begin(OracleConnection conn, ContextInternal context) {
-    return context.executeBlocking((SQLBlockingCodeHandler<String>) prom -> {
+    return executeBlocking(context, () -> {
       int isolation = conn.getTransactionIsolation();
       String isolationLevel;
       switch (isolation) {
@@ -62,8 +62,8 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
           throw new IllegalArgumentException("Invalid isolation level: " + isolation);
       }
       conn.setAutoCommit(false);
-      prom.complete(isolationLevel);
-    }, false).compose((SQLFutureMapper<String, Boolean>) isolationLevel -> {
+      return isolationLevel;
+    }).compose((SQLFutureMapper<String, Boolean>) isolationLevel -> {
       Flow.Publisher<Boolean> publisher = conn
         .prepareStatement("SET TRANSACTION ISOLATION LEVEL " + isolationLevel)
         .unwrap(OraclePreparedStatement.class)
@@ -73,24 +73,18 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
   }
 
   private Future<Void> commit(OracleConnection conn, ContextInternal context) {
-    return context.executeBlocking((SQLBlockingCodeHandler<Boolean>) prom -> {
-      prom.complete(conn.getAutoCommit());
-    }, false).compose((SQLFutureMapper<Boolean, Void>) autoCommit -> {
-      return autoCommit ? Future.succeededFuture() : Helper.first(conn.commitAsyncOracle(), context);
-    }).eventually(v -> context.executeBlocking((SQLBlockingCodeHandler<Boolean>) prom -> {
-      conn.setAutoCommit(true);
-      prom.complete();
-    }, false));
+    return executeBlocking(context, () -> conn.getAutoCommit())
+      .compose((SQLFutureMapper<Boolean, Void>) autoCommit -> {
+        return autoCommit ? Future.succeededFuture() : Helper.first(conn.commitAsyncOracle(), context);
+      })
+      .eventually(v -> executeBlocking(context, () -> conn.setAutoCommit(true)));
   }
 
   private Future<Void> rollback(OracleConnection conn, ContextInternal context) {
-    return context.executeBlocking((SQLBlockingCodeHandler<Boolean>) prom -> {
-      prom.complete(conn.getAutoCommit());
-    }, false).compose((SQLFutureMapper<Boolean, Void>) autoCommit -> {
-      return autoCommit ? Future.succeededFuture() : Helper.first(conn.rollbackAsyncOracle(), context);
-    }).eventually(v -> context.executeBlocking((SQLBlockingCodeHandler<Boolean>) prom -> {
-      conn.setAutoCommit(true);
-      prom.complete();
-    }, false));
+    return executeBlocking(context, () -> conn.getAutoCommit())
+      .compose((SQLFutureMapper<Boolean, Void>) autoCommit -> {
+        return autoCommit ? Future.succeededFuture() : Helper.first(conn.rollbackAsyncOracle(), context);
+      })
+      .eventually(v -> executeBlocking(context, () -> conn.setAutoCommit(true)));
   }
 }

@@ -10,6 +10,7 @@
  */
 package io.vertx.oracleclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -348,14 +349,30 @@ public class Helper {
   @FunctionalInterface
   public interface SQLBlockingCodeHandler<T> extends Handler<Promise<T>> {
 
-    void doHandle(Promise<T> promise) throws SQLException;
+    T doHandle() throws SQLException;
 
     @Override
     default void handle(Promise<T> promise) {
       try {
-        doHandle(promise);
+        promise.complete(doHandle());
       } catch (SQLException e) {
-        promise.tryFail(new OracleException(e));
+        promise.fail(new OracleException(e));
+      }
+    }
+  }
+
+  @FunctionalInterface
+  public interface SQLBlockingTaskHandler extends Handler<Promise<Void>> {
+
+    void doHandle() throws SQLException;
+
+    @Override
+    default void handle(Promise<Void> promise) {
+      try {
+        doHandle();
+        promise.complete(null);
+      } catch (SQLException e) {
+        promise.fail(new OracleException(e));
       }
     }
   }
@@ -373,5 +390,13 @@ public class Helper {
         return Future.failedFuture(new OracleException(e));
       }
     }
+  }
+
+  public static <T> Future<T> executeBlocking(Context context, SQLBlockingCodeHandler<T> blockingCodeHandler) {
+    return context.executeBlocking(blockingCodeHandler, false);
+  }
+
+  public static Future<Void> executeBlocking(Context context, SQLBlockingTaskHandler blockingTaskHandler) {
+    return context.executeBlocking(blockingTaskHandler, false);
   }
 }
