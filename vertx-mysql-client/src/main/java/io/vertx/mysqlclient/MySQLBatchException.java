@@ -17,11 +17,11 @@ import java.util.Map;
 
 /**
  * {@code MySQLBatchException} is thrown if an error occurs during executions when using {@link io.vertx.sqlclient.PreparedQuery#executeBatch(List)}.
- * The client will try to execute with all the params no matter if one iteration of the executions fails, the iteration count is calculated from zero.
+ * The client will try to execute with all the params no matter if one iteration of the executions fails, the iteration count is counted from zero.
  */
 public class MySQLBatchException extends RuntimeException {
   /**
-   * A mapping between the iteration count and error message.
+   * A mapping between the iteration count and error message, the key is consistent with the batching param list index.
    */
   private final Map<Integer, String> iterationError = new HashMap<>();
 
@@ -29,6 +29,11 @@ public class MySQLBatchException extends RuntimeException {
     super("Error occurs during batch execution");
   }
 
+  /**
+   * Get the detailed error message of all failed iterations in batching.
+   *
+   * @return the iteration count and detailed error message mapping
+   */
   public Map<Integer, String> getIterationError() {
     return iterationError;
   }
