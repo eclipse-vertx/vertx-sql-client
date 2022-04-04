@@ -10,7 +10,9 @@
  */
 package io.vertx.oracleclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
@@ -18,10 +20,21 @@ import io.vertx.oracleclient.OracleException;
 import io.vertx.sqlclient.Tuple;
 import oracle.sql.TIMESTAMPTZ;
 
-import java.sql.*;
+import java.sql.Array;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.RowId;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Struct;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
@@ -331,5 +344,59 @@ public class Helper {
      * @return A cached copy of this row.
      */
     JdbcRow copy();
+  }
+
+  @FunctionalInterface
+  public interface SQLBlockingCodeHandler<T> extends Handler<Promise<T>> {
+
+    T doHandle() throws SQLException;
+
+    @Override
+    default void handle(Promise<T> promise) {
+      try {
+        promise.complete(doHandle());
+      } catch (SQLException e) {
+        promise.fail(new OracleException(e));
+      }
+    }
+  }
+
+  @FunctionalInterface
+  public interface SQLBlockingTaskHandler extends Handler<Promise<Void>> {
+
+    void doHandle() throws SQLException;
+
+    @Override
+    default void handle(Promise<Void> promise) {
+      try {
+        doHandle();
+        promise.complete(null);
+      } catch (SQLException e) {
+        promise.fail(new OracleException(e));
+      }
+    }
+  }
+
+  @FunctionalInterface
+  public interface SQLFutureMapper<T, U> extends Function<T, Future<U>> {
+
+    Future<U> doApply(T t) throws SQLException;
+
+    @Override
+    default Future<U> apply(T t) {
+      try {
+        return doApply(t);
+      } catch (SQLException e) {
+        return Future.failedFuture(new OracleException(e));
+      }
+    }
+  }
+
+  public static <T> Future<T> executeBlocking(Context context, SQLBlockingCodeHandler<T> blockingCodeHandler) {
+    return context.executeBlocking(blockingCodeHandler, false);
+  }
+
+  public static Future<Void> executeBlocking(Context context, SQLBlockingTaskHandler blockingTaskHandler) {
+    return context.executeBlocking(blockingTaskHandler, false);
   }
 }
