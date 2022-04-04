@@ -12,6 +12,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.mysqlclient.MySQLBatchException;
 import io.vertx.mysqlclient.MySQLException;
 import io.vertx.sqlclient.Tuple;
@@ -52,7 +53,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   @Override
   void handleErrorPacketPayload(ByteBuf payload) {
     MySQLException mySQLException = decodeErrorPacketPayload(payload);
-    reportError(batchIdx, mySQLException.getMessage());
+    reportError(batchIdx, mySQLException);
     // state needs to be reset
     commandHandlerState = CommandHandlerState.INIT;
     batchIdx++;
@@ -82,17 +83,17 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       // binding parameters
       String bindMsg = statement.bindParameters(param);
       if (bindMsg != null) {
-        reportError(i, bindMsg);
+        reportError(i, new NoStackTraceThrowable(bindMsg));
       } else {
         sendStatementExecuteCommand(statement, statement.sendTypesToServer(), param, CURSOR_TYPE_NO_CURSOR);
       }
     }
   }
 
-  private void reportError(int iteration, String errorMessage) {
+  private void reportError(int iteration, Throwable error) {
     if (failure == null) {
       failure = new MySQLBatchException();
     }
-    ((MySQLBatchException) failure).reportError(iteration, errorMessage);
+    ((MySQLBatchException) failure).reportError(iteration, error);
   }
 }

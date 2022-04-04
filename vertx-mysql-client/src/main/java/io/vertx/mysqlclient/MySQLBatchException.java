@@ -21,24 +21,24 @@ import java.util.Map;
  */
 public class MySQLBatchException extends RuntimeException {
   /**
-   * A mapping between the iteration count and error message, the key is consistent with the batching param list index.
+   * A mapping between the iteration count and errors, the key is consistent with the batching param list index.
    */
-  private final Map<Integer, String> iterationError = new HashMap<>();
+  private final Map<Integer, Throwable> iterationError = new HashMap<>();
 
   public MySQLBatchException() {
     super("Error occurs during batch execution");
   }
 
   /**
-   * Get the detailed error message of all failed iterations in batching.
+   * Get the detailed errors of all failed iterations in batching.
    *
-   * @return the iteration count and detailed error message mapping
+   * @return the iteration count and error mapping
    */
-  public Map<Integer, String> getIterationError() {
+  public Map<Integer, Throwable> getIterationError() {
     return iterationError;
   }
 
-  public void reportError(int iteration, String errorMessage) {
-    iterationError.put(iteration, errorMessage);
+  public void reportError(int iteration, Throwable error) {
+    iterationError.put(iteration, error);
   }
 }
