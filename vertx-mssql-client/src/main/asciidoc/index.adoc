@@ -13,12 +13,12 @@ scalability and low overhead.
 * Java 8 Date and Time
 * RxJava API
 * SSL/TLS
+* Cursor
+* Row streaming
 
 *Not supported yet*
 
 * Prepared queries caching
-* Cursor
-* Row streaming
 * Some https://github.com/eclipse-vertx/vertx-sql-client/issues/608#issuecomment-629390027[data types] are not supported
 
 == Usage
@@ -144,6 +144,8 @@ You can retrieve the value of an `identity` column after inserting new data usin
 include::connections.adoc[]
 
 include::transactions.adoc[]
+
+include::cursor.adoc[]
 
 == Tracing queries
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,18 +11,78 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowDesc;
 
-import java.util.Arrays;
+import java.util.AbstractList;
 import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.List;
 
-class MSSQLRowDesc extends RowDesc {
-  final ColumnData[] columnDatas;
+/**
+ * An implementation of {@link RowDesc} for MSSQL.
+ * <p>
+ * When reading rows with a cursor, an extra column named {@code ROWSTAT} is returned by the server.
+ * This column should not be conveyed to the user so this class filters it out.
+ */
+public class MSSQLRowDesc extends RowDesc {
 
-  MSSQLRowDesc(ColumnData[] columnDatas) {
-    super(Stream.of(columnDatas).map(ColumnData::name).collect(Collectors.toList()), Collections.unmodifiableList(Arrays.asList(columnDatas)));
+  private final ColumnData[] columnDatas;
+  private final boolean rowStat;
+
+  private MSSQLRowDesc(List<String> columnNames, List<ColumnDescriptor> columnDescriptors, ColumnData[] columnDatas, boolean hasRowStat) {
+    super(columnNames, columnDescriptors);
     this.columnDatas = columnDatas;
+    this.rowStat = hasRowStat;
+  }
+
+  public static MSSQLRowDesc create(ColumnData[] columnDatas, boolean hasRowStat) {
+    if (columnDatas.length == 0) {
+      return new MSSQLRowDesc(Collections.emptyList(), Collections.emptyList(), columnDatas, false);
+    }
+    int size = hasRowStat ? columnDatas.length - 1 : columnDatas.length;
+    List<String> columnNames = new AbstractList<String>() {
+      @Override
+      public String get(int index) {
+        if (index < 0 || index >= size) {
+          throw new IndexOutOfBoundsException();
+        }
+        return columnDatas[index].name();
+      }
+
+      @Override
+      public int size() {
+        return size;
+      }
+    };
+    List<ColumnDescriptor> columnDescriptors = new AbstractList<ColumnDescriptor>() {
+      @Override
+      public ColumnDescriptor get(int index) {
+        if (index < 0 || index >= size) {
+          throw new IndexOutOfBoundsException();
+        }
+        return columnDatas[index];
+      }
+
+      @Override
+      public int size() {
+        return size;
+      }
+    };
+    return new MSSQLRowDesc(columnNames, columnDescriptors, columnDatas, hasRowStat);
+  }
+
+  public int size() {
+    return rowStat ? columnDatas.length - 1 : columnDatas.length;
+  }
+
+  public ColumnData get(int index) {
+    if (index < 0 || index >= size()) {
+      throw new IndexOutOfBoundsException();
+    }
+    return columnDatas[index];
+  }
+
+  public boolean hasRowStat() {
+    return rowStat;
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -62,6 +62,8 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
           break;
         case INFO:
         case ORDER:
+        case TABNAME:
+        case COLINFO:
           payload.skipBytes(payload.readUnsignedShortLE());
           break;
         case RETURNSTATUS:
@@ -77,7 +79,7 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
           handleEnvChange(payload);
           break;
         default:
-          throw new UnsupportedOperationException("Unsupported token: " + tokenType);
+          throw new UnsupportedOperationException("Unsupported token: 0x" + Integer.toHexString(tokenType));
       }
     }
     handleDecodingComplete();
@@ -88,19 +90,25 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
 
   private void handleColumnMetadata(ByteBuf payload) {
     int columnCount = payload.readUnsignedShortLE();
+    if (columnCount == 0xFFFF) { // no metadata
+      return;
+    }
 
     ColumnData[] columnDatas = new ColumnData[columnCount];
 
     for (int i = 0; i < columnCount; i++) {
-      long userType = payload.readUnsignedIntLE();
-      int flags = payload.readUnsignedShortLE();
+      payload.skipBytes(6);
       DataType dataType = DataType.forId(payload.readUnsignedByte());
       DataType.Metadata metadata = dataType.decodeMetadata(payload);
       String columnName = readUnsignedByteLengthString(payload);
       columnDatas[i] = new ColumnData(columnName, dataType, metadata);
     }
 
-    handleRowDesc(new MSSQLRowDesc(columnDatas));
+    handleRowDesc(createRowDesc(columnDatas));
+  }
+
+  protected MSSQLRowDesc createRowDesc(ColumnData[] columnData) {
+    return MSSQLRowDesc.create(columnData, false);
   }
 
   protected void handleRowDesc(MSSQLRowDesc mssqlRowDesc) {
