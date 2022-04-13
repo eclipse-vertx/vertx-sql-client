@@ -18,15 +18,10 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Future;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

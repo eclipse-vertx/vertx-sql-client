@@ -10,27 +10,13 @@
  */
 package io.vertx.oracleclient.impl;
 
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.VertxException;
+import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleException;
 import io.vertx.sqlclient.Tuple;
 import oracle.sql.TIMESTAMPTZ;
 
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.RowId;
-import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
-import java.sql.Struct;
-import java.sql.Time;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
@@ -237,6 +223,32 @@ public class Helper {
 
     // fallback to String
     return value.toString();
+  }
+
+  public static boolean isFatal(SQLException e) {
+    int errorCode = e.getErrorCode();
+    return errorCode == 28
+      || errorCode == 600
+      || errorCode == 1012
+      || errorCode == 1014
+      || errorCode == 1033
+      || errorCode == 1034
+      || errorCode == 1035
+      || errorCode == 1089
+      || errorCode == 1090
+      || errorCode == 1092
+      || errorCode == 1094
+      || errorCode == 2396
+      || errorCode == 3106
+      || errorCode == 3111
+      || errorCode == 3113
+      || errorCode == 3114
+      || (errorCode >= 12100 && errorCode <= 12299)
+      || errorCode == 17002
+      || errorCode == 17008
+      || errorCode == 17410
+      || errorCode == 17447
+      || "08000".equals(e.getSQLState());
   }
 
   /**
