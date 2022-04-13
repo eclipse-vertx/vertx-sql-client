@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.pgclient;
+package io.vertx.sqlclient;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -25,20 +25,18 @@ import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetSocket;
 
-import java.util.function.Function;
-
 /**
  * A proxy server, useful for changing some server behavior
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class ProxyServer {
+public class ProxyServer {
 
-  static ProxyServer create(Vertx vertx, int pgPort, String pgHost) {
-    return new ProxyServer(vertx, pgPort, pgHost);
+  public static ProxyServer create(Vertx vertx, int port, String host) {
+    return new ProxyServer(vertx, port, host);
   }
 
-  static class Connection {
+  public static class Connection {
 
     private final NetSocket clientSocket;
     private final NetSocket serverSocket;
@@ -54,25 +52,25 @@ class ProxyServer {
       this.serverHandler = clientSocket::write;
     }
 
-    NetSocket clientSocket() {
+    public NetSocket clientSocket() {
       return clientSocket;
     }
 
-    NetSocket serverSocket() {
+    public NetSocket serverSocket() {
       return serverSocket;
     }
 
-    Connection clientHandler(Handler<Buffer> handler) {
+    public Connection clientHandler(Handler<Buffer> handler) {
       clientHandler = handler;
       return this;
     }
 
-    Connection serverHandler(Handler<Buffer> handler) {
+    public Connection serverHandler(Handler<Buffer> handler) {
       serverHandler = handler;
       return this;
     }
 
-    void connect() {
+    public void connect() {
       clientSocket.handler(clientHandler);
       serverSocket.handler(serverHandler);
       clientSocket.closeHandler(v -> {
@@ -91,33 +89,31 @@ class ProxyServer {
       clientSocket.resume();
     }
 
-    Connection clientCloseHandler(Handler<Void> handler) {
+    public Connection clientCloseHandler(Handler<Void> handler) {
       clientCloseHandler = handler;
       return this;
     }
 
-    Connection serverCloseHandler(Handler<Void> handler) {
+    public Connection serverCloseHandler(Handler<Void> handler) {
       serverCloseHandler = handler;
       return this;
     }
 
-    void close() {
+    public void close() {
       clientSocket.close();
       serverSocket.close();
     }
   }
 
-  private final Vertx vertx;
   private final NetServer server;
   private final NetClient client;
-  private final int pgPort;
-  private final String pgHost;
+  private final int port;
+  private final String host;
   private Handler<Connection> proxyHandler;
 
-  private ProxyServer(Vertx vertx, int pgPort, String pgHost) {
-    this.pgPort = pgPort;
-    this.pgHost = pgHost;
-    this.vertx = vertx;
+  private ProxyServer(Vertx vertx, int port, String host) {
+    this.port = port;
+    this.host = host;
     this.client = vertx.createNetClient();
     this.server = vertx.createNetServer().connectHandler(this::handle);
     this.proxyHandler = Connection::connect;
@@ -134,7 +130,7 @@ class ProxyServer {
 
   private void handle(NetSocket clientSocket) {
     clientSocket.pause();
-    client.connect(pgPort, pgHost, ar -> {
+    client.connect(port, host, ar -> {
       if (ar.succeeded()) {
         NetSocket serverSocket = ar.result();
         serverSocket.pause();

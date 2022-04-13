@@ -10,15 +10,12 @@
  */
 package io.vertx.oracleclient.test.tck;
 
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.tck.ConnectionAutoRetryTestBase;
 import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -46,36 +43,5 @@ public class OracleConnectionAutoRetryTest extends ConnectionAutoRetryTestBase {
     proxyOptions.setHost("localhost");
     connectionConnector = ClientConfig.CONNECT.connect(vertx, proxyOptions);
     poolConnector = ClientConfig.POOLED.connect(vertx, proxyOptions);
-  }
-
-  @Test
-  @Ignore("Connection success, but any request get staled")
-  public void testConnExceedingRetryLimit(TestContext ctx) {
-    Async async = ctx.async();
-    this.options.setReconnectAttempts(1);
-    this.options.setReconnectInterval(1000L);
-    UnstableProxyServer unstableProxyServer = new UnstableProxyServer(
-      2);
-    unstableProxyServer.initialize(this.options, ctx.asyncAssertSuccess((v) -> {
-      this.initialConnector(unstableProxyServer.port());
-      this.connectionConnector.connect(s -> {
-        ctx.assertFalse(s.succeeded());
-        async.complete();
-      });
-    }));
-  }
-
-  @Test
-  @Ignore("Connection success, but any request get staled")
-  public void testPoolExceedingRetryLimit(TestContext ctx) {
-    this.options.setReconnectAttempts(1);
-    this.options.setReconnectInterval(1000L);
-    UnstableProxyServer unstableProxyServer = new UnstableProxyServer(
-      2);
-    unstableProxyServer.initialize(this.options, ctx.asyncAssertSuccess((v) -> {
-      this.initialConnector(unstableProxyServer.port());
-      this.poolConnector.connect(ctx.asyncAssertFailure((throwable) -> {
-      }));
-    }));
   }
 }
