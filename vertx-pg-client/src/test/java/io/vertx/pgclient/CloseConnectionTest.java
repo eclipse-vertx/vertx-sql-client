@@ -1,28 +1,18 @@
 package io.vertx.pgclient;
 
 import io.netty.buffer.ByteBufUtil;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.impl.PgConnectionFactory;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.ProxyServer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class CloseConnectionTest extends PgTestBase {
 
