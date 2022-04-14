@@ -25,7 +25,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.ZoneId;
 import java.util.Objects;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.DEFAULT_PORT;
@@ -84,7 +83,7 @@ public class MSSQLRule extends ExternalResource {
     }
     server = new ServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
       .withEnv("ACCEPT_EULA", "Y")
-      .withEnv("TZ", ZoneId.systemDefault().toString())
+      .withEnv("TZ", "UTC")
       .withEnv("SA_PASSWORD", PASSWORD)
       .withClasspathResourceMapping("init.sql", INIT_SQL, READ_ONLY)
       .waitingFor(Wait.forLogMessage(".*Service Broker manager has started.*\\n", 1));

@@ -25,7 +25,7 @@ You can start an external database:
 
 [source,bash]
 ----
-docker run -t -i -p 1433:1433 -e TZ=Europe/Paris -e ACCEPT_EULA=Y -e SA_PASSWORD=A_Str0ng_Required_Password mcr.microsoft.com/mssql/server:2017-latest
+docker run -t -i -p 1433:1433 -e TZ=UTC -e ACCEPT_EULA=Y -e SA_PASSWORD=A_Str0ng_Required_Password mcr.microsoft.com/mssql/server:2017-latest
 ----
 
 Then run tests against it:
