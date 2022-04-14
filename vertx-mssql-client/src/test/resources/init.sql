@@ -208,6 +208,7 @@ INSERT INTO Fortune (id, message)
 VALUES (12, 'フレームワークのベンチマーク');
 
 -- Table for testing OUTPUT
+DROP TABLE IF EXISTS EntityWithIdentity
 CREATE TABLE EntityWithIdentity
 (
     id       bigint identity NOT NULL,
