@@ -86,7 +86,7 @@ public class MSSQLRule extends ExternalResource {
       .withEnv("TZ", "UTC")
       .withEnv("SA_PASSWORD", PASSWORD)
       .withClasspathResourceMapping("init.sql", INIT_SQL, READ_ONLY)
-      .waitingFor(Wait.forLogMessage(".*Service Broker manager has started.*\\n", 1));
+      .waitingFor(Wait.forLogMessage(".*The tempdb database has \\d+ data file\\(s\\).*\\n", 2));
 
     if (System.getProperties().containsKey("containerFixedPort")) {
       server.withFixedExposedPort(DEFAULT_PORT, DEFAULT_PORT);
