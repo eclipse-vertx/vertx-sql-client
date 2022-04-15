@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -48,6 +48,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row.getValue("test_datetimeoffset"));
       ctx.assertEquals(Buffer.buffer("hello world").appendBytes(new byte[20 - "hello world".length()]), row.getValue("test_binary"));
       ctx.assertEquals(Buffer.buffer("big apple"), row.getValue("test_varbinary"));
+      ctx.assertEquals(Buffer.buffer("venice of the north"), row.getValue("test_varbinary_max"));
       ctx.assertEquals(new BigDecimal("12.3456"), row.getValue("test_money"));
       ctx.assertEquals(new BigDecimal("12.34"), row.getValue("test_smallmoney"));
     });

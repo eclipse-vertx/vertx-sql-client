@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -402,6 +403,18 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   @Test
   public void testEncodeNullVarBinary(TestContext ctx) {
     testEncodeBufferValue(ctx, "test_varbinary", BUFFER_NULL_VALUE);
+  }
+
+  @Test
+  public void testEncodeVarBinaryMax(TestContext ctx) {
+    byte[] bytes = new byte[15 * 1024];
+    ThreadLocalRandom.current().nextBytes(bytes);
+    testEncodeBufferValue(ctx, "test_varbinary_max", Buffer.buffer(bytes));
+  }
+
+  @Test
+  public void testEncodeNullVarBinaryMax(TestContext ctx) {
+    testEncodeBufferValue(ctx, "test_varbinary_max", BUFFER_NULL_VALUE);
   }
 
   private void testEncodeBufferValue(TestContext ctx, String columnName, Object value) {

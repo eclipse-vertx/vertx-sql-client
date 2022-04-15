@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -242,6 +242,20 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
         .returns(Tuple::getValue, Row::getValue, Buffer.buffer("ninja plumber"))
         .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("ninja plumber"))
         .returns(Buffer.class, Buffer.buffer("ninja plumber"))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeVarBinaryMax(TestContext ctx) {
+    byte[] bytes = new byte[15 * 1024];
+    ThreadLocalRandom.current().nextBytes(bytes);
+    Buffer buffer = Buffer.buffer(bytes);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_varbinary_max", buffer, row -> {
+      ColumnChecker.checkColumn(0, "test_varbinary_max")
+        .returns(Tuple::getValue, Row::getValue, buffer)
+        .returns(Tuple::getBuffer, Row::getBuffer, buffer)
+        .returns(Buffer.class, buffer)
         .forRow(row);
     });
   }
