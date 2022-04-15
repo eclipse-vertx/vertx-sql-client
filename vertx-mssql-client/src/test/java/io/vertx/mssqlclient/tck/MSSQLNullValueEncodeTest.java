@@ -171,12 +171,6 @@ public class MSSQLNullValueEncodeTest extends NullValueEncodeTestBase {
   @Test
   @Ignore
   @Override
-  public void testEncodeNullUUID(TestContext ctx) {
-  }
-
-  @Test
-  @Ignore
-  @Override
   public void testEncodeNullJsonObject(TestContext ctx) {
   }
 }
