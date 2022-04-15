@@ -23,3 +23,45 @@ services:
         source: ../src/test/resources/init.sql
         target: /opt/data/init.sql
         read_only: true
+  test-mssql-tls:
+    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2019-latest}
+    ports:
+      - "1435:1433"
+    environment:
+      ACCEPT_EULA: Y
+      TZ: UTC
+      SA_PASSWORD: A_Str0ng_Required_Password
+    volumes:
+      - type: bind
+        source: ../src/test/resources/mssql-tls.conf
+        target: /var/opt/mssql/mssql.conf
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/mssql.key
+        target: /etc/ssl/certs/mssql.key
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/mssql.pem
+        target: /etc/ssl/certs/mssql.pem
+        read_only: true
+  test-mssql-force-encryption:
+    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2019-latest}
+    ports:
+      - "1437:1433"
+    environment:
+      ACCEPT_EULA: Y
+      TZ: UTC
+      SA_PASSWORD: A_Str0ng_Required_Password
+    volumes:
+      - type: bind
+        source: ../src/test/resources/mssql-force-encryption.conf
+        target: /var/opt/mssql/mssql.conf
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/mssql.key
+        target: /etc/ssl/certs/mssql.key
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/mssql.pem
+        target: /etc/ssl/certs/mssql.pem
+        read_only: true

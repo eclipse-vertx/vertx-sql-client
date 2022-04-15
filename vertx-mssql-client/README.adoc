@@ -20,7 +20,7 @@ mvn test -DcontainerFixedPort
 
 ==== Testing with an external database
 
-You can start an external database:
+You can start external database instances:
 
 [source,bash]
 ----
@@ -32,7 +32,12 @@ Then run tests against it:
 
 [source,bash]
 ----
-mvn test -Dconnection.uri=sqlserver://SA:A_Str0ng_Required_Password@localhost:1433
+mvn test \
+  -Dconnection.uri=sqlserver://SA:A_Str0ng_Required_Password@localhost:1433 \
+  -Dtls.connection.uri=sqlserver://SA:A_Str0ng_Required_Password@localhost:1435 \
+  -Dforce.encryption.connection.uri=sqlserver://SA:A_Str0ng_Required_Password@localhost:1437
 ----
 
-* `connection.uri`: configure the client to connect to the specified database
+* `tls.connection.uri`: connection uri of the database to use for `MSSQLEncryptionTest`
+* `force.encryption.connection.uri`: connection uri of the database to use for `MSSQLForcedEncryptionTest`
+* `connection.uri`: connection uri of the database to use for all other tests
