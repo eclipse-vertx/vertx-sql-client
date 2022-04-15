@@ -25,6 +25,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
@@ -71,7 +72,7 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   @Test
   @Repeat(50)
   public void testQueryCurrentTimestamp(TestContext ctx) {
-    LocalDateTime start = LocalDateTime.now();
+    LocalDateTime start = LocalDateTime.now(Clock.systemUTC());
     connection.query("SELECT current_timestamp")
       .execute(ctx.asyncAssertSuccess(rs -> {
         Object value = rs.iterator().next().getValue(0);

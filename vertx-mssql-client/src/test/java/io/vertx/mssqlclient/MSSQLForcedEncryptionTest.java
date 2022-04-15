@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -18,6 +18,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static io.vertx.mssqlclient.junit.MSSQLRule.Config.FORCE_ENCRYPTION;
+
 /**
  * Encryption tests for a server that forces encryption.
  */
@@ -25,7 +27,7 @@ import org.junit.runner.RunWith;
 public class MSSQLForcedEncryptionTest extends MSSQLEncryptionTestBase {
 
   @ClassRule
-  public static MSSQLRule rule = new MSSQLRule(true, true);
+  public static MSSQLRule rule = new MSSQLRule(FORCE_ENCRYPTION);
 
   @Override
   protected MSSQLRule rule() {

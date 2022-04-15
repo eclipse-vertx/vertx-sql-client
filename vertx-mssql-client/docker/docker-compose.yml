@@ -1,0 +1,67 @@
+version: "3.9"
+
+services:
+  test-mssql:
+    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2019-latest}
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: Y
+      TZ: UTC
+      SA_PASSWORD: A_Str0ng_Required_Password
+  test-mssql-initdb:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - "test-mssql"
+    command: [ "sh", "/opt/mssql-tools/bin/initdb.sh","test-mssql,1433","A_Str0ng_Required_Password","/opt/data/init.sql" ]
+    volumes:
+      - type: bind
+        source: ./initdb.sh
+        target: /opt/mssql-tools/bin/initdb.sh
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/init.sql
+        target: /opt/data/init.sql
+        read_only: true
+  test-mssql-tls:
+    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2019-latest}
+    ports:
+      - "1435:1433"
+    environment:
+      ACCEPT_EULA: Y
+      TZ: UTC
+      SA_PASSWORD: A_Str0ng_Required_Password
+    volumes:
+      - type: bind
+        source: ../src/test/resources/mssql-tls.conf
+        target: /var/opt/mssql/mssql.conf
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/mssql.key
+        target: /etc/ssl/certs/mssql.key
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/mssql.pem
+        target: /etc/ssl/certs/mssql.pem
+        read_only: true
+  test-mssql-force-encryption:
+    image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2019-latest}
+    ports:
+      - "1437:1433"
+    environment:
+      ACCEPT_EULA: Y
+      TZ: UTC
+      SA_PASSWORD: A_Str0ng_Required_Password
+    volumes:
+      - type: bind
+        source: ../src/test/resources/mssql-force-encryption.conf
+        target: /var/opt/mssql/mssql.conf
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/mssql.key
+        target: /etc/ssl/certs/mssql.key
+        read_only: true
+      - type: bind
+        source: ../src/test/resources/mssql.pem
+        target: /etc/ssl/certs/mssql.pem
+        read_only: true
