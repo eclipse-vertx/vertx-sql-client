@@ -14,20 +14,20 @@ package io.vertx.mssqlclient.impl.codec;
 /**
  * Data related to a server cursor.
  */
-public class CursorData {
+class CursorData {
 
   // We need to store the cursor prepared handle here and not use the value inside the prepared statement.
   // On MSSQL, a specific handle is returned when invoking CursorPrepExec.
-  public int preparedHandle;
-  public int serverCursorId;
+  int preparedHandle;
+  int serverCursorId;
   // When invoking CursorPrepExec, the database server returns column metadata.
   // We store it so that we can tell the server not to return column metadata again when invoking CursorFetch
-  public MSSQLRowDesc mssqlRowDesc;
-  public boolean fetchSent;
-  public int rowsTotal;
-  public int rowsFetched;
+  MSSQLRowDesc mssqlRowDesc;
+  boolean fetchSent;
+  int rowsTotal;
+  int rowsFetched;
 
-  public boolean hasMore() {
+  boolean hasMore() {
     return rowsFetched != rowsTotal;
   }
 }
