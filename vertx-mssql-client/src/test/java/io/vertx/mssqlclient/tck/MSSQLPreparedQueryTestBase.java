@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,16 +11,22 @@
 
 package io.vertx.mssqlclient.tck;
 
-import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.tck.PreparedQueryTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
+
   @ClassRule
   public static MSSQLRule rule = MSSQLRule.SHARED_INSTANCE;
+
+  @Override
+  protected boolean cursorRequiresTx() {
+    return false;
+  }
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
@@ -40,62 +46,6 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
       sb.append(parts[i]);
     }
     return sb.toString();
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testQueryCursor(TestContext ctx) {
-    //TODO cursor support
-    super.testQueryCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testQueryCloseCursor(TestContext ctx) {
-    //TODO cursor support
-    super.testQueryCloseCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testQueryStreamCloseCursor(TestContext ctx) {
-    //TODO cursor support
-    super.testQueryStreamCloseCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testStreamQueryPauseInBatch(TestContext ctx) {
-    // TODO streaming support
-    super.testStreamQueryPauseInBatch(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testStreamQueryPauseInBatchFromAnotherThread(TestContext ctx) {
-    // TODO streaming support
-    super.testStreamQueryPauseInBatchFromAnotherThread(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testStreamQueryPauseResume(TestContext ctx) {
-    // TODO streaming support
-    super.testStreamQueryPauseResume(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testStreamQuery(TestContext ctx) {
-    // TODO streaming support
-    super.testStreamQuery(ctx);
   }
 
   @Override

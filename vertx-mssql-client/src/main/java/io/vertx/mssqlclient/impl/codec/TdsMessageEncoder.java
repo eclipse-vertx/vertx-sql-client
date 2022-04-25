@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -76,16 +76,13 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
     } else if (cmd instanceof PrepareStatementCommand) {
       return new PrepareStatementCodec(tdsMessageCodec, (PrepareStatementCommand) cmd);
     } else if (cmd instanceof ExtendedQueryCommand) {
-      ExtendedQueryCommand<?> queryCmd = (ExtendedQueryCommand<?>) cmd;
-      if (queryCmd.isBatch()) {
-        return new ExtendedBatchQueryCommandCodec<>(tdsMessageCodec, queryCmd);
-      } else {
-        return new ExtendedQueryCommandCodec<>(tdsMessageCodec, queryCmd);
-      }
+      return ExtendedQueryCommandBaseCodec.create(tdsMessageCodec, (ExtendedQueryCommand<?>) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
       return new CloseStatementCommandCodec(tdsMessageCodec, (CloseStatementCommand) cmd);
     } else if (cmd == CloseConnectionCommand.INSTANCE) {
       return new CloseConnectionCommandCodec(tdsMessageCodec, (CloseConnectionCommand) cmd);
+    } else if (cmd instanceof CloseCursorCommand) {
+      return new CloseCursorCommandCodec(tdsMessageCodec, (CloseCursorCommand) cmd);
     } else {
       throw new UnsupportedOperationException();
     }

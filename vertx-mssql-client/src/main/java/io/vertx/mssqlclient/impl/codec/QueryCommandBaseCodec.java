@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -38,12 +38,12 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
 
   @Override
   protected void handleRow(ByteBuf payload) {
-    rowResultDecoder.handleRow(rowResultDecoder.desc.columnDatas.length, payload);
+    rowResultDecoder.handleRow(payload);
   }
 
   @Override
   protected void handleNbcRow(ByteBuf payload) {
-    rowResultDecoder.handleNbcRow(rowResultDecoder.desc.columnDatas.length, payload);
+    rowResultDecoder.handleNbcRow(payload);
   }
 
   @Override
@@ -60,7 +60,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
     if (rowResultDecoder != null) {
       failure = rowResultDecoder.complete();
       result = rowResultDecoder.result();
-      rowDesc = rowResultDecoder.desc;
+      rowDesc = rowResultDecoder.desc();
       size = rowResultDecoder.size();
       rowResultDecoder.reset();
     } else {
