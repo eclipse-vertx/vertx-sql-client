@@ -3,8 +3,8 @@
 DROP TABLE IF EXISTS immutable;
 CREATE TABLE immutable
 (
-  id      integer       NOT NULL,
-  message varchar(2048) NOT NULL,
+  id      INTEGER       NOT NULL,
+  message VARCHAR(2048) NOT NULL,
   PRIMARY KEY (id)
 );
 
@@ -38,8 +38,8 @@ VALUES (12, N'フレームワークのベンチマーク');
 DROP TABLE IF EXISTS mutable;
 CREATE TABLE mutable
 (
-  id  integer       NOT NULL,
-  val varchar(2048) NOT NULL,
+  id  INTEGER       NOT NULL,
+  val VARCHAR(2048) NOT NULL,
   PRIMARY KEY (id)
 );
 -- mutable for insert,update,delete query testing
@@ -48,19 +48,19 @@ CREATE TABLE mutable
 DROP TABLE IF EXISTS basicdatatype;
 CREATE TABLE basicdatatype
 (
-    id           INT,
-    test_int_2   SMALLINT,
-    test_int_4   INT,
-    test_int_8   BIGINT,
-    test_float_4 REAL,
-    test_float_8 DOUBLE PRECISION,
-    test_numeric NUMERIC(5, 2),
-    test_decimal DECIMAL,
-    test_boolean BIT,
-    test_char    CHAR(8),
-    test_varchar VARCHAR(20),
-    test_date    DATE,
-    test_time    TIME(2)
+  id           INT,
+  test_int_2   SMALLINT,
+  test_int_4   INT,
+  test_int_8   BIGINT,
+  test_float_4 REAL,
+  test_float_8 DOUBLE PRECISION,
+  test_numeric NUMERIC(5, 2),
+  test_decimal DECIMAL,
+  test_boolean BIT,
+  test_char    CHAR(8),
+  test_varchar VARCHAR(20),
+  test_date    DATE,
+  test_time    TIME(2)
 );
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
@@ -79,109 +79,122 @@ VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NUL
 DROP TABLE IF EXISTS nullable_datatype;
 CREATE TABLE nullable_datatype
 (
-    id                  INT,
-    test_tinyint        TINYINT,
-    test_smallint       SMALLINT,
-    test_int            INT,
-    test_bigint         BIGINT,
-    test_float_4        REAL,
-    test_float_8        DOUBLE PRECISION,
-    test_numeric        NUMERIC(5, 2),
-    test_decimal        DECIMAL,
-    test_boolean        BIT,
-    test_char           CHAR(8),
-    test_varchar        VARCHAR(20),
-    test_varchar_max    VARCHAR(MAX),
-    test_date           DATE,
-    test_time           TIME(5),
-    test_smalldatetime  SMALLDATETIME,
-    test_datetime       DATETIME,
-    test_datetime2      DATETIME2(4),
-    test_datetimeoffset DATETIMEOFFSET(3),
-    test_binary         BINARY(20),
-    test_varbinary      VARBINARY(20),
-    test_varbinary_max  VARBINARY(MAX),
-    test_money          MONEY,
-    test_smallmoney     SMALLMONEY,
-    test_uuid           UNIQUEIDENTIFIER
+  id                  INT,
+  test_tinyint        TINYINT,
+  test_smallint       SMALLINT,
+  test_int            INT,
+  test_bigint         BIGINT,
+  test_float_4        REAL,
+  test_float_8        DOUBLE PRECISION,
+  test_numeric        NUMERIC(5, 2),
+  test_decimal        DECIMAL,
+  test_boolean        BIT,
+  test_char           CHAR(8),
+  test_varchar        VARCHAR(20),
+  test_varchar_max    VARCHAR(MAX),
+  test_date           DATE,
+  test_time           TIME(5),
+  test_smalldatetime  SMALLDATETIME,
+  test_datetime       DATETIME,
+  test_datetime2      DATETIME2(4),
+  test_datetimeoffset DATETIMEOFFSET(3),
+  test_binary         BINARY(20),
+  test_varbinary      VARBINARY(20),
+  test_varbinary_max  VARBINARY(MAX),
+  test_money          MONEY,
+  test_smallmoney     SMALLMONEY,
+  test_uuid           UNIQUEIDENTIFIER
 );
 
 INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
-                              test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max, test_date, test_time,
-                              test_smalldatetime, test_datetime, test_datetime2, test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max,
-                              test_money, test_smallmoney, test_uuid)
-VALUES (1, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
-        12345, 1, 'testchar', 'testvarchar', 'testvarcharmax', '2019-01-01', '18:45:02', '2019-01-01 18:45:00', '2019-01-01T18:45:02', '2019-01-01T18:45:02',
-        '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'), 12.3456, 12.34, 'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
+                              test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max,
+                              test_date, test_time, test_smalldatetime, test_datetime, test_datetime2,
+                              test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max, test_money,
+                              test_smallmoney, test_uuid)
+VALUES (1, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99, 12345, 1,
+        'testchar', 'testvarchar', 'testvarcharmax', '2019-01-01', '18:45:02', '2019-01-01 18:45:00',
+        '2019-01-01T18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'),
+        CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'), 12.3456, 12.34,
+        'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
 INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
-                              test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max, test_date, test_time,
-                              test_smalldatetime, test_datetime, test_datetime2, test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max,
-                              test_money, test_smallmoney, test_uuid)
-VALUES (2, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
-        12345, 1, 'testchar', 'testvarchar', 'testvarcharmax', '2019-01-01', '18:45:02', '2019-01-01 18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02',
-        '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'), 12.3456, 12.34, 'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
+                              test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max,
+                              test_date, test_time, test_smalldatetime, test_datetime, test_datetime2,
+                              test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max, test_money,
+                              test_smallmoney, test_uuid)
+VALUES (2, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99, 12345, 1,
+        'testchar', 'testvarchar', 'testvarcharmax', '2019-01-01', '18:45:02', '2019-01-01 18:45:02',
+        '2019-01-01T18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'),
+        CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'), 12.3456, 12.34,
+        'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
 INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
-                              test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max, test_date, test_time,
-                              test_smalldatetime, test_datetime, test_datetime2, test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max,
-                              test_money, test_smallmoney, test_uuid)
-VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-        NULL, NULL, NULL);
+                              test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max,
+                              test_date, test_time, test_smalldatetime, test_datetime, test_datetime2,
+                              test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max, test_money,
+                              test_smallmoney, test_uuid)
+VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+        NULL, NULL, NULL, NULL, NULL, NULL);
 -- table for testing nullable data types
 
 -- table for testing NOT NULL data types
 DROP TABLE IF EXISTS not_nullable_datatype;
 CREATE TABLE not_nullable_datatype
 (
-    id                  INT              NOT NULL,
-    test_tinyint        TINYINT          NOT NULL,
-    test_smallint       SMALLINT         NOT NULL,
-    test_int            INT              NOT NULL,
-    test_bigint         BIGINT           NOT NULL,
-    test_float_4        REAL             NOT NULL,
-    test_float_8        DOUBLE PRECISION NOT NULL,
-    test_numeric        NUMERIC(5, 2)    NOT NULL,
-    test_decimal        DECIMAL          NOT NULL,
-    test_boolean        BIT              NOT NULL,
-    test_char           CHAR(8)          NOT NULL,
-    test_varchar        VARCHAR(20)      NOT NULL,
-    test_varchar_max    VARCHAR(MAX)     NOT NULL,
-    test_date           DATE             NOT NULL,
-    test_time           TIME(6)          NOT NULL,
-    test_smalldatetime  SMALLDATETIME    NOT NULL,
-    test_datetime       DATETIME         NOT NULL,
-    test_datetime2      DATETIME2(7)     NOT NULL,
-    test_datetimeoffset DATETIMEOFFSET(5) NOT NULL,
-    test_binary         BINARY(20)       NOT NULL,
-    test_varbinary      VARBINARY(20)    NOT NULL,
-    test_varbinary_max  VARBINARY(MAX)   NOT NULL,
-    test_money          MONEY            NOT NULL,
-    test_smallmoney     SMALLMONEY       NOT NULL,
-    test_uuid           UNIQUEIDENTIFIER NOT NULL
+  id                  INT               NOT NULL,
+  test_tinyint        TINYINT           NOT NULL,
+  test_smallint       SMALLINT          NOT NULL,
+  test_int            INT               NOT NULL,
+  test_bigint         BIGINT            NOT NULL,
+  test_float_4        REAL              NOT NULL,
+  test_float_8        DOUBLE PRECISION  NOT NULL,
+  test_numeric        NUMERIC(5, 2)     NOT NULL,
+  test_decimal        DECIMAL           NOT NULL,
+  test_boolean        BIT               NOT NULL,
+  test_char           CHAR(8)           NOT NULL,
+  test_varchar        VARCHAR(20)       NOT NULL,
+  test_varchar_max    VARCHAR(MAX)      NOT NULL,
+  test_date           DATE              NOT NULL,
+  test_time           TIME(6)           NOT NULL,
+  test_smalldatetime  SMALLDATETIME     NOT NULL,
+  test_datetime       DATETIME          NOT NULL,
+  test_datetime2      DATETIME2(7)      NOT NULL,
+  test_datetimeoffset DATETIMEOFFSET(5) NOT NULL,
+  test_binary         BINARY(20)        NOT NULL,
+  test_varbinary      VARBINARY(20)     NOT NULL,
+  test_varbinary_max  VARBINARY(MAX)    NOT NULL,
+  test_money          MONEY             NOT NULL,
+  test_smallmoney     SMALLMONEY        NOT NULL,
+  test_uuid           UNIQUEIDENTIFIER  NOT NULL
 );
 
 INSERT INTO not_nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
-                                  test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max, test_date,
-                                  test_time, test_smalldatetime, test_datetime, test_datetime2, test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max,
-                                  test_money, test_smallmoney, test_uuid)
-VALUES (1, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
-        12345, 1, 'testchar', 'testvarchar', 'testvarcharmax', '2019-01-01', '18:45:02', '2019-01-01 18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02',
-        '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'), 12.3456, 12.34, 'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
+                                  test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max,
+                                  test_date, test_time, test_smalldatetime, test_datetime, test_datetime2,
+                                  test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max, test_money,
+                                  test_smallmoney, test_uuid)
+VALUES (1, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99, 12345, 1,
+        'testchar', 'testvarchar', 'testvarcharmax', '2019-01-01', '18:45:02', '2019-01-01 18:45:02',
+        '2019-01-01T18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'),
+        CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'), 12.3456, 12.34,
+        'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
 INSERT INTO not_nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bigint, test_float_4, test_float_8,
-                                  test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max, test_date,
-                                  test_time, test_smalldatetime, test_datetime, test_datetime2, test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max,
-                                  test_money, test_smallmoney, test_uuid)
-VALUES (2, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99,
-        12345, 1, 'testchar', 'testvarchar', 'testvarcharmax', '2019-01-01', '18:45:02', '2019-01-01 18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02',
-        '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'), 12.3456, 12.34, 'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
+                                  test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_varchar_max,
+                                  test_date, test_time, test_smalldatetime, test_datetime, test_datetime2,
+                                  test_datetimeoffset, test_binary, test_varbinary, test_varbinary_max, test_money,
+                                  test_smallmoney, test_uuid)
+VALUES (2, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348623157E308, 999.99, 12345, 1,
+        'testchar', 'testvarchar', 'testvarcharmax', '2019-01-01', '18:45:02', '2019-01-01 18:45:02',
+        '2019-01-01T18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02-03:15', CONVERT(VARBINARY, 'hello world'),
+        CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'), 12.3456, 12.34,
+        'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
 -- table for testing NOT NULL data types
 
 -- Fortune table
 DROP TABLE IF EXISTS Fortune;
 CREATE TABLE Fortune
 (
-    id      integer       NOT NULL,
-    message varchar(2048) NOT NULL,
-    PRIMARY KEY (id)
+  id      INTEGER       NOT NULL,
+  message VARCHAR(2048) NOT NULL,
+  PRIMARY KEY (id)
 );
 
 INSERT INTO Fortune (id, message)
@@ -213,7 +226,7 @@ VALUES (12, N'フレームワークのベンチマーク');
 DROP TABLE IF EXISTS EntityWithIdentity
 CREATE TABLE EntityWithIdentity
 (
-    id       bigint identity NOT NULL,
-    name     varchar(255)
-    primary key (id)
+  id   BIGINT IDENTITY NOT NULL,
+  name VARCHAR(255)
+    PRIMARY KEY (id)
 );
