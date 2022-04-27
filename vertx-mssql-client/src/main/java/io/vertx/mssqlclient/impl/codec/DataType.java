@@ -262,7 +262,7 @@ public enum DataType {
       int length = byteBuf.readByte();
       if (length == 0) return null;
       if (length == 16) {
-        long first = byteBuf.readIntLE() & 0xFFFFFFFF;
+        long first = byteBuf.readIntLE();
         long second = byteBuf.readShortLE() & 0xFFFF;
         long third = byteBuf.readShortLE() & 0xFFFF;
         long lsb = byteBuf.readLong();
