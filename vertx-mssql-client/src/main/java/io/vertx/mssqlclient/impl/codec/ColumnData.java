@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -19,20 +19,20 @@ public final class ColumnData implements ColumnDescriptor {
 
   private final String name;
   private final DataType dataType;
-  private final DataType.Metadata metadata;
+  private final TypeInfo typeInfo;
 
-  public ColumnData(String name, DataType dataType, DataType.Metadata metadata) {
+  public ColumnData(String name, DataType dataType, TypeInfo typeInfo) {
     this.dataType = dataType;
     this.name = name;
-    this.metadata = metadata;
+    this.typeInfo = typeInfo;
   }
 
   public DataType dataType() {
     return dataType;
   }
 
-  public DataType.Metadata metadata() {
-    return metadata;
+  public TypeInfo typeInfo() {
+    return typeInfo;
   }
 
   @Override
@@ -52,6 +52,6 @@ public final class ColumnData implements ColumnDescriptor {
 
   @Override
   public JDBCType jdbcType() {
-    return dataType.jdbcType(metadata);
+    return dataType.jdbcType(typeInfo);
   }
 }
