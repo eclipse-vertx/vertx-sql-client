@@ -40,6 +40,8 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals("testchar", row.getValue("test_char"));
       ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
       ctx.assertEquals("testvarcharmax", row.getValue("test_varchar_max"));
+      ctx.assertEquals("testtext", row.getValue("test_text"));
+      ctx.assertEquals("testntext", row.getValue("test_ntext"));
       ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue("test_date"));
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 0), row.getValue("test_smalldatetime"));
@@ -49,6 +51,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(Buffer.buffer("hello world").appendBytes(new byte[20 - "hello world".length()]), row.getValue("test_binary"));
       ctx.assertEquals(Buffer.buffer("big apple"), row.getValue("test_varbinary"));
       ctx.assertEquals(Buffer.buffer("venice of the north"), row.getValue("test_varbinary_max"));
+      ctx.assertEquals(Buffer.buffer("paris of the west"), row.getValue("test_image"));
       ctx.assertEquals(new BigDecimal("12.3456"), row.getValue("test_money"));
       ctx.assertEquals(new BigDecimal("12.34"), row.getValue("test_smallmoney"));
     });

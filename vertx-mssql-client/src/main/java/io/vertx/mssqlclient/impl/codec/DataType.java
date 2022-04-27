@@ -682,7 +682,9 @@ public enum DataType {
   BINARY(0x2D) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return decodeBinaryMetadata(byteBuf);
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readUnsignedShortLE();
+      return metadata;
     }
 
     @Override
@@ -692,13 +694,15 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeBinaryValue(byteBuf, metadata);
+      return BIGVARBINARY.decodeValue(byteBuf, metadata);
     }
   },
   VARBINARY(0x25) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return decodeBinaryMetadata(byteBuf);
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readUnsignedShortLE();
+      return metadata;
     }
 
     @Override
@@ -708,14 +712,16 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeBinaryValue(byteBuf, metadata);
+      return BIGVARBINARY.decodeValue(byteBuf, metadata);
     }
   },
 
   BIGVARBINARY(0xA5) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return decodeBinaryMetadata(byteBuf);
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readUnsignedShortLE();
+      return metadata;
     }
 
     @Override
@@ -725,7 +731,23 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeBinaryValue(byteBuf, metadata);
+      Object result;
+      if (isPLP(metadata)) {
+        long payloadLength = byteBuf.readLongLE();
+        if (isPLPNull(payloadLength)) {
+          result = null;
+        } else {
+          result = Buffer.buffer(readPLP(byteBuf));
+        }
+      } else {
+        int length = byteBuf.readUnsignedShortLE();
+        if (length == 0xFFFF) {
+          result = null;
+        } else {
+          result = decodeBinaryValue(byteBuf, length);
+        }
+      }
+      return result;
     }
 
     @Override
@@ -761,7 +783,10 @@ public enum DataType {
   BIGVARCHAR(0xA7) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return decodeCharacterMetadata(byteBuf, null);
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readUnsignedShortLE();
+      decodeCharacterMetadata(metadata, byteBuf, null);
+      return metadata;
     }
 
     @Override
@@ -771,13 +796,15 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeCharacterValue(byteBuf, metadata);
+      return NVARCHAR.decodeValue(byteBuf, metadata);
     }
   },
   BIGBINARY(0xAD) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return decodeBinaryMetadata(byteBuf);
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readUnsignedShortLE();
+      return metadata;
     }
 
     @Override
@@ -787,13 +814,16 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeBinaryValue(byteBuf, metadata);
+      return BIGVARBINARY.decodeValue(byteBuf, metadata);
     }
   },
   BIGCHAR(0xAF) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return decodeCharacterMetadata(byteBuf, null);
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readUnsignedShortLE();
+      decodeCharacterMetadata(metadata, byteBuf, null);
+      return metadata;
     }
 
     @Override
@@ -803,13 +833,16 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeCharacterValue(byteBuf, metadata);
+      return BIGVARCHAR.decodeValue(byteBuf, metadata);
     }
   },
   NVARCHAR(0xE7) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return decodeCharacterMetadata(byteBuf, StandardCharsets.UTF_16LE);
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readUnsignedShortLE();
+      decodeCharacterMetadata(metadata, byteBuf, StandardCharsets.UTF_16LE);
+      return metadata;
     }
 
     @Override
@@ -819,7 +852,23 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeCharacterValue(byteBuf, metadata);
+      Object result;
+      if (isPLP(metadata)) {
+        long payloadLength = byteBuf.readLongLE();
+        if (isPLPNull(payloadLength)) {
+          result = null;
+        } else {
+          result = readPLP(byteBuf).toString(metadata.charset);
+        }
+      } else {
+        int length = byteBuf.readUnsignedShortLE();
+        if (length == 0xFFFF) {
+          result = null;
+        } else {
+          result = byteBuf.readCharSequence(length, metadata.charset);
+        }
+      }
+      return result;
     }
 
     @Override
@@ -859,7 +908,10 @@ public enum DataType {
   NCHAR(0xEF) {
     @Override
     public Metadata decodeMetadata(ByteBuf byteBuf) {
-      return decodeCharacterMetadata(byteBuf, StandardCharsets.UTF_16LE);
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readUnsignedShortLE();
+      decodeCharacterMetadata(metadata, byteBuf, StandardCharsets.UTF_16LE);
+      return metadata;
     }
 
     @Override
@@ -869,15 +921,87 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
-      return decodeCharacterValue(byteBuf, metadata);
+      return NVARCHAR.decodeValue(byteBuf, metadata);
     }
   },
   XML(0xF1),
   UDT(0xF0),
 
-  TEXT(0x23),
-  IMAGE(0x22),
-  NTEXT(0x63),
+  TEXT(0x23) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readIntLE();
+      decodeCharacterMetadata(metadata, byteBuf, null);
+      skipMultipartTableName(byteBuf);
+      return metadata;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.LONGVARCHAR;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      return NTEXT.decodeValue(byteBuf, metadata);
+    }
+  },
+  IMAGE(0x22) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readIntLE();
+      skipMultipartTableName(byteBuf);
+      return metadata;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.LONGVARBINARY;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      Buffer result;
+      if (byteBuf.readUnsignedByte() == 0) {
+        result = null;
+      } else {
+        byteBuf.skipBytes(24);
+        int length = byteBuf.readIntLE();
+        result = decodeBinaryValue(byteBuf, length);
+      }
+      return result;
+    }
+  },
+  NTEXT(0x63) {
+    @Override
+    public Metadata decodeMetadata(ByteBuf byteBuf) {
+      Metadata metadata = new Metadata();
+      metadata.length = byteBuf.readIntLE();
+      decodeCharacterMetadata(metadata, byteBuf, StandardCharsets.UTF_16LE);
+      skipMultipartTableName(byteBuf);
+      return metadata;
+    }
+
+    @Override
+    public JDBCType jdbcType(Metadata metadata) {
+      return JDBCType.LONGVARCHAR;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, Metadata metadata) {
+      Object result;
+      if (byteBuf.readUnsignedByte() == 0) {
+        result = null;
+      } else {
+        byteBuf.skipBytes(24);
+        int length = byteBuf.readIntLE();
+        result = byteBuf.readCharSequence(length, metadata.charset);
+      }
+      return result;
+    }
+  },
   SSVARIANT(0x62);
 
   public final int id;
@@ -919,73 +1043,45 @@ public enum DataType {
     }
   }
 
-  private static Metadata decodeCharacterMetadata(ByteBuf byteBuf, Charset charset) {
-    Metadata metadata = new Metadata();
-    metadata.length = byteBuf.readUnsignedShortLE();
+  private static void skipMultipartTableName(ByteBuf byteBuf) {
+    int numParts = byteBuf.readUnsignedByte();
+    for (int i = 0; i < numParts; i++) {
+      byteBuf.skipBytes(2 * byteBuf.readUnsignedShortLE());
+    }
+  }
+
+  private static void decodeCharacterMetadata(Metadata metadata, ByteBuf byteBuf, Charset charset) {
     if (charset != null) {
       metadata.charset = charset;
       byteBuf.skipBytes(5);
     } else {
       metadata.charset = Encoding.readCharsetFrom(byteBuf);
     }
-    return metadata;
   }
 
-  private static Object decodeCharacterValue(ByteBuf byteBuf, Metadata metadata) {
-    Object result;
-    if (metadata.length == 0xFFFF) { // PLP (partially length-prefixed)
-      long payloadLength = byteBuf.readLongLE();
-      if (payloadLength == 0xFFFFFFFFFFFFFFFFL) { // PLP null
-        result = null;
-      } else {
-        Stream.Builder<ByteBuf> byteBufs = Stream.builder();
-        for (int chunkSize = (int) byteBuf.readUnsignedIntLE(); chunkSize > 0; chunkSize = (int) byteBuf.readUnsignedIntLE()) {
-          byteBufs.add(byteBuf.slice(byteBuf.readerIndex(), chunkSize));
-          byteBuf.skipBytes(chunkSize);
-        }
-        ByteBuf wrapped = Unpooled.wrappedBuffer(byteBufs.build().toArray(ByteBuf[]::new));
-        result = wrapped.toString(metadata.charset);
-      }
-    } else { // Length-prefixed
-      int length = byteBuf.readUnsignedShortLE();
-      result = length == 0xFFFF ? null : byteBuf.readCharSequence(length, metadata.charset);
+  private static boolean isPLP(Metadata metadata) {
+    return metadata.length == 0xFFFF;
+  }
+
+  private static boolean isPLPNull(long payloadLength) {
+    return payloadLength == 0xFFFFFFFFFFFFFFFFL;
+  }
+
+  private static ByteBuf readPLP(ByteBuf byteBuf) {
+    Stream.Builder<ByteBuf> byteBufs = Stream.builder();
+    for (int chunkSize = (int) byteBuf.readUnsignedIntLE(); chunkSize > 0; chunkSize = (int) byteBuf.readUnsignedIntLE()) {
+      byteBufs.add(byteBuf.slice(byteBuf.readerIndex(), chunkSize));
+      byteBuf.skipBytes(chunkSize);
     }
-    return result;
+    ByteBuf wrapped = Unpooled.wrappedBuffer(byteBufs.build().toArray(ByteBuf[]::new));
+    return wrapped;
   }
 
-  private static Metadata decodeBinaryMetadata(ByteBuf byteBuf) {
-    Metadata metadata = new Metadata();
-    metadata.length = byteBuf.readUnsignedShortLE();
-    return metadata;
-  }
-
-  private static Object decodeBinaryValue(ByteBuf byteBuf, Metadata metadata) {
-    Object result;
-    if (metadata.length == 0xFFFF) { // PLP (partially length-prefixed)
-      long payloadLength = byteBuf.readLongLE();
-      if (payloadLength == 0xFFFFFFFFFFFFFFFFL) { // PLP null
-        result = null;
-      } else {
-        Stream.Builder<ByteBuf> byteBufs = Stream.builder();
-        for (int chunkSize = (int) byteBuf.readUnsignedIntLE(); chunkSize > 0; chunkSize = (int) byteBuf.readUnsignedIntLE()) {
-          byteBufs.add(byteBuf.slice(byteBuf.readerIndex(), chunkSize));
-          byteBuf.skipBytes(chunkSize);
-        }
-        ByteBuf wrapped = Unpooled.wrappedBuffer(byteBufs.build().toArray(ByteBuf[]::new));
-        result = Buffer.buffer(wrapped);
-      }
-    } else { // Length-prefixed
-      int length = byteBuf.readUnsignedShortLE();
-      if (length == 0xFFFF) {
-        result = null;
-      } else {
-        ByteBuf unpooled = Unpooled.buffer(length);
-        byteBuf.readBytes(unpooled, 0, length);
-        unpooled.writerIndex(length);
-        result = Buffer.buffer(unpooled);
-      }
-    }
-    return result;
+  private static Buffer decodeBinaryValue(ByteBuf byteBuf, int length) {
+    ByteBuf unpooled = Unpooled.buffer(length);
+    byteBuf.readBytes(unpooled, 0, length);
+    unpooled.writerIndex(length);
+    return Buffer.buffer(unpooled);
   }
 
   private static LocalDateTime decodeIntLEDateValue(ByteBuf byteBuf) {

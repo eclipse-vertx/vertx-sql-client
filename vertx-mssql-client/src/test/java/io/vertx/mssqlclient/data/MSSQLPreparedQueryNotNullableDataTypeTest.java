@@ -119,6 +119,41 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   }
 
   @Test
+  public void testEncodeText(TestContext ctx) {
+    String bigString = createBigString(false);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_text", bigString, row -> {
+      ColumnChecker.checkColumn(0, "test_text")
+        .returns(Tuple::getValue, Row::getValue, bigString)
+        .returns(Tuple::getString, Row::getString, bigString)
+        .returns(String.class, bigString)
+        .forRow(row);
+    });
+  }
+
+  private static String createBigString(boolean withNonLatinCharacters) {
+    StringBuilder sb = new StringBuilder(10000);
+    while (sb.length() < 10000) {
+      sb.append("ae $ \u20AC iou y \u00E9\u00E8 %\u00FB* <> '");
+      if (withNonLatinCharacters) {
+        sb.append(" \u30D5\u30EC\u30FC\u30E0\u30EF\u30FC\u30AF\u306E\u30D9\u30F3\u30C1\u30DE\u30FC\u30AF ");
+      }
+    }
+    return sb.toString();
+  }
+
+  @Test
+  public void testEncodeNText(TestContext ctx) {
+    String bigString = createBigString(true);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_ntext", bigString, row -> {
+      ColumnChecker.checkColumn(0, "test_ntext")
+        .returns(Tuple::getValue, Row::getValue, bigString)
+        .returns(Tuple::getString, Row::getString, bigString)
+        .returns(String.class, bigString)
+        .forRow(row);
+    });
+  }
+
+  @Test
   public void testEncodeDate(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_date", LocalDate.of(1999, 12, 31), row -> {
       ColumnChecker.checkColumn(0, "test_date")
@@ -253,6 +288,20 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
     Buffer buffer = Buffer.buffer(bytes);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_varbinary_max", buffer, row -> {
       ColumnChecker.checkColumn(0, "test_varbinary_max")
+        .returns(Tuple::getValue, Row::getValue, buffer)
+        .returns(Tuple::getBuffer, Row::getBuffer, buffer)
+        .returns(Buffer.class, buffer)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeImage(TestContext ctx) {
+    byte[] bytes = new byte[15 * 1024];
+    ThreadLocalRandom.current().nextBytes(bytes);
+    Buffer buffer = Buffer.buffer(bytes);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_image", buffer, row -> {
+      ColumnChecker.checkColumn(0, "test_image")
         .returns(Tuple::getValue, Row::getValue, buffer)
         .returns(Tuple::getBuffer, Row::getBuffer, buffer)
         .returns(Buffer.class, buffer)
