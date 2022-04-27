@@ -62,7 +62,7 @@ public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
     int len = desc.size();
     for (int c = 0; c < len; c++) {
       ColumnData columnData = desc.get(c);
-      row.addValue(columnData.dataType().decodeValue(in, columnData.metadata()));
+      row.addValue(columnData.dataType().decodeValue(in, columnData.typeInfo()));
     }
     return ifNotMissing(in, row);
   }
@@ -93,7 +93,7 @@ public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
       if ((nullByte & mask) == 0) {
         // not null
         ColumnData columnData = desc.get(c);
-        decoded = columnData.dataType().decodeValue(in, columnData.metadata());
+        decoded = columnData.dataType().decodeValue(in, columnData.typeInfo());
       }
       row.addValue(decoded);
     }

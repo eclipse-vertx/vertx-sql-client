@@ -99,7 +99,7 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
     for (int i = 0; i < columnCount; i++) {
       payload.skipBytes(6);
       DataType dataType = DataType.forId(payload.readUnsignedByte());
-      DataType.Metadata metadata = dataType.decodeMetadata(payload);
+      TypeInfo metadata = dataType.decodeTypeInfo(payload);
       String columnName = readUnsignedByteLengthString(payload);
       columnDatas[i] = new ColumnData(columnName, dataType, metadata);
     }
