@@ -48,10 +48,15 @@ public class OracleConnectOptions extends SqlConnectOptions {
   private String tnsAdmin;
 
   public OracleConnectOptions() {
+    super();
   }
 
   public OracleConnectOptions(OracleConnectOptions other) {
     super(other);
+    copyFields(other);
+  }
+
+  private void copyFields(OracleConnectOptions other) {
     this.serviceId = other.serviceId;
     this.serviceName = other.serviceName;
     this.serverMode = other.serverMode;
@@ -62,6 +67,10 @@ public class OracleConnectOptions extends SqlConnectOptions {
 
   public OracleConnectOptions(SqlConnectOptions options) {
     super(options);
+    if (options instanceof OracleConnectOptions) {
+      OracleConnectOptions opts = (OracleConnectOptions) options;
+      copyFields(opts);
+    }
   }
 
   public OracleConnectOptions(JsonObject json) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -86,11 +86,18 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
 
   public MSSQLConnectOptions(SqlConnectOptions other) {
     super(other);
-    packetSize = DEFAULT_PACKET_SIZE;
+    if (other instanceof MSSQLConnectOptions) {
+      MSSQLConnectOptions opts = (MSSQLConnectOptions) other;
+      copyFields(opts);
+    }
   }
 
   public MSSQLConnectOptions(MSSQLConnectOptions other) {
     super(other);
+    copyFields(other);
+  }
+
+  private void copyFields(MSSQLConnectOptions other) {
     packetSize = other.packetSize;
   }
 
