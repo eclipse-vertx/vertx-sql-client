@@ -285,10 +285,9 @@ public class MySQLPipeliningTest extends MySQLTestBase {
 
   private void testSequentialQuery(TestContext ctx, Function<Integer, Future<RowSet<Row>>> resultExecution) {
     Async latch = ctx.async(1000);
-    Future<RowSet<Row>> fut = Future.succeededFuture();
     for (int i = 0; i < 1000; i++) {
       final int currentIter = i;
-      fut = fut.flatMap(res -> resultExecution.apply(currentIter)).onComplete(ctx.asyncAssertSuccess(res -> {
+      resultExecution.apply(currentIter).onComplete(ctx.asyncAssertSuccess(res -> {
         checkQueryResult(ctx, res, currentIter, orderCheckCounter);
         latch.countDown();
       }));
