@@ -194,7 +194,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     return (encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_DEPRECATE_EOF) != 0;
   }
 
-  boolean receiveNoResponsePacket() {
+  boolean expectNoResponsePacket() {
     return false;
   }
 }

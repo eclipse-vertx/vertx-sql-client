@@ -61,7 +61,7 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
   static void checkFireAndForgetCommands(Deque<CommandCodec<?, ?>> inflight) {
     // check if there is any completed command
     CommandCodec<?, ?> commandCodec;
-    while ((commandCodec = inflight.peek()) != null && commandCodec.receiveNoResponsePacket()) {
+    while ((commandCodec = inflight.peek()) != null && commandCodec.expectNoResponsePacket()) {
       commandCodec.decodePayload(null, 0);
     }
   }

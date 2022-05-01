@@ -51,7 +51,7 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
   }
 
   @Override
-  boolean receiveNoResponsePacket() {
+  boolean expectNoResponsePacket() {
     return true;
   }
 }
