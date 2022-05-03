@@ -74,7 +74,6 @@ public interface Driver {
       }
       throw e;
     }
-    vx.addCloseHook(closeFuture);
     if (vertx == null) {
       closeFuture.future().onComplete(ar -> vx.close());
     } else {
