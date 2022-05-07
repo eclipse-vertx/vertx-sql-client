@@ -48,27 +48,27 @@ public abstract class PipeliningQueryTestBase {
 
   @Test
   public void testContinuousSimpleQueryUsingConn(TestContext ctx) {
-    connectionConnector.connect(ctx.asyncAssertSuccess(conn -> testSequentialQuery(ctx, currentIter -> conn.query("SELECT " + currentIter).execute())));
+    connectionConnector.connect(ctx.asyncAssertSuccess(conn -> testSequentialQueryWithConnection(ctx, currentIter -> conn.query("SELECT " + currentIter).execute())));
   }
 
   @Test
   public void testContinuousSimpleQueryUsingPoolWithSingleConn(TestContext ctx) {
     pooledConnectionConnector.connect(ctx.asyncAssertSuccess(pooledConn -> {
-      testSequentialQuery(ctx, currentIter -> pooledConn.query("SELECT " + currentIter).execute());
+      testSequentialQueryWithConnection(ctx, currentIter -> pooledConn.query("SELECT " + currentIter).execute());
     }));
   }
 
   @Test
   public void testContinuousSimpleQueryUsingPool(TestContext ctx) {
     SqlClient client = pooledClientSupplier.get();
-    testSequentialQuery(ctx, currentIter -> client.query("SELECT " + currentIter).execute());
+    testQueryWithPool(ctx, currentIter -> client.query("SELECT " + currentIter).execute());
   }
 
   @Test
   public void testContinuousOneShotPreparedQueryUsingConn(TestContext ctx) {
     // one-shot preparedQuery auto closing
     options.setCachePreparedStatements(false);
-    connectionConnector.connect(ctx.asyncAssertSuccess(conn -> testSequentialQuery(ctx, currentIter -> conn.preparedQuery("SELECT " + currentIter).execute())));
+    connectionConnector.connect(ctx.asyncAssertSuccess(conn -> testSequentialQueryWithConnection(ctx, currentIter -> conn.preparedQuery("SELECT " + currentIter).execute())));
   }
 
 
@@ -77,7 +77,7 @@ public abstract class PipeliningQueryTestBase {
     // one-shot preparedQuery auto closing
     options.setCachePreparedStatements(false);
     pooledConnectionConnector.connect(ctx.asyncAssertSuccess(pooledConn -> {
-      testSequentialQuery(ctx, currentIter -> pooledConn.preparedQuery("SELECT " + currentIter).execute());
+      testSequentialQueryWithConnection(ctx, currentIter -> pooledConn.preparedQuery("SELECT " + currentIter).execute());
     }));
   }
 
@@ -86,20 +86,20 @@ public abstract class PipeliningQueryTestBase {
     // one-shot preparedQuery auto closing
     options.setCachePreparedStatements(false);
     SqlClient client = pooledClientSupplier.get();
-    testSequentialQuery(ctx, currentIter -> client.preparedQuery("SELECT " + currentIter).execute());
+    testQueryWithPool(ctx, currentIter -> client.preparedQuery("SELECT " + currentIter).execute());
   }
 
   @Test
   public void testContinuousOneShotCachedPreparedQueryWithSameSqlUsingConn(TestContext ctx) {
     options.setCachePreparedStatements(true);
-    connectionConnector.connect(ctx.asyncAssertSuccess(conn -> testSequentialQuery(ctx, currentIter -> conn.preparedQuery(buildCounterPreparedQueryWithoutTable()).execute(Tuple.of(currentIter)))));
+    connectionConnector.connect(ctx.asyncAssertSuccess(conn -> testSequentialQueryWithConnection(ctx, currentIter -> conn.preparedQuery(buildCounterPreparedQueryWithoutTable()).execute(Tuple.of(currentIter)))));
   }
 
   @Test
   public void testContinuousOneShotCachedPreparedQueryWithSameSqlUsingPoolWithSingleConn(TestContext ctx) {
     options.setCachePreparedStatements(true);
     pooledConnectionConnector.connect(ctx.asyncAssertSuccess(pooledConn -> {
-      testSequentialQuery(ctx, currentIter -> pooledConn.preparedQuery(buildCounterPreparedQueryWithoutTable()).execute(Tuple.of(currentIter)));
+      testSequentialQueryWithConnection(ctx, currentIter -> pooledConn.preparedQuery(buildCounterPreparedQueryWithoutTable()).execute(Tuple.of(currentIter)));
     }));
   }
 
@@ -107,20 +107,20 @@ public abstract class PipeliningQueryTestBase {
   public void testContinuousOneShotCachedPreparedQueryWithSameSqlUsingPool(TestContext ctx) {
     options.setCachePreparedStatements(true);
     SqlClient client = pooledClientSupplier.get();
-    testSequentialQuery(ctx, currentIter -> client.preparedQuery(buildCounterPreparedQueryWithoutTable()).execute(Tuple.of(currentIter)));
+    testQueryWithPool(ctx, currentIter -> client.preparedQuery(buildCounterPreparedQueryWithoutTable()).execute(Tuple.of(currentIter)));
   }
 
   @Test
   public void testContinuousOneShotCachedPreparedQueryWithDifferentSqlUsingConn(TestContext ctx) {
     options.setCachePreparedStatements(true);
-    connectionConnector.connect(ctx.asyncAssertSuccess(conn -> testSequentialQuery(ctx, currentIter -> conn.preparedQuery("SELECT " + currentIter).execute())));
+    connectionConnector.connect(ctx.asyncAssertSuccess(conn -> testSequentialQueryWithConnection(ctx, currentIter -> conn.preparedQuery("SELECT " + currentIter).execute())));
   }
 
   @Test
   public void testContinuousOneShotCachedPreparedQueryWithDifferentSqlUsingPoolWithSingleConn(TestContext ctx) {
     options.setCachePreparedStatements(true);
     pooledConnectionConnector.connect(ctx.asyncAssertSuccess(pooledConn -> {
-      testSequentialQuery(ctx, currentIter -> pooledConn.preparedQuery("SELECT " + currentIter).execute());
+      testSequentialQueryWithConnection(ctx, currentIter -> pooledConn.preparedQuery("SELECT " + currentIter).execute());
     }));
   }
 
@@ -128,7 +128,7 @@ public abstract class PipeliningQueryTestBase {
   public void testContinuousOneShotCachedPreparedQueryWithDifferentSqlUsingPool(TestContext ctx) {
     options.setCachePreparedStatements(true);
     SqlClient client = pooledClientSupplier.get();
-    testSequentialQuery(ctx, currentIter -> client.preparedQuery("SELECT " + currentIter).execute());
+    testQueryWithPool(ctx, currentIter -> client.preparedQuery("SELECT " + currentIter).execute());
   }
 
   @Test
@@ -139,7 +139,7 @@ public abstract class PipeliningQueryTestBase {
         final int currentIter = i;
         conn.prepare("SELECT " + currentIter).onComplete(ctx.asyncAssertSuccess(ps -> {
           ps.query().execute().onComplete(ctx.asyncAssertSuccess(res -> {
-            checkQueryResult(ctx, res, currentIter, orderCheckCounter);
+            checkSequentialQueryResult(ctx, res, currentIter, orderCheckCounter);
             ps.close(ctx.asyncAssertSuccess(v -> {
               latch.countDown();
             }));
@@ -236,22 +236,40 @@ public abstract class PipeliningQueryTestBase {
     }));
   }
 
-  private void testSequentialQuery(TestContext ctx, Function<Integer, Future<RowSet<Row>>> resultExecution) {
+  private void testSequentialQueryWithConnection(TestContext ctx, Function<Integer, Future<RowSet<Row>>> resultExecution) {
     Async latch = ctx.async(1000);
     for (int i = 0; i < 1000; i++) {
       final int currentIter = i;
       resultExecution.apply(currentIter).onComplete(ctx.asyncAssertSuccess(res -> {
-        checkQueryResult(ctx, res, currentIter, orderCheckCounter);
+        checkSequentialQueryResult(ctx, res, currentIter, orderCheckCounter);
         latch.countDown();
       }));
     }
   }
 
-  private void checkQueryResult(TestContext ctx, RowSet<Row> result, int currentIter, AtomicInteger orderCheckCounter) {
+  private void testQueryWithPool(TestContext ctx, Function<Integer, Future<RowSet<Row>>> resultExecution) {
+    Async latch = ctx.async(1000);
+    for (int i = 0; i < 1000; i++) {
+      final int currentIter = i;
+      resultExecution.apply(currentIter).onComplete(ctx.asyncAssertSuccess(res -> {
+        checkQueryResult(ctx, res, currentIter);
+        latch.countDown();
+      }));
+    }
+  }
+
+  private void checkSequentialQueryResult(TestContext ctx, RowSet<Row> result, int currentIter, AtomicInteger orderCheckCounter) {
     ctx.assertEquals(1, result.size());
     Row row = result.iterator().next();
     ctx.assertEquals(1, row.size());
     ctx.assertEquals(currentIter, row.getInteger(0));
     ctx.assertEquals(currentIter, orderCheckCounter.getAndIncrement());
+  }
+
+  private void checkQueryResult(TestContext ctx, RowSet<Row> result, int currentIter) {
+    ctx.assertEquals(1, result.size());
+    Row row = result.iterator().next();
+    ctx.assertEquals(1, row.size());
+    ctx.assertEquals(currentIter, row.getInteger(0));
   }
 }
