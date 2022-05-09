@@ -363,4 +363,12 @@ public abstract class SocketConnectionBase implements Connection {
       }
     }
   }
+
+  public void suspendPipeline() {
+    this.paused = true;
+  }
+
+  public void resumePipeline() {
+    this.paused = false;
+  }
 }

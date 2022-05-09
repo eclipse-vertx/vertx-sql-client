@@ -17,6 +17,7 @@ scalability and low overhead.
 * Complete data type support
 * Stored Procedures support
 * TLS/SSL support
+* Query pipelining
 * MySQL utilities commands support
 * Working with MySQL and MariaDB
 * Rich collation and charset support
@@ -91,6 +92,18 @@ You can easily get one from the pool:
 ----
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
+
+== Pool versus pooled client
+
+The {@link io.vertx.mysqlclient.MySQLPool} allows you to create a pool or a pooled client
+
+[source,$lang]
+----
+{@link examples.MySQLClientExamples#poolVersusPooledClient}
+----
+
+- pool operations are not pipelined, only connection client are pipelined
+- pooled client operations are pipelined
 
 == Pool sharing
 
@@ -665,6 +678,7 @@ You can also manage the lifecycle of prepared statements manually by creating a 
 
 There is time when you want to batch insert data into the database, you can use `PreparedQuery#executeBatch` which provides a simple API to handle this.
 Keep in mind that MySQL does not natively support batching protocol so the API is only a sugar by executing the prepared statement one after another, which means more network round trips are required comparing to inserting multiple rows by executing one prepared statement with a list of values.
+In order to gain best performance on the wire, we execute the batch in pipelining mode which means the execution request is sent before the response of previous request returns, if your server or proxy does not support this feature or you might not be interested in it, you can use the single execution API and compose them by yourself instead.
 
 === tricky DATE & TIME data types
 

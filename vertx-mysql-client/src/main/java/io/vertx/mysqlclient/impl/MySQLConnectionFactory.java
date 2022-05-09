@@ -40,6 +40,8 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
   private boolean useAffectedRows;
   private SslMode sslMode;
   private Buffer serverRsaPublicKey;
+  private int initialCapabilitiesFlags;
+  private int pipeliningLimit;
   private MySQLAuthenticationPlugin authenticationPlugin;
 
   public MySQLConnectionFactory(VertxInternal vertx, MySQLConnectOptions options) {
@@ -86,6 +88,8 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
       }
     }
     this.serverRsaPublicKey = serverRsaPublicKey;
+    this.initialCapabilitiesFlags = initCapabilitiesFlags(database);
+    this.pipeliningLimit = options.getPipeliningLimit();
 
     // check the SSLMode here
     switch (sslMode) {
@@ -110,10 +114,9 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
-    int initialCapabilitiesFlags = initCapabilitiesFlags(database);
     Future<NetSocket> fut = netClient.connect(server);
     return fut.flatMap(so -> {
-      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, context);
+      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();
       return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
     });

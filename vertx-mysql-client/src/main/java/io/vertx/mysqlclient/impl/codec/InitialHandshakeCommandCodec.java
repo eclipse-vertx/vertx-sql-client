@@ -135,7 +135,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         upgradeToSsl = true;
         break;
       default:
-        completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unknown SSL mode to handle: " + sslMode)));
+        encoder.handleCommandResponse(CommandResponse.failure(new IllegalStateException("Unknown SSL mode to handle: " + sslMode)));
         return;
     }
 
@@ -147,7 +147,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         if (upgrade.succeeded()) {
           doSendHandshakeResponseMessage(serverAuthPluginName, cmd.authenticationPlugin(), authPluginData, serverCapabilitiesFlags);
         } else {
-          completionHandler.handle(CommandResponse.failure(upgrade.cause()));
+          encoder.handleCommandResponse(CommandResponse.failure(upgrade.cause()));
         }
       });
     } else {
@@ -167,7 +167,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     switch (header) {
       case OK_PACKET_HEADER:
         status = ST_CONNECTED;
-        completionHandler.handle(CommandResponse.success(cmd.connection()));
+        encoder.handleCommandResponse(CommandResponse.success(cmd.connection()));
         break;
       case ERROR_PACKET_HEADER:
         handleErrorPacketPayload(payload);
@@ -179,7 +179,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         handleAuthMoreData(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
         break;
       default:
-        completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
+        encoder.handleCommandResponse(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
     }
   }
 
@@ -201,7 +201,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         authResponse = password;
         break;
       default:
-        completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
+        encoder.handleCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
         return;
     }
     sendBytesAsPacket(authResponse);
