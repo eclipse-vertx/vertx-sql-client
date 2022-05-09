@@ -86,7 +86,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
     packet.writeIntLE(1);
 
     int numOfParams = statement.bindingTypes().length;
-    int bitmapLength = (numOfParams + 7) / 8;
+    int bitmapLength = (numOfParams + 7) >> 3;
     byte[] nullBitmap = new byte[bitmapLength];
 
     int pos = packet.writerIndex();
@@ -108,7 +108,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
         if (value != null) {
           DataTypeCodec.encodeBinary(statement.bindingTypes()[i], value, encoder.encodingCharset, packet);
         } else {
-          nullBitmap[i / 8] |= (1 << (i & 7));
+          nullBitmap[i >> 3] |= (1 << (i & 7));
         }
       }
 
