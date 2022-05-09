@@ -111,7 +111,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     switch (header) {
       case EOF_PACKET_HEADER:
       case OK_PACKET_HEADER:
-        encoder.onCommandResponse(CommandResponse.success(null));
+        encoder.handleCommandResponse(CommandResponse.success(null));
         break;
       case ERROR_PACKET_HEADER:
         handleErrorPacketPayload(payload);
@@ -121,7 +121,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
 
   void handleErrorPacketPayload(ByteBuf payload) {
     MySQLException mySQLException = decodeErrorPacketPayload(payload);
-    encoder.onCommandResponse(CommandResponse.failure(mySQLException));
+    encoder.handleCommandResponse(CommandResponse.failure(mySQLException));
   }
 
   final MySQLException decodeErrorPacketPayload(ByteBuf payload) {

@@ -27,7 +27,6 @@ import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
-import java.nio.charset.StandardCharsets;
 import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
@@ -171,7 +170,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     } else {
       response = CommandResponse.success(this.result);
     }
-    encoder.onCommandResponse(response);
+    encoder.handleCommandResponse(response);
   }
 
   private int decodeColumnCountPacketPayload(ByteBuf payload) {

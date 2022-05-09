@@ -38,7 +38,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
     super.encode(encoder);
 
     if (params.isEmpty() && statement.paramDesc.paramDefinitions().length > 0) {
-      encoder.onCommandResponse(CommandResponse.failure("Statement parameter is not set because of the empty batch param list"));
+      encoder.handleCommandResponse(CommandResponse.failure("Statement parameter is not set because of the empty batch param list"));
       return;
     }
     encoder.socketConnection.suspendPipeline();

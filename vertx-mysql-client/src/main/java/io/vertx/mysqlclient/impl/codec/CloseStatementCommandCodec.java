@@ -34,7 +34,7 @@ class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementComman
   void decodePayload(ByteBuf payload, int payloadLength) {
     // no statement response
     // it will be called by the connection in order
-    encoder.onCommandResponse(CommandResponse.success(null));
+    encoder.handleCommandResponse(CommandResponse.success(null));
   }
 
   private void sendCloseStatementCommand(MySQLPreparedStatement statement) {

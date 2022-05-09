@@ -32,7 +32,7 @@ class PingCommandCodec extends CommandCodec<Void, PingCommand> {
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
     // we don't care what the response payload is from the server
-    encoder.onCommandResponse(CommandResponse.success(null));
+    encoder.handleCommandResponse(CommandResponse.success(null));
   }
 
   private void sendPingCommand() {

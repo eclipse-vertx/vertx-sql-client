@@ -57,7 +57,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     codec.encode(this);
   }
 
-  final void onCommandResponse(CommandResponse<?> commandResponse) {
+  final void handleCommandResponse(CommandResponse<?> commandResponse) {
     CommandCodec<?, ?> c = inflight.poll();
     commandResponse.cmd = (CommandBase) c.cmd;
     chctx.fireChannelRead(commandResponse);
