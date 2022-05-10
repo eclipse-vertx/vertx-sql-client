@@ -253,13 +253,17 @@ public class PgClientExamples {
     });
   }
 
+  public void clientPipelining(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
+    PgPool pool = PgPool.pool(vertx, connectOptions.setPipeliningLimit(16), poolOptions);
+  }
+
   public void poolVersusPooledClient(Vertx vertx, String sql, PgConnectOptions connectOptions, PoolOptions poolOptions) {
 
     // Pooled client
-    SqlClient pooledClient = PgPool.client(vertx, connectOptions, poolOptions);
+    SqlClient client = PgPool.client(vertx, connectOptions, poolOptions);
 
     // Pipelined
-    Future<RowSet<Row>> res1 = pooledClient.query(sql).execute();
+    Future<RowSet<Row>> res1 = client.query(sql).execute();
 
     // Connection pool
     PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);

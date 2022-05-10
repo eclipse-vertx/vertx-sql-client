@@ -191,10 +191,10 @@ public class DB2ClientExamples {
   public void poolVersusPooledClient(Vertx vertx, String sql, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
 
     // Pooled client
-    SqlClient pooledClient = DB2Pool.client(vertx, connectOptions, poolOptions);
+    SqlClient client = DB2Pool.client(vertx, connectOptions, poolOptions);
 
     // Pipelined
-    Future<RowSet<Row>> res1 = pooledClient.query(sql).execute();
+    Future<RowSet<Row>> res1 = client.query(sql).execute();
 
     // Connection pool
     DB2Pool pool = DB2Pool.pool(vertx, connectOptions, poolOptions);

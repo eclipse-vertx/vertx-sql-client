@@ -91,6 +91,21 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Command pipelining
+
+In some use cases, command pipelining can improve database access performance.
+
+You can configure the client to use pipelining
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#clientPipelining}
+----
+
+The default pipelining limit is `256`.
+
+You can set this value to `1` to disable pipelining.
+
 == Pool versus pooled client
 
 The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled client
@@ -100,8 +115,8 @@ The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled cli
 {@link examples.PgClientExamples#poolVersusPooledClient}
 ----
 
-- pool operations are not pipelined, only connection client are pipelined
-- pooled client operations are pipelined
+- pool operations are not pipelined, only connections acquired from the pool are pipelined
+- pooled client operations are pipelined, you cannot acquire a connection from a pooled client
 
 == Pool sharing
 

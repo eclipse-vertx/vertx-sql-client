@@ -186,10 +186,10 @@ public class MySQLClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    MySQLPool client = MySQLPool.pool(vertx, connectOptions, poolOptions);
+    MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
 
     // Get a connection from the pool
-    client.getConnection().compose(conn -> {
+    pool.getConnection().compose(conn -> {
       System.out.println("Got a connection from the pool");
 
       // All operations execute on the same connection
@@ -213,14 +213,18 @@ public class MySQLClientExamples {
     });
   }
 
+  public void clientPipelining(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+    MySQLPool pool = MySQLPool.pool(vertx, connectOptions.setPipeliningLimit(16), poolOptions);
+  }
+
   public void poolVersusPooledClient(Vertx vertx, String sql, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
 
     // Pooled client
     connectOptions.setPipeliningLimit(64);
-    SqlClient pooledClient = MySQLPool.client(vertx, connectOptions, poolOptions);
+    SqlClient client = MySQLPool.client(vertx, connectOptions, poolOptions);
 
     // Pipelined
-    Future<RowSet<Row>> res1 = pooledClient.query(sql).execute();
+    Future<RowSet<Row>> res1 = client.query(sql).execute();
 
     // Connection pool
     MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
