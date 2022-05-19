@@ -19,7 +19,6 @@ scalability and low overhead.
 *Not supported yet*
 
 * Prepared queries caching
-* Some https://github.com/eclipse-vertx/vertx-sql-client/issues/608#issuecomment-629390027[data types] are not supported
 
 == Usage
 
