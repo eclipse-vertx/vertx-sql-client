@@ -623,6 +623,11 @@ public class TupleTest {
   }
 
   @Test
+  public void testEnumNullValue() {
+    testNullValue(Object.class, tuple -> tuple.addValue(null), (i, tuple) -> tuple.get(TupleKind.class, i));
+  }
+
+  @Test
   public void testArrayOfBooleanNullValue() {
     testNullValue(Boolean[].class, tuple -> tuple.addArrayOfBoolean(null), (i, tuple) -> tuple.getArrayOfBooleans(i));
   }
