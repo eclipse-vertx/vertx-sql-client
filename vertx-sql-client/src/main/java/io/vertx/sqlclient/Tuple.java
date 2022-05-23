@@ -1664,7 +1664,7 @@ public interface Tuple {
    *
    * @param type the expected value type
    * @param position the value position
-   * @return the value if the value is not found or null.
+   * @return the value if the value is found or null.
    */
   default <T> T get(Class<T> type, int position) {
     if (type == null) {
