@@ -228,7 +228,7 @@ public class RowImpl extends ArrayTuple implements Row {
         }
       }
     }
-    throw new ClassCastException();
+    return null;
   }
 
   /**
