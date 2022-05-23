@@ -9,24 +9,24 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.pgclient.impl;
+package io.vertx.mysqlclient.impl;
 
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-public class RowImplTest {
+public class MySQLRowImplTest {
   enum EnumValue {
     SOME, NONE
   }
+
   @Test
   public void testGetNullEnum() {
-    RowImpl row = new RowImpl(new RowDesc(Collections.singletonList("enum")));
+    MySQLRowImpl row = new MySQLRowImpl(new MySQLRowDesc(new ColumnDefinition[0], null));
     row.addValue(null);
     assertNull(row.get(EnumValue.class, 0));
 
