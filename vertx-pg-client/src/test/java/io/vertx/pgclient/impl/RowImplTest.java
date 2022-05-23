@@ -21,15 +21,20 @@ import io.vertx.pgclient.impl.codec.DataType;
 import io.vertx.sqlclient.impl.RowDesc;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.util.Collections;
 
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
 public class RowImplTest {
   @Test
   public void testGetNullEnum() {
-    RowImpl rowSet = new RowImpl(new RowDesc(Collections.singletonList("enum")));
-    rowSet.addValue(null);
-    assertNull(rowSet.get(DataType.class, 0));
+    RowImpl row = new RowImpl(new RowDesc(Collections.singletonList("enum")));
+    row.addValue(null);
+    assertNull(row.get(DataType.class, 0));
+
+    row.addValue(LocalDate.now());
+    assertThrows(ClassCastException.class, () -> row.get(DataType.class, 1));
   }
 }
