@@ -267,8 +267,10 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
           return constants[ordinal];
         }
       }
+    } else if (val == null) {
+      return null;
     }
-    return null;
+    throw new ClassCastException();
   }
 
   private <T> String buildIllegalAccessMessage(Object value, String columnName, Class<T> clazz) {

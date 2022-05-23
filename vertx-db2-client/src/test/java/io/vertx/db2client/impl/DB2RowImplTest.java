@@ -9,24 +9,25 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.pgclient.impl;
+package io.vertx.db2client.impl;
 
 import io.vertx.sqlclient.impl.RowDesc;
+import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.time.LocalDate;
 import java.util.Collections;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-public class RowImplTest {
+public class DB2RowImplTest extends TestCase {
   enum EnumValue {
     SOME, NONE
   }
+
   @Test
   public void testGetNullEnum() {
-    RowImpl row = new RowImpl(new RowDesc(Collections.singletonList("enum")));
+    DB2RowImpl row = new DB2RowImpl(new RowDesc(Collections.singletonList("enum")));
     row.addValue(null);
     assertNull(row.get(EnumValue.class, 0));
 
