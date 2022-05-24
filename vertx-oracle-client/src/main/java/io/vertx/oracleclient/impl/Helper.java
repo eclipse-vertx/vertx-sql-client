@@ -11,6 +11,7 @@
 package io.vertx.oracleclient.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleException;
 import io.vertx.sqlclient.Tuple;
@@ -142,8 +143,12 @@ public class Helper {
       return null;
     }
 
-    if (value instanceof Boolean || value instanceof String || value instanceof byte[] || value instanceof Number) {
+    if (value instanceof Boolean || value instanceof String || value instanceof Number) {
       return value;
+    }
+
+    if (value instanceof byte[]) {
+      return Buffer.buffer((byte[]) value);
     }
 
     // JDBC temporal values
@@ -182,13 +187,11 @@ public class Helper {
     if (value instanceof Blob) {
       Blob b = (Blob) value;
       try {
-        // result might be truncated due to downcasting to int
-        return b.getBytes(1, (int) b.length());
+        return Buffer.buffer(b.getBytes(1, (int) b.length()));
       } finally {
         try {
           b.free();
-        } catch (AbstractMethodError | SQLFeatureNotSupportedException e) {
-          // ignore since it is an optional feature since 1.6 and non existing before 1.6
+        } catch (AbstractMethodError | SQLFeatureNotSupportedException ignore) {
         }
       }
     }

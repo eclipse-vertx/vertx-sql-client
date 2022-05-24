@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -16,6 +16,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.oracleclient.OraclePrepareOptions;
+import io.vertx.oracleclient.data.Blob;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.oracleclient.impl.OracleColumnDesc;
 import io.vertx.oracleclient.impl.OracleRow;
@@ -142,12 +143,16 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
       // -> java.sql.Timestamp
       Instant timestamp = (Instant) value;
       return Timestamp.from(timestamp);
-    } else if (value instanceof Buffer) {
+    } else if (value instanceof Blob) {
       // -> java.sql.Blob
+      Blob blob = (Blob) value;
+      java.sql.Blob javaBlob = conn.createBlob();
+      javaBlob.setBytes(1, blob.bytes);
+      return javaBlob;
+    } else if (value instanceof Buffer) {
+      // -> RAW
       Buffer buffer = (Buffer) value;
-      Blob blob = conn.createBlob();
-      blob.setBytes(1, buffer.getBytes());
-      return blob;
+      return buffer.getBytes();
     }
 
     return value;

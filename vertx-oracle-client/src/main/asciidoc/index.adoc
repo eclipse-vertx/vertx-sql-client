@@ -164,8 +164,17 @@ Currently, the client supports the following Oracle data types:
 * FLOAT(`java.lang.Double`)
 * DATE(`java.time.LocalDate`)
 * TIMESTAMP(`java.time.LocalDateTime`)
+* RAW(`io.vertx.core.buffer.Buffer`)
 
 Tuple decoding uses the above types when storing values.
+
+`BLOB` data type is also supported with one caveat: it must be represented by an instance of {@link io.vertx.oracleclient.data.Blob} when writing or filtering.
+However, when reading `BLOB` data, the client returns a {@link io.vertx.core.buffer.Buffer}.
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#blobUsage}
+----
 
 == Tracing queries
 
