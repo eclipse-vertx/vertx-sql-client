@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -20,6 +20,7 @@ import io.vertx.oracleclient.OracleClient;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.OraclePrepareOptions;
+import io.vertx.oracleclient.data.Blob;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
 
@@ -428,5 +429,25 @@ public class OracleClientExamples {
         Long id = generated.getLong("ID");
       }
     });
+  }
+
+  public void blobUsage(SqlClient client, Buffer imageBuffer, Long id) {
+    client.preparedQuery("INSERT INTO images (name, data) VALUES (?, ?)")
+      // Use io.vertx.oracleclient.data.Blob when inserting
+      .execute(Tuple.of("beautiful-sunset.jpg", Blob.copy(imageBuffer)))
+      .onComplete(ar -> {
+        // Do something
+      });
+
+    client.preparedQuery("SELECT data FROM images WHERE id = ?")
+      .execute(Tuple.of(id))
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          Row row = ar.result().iterator().next();
+
+          // Use io.vertx.core.buffer.Buffer when reading
+          Buffer data = row.getBuffer("data");
+        }
+      });
   }
 }
