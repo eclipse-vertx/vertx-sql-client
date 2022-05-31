@@ -20,10 +20,13 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
+import io.vertx.pgclient.PgNotice;
 import io.vertx.pgclient.PgNotification;
+import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
@@ -51,6 +54,7 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   }
 
   private volatile Handler<PgNotification> notificationHandler;
+  private volatile Handler<PgNotice> noticeHandler;
 
   public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     super(context, factory, conn, PgDriver.INSTANCE, tracer, metrics);
@@ -62,21 +66,54 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     return this;
   }
 
-
   public void handleEvent(Object event) {
-    Handler<PgNotification> handler = notificationHandler;
-    if (handler != null && event instanceof Notification) {
-      Notification notification = (Notification) event;
-      handler.handle(new PgNotification()
-        .setChannel(notification.getChannel())
-        .setProcessId(notification.getProcessId())
-        .setPayload(notification.getPayload()));
-    }
-    if (event instanceof TxFailedEvent) {
+    if (event instanceof Notification) {
+      Handler<PgNotification> handler = notificationHandler;
+      if (handler != null) {
+        Notification notification = (Notification) event;
+        handler.handle(new PgNotification()
+          .setChannel(notification.getChannel())
+          .setProcessId(notification.getProcessId())
+          .setPayload(notification.getPayload()));
+      }
+    } else if (event instanceof NoticeResponse) {
+      Handler<PgNotice> handler = noticeHandler;
+      NoticeResponse noticeEvent = (NoticeResponse) event;
+      PgNotice notice = new PgNotice()
+        .setSeverity(noticeEvent.getSeverity())
+        .setCode(noticeEvent.getCode())
+        .setMessage(noticeEvent.getMessage())
+        .setDetail(noticeEvent.getDetail())
+        .setHint(noticeEvent.getHint())
+        .setPosition(noticeEvent.getPosition())
+        .setInternalPosition(noticeEvent.getInternalPosition())
+        .setInternalQuery(noticeEvent.getInternalQuery())
+        .setWhere(noticeEvent.getWhere())
+        .setFile(noticeEvent.getFile())
+        .setLine(noticeEvent.getLine())
+        .setRoutine(noticeEvent.getRoutine())
+        .setSchema(noticeEvent.getSchema())
+        .setTable(noticeEvent.getTable())
+        .setColumn(noticeEvent.getColumn())
+        .setDataType(noticeEvent.getDataType())
+        .setConstraint(noticeEvent.getConstraint());
+      if (handler != null) {
+        handler.handle(notice
+        );
+      } else {
+        notice.log(SocketConnectionBase.logger);
+      }
+    } else if (event instanceof TxFailedEvent) {
       if (tx != null) {
         tx.fail();
       }
     }
+  }
+
+  @Override
+  public PgConnection noticeHandler(Handler<PgNotice> handler) {
+    noticeHandler = handler;
+    return this;
   }
 
   @Override

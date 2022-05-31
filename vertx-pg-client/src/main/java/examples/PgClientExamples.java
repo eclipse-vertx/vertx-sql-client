@@ -436,6 +436,12 @@ public class PgClientExamples {
     });
   }
 
+  public void noticeHandler(PgConnection connection) {
+    connection.noticeHandler(notice -> {
+      System.out.println("Received notice " + notice.getSeverity() + "" + notice.getMessage());
+    });
+  }
+
   public void ex10(Vertx vertx) {
 
     PgConnectOptions options = new PgConnectOptions()
