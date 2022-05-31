@@ -517,6 +517,19 @@ value:
 
 The default policy is to not reconnect.
 
+== Notice messages
+
+PostgreSQL can send notice message during the lifetime of a connection.
+
+By default, such messages are logged on the console as warns.
+
+You can set a handler on a connection to catch them and do something useful with them.
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#noticeHandler}
+----
+
 == Cancelling Request
 
 PostgreSQL supports cancellation of requests in progress. You can cancel inflight requests using {@link io.vertx.pgclient.PgConnection#cancelRequest}. Cancelling a request opens a new connection to the server and cancels the request and then close the connection.

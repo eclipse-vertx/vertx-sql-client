@@ -95,7 +95,7 @@ public interface PgConnection extends SqlConnection {
   }
 
   /**
-   * Set an handler called when the connection receives notification on a channel.
+   * Set a handler called when the connection receives notification on a channel.
    * <p/>
    * The handler is called with the {@link PgNotification} and has access to the channel name
    * and the notification payload.
@@ -105,6 +105,15 @@ public interface PgConnection extends SqlConnection {
    */
   @Fluent
   PgConnection notificationHandler(Handler<PgNotification> handler);
+
+  /**
+   *Set a handler called when the connection receives a notice from the server.
+   *
+   * @param handler
+   * @return
+   */
+  @Fluent
+  PgConnection noticeHandler(Handler<PgNotice> handler);
 
   /**
    * Send a request cancellation message to tell the server to cancel processing request in this connection.

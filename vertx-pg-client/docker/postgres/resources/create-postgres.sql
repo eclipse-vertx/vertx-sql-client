@@ -415,5 +415,17 @@ VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WOR
 INSERT INTO collector_test
 VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
+-- notice example --
+create function raise_message(msg varchar)
+returns int
+language plpgsql
+as
+$$
+begin
+   raise notice '%', msg;
+   return 0;
+end;
+$$;
+
 -- TCK usage --
 

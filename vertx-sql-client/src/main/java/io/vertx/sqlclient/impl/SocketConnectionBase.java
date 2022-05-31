@@ -49,7 +49,7 @@ import java.util.function.Predicate;
  */
 public abstract class SocketConnectionBase implements Connection {
 
-  protected static final Logger logger = LoggerFactory.getLogger(SocketConnectionBase.class);
+  public static final Logger logger = LoggerFactory.getLogger(SocketConnectionBase.class);
 
   public enum Status {
 
