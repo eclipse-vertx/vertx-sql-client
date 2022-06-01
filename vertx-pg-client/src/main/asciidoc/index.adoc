@@ -159,6 +159,9 @@ A simple way to configure the client is to specify a `PgConnectOptions` data obj
 
 You can also configure the generic properties with the `setProperties` or `addProperty` methods. Note `setProperties` will override the default client properties.
 
+NOTE: When using this client with CockroachDB DBaaS, the `cluster` option needs to be included using `addProperty("options", "--cluster=<cluster-id>")`
+
+
 For example, you can set a default schema for the connection with adding a `search_path` property.
 
 [source,$lang]
