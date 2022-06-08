@@ -16,15 +16,10 @@ import io.vertx.oracleclient.impl.Helper;
 import io.vertx.oracleclient.impl.Helper.SQLFutureMapper;
 import io.vertx.sqlclient.impl.command.TxCommand;
 import oracle.jdbc.OracleConnection;
-import oracle.jdbc.OraclePreparedStatement;
-
-import java.util.concurrent.Flow;
 
 import static io.vertx.oracleclient.impl.Helper.executeBlocking;
 import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 import static io.vertx.sqlclient.impl.command.TxCommand.Kind.COMMIT;
-import static java.sql.Connection.TRANSACTION_READ_COMMITTED;
-import static java.sql.Connection.TRANSACTION_SERIALIZABLE;
 
 public class OracleTransactionCommand<R> extends AbstractCommand<R> {
 
@@ -50,26 +45,9 @@ public class OracleTransactionCommand<R> extends AbstractCommand<R> {
   private Future<Void> begin(OracleConnection conn, ContextInternal context) {
     return executeBlocking(context, () -> {
       int isolation = conn.getTransactionIsolation();
-      String isolationLevel;
-      switch (isolation) {
-        case TRANSACTION_READ_COMMITTED:
-          isolationLevel = "READ COMMITTED";
-          break;
-        case TRANSACTION_SERIALIZABLE:
-          isolationLevel = "SERIALIZABLE";
-          break;
-        default:
-          throw new IllegalArgumentException("Invalid isolation level: " + isolation);
-      }
       conn.setAutoCommit(false);
-      return isolationLevel;
-    }).compose((SQLFutureMapper<String, Boolean>) isolationLevel -> {
-      Flow.Publisher<Boolean> publisher = conn
-        .prepareStatement("SET TRANSACTION ISOLATION LEVEL " + isolationLevel)
-        .unwrap(OraclePreparedStatement.class)
-        .executeAsyncOracle();
-      return Helper.first(publisher, context);
-    }).mapEmpty();
+      conn.setTransactionIsolation(isolation);
+    });
   }
 
   private Future<Void> commit(OracleConnection conn, ContextInternal context) {
