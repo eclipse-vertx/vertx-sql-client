@@ -10,6 +10,7 @@
  */
 package io.vertx.oracleclient.test.tck;
 
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.OraclePool;
@@ -51,5 +52,17 @@ public class OracleTransactionTest extends TransactionTestBase {
       .compose(v -> pool.withConnection(client -> client.query("DELETE FROM mutable WHERE id = 1").execute().<Void>mapEmpty()))
       .compose(v -> pool.withTransaction(client -> client.query("SELECT 1 FROM DUAL").execute().<Void>mapEmpty()))
       .onComplete(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testTransactionDoNotLeaveOpenCursors(TestContext ctx) {
+    // See https://github.com/eclipse-vertx/vertx-sql-client/issues/1187
+    int count = 5000;
+    Async async = ctx.async(count);
+    for (int i = 0; i < count; i++) {
+      pool.withTransaction(conn -> {
+        return conn.query("SELECT 1 FROM DUAL").execute();
+      }, ctx.asyncAssertSuccess(v -> async.countDown()));
+    }
   }
 }
