@@ -134,12 +134,14 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
     short paramNameLength = payload.getUnsignedByte(payload.readerIndex() + 2);
     payload.skipBytes(12 + 2 * paramNameLength);
     Number value = (Number) INTN.decodeValue(payload, null);
-    if (cursorData.preparedHandle == 0) {
-      cursorData.preparedHandle = value.intValue();
-    } else if (cursorData.serverCursorId == 0) {
-      cursorData.serverCursorId = value.intValue();
-    } else {
-      cursorData.rowsTotal = value.intValue();
+    if (value != null) {
+      if (cursorData.preparedHandle == 0) {
+        cursorData.preparedHandle = value.intValue();
+      } else if (cursorData.serverCursorId == 0) {
+        cursorData.serverCursorId = value.intValue();
+      } else {
+        cursorData.rowsTotal = value.intValue();
+      }
     }
   }
 

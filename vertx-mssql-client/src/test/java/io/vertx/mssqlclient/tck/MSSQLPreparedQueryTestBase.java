@@ -11,7 +11,9 @@
 
 package io.vertx.mssqlclient.tck;
 
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.mssqlclient.MSSQLException;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.tck.PreparedQueryTestBase;
 import org.junit.ClassRule;
@@ -48,19 +50,24 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
     return sb.toString();
   }
 
-  @Override
   @Test
-  @Ignore
   public void testPrepareError(TestContext ctx) {
-    // prepexec prepared statement will not care about the SQL
-    super.testPrepareError(ctx);
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT whatever FROM DOES_NOT_EXIST", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(ctx.asyncAssertFailure(error -> {
+          ctx.assertTrue(error instanceof MSSQLException);
+          MSSQLException e = (MSSQLException) error;
+          ctx.assertEquals("Invalid object name 'DOES_NOT_EXIST'.", e.errorMessage());
+        }));
+      }));
+    }));
   }
 
   @Override
   @Test
   @Ignore
   public void testPreparedQueryParamCoercionQuantityError(TestContext ctx) {
-    // can't check this for now due to prepexec cmd
+    // can't check this due to prepexec cmd
     super.testPreparedQueryParamCoercionQuantityError(ctx);
   }
 
@@ -68,8 +75,25 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
   @Test
   @Ignore
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
-    // can't check this for now due to prepexec cmd
+    // can't check this due to prepexec cmd
     super.testPreparedQueryParamCoercionTypeError(ctx);
+  }
+
+  @Test
+  public void failureWhenPreparingCursor(TestContext ctx) {
+    Async async = ctx.async();
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT invalid_function()", ctx.asyncAssertSuccess(ps -> {
+        ps.createStream(50)
+          .exceptionHandler(error -> {
+            ctx.assertTrue(error instanceof MSSQLException);
+            MSSQLException e = (MSSQLException) error;
+            ctx.assertEquals("'invalid_function' is not a recognized built-in function name.", e.errorMessage());
+            async.complete();
+          })
+          .handler(row -> ctx.fail());
+      }));
+    }));
   }
 }
 
