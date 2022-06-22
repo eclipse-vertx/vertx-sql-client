@@ -23,7 +23,7 @@ public class ConnectionMetaData {
   
   public byte[] correlationToken;
   public String databaseName;
-  public DB2DatabaseMetadata dbMetadata;
+  private DB2DatabaseMetadata dbMetadata;
   public final SectionManager sectionManager = new SectionManager();
   
   private Charset currentCCSID = CCSIDConstants.EBCDIC;
@@ -34,6 +34,15 @@ public class ConnectionMetaData {
   
   public boolean isZos() {
     return dbMetadata.isZOS();
+  }
+  
+  public void setDbMetadata(DB2DatabaseMetadata metadata) {
+    if (metadata.isZOS()) currentCCSID = CCSIDConstants.UTF8;
+    dbMetadata = metadata;
+  }
+  
+  public DB2DatabaseMetadata getDbMetadata() {
+    return dbMetadata;
   }
 
 }

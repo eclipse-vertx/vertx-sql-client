@@ -1,6 +1,6 @@
 -- See this page for a cross-platform SQL reference:
 -- https://community.ibm.com/community/user/hybriddatamanagement/blogs/lynn-chou/2018/10/01/the-sql-reference-for-cross-platform-development
--- 
+--
 -- Fortune table --
 -- used by TCK
 DROP TABLE Fortune;
@@ -73,21 +73,21 @@ CREATE TABLE basicdatatype
     test_date    DATE,
     test_time    TIME
 );
-INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, 
-                          test_float_4, test_float_8, test_numeric, test_decimal, 
-                          test_boolean, test_char, test_varchar, 
+INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8,
+                          test_float_4, test_float_8, test_numeric, test_decimal,
+                          test_boolean, test_char, test_varchar,
                           test_date, test_time)
-VALUES (1, 32767, 2147483647, 9223372036854775807, 
-        3.40282E38, 7.2E75, 999.99, 12345, 
-        1, 'testchar', 'testvarchar', 
+VALUES (1, 32767, 2147483647, 9223372036854775807,
+        3.40282E38, 7.2E75, 999.99, 12345,
+        1, 'testchar', 'testvarchar',
         '2019-01-01', '18:45:02');
-INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, 
-                          test_float_4, test_float_8, test_numeric, test_decimal, 
-                          test_boolean, test_char, test_varchar, 
+INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8,
+                          test_float_4, test_float_8, test_numeric, test_decimal,
+                          test_boolean, test_char, test_varchar,
                           test_date, test_time)
-VALUES (2, 32767, 2147483647, 9223372036854775807, 
-        3.40282E38, 7.2E75, 999.99, 12345, 
-        1, 'testchar', 'testvarchar', 
+VALUES (2, 32767, 2147483647, 9223372036854775807,
+        3.40282E38, 7.2E75, 999.99, 12345,
+        1, 'testchar', 'testvarchar',
         '2019-01-01', '18:45:02');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric, test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
@@ -123,7 +123,9 @@ CREATE TABLE db2_types
     test_byte    SMALLINT,
     test_float   FLOAT,
     test_bytes   VARCHAR(255) for bit data,
-    test_tstamp  TIMESTAMP
+    test_tstamp  TIMESTAMP,
+    test_vchar   VARCHAR(255),
+    test_int     INT
 );
 
 -- Sequence used by QueryVariationsTest
