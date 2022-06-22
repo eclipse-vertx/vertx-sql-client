@@ -221,7 +221,8 @@ public class DB2ErrorMessageTest extends DB2TestBase {
         conn.query("INSERT INTO immutable (id, message) VALUES (1, 'a duplicate key')").execute(ctx.asyncAssertFailure(err -> {
             ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
             DB2Exception ex = (DB2Exception) err;
-            assertContains(ctx, ex.getMessage(), "Duplicate keys were detected on table " + options.getUser().toUpperCase() + ".IMMUTABLE");
+            
+            assertContains(ctx, ex.getMessage(), "Duplicate keys were detected on table ");//Db2/z doesn't send back table name + options.getUser().toUpperCase() + ".IMMUTABLE");
             ctx.assertEquals(SqlCode.DUPLICATE_KEYS_DETECTED, ex.getErrorCode());
           }));
       }));
