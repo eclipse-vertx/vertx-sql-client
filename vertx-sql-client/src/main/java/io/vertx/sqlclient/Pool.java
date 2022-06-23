@@ -183,7 +183,7 @@ public interface Pool extends SqlClient {
   }
 
   /**
-   * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #withConnection(Function, Handler)} but returns a {@code Future} of the asynchronous result
    */
   default <T> Future<@Nullable T> withConnection(Function<SqlConnection, Future<@Nullable T>> function) {
     return getConnection().flatMap(conn -> function.apply(conn).onComplete(ar -> conn.close()));
