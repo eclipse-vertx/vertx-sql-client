@@ -118,7 +118,7 @@ public class MySQLClientExamples {
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI
-    String connectionUri = "mysql://dbuser:secretpassword@database.server.com:3211/mydb";
+    String connectionUri = "mysql://dbuser:secretpassword@database.server.com:3306/mydb";
 
     // Create the pool from the connection URI
     MySQLPool pool = MySQLPool.pool(connectionUri);

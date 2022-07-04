@@ -110,15 +110,21 @@ As an alternative to configuring the client with a {@link io.vertx.mssqlclient.M
 {@link examples.MSSQLClientExamples#configureFromUri(io.vertx.core.Vertx)}
 ----
 
-The connection URI format is defined by the client in an idiomatic way: `sqlserver://[user[:[password]]@]host[:port][/database][?attribute1=value1&attribute2=value2...]`
+The connection URI format is defined by the client in an idiomatic way:
 
-Currently, the client supports the following parameter keywords in connection uri (keys are case-insensitive):
+----
+sqlserver://[user[:[password]]@]host[:port][/database][?<key1>=<value1>[&<key2>=<value2>]]
+----
 
-* host
-* port
-* user
-* password
-* database
+Currently, the client supports the following parameter keys:
+
+* `host`
+* `port`
+* `user`
+* `password`
+* `database`
+
+NOTE: Configuring parameters in connection URI will override the default properties.
 
 == Connect retries
 

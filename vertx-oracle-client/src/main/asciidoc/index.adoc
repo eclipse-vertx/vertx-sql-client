@@ -109,11 +109,20 @@ A simple way to configure the client is to specify a {@link io.vertx.oracleclien
 
 === Connection URI
 
-Apart from configuring with a {@link io.vertx.oracleclient.OracleConnectOptions} data object, we also provide you with an alternative way to connect when you want to configure with a connection URI:
+Apart from configuring with a {@link io.vertx.oracleclient.OracleConnectOptions} data object, we also provide you with an alternative way to connect when you want to configure with a connection URI.
+
+Using the EZConnect format:
 
 [source,$lang]
 ----
 {@link examples.OracleClientExamples#configureFromUri(io.vertx.core.Vertx)}
+----
+
+Or, using the TNS Alias format:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#configureFromTnsAliasUri(io.vertx.core.Vertx)}
 ----
 
 == Connect retries

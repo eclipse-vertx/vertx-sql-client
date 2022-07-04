@@ -122,7 +122,7 @@ public class PgClientExamples {
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI
-    String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:3211/mydb";
+    String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:5432/mydb";
 
     // Create the pool from the connection URI
     PgPool pool = PgPool.pool(connectionUri);
