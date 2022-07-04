@@ -91,13 +91,18 @@ public class OracleClientExamples {
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI
-    String connectionUri = "oracle:thin:scott/tiger@myhost:1521:orcl";
+    String connectionUri = "oracle:thin:@mydbhost1:5521/mydbservice?connect_timeout=10sec";
+
+    // Connect options
+    OracleConnectOptions connectOptions = OracleConnectOptions.fromUri(connectionUri)
+      .setUser("user")
+      .setPassword("secret");
 
     // Pool Options
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the connection URI
-    OraclePool pool = OraclePool.pool(connectionUri, poolOptions);
+    OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
   }
 
   public void connecting01() {
