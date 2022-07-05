@@ -105,6 +105,23 @@ public class OracleClientExamples {
     OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
   }
 
+  public void configureFromTnsAliasUri(Vertx vertx) {
+
+    // Connection URI
+    String connectionUri = "oracle:thin:@prod_db?TNS_ADMIN=/work/tns/";
+
+    // Connect options
+    OracleConnectOptions connectOptions = OracleConnectOptions.fromUri(connectionUri)
+      .setUser("user")
+      .setPassword("secret");
+
+    // Pool Options
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+
+    // Create the pool from the connection URI
+    OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
+  }
+
   public void connecting01() {
 
     // Connect options
