@@ -29,7 +29,6 @@ import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
-import io.vertx.mssqlclient.impl.command.PreLoginResponse;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -61,7 +60,10 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
 
   Future<Byte> sendPreLoginMessage(boolean clientConfigSsl) {
     PreLoginCommand cmd = new PreLoginCommand(clientConfigSsl);
-    return schedule(context, cmd).onSuccess(resp -> setDatabaseMetadata(resp.metadata())).map(PreLoginResponse::encryptionLevel);
+    return schedule(context, cmd).map(resp -> {
+      setDatabaseMetadata(resp.metadata());
+      return resp.encryptionLevel();
+    });
   }
 
   Future<Void> enableSsl(boolean clientConfigSsl, byte encryptionLevel, MSSQLConnectOptions options) {
