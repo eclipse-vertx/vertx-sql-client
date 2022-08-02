@@ -72,8 +72,14 @@ public class CommandHandler implements Connection {
   public void close(Holder holder, Promise<Void> promise) {
     executeBlocking(context, () -> connection.closeAsyncOracle())
       .compose(publisher -> first(publisher, context))
-      .onComplete(x -> holder.handleClosed())
-      .onComplete(promise);
+      .onSuccess(v -> {
+        holder.handleClosed();
+        promise.complete();
+      })
+      .onFailure(t -> {
+        holder.handleClosed();
+        promise.fail(t);
+      });
   }
 
   @Override
