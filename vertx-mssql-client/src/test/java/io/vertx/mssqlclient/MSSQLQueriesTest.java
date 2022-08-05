@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
@@ -28,6 +29,9 @@ import org.junit.runner.RunWith;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -135,5 +139,23 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
       .execute(Tuple.tuple(), ctx.asyncAssertSuccess(rows -> {
         ctx.assertTrue(rows.size() > 0);
       }));
+  }
+
+  @Test
+  public void testExecuteStoredProcedure(TestContext ctx) {
+    Async async = ctx.async();
+    List<Row> rows = Collections.synchronizedList(new ArrayList<>());
+    connection.prepare("EXEC GetFortune", ctx.asyncAssertSuccess(ps -> {
+      ps.createStream(2)
+        .exceptionHandler(ctx::fail)
+        .endHandler(v -> {
+          ctx.assertEquals(6, rows.size());
+          async.complete();
+        })
+        .handler(row -> {
+          ctx.assertEquals(2, row.size());
+          rows.add(row);
+        });
+    }));
   }
 }

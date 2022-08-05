@@ -32,6 +32,9 @@ INSERT INTO immutable (id, message)
 VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO immutable (id, message)
 VALUES (12, N'フレームワークのベンチマーク');
+
+GO
+
 -- immutable for select query testing --
 
 -- mutable for insert,update,delete query testing
@@ -42,6 +45,9 @@ CREATE TABLE mutable
   val VARCHAR(2048) NOT NULL,
   PRIMARY KEY (id)
 );
+
+GO
+
 -- mutable for insert,update,delete query testing
 
 -- table for test ANSI SQL data type codecs
@@ -73,6 +79,9 @@ VALUES ('2', '32767', '2147483647', '9223372036854775807', '3.40282E38', '1.7976
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, test_float_8, test_numeric,
                           test_decimal, test_boolean, test_char, test_varchar, test_date, test_time)
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+GO
+
 -- table for test ANSI SQL data type codecs
 
 -- table for testing nullable data types
@@ -136,6 +145,9 @@ INSERT INTO nullable_datatype(id, test_tinyint, test_smallint, test_int, test_bi
                               test_image, test_money, test_smallmoney, test_uuid)
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
         NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+
+GO
+
 -- table for testing nullable data types
 
 -- table for testing NOT NULL data types
@@ -192,6 +204,9 @@ VALUES (2, 127, 32767, 2147483647, 9223372036854775807, 3.40282E38, 1.7976931348
         '2019-01-01 18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02', '2019-01-01T18:45:02-03:15',
         CONVERT(VARBINARY, 'hello world'), CONVERT(VARBINARY, 'big apple'), CONVERT(VARBINARY, 'venice of the north'),
         CONVERT(IMAGE, 'paris of the west'), 12.3456, 12.34, 'e2d1f163-40a7-480b-b1a6-07faaef8e01b');
+
+GO
+
 -- table for testing NOT NULL data types
 
 -- Fortune table
@@ -228,6 +243,9 @@ VALUES (11, '<script>alert("This should not be displayed in a browser alert box.
 INSERT INTO Fortune (id, message)
 VALUES (12, N'フレームワークのベンチマーク');
 
+GO
+-- Fortune table
+
 -- Table for testing OUTPUT
 DROP TABLE IF EXISTS EntityWithIdentity
 CREATE TABLE EntityWithIdentity
@@ -236,3 +254,37 @@ CREATE TABLE EntityWithIdentity
   name VARCHAR(255)
     PRIMARY KEY (id)
 );
+
+GO
+-- Table for testing OUTPUT
+
+-- Procedure for testing streaming with no cursor
+DROP PROCEDURE IF EXISTS GetFortune;
+
+GO
+
+CREATE PROCEDURE GetFortune
+AS
+BEGIN
+  DECLARE @fortune_count INT;
+
+  SET @fortune_count = (
+    SELECT COUNT(1)
+    FROM Fortune
+  );
+
+  -- We don't really care for the actuall value
+  -- We want the procedure to return a result set using conditional operators
+  -- So that SQL Server cannot open a cursor when executing it and chooses to execute SQL directly
+  IF @fortune_count > 6
+    BEGIN
+      SELECT TOP 6 * FROM Fortune
+    END
+  ELSE
+    BEGIN
+      SELECT TOP 0 * FROM Fortune
+    END
+END
+
+GO
+-- Procedure for testing streaming with no cursor

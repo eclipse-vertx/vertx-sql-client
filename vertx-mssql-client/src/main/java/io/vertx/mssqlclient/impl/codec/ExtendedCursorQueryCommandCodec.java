@@ -38,6 +38,18 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
     }
   }
 
+  @Override
+  protected void handleInfo(ByteBuf payload) {
+    int length = payload.readUnsignedShortLE();
+    int number = payload.readIntLE();
+
+    if (number == 16954) {
+      cursorData.setExecutedSqlDirectly();
+    }
+
+    payload.skipBytes(length - 4);
+  }
+
   private void sendCursorPrepExec() {
     ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
@@ -81,24 +93,28 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
 
   @Override
   protected void handleResultSetDone() {
-    if (cursorData.fetchSent) {
+    if (cursorData.executedSqlDirectly() || cursorData.fetchSent) {
       super.handleResultSetDone();
     }
   }
 
   @Override
   protected void handleDecodingComplete() {
-    if (!cursorData.fetchSent) {
-      sendCursorFetch();
-    } else {
+    if (cursorData.executedSqlDirectly()) {
+      result = false;
+      complete();
+    } else if (cursorData.fetchSent) {
       result = cursorData.hasMore();
       complete();
+    } else {
+      sendCursorFetch();
     }
   }
 
   @Override
   protected MSSQLRowDesc createRowDesc(ColumnData[] columnData) {
-    return (cursorData.mssqlRowDesc = MSSQLRowDesc.create(columnData, true));
+    boolean hasRowStat = columnData.length > 0 && "ROWSTAT".equals(columnData[columnData.length - 1].name());
+    return (cursorData.mssqlRowDesc = MSSQLRowDesc.create(columnData, hasRowStat));
   }
 
   private void sendCursorFetch() {
@@ -134,7 +150,7 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
     short paramNameLength = payload.getUnsignedByte(payload.readerIndex() + 2);
     payload.skipBytes(12 + 2 * paramNameLength);
     Number value = (Number) INTN.decodeValue(payload, null);
-    if (value != null) {
+    if (value != null && !cursorData.executedSqlDirectly()) {
       if (cursorData.preparedHandle == 0) {
         cursorData.preparedHandle = value.intValue();
       } else if (cursorData.serverCursorId == 0) {
