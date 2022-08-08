@@ -45,6 +45,12 @@ public class MSSQLInfo {
     MSSQLInfoConverter.fromJson(json, this);
   }
 
+  public JsonObject toJson() {
+    JsonObject json = new JsonObject();
+    MSSQLInfoConverter.toJson(this, json);
+    return json;
+  }
+
   public int getNumber() {
     return number;
   }
