@@ -61,6 +61,8 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
           handleDone(tokenType, payload);
           break;
         case INFO:
+          handleInfo(payload);
+          break;
         case ORDER:
         case TABNAME:
         case COLINFO:
@@ -83,6 +85,10 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
       }
     }
     handleDecodingComplete();
+  }
+
+  protected void handleInfo(ByteBuf payload) {
+    payload.skipBytes(payload.readUnsignedShortLE());
   }
 
   protected void handleLoginAck() {
@@ -141,8 +147,7 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
   }
 
   private void handleError(ByteBuf buffer) {
-    // token value has been processed
-    int length = buffer.readUnsignedShortLE();
+    buffer.skipBytes(2); // length
 
     int number = buffer.readIntLE();
     byte state = buffer.readByte();
@@ -206,5 +211,4 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
     }
     completionHandler.handle(resp);
   }
-
 }

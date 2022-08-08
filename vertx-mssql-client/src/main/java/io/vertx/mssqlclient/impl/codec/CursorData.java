@@ -30,4 +30,12 @@ class CursorData {
   boolean hasMore() {
     return rowsFetched != rowsTotal;
   }
+
+  void setExecutedSqlDirectly() {
+    serverCursorId = -1;
+  }
+
+  boolean executedSqlDirectly() {
+    return serverCursorId == -1;
+  }
 }

@@ -48,7 +48,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
 
   @Override
   protected void handleAffectedRows(long count) {
-    rowCount += count;
+    rowCount = (int) Math.min(count, Integer.MAX_VALUE);
   }
 
   protected void handleResultSetDone() {
