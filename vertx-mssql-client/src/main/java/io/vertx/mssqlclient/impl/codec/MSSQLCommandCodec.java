@@ -14,6 +14,7 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
 import io.vertx.mssqlclient.MSSQLException;
+import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -88,7 +89,18 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
   }
 
   protected void handleInfo(ByteBuf payload) {
-    payload.skipBytes(payload.readUnsignedShortLE());
+    payload.skipBytes(2); // length
+
+    MSSQLInfo info = new MSSQLInfo()
+      .setNumber(payload.readIntLE())
+      .setState(payload.readByte())
+      .setSeverity(payload.readByte())
+      .setMessage(readUnsignedShortLengthString(payload))
+      .setServerName(readUnsignedByteLengthString(payload))
+      .setProcedureName(readUnsignedByteLengthString(payload))
+      .setLineNumber(payload.readIntLE());
+
+    tdsMessageCodec.chctx().fireChannelRead(info);
   }
 
   protected void handleLoginAck() {

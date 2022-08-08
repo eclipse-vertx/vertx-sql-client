@@ -40,14 +40,14 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
 
   @Override
   protected void handleInfo(ByteBuf payload) {
-    int length = payload.readUnsignedShortLE();
-    int number = payload.readIntLE();
+    // do not move the reader index, it will be moved later when calling super
+    int infoNumber = payload.getIntLE(payload.readerIndex() + 2);
 
-    if (number == 16954) {
+    if (infoNumber == 16954) {
       cursorData.setExecutedSqlDirectly();
     }
 
-    payload.skipBytes(length - 4);
+    super.handleInfo(payload);
   }
 
   private void sendCursorPrepExec() {

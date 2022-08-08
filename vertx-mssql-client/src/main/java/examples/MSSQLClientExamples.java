@@ -306,4 +306,10 @@ public class MSSQLClientExamples {
       .setSsl(true)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/server-cert.pem"));
   }
+
+  public void infoHandler(MSSQLConnection connection) {
+    connection.infoHandler(info -> {
+      System.out.println("Received info " + info.getSeverity() + "" + info.getMessage());
+    });
+  }
 }
