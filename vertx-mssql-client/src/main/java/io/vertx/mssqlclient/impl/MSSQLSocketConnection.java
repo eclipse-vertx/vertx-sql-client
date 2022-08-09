@@ -24,6 +24,7 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
+import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
@@ -139,6 +140,15 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
       super.doSchedule(cmd2, ar -> handler.handle(ar.map(tx.result)));
     } else {
       super.doSchedule(cmd, handler);
+    }
+  }
+
+  @Override
+  protected void handleMessage(Object msg) {
+    if (msg instanceof MSSQLInfo) {
+      handleEvent(msg);
+    } else {
+      super.handleMessage(msg);
     }
   }
 
