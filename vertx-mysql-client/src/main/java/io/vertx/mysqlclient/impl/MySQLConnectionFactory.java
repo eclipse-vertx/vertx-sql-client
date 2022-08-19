@@ -114,6 +114,14 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
+    if (sslMode == SslMode.PREFERRED) {
+      return doConnect(server, username, password, database, sslMode, context).recover(err -> doConnect(server, username, password, database, SslMode.DISABLED, context));
+    } else {
+      return doConnect(server, username, password, database, sslMode, context);
+    }
+  }
+
+  private Future<Connection> doConnect(SocketAddress server, String username, String password, String database, SslMode sslMode, EventLoopContext context) {
     Future<NetSocket> fut = netClient.connect(server);
     return fut.flatMap(so -> {
       MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
