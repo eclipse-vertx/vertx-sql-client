@@ -12,6 +12,7 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
@@ -31,14 +32,18 @@ public class MySQLTLSTest {
   @ClassRule
   public static MySQLRule rule = MySQLRule.SHARED_TLS_INSTANCE;
 
+  @ClassRule
+  public static MySQLRule nonTlsRule = MySQLRule.SHARED_INSTANCE;
+
   Vertx vertx;
   MySQLConnectOptions options;
+  MySQLConnectOptions nonTlsOptions;
 
   @Before
   public void setup() {
     vertx = Vertx.vertx();
     options = new MySQLConnectOptions(rule.options());
-
+    nonTlsOptions = new MySQLConnectOptions(nonTlsRule.options());
     /*
      * For testing we have to drop using the TLSv1.2.
      *
@@ -79,7 +84,7 @@ public class MySQLTLSTest {
   }
 
   @Test
-  public void testSuccessWithPreferredSslMode(TestContext ctx) {
+  public void testTlsSuccessWithPreferredSslMode(TestContext ctx) {
     options.setSslMode(SslMode.PREFERRED);
     options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
     options.setPemKeyCertOptions(new PemKeyCertOptions()
@@ -88,6 +93,40 @@ public class MySQLTLSTest {
 
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+        ctx.assertEquals(1, res.size());
+        conn.close();
+      }));
+    }));
+  }
+
+  @Test
+  public void testTlsHandshakeFailWithPreferredSslMode(TestContext ctx) {
+    options.setSslMode(SslMode.PREFERRED);
+    options.setPemTrustOptions(new PemTrustOptions().addCertValue(Buffer.buffer("INVALID CERT")));
+    options.setPemKeyCertOptions(new PemKeyCertOptions()
+      .setCertPath("tls/files/client-cert.pem")
+      .setKeyPath("tls/files/client-key.pem"));
+
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertFalse(conn.isSSL());
+      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+        ctx.assertEquals(1, res.size());
+        conn.close();
+      }));
+    }));
+  }
+
+  @Test
+  public void testNonTlsConnWithPreferredSslMode(TestContext ctx) {
+    nonTlsOptions.setSslMode(SslMode.PREFERRED);
+    nonTlsOptions.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
+    nonTlsOptions.setPemKeyCertOptions(new PemKeyCertOptions()
+      .setCertPath("tls/files/client-cert.pem")
+      .setKeyPath("tls/files/client-key.pem"));
+
+    MySQLConnection.connect(vertx, nonTlsOptions, ctx.asyncAssertSuccess(conn -> {
+      ctx.assertFalse(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
