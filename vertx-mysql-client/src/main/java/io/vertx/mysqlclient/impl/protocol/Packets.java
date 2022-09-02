@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -22,23 +22,17 @@ public final class Packets {
 
   public static final class OkPacket {
 
-    private final long affectedRows;
+    private final int affectedRows;
     private final long lastInsertId;
     private final int serverStatusFlags;
-    private final int numberOfWarnings;
-    private final String statusInfo;
-    private final String sessionStateInfo;
 
-    public OkPacket(long affectedRows, long lastInsertId, int serverStatusFlags, int numberOfWarnings, String statusInfo, String sessionStateInfo) {
+    public OkPacket(int affectedRows, long lastInsertId, int serverStatusFlags) {
       this.affectedRows = affectedRows;
       this.lastInsertId = lastInsertId;
       this.serverStatusFlags = serverStatusFlags;
-      this.numberOfWarnings = numberOfWarnings;
-      this.statusInfo = statusInfo;
-      this.sessionStateInfo = sessionStateInfo;
     }
 
-    public long affectedRows() {
+    public int affectedRows() {
       return affectedRows;
     }
 
@@ -48,18 +42,6 @@ public final class Packets {
 
     public int serverStatusFlags() {
       return serverStatusFlags;
-    }
-
-    public int numberOfWarnings() {
-      return numberOfWarnings;
-    }
-
-    public String statusInfo() {
-      return statusInfo;
-    }
-
-    public String sessionStateInfo() {
-      return sessionStateInfo;
     }
   }
 
@@ -82,6 +64,7 @@ public final class Packets {
     }
   }
 
+  @SuppressWarnings("unused")
   public static final class ServerStatusFlags {
     /*
       https://dev.mysql.com/doc/dev/mysql-server/latest/mysql__com_8h.html#a1d854e841086925be1883e4d7b4e8cad
@@ -103,6 +86,7 @@ public final class Packets {
     public static final int SERVER_SESSION_STATE_CHANGED = 0x4000;
   }
 
+  @SuppressWarnings("unused")
   public static final class EnumCursorType {
     public static final byte CURSOR_TYPE_NO_CURSOR = 0;
     public static final byte CURSOR_TYPE_READ_ONLY = 1;
@@ -112,6 +96,7 @@ public final class Packets {
     public static final byte CURSOR_TYPE_SCROLLABLE = 4;
   }
 
+  @SuppressWarnings("unused")
   public static final class ParameterFlag {
     public static final int UNSIGNED = 0x80;
   }

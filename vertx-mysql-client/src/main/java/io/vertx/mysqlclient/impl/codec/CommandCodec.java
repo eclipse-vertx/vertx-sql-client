@@ -18,8 +18,8 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.MySQLException;
-import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -137,24 +137,10 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   // simplify the ok packet as those properties are actually not used for now
   OkPacket decodeOkPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip OK packet header
-    long affectedRows = BufferUtils.readLengthEncodedInteger(payload);
+    int affectedRows = (int) BufferUtils.readLengthEncodedInteger(payload);
     long lastInsertId = BufferUtils.readLengthEncodedInteger(payload);
     int serverStatusFlags = payload.readUnsignedShortLE();
-//    int numberOfWarnings = payload.readUnsignedShortLE();
-    String statusInfo = null;
-    String sessionStateInfo = null;
-//    if (payload.readableBytes() == 0) {
-//      // handle when OK packet does not contain server status info
-//      statusInfo = null;
-//    } else if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_SESSION_TRACK) != 0) {
-//      statusInfo = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-//      if ((serverStatusFlags & ServerStatusFlags.SERVER_SESSION_STATE_CHANGED) != 0) {
-//        sessionStateInfo = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-//      }
-//    } else {
-//      statusInfo = readRestOfPacketString(payload, charset);
-//    }
-    return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, 0, statusInfo, sessionStateInfo);
+    return new OkPacket(affectedRows, lastInsertId, serverStatusFlags);
   }
 
   EofPacket decodeEofPacketPayload(ByteBuf payload) {
