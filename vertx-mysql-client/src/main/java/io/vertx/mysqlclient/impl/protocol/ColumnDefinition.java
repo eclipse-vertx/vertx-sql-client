@@ -17,75 +17,28 @@ import io.vertx.sqlclient.desc.ColumnDescriptor;
 import java.sql.JDBCType;
 
 public final class ColumnDefinition implements ColumnDescriptor {
+
   /*
     https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_query_response_text_resultset_column_definition.html
    */
-  private final String catalog;
-  private final String schema;
-  private final String table;
-  private final String orgTable;
   private final String name;
-  private final String orgName;
   private final int characterSet;
-  private final long columnLength;
   private final DataType type;
   private final int flags;
-  private final byte decimals;
 
-  public ColumnDefinition(String catalog,
-                   String schema,
-                   String table,
-                   String orgTable,
-                   String name,
-                   String orgName,
-                   int characterSet,
-                   long columnLength,
-                   DataType type,
-                   int flags,
-                   byte decimals) {
-    this.catalog = catalog;
-    this.schema = schema;
-    this.table = table;
-    this.orgTable = orgTable;
+  public ColumnDefinition(String name, int characterSet, DataType type, int flags) {
     this.name = name;
-    this.orgName = orgName;
     this.characterSet = characterSet;
-    this.columnLength = columnLength;
     this.type = type;
     this.flags = flags;
-    this.decimals = decimals;
-  }
-
-  public String catalog() {
-    return catalog;
-  }
-
-  public String schema() {
-    return schema;
-  }
-
-  public String table() {
-    return table;
-  }
-
-  public String orgTable() {
-    return orgTable;
   }
 
   public String name() {
     return name;
   }
 
-  public String orgName() {
-    return orgName;
-  }
-
   public int characterSet() {
     return characterSet;
-  }
-
-  public long columnLength() {
-    return columnLength;
   }
 
   public DataType type() {
@@ -94,10 +47,6 @@ public final class ColumnDefinition implements ColumnDescriptor {
 
   public int flags() {
     return flags;
-  }
-
-  public byte decimals() {
-    return decimals;
   }
 
   @Override
@@ -119,17 +68,10 @@ public final class ColumnDefinition implements ColumnDescriptor {
   @Override
   public String toString() {
     return "ColumnDefinition{" +
-      "catalog='" + catalog + '\'' +
-      ", schema='" + schema + '\'' +
-      ", table='" + table + '\'' +
-      ", orgTable='" + orgTable + '\'' +
       ", name='" + name + '\'' +
-      ", orgName='" + orgName + '\'' +
       ", characterSet=" + characterSet +
-      ", columnLength=" + columnLength +
       ", type=" + type +
       ", flags=" + flags +
-      ", decimals=" + decimals +
       '}';
   }
 
@@ -137,6 +79,7 @@ public final class ColumnDefinition implements ColumnDescriptor {
     Type of column definition
     https://dev.mysql.com/doc/dev/mysql-server/latest/binary__log__types_8h.html#aab0df4798e24c673e7686afce436aa85
    */
+  @SuppressWarnings("unused")
   public static final class ColumnType {
     public static final int MYSQL_TYPE_DECIMAL = 0x00;
     public static final int MYSQL_TYPE_TINY = 0x01;
@@ -178,6 +121,7 @@ public final class ColumnDefinition implements ColumnDescriptor {
   /*
     https://dev.mysql.com/doc/dev/mysql-server/latest/group__group__cs__column__definition__flags.html
    */
+  @SuppressWarnings("unused")
   public static final class ColumnDefinitionFlags {
     public static final int NOT_NULL_FLAG = 0x00000001;
     public static final int PRI_KEY_FLAG = 0x00000002;

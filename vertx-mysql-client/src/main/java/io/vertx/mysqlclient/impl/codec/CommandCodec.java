@@ -155,19 +155,19 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   ColumnDefinition decodeColumnDefinitionPacketPayload(ByteBuf payload) {
-    String catalog = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String schema = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String table = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String orgTable = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
+    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // catalogq
+    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // schema
+    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // table
+    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // orgTable
     String name = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String orgName = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    long lengthOfFixedLengthFields = BufferUtils.readLengthEncodedInteger(payload);
+    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // orgName
+    BufferUtils.readLengthEncodedInteger(payload); // skip lengthOfFixedLengthFields
     int characterSet = payload.readUnsignedShortLE();
-    long columnLength = payload.readUnsignedIntLE();
+    payload.skipBytes(4); // columnLength
     DataType type = DataType.valueOf(payload.readUnsignedByte());
     int flags = payload.readUnsignedShortLE();
-    byte decimals = payload.readByte();
-    return new ColumnDefinition(catalog, schema, table, orgTable, name, orgName, characterSet, columnLength, type, flags, decimals);
+    payload.skipBytes(1); // decimals
+    return new ColumnDefinition(name, characterSet, type, flags);
   }
 
   void skipEofPacketIfNeeded(ByteBuf payload) {
