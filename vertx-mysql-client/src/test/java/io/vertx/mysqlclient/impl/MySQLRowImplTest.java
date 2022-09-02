@@ -26,7 +26,7 @@ public class MySQLRowImplTest {
 
   @Test
   public void testGetNullEnum() {
-    MySQLRowImpl row = new MySQLRowImpl(new MySQLRowDesc(new ColumnDefinition[0], null));
+    MySQLRowImpl row = new MySQLRowImpl(MySQLRowDesc.create(new ColumnDefinition[0], null));
     row.addValue(null);
     assertNull(row.get(EnumValue.class, 0));
 
