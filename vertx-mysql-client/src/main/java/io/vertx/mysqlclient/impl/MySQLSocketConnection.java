@@ -18,14 +18,16 @@
 package io.vertx.mysqlclient.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.vertx.core.*;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
+import io.vertx.mysqlclient.impl.codec.MySQLPacketDecoder;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
@@ -77,6 +79,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     codec = new MySQLCodec(this);
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
+    pipeline.addBefore("codec", "packetDecoder", new MySQLPacketDecoder());
     super.init();
   }
 
