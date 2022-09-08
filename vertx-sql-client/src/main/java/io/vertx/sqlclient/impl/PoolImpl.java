@@ -53,6 +53,8 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
 
+  private volatile SqlConnection propagatableConnection;
+
   public PoolImpl(VertxInternal vertx,
                   Driver driver,
                   QueryTracer tracer,
@@ -153,6 +155,24 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
       conn.init(wrapper);
       return wrapper;
     });
+  }
+
+  @Override
+  public Future<SqlConnection> getPropagatableConnection() {
+    if (propagatableConnection == null) {
+      return getConnection().onComplete(c -> setPropagatableConnection(c.result()));
+    }
+    return Future.succeededFuture(propagatableConnection);
+  }
+
+  @Override
+  public boolean propagatableConnectionIsActive() {
+    return propagatableConnection != null;
+  }
+
+  @Override
+  public Future<Void> setPropagatableConnection(SqlConnection propagatableConnection) {
+    return Future.future(handler -> this.propagatableConnection = propagatableConnection);
   }
 
   @Override

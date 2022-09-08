@@ -68,6 +68,21 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
   }
 
   @Override
+  public Future<SqlConnection> getPropagatableConnection() {
+    return delegate.getPropagatableConnection();
+  }
+
+  @Override
+  public boolean propagatableConnectionIsActive() {
+    return delegate.propagatableConnectionIsActive();
+  }
+
+  @Override
+  public Future<Void> setPropagatableConnection(SqlConnection propagatableConnection) {
+    return delegate.setPropagatableConnection(propagatableConnection);
+  }
+
+  @Override
   public Query<RowSet<Row>> query(String sql) {
     return delegate.query(sql);
   }

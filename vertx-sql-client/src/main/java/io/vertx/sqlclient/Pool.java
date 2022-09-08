@@ -98,6 +98,12 @@ public interface Pool extends SqlClient {
    */
   Future<SqlConnection> getConnection();
 
+  Future<SqlConnection> getPropagatableConnection();
+
+  boolean propagatableConnectionIsActive();
+
+  Future<Void> setPropagatableConnection(SqlConnection propagatableConnection);
+
   /**
    * {@inheritDoc}
    *
@@ -162,6 +168,39 @@ public interface Pool extends SqlClient {
               }
             }))
         .onComplete(ar -> conn.close()));
+  }
+
+
+  default <T> Future<@Nullable T> withPropagatedTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
+    if (propagatableConnectionIsActive()) {
+      return getPropagatableConnection()
+        .flatMap(conn -> function.apply(conn)
+          .onFailure(err -> {
+            if (!(err instanceof TransactionRollbackException)) {
+              conn.getTransaction().rollback();
+            }
+          }));
+    } else {
+      return getPropagatableConnection()
+        .flatMap(conn -> conn
+          .begin()
+          .flatMap(tx -> function
+            .apply(conn)
+            .compose(
+              res -> tx
+                .commit()
+                .flatMap(v -> Future.succeededFuture(res)),
+              err -> {
+                if (err instanceof TransactionRollbackException) {
+                  return Future.failedFuture(err);
+                } else {
+                  return tx
+                    .rollback()
+                    .compose(v -> Future.failedFuture(err), failure -> Future.failedFuture(err));
+                }
+              }))
+          .onComplete(ar -> conn.close(v -> setPropagatableConnection(null))));
+    }
   }
 
   /**
