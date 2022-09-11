@@ -15,6 +15,7 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -68,21 +69,6 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
   }
 
   @Override
-  public Future<SqlConnection> getPropagatableConnection() {
-    return delegate.getPropagatableConnection();
-  }
-
-  @Override
-  public boolean propagatableConnectionIsActive() {
-    return delegate.propagatableConnectionIsActive();
-  }
-
-  @Override
-  public Future<Void> setPropagatableConnection(SqlConnection propagatableConnection) {
-    return delegate.setPropagatableConnection(propagatableConnection);
-  }
-
-  @Override
   public Query<RowSet<Row>> query(String sql) {
     return delegate.query(sql);
   }
@@ -90,6 +76,11 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
     return delegate.preparedQuery(sql);
+  }
+
+  @Override
+  public <T> Future<@Nullable T> withPropagatedTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
+    return delegate.withPropagatedTransaction(function);
   }
 
   @Override

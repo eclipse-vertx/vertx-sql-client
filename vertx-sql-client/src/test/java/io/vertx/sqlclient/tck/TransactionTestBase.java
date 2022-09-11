@@ -321,7 +321,6 @@ public abstract class TransactionTestBase {
       .query("SELECT id, val FROM mutable")
       .execute(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(3, rows.size());
-        ctx.assertFalse(pool.propagatableConnectionIsActive());
         async.complete();
       }))));
   }
