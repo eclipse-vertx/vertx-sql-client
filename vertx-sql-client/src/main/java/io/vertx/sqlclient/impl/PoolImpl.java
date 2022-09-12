@@ -159,7 +159,8 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   }
 
   public <T> Future<@Nullable T> withPropagatedTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
-    SqlConnection sqlConnection = context().get(PROPAGATABLE_CONNECTION);
+    Context context = Vertx.currentContext();
+    SqlConnection sqlConnection = context.getLocal(PROPAGATABLE_CONNECTION);
     if (sqlConnection == null) {
       return initializePropagatedConnectionAndTransaction(function);
     }
@@ -173,7 +174,8 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   }
 
   private <T> Future<@Nullable T> initializePropagatedConnectionAndTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
-    return getConnection().onComplete(handler -> context().put(PROPAGATABLE_CONNECTION, handler.result()))
+    Context context = Vertx.currentContext();
+    return getConnection().onComplete(handler -> context.putLocal(PROPAGATABLE_CONNECTION, handler.result()))
       .flatMap(conn -> conn
         .begin()
         .flatMap(tx -> function
@@ -191,7 +193,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   .compose(v -> Future.failedFuture(err), failure -> Future.failedFuture(err));
               }
             }))
-        .onComplete(ar -> conn.close(v -> context().remove(PROPAGATABLE_CONNECTION))));
+        .onComplete(ar -> conn.close(v -> context.removeLocal(PROPAGATABLE_CONNECTION))));
   }
 
   @Override

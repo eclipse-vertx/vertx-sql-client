@@ -313,6 +313,7 @@ public abstract class TransactionTestBase {
   public void testWithPropagatedConnectionTransactionCommit(TestContext ctx) {
     Async async = ctx.async();
     Pool pool = createPool();
+    vertx.runOnContext(handler -> {
     pool.withPropagatedTransaction(c ->
       pool.withPropagatedTransaction(conn -> conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty()).flatMap(v ->
         pool.withPropagatedTransaction(conn -> conn.query("INSERT INTO mutable (id, val) VALUES (2, 'hello-2')").execute().mapEmpty())).flatMap(v2 ->
@@ -321,8 +322,10 @@ public abstract class TransactionTestBase {
       .query("SELECT id, val FROM mutable")
       .execute(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(3, rows.size());
+        ctx.assertNull(Vertx.currentContext().getLocal("propagatable_connection"));
         async.complete();
       }))));
+    });
   }
 
   @Test
@@ -330,13 +333,16 @@ public abstract class TransactionTestBase {
     Async async = ctx.async();
     Pool pool = createPool();
     Throwable failure = new Throwable();
-    pool.withPropagatedTransaction(c ->
-      pool.withPropagatedTransaction(conn -> conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty().flatMap(v -> Future.failedFuture(failure)))
-    ).onComplete(ctx.asyncAssertFailure(v -> pool
-      .query("SELECT id, val FROM mutable")
-      .execute(ctx.asyncAssertSuccess(rows -> {
-        ctx.assertEquals(0, rows.size());
-        async.complete();
-      }))));
+    vertx.runOnContext(handler -> {
+      pool.withPropagatedTransaction(c ->
+        pool.withPropagatedTransaction(conn -> conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty().flatMap(v -> Future.failedFuture(failure)))
+      ).onComplete(ctx.asyncAssertFailure(v -> pool
+        .query("SELECT id, val FROM mutable")
+        .execute(ctx.asyncAssertSuccess(rows -> {
+          ctx.assertEquals(0, rows.size());
+          ctx.assertNull(Vertx.currentContext().getLocal("propagatable_connection"));
+          async.complete();
+        }))));
+    });
   }
 }
