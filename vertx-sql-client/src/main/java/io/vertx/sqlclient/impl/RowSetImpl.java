@@ -19,11 +19,12 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.impl.accumulator.Accumulator;
+import io.vertx.sqlclient.impl.accumulator.ChunkedAccumulator;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 import java.util.stream.Collector;
 
 class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
@@ -53,7 +54,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
   }
 
   private R firstRow;
-  private ArrayList<R> rowAccumulator;
+  private Accumulator<R> rowAccumulator;
 
   @Override
   public RowSet<R> value() {
@@ -62,11 +63,11 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
 
   private void add(R row) {
     if (rowAccumulator != null) {
-      rowAccumulator.add(row);
+      rowAccumulator.accept(row);
     } else if (firstRow != null) {
-      rowAccumulator = new ArrayList<>();
-      rowAccumulator.add(firstRow);
-      rowAccumulator.add(row);
+      rowAccumulator = new ChunkedAccumulator<>(IntUnaryOperator.identity());
+      rowAccumulator.accept(firstRow);
+      rowAccumulator.accept(row);
       firstRow = null;
     } else {
       firstRow = row;
@@ -77,7 +78,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
   @Override
   public RowIterator<R> iterator() {
     if (rowAccumulator != null) {
-      return rowIterator(rowAccumulator.iterator());
+      return rowAccumulator.iterator();
     }
     if (firstRow != null) {
       return singletonRowIterator(firstRow);
@@ -122,20 +123,6 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
           return row;
         }
         throw new NoSuchElementException();
-      }
-    };
-  }
-
-  private static <ROW> RowIterator<ROW> rowIterator(Iterator<ROW> iter) {
-    return new RowIterator<ROW>() {
-      @Override
-      public boolean hasNext() {
-        return iter.hasNext();
-      }
-
-      @Override
-      public ROW next() {
-        return iter.next();
       }
     };
   }
