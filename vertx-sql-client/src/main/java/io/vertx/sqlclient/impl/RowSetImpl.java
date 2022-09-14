@@ -16,10 +16,9 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.SqlResult;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -31,9 +30,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
 
   static Collector<Row, RowSetImpl<Row>, RowSet<Row>> COLLECTOR = Collector.of(
     RowSetImpl::new,
-    (set, row) -> {
-      set.list.add(row);
-    },
+    RowSetImpl::add,
     (set1, set2) -> null, // Shall not be invoked as this is sequential
     (set) -> set
   );
@@ -42,43 +39,104 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
     return Collector.of(
       RowSetImpl::new,
       (set, row) -> {
-        set.list.add(mapper.apply(row));
+        set.add(mapper.apply(row));
       },
       (set1, set2) -> null, // Shall not be invoked as this is sequential
       (set) -> set
     );
   }
 
-  static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl) rs;
+  static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl<Row>) rs;
 
   static <U> Function<RowSet<U>, RowSetImpl<U>> factory() {
-    return rs -> (RowSetImpl) rs;
-  };
+    return rs -> (RowSetImpl<U>) rs;
+  }
 
-  private ArrayList<R> list = new ArrayList<>();
+  private R firstRow;
+  private ArrayList<R> rowAccumulator;
 
   @Override
   public RowSet<R> value() {
     return this;
   }
 
+  private void add(R row) {
+    if (rowAccumulator != null) {
+      rowAccumulator.add(row);
+    } else if (firstRow != null) {
+      rowAccumulator = new ArrayList<>();
+      rowAccumulator.add(firstRow);
+      rowAccumulator.add(row);
+      firstRow = null;
+    } else {
+      firstRow = row;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
   @Override
   public RowIterator<R> iterator() {
-    Iterator<R> i = list.iterator();
-    return new RowIterator<R>() {
-      @Override
-      public boolean hasNext() {
-        return i.hasNext();
-      }
-      @Override
-      public R next() {
-        return i.next();
-      }
-    };
+    if (rowAccumulator != null) {
+      return rowIterator(rowAccumulator.iterator());
+    }
+    if (firstRow != null) {
+      return singletonRowIterator(firstRow);
+    }
+    return (RowIterator<R>) EmptyRowIterator.INSTANCE;
   }
 
   @Override
   public RowSetImpl<R> next() {
     return (RowSetImpl<R>) super.next();
+  }
+
+  private static final class EmptyRowIterator<ROW> implements RowIterator<ROW> {
+
+    static final EmptyRowIterator<Object> INSTANCE = new EmptyRowIterator<>();
+
+    @Override
+    public boolean hasNext() {
+      return false;
+    }
+
+    @Override
+    public ROW next() {
+      throw new NoSuchElementException();
+    }
+  }
+
+  private static <ROW> RowIterator<ROW> singletonRowIterator(ROW row) {
+    return new RowIterator<ROW>() {
+
+      boolean hasNext = true;
+
+      @Override
+      public boolean hasNext() {
+        return hasNext;
+      }
+
+      @Override
+      public ROW next() {
+        if (hasNext) {
+          hasNext = false;
+          return row;
+        }
+        throw new NoSuchElementException();
+      }
+    };
+  }
+
+  private static <ROW> RowIterator<ROW> rowIterator(Iterator<ROW> iter) {
+    return new RowIterator<ROW>() {
+      @Override
+      public boolean hasNext() {
+        return iter.hasNext();
+      }
+
+      @Override
+      public ROW next() {
+        return iter.next();
+      }
+    };
   }
 }
