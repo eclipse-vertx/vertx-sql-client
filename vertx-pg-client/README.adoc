@@ -306,8 +306,8 @@ mvn test -DcontainerFixedPort
 
 You can run tests with an external database:
 
-- the script `docker/postgres/resources/create-postgres.sql` creates the test data
-- the `TLSTest` expects the database to be configured with SSL with `docker/postgres/resources/server.key` / `docker/postgres/resources/server.cert``
+- the script `src/test/resources/create-postgres.sql` creates the test data
+- the `TLSTest` expects the database to be configured with SSL with `src/test/resources/tls/server.key` / `src/test/resources/tls/server.cert``
 
 You need to add some properties for testing:
 

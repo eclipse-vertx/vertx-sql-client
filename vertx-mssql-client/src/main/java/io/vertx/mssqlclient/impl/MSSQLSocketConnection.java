@@ -93,24 +93,25 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
       options.setTrustAll(true);
     }
 
-    // 2. Create and setup an SSLHelper and SSLHandler
-    SSLHelper helper = new SSLHelper(options, options.getKeyCertOptions(), options.getTrustOptions()).setApplicationProtocols(options.getApplicationLayerProtocols());
-    SslHandler sslHandler = new SslHandler(helper.createEngine(context.owner(), socket.remoteAddress(), null, false));
-    sslHandler.setHandshakeTimeout(helper.getSslHandshakeTimeout(), helper.getSslHandshakeTimeoutUnit());
+    // 2. Create and set up an SSLHelper and SSLHandler
+    SSLHelper helper = new SSLHelper(options, options.getApplicationLayerProtocols());
+    return helper.init(context).compose(v -> {
+      SslHandler sslHandler = helper.createSslHandler(context.owner(), socket.remoteAddress(), null, false);
 
-    // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
-    TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
+      // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
+      TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
 
-    // 4. TdsLoginSentCompletionHandler removes the SSLHandler after login packet has been sent if full encryption is not required
-    TdsLoginSentCompletionHandler tdsLoginSentCompletionHandler = new TdsLoginSentCompletionHandler(sslHandler, encryptionLevel);
+      // 4. TdsLoginSentCompletionHandler removes the SSLHandler after login packet has been sent if full encryption is not required
+      TdsLoginSentCompletionHandler tdsLoginSentCompletionHandler = new TdsLoginSentCompletionHandler(sslHandler, encryptionLevel);
 
-    // 5. Add the handlers to the pipeline
-    // The SSLHandler must be the last one added because as soon as it is, it starts handshaking
-    pipeline.addFirst("tds-ssl-handshake-codec", tdsSslHandshakeCodec);
-    pipeline.addAfter("tds-ssl-handshake-codec", "tds-login-sent-handler", tdsLoginSentCompletionHandler);
-    pipeline.addAfter("tds-login-sent-handler", "ssl", sslHandler);
+      // 5. Add the handlers to the pipeline
+      // The SSLHandler must be the last one added because as soon as it is, it starts handshaking
+      pipeline.addFirst("tds-ssl-handshake-codec", tdsSslHandshakeCodec);
+      pipeline.addAfter("tds-ssl-handshake-codec", "tds-login-sent-handler", tdsLoginSentCompletionHandler);
+      pipeline.addAfter("tds-login-sent-handler", "ssl", sslHandler);
 
-    return promise.future();
+      return promise.future();
+    });
   }
 
   Future<Connection> sendLoginMessage(String username, String password, String database, Map<String, String> properties) {

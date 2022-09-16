@@ -16,12 +16,21 @@
  */
 package io.vertx.pgclient.junit;
 
-import static org.junit.Assert.assertTrue;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.V10_6;
-import static ru.yandex.qatools.embed.postgresql.distribution.Version.V9_6_11;
+import de.flapdoodle.embed.process.config.IRuntimeConfig;
+import de.flapdoodle.embed.process.config.io.ProcessOutput;
+import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
+import de.flapdoodle.embed.process.runtime.ProcessControl;
+import de.flapdoodle.embed.process.store.IArtifactStore;
+import io.vertx.pgclient.PgConnectOptions;
+import org.junit.AssumptionViolatedException;
+import org.junit.rules.ExternalResource;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
+import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
+import ru.yandex.qatools.embed.postgresql.PostgresProcess;
+import ru.yandex.qatools.embed.postgresql.distribution.Version;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
@@ -29,28 +38,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFilePermission;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import org.junit.AssumptionViolatedException;
-import org.junit.rules.ExternalResource;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
-
-import de.flapdoodle.embed.process.config.IRuntimeConfig;
-import de.flapdoodle.embed.process.config.io.ProcessOutput;
-import de.flapdoodle.embed.process.runtime.ICommandLinePostProcessor;
-import de.flapdoodle.embed.process.runtime.ProcessControl;
-import de.flapdoodle.embed.process.store.IArtifactStore;
-import io.vertx.pgclient.PgConnectOptions;
-import ru.yandex.qatools.embed.postgresql.EmbeddedPostgres;
-import ru.yandex.qatools.embed.postgresql.PostgresProcess;
-import ru.yandex.qatools.embed.postgresql.distribution.Version;
+import static org.junit.Assert.assertTrue;
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.V10_6;
+import static ru.yandex.qatools.embed.postgresql.distribution.Version.V9_6_11;
 
 
 /**
@@ -67,7 +59,7 @@ public class PgRule extends ExternalResource {
   }
 
   public synchronized static PgConnectOptions startPg(boolean domainSockets) throws Exception {
-   
+
     if (connectionUri != null && !connectionUri.isEmpty()) {
       return PgConnectOptions.fromUri(connectionUri);
     }
@@ -154,14 +146,14 @@ public class PgRule extends ExternalResource {
   }
 
   private static File getTestResource(String name) throws Exception {
-    InputStream in = new FileInputStream(new File("docker" + File.separator + "postgres" + File.separator + "resources" + File.separator + name));
-    Path path = Files.createTempFile("pg-client", ".tmp");
-    Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
-    File file = path.toFile();
-    file.deleteOnExit();
-    return file;
+    try (InputStream in = PgRule.class.getClassLoader().getResourceAsStream(name)) {
+      Path path = Files.createTempFile("pg-client", ".tmp");
+      Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+      File file = path.toFile();
+      file.deleteOnExit();
+      return file;
+    }
   }
-
 
   private static IRuntimeConfig useDomainSocketRunTimeConfig(IRuntimeConfig config, File sock) throws Exception {
     return new RunTimeConfigBase(config) {
@@ -254,7 +246,7 @@ public class PgRule extends ExternalResource {
       }
     }
   }
-  
+
   @Override
   public Statement apply(Statement base, Description description) {
     return new Statement() {
@@ -266,7 +258,7 @@ public class PgRule extends ExternalResource {
         catch (Exception e) {
           throw new AssumptionViolatedException(e.getMessage());
         }
-        
+
         before();
         try {
           base.evaluate();
