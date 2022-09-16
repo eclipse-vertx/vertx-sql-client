@@ -20,6 +20,7 @@ import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.impl.NetClientBuilder;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
@@ -82,7 +83,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     NetClientOptions netClientOptions = new NetClientOptions(options);
     configureNetClientOptions(netClientOptions);
     netClientOptions.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
-    this.netClient = vertx.createNetClient(netClientOptions, clientCloseFuture);
+    this.netClient = new NetClientBuilder(vertx, netClientOptions).closeFuture(clientCloseFuture).build();
   }
 
   public static EventLoopContext asEventLoopContext(ContextInternal ctx) {

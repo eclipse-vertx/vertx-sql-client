@@ -12,7 +12,6 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
@@ -103,7 +102,7 @@ public class MySQLTLSTest {
   @Test
   public void testTlsHandshakeFailWithPreferredSslMode(TestContext ctx) {
     options.setSslMode(SslMode.PREFERRED);
-    options.setPemTrustOptions(new PemTrustOptions().addCertValue(Buffer.buffer("INVALID CERT")));
+    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/client-cert.pem")); // wrong file
     options.setPemKeyCertOptions(new PemKeyCertOptions()
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));

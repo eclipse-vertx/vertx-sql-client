@@ -19,16 +19,9 @@ package io.vertx.pgclient.junit;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
 import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 
 import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT;
 
@@ -72,34 +65,22 @@ public class ContainerPgRule extends ExternalResource {
   }
 
   private void initServer(String version) throws Exception {
-    File setupFile = getTestResource("resources" + File.separator + "create-postgres.sql");
-
     server = new ServerContainer<>("postgres:" + version)
       .withDatabaseName("postgres")
       .withUsername(user)
       .withPassword("postgres")
-      .withCopyFileToContainer(MountableFile.forHostPath(setupFile.toPath()), "/docker-entrypoint-initdb.d/create-postgres.sql");
+      .withClasspathResourceMapping("create-postgres.sql", "/docker-entrypoint-initdb.d/create-postgres.sql", BindMode.READ_ONLY);
     if (ssl) {
-      server.withCopyFileToContainer(MountableFile.forHostPath(getTestResource("resources" + File.separator + "server.crt").toPath()), "/server.crt")
-        .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("resources" + File.separator + "server.key").toPath()), "/server.key")
-        .withCopyFileToContainer(MountableFile.forHostPath(getTestResource("ssl.sh").toPath()), "/docker-entrypoint-initdb.d/ssl.sh");
+      server
+        .withClasspathResourceMapping("tls/server.crt", "/server.crt", BindMode.READ_ONLY)
+        .withClasspathResourceMapping("tls/server.key", "/server.key", BindMode.READ_ONLY)
+        .withClasspathResourceMapping("tls/ssl.sh", "/docker-entrypoint-initdb.d/ssl.sh", BindMode.READ_ONLY);
     }
     if (System.getProperties().containsKey("containerFixedPort")) {
       server.withFixedExposedPort(POSTGRESQL_PORT, POSTGRESQL_PORT);
     } else {
       server.withExposedPorts(POSTGRESQL_PORT);
     }
-  }
-
-  private static File getTestResource(String name) throws Exception {
-    File file = null;
-    try(InputStream in = new FileInputStream(new File("docker" + File.separator + "postgres" + File.separator + name))) {
-      Path path = Files.createTempFile("pg-client", ".tmp");
-      Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
-      file = path.toFile();
-      file.deleteOnExit();
-    }
-    return file;
   }
 
   public static boolean isTestingWithExternalDatabase() {
