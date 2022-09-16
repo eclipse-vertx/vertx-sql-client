@@ -103,6 +103,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
       this.serverRsaPublicKeyPath = opts.serverRsaPublicKeyPath;
       this.serverRsaPublicKeyValue = opts.serverRsaPublicKeyValue != null ? opts.serverRsaPublicKeyValue.copy() : null;
       this.characterEncoding = opts.characterEncoding;
+      this.pipeliningLimit = opts.pipeliningLimit;
       this.authenticationPlugin = opts.authenticationPlugin;
     }
   }
@@ -116,6 +117,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
     this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
     this.characterEncoding = other.characterEncoding;
+    this.pipeliningLimit = other.pipeliningLimit;
     this.authenticationPlugin = other.authenticationPlugin;
   }
 
