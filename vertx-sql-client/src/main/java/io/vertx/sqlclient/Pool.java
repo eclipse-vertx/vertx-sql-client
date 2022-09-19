@@ -140,7 +140,7 @@ public interface Pool extends SqlClient {
   }
 
   /**
-   * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result.
    */
   default <T> Future<@Nullable T> withTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
     return getConnection()
@@ -165,10 +165,10 @@ public interface Pool extends SqlClient {
   }
 
   /**
-   * Like {@link #withTransaction(Function, Handler)} but keeps the connection accessible via the context
-   * for the duration of the given {@code function}
+   * Like {@link #withTransaction(Function, Handler)} but allows for setting the mode, defining how the acquired
+   * connection is managed during the execution of the function.
    */
-  <T> Future<@Nullable T> withPropagatedTransaction(Function<SqlConnection, Future<@Nullable T>> function);
+  <T> Future<@Nullable T> withTransaction(TransactionMode mode, Function<SqlConnection, Future<@Nullable T>> function);
 
   /**
    * Get a connection from the pool and execute the given {@code function}.

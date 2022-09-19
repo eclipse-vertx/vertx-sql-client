@@ -24,10 +24,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.TransactionRollbackException;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
@@ -158,22 +155,26 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     });
   }
 
-  public <T> Future<@Nullable T> withPropagatedTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
-    ContextInternal context = (ContextInternal) Vertx.currentContext();
-    SqlConnection sqlConnection = context.getLocal(PROPAGATABLE_CONNECTION);
-    if (sqlConnection == null) {
-      return initializePropagatedConnectionAndTransaction(function);
+  public <T> Future<@Nullable T> withTransaction(TransactionMode mode,
+                                                 Function<SqlConnection, Future<@Nullable T>> function) {
+    if (mode == TransactionMode.PROPAGATABLE) {
+      ContextInternal context = (ContextInternal) Vertx.currentContext();
+      SqlConnection sqlConnection = context.getLocal(PROPAGATABLE_CONNECTION);
+      if (sqlConnection == null) {
+        return startPropagatableConnection(function);
+      }
+      return context.succeededFuture(sqlConnection)
+        .flatMap(conn -> function.apply(conn)
+          .onFailure(err -> {
+            if (!(err instanceof TransactionRollbackException)) {
+              conn.getTransaction().rollback();
+            }
+          }));
     }
-    return context.succeededFuture(sqlConnection)
-      .flatMap(conn -> function.apply(conn)
-        .onFailure(err -> {
-          if (!(err instanceof TransactionRollbackException)) {
-            conn.getTransaction().rollback();
-          }
-        }));
+    return withTransaction(function);
   }
 
-  private <T> Future<@Nullable T> initializePropagatedConnectionAndTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
+  private <T> Future<@Nullable T> startPropagatableConnection(Function<SqlConnection, Future<@Nullable T>> function) {
     ContextInternal context = (ContextInternal) Vertx.currentContext();
     return getConnection().onComplete(handler -> context.putLocal(PROPAGATABLE_CONNECTION, handler.result()))
       .flatMap(conn -> conn

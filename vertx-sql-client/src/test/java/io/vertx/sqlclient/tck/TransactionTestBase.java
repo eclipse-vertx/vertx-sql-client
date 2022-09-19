@@ -310,13 +310,15 @@ public abstract class TransactionTestBase {
   }
 
   @Test
-  public void testWithPropagatedConnectionTransactionCommit(TestContext ctx) {
+  public void testWithPropagatableConnectionTransactionCommit(TestContext ctx) {
     Async async = ctx.async();
     Pool pool = createPool();
     vertx.runOnContext(handler -> {
-    pool.withPropagatedTransaction(c ->
-      pool.withPropagatedTransaction(conn -> conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty()).flatMap(v ->
-        pool.withPropagatedTransaction(conn -> conn.query("INSERT INTO mutable (id, val) VALUES (2, 'hello-2')").execute().mapEmpty())).flatMap(v2 ->
+    pool.withTransaction(TransactionMode.PROPAGATABLE, c ->
+      pool.withTransaction(TransactionMode.PROPAGATABLE, conn ->
+        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty()).flatMap(v ->
+        pool.withTransaction(TransactionMode.PROPAGATABLE, conn ->
+          conn.query("INSERT INTO mutable (id, val) VALUES (2, 'hello-2')").execute().mapEmpty())).flatMap(v2 ->
         c.query("INSERT INTO mutable (id, val) VALUES (3, 'hello-3')").execute().mapEmpty())
     ).onComplete(ctx.asyncAssertSuccess(v -> pool
       .query("SELECT id, val FROM mutable")
@@ -329,13 +331,15 @@ public abstract class TransactionTestBase {
   }
 
   @Test
-  public void testWithPropagatedConnectionTransactionRollback(TestContext ctx) {
+  public void testWithPropagatableConnectionTransactionRollback(TestContext ctx) {
     Async async = ctx.async();
     Pool pool = createPool();
     Throwable failure = new Throwable();
     vertx.runOnContext(handler -> {
-      pool.withPropagatedTransaction(c ->
-        pool.withPropagatedTransaction(conn -> conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty().flatMap(v -> Future.failedFuture(failure)))
+      pool.withTransaction(TransactionMode.PROPAGATABLE, c ->
+        pool.withTransaction(TransactionMode.PROPAGATABLE, conn ->
+          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty().flatMap(
+            v -> Future.failedFuture(failure)))
       ).onComplete(ctx.asyncAssertFailure(v -> pool
         .query("SELECT id, val FROM mutable")
         .execute(ctx.asyncAssertSuccess(rows -> {
