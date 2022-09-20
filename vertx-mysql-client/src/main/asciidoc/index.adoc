@@ -106,6 +106,12 @@ You can configure the client to use pipelining
 
 The default pipelining limit is `1` which disables pipelining.
 
+[CAUTION]
+====
+Do not enable pipelining if you use a proxy that does not support it.
+Otherwise, the proxy might close client connections abruptly.
+====
+
 == Pool versus pooled client
 
 The {@link io.vertx.mysqlclient.MySQLPool} allows you to create a pool or a pooled client
