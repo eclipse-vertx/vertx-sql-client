@@ -21,6 +21,7 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +31,7 @@ public class MySQLRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
 
+  private Network network;
   private GenericContainer<?> server;
   private MySQLConnectOptions options;
   private DatabaseServerInfo databaseServerInfo;
@@ -68,6 +70,8 @@ public class MySQLRule extends ExternalResource {
   }
 
   private void initServer() throws IOException {
+    network = Network.builder().driver("bridge").build();
+
     server = new GenericContainer<>(databaseServerInfo.getDatabaseType().toDockerImageName() + ":" + databaseServerInfo.getDockerImageTag())
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
@@ -76,6 +80,8 @@ public class MySQLRule extends ExternalResource {
       .withCreateContainerCmdModifier(createContainerCmd -> {
         createContainerCmd.getHostConfig().withUlimits(new Ulimit[]{new Ulimit("nofile", 262144L, 262144L)});
       })
+      .withNetwork(network)
+      .withNetworkAliases(networkAlias())
       .withExposedPorts(3306)
       .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY)
       .withReuse(true);
@@ -99,6 +105,14 @@ public class MySQLRule extends ExternalResource {
       }
       server.withCommand(cmd);
     }
+  }
+
+  public String network() {
+    return network != null ? network.getId() : "mysql_default";
+  }
+
+  public String networkAlias() {
+    return network != null ? Integer.toHexString(System.identityHashCode(this)) : "test-mysql";
   }
 
   private static DatabaseType parseDatabaseTypeString(String databaseInfo) throws IllegalArgumentException {

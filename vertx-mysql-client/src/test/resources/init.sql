@@ -259,3 +259,7 @@ CREATE TABLE duplicate_test
 );
 INSERT INTO duplicate_test
 VALUES (1);
+
+# testing ProxySQL connectivity
+CREATE USER 'proxysql'@'%' IDENTIFIED BY 'proxysql1234#';
+GRANT ALL ON *.* TO 'proxysql'@'%';
