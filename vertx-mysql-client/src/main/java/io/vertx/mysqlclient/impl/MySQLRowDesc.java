@@ -51,9 +51,6 @@ public class MySQLRowDesc extends RowDesc {
   }
 
   public ColumnDefinition get(int index) {
-    if (index < 0 || index >= size()) {
-      throw new IndexOutOfBoundsException();
-    }
     return columnDefinitions[index];
   }
 
@@ -70,9 +67,6 @@ public class MySQLRowDesc extends RowDesc {
 
     @Override
     public String get(int index) {
-      if (index < 0 || index >= columnDefinitions.length) {
-        throw new IndexOutOfBoundsException();
-      }
       return columnDefinitions[index].name();
     }
 
@@ -91,9 +85,6 @@ public class MySQLRowDesc extends RowDesc {
 
     @Override
     public ColumnDescriptor get(int index) {
-      if (index < 0 || index >= columnDefinitions.length) {
-        throw new IndexOutOfBoundsException();
-      }
       return columnDefinitions[index];
     }
 
