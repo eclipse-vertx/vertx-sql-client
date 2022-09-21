@@ -74,16 +74,9 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
     }
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public RowIterator<R> iterator() {
-    if (rowAccumulator != null) {
-      return rowAccumulator.iterator();
-    }
-    if (firstRow != null) {
-      return singletonRowIterator(firstRow);
-    }
-    return (RowIterator<R>) EmptyRowIterator.INSTANCE;
+    return rowAccumulator != null ? rowAccumulator.iterator() : SingletonRowIterator.createFor(firstRow);
   }
 
   @Override
@@ -91,39 +84,34 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
     return (RowSetImpl<R>) super.next();
   }
 
-  private static final class EmptyRowIterator<ROW> implements RowIterator<ROW> {
+  private static final class SingletonRowIterator<ROW> implements RowIterator<ROW> {
 
-    static final EmptyRowIterator<Object> INSTANCE = new EmptyRowIterator<>();
+    static final SingletonRowIterator<Object> EMPTY_INSTANCE = new SingletonRowIterator<>(null);
+
+    ROW row;
+
+    SingletonRowIterator(ROW row) {
+      this.row = row;
+    }
+
+    @SuppressWarnings("unchecked")
+    static <X> SingletonRowIterator<X> createFor(X row) {
+      return row != null ? new SingletonRowIterator<>(row) : (SingletonRowIterator<X>) EMPTY_INSTANCE;
+    }
 
     @Override
     public boolean hasNext() {
-      return false;
+      return row != null;
     }
 
     @Override
     public ROW next() {
+      if (row != null) {
+        ROW res = row;
+        row = null;
+        return res;
+      }
       throw new NoSuchElementException();
     }
-  }
-
-  private static <ROW> RowIterator<ROW> singletonRowIterator(ROW row) {
-    return new RowIterator<ROW>() {
-
-      boolean hasNext = true;
-
-      @Override
-      public boolean hasNext() {
-        return hasNext;
-      }
-
-      @Override
-      public ROW next() {
-        if (hasNext) {
-          hasNext = false;
-          return row;
-        }
-        throw new NoSuchElementException();
-      }
-    };
   }
 }
