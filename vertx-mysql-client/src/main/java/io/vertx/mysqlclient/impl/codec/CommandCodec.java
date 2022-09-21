@@ -155,18 +155,35 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   ColumnDefinition decodeColumnDefinitionPacketPayload(ByteBuf payload) {
-    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // catalogq
-    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // schema
-    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // table
-    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // orgTable
+    int start = payload.readerIndex();
+    int bytesToSkip = 0;
+
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // catalog
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // schema
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // table
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // orgTable
+
+    payload.skipBytes(bytesToSkip);
+
     String name = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    payload.skipBytes((int) BufferUtils.readLengthEncodedInteger(payload)); // orgName
-    BufferUtils.readLengthEncodedInteger(payload); // skip lengthOfFixedLengthFields
-    int characterSet = payload.readUnsignedShortLE();
-    payload.skipBytes(4); // columnLength
-    DataType type = DataType.valueOf(payload.readUnsignedByte());
-    int flags = payload.readUnsignedShortLE();
-    payload.skipBytes(1); // decimals
+
+    start = payload.readerIndex();
+    bytesToSkip = 0;
+
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // orgName
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedInteger(payload, start + bytesToSkip); // lengthOfFixedLengthFields
+
+    int characterSet = payload.getUnsignedShortLE(start + bytesToSkip);
+    bytesToSkip += 6; // characterSet + columnLength
+
+    DataType type = DataType.valueOf(payload.getUnsignedByte(start + bytesToSkip));
+    bytesToSkip++;
+
+    int flags = payload.getUnsignedShortLE(start + bytesToSkip);
+    bytesToSkip += 2; // flags + decimals
+
+    payload.skipBytes(bytesToSkip);
+
     return new ColumnDefinition(name, characterSet, type, flags);
   }
 
