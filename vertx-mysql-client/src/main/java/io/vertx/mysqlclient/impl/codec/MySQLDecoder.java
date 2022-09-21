@@ -12,7 +12,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -25,17 +24,11 @@ class MySQLDecoder extends ChannelInboundHandlerAdapter {
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
 
-  private ByteBufAllocator alloc;
   private ByteBuf payload;
   private short sequenceId;
 
   MySQLDecoder(ArrayDeque<CommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
-  }
-
-  @Override
-  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-    alloc = ctx.alloc();
   }
 
   @Override
@@ -47,7 +40,7 @@ class MySQLDecoder extends ChannelInboundHandlerAdapter {
       CompositeByteBuf compositeByteBuf = (CompositeByteBuf) payload;
       compositeByteBuf.addComponent(true, packet.slice());
     } else if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
-      payload = alloc.compositeDirectBuffer().addComponent(true, packet.slice());
+      payload = ctx.alloc().compositeDirectBuffer().addComponent(true, packet.slice());
     } else {
       payload = packet;
     }
