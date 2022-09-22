@@ -80,7 +80,8 @@ public class MySQLRowDesc extends RowDesc {
     public int indexOf(Object o) {
       if (o != null) {
         for (int i = 0; i < columnDefinitions.length; i++) {
-          if (o.equals(columnDefinitions[i].name())) {
+          String name = columnDefinitions[i].name();
+          if (o.hashCode() == name.hashCode() && o.equals(name)) {
             return i;
           }
         }
