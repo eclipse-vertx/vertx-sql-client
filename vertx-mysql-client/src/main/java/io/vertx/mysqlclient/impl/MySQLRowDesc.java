@@ -24,6 +24,7 @@ import io.vertx.sqlclient.impl.RowDesc;
 import java.util.AbstractList;
 import java.util.Collections;
 import java.util.List;
+import java.util.RandomAccess;
 
 public class MySQLRowDesc extends RowDesc {
 
@@ -58,7 +59,7 @@ public class MySQLRowDesc extends RowDesc {
     return dataFormat;
   }
 
-  private static class ColumnNames extends AbstractList<String> {
+  private static class ColumnNames extends AbstractList<String> implements RandomAccess {
     private final ColumnDefinition[] columnDefinitions;
 
     public ColumnNames(ColumnDefinition[] columnDefinitions) {
@@ -73,6 +74,18 @@ public class MySQLRowDesc extends RowDesc {
     @Override
     public int size() {
       return columnDefinitions.length;
+    }
+
+    @Override
+    public int indexOf(Object o) {
+      if (o != null) {
+        for (int i = 0; i < columnDefinitions.length; i++) {
+          if (o.equals(columnDefinitions[i].name())) {
+            return i;
+          }
+        }
+      }
+      return -1;
     }
   }
 
