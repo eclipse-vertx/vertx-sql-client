@@ -26,8 +26,6 @@ import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.function.Function;
 
 /**
@@ -87,13 +85,9 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
     R r = this.current;
     if (r != null) {
       if (r.properties == null) {
-        r.properties = Collections.singletonMap(property, value);
-      } else {
-        if (r.properties.size() == 1) {
-          r.properties = new HashMap<>(r.properties);
-        }
-        r.properties.put(property, value);
+        r.properties = new PropertyKindMap();
       }
+      r.properties.put(property, value);
     }
   }
 

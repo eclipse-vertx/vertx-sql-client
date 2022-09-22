@@ -22,7 +22,6 @@ import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 
 import java.util.List;
-import java.util.Map;
 
 public abstract class SqlResultBase<T> implements SqlResult<T> {
 
@@ -31,7 +30,7 @@ public abstract class SqlResultBase<T> implements SqlResult<T> {
   List<ColumnDescriptor> columnDescriptors;
   int size;
   SqlResult<T> next;
-  Map<PropertyKind<?>, Object> properties;
+  PropertyKindMap properties;
 
   @Override
   public List<String> columnsNames() {
