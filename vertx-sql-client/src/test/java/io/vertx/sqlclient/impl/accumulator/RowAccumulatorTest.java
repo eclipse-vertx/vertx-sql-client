@@ -24,7 +24,7 @@ import static java.util.stream.Collectors.toList;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
-public class AccumulatorTest {
+public class RowAccumulatorTest {
 
   @Parameters(name = "Accumulate {index} item(s)")
   public static List<Object[]> testData() {
@@ -50,19 +50,19 @@ public class AccumulatorTest {
 
   private final List<String> data;
 
-  public AccumulatorTest(List<String> data) {
+  public RowAccumulatorTest(List<String> data) {
     this.data = data;
   }
 
   @Test
   public void testArrayListAccumulator() {
-    doTest(new ArrayListAccumulator<>());
+    doTest(new ArrayListRowAccumulator<>());
   }
 
-  private void doTest(Accumulator<String> accumulator) {
-    data.forEach(accumulator);
+  private void doTest(RowAccumulator<String> rowAccumulator) {
+    data.forEach(rowAccumulator);
     List<String> actual = new ArrayList<>(data.size());
-    for (String value : accumulator) {
+    for (String value : rowAccumulator) {
       actual.add(value);
     }
     assertEquals(data, actual);
@@ -70,11 +70,11 @@ public class AccumulatorTest {
 
   @Test
   public void testChunkedAccumulatorFixedChunkSize() {
-    doTest(new ChunkedAccumulator<>(IntUnaryOperator.identity()));
+    doTest(new ChunkedRowAccumulator<>(IntUnaryOperator.identity()));
   }
 
   @Test
   public void testChunkedAccumulatorGrowingChunkSize() {
-    doTest(new ChunkedAccumulator<>(size -> size + (size >> 1)));
+    doTest(new ChunkedRowAccumulator<>(size -> size + (size >> 1)));
   }
 }

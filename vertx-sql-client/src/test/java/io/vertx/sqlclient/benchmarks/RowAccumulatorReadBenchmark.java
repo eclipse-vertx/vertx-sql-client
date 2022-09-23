@@ -11,7 +11,7 @@
 
 package io.vertx.sqlclient.benchmarks;
 
-import io.vertx.sqlclient.impl.accumulator.Accumulator;
+import io.vertx.sqlclient.impl.accumulator.RowAccumulator;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
@@ -27,10 +27,10 @@ import static io.vertx.sqlclient.benchmarks.Utils.generateStrings;
 @Warmup(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 2, timeUnit = TimeUnit.SECONDS)
 @Fork(value = 1, jvmArgs = {"-Xms8g", "-Xmx8g", "-Xmn7g"})
-public class AccumulatorWriteBenchmark {
+public class RowAccumulatorReadBenchmark {
 
   @Param({"ARRAY_LIST", "CHUNKED_FIXED_SIZE", "CHUNKED_GROWING_SIZE"})
-  public AccumulatorType accumulatorType;
+  public RowAccumulatorType rowAccumulatorType;
 
   @Param({"5", "20", "65", "605", "1820", "5465", "16400"})
   int size;
@@ -42,19 +42,21 @@ public class AccumulatorWriteBenchmark {
   boolean gc;
 
   String[] arr;
+  RowAccumulator<String> rowAccumulator;
 
   @Setup
   public void setup() throws IOException, InterruptedException {
     arr = generateStrings(size, shuffle, gc);
+    rowAccumulator = rowAccumulatorType.newInstance();
+    for (String s : arr) {
+      rowAccumulator.accept(s);
+    }
   }
 
   @Benchmark
-  public void accumulate(Blackhole bh) {
-    Accumulator<String> accumulator = accumulatorType.newInstance();
-    for (String s : arr) {
+  public void iterate(Blackhole bh) {
+    for (String s : rowAccumulator) {
       bh.consume(s.hashCode());
-      accumulator.accept(s);
     }
-    bh.consume(accumulator);
   }
 }

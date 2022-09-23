@@ -11,24 +11,24 @@
 
 package io.vertx.sqlclient.benchmarks;
 
-import io.vertx.sqlclient.impl.accumulator.Accumulator;
-import io.vertx.sqlclient.impl.accumulator.ArrayListAccumulator;
-import io.vertx.sqlclient.impl.accumulator.ChunkedAccumulator;
+import io.vertx.sqlclient.impl.accumulator.ArrayListRowAccumulator;
+import io.vertx.sqlclient.impl.accumulator.ChunkedRowAccumulator;
+import io.vertx.sqlclient.impl.accumulator.RowAccumulator;
 
 import java.util.function.IntUnaryOperator;
 
-public enum AccumulatorType {
+public enum RowAccumulatorType {
 
   ARRAY_LIST, CHUNKED_FIXED_SIZE, CHUNKED_GROWING_SIZE;
 
-  Accumulator<String> newInstance() {
+  RowAccumulator<String> newInstance() {
     switch (this) {
       case ARRAY_LIST:
-        return new ArrayListAccumulator<>();
+        return new ArrayListRowAccumulator<>();
       case CHUNKED_FIXED_SIZE:
-        return new ChunkedAccumulator<>(IntUnaryOperator.identity());
+        return new ChunkedRowAccumulator<>(IntUnaryOperator.identity());
       case CHUNKED_GROWING_SIZE:
-        return new ChunkedAccumulator<>(size -> size + (size >> 1));
+        return new ChunkedRowAccumulator<>(size -> size + (size >> 1));
       default:
         throw new AssertionError();
     }

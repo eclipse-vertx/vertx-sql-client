@@ -16,7 +16,7 @@ import io.vertx.sqlclient.RowIterator;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class ArrayListAccumulator<T> extends ArrayList<T> implements Accumulator<T> {
+public class ArrayListRowAccumulator<T> extends ArrayList<T> implements RowAccumulator<T> {
 
   @Override
   public void accept(T t) {

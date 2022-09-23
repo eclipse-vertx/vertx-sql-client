@@ -16,7 +16,7 @@ import io.vertx.sqlclient.RowIterator;
 import java.util.NoSuchElementException;
 import java.util.function.IntUnaryOperator;
 
-public class ChunkedAccumulator<T> implements Accumulator<T> {
+public class ChunkedRowAccumulator<T> implements RowAccumulator<T> {
 
   // How many items can be stored in the first chunk
   private static final int FIRST_CHUNK_CAPACITY = 10;
@@ -37,7 +37,7 @@ public class ChunkedAccumulator<T> implements Accumulator<T> {
   /**
    * @param extensionPolicy determines the capacity of a new chunk using the capacity of the previous one
    */
-  public ChunkedAccumulator(IntUnaryOperator extensionPolicy) {
+  public ChunkedRowAccumulator(IntUnaryOperator extensionPolicy) {
     this.extensionPolicy = extensionPolicy;
     firstChunk = lastChunk = newChunk(FIRST_CHUNK_CAPACITY);
     count = 0;

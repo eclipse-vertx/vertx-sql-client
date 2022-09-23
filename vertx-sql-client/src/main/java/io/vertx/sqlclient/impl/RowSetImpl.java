@@ -19,8 +19,8 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.impl.accumulator.Accumulator;
-import io.vertx.sqlclient.impl.accumulator.ChunkedAccumulator;
+import io.vertx.sqlclient.impl.accumulator.ChunkedRowAccumulator;
+import io.vertx.sqlclient.impl.accumulator.RowAccumulator;
 
 import java.util.NoSuchElementException;
 import java.util.function.Function;
@@ -54,7 +54,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
   }
 
   private R firstRow;
-  private Accumulator<R> rowAccumulator;
+  private RowAccumulator<R> rowAccumulator;
 
   @Override
   public RowSet<R> value() {
@@ -65,7 +65,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
     if (rowAccumulator != null) {
       rowAccumulator.accept(row);
     } else if (firstRow != null) {
-      rowAccumulator = new ChunkedAccumulator<>(IntUnaryOperator.identity());
+      rowAccumulator = new ChunkedRowAccumulator<>(IntUnaryOperator.identity());
       rowAccumulator.accept(firstRow);
       rowAccumulator.accept(row);
       firstRow = null;

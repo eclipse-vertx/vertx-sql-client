@@ -18,7 +18,7 @@ import java.util.function.Consumer;
 /**
  * A data structure similar to a {@link java.util.Collection} but which is append-only.
  */
-public interface Accumulator<T> extends Consumer<T>, Iterable<T> {
+public interface RowAccumulator<T> extends Consumer<T>, Iterable<T> {
   @Override
   RowIterator<T> iterator();
 }
