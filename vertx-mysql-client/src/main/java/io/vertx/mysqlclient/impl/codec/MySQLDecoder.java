@@ -38,9 +38,9 @@ class MySQLDecoder extends ChannelInboundHandlerAdapter {
     sequenceId = packet.readUnsignedByte();
     if (payload != null) {
       CompositeByteBuf compositeByteBuf = (CompositeByteBuf) payload;
-      compositeByteBuf.addComponent(true, packet.slice());
+      compositeByteBuf.addComponent(true, packet);
     } else if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
-      payload = ctx.alloc().compositeDirectBuffer().addComponent(true, packet.slice());
+      payload = ctx.alloc().compositeDirectBuffer().addComponent(true, packet);
     } else {
       payload = packet;
     }
