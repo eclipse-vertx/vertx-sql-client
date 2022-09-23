@@ -21,43 +21,41 @@ import java.util.Arrays;
  */
 public final class PropertyKindMap {
 
+  private static final Object[] EMPTY_ELEMENTS = {};
+
   private Object[] elements;
-  private int count;
 
   public PropertyKindMap() {
-    elements = new Object[2];
-    count = 0;
+    elements = EMPTY_ELEMENTS;
   }
 
   public Object get(PropertyKind<?> property) {
-    for (int i = 0; i < count; i++) {
-      int idx = 2 * i;
-      if (property.equals(elements[idx])) {
-        return elements[idx + 1];
+    for (int i = 0; i < elements.length; i += 2) {
+      if (property.equals(elements[i])) {
+        return elements[i + 1];
       }
     }
     return null;
   }
 
   public void put(PropertyKind<?> property, Object value) {
-    for (int i = 0; i < count; i++) {
-      int idx = 2 * i;
-      if (property.equals(elements[idx])) {
-        elements[idx + 1] = value;
+    for (int i = 0; i < elements.length; i += 2) {
+      if (property.equals(elements[i])) {
+        elements[i + 1] = value;
         return;
       }
     }
-    int idx = 2 * count;
-    if (idx == elements.length) {
-      elements = Arrays.copyOf(elements, 2 * (count + 1));
+    if (elements == EMPTY_ELEMENTS) {
+      elements = new Object[2];
+    } else {
+      elements = Arrays.copyOf(elements, elements.length + 2);
     }
-    elements[idx] = property;
-    elements[idx + 1] = value;
-    count++;
+    elements[elements.length - 2] = property;
+    elements[elements.length - 1] = value;
   }
 
   // visible for testing
   int count() {
-    return count;
+    return elements.length >> 1;
   }
 }
