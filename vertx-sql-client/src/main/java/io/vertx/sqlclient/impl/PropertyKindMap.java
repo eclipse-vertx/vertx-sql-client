@@ -14,6 +14,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.PropertyKind;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * A map-like storage for {@link PropertyKind} instances.
@@ -31,7 +32,8 @@ public final class PropertyKindMap {
 
   public Object get(PropertyKind<?> property) {
     for (int i = 0; i < elements.length; i += 2) {
-      if (property.equals(elements[i])) {
+      Object key = elements[i];
+      if (key == property || key.equals(property)) {
         return elements[i + 1];
       }
     }
@@ -39,8 +41,11 @@ public final class PropertyKindMap {
   }
 
   public void put(PropertyKind<?> property, Object value) {
+    Objects.requireNonNull(property, "property is null");
+    Objects.requireNonNull(value, "value is null");
     for (int i = 0; i < elements.length; i += 2) {
-      if (property.equals(elements[i])) {
+      Object key = elements[i];
+      if (key == property || key.equals(property)) {
         elements[i + 1] = value;
         return;
       }
