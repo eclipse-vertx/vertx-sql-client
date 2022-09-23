@@ -20,6 +20,7 @@ public final class ColumnDefinition implements ColumnDescriptor {
 
   /*
     https://dev.mysql.com/doc/dev/mysql-server/latest/page_protocol_com_query_response_text_resultset_column_definition.html
+    We only decode a subset of the column metadata to avoid wasting time and memory in decoding unused information.
    */
   private final String name;
   private final int characterSet;
