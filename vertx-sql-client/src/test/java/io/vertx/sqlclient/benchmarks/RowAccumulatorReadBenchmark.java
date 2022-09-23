@@ -13,7 +13,6 @@ package io.vertx.sqlclient.benchmarks;
 
 import io.vertx.sqlclient.impl.accumulator.RowAccumulator;
 import org.openjdk.jmh.annotations.*;
-import org.openjdk.jmh.infra.Blackhole;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +25,7 @@ import static io.vertx.sqlclient.benchmarks.Utils.generateStrings;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 2, timeUnit = TimeUnit.SECONDS)
-@Fork(value = 1, jvmArgs = {"-Xms8g", "-Xmx8g", "-Xmn7g"})
+@Fork(value = 3, jvmArgs = {"-Xms8g", "-Xmx8g", "-Xmn7g"})
 public class RowAccumulatorReadBenchmark {
 
   @Param({"ARRAY_LIST", "CHUNKED_FIXED_SIZE", "CHUNKED_GROWING_SIZE"})
@@ -54,9 +53,11 @@ public class RowAccumulatorReadBenchmark {
   }
 
   @Benchmark
-  public void iterate(Blackhole bh) {
+  public int iterate() {
+    int dummy = 0;
     for (String s : rowAccumulator) {
-      bh.consume(s.hashCode());
+      dummy += s.length();
     }
+    return dummy;
   }
 }
