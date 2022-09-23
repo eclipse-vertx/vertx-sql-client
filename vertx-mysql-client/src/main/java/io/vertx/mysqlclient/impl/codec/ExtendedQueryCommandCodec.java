@@ -31,7 +31,7 @@ class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, Exte
     super(cmd);
     if (cmd.fetch() > 0 && statement.isCursorOpen) {
       // restore the state we need for decoding fetch response based on the prepared statement
-      columnDefinitions = statement.rowDesc.columnDefinitions;
+      columnDefinitions = statement.rowDesc.columnDefinitions();
     }
   }
 

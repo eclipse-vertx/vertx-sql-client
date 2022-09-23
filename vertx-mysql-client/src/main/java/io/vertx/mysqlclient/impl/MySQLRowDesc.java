@@ -28,7 +28,7 @@ import java.util.RandomAccess;
 
 public class MySQLRowDesc extends RowDesc {
 
-  public final ColumnDefinition[] columnDefinitions;
+  private final ColumnDefinition[] columnDefinitions;
   private final DataFormat dataFormat;
 
   private MySQLRowDesc(List<String> columnNames, List<ColumnDescriptor> columnDescriptors, ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
@@ -49,6 +49,10 @@ public class MySQLRowDesc extends RowDesc {
 
   public int size() {
     return columnDefinitions.length;
+  }
+
+  public ColumnDefinition[] columnDefinitions() {
+    return columnDefinitions;
   }
 
   public ColumnDefinition get(int index) {
