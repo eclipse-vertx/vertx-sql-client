@@ -67,6 +67,7 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
 
   @Override
   void decode(ByteBuf payload) {
+    int startOfMessage = payload.readerIndex();
     MSSQLDatabaseMetadata metadata = null;
     Byte encryptionLevel = null;
     while (true) {
@@ -77,7 +78,7 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
       int offset = payload.readUnsignedShort();
       payload.skipBytes(2); // length
       payload.markReaderIndex();
-      payload.readerIndex(offset);
+      payload.readerIndex(startOfMessage + offset);
       if (optionType == VERSION) {
         int major = payload.readUnsignedByte();
         int minor = payload.readUnsignedByte();

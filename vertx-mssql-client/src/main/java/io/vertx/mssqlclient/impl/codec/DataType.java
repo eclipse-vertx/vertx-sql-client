@@ -16,6 +16,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.VertxByteBufAllocator;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -28,7 +29,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.*;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -1001,13 +1001,21 @@ public enum DataType {
   }
 
   private static ByteBuf readPLP(ByteBuf byteBuf) {
-    Stream.Builder<ByteBuf> byteBufs = Stream.builder();
-    for (int chunkSize = (int) byteBuf.readUnsignedIntLE(); chunkSize > 0; chunkSize = (int) byteBuf.readUnsignedIntLE()) {
-      byteBufs.add(byteBuf.slice(byteBuf.readerIndex(), chunkSize));
-      byteBuf.skipBytes(chunkSize);
+    final int startIndex = byteBuf.readerIndex();
+    int nextIndex = startIndex;
+    int totalSize = 0;
+    for (int chunkSize = (int) byteBuf.getUnsignedIntLE(nextIndex); chunkSize > 0; chunkSize = (int) byteBuf.getUnsignedIntLE(nextIndex)) {
+      totalSize += chunkSize;
+      nextIndex += 4 + chunkSize;
     }
-    ByteBuf wrapped = Unpooled.wrappedBuffer(byteBufs.build().toArray(ByteBuf[]::new));
-    return wrapped;
+    ByteBuf heapBuffer = VertxByteBufAllocator.DEFAULT.heapBuffer(totalSize);
+    nextIndex = startIndex;
+    for (int chunkSize = (int) byteBuf.getUnsignedIntLE(nextIndex); chunkSize > 0; chunkSize = (int) byteBuf.getUnsignedIntLE(nextIndex)) {
+      heapBuffer.writeBytes(byteBuf, nextIndex + 4, chunkSize);
+      nextIndex += 4 + chunkSize;
+    }
+    byteBuf.readerIndex(nextIndex + 4);
+    return heapBuffer;
   }
 
   private static Buffer decodeBinaryValue(ByteBuf byteBuf, int length) {
