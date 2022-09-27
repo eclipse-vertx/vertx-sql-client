@@ -11,12 +11,9 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowDesc;
 
-import java.util.AbstractList;
-import java.util.Collections;
-import java.util.List;
+import java.util.Arrays;
 
 /**
  * An implementation of {@link RowDesc} for MSSQL.
@@ -29,56 +26,21 @@ public class MSSQLRowDesc extends RowDesc {
   private final ColumnData[] columnDatas;
   private final boolean rowStat;
 
-  private MSSQLRowDesc(List<String> columnNames, List<ColumnDescriptor> columnDescriptors, ColumnData[] columnDatas, boolean hasRowStat) {
-    super(columnNames, columnDescriptors);
+  private MSSQLRowDesc(ColumnData[] columnDatas, boolean hasRowStat) {
+    super(columnDatas);
     this.columnDatas = columnDatas;
     this.rowStat = hasRowStat;
   }
 
   public static MSSQLRowDesc create(ColumnData[] columnDatas, boolean hasRowStat) {
-    if (columnDatas.length == 0) {
-      return new MSSQLRowDesc(Collections.emptyList(), Collections.emptyList(), columnDatas, false);
-    }
-    int size = hasRowStat ? columnDatas.length - 1 : columnDatas.length;
-    List<String> columnNames = new AbstractList<String>() {
-      @Override
-      public String get(int index) {
-        if (index < 0 || index >= size) {
-          throw new IndexOutOfBoundsException();
-        }
-        return columnDatas[index].name();
-      }
-
-      @Override
-      public int size() {
-        return size;
-      }
-    };
-    List<ColumnDescriptor> columnDescriptors = new AbstractList<ColumnDescriptor>() {
-      @Override
-      public ColumnDescriptor get(int index) {
-        if (index < 0 || index >= size) {
-          throw new IndexOutOfBoundsException();
-        }
-        return columnDatas[index];
-      }
-
-      @Override
-      public int size() {
-        return size;
-      }
-    };
-    return new MSSQLRowDesc(columnNames, columnDescriptors, columnDatas, hasRowStat);
+    return new MSSQLRowDesc(hasRowStat ? Arrays.copyOf(columnDatas, columnDatas.length - 1) : columnDatas, hasRowStat);
   }
 
   public int size() {
-    return rowStat ? columnDatas.length - 1 : columnDatas.length;
+    return columnDatas.length;
   }
 
   public ColumnData get(int index) {
-    if (index < 0 || index >= size()) {
-      throw new IndexOutOfBoundsException();
-    }
     return columnDatas[index];
   }
 

@@ -18,8 +18,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.data.Blob;
 import io.vertx.oracleclient.impl.Helper;
-import io.vertx.oracleclient.impl.OracleColumnDesc;
 import io.vertx.oracleclient.impl.OracleRow;
+import io.vertx.oracleclient.impl.OracleRowDesc;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
 import oracle.jdbc.OracleConnection;
@@ -193,7 +193,7 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
 
     BiConsumer<C, Row> accumulator = collector.accumulator();
 
-    RowDesc desc = RowDesc.EMPTY;
+    RowDesc desc = OracleRowDesc.EMPTY;
     C container = collector.supplier().get();
     for (int result : returnedBatchResult) {
       Row row = new OracleRow(desc);
@@ -217,7 +217,7 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
     C container = collector.supplier().get();
     int size = 0;
     ResultSetMetaData metaData = rs.getMetaData();
-    RowDesc desc = OracleColumnDesc.rowDesc(metaData);
+    RowDesc desc = OracleRowDesc.create(metaData);
     while (rs.next()) {
       size++;
       Row row = new OracleRow(desc);
@@ -239,7 +239,7 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
         if (metaData != null) {
           int cols = metaData.getColumnCount();
           if (cols > 0) {
-            RowDesc keysDesc = OracleColumnDesc.rowDesc(metaData);
+            RowDesc keysDesc = OracleRowDesc.create(metaData);
 
             OracleRow keys = new OracleRow(keysDesc);
             for (int i = 1; i <= cols; i++) {

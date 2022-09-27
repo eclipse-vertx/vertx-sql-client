@@ -19,49 +19,22 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 
-import java.sql.JDBCType;
-import java.util.Collections;
+import java.util.AbstractList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.RandomAccess;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
 
-public class RowDesc {
+public abstract class RowDesc {
 
-  public static final RowDesc EMPTY = new RowDesc(Collections.emptyList(), Collections.emptyList());
+  private final ColumnNames columnNames;
+  private final ColumnDescriptors columnDescriptors;
 
-  private final List<String> columnNames;
-  private final List<ColumnDescriptor> columnDescriptors;
-
-  public RowDesc(List<String> columnNames) {
-    this(columnNames, columnNames.stream().map(colName -> new ColumnDescriptor() {
-      @Override
-      public String name() {
-        return colName;
-      }
-
-      @Override
-      public JDBCType jdbcType() {
-        return JDBCType.OTHER;
-      }
-
-      @Override
-      public boolean isArray() {
-        return false;
-      }
-
-      @Override
-      public String typeName() {
-        return null;
-      }
-    }).collect(Collectors.toList()));
-  }
-
-  public RowDesc(List<String> columnNames, List<ColumnDescriptor> columnDescriptors) {
-    this.columnNames = columnNames;
-    this.columnDescriptors = columnDescriptors;
+  protected RowDesc(ColumnDescriptor[] columnDescriptors) {
+    this.columnNames = new ColumnNames(columnDescriptors);
+    this.columnDescriptors = new ColumnDescriptors(columnDescriptors);
   }
 
   public int columnIndex(String columnName) {
@@ -84,5 +57,54 @@ public class RowDesc {
     return "RowDesc{" +
       "columns=" + columnNames +
       '}';
+  }
+
+  private static class ColumnNames extends AbstractList<String> implements RandomAccess {
+    final ColumnDescriptor[] elements;
+
+    ColumnNames(ColumnDescriptor[] elements) {
+      this.elements = elements;
+    }
+
+    @Override
+    public String get(int index) {
+      return elements[index].name();
+    }
+
+    @Override
+    public int size() {
+      return elements.length;
+    }
+
+    @Override
+    public int indexOf(Object o) {
+      if (o != null) {
+        for (int i = 0; i < elements.length; i++) {
+          String name = elements[i].name();
+          if (o.hashCode() == name.hashCode() && o.equals(name)) {
+            return i;
+          }
+        }
+      }
+      return -1;
+    }
+  }
+
+  private static class ColumnDescriptors extends AbstractList<ColumnDescriptor> implements RandomAccess {
+    final ColumnDescriptor[] elements;
+
+    ColumnDescriptors(ColumnDescriptor[] elements) {
+      this.elements = elements;
+    }
+
+    @Override
+    public ColumnDescriptor get(int index) {
+      return elements[index];
+    }
+
+    @Override
+    public int size() {
+      return elements.length;
+    }
   }
 }

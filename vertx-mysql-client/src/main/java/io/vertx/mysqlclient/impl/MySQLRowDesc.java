@@ -18,37 +18,21 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
-import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowDesc;
-
-import java.util.AbstractList;
-import java.util.Collections;
-import java.util.List;
-import java.util.RandomAccess;
 
 public class MySQLRowDesc extends RowDesc {
 
   private final ColumnDefinition[] columnDefinitions;
   private final DataFormat dataFormat;
 
-  private MySQLRowDesc(List<String> columnNames, List<ColumnDescriptor> columnDescriptors, ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
-    super(columnNames, columnDescriptors);
+  private MySQLRowDesc(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
+    super(columnDefinitions);
     this.columnDefinitions = columnDefinitions;
     this.dataFormat = dataFormat;
   }
 
-
   public static MySQLRowDesc create(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
-    if (columnDefinitions.length == 0) {
-      return new MySQLRowDesc(Collections.emptyList(), Collections.emptyList(), columnDefinitions, dataFormat);
-    }
-    List<String> columnNames = new ColumnNames(columnDefinitions);
-    List<ColumnDescriptor> columnDescriptors = new ColumnDescriptors(columnDefinitions);
-    return new MySQLRowDesc(columnNames, columnDescriptors, columnDefinitions, dataFormat);
-  }
-
-  public int size() {
-    return columnDefinitions.length;
+    return new MySQLRowDesc(columnDefinitions, dataFormat);
   }
 
   public ColumnDefinition[] columnDefinitions() {
@@ -61,54 +45,5 @@ public class MySQLRowDesc extends RowDesc {
 
   public DataFormat dataFormat() {
     return dataFormat;
-  }
-
-  private static class ColumnNames extends AbstractList<String> implements RandomAccess {
-    private final ColumnDefinition[] columnDefinitions;
-
-    public ColumnNames(ColumnDefinition[] columnDefinitions) {
-      this.columnDefinitions = columnDefinitions;
-    }
-
-    @Override
-    public String get(int index) {
-      return columnDefinitions[index].name();
-    }
-
-    @Override
-    public int size() {
-      return columnDefinitions.length;
-    }
-
-    @Override
-    public int indexOf(Object o) {
-      if (o != null) {
-        for (int i = 0; i < columnDefinitions.length; i++) {
-          String name = columnDefinitions[i].name();
-          if (o.hashCode() == name.hashCode() && o.equals(name)) {
-            return i;
-          }
-        }
-      }
-      return -1;
-    }
-  }
-
-  private static class ColumnDescriptors extends AbstractList<ColumnDescriptor> {
-    private final ColumnDefinition[] columnDefinitions;
-
-    public ColumnDescriptors(ColumnDefinition[] columnDefinitions) {
-      this.columnDefinitions = columnDefinitions;
-    }
-
-    @Override
-    public ColumnDescriptor get(int index) {
-      return columnDefinitions[index];
-    }
-
-    @Override
-    public int size() {
-      return columnDefinitions.length;
-    }
   }
 }

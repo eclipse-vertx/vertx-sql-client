@@ -13,15 +13,12 @@ package io.vertx.oracleclient.impl;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
-import io.vertx.sqlclient.impl.RowDesc;
 import oracle.sql.TIMESTAMPTZ;
 
 import java.sql.JDBCType;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class OracleColumnDesc implements ColumnDescriptor {
@@ -36,17 +33,6 @@ public class OracleColumnDesc implements ColumnDescriptor {
     }
     TYPES_BY_CLASSNAME = new HashMap<>();
     TYPES_BY_CLASSNAME.put(TIMESTAMPTZ.class.getName(), JDBCType.TIMESTAMP_WITH_TIMEZONE);
-  }
-
-  public static RowDesc rowDesc(ResultSetMetaData metaData) throws SQLException {
-    int cols = metaData.getColumnCount();
-    List<String> columnNames = new ArrayList<>(cols);
-    List<ColumnDescriptor> columnDescriptors = new ArrayList<>(cols);
-    for (int i = 1; i <= cols; i++) {
-      columnNames.add(metaData.getColumnLabel(i));
-      columnDescriptors.add(new OracleColumnDesc(metaData, i));
-    }
-    return new RowDesc(columnNames, columnDescriptors);
   }
 
   private final String name;

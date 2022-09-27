@@ -57,7 +57,7 @@ public class RowReader<R, A> implements Flow.Subscriber<Row>, Function<oracle.jd
       types.add(ors.getMetaData().getColumnClassName(i));
     }
     this.publisher = ors.publisherOracle(this);
-    this.description = OracleColumnDesc.rowDesc(ors.getMetaData());
+    this.description = OracleRowDesc.create(ors.getMetaData());
     this.subscriptionPromise = subscriptionPromise;
     this.handler = handler;
     this.context = context;

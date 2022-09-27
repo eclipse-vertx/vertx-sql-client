@@ -11,23 +11,22 @@
 
 package io.vertx.db2client.impl;
 
-import io.vertx.sqlclient.impl.RowDesc;
-import junit.framework.TestCase;
+import io.vertx.sqlclient.impl.TestRowDesc;
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-public class DB2RowImplTest extends TestCase {
+public class DB2RowImplTest {
   enum EnumValue {
     SOME, NONE
   }
 
   @Test
   public void testGetNullEnum() {
-    DB2RowImpl row = new DB2RowImpl(new RowDesc(Collections.singletonList("enum")));
+    DB2RowImpl row = new DB2RowImpl(TestRowDesc.create("enum"));
     row.addValue(null);
     assertNull(row.get(EnumValue.class, 0));
 
