@@ -166,7 +166,7 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   @Override
-  public Transaction getTransaction() {
+  public Transaction transaction() {
     return tx;
   }
 

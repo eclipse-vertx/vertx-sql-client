@@ -167,7 +167,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
         .flatMap(conn -> function.apply(conn)
           .onFailure(err -> {
             if (!(err instanceof TransactionRollbackException)) {
-              conn.getTransaction().rollback();
+              conn.transaction().rollback();
             }
           }));
     }
