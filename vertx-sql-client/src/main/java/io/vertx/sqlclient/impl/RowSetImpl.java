@@ -20,10 +20,12 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.impl.accumulator.ArrayListRowAccumulator;
+import io.vertx.sqlclient.impl.accumulator.ChunkedRowAccumulator;
 import io.vertx.sqlclient.impl.accumulator.RowAccumulator;
 
 import java.util.NoSuchElementException;
 import java.util.function.Function;
+import java.util.function.IntUnaryOperator;
 import java.util.stream.Collector;
 
 class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
@@ -64,7 +66,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
     if (rowAccumulator != null) {
       rowAccumulator.accept(row);
     } else if (firstRow != null) {
-      rowAccumulator = new ArrayListRowAccumulator<>();
+      rowAccumulator = new ChunkedRowAccumulator<>(IntUnaryOperator.identity());
       rowAccumulator.accept(firstRow);
       rowAccumulator.accept(row);
       firstRow = null;

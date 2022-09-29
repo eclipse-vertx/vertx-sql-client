@@ -14,23 +14,16 @@ package io.vertx.sqlclient.benchmarks;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class Utils {
 
-  public static String[] generateStrings(int size, boolean shuffle, boolean gc) throws InterruptedException {
+  public static String[] generateStrings(int size, boolean shuffle) {
     String[] strings = new String[size];
     for (int c = 0; c < size; c++) {
       strings[c] = "Value" + c;
     }
     if (shuffle) {
       Collections.shuffle(Arrays.asList(strings), new Random(0xBAD_BEE));
-    }
-    if (gc) {
-      for (int c = 0; c < 5; c++) {
-        System.gc();
-        TimeUnit.SECONDS.sleep(1);
-      }
     }
     return strings;
   }

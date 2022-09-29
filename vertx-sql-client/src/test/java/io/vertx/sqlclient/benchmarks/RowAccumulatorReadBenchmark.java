@@ -11,11 +11,14 @@
 
 package io.vertx.sqlclient.benchmarks;
 
+import io.vertx.sqlclient.impl.accumulator.ArrayListRowAccumulator;
+import io.vertx.sqlclient.impl.accumulator.ChunkedRowAccumulator;
 import io.vertx.sqlclient.impl.accumulator.RowAccumulator;
 import org.openjdk.jmh.annotations.*;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntUnaryOperator;
 
 import static io.vertx.sqlclient.benchmarks.Utils.generateStrings;
 
@@ -28,10 +31,7 @@ import static io.vertx.sqlclient.benchmarks.Utils.generateStrings;
 @Fork(value = 3, jvmArgs = {"-Xms8g", "-Xmx8g", "-Xmn7g"})
 public class RowAccumulatorReadBenchmark {
 
-  @Param({"ARRAY_LIST", "CHUNKED_FIXED_SIZE", "CHUNKED_GROWING_SIZE"})
-  public RowAccumulatorType rowAccumulatorType;
-
-  @Param({"5", "20", "65", "605", "1820", "5465", "16400"})
+  @Param({"5", "20", "65", "605", "1820", "5465"})
   int size;
 
   @Param({"false", "true"})
@@ -41,19 +41,37 @@ public class RowAccumulatorReadBenchmark {
   boolean gc;
 
   String[] arr;
-  RowAccumulator<String> rowAccumulator;
+  ArrayListRowAccumulator<String> arrayListRowAccumulator;
+  ChunkedRowAccumulator<String> chunkedRowAccumulator;
 
   @Setup
   public void setup() throws IOException, InterruptedException {
-    arr = generateStrings(size, shuffle, gc);
-    rowAccumulator = rowAccumulatorType.newInstance();
+    arr = generateStrings(size, shuffle);
+    arrayListRowAccumulator = new ArrayListRowAccumulator<>();
+    chunkedRowAccumulator = new ChunkedRowAccumulator<>(IntUnaryOperator.identity());
     for (String s : arr) {
-      rowAccumulator.accept(s);
+      arrayListRowAccumulator.accept(s);
+      chunkedRowAccumulator.accept(s);
+    }
+    if (gc) {
+      for (int c = 0; c < 5; c++) {
+        System.gc();
+        TimeUnit.SECONDS.sleep(1);
+      }
     }
   }
 
   @Benchmark
-  public int iterate() {
+  public int iterateArrayList() {
+    return test(arrayListRowAccumulator);
+  }
+
+  @Benchmark
+  public int iterateChunked() {
+    return test(chunkedRowAccumulator);
+  }
+
+  private static int test(RowAccumulator<String> rowAccumulator) {
     int dummy = 0;
     for (String s : rowAccumulator) {
       dummy += s.length();

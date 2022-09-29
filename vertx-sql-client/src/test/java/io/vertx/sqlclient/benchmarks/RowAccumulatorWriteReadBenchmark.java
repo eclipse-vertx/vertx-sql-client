@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.IntUnaryOperator;
 
 import static io.vertx.sqlclient.benchmarks.Utils.generateStrings;
+import static org.openjdk.jmh.annotations.CompilerControl.Mode.DONT_INLINE;
 
 @Threads(1)
 @State(Scope.Thread)
@@ -29,7 +30,7 @@ import static io.vertx.sqlclient.benchmarks.Utils.generateStrings;
 @Warmup(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 10, time = 2, timeUnit = TimeUnit.SECONDS)
 @Fork(value = 3, jvmArgs = {"-Xms8g", "-Xmx8g", "-Xmn7g"})
-public class RowAccumulatorWriteBenchmark {
+public class RowAccumulatorWriteReadBenchmark {
 
   @Param({"5", "20", "65", "605", "1820", "5465"})
   int size;
@@ -54,19 +55,34 @@ public class RowAccumulatorWriteBenchmark {
   }
 
   @Benchmark
-  public RowAccumulator<String> accumulateArrayList() {
+  public int accumulateIterateArrayList() {
     return test(new ArrayListRowAccumulator<>());
   }
 
   @Benchmark
-  public RowAccumulator<String> accumulateChunked() {
+  public int accumulateIterateChunked() {
     return test(new ChunkedRowAccumulator<>(IntUnaryOperator.identity()));
   }
 
-  private RowAccumulator<String> test(RowAccumulator<String> rowAccumulator) {
+  private int test(RowAccumulator<String> rowAccumulator) {
+    accumulateFromDB(rowAccumulator);
+    return comsumeRows(rowAccumulator);
+  }
+
+  @CompilerControl(DONT_INLINE)
+  public void accumulateFromDB(RowAccumulator<String> rowAccumulator) {
     for (String s : arr) {
       rowAccumulator.accept(s);
     }
-    return rowAccumulator;
   }
+
+  @CompilerControl(DONT_INLINE)
+  public int comsumeRows(RowAccumulator<String> accumulator) {
+    int dummy = 0;
+    for (String s : accumulator) {
+      dummy += s.length();
+    }
+    return dummy;
+  }
+
 }
