@@ -20,6 +20,7 @@ package io.vertx.pgclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.Json;
@@ -360,6 +361,12 @@ public class DataTypeCodec {
       case MONEY_ARRAY:
         binaryEncodeArray((Money[]) value, DataType.MONEY, buff);
         break;
+      case XML:
+        binaryEncodeXML((String) value, buff);
+        break;
+      case XML_ARRAY:
+        binaryEncodeArray((String[]) value, DataType.XML, buff);
+        break;
       default:
         logger.debug("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -497,6 +504,10 @@ public class DataTypeCodec {
         return binaryDecodeMoney(index, len, buff);
       case MONEY_ARRAY:
         return binaryDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
+      case XML:
+        return binaryDecodeXML(index, len, buff);
+      case XML_ARRAY:
+        return binaryDecodeArray(STRING_ARRAY_FACTORY, DataType.XML, index, len, buff);
       default:
         logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
@@ -637,6 +648,10 @@ public class DataTypeCodec {
         return textDecodeMoney(index, len, buff);
       case MONEY_ARRAY:
         return textDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
+      case XML:
+        return textDecodeXML(index, len, buff);
+      case XML_ARRAY:
+        return textDecodeArray(STRING_ARRAY_FACTORY, DataType.XML, index, len, buff);
       default:
         return defaultDecodeText(index, len, buff);
     }
@@ -1475,6 +1490,18 @@ public class DataTypeCodec {
 
   private static void binaryEncodeTsQuery(String value, ByteBuf buff) {
     buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
+  }
+
+  private static String binaryDecodeXML(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
+  }
+
+  private static void binaryEncodeXML(String value, ByteBuf buff) {
+    buff.writeCharSequence(value, StandardCharsets.UTF_8);
+  }
+
+  private static String textDecodeXML(int index, int len, ByteBuf buff) {
+    return buff.getCharSequence(index, len, StandardCharsets.UTF_8).toString();
   }
 
   private static String textDecodeTsVector(int index, int len, ByteBuf buff) {
