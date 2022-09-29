@@ -33,7 +33,7 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
   public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
     inflight = new ArrayDeque<>();
     MySQLEncoder encoder = new MySQLEncoder(inflight, mySQLSocketConnection);
-    MySQLDecoder decoder = new MySQLDecoder(inflight, mySQLSocketConnection);
+    MySQLDecoder decoder = new MySQLDecoder(inflight);
     init(decoder, encoder);
   }
 

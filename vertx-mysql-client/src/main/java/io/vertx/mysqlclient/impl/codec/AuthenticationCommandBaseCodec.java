@@ -12,7 +12,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.util.ReferenceCountUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.impl.command.AuthenticationCommandBase;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
@@ -105,7 +104,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
       packet.writeBytes(kv);
     } finally {
       if (kv != null) {
-        ReferenceCountUtil.release(kv);
+        kv.release();
       }
     }
   }

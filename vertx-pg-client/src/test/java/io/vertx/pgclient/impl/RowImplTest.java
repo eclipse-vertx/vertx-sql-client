@@ -11,11 +11,10 @@
 
 package io.vertx.pgclient.impl;
 
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.impl.TestRowDesc;
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -26,7 +25,7 @@ public class RowImplTest {
   }
   @Test
   public void testGetNullEnum() {
-    RowImpl row = new RowImpl(new RowDesc(Collections.singletonList("enum")));
+    RowImpl row = new RowImpl(TestRowDesc.create("enum"));
     row.addValue(null);
     assertNull(row.get(EnumValue.class, 0));
 

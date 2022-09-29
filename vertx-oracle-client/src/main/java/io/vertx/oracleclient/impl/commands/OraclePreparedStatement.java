@@ -10,7 +10,7 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.oracleclient.impl.OracleColumnDesc;
+import io.vertx.oracleclient.impl.OracleRowDesc;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.TupleInternal;
@@ -28,9 +28,9 @@ public class OraclePreparedStatement implements io.vertx.sqlclient.impl.Prepared
     ResultSetMetaData metaData = preparedStatement.getMetaData();
     RowDesc rowDesc;
     if (metaData != null) {
-      rowDesc = OracleColumnDesc.rowDesc(metaData);
+      rowDesc = OracleRowDesc.create(metaData);
     } else {
-      rowDesc = RowDesc.EMPTY;
+      rowDesc = OracleRowDesc.EMPTY;
     }
     this.sql = sql;
     this.rowDesc = rowDesc;

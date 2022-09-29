@@ -17,21 +17,14 @@
 
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.pgclient.data.Box;
-import io.vertx.pgclient.data.Circle;
-import io.vertx.pgclient.data.Line;
-import io.vertx.pgclient.data.LineSegment;
+import io.vertx.pgclient.data.*;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.pgclient.data.Path;
-import io.vertx.pgclient.data.Polygon;
-import io.vertx.pgclient.data.Interval;
-import io.vertx.pgclient.data.Point;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.core.buffer.Buffer;
 
 import java.lang.reflect.Array;
 import java.time.*;

@@ -11,6 +11,7 @@
 
 package io.vertx.mysqlclient.impl;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.data.spatial.*;
@@ -19,14 +20,8 @@ import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
-import io.vertx.core.buffer.Buffer;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.UUID;
@@ -244,7 +239,7 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
 
   @Override
   public LocalTime getLocalTime(int pos) {
-    ColumnDefinition columnDefinition = rowDesc.columnDefinitions()[pos];
+    ColumnDefinition columnDefinition = rowDesc.get(pos);
     Object val = getValue(pos);
     if (columnDefinition.type() == DataType.TIME && val instanceof Duration) {
       // map MySQL TIME data type to java.time.LocalTime

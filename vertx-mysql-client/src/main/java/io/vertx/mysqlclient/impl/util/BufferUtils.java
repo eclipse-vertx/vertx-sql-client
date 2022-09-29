@@ -69,6 +69,36 @@ public class BufferUtils {
     }
   }
 
+  public static long countBytesOfLengthEncodedString(ByteBuf buffer, int index) {
+    short firstByte = buffer.getUnsignedByte(index);
+    switch (firstByte) {
+      case 0xFB:
+        return 1;
+      case 0xFC:
+        return 3 + buffer.getUnsignedShortLE(index + 1);
+      case 0xFD:
+        return 4 + buffer.getUnsignedMediumLE(index + 1);
+      case 0xFE:
+        return 9 + buffer.getLongLE(index + 1);
+      default:
+        return 1 + firstByte;
+    }
+  }
+
+  public static long countBytesOfLengthEncodedInteger(ByteBuf buffer, int index) {
+    short firstByte = buffer.getUnsignedByte(index);
+    switch (firstByte) {
+      case 0xFC:
+        return 3;
+      case 0xFD:
+        return 4;
+      case 0xFE:
+        return 9;
+      default:
+        return 1;
+    }
+  }
+
   public static void writeLengthEncodedString(ByteBuf buffer, String value, Charset charset) {
     byte[] bytes = value.getBytes(charset);
     writeLengthEncodedInteger(buffer, bytes.length);

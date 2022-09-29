@@ -12,11 +12,9 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.util.ReferenceCountUtil;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.impl.command.*;
 
@@ -25,13 +23,11 @@ import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;
 import static io.vertx.mssqlclient.impl.codec.MessageStatus.NORMAL;
 import static io.vertx.mssqlclient.impl.codec.TdsPacket.PACKET_HEADER_SIZE;
 import static java.lang.Math.max;
-import static java.lang.Math.min;
 
 public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
   private final TdsMessageCodec tdsMessageCodec;
 
   private ChannelHandlerContext chctx;
-  private ByteBufAllocator alloc;
   private int payloadMaxLength;
 
   public TdsMessageEncoder(TdsMessageCodec tdsMessageCodec, int packetSize) {
@@ -42,7 +38,6 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
   @Override
   public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
     chctx = ctx;
-    alloc = chctx.alloc();
   }
 
   @Override
@@ -113,32 +108,35 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   void writeTdsMessage(short messageType, ByteBuf tdsMessageContent) {
-    try {
-      int tdsMessageLength = tdsMessageContent.writerIndex();
-      int numPackets = (tdsMessageLength / payloadMaxLength) + ((tdsMessageLength % payloadMaxLength) == 0 ? 0 : 1);
-
-      for (int i = 0; i < numPackets; i++) {
-        int start = i * payloadMaxLength;
-        int length = min(tdsMessageLength - start, payloadMaxLength);
-        ByteBuf slice = tdsMessageContent.retainedSlice(start, length);
-        short status = NORMAL;
-        if (i == numPackets - 1) {
-          status |= END_OF_MESSAGE;
-        }
-        writeTdsPacket(messageType, status, length, slice);
+    int remaining = tdsMessageContent.writerIndex();
+    while (remaining > 0) {
+      int payloadLength = Math.min(remaining, payloadMaxLength);
+      tdsMessageContent.writerIndex(tdsMessageContent.readerIndex() + payloadLength);
+      short status = NORMAL;
+      ByteBuf payload;
+      if (payloadLength == remaining) {
+        status |= END_OF_MESSAGE;
+        payload = tdsMessageContent;
+      } else {
+        payload = tdsMessageContent.copy(tdsMessageContent.readerIndex(), payloadLength);
+        tdsMessageContent.skipBytes(payloadLength);
       }
-    } finally {
-      ReferenceCountUtil.release(tdsMessageContent);
+      writeTdsPacket(messageType, status, payloadLength, payload);
+      remaining -= payloadLength;
     }
   }
 
   private void writeTdsPacket(short messageType, short status, int length, ByteBuf payload) {
-    ByteBuf header = alloc.ioBuffer(8);
+    ByteBuf header = chctx.alloc().ioBuffer(PACKET_HEADER_SIZE);
     header.writeByte(messageType);
     header.writeByte(status);
     header.writeShort(PACKET_HEADER_SIZE + length);
     header.writeZero(4);
     chctx.write(header, chctx.voidPromise());
-    chctx.writeAndFlush(payload, chctx.voidPromise());
+    if (status == END_OF_MESSAGE) {
+      chctx.writeAndFlush(payload, chctx.voidPromise());
+    } else {
+      chctx.write(payload, chctx.voidPromise());
+    }
   }
 }
