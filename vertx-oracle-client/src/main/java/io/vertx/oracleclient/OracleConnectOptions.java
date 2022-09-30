@@ -327,6 +327,11 @@ public class OracleConnectOptions extends SqlConnectOptions {
   }
 
   @Override
+  public OracleConnectOptions setSsl(boolean ssl) {
+    return (OracleConnectOptions) super.setSsl(ssl);
+  }
+
+  @Override
   public JsonObject toJson() {
     JsonObject json = super.toJson();
     OracleConnectOptionsConverter.toJson(this, json);
