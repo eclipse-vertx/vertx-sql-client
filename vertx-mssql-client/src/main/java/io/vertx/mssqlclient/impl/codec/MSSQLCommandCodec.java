@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,6 +14,7 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
 import io.vertx.mssqlclient.MSSQLException;
+import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -61,7 +62,11 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
           handleDone(tokenType, payload);
           break;
         case INFO:
+          handleInfo(payload);
+          break;
         case ORDER:
+        case TABNAME:
+        case COLINFO:
           payload.skipBytes(payload.readUnsignedShortLE());
           break;
         case RETURNSTATUS:
@@ -77,10 +82,25 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
           handleEnvChange(payload);
           break;
         default:
-          throw new UnsupportedOperationException("Unsupported token: " + tokenType);
+          throw new UnsupportedOperationException("Unsupported token: 0x" + Integer.toHexString(tokenType));
       }
     }
     handleDecodingComplete();
+  }
+
+  protected void handleInfo(ByteBuf payload) {
+    payload.skipBytes(2); // length
+
+    MSSQLInfo info = new MSSQLInfo()
+      .setNumber(payload.readIntLE())
+      .setState(payload.readByte())
+      .setSeverity(payload.readByte())
+      .setMessage(readUnsignedShortLengthString(payload))
+      .setServerName(readUnsignedByteLengthString(payload))
+      .setProcedureName(readUnsignedByteLengthString(payload))
+      .setLineNumber(payload.readIntLE());
+
+    tdsMessageCodec.chctx().fireChannelRead(info);
   }
 
   protected void handleLoginAck() {
@@ -88,19 +108,25 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
 
   private void handleColumnMetadata(ByteBuf payload) {
     int columnCount = payload.readUnsignedShortLE();
+    if (columnCount == 0xFFFF) { // no metadata
+      return;
+    }
 
     ColumnData[] columnDatas = new ColumnData[columnCount];
 
     for (int i = 0; i < columnCount; i++) {
-      long userType = payload.readUnsignedIntLE();
-      int flags = payload.readUnsignedShortLE();
+      payload.skipBytes(6);
       DataType dataType = DataType.forId(payload.readUnsignedByte());
-      DataType.Metadata metadata = dataType.decodeMetadata(payload);
+      TypeInfo metadata = dataType.decodeTypeInfo(payload);
       String columnName = readUnsignedByteLengthString(payload);
       columnDatas[i] = new ColumnData(columnName, dataType, metadata);
     }
 
-    handleRowDesc(new MSSQLRowDesc(columnDatas));
+    handleRowDesc(createRowDesc(columnDatas));
+  }
+
+  protected MSSQLRowDesc createRowDesc(ColumnData[] columnData) {
+    return MSSQLRowDesc.create(columnData, false);
   }
 
   protected void handleRowDesc(MSSQLRowDesc mssqlRowDesc) {
@@ -133,8 +159,7 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
   }
 
   private void handleError(ByteBuf buffer) {
-    // token value has been processed
-    int length = buffer.readUnsignedShortLE();
+    buffer.skipBytes(2); // length
 
     int number = buffer.readIntLE();
     byte state = buffer.readByte();
@@ -198,5 +223,4 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
     }
     completionHandler.handle(resp);
   }
-
 }

@@ -40,6 +40,11 @@ public class MySQLConnectOptionsConverter {
             obj.setCollation((String)member.getValue());
           }
           break;
+        case "pipeliningLimit":
+          if (member.getValue() instanceof Number) {
+            obj.setPipeliningLimit(((Number)member.getValue()).intValue());
+          }
+          break;
         case "serverRsaPublicKeyPath":
           if (member.getValue() instanceof String) {
             obj.setServerRsaPublicKeyPath((String)member.getValue());
@@ -81,6 +86,7 @@ public class MySQLConnectOptionsConverter {
     if (obj.getCollation() != null) {
       json.put("collation", obj.getCollation());
     }
+    json.put("pipeliningLimit", obj.getPipeliningLimit());
     if (obj.getServerRsaPublicKeyPath() != null) {
       json.put("serverRsaPublicKeyPath", obj.getServerRsaPublicKeyPath());
     }

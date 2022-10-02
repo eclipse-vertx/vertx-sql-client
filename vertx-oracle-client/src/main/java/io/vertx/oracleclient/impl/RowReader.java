@@ -12,8 +12,8 @@ package io.vertx.oracleclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.VertxException;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.oracleclient.OracleException;
 import io.vertx.oracleclient.impl.commands.OraclePreparedQuery;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.QueryResultHandler;
@@ -57,7 +57,7 @@ public class RowReader<R, A> implements Flow.Subscriber<Row>, Function<oracle.jd
       types.add(ors.getMetaData().getColumnClassName(i));
     }
     this.publisher = ors.publisherOracle(this);
-    this.description = OracleColumnDesc.rowDesc(ors.getMetaData());
+    this.description = OracleRowDesc.create(ors.getMetaData());
     this.subscriptionPromise = subscriptionPromise;
     this.handler = handler;
     this.context = context;
@@ -142,7 +142,7 @@ public class RowReader<R, A> implements Flow.Subscriber<Row>, Function<oracle.jd
     try {
       return transform(types, description, oracleRow);
     } catch (SQLException e) {
-      throw new VertxException(e);
+      throw new OracleException(e);
     }
   }
 

@@ -106,8 +106,8 @@ The {@link io.vertx.db2client.DB2Pool} allows you to create a pool or a pooled c
 {@link examples.DB2ClientExamples#poolVersusPooledClient}
 ----
 
-- pool operations are not pipelined, only connection client are pipelined
-- pooled client operations are pipelined
+- pool operations are not pipelined, only connections acquired from the pool are pipelined
+- pooled client operations are pipelined, you cannot acquire a connection from a pooled client
 
 == Pool sharing
 
@@ -128,7 +128,7 @@ A simple way to configure the client is to specify a `DB2ConnectOptions` data ob
 
 You can also configure the generic properties with the `setProperties` or `addProperty` methods. Note `setProperties` will override the default client properties.
 
-=== connection uri
+=== Connection URI
 
 Apart from configuring with a `DB2ConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
 
@@ -140,18 +140,18 @@ Apart from configuring with a `DB2ConnectOptions` data object, We also provide y
 The URI format for a connection string is:
 
 ----
-db2://<USERNAME>:<PASSWORD>@<HOSTNAME>:<PORT>/<DBNAME>
+db2://[user[:[password]]@]host[:port][/database][?<key1>=<value1>[&<key2>=<value2>]]
 ----
 
-Currently the client supports the following parameter key words in connection uri
+Currently, the client supports the following parameter keys:
 
-* host
-* port
-* user
-* password
-* dbname
+* `host`
+* `port`
+* `user`
+* `password`
+* `database`
 
-Note: configuring properties in connection URI will override the default properties.
+NOTE: Configuring parameters in connection URI will override the default properties.
 
 == Connect retries
 

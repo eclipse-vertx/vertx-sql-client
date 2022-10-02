@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -20,6 +20,7 @@ import io.vertx.oracleclient.OracleClient;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.OraclePrepareOptions;
+import io.vertx.oracleclient.data.Blob;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
 
@@ -90,13 +91,35 @@ public class OracleClientExamples {
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI
-    String connectionUri = "oracle:thin:scott/tiger@myhost:1521:orcl";
+    String connectionUri = "oracle:thin:@mydbhost1:5521/mydbservice?connect_timeout=10sec";
+
+    // Connect options
+    OracleConnectOptions connectOptions = OracleConnectOptions.fromUri(connectionUri)
+      .setUser("user")
+      .setPassword("secret");
 
     // Pool Options
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the connection URI
-    OraclePool pool = OraclePool.pool(connectionUri, poolOptions);
+    OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
+  }
+
+  public void configureFromTnsAliasUri(Vertx vertx) {
+
+    // Connection URI
+    String connectionUri = "oracle:thin:@prod_db?TNS_ADMIN=/work/tns/";
+
+    // Connect options
+    OracleConnectOptions connectOptions = OracleConnectOptions.fromUri(connectionUri)
+      .setUser("user")
+      .setPassword("secret");
+
+    // Pool Options
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+
+    // Create the pool from the connection URI
+    OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
   }
 
   public void connecting01() {
@@ -428,5 +451,25 @@ public class OracleClientExamples {
         Long id = generated.getLong("ID");
       }
     });
+  }
+
+  public void blobUsage(SqlClient client, Buffer imageBuffer, Long id) {
+    client.preparedQuery("INSERT INTO images (name, data) VALUES (?, ?)")
+      // Use io.vertx.oracleclient.data.Blob when inserting
+      .execute(Tuple.of("beautiful-sunset.jpg", Blob.copy(imageBuffer)))
+      .onComplete(ar -> {
+        // Do something
+      });
+
+    client.preparedQuery("SELECT data FROM images WHERE id = ?")
+      .execute(Tuple.of(id))
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          Row row = ar.result().iterator().next();
+
+          // Use io.vertx.core.buffer.Buffer when reading
+          Buffer data = row.getBuffer("data");
+        }
+      });
   }
 }

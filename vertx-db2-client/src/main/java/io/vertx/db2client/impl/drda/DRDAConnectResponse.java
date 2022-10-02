@@ -213,6 +213,13 @@ public class DRDAConnectResponse extends DRDAResponse {
                 codpnt = parseCODPNT();
                 peekCP = peekCodePoint();
             }
+            if (peekCP == CodePoint.SRVDGN) {
+                foundInPass = true;
+                String serverDiagnostics = parseSRVDGN();
+                // TODO: Log this as a warning
+                System.out.println("Server diagnostics: " + serverDiagnostics);
+                peekCP = peekCodePoint();
+            }
 
             // RECCNT will be skipped
 
@@ -1758,7 +1765,7 @@ public class DRDAConnectResponse extends DRDAResponse {
                 srvrlslvReceived = checkAndGetReceivedFlag(srvrlslvReceived);
                 parseLengthAndMatchCodePoint(CodePoint.SRVRLSLV);
                 String serverReleaseLevel = readString(); // parseSRVRLSLV();
-                metadata.dbMetadata = new DB2DatabaseMetadata(serverReleaseLevel);
+                metadata.setDbMetadata(new DB2DatabaseMetadata(serverReleaseLevel));
                 peekCP = peekCodePoint();
             }
 

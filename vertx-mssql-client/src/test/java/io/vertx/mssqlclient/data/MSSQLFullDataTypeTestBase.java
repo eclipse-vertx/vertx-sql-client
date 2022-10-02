@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -39,6 +39,9 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(true, row.getValue("test_boolean"));
       ctx.assertEquals("testchar", row.getValue("test_char"));
       ctx.assertEquals("testvarchar", row.getValue("test_varchar"));
+      ctx.assertEquals("testvarcharmax", row.getValue("test_varchar_max"));
+      ctx.assertEquals("testtext", row.getValue("test_text"));
+      ctx.assertEquals("testntext", row.getValue("test_ntext"));
       ctx.assertEquals(LocalDate.of(2019, 1, 1), row.getValue("test_date"));
       ctx.assertEquals(LocalTime.of(18, 45, 2), row.getValue("test_time"));
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 0), row.getValue("test_smalldatetime"));
@@ -47,6 +50,8 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(LocalDateTime.of(2019, 1, 1, 18, 45, 2).atOffset(ZoneOffset.ofHoursMinutes(-3, -15)), row.getValue("test_datetimeoffset"));
       ctx.assertEquals(Buffer.buffer("hello world").appendBytes(new byte[20 - "hello world".length()]), row.getValue("test_binary"));
       ctx.assertEquals(Buffer.buffer("big apple"), row.getValue("test_varbinary"));
+      ctx.assertEquals(Buffer.buffer("venice of the north"), row.getValue("test_varbinary_max"));
+      ctx.assertEquals(Buffer.buffer("paris of the west"), row.getValue("test_image"));
       ctx.assertEquals(new BigDecimal("12.3456"), row.getValue("test_money"));
       ctx.assertEquals(new BigDecimal("12.34"), row.getValue("test_smallmoney"));
     });
@@ -100,7 +105,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       checkNumber(row, "test_numeric", new BigDecimal("999.99"));
     });
   }
-  
+
 
   @Test
   public void testDecodeUuid(TestContext ctx) {
@@ -110,7 +115,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
         .returns(Tuple::getUUID, Row::getUUID, UUID.fromString("e2d1f163-40a7-480b-b1a6-07faaef8e01b"))
         .forRow(row);
     });
-  }  
+  }
 
   @Test
   public void testDecodeDecimal(TestContext ctx) {

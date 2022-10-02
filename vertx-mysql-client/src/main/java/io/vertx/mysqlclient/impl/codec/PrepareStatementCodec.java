@@ -131,11 +131,11 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
   }
 
   private void handleReadyForQuery() {
-    completionHandler.handle(CommandResponse.success(new MySQLPreparedStatement(
+    encoder.handleCommandResponse(CommandResponse.success(new MySQLPreparedStatement(
       cmd.sql(),
       this.statementId,
       new MySQLParamDesc(paramDescs),
-      new MySQLRowDesc(columnDescs, DataFormat.BINARY),
+      MySQLRowDesc.create(columnDescs, DataFormat.BINARY),
       !cmd.isManaged())));
   }
 

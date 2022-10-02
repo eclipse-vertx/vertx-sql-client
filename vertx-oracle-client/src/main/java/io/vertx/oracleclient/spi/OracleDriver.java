@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -10,6 +10,7 @@
  */
 package io.vertx.oracleclient.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -18,17 +19,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.impl.OracleConnectionFactory;
-import io.vertx.oracleclient.impl.OracleConnectionUriParser;
-import io.vertx.oracleclient.impl.OraclePoolImpl;
+import io.vertx.oracleclient.impl.*;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.PoolImpl;
+import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class OracleDriver implements Driver {
 
@@ -37,43 +41,31 @@ public class OracleDriver implements Driver {
   public static final OracleDriver INSTANCE = new OracleDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases,
-                      PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
-    ContextInternal context = vx.getOrCreateContext();
-    OracleConnectOptions database = wrap(databases.get(0));
-    QueryTracer tracer = context.tracer() == null ? null : new QueryTracer(vx.tracer(), database);
-    VertxMetrics vertxMetrics = vx.metricsSPI();
-    @SuppressWarnings("rawtypes") ClientMetrics metrics = vertxMetrics != null ?
-      vertxMetrics.createClientMetrics(database.getSocketAddress(), "sql",
-        database.getMetricsName()) :
-      null;
-    OracleConnectionFactory factory;
+    PoolImpl pool;
     if (options.isShared()) {
-      factory = vx.createSharedClient(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> {
-        OracleConnectionFactory connectionFactory = new OracleConnectionFactory(vx, database, options, tracer, metrics);
-        cf.add(connectionFactory);
-        return connectionFactory;
-      });
+      pool = vx.createSharedClient(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, cf));
     } else {
-      factory = new OracleConnectionFactory(vx, database, options, tracer, metrics);
-      closeFuture.add(factory);
+      pool = newPoolImpl(vx, databases, options, closeFuture);
     }
-    return new OraclePoolImpl(vx, factory, metrics, tracer, closeFuture);
+    return new OraclePoolImpl(vx, closeFuture, pool);
   }
 
-  @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx,
-    SqlConnectOptions database) {
-    OracleConnectOptions options = wrap(database);
-    VertxInternal vi = (VertxInternal) vertx;
-    VertxMetrics vertxMetrics = vi.metricsSPI();
-    @SuppressWarnings("rawtypes") ClientMetrics metrics = vertxMetrics != null ?
-      vertxMetrics.createClientMetrics(database.getSocketAddress(), "sql",
-        database.getMetricsName()) :
-      null;
-    QueryTracer tracer = new QueryTracer(vi.tracer(), database);
-    return new OracleConnectionFactory(vi, options, new PoolOptions(), tracer, metrics);
+  private PoolImpl newPoolImpl(VertxInternal vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+    OracleConnectOptions baseConnectOptions = OracleConnectOptions.wrap(databases.get(0));
+    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
+    VertxMetrics vertxMetrics = vertx.metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
+    Function<Connection, Future<Void>> afterAcquire = conn -> ((CommandHandler) conn).afterAcquire();
+    Function<Connection, Future<Void>> beforeRecycle = conn -> ((CommandHandler) conn).beforeRecycle();
+    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, afterAcquire, beforeRecycle, closeFuture);
+    List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
+    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
+    pool.connectionProvider(factory::connect);
+    pool.init();
+    closeFuture.add(factory);
+    return pool;
   }
 
   @Override
@@ -87,12 +79,13 @@ public class OracleDriver implements Driver {
     return options instanceof OracleConnectOptions || SqlConnectOptions.class.equals(options.getClass());
   }
 
-  private static OracleConnectOptions wrap(SqlConnectOptions options) {
-    if (options instanceof OracleConnectOptions) {
-      return (OracleConnectOptions) options;
-    } else {
-      return new OracleConnectOptions(options);
-    }
+  @Override
+  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+    return new OracleConnectionFactory((VertxInternal) vertx, OracleConnectOptions.wrap(database));
   }
 
+  @Override
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+    return new OracleConnectionImpl(context, factory, conn, tracer, metrics);
+  }
 }

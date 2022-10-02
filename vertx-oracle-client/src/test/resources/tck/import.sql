@@ -1,3 +1,15 @@
+CREATE TABLE World
+(
+  id           INTEGER           NOT NULL,
+  randomNumber INTEGER DEFAULT 0 NOT NULL,
+  PRIMARY KEY (id)
+);
+
+INSERT INTO World (id, randomNumber)
+SELECT Rownum r, dbms_random.value
+FROM dual
+CONNECT BY Rownum <= 100;
+
 -- Fortune Table
 CREATE TABLE Fortune
 (
@@ -115,16 +127,18 @@ INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, 
                           test_decimal, test_char, test_varchar, test_date)
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
-/*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
- * which is available at https://www.apache.org/licenses/LICENSE-2.0.
- *
- * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
- */
+CREATE TABLE binary_data_types
+(
+  id        INT,
+  test_raw  RAW(255),
+  test_blob BLOB
+);
+INSERT INTO binary_data_types(id, test_raw, test_blob)
+VALUES (1, UTL_RAW.CAST_TO_RAW('See you space cowboy...'), UTL_RAW.CAST_TO_RAW('See you space cowboy...'));
+INSERT INTO binary_data_types(id, test_raw, test_blob)
+VALUES (2, UTL_RAW.CAST_TO_RAW('See you space cowboy...'), UTL_RAW.CAST_TO_RAW('See you space cowboy...'));
+INSERT INTO binary_data_types(id, test_raw, test_blob)
+VALUES (3, NULL, NULL);
 
 -- Don't forget to commit...
 COMMIT;

@@ -13,11 +13,11 @@ package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.Future;
-import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 
@@ -84,6 +84,15 @@ public interface MSSQLConnection extends SqlConnection {
   @Fluent
   @Override
   MSSQLConnection closeHandler(Handler<Void> handler);
+
+  /**
+   * Set a handler called when the connection receives an informational message from the server.
+   *
+   * @param handler the handler
+   * @return a reference to this, so the API can be used fluently
+   */
+  @Fluent
+  MSSQLConnection infoHandler(Handler<MSSQLInfo> handler);
 
   /**
    * Cast a {@link SqlConnection} to {@link MSSQLConnection}.

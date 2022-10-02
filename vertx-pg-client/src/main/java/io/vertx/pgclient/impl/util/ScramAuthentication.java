@@ -62,7 +62,7 @@ public class ScramAuthentication {
     }
 
     if (mechanisms.isEmpty()) {
-      throw new UnsupportedOperationException("SASL Authentication : the server returned no mecanism");
+      throw new UnsupportedOperationException("SASL Authentication : the server returned no mechanism");
     }
 
     // SCRAM-SHA-256-PLUS added in postgresql 11 is not supported

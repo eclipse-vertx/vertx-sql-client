@@ -21,11 +21,11 @@ package io.vertx.pgclient.impl.codec;
  */
 public class ScramClientInitialMessage {
 
-  final String mecanism;
+  final String mechanism;
   final String message;
 
-  public ScramClientInitialMessage(String message, String mecanism) {
+  public ScramClientInitialMessage(String message, String mechanism) {
     this.message = message;
-    this.mecanism = mecanism;
+    this.mechanism = mechanism;
   }
 }

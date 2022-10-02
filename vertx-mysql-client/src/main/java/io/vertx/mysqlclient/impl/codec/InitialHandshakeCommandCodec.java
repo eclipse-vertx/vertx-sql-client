@@ -135,7 +135,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         upgradeToSsl = true;
         break;
       default:
-        completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unknown SSL mode to handle: " + sslMode)));
+        encoder.handleCommandResponse(CommandResponse.failure(new IllegalStateException("Unknown SSL mode to handle: " + sslMode)));
         return;
     }
 
@@ -147,7 +147,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         if (upgrade.succeeded()) {
           doSendHandshakeResponseMessage(serverAuthPluginName, cmd.authenticationPlugin(), authPluginData, serverCapabilitiesFlags);
         } else {
-          completionHandler.handle(CommandResponse.failure(upgrade.cause()));
+          encoder.handleCommandResponse(CommandResponse.failure(upgrade.cause()));
         }
       });
     } else {
@@ -167,44 +167,44 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
     switch (header) {
       case OK_PACKET_HEADER:
         status = ST_CONNECTED;
-        completionHandler.handle(CommandResponse.success(cmd.connection()));
+        encoder.handleCommandResponse(CommandResponse.success(cmd.connection()));
         break;
       case ERROR_PACKET_HEADER:
         handleErrorPacketPayload(payload);
         break;
       case AUTH_SWITCH_REQUEST_STATUS_FLAG:
-        handleAuthSwitchRequest(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
+        handleAuthSwitchRequest(cmd.password(), payload);
         break;
       case AUTH_MORE_DATA_STATUS_FLAG:
         handleAuthMoreData(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
         break;
       default:
-        completionHandler.handle(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
+        encoder.handleCommandResponse(CommandResponse.failure(new IllegalStateException("Unhandled state with header: " + header)));
     }
   }
 
-  private void handleAuthSwitchRequest(byte[] password, ByteBuf payload) {
+  private void handleAuthSwitchRequest(String password, ByteBuf payload) {
     // Protocol::AuthSwitchRequest
     payload.skipBytes(1); // status flag, always 0xFE
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     byte[] nonce = new byte[NONCE_LENGTH];
     payload.readBytes(nonce);
-    byte[] authResponse;
     switch (pluginName) {
       case "mysql_native_password":
-        authResponse = Native41Authenticator.encode(password, nonce);
+        sendBytesAsPacket(Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce));
         break;
       case "caching_sha2_password":
-        authResponse = CachingSha2Authenticator.encode(password, nonce);
+        sendBytesAsPacket(CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce));
         break;
       case "mysql_clear_password":
-        authResponse = password;
+        ByteBuf buffer = encoder.chctx.alloc().buffer();
+        BufferUtils.writeNullTerminatedString(buffer, password, StandardCharsets.UTF_8);
+        sendNonSplitPacket(buffer);
         break;
       default:
-        completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
+        encoder.handleCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
         return;
     }
-    sendBytesAsPacket(authResponse);
   }
 
   private void sendSslRequest() {
@@ -249,7 +249,10 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
           authResponse = CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce);
           break;
         case "mysql_clear_password":
-          authResponse = password.getBytes(StandardCharsets.UTF_8);
+          ByteBuf buffer = encoder.chctx.alloc().heapBuffer();
+          BufferUtils.writeNullTerminatedString(buffer, password, StandardCharsets.UTF_8);
+          authResponse = new byte[buffer.readableBytes()];
+          buffer.readBytes(authResponse);
           break;
         default:
           LOGGER.warn("Unknown authentication method: " + authMethod + ", the client will try to use mysql_native_password instead.");

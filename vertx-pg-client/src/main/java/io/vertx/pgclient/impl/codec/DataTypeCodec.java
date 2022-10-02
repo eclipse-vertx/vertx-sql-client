@@ -20,16 +20,17 @@ package io.vertx.pgclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.VertxByteBufAllocator;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.Json;
-import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.data.Numeric;
-import io.vertx.pgclient.data.*;
-import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.pgclient.data.*;
+import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.codec.CommonCodec;
 
 import java.net.Inet4Address;
@@ -50,7 +51,7 @@ import java.util.function.IntFunction;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
-import static java.util.concurrent.TimeUnit.*;
+import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -1169,9 +1170,9 @@ public class DataTypeCodec {
   }
 
   private static Buffer binaryDecodeBYTEA(int index, int len, ByteBuf buff) {
-    Buffer target = Buffer.buffer(len);
-    target.appendBuffer(Buffer.buffer(buff.slice(index, len)));
-    return target;
+    ByteBuf byteBuf = VertxByteBufAllocator.DEFAULT.heapBuffer(len);
+    byteBuf.writeBytes(buff, index, len);
+    return Buffer.buffer(byteBuf);
   }
 
   private static void binaryEncodeUUID(UUID uuid, ByteBuf buff) {

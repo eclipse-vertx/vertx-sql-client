@@ -175,12 +175,13 @@ public class PgConnectOptionsTest {
 
   @Test
   public void testValidUri12() {
-    connectionUri = "postgresql://?fallback_application_name=myapp&search_path=myschema";
+    connectionUri = "postgresql://?fallback_application_name=myapp&search_path=myschema&options=--foo%3Dbar";
     actualConfiguration = PgConnectOptions.fromUri(connectionUri);
 
     Map<String, String> expectedProperties = new HashMap<>();
     expectedProperties.put("fallback_application_name", "myapp");
     expectedProperties.put("search_path", "myschema");
+    expectedProperties.put("options", "--foo=bar");
 
     expectedConfiguration = new PgConnectOptions()
       .setProperties(expectedProperties);

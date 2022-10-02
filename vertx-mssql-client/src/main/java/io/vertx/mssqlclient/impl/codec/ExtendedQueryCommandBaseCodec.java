@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -21,13 +21,25 @@ import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
 abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
 
+  final MSSQLPreparedStatement ps;
+
   ExtendedQueryCommandBaseCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
     super(tdsMessageCodec, cmd);
+    ps = (MSSQLPreparedStatement) this.cmd.preparedStatement();
+  }
+
+  public static <U> MSSQLCommandCodec<?, ?> create(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<U> queryCmd) {
+    if (queryCmd.isBatch()) {
+      return new ExtendedBatchQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+    } else if (queryCmd.cursorId() != null) {
+      return new ExtendedCursorQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+    } else {
+      return new ExtendedQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+    }
   }
 
   @Override
   void encode() {
-    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
     if (ps.handle > 0) {
       sendExecRequest();
     } else {
@@ -50,7 +62,6 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
 
   @Override
   protected void handleReturnValue(ByteBuf payload) {
-    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.preparedStatement();
     short paramNameLength = payload.getUnsignedByte(payload.readerIndex() + 2);
     payload.skipBytes(12 + 2 * paramNameLength);
     Number value = (Number) INTN.decodeValue(payload, null);
@@ -74,7 +85,6 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
     // Parameter
 
     // OUT Parameter
-    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.ps;
     INTN.encodeParam(content, null, true, ps.handle);
 
     TupleInternal params = prepexecRequestParams();
@@ -115,7 +125,6 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
     // Parameter
 
     // OUT Parameter
-    MSSQLPreparedStatement ps = (MSSQLPreparedStatement) cmd.ps;
     INTN.encodeParam(packet, null, true, ps.handle);
 
     // Param values
@@ -124,7 +133,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
 
   protected abstract TupleInternal execRequestParams();
 
-  private String parseParamDefinitions(TupleInternal params) {
+  protected String parseParamDefinitions(TupleInternal params) {
     StringBuilder stringBuilder = new StringBuilder();
     for (int i = 0; i < params.size(); i++) {
       if (i > 0) {
@@ -147,7 +156,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
     return stringBuilder.toString();
   }
 
-  private void encodeParams(ByteBuf buffer, TupleInternal params) {
+  protected void encodeParams(ByteBuf buffer, TupleInternal params) {
     for (int i = 0; i < params.size(); i++) {
       String name = "@P" + (i + 1);
       Object value = params.getValue(i);

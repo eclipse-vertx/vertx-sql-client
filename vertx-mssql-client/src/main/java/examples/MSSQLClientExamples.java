@@ -83,7 +83,7 @@ public class MSSQLClientExamples {
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI
-    String connectionUri = "sqlserver://dbuser:secretpassword@database.server.com:3211/mydb";
+    String connectionUri = "sqlserver://dbuser:secretpassword@database.server.com:1433/mydb";
 
     // Create the pool from the connection URI
     MSSQLPool pool = MSSQLPool.pool(connectionUri);
@@ -305,5 +305,11 @@ public class MSSQLClientExamples {
     MSSQLConnectOptions connectOptions = new MSSQLConnectOptions()
       .setSsl(true)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/server-cert.pem"));
+  }
+
+  public void infoHandler(MSSQLConnection connection) {
+    connection.infoHandler(info -> {
+      System.out.println("Received info " + info.getSeverity() + "" + info.getMessage());
+    });
   }
 }

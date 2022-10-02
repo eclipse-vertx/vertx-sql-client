@@ -17,9 +17,11 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.mysqlclient.impl.MySQLPoolOptions;
 import io.vertx.mysqlclient.spi.MySQLDriver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
 
 import java.util.Collections;
@@ -98,6 +100,72 @@ public interface MySQLPool extends Pool {
   static MySQLPool pool(Vertx vertx, List<MySQLConnectOptions> databases, PoolOptions options) {
     return (MySQLPool) MySQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
+
+
+  /**
+   * Like {@link #client(String, PoolOptions)} with a default {@code poolOptions}.
+   */
+  static SqlClient client(String connectionUri) {
+    return client(connectionUri, new PoolOptions());
+  }
+
+  /**
+   * Like {@link #client(MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   */
+  static SqlClient client(String connectionUri, PoolOptions poolOptions) {
+    return client(MySQLConnectOptions.fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Like {@link #client(Vertx, String,PoolOptions)} with a default {@code poolOptions}.
+   */
+  static SqlClient client(Vertx vertx, String connectionUri) {
+    return client(vertx, MySQLConnectOptions.fromUri(connectionUri), new PoolOptions());
+  }
+
+  /**
+   * Like {@link #client(Vertx, MySQLConnectOptions, PoolOptions)} with {@code connectOptions} build from {@code connectionUri}.
+   */
+  static SqlClient client(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
+    return client(vertx, MySQLConnectOptions.fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Create a client backed by a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   *
+   * @param poolOptions the options for creating the backing pool
+   * @return the client
+   */
+  static SqlClient client(MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+    return client(null, Collections.singletonList(connectOptions), poolOptions);
+  }
+
+  /**
+   * Like {@link #client(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  static SqlClient client(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+    return client(vertx, Collections.singletonList(connectOptions), poolOptions);
+  }
+
+  /**
+   * Like {@link #client(List, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  static SqlClient client(Vertx vertx, List<MySQLConnectOptions> mySQLConnectOptions, PoolOptions options) {
+    return MySQLDriver.INSTANCE.createPool(vertx, mySQLConnectOptions, new MySQLPoolOptions(options).setPipelined(true));
+  }
+
+  /**
+   * Create a client backed by a connection pool to the MySQL {@code databases} with round-robin selection.
+   * Round-robin is applied when a new connection is created by the pool.
+   *
+   * @param databases the list of databases
+   * @param options the options for creating the pool
+   * @return the pooled client
+   */
+  static SqlClient client(List<MySQLConnectOptions> databases, PoolOptions options) {
+    return client(null, databases, options);
+  }
+
 
   @Override
   MySQLPool connectHandler(Handler<SqlConnection> handler);

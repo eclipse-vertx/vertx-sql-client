@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -10,18 +10,18 @@
  */
 package io.vertx.oracleclient.impl;
 
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.VertxException;
+import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.oracleclient.OracleException;
 import io.vertx.sqlclient.Tuple;
 import oracle.sql.TIMESTAMPTZ;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Flow;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
@@ -35,18 +35,6 @@ public class Helper {
       } catch (Exception ignore) {
       }
     }
-  }
-
-  public static <T> Future<T> contextualize(CompletionStage<T> stage, ContextInternal context) {
-    Promise<T> future = context.promise();
-    stage.whenComplete((r, f) -> {
-      if (f != null) {
-        future.fail(f);
-      } else {
-        future.complete(r);
-      }
-    });
-    return future.future();
   }
 
   /**
@@ -77,7 +65,7 @@ public class Helper {
     try {
       return supplier.getOrThrow();
     } catch (SQLException sqlException) {
-      throw new VertxException(sqlException);
+      throw new OracleException(sqlException);
     }
   }
 
@@ -86,7 +74,7 @@ public class Helper {
     try {
       runnable.runOrThrow();
     } catch (SQLException sqlException) {
-      throw new VertxException(sqlException);
+      throw new OracleException(sqlException);
     }
   }
 
@@ -155,8 +143,12 @@ public class Helper {
       return null;
     }
 
-    if (value instanceof Boolean || value instanceof String || value instanceof byte[] || value instanceof Number) {
+    if (value instanceof Boolean || value instanceof String || value instanceof Number) {
       return value;
+    }
+
+    if (value instanceof byte[]) {
+      return Buffer.buffer((byte[]) value);
     }
 
     // JDBC temporal values
@@ -195,13 +187,11 @@ public class Helper {
     if (value instanceof Blob) {
       Blob b = (Blob) value;
       try {
-        // result might be truncated due to downcasting to int
-        return b.getBytes(1, (int) b.length());
+        return Buffer.buffer(b.getBytes(1, (int) b.length()));
       } finally {
         try {
           b.free();
-        } catch (AbstractMethodError | SQLFeatureNotSupportedException e) {
-          // ignore since it is an optional feature since 1.6 and non existing before 1.6
+        } catch (AbstractMethodError | SQLFeatureNotSupportedException ignore) {
         }
       }
     }
@@ -236,6 +226,32 @@ public class Helper {
 
     // fallback to String
     return value.toString();
+  }
+
+  public static boolean isFatal(SQLException e) {
+    int errorCode = e.getErrorCode();
+    return errorCode == 28
+      || errorCode == 600
+      || errorCode == 1012
+      || errorCode == 1014
+      || errorCode == 1033
+      || errorCode == 1034
+      || errorCode == 1035
+      || errorCode == 1089
+      || errorCode == 1090
+      || errorCode == 1092
+      || errorCode == 1094
+      || errorCode == 2396
+      || errorCode == 3106
+      || errorCode == 3111
+      || errorCode == 3113
+      || errorCode == 3114
+      || (errorCode >= 12100 && errorCode <= 12299)
+      || errorCode == 17002
+      || errorCode == 17008
+      || errorCode == 17410
+      || errorCode == 17447
+      || "08000".equals(e.getSQLState());
   }
 
   /**
@@ -343,5 +359,59 @@ public class Helper {
      * @return A cached copy of this row.
      */
     JdbcRow copy();
+  }
+
+  @FunctionalInterface
+  public interface SQLBlockingCodeHandler<T> extends Handler<Promise<T>> {
+
+    T doHandle() throws SQLException;
+
+    @Override
+    default void handle(Promise<T> promise) {
+      try {
+        promise.complete(doHandle());
+      } catch (SQLException e) {
+        promise.fail(new OracleException(e));
+      }
+    }
+  }
+
+  @FunctionalInterface
+  public interface SQLBlockingTaskHandler extends Handler<Promise<Void>> {
+
+    void doHandle() throws SQLException;
+
+    @Override
+    default void handle(Promise<Void> promise) {
+      try {
+        doHandle();
+        promise.complete(null);
+      } catch (SQLException e) {
+        promise.fail(new OracleException(e));
+      }
+    }
+  }
+
+  @FunctionalInterface
+  public interface SQLFutureMapper<T, U> extends Function<T, Future<U>> {
+
+    Future<U> doApply(T t) throws SQLException;
+
+    @Override
+    default Future<U> apply(T t) {
+      try {
+        return doApply(t);
+      } catch (SQLException e) {
+        return Future.failedFuture(new OracleException(e));
+      }
+    }
+  }
+
+  public static <T> Future<T> executeBlocking(Context context, SQLBlockingCodeHandler<T> blockingCodeHandler) {
+    return context.executeBlocking(blockingCodeHandler, false);
+  }
+
+  public static Future<Void> executeBlocking(Context context, SQLBlockingTaskHandler blockingTaskHandler) {
+    return context.executeBlocking(blockingTaskHandler, false);
   }
 }

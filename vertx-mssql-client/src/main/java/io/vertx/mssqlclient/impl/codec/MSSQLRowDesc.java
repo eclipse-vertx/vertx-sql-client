@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,15 +14,37 @@ package io.vertx.mssqlclient.impl.codec;
 import io.vertx.sqlclient.impl.RowDesc;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-class MSSQLRowDesc extends RowDesc {
-  final ColumnData[] columnDatas;
+/**
+ * An implementation of {@link RowDesc} for MSSQL.
+ * <p>
+ * When reading rows with a cursor, an extra column named {@code ROWSTAT} is returned by the server.
+ * This column should not be conveyed to the user so this class filters it out.
+ */
+public class MSSQLRowDesc extends RowDesc {
 
-  MSSQLRowDesc(ColumnData[] columnDatas) {
-    super(Stream.of(columnDatas).map(ColumnData::name).collect(Collectors.toList()), Collections.unmodifiableList(Arrays.asList(columnDatas)));
+  private final ColumnData[] columnDatas;
+  private final boolean rowStat;
+
+  private MSSQLRowDesc(ColumnData[] columnDatas, boolean hasRowStat) {
+    super(columnDatas);
     this.columnDatas = columnDatas;
+    this.rowStat = hasRowStat;
+  }
+
+  public static MSSQLRowDesc create(ColumnData[] columnDatas, boolean hasRowStat) {
+    return new MSSQLRowDesc(hasRowStat ? Arrays.copyOf(columnDatas, columnDatas.length - 1) : columnDatas, hasRowStat);
+  }
+
+  public int size() {
+    return columnDatas.length;
+  }
+
+  public ColumnData get(int index) {
+    return columnDatas[index];
+  }
+
+  public boolean hasRowStat() {
+    return rowStat;
   }
 }

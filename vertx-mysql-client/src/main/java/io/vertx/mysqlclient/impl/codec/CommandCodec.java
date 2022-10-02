@@ -17,10 +17,9 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.Handler;
 import io.vertx.mysqlclient.MySQLException;
-import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -33,7 +32,6 @@ import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
 abstract class CommandCodec<R, C extends CommandBase<R>> {
 
-  Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
   public R result;
   final C cmd;
@@ -79,7 +77,9 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
       packetHeader.writeMediumLE(PACKET_PAYLOAD_LENGTH_LIMIT);
       packetHeader.writeByte(sequenceId++);
       encoder.chctx.write(packetHeader, encoder.chctx.voidPromise());
-      encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT), encoder.chctx.voidPromise());
+      ByteBuf msg = payload.copy(payload.readerIndex(), PACKET_PAYLOAD_LENGTH_LIMIT);
+      payload.skipBytes(PACKET_PAYLOAD_LENGTH_LIMIT);
+      encoder.chctx.write(msg, encoder.chctx.voidPromise());
     }
 
     // send a packet with last part of the payload
@@ -113,7 +113,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     switch (header) {
       case EOF_PACKET_HEADER:
       case OK_PACKET_HEADER:
-        completionHandler.handle(CommandResponse.success(null));
+        encoder.handleCommandResponse(CommandResponse.success(null));
         break;
       case ERROR_PACKET_HEADER:
         handleErrorPacketPayload(payload);
@@ -122,36 +122,27 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   void handleErrorPacketPayload(ByteBuf payload) {
+    MySQLException mySQLException = decodeErrorPacketPayload(payload);
+    encoder.handleCommandResponse(CommandResponse.failure(mySQLException));
+  }
+
+  final MySQLException decodeErrorPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip ERR packet header
     int errorCode = payload.readUnsignedShortLE();
     // CLIENT_PROTOCOL_41 capability flag will always be set
     payload.skipBytes(1); // SQL state marker will always be #
     String sqlState = BufferUtils.readFixedLengthString(payload, 5, StandardCharsets.UTF_8);
     String errorMessage = readRestOfPacketString(payload, StandardCharsets.UTF_8);
-    completionHandler.handle(CommandResponse.failure(new MySQLException(errorMessage, errorCode, sqlState)));
+    return new MySQLException(errorMessage, errorCode, sqlState);
   }
 
   // simplify the ok packet as those properties are actually not used for now
   OkPacket decodeOkPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip OK packet header
-    long affectedRows = BufferUtils.readLengthEncodedInteger(payload);
+    int affectedRows = (int) BufferUtils.readLengthEncodedInteger(payload);
     long lastInsertId = BufferUtils.readLengthEncodedInteger(payload);
     int serverStatusFlags = payload.readUnsignedShortLE();
-//    int numberOfWarnings = payload.readUnsignedShortLE();
-    String statusInfo = null;
-    String sessionStateInfo = null;
-//    if (payload.readableBytes() == 0) {
-//      // handle when OK packet does not contain server status info
-//      statusInfo = null;
-//    } else if ((encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_SESSION_TRACK) != 0) {
-//      statusInfo = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-//      if ((serverStatusFlags & ServerStatusFlags.SERVER_SESSION_STATE_CHANGED) != 0) {
-//        sessionStateInfo = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-//      }
-//    } else {
-//      statusInfo = readRestOfPacketString(payload, charset);
-//    }
-    return new OkPacket(affectedRows, lastInsertId, serverStatusFlags, 0, statusInfo, sessionStateInfo);
+    return new OkPacket(affectedRows, lastInsertId, serverStatusFlags);
   }
 
   EofPacket decodeEofPacketPayload(ByteBuf payload) {
@@ -166,19 +157,36 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
   }
 
   ColumnDefinition decodeColumnDefinitionPacketPayload(ByteBuf payload) {
-    String catalog = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String schema = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String table = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String orgTable = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
+    int start = payload.readerIndex();
+    int bytesToSkip = 0;
+
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // catalog
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // schema
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // table
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // orgTable
+
+    payload.skipBytes(bytesToSkip);
+
     String name = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    String orgName = BufferUtils.readLengthEncodedString(payload, StandardCharsets.UTF_8);
-    long lengthOfFixedLengthFields = BufferUtils.readLengthEncodedInteger(payload);
-    int characterSet = payload.readUnsignedShortLE();
-    long columnLength = payload.readUnsignedIntLE();
-    DataType type = DataType.valueOf(payload.readUnsignedByte());
-    int flags = payload.readUnsignedShortLE();
-    byte decimals = payload.readByte();
-    return new ColumnDefinition(catalog, schema, table, orgTable, name, orgName, characterSet, columnLength, type, flags, decimals);
+
+    start = payload.readerIndex();
+    bytesToSkip = 0;
+
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedString(payload, start + bytesToSkip); // orgName
+    bytesToSkip += BufferUtils.countBytesOfLengthEncodedInteger(payload, start + bytesToSkip); // lengthOfFixedLengthFields
+
+    int characterSet = payload.getUnsignedShortLE(start + bytesToSkip);
+    bytesToSkip += 6; // characterSet + columnLength
+
+    DataType type = DataType.valueOf(payload.getUnsignedByte(start + bytesToSkip));
+    bytesToSkip++;
+
+    int flags = payload.getUnsignedShortLE(start + bytesToSkip);
+    bytesToSkip += 2; // flags + decimals
+
+    payload.skipBytes(bytesToSkip);
+
+    return new ColumnDefinition(name, characterSet, type, flags);
   }
 
   void skipEofPacketIfNeeded(ByteBuf payload) {
@@ -189,5 +197,9 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
 
   boolean isDeprecatingEofFlagEnabled() {
     return (encoder.clientCapabilitiesFlag & CapabilitiesFlag.CLIENT_DEPRECATE_EOF) != 0;
+  }
+
+  boolean expectNoResponsePacket() {
+    return false;
   }
 }

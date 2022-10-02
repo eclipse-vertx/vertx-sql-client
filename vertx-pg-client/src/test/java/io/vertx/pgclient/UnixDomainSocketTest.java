@@ -23,10 +23,13 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(VertxUnitRunner.class)
@@ -105,5 +108,19 @@ public class UnixDomainSocketTest {
       assertFalse(pgConnection.isSSL());
       pgConnection.close();
     }));
+  }
+
+  @Test
+  public void testNativeTransportMustBeEnabled() {
+    Vertx vertx = Vertx.vertx();
+    try {
+      PgPool.pool(vertx, PgConnectOptions.fromUri("postgresql:///dbname?host=/var/lib/postgresql"), new PoolOptions());
+      fail();
+    } catch (IllegalArgumentException expected) {
+      // Expected
+      assertEquals(ConnectionFactoryBase.NATIVE_TRANSPORT_REQUIRED, expected.getMessage());
+    } finally {
+      vertx.close();
+    }
   }
 }

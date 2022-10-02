@@ -31,7 +31,7 @@ class StatisticsCommandCodec extends CommandCodec<String, StatisticsCommand> {
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
-    completionHandler.handle(CommandResponse.success(payload.toString()));
+    encoder.handleCommandResponse(CommandResponse.success(payload.toString()));
   }
 
   private void sendStatisticsCommand() {

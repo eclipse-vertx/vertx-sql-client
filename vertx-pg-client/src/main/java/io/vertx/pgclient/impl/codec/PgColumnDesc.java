@@ -21,6 +21,9 @@ import io.vertx.sqlclient.desc.ColumnDescriptor;
 
 import java.sql.JDBCType;
 
+import static io.vertx.pgclient.impl.codec.DataFormat.BINARY;
+import static io.vertx.pgclient.impl.codec.DataFormat.TEXT;
+
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
@@ -45,6 +48,25 @@ class PgColumnDesc implements ColumnDescriptor {
     this.relationId = relationId;
     this.relationAttributeNo = relationAttributeNo;
     this.typeModifier = typeModifier;
+  }
+
+  boolean supportsBinary() {
+    return dataType.supportsBinary;
+  }
+
+  boolean hasTextFormat() {
+    return dataFormat == TEXT;
+  }
+
+  PgColumnDesc toBinaryDataFormat() {
+    return new PgColumnDesc(
+      name,
+      relationId,
+      relationAttributeNo,
+      dataType,
+      length,
+      typeModifier,
+      BINARY);
   }
 
   @Override

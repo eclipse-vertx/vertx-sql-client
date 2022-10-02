@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,16 +11,24 @@
 
 package io.vertx.mssqlclient.tck;
 
-import io.vertx.mssqlclient.junit.MSSQLRule;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.mssqlclient.MSSQLException;
+import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.tck.PreparedQueryTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 
 public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
+
   @ClassRule
   public static MSSQLRule rule = MSSQLRule.SHARED_INSTANCE;
+
+  @Override
+  protected boolean cursorRequiresTx() {
+    return false;
+  }
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
@@ -42,75 +50,24 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
     return sb.toString();
   }
 
-  @Override
   @Test
-  @Ignore
-  public void testQueryCursor(TestContext ctx) {
-    //TODO cursor support
-    super.testQueryCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testQueryCloseCursor(TestContext ctx) {
-    //TODO cursor support
-    super.testQueryCloseCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testQueryStreamCloseCursor(TestContext ctx) {
-    //TODO cursor support
-    super.testQueryStreamCloseCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testStreamQueryPauseInBatch(TestContext ctx) {
-    // TODO streaming support
-    super.testStreamQueryPauseInBatch(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testStreamQueryPauseInBatchFromAnotherThread(TestContext ctx) {
-    // TODO streaming support
-    super.testStreamQueryPauseInBatchFromAnotherThread(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testStreamQueryPauseResume(TestContext ctx) {
-    // TODO streaming support
-    super.testStreamQueryPauseResume(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
-  public void testStreamQuery(TestContext ctx) {
-    // TODO streaming support
-    super.testStreamQuery(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore
   public void testPrepareError(TestContext ctx) {
-    // prepexec prepared statement will not care about the SQL
-    super.testPrepareError(ctx);
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT whatever FROM DOES_NOT_EXIST", ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(ctx.asyncAssertFailure(error -> {
+          ctx.assertTrue(error instanceof MSSQLException);
+          MSSQLException e = (MSSQLException) error;
+          ctx.assertEquals("Invalid object name 'DOES_NOT_EXIST'.", e.errorMessage());
+        }));
+      }));
+    }));
   }
 
   @Override
   @Test
   @Ignore
   public void testPreparedQueryParamCoercionQuantityError(TestContext ctx) {
-    // can't check this for now due to prepexec cmd
+    // can't check this due to prepexec cmd
     super.testPreparedQueryParamCoercionQuantityError(ctx);
   }
 
@@ -118,8 +75,25 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
   @Test
   @Ignore
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
-    // can't check this for now due to prepexec cmd
+    // can't check this due to prepexec cmd
     super.testPreparedQueryParamCoercionTypeError(ctx);
+  }
+
+  @Test
+  public void failureWhenPreparingCursor(TestContext ctx) {
+    Async async = ctx.async();
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT invalid_function()", ctx.asyncAssertSuccess(ps -> {
+        ps.createStream(50)
+          .exceptionHandler(error -> {
+            ctx.assertTrue(error instanceof MSSQLException);
+            MSSQLException e = (MSSQLException) error;
+            ctx.assertEquals("'invalid_function' is not a recognized built-in function name.", e.errorMessage());
+            async.complete();
+          })
+          .handler(row -> ctx.fail());
+      }));
+    }));
   }
 }
 

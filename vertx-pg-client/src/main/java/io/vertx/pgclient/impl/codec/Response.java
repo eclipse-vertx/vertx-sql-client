@@ -46,7 +46,7 @@ abstract class Response {
   private String dataType;
   private String constraint;
 
-  String getSeverity() {
+  public String getSeverity() {
     return severity;
   }
 
@@ -54,7 +54,7 @@ abstract class Response {
     this.severity = severity;
   }
 
-  String getCode() {
+  public String getCode() {
     return code;
   }
 
@@ -62,7 +62,7 @@ abstract class Response {
     this.code = code;
   }
 
-  String getMessage() {
+  public String getMessage() {
     return message;
   }
 
@@ -70,7 +70,7 @@ abstract class Response {
     this.message = message;
   }
 
-  String getDetail() {
+  public String getDetail() {
     return detail;
   }
 
@@ -78,7 +78,7 @@ abstract class Response {
     this.detail = detail;
   }
 
-  String getHint() {
+  public String getHint() {
     return hint;
   }
 
@@ -86,7 +86,7 @@ abstract class Response {
     this.hint = hint;
   }
 
-  String getPosition() {
+  public String getPosition() {
     return position;
   }
 
@@ -94,7 +94,7 @@ abstract class Response {
     this.position = position;
   }
 
-  String getWhere() {
+  public String getWhere() {
     return where;
   }
 
@@ -102,7 +102,7 @@ abstract class Response {
     this.where = where;
   }
 
-  String getFile() {
+  public String getFile() {
     return file;
   }
 
@@ -110,7 +110,7 @@ abstract class Response {
     this.file = file;
   }
 
-  String getLine() {
+  public String getLine() {
     return line;
   }
 
@@ -118,7 +118,7 @@ abstract class Response {
     this.line = line;
   }
 
-  String getRoutine() {
+  public String getRoutine() {
     return routine;
   }
 
@@ -126,7 +126,7 @@ abstract class Response {
     this.routine = routine;
   }
 
-  String getSchema() {
+  public String getSchema() {
     return schema;
   }
 
@@ -134,7 +134,7 @@ abstract class Response {
     this.schema = schema;
   }
 
-  String getTable() {
+  public String getTable() {
     return table;
   }
 
@@ -142,7 +142,7 @@ abstract class Response {
     this.table = table;
   }
 
-  String getColumn() {
+  public String getColumn() {
     return column;
   }
 
@@ -150,7 +150,7 @@ abstract class Response {
     this.column = column;
   }
 
-  String getDataType() {
+  public String getDataType() {
     return dataType;
   }
 
@@ -158,7 +158,7 @@ abstract class Response {
     this.dataType = dataType;
   }
 
-  String getConstraint() {
+  public String getConstraint() {
     return constraint;
   }
 
@@ -166,8 +166,7 @@ abstract class Response {
     this.constraint = constraint;
   }
 
-
-  String getInternalPosition() {
+  public String getInternalPosition() {
     return internalPosition;
   }
 
@@ -175,14 +174,13 @@ abstract class Response {
     this.internalPosition = internalPosition;
   }
 
-  String getInternalQuery() {
+  public String getInternalQuery() {
     return internalQuery;
   }
 
   void setInternalQuery(String internalQuery) {
     this.internalQuery = internalQuery;
   }
-
 
   @Override
   public String toString() {

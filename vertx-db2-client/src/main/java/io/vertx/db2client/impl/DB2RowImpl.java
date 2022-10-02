@@ -193,7 +193,9 @@ public class DB2RowImpl extends ArrayTuple implements Row {
 		  return constants[ordinal];
 	    }
       }
-	}
+	} else if (val == null) {
     return null;
+  }
+    throw new ClassCastException();
   }
 }

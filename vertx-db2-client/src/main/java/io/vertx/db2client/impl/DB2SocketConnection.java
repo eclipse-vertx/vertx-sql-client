@@ -99,7 +99,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
 
   @Override
   public DatabaseMetadata getDatabaseMetaData() {
-    return connMetadata.dbMetadata;
+    return connMetadata.getDbMetadata();
   }
 
   public DB2SocketConnection closeHandler(Handler<Void> handler) {

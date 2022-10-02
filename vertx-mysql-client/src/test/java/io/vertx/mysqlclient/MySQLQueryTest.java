@@ -16,11 +16,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.PropertyKind;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -31,7 +27,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 @RunWith(VertxUnitRunner.class)
@@ -58,13 +53,13 @@ public class MySQLQueryTest extends MySQLTestBase {
     PropertyKind<Long> property = PropertyKind.create("last-inserted-id", Long.class);
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
-        long lastInsertId1 = createTableResult.property(property);
-        ctx.assertEquals(0L, lastInsertId1);
+        Long lastInsertId1 = createTableResult.property(property);
+        ctx.assertNull(lastInsertId1);
         conn.query("INSERT INTO last_insert_id(val) VALUES('test')").execute(ctx.asyncAssertSuccess(insertResult1 -> {
-          long lastInsertId2 = insertResult1.property(property);
+          Long lastInsertId2 = insertResult1.property(property);
           ctx.assertEquals(1L, lastInsertId2);
           conn.query("INSERT INTO last_insert_id(val) VALUES('test2')").execute(ctx.asyncAssertSuccess(insertResult2 -> {
-            long lastInsertId3 = insertResult2.property(property);
+            Long lastInsertId3 = insertResult2.property(property);
             ctx.assertEquals(2L, lastInsertId3);
             conn.close();
           }));
@@ -77,16 +72,16 @@ public class MySQLQueryTest extends MySQLTestBase {
   public void testLastInsertIdWithSpecifiedValue(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
-        long lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
-        ctx.assertEquals(0L, lastInsertId1);
+        Long lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
+        ctx.assertNull(lastInsertId1);
         conn.query("ALTER TABLE last_insert_id AUTO_INCREMENT=1234").execute(ctx.asyncAssertSuccess(alterTableResult -> {
-          long lastInsertId2 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
-          ctx.assertEquals(0L, lastInsertId2);
+          Long lastInsertId2 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
+          ctx.assertNull(lastInsertId2);
           conn.query("INSERT INTO last_insert_id(val) VALUES('test')").execute(ctx.asyncAssertSuccess(insertResult1 -> {
-            long lastInsertId3 = insertResult1.property(MySQLClient.LAST_INSERTED_ID);
+            Long lastInsertId3 = insertResult1.property(MySQLClient.LAST_INSERTED_ID);
             ctx.assertEquals(1234L, lastInsertId3);
             conn.query("INSERT INTO last_insert_id(val) VALUES('test2')").execute(ctx.asyncAssertSuccess(insertResult2 -> {
-              long lastInsertId4 = insertResult2.property(MySQLClient.LAST_INSERTED_ID);
+              Long lastInsertId4 = insertResult2.property(MySQLClient.LAST_INSERTED_ID);
               ctx.assertEquals(1235L, lastInsertId4);
               conn.close();
             }));

@@ -42,13 +42,13 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     int header = payload.getUnsignedByte(payload.readerIndex());
     switch (header) {
       case AUTH_SWITCH_REQUEST_STATUS_FLAG:
-        handleAuthSwitchRequest(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
+        handleAuthSwitchRequest(cmd.password(), payload);
         break;
       case AUTH_MORE_DATA_STATUS_FLAG:
         handleAuthMoreData(cmd.password().getBytes(StandardCharsets.UTF_8), payload);
         break;
       case OK_PACKET_HEADER:
-        completionHandler.handle(CommandResponse.success(null));
+        encoder.handleCommandResponse(CommandResponse.success(null));
         break;
       case ERROR_PACKET_HEADER:
         handleErrorPacketPayload(payload);
@@ -56,28 +56,28 @@ class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, Change
     }
   }
 
-  private void handleAuthSwitchRequest(byte[] password, ByteBuf payload) {
+  private void handleAuthSwitchRequest(String password, ByteBuf payload) {
     // Protocol::AuthSwitchRequest
     payload.skipBytes(1); // status flag, always 0xFE
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     authPluginData = new byte[NONCE_LENGTH];
     payload.readBytes(authPluginData);
-    byte[] authResponse;
     switch (pluginName) {
       case "mysql_native_password":
-        authResponse = Native41Authenticator.encode(password, authPluginData);
+        sendBytesAsPacket(Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), authPluginData));
         break;
       case "caching_sha2_password":
-        authResponse = CachingSha2Authenticator.encode(password, authPluginData);
+        sendBytesAsPacket(CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), authPluginData));
         break;
       case "mysql_clear_password":
-        authResponse = password;
+        ByteBuf buffer = encoder.chctx.alloc().buffer();
+        BufferUtils.writeNullTerminatedString(buffer, password, StandardCharsets.UTF_8);
+        sendNonSplitPacket(buffer);
         break;
       default:
-        completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
+        encoder.handleCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
         return;
     }
-    sendBytesAsPacket(authResponse);
   }
 
   private void sendChangeUserCommand() {

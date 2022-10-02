@@ -1,45 +1,35 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
 package io.vertx.sqlclient.impl.pool;
 
 import io.netty.channel.EventLoop;
+import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.ConnectionBase;
-import io.vertx.core.net.impl.pool.ConnectResult;
-import io.vertx.core.net.impl.pool.Lease;
-import io.vertx.core.net.impl.pool.ConnectionPool;
-import io.vertx.core.net.impl.pool.PoolConnector;
-import io.vertx.core.net.impl.pool.PoolWaiter;
+import io.vertx.core.net.impl.pool.*;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.ConnectionFactory;
-import io.vertx.core.*;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * Todo :
@@ -54,12 +44,16 @@ public class SqlConnectionPool {
   private final VertxInternal vertx;
   private final ConnectionPool<PooledConnection> pool;
   private final Supplier<Handler<PooledConnection>> hook;
+  private final Function<Connection, Future<Void>> afterAcquire;
+  private final Function<Connection, Future<Void>> beforeRecycle;
   private final int pipeliningLimit;
   private final long idleTimeout;
   private final int maxSize;
 
   public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
                            Supplier<Handler<PooledConnection>> hook,
+                           Function<Connection, Future<Void>> afterAcquire,
+                           Function<Connection, Future<Void>> beforeRecycle,
                            VertxInternal vertx,
                            long idleTimeout,
                            int maxSize,
@@ -72,27 +66,38 @@ public class SqlConnectionPool {
     if (pipeliningLimit < 1) {
       throw new IllegalArgumentException("Pipelining limit must be > 0");
     }
-    this.pool = ConnectionPool.pool(connector, new int[] { maxSize }, maxWaitQueueSize);
+    if (afterAcquire != null && beforeRecycle == null) {
+      throw new IllegalArgumentException("afterAcquire and beforeRecycle hooks must be both not null");
+    }
+    this.pool = ConnectionPool.pool(connector, new int[]{maxSize}, maxWaitQueueSize);
     this.vertx = vertx;
     this.pipeliningLimit = pipeliningLimit;
     this.idleTimeout = idleTimeout;
     this.maxSize = maxSize;
     this.hook = hook;
     this.connectionProvider = connectionProvider;
+    this.afterAcquire = afterAcquire;
+    this.beforeRecycle = beforeRecycle;
 
     if (eventLoopSize > 0) {
-      EventLoop[] loops = new EventLoop[maxSize];
-      for (int i = 0;i < maxSize;i++) {
+      EventLoop[] loops = new EventLoop[eventLoopSize];
+      for (int i = 0; i < eventLoopSize; i++) {
         loops[i] = vertx.nettyEventLoopGroup().next();
       }
       pool.contextProvider(new Function<ContextInternal, EventLoopContext>() {
         int idx = 0;
+
         @Override
         public EventLoopContext apply(ContextInternal contextInternal) {
           EventLoop loop = loops[idx++];
+          if (idx == loops.length) {
+            idx = 0;
+          }
           return vertx.createEventLoopContext(loop, null, Thread.currentThread().getContextClassLoader());
         }
       });
+    } else {
+      pool.contextProvider(ctx -> ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), null, Thread.currentThread().getContextClassLoader()));
     }
   }
 
@@ -107,7 +112,13 @@ public class SqlConnectionPool {
           if (conn.isValid()) {
             PooledConnection pooled = new PooledConnection(res.factory(), conn, listener);
             conn.init(pooled);
-            handler.handle(Future.succeededFuture(new ConnectResult<>(pooled, pipeliningLimit, 0)));
+            Handler<PooledConnection> connectionHandler = hook.get();
+            if (connectionHandler != null) {
+              pooled.poolResultHandler = handler;
+              connectionHandler.handle(pooled);
+            } else {
+              handler.handle(Future.succeededFuture(new ConnectResult<>(pooled, pipeliningLimit, 0)));
+            }
           } else {
             handler.handle(Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION));
           }
@@ -144,30 +155,29 @@ public class SqlConnectionPool {
   }
 
   public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
-    Promise<R> promise = context.promise();
-    pool.acquire(context, 0, ar -> {
-      if (ar.succeeded()) {
-        Lease<PooledConnection> lease = ar.result();
-        PooledConnection pooled = lease.get();
-        pooled.inflight++;
-        pooled.num++;
-        pooled.schedule(context, cmd)
-          .onComplete(promise)
-          .onComplete(v -> {
-            pooled.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
-            pooled.inflight--;
-            lease.recycle();
-          });
+    Promise<Lease<PooledConnection>> p = context.promise();
+    pool.acquire(context, 0, p);
+    return p.future().compose(lease -> {
+      PooledConnection pooled = lease.get();
+      Future<R> future;
+      if (afterAcquire != null) {
+        future = afterAcquire.apply(pooled.conn)
+          .compose(v -> pooled.schedule(context, cmd))
+          .eventually(v -> beforeRecycle.apply(pooled.conn));
       } else {
-        promise.fail(ar.cause());
+        future = pooled.schedule(context, cmd);
       }
+      return future.onComplete(v -> {
+        pooled.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
+        lease.recycle();
+      });
     });
-    return promise.future();
   }
 
   public void acquire(ContextInternal context, long timeout, Handler<AsyncResult<PooledConnection>> handler) {
     class PoolRequest implements PoolWaiter.Listener<PooledConnection>, Handler<AsyncResult<Lease<PooledConnection>>> {
       private long timerID = -1L;
+
       @Override
       public void handle(AsyncResult<Lease<PooledConnection>> ar) {
         if (timerID != -1L) {
@@ -175,23 +185,29 @@ public class SqlConnectionPool {
         }
         if (ar.succeeded()) {
           Lease<PooledConnection> lease = ar.result();
-          PooledConnection pooled = lease.get();
-          pooled.lease = lease;
-          if (!pooled.initialized) {
-            Handler<PooledConnection> connectionHandler = hook.get();
-            if (connectionHandler != null) {
-              pooled.continuation = handler;
-              connectionHandler.handle(pooled);
-              return;
-            } else {
-              pooled.initialized = true;
-            }
+          if (afterAcquire != null) {
+            afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
+              if (ar2.succeeded()) {
+                handle(lease);
+              } else {
+                // Should we do some cleanup ?
+                handler.handle(Future.failedFuture(ar.cause()));
+              }
+            });
+          } else {
+            handle(lease);
           }
-          handler.handle(Future.succeededFuture(pooled));
         } else {
           handler.handle(Future.failedFuture(ar.cause()));
         }
       }
+
+      private void handle(Lease<PooledConnection> lease) {
+        PooledConnection pooled = lease.get();
+        pooled.lease = lease;
+        handler.handle(Future.succeededFuture(pooled));
+      }
+
       @Override
       public void onEnqueue(PoolWaiter<PooledConnection> waiter) {
         if (timeout > 0L && timerID == -1L) {
@@ -208,33 +224,46 @@ public class SqlConnectionPool {
           });
         }
       }
+
       @Override
       public void onConnect(PoolWaiter<PooledConnection> waiter) {
         onEnqueue(waiter);
       }
     }
     PoolRequest request = new PoolRequest();
-    pool.acquire(context, request,0, request);
+    pool.acquire(context, request, 0, request);
   }
 
   public Future<Void> close() {
     Promise<Void> promise = vertx.promise();
-    pool.close(ar -> promise.complete());
+    pool.close(ar1 -> {
+      if (ar1.succeeded()) {
+        List<Future> results = ar1
+          .result()
+          .stream()
+          .map(connection -> connection
+            .compose(pooled -> Future.<Void>future(p -> pooled.conn.close(pooled, p))))
+          .collect(Collectors.toList());
+        CompositeFuture
+          .join(results)
+          .<Void>mapEmpty()
+          .onComplete(promise);
+      } else {
+        promise.fail(ar1.cause());
+      }
+    });
     return promise.future();
   }
 
-  public class PooledConnection implements Connection, Connection.Holder  {
+  public class PooledConnection implements Connection, Connection.Holder {
 
     private final ConnectionFactory factory;
     private final Connection conn;
     private final PoolConnector.Listener listener;
     private Holder holder;
+    private Handler<AsyncResult<ConnectResult<PooledConnection>>> poolResultHandler;
     private Lease<PooledConnection> lease;
     public long expirationTimestamp;
-    private int inflight;
-    private int num;
-    private boolean initialized;
-    private Handler<AsyncResult<PooledConnection>> continuation;
 
     PooledConnection(ConnectionFactory factory, Connection conn, PoolConnector.Listener listener) {
       this.factory = factory;
@@ -303,19 +332,27 @@ public class SqlConnectionPool {
         promise.fail(msg);
       } else {
         this.holder = null;
-        if (!initialized) {
-          initialized = true;
-          Handler<AsyncResult<PooledConnection>> c = continuation;
-          continuation = null;
-          c.handle(Future.succeededFuture(this));
+        Handler<AsyncResult<ConnectResult<PooledConnection>>> resultHandler = poolResultHandler;
+        if (resultHandler != null) {
+          poolResultHandler = null;
+          promise.complete();
+          resultHandler.handle(Future.succeededFuture(new ConnectResult<>(this, pipeliningLimit, 0)));
           return;
         }
-        Lease<PooledConnection> l = this.lease;
-        this.lease = null;
-        this.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
-        l.recycle();
-        promise.complete();
+        if (beforeRecycle == null) {
+          cleanup(promise);
+        } else {
+          beforeRecycle.apply(lease.get().conn).onComplete(ar -> cleanup(promise));
+        }
       }
+    }
+
+    private void cleanup(Promise<Void> promise) {
+      Lease<PooledConnection> l = this.lease;
+      this.lease = null;
+      this.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
+      l.recycle();
+      promise.complete();
     }
 
     @Override
@@ -323,11 +360,10 @@ public class SqlConnectionPool {
       if (holder != null) {
         holder.handleClosed();
       }
-
-      Handler<AsyncResult<PooledConnection>> c = this.continuation;
-      if (c != null) {
-        this.continuation = null;
-        c.handle(Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION));
+      Handler<AsyncResult<ConnectResult<PooledConnection>>> resultHandler = poolResultHandler;
+      if (resultHandler != null) {
+        poolResultHandler = null;
+        resultHandler.handle(Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION));
       }
       listener.onRemove();
     }
@@ -355,15 +391,10 @@ public class SqlConnectionPool {
     public int getSecretKey() {
       return conn.getSecretKey();
     }
-  }
 
-  public void check(Handler<AsyncResult<List<Integer>>> handler) {
-    List<Integer> list = new ArrayList<>();
-    pool.evict(pred -> {
-      list.add(pred.num);
-      return false;
-    }, ar -> {
-      handler.handle(Future.succeededFuture(list));
-    });
+    @Override
+    public Connection unwrap() {
+      return conn;
+    }
   }
 }

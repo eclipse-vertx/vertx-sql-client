@@ -91,6 +91,21 @@ You can easily get one from the pool:
 
 Once you are done with the connection you must close it to release it to the pool, so it can be reused.
 
+== Command pipelining
+
+In some use cases, command pipelining can improve database access performance.
+
+You can configure the client to use pipelining
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#clientPipelining}
+----
+
+The default pipelining limit is `256`.
+
+You can set this value to `1` to disable pipelining.
+
 == Pool versus pooled client
 
 The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled client
@@ -100,8 +115,8 @@ The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled cli
 {@link examples.PgClientExamples#poolVersusPooledClient}
 ----
 
-- pool operations are not pipelined, only connection client are pipelined
-- pooled client operations are pipelined
+- pool operations are not pipelined, only connections acquired from the pool are pipelined
+- pooled client operations are pipelined, you cannot acquire a connection from a pooled client
 
 == Pool sharing
 
@@ -144,6 +159,9 @@ A simple way to configure the client is to specify a `PgConnectOptions` data obj
 
 You can also configure the generic properties with the `setProperties` or `addProperty` methods. Note `setProperties` will override the default client properties.
 
+NOTE: When using this client with CockroachDB DBaaS, the `cluster` option needs to be included using `addProperty("options", "--cluster=<cluster-id>")` or in the URL `...&options=--cluster%3D<cluster-id>`
+
+
 For example, you can set a default schema for the connection with adding a `search_path` property.
 
 [source,$lang]
@@ -153,7 +171,7 @@ For example, you can set a default schema for the connection with adding a `sear
 
 More information about the available properties can be found in the https://www.postgresql.org/docs/current/runtime-config-client.html[PostgreSQL Manuals].
 
-=== connection uri
+=== Connection URI
 
 Apart from configuring with a `PgConnectOptions` data object, We also provide you an alternative way to connect when you want to configure with a connection URI:
 
@@ -164,18 +182,22 @@ Apart from configuring with a `PgConnectOptions` data object, We also provide yo
 
 More information about connection string formats can be found in the https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING[PostgreSQL Manuals].
 
-Currently the client supports the following parameter key words in connection uri
+Currently, the client supports the following parameter keys:
 
-* host
-* hostaddr
-* port
-* user
-* password
-* dbname
-* sslmode
-* properties including(application_name, fallback_application_name, search_path)
+* `host`
+* `hostaddr`
+* `port`
+* `user`
+* `password`
+* `dbname`
+* `sslmode`
+* additional properties, including:
+** `application_name`
+** `fallback_application_name`
+** `search_path`
+** `options`
 
-NOTE: configuring properties in connection URI will override the default properties.
+NOTE: Configuring parameters in connection URI will override the default properties.
 
 === environment variables
 
@@ -501,6 +523,19 @@ value:
 ----
 
 The default policy is to not reconnect.
+
+== Notice messages
+
+PostgreSQL can send notice message during the lifetime of a connection.
+
+By default, such messages are logged on the console as warns.
+
+You can set a handler on a connection to catch them and do something useful with them.
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#noticeHandler}
+----
 
 == Cancelling Request
 

@@ -11,6 +11,7 @@
 
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -45,7 +46,7 @@ public class MySQLClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    MySQLPool client = MySQLPool.pool(connectOptions, poolOptions);
+    SqlClient client = MySQLPool.client(connectOptions, poolOptions);
 
     // A simple query
     client
@@ -117,7 +118,7 @@ public class MySQLClientExamples {
   public void configureFromUri(Vertx vertx) {
 
     // Connection URI
-    String connectionUri = "mysql://dbuser:secretpassword@database.server.com:3211/mydb";
+    String connectionUri = "mysql://dbuser:secretpassword@database.server.com:3306/mydb";
 
     // Create the pool from the connection URI
     MySQLPool pool = MySQLPool.pool(connectionUri);
@@ -185,10 +186,10 @@ public class MySQLClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    MySQLPool client = MySQLPool.pool(vertx, connectOptions, poolOptions);
+    MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
 
     // Get a connection from the pool
-    client.getConnection().compose(conn -> {
+    pool.getConnection().compose(conn -> {
       System.out.println("Got a connection from the pool");
 
       // All operations execute on the same connection
@@ -210,6 +211,26 @@ public class MySQLClientExamples {
         System.out.println("Something went wrong " + ar.cause().getMessage());
       }
     });
+  }
+
+  public void clientPipelining(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+    MySQLPool pool = MySQLPool.pool(vertx, connectOptions.setPipeliningLimit(16), poolOptions);
+  }
+
+  public void poolVersusPooledClient(Vertx vertx, String sql, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
+
+    // Pooled client
+    connectOptions.setPipeliningLimit(64);
+    SqlClient client = MySQLPool.client(vertx, connectOptions, poolOptions);
+
+    // Pipelined
+    Future<RowSet<Row>> res1 = client.query(sql).execute();
+
+    // Connection pool
+    MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
+
+    // Not pipelined
+    Future<RowSet<Row>> res2 = pool.query(sql).execute();
   }
 
   public void connectWithUnixDomainSocket(Vertx vertx) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -108,6 +108,52 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   }
 
   @Test
+  public void testEncodeVarCharMax(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_varchar_max", "testedvarchar", row -> {
+      ColumnChecker.checkColumn(0, "test_varchar_max")
+        .returns(Tuple::getValue, Row::getValue, "testedvarchar")
+        .returns(Tuple::getString, Row::getString, "testedvarchar")
+        .returns(String.class, "testedvarchar")
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeText(TestContext ctx) {
+    String bigString = createBigString(false);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_text", bigString, row -> {
+      ColumnChecker.checkColumn(0, "test_text")
+        .returns(Tuple::getValue, Row::getValue, bigString)
+        .returns(Tuple::getString, Row::getString, bigString)
+        .returns(String.class, bigString)
+        .forRow(row);
+    });
+  }
+
+  private static String createBigString(boolean withNonLatinCharacters) {
+    StringBuilder sb = new StringBuilder(10000);
+    while (sb.length() < 10000) {
+      sb.append("ae $ \u20AC iou y \u00E9\u00E8 %\u00FB* <> '");
+      if (withNonLatinCharacters) {
+        sb.append(" \u30D5\u30EC\u30FC\u30E0\u30EF\u30FC\u30AF\u306E\u30D9\u30F3\u30C1\u30DE\u30FC\u30AF ");
+      }
+    }
+    return sb.toString();
+  }
+
+  @Test
+  public void testEncodeNText(TestContext ctx) {
+    String bigString = createBigString(true);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_ntext", bigString, row -> {
+      ColumnChecker.checkColumn(0, "test_ntext")
+        .returns(Tuple::getValue, Row::getValue, bigString)
+        .returns(Tuple::getString, Row::getString, bigString)
+        .returns(String.class, bigString)
+        .forRow(row);
+    });
+  }
+
+  @Test
   public void testEncodeDate(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_date", LocalDate.of(1999, 12, 31), row -> {
       ColumnChecker.checkColumn(0, "test_date")
@@ -160,22 +206,16 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
 
     // Reduce accuracy since datatype accuracy is rounded to increments of .000, .003, or .007 seconds
     int nanoOfDay = (int) Math.round(Math.round((now.getNano()/1000000d)/3.333333)*3.333333)*1000000;
-    int secondOfDay = now.getSecond();
 
-    // If nanoseconds is rounded up to one second
-    if (nanoOfDay == nanosPerSecond) {
-      nanoOfDay = 0;
-      secondOfDay++;
-    }
+    LocalDateTime expected = nanoOfDay == nanosPerSecond ? now.withNano(0).plusSeconds(1) : now.withNano(nanoOfDay);
 
-    LocalDateTime convertedNow = now.withNano(nanoOfDay).withSecond(secondOfDay);
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_datetime", now, row -> {
       ColumnChecker.checkColumn(0, "test_datetime")
-        .returns(Tuple::getValue, Row::getValue, convertedNow)
-        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, convertedNow)
-        .returns(Tuple::getLocalDate, Row::getLocalDate, convertedNow.toLocalDate())
-        .returns(Tuple::getLocalTime, Row::getLocalTime, convertedNow.toLocalTime())
-        .returns(LocalDateTime.class, convertedNow)
+        .returns(Tuple::getValue, Row::getValue, expected)
+        .returns(Tuple::getLocalDateTime, Row::getLocalDateTime, expected)
+        .returns(Tuple::getLocalDate, Row::getLocalDate, expected.toLocalDate())
+        .returns(Tuple::getLocalTime, Row::getLocalTime, expected.toLocalTime())
+        .returns(LocalDateTime.class, expected)
         .forRow(row);
     });
   }
@@ -237,6 +277,34 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
         .returns(Tuple::getValue, Row::getValue, Buffer.buffer("ninja plumber"))
         .returns(Tuple::getBuffer, Row::getBuffer, Buffer.buffer("ninja plumber"))
         .returns(Buffer.class, Buffer.buffer("ninja plumber"))
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeVarBinaryMax(TestContext ctx) {
+    byte[] bytes = new byte[15 * 1024];
+    ThreadLocalRandom.current().nextBytes(bytes);
+    Buffer buffer = Buffer.buffer(bytes);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_varbinary_max", buffer, row -> {
+      ColumnChecker.checkColumn(0, "test_varbinary_max")
+        .returns(Tuple::getValue, Row::getValue, buffer)
+        .returns(Tuple::getBuffer, Row::getBuffer, buffer)
+        .returns(Buffer.class, buffer)
+        .forRow(row);
+    });
+  }
+
+  @Test
+  public void testEncodeImage(TestContext ctx) {
+    byte[] bytes = new byte[15 * 1024];
+    ThreadLocalRandom.current().nextBytes(bytes);
+    Buffer buffer = Buffer.buffer(bytes);
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_image", buffer, row -> {
+      ColumnChecker.checkColumn(0, "test_image")
+        .returns(Tuple::getValue, Row::getValue, buffer)
+        .returns(Tuple::getBuffer, Row::getBuffer, buffer)
+        .returns(Buffer.class, buffer)
         .forRow(row);
     });
   }

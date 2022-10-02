@@ -20,6 +20,7 @@ import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.impl.NetClientBuilder;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
@@ -31,6 +32,8 @@ import java.util.function.Predicate;
  * An base connection factory for creating database connections
  */
 public abstract class ConnectionFactoryBase implements ConnectionFactory {
+
+  public static final String NATIVE_TRANSPORT_REQUIRED = "The Vertx instance must use a native transport in order to connect to connect through domain sockets";
 
   protected final VertxInternal vertx;
   protected final NetClient netClient;
@@ -54,6 +57,12 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   private final long reconnectInterval;
 
   protected ConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
+
+    // check we can do domain sockets
+    if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
+      throw new IllegalArgumentException(NATIVE_TRANSPORT_REQUIRED);
+    }
+
     this.vertx = vertx;
     this.properties = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
     this.server = options.getSocketAddress();
@@ -74,7 +83,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     NetClientOptions netClientOptions = new NetClientOptions(options);
     configureNetClientOptions(netClientOptions);
     netClientOptions.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
-    this.netClient = vertx.createNetClient(netClientOptions, clientCloseFuture);
+    this.netClient = new NetClientBuilder(vertx, netClientOptions).closeFuture(clientCloseFuture).build();
   }
 
   public static EventLoopContext asEventLoopContext(ContextInternal ctx) {

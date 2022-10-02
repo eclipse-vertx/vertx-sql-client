@@ -65,6 +65,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
   public static final SslMode DEFAULT_SSL_MODE = SslMode.DISABLED;
   public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
+  public static final int DEFAULT_PIPELINING_LIMIT = 1;
 
   static {
     Map<String, String> defaultAttributes = new HashMap<>();
@@ -79,6 +80,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   private String serverRsaPublicKeyPath;
   private Buffer serverRsaPublicKeyValue;
   private String characterEncoding = DEFAULT_CHARACTER_ENCODING;
+  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
   private MySQLAuthenticationPlugin authenticationPlugin = MySQLAuthenticationPlugin.DEFAULT;
 
   public MySQLConnectOptions() {
@@ -101,6 +103,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
       this.serverRsaPublicKeyPath = opts.serverRsaPublicKeyPath;
       this.serverRsaPublicKeyValue = opts.serverRsaPublicKeyValue != null ? opts.serverRsaPublicKeyValue.copy() : null;
       this.characterEncoding = opts.characterEncoding;
+      this.pipeliningLimit = opts.pipeliningLimit;
       this.authenticationPlugin = opts.authenticationPlugin;
     }
   }
@@ -114,6 +117,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.serverRsaPublicKeyPath = other.serverRsaPublicKeyPath;
     this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
     this.characterEncoding = other.characterEncoding;
+    this.pipeliningLimit = other.pipeliningLimit;
     this.authenticationPlugin = other.authenticationPlugin;
   }
 
@@ -299,6 +303,29 @@ public class MySQLConnectOptions extends SqlConnectOptions {
    */
   public Buffer getServerRsaPublicKeyValue() {
     return serverRsaPublicKeyValue;
+  }
+
+  /**
+   * Get the pipelining limit count.
+   *
+   * @return the pipelining count
+   */
+  public int getPipeliningLimit() {
+    return pipeliningLimit;
+  }
+
+  /**
+   * Set the pipelining limit count.
+   *
+   * @param pipeliningLimit the count to configure
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setPipeliningLimit(int pipeliningLimit) {
+    if (pipeliningLimit < 1) {
+      throw new IllegalArgumentException("pipelining limit can not be less than 1");
+    }
+    this.pipeliningLimit = pipeliningLimit;
+    return this;
   }
 
   @Override

@@ -13,13 +13,12 @@ scalability and low overhead.
 * Java 8 Date and Time
 * RxJava API
 * SSL/TLS
+* Cursor
+* Row streaming
 
 *Not supported yet*
 
 * Prepared queries caching
-* Cursor
-* Row streaming
-* Some https://github.com/eclipse-vertx/vertx-sql-client/issues/608#issuecomment-629390027[data types] are not supported
 
 == Usage
 
@@ -111,15 +110,21 @@ As an alternative to configuring the client with a {@link io.vertx.mssqlclient.M
 {@link examples.MSSQLClientExamples#configureFromUri(io.vertx.core.Vertx)}
 ----
 
-The connection URI format is defined by the client in an idiomatic way: `sqlserver://[user[:[password]]@]host[:port][/database][?attribute1=value1&attribute2=value2...]`
+The connection URI format is defined by the client in an idiomatic way:
 
-Currently, the client supports the following parameter keywords in connection uri (keys are case-insensitive):
+----
+sqlserver://[user[:[password]]@]host[:port][/database][?<key1>=<value1>[&<key2>=<value2>]]
+----
 
-* host
-* port
-* user
-* password
-* database
+Currently, the client supports the following parameter keys:
+
+* `host`
+* `port`
+* `user`
+* `password`
+* `database`
+
+NOTE: Configuring parameters in connection URI will override the default properties.
 
 == Connect retries
 
@@ -144,6 +149,8 @@ You can retrieve the value of an `identity` column after inserting new data usin
 include::connections.adoc[]
 
 include::transactions.adoc[]
+
+include::cursor.adoc[]
 
 == Tracing queries
 
@@ -230,6 +237,18 @@ create easily create a string directly from the row set:
 [source,$lang]
 ----
 {@link examples.MSSQLClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
+----
+
+== Information messages
+
+SQL Server can send information messages to the client as part of responses to queries.
+By default, they are logged at `WARN` level.
+
+You can set a handler on a connection to catch them and do something useful with them.
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#infoHandler}
 ----
 
 == Using SSL/TLS

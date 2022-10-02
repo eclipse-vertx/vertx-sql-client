@@ -45,6 +45,7 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     if (msg instanceof CommandBase<?>) {
       CommandBase<?> cmd = (CommandBase<?>) msg;
       write(cmd);
+      MySQLCodec.checkFireAndForgetCommands(inflight);
     } else {
       super.write(ctx, msg, promise);
     }
@@ -52,13 +53,14 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   void write(CommandBase<?> cmd) {
     CommandCodec<?, ?> codec = wrap(cmd);
-    codec.completionHandler = resp -> {
-      CommandCodec<?, ?> c = inflight.poll();
-      resp.cmd = (CommandBase) c.cmd;
-      chctx.fireChannelRead(resp);
-    };
     inflight.add(codec);
     codec.encode(this);
+  }
+
+  final void handleCommandResponse(CommandResponse<?> commandResponse) {
+    CommandCodec<?, ?> c = inflight.poll();
+    commandResponse.cmd = (CommandBase) c.cmd;
+    chctx.fireChannelRead(commandResponse);
   }
 
   private CommandCodec<?, ?> wrap(CommandBase<?> cmd) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -13,6 +13,7 @@ package io.vertx.oracleclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
@@ -25,6 +26,10 @@ import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.impl.command.TxCommand;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import oracle.jdbc.OracleConnection;
+
+import java.sql.SQLException;
+
+import static io.vertx.oracleclient.impl.Helper.*;
 
 public class CommandHandler implements Connection {
   private final OracleConnection connection;
@@ -65,9 +70,16 @@ public class CommandHandler implements Connection {
 
   @Override
   public void close(Holder holder, Promise<Void> promise) {
-    Helper.first(Helper.getOrHandleSQLException(connection::closeAsyncOracle), context)
-      .onComplete(x -> holder.handleClosed())
-      .onComplete(promise);
+    executeBlocking(context, () -> connection.closeAsyncOracle())
+      .compose(publisher -> first(publisher, context))
+      .onSuccess(v -> {
+        holder.handleClosed();
+        promise.complete();
+      })
+      .onFailure(t -> {
+        holder.handleClosed();
+        promise.fail(t);
+      });
   }
 
   @Override
@@ -80,22 +92,70 @@ public class CommandHandler implements Connection {
     throw new UnsupportedOperationException();
   }
 
+  public Future<Void> afterAcquire() {
+    PromiseInternal<Void> promise = context.owner().promise();
+    context.executeBlocking(prom -> {
+      try {
+        connection.beginRequest();
+        prom.complete();
+      } catch (SQLException e) {
+        prom.fail(e);
+      }
+    }, false, promise);
+    return promise.future();
+  }
+
+  public Future<Void> beforeRecycle() {
+    PromiseInternal<Void> promise = context.owner().promise();
+    context.executeBlocking(prom -> {
+      try {
+        connection.endRequest();
+        prom.complete();
+      } catch (SQLException e) {
+        prom.fail(e);
+      }
+    }, false, promise);
+    return promise.future();
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public <R> Future<R> schedule(ContextInternal contextInternal, CommandBase<R> commandBase) {
+    Future<R> result;
     if (commandBase instanceof io.vertx.sqlclient.impl.command.SimpleQueryCommand) {
-      return (Future<R>) handle((io.vertx.sqlclient.impl.command.SimpleQueryCommand) commandBase);
+      result = (Future<R>) handle((io.vertx.sqlclient.impl.command.SimpleQueryCommand) commandBase);
     } else if (commandBase instanceof io.vertx.sqlclient.impl.command.PrepareStatementCommand) {
-      return (Future<R>) handle((io.vertx.sqlclient.impl.command.PrepareStatementCommand) commandBase);
+      result = (Future<R>) handle((io.vertx.sqlclient.impl.command.PrepareStatementCommand) commandBase);
     } else if (commandBase instanceof ExtendedQueryCommand) {
-      return (Future<R>) handle((ExtendedQueryCommand<?>) commandBase);
+      result = (Future<R>) handle((ExtendedQueryCommand<?>) commandBase);
     } else if (commandBase instanceof TxCommand) {
-      return handle((TxCommand<R>) commandBase);
+      result = handle((TxCommand<R>) commandBase);
     } else if (commandBase instanceof PingCommand) {
-      return (Future<R>) handle((PingCommand) commandBase);
+      result = (Future<R>) handle((PingCommand) commandBase);
     } else {
-      return context.failedFuture("Not yet implemented " + commandBase);
+      result = context.failedFuture("Not yet implemented " + commandBase);
     }
+    return result.transform(ar -> {
+      Promise<R> promise = contextInternal.promise();
+      if (ar.succeeded()) {
+        promise.complete(ar.result());
+      } else {
+        Throwable cause = ar.cause();
+        if (cause instanceof SQLException) {
+          SQLException sqlException = (SQLException) cause;
+          if (isFatal(sqlException)) {
+            Promise<Void> closePromise = Promise.promise();
+            close(holder, closePromise);
+            closePromise.future().onComplete(v -> promise.fail(sqlException));
+          } else {
+            promise.fail(sqlException);
+          }
+        } else {
+          promise.fail(cause);
+        }
+      }
+      return promise.future();
+    });
   }
 
   private Future<Integer> handle(PingCommand ping) {

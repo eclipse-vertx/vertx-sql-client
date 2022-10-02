@@ -25,16 +25,14 @@ import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -50,18 +48,19 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final long idleTimeout;
   private final long connectionTimeout;
   private final long cleanerPeriod;
+  private final int pipeliningLimit;
   private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
 
   public PoolImpl(VertxInternal vertx,
                   Driver driver,
-                  SqlConnectOptions baseConnectOptions,
-                  Supplier<Future<SqlConnectOptions>> connectOptionsProvider,
                   QueryTracer tracer,
                   ClientMetrics metrics,
                   int pipeliningLimit,
                   PoolOptions poolOptions,
+                  Function<Connection, Future<Void>> afterAcquire,
+                  Function<Connection, Future<Void>> beforeRecycle,
                   CloseFuture closeFuture) {
     super(driver, tracer, metrics);
 
@@ -69,8 +68,9 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
+    this.pipeliningLimit = pipeliningLimit;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, afterAcquire, beforeRecycle, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
   }
 
@@ -132,6 +132,9 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   @Override
   public Future<SqlConnection> getConnection() {
     ContextInternal current = vertx.getOrCreateContext();
+    if (pipeliningLimit > 1) {
+      return current.failedFuture("Cannot acquire a connection on a pipelined pool");
+    }
     Object metric;
     if (metrics != null) {
       metric = metrics.enqueueRequest();
@@ -223,9 +226,5 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
 
   public int size() {
     return pool.size();
-  }
-
-  public void check(Handler<AsyncResult<List<Integer>>> handler) {
-    pool.check(handler);
   }
 }

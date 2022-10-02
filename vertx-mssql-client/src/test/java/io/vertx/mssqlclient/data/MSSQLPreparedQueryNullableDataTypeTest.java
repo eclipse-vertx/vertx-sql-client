@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 @RunWith(VertxUnitRunner.class)
@@ -161,7 +162,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
         .forRow(row);
     });
   }
-  
+
   @Test
   public void testEncodeBit(TestContext ctx) {
     testEncodeBitValue(ctx, false);
@@ -198,33 +199,52 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   }
 
   private void testEncodeCharValue(TestContext ctx, String value) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_char", value, row -> {
-      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_char");
-      if (value == null) {
-        checker.returnsNull();
-      } else {
-        checker
-          .returns(Tuple::getValue, Row::getValue, value)
-          .returns(Tuple::getString, Row::getString, value)
-          .returns(String.class, value);
-      }
-      checker.forRow(row);
-    });
+    testEncodeVarCharValue(ctx, "test_char", value);
   }
 
   @Test
   public void testEncodeVarChar(TestContext ctx) {
-    testEncodeVarCharValue(ctx, "testedvarchar");
+    testEncodeVarCharValue(ctx, "test_varchar", "testedvarchar");
   }
 
   @Test
   public void testEncodeNullVarChar(TestContext ctx) {
-    testEncodeVarCharValue(ctx, STRING_NULL_VALUE);
+    testEncodeVarCharValue(ctx, "test_varchar", STRING_NULL_VALUE);
   }
 
-  private void testEncodeVarCharValue(TestContext ctx, String value) {
-    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", "test_varchar", value, row -> {
-      ColumnChecker checker = ColumnChecker.checkColumn(0, "test_varchar");
+  @Test
+  public void testEncodeVarCharMax(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "test_varchar_max", "testedvarchar");
+  }
+
+  @Test
+  public void testEncodeNullVarCharMax(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "test_varchar_max", STRING_NULL_VALUE);
+  }
+
+  @Test
+  public void testEncodeText(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "test_text", "testedvarchar");
+  }
+
+  @Test
+  public void testEncodeNullText(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "test_text", STRING_NULL_VALUE);
+  }
+
+  @Test
+  public void testEncodeNText(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "test_ntext", "testedvarchar");
+  }
+
+  @Test
+  public void testEncodeNullNText(TestContext ctx) {
+    testEncodeVarCharValue(ctx, "test_ntext", STRING_NULL_VALUE);
+  }
+
+  private void testEncodeVarCharValue(TestContext ctx, String columnName, String value) {
+    testPreparedQueryEncodeGeneric(ctx, "nullable_datatype", columnName, value, row -> {
+      ColumnChecker checker = ColumnChecker.checkColumn(0, columnName);
       if (value == null) {
         checker.returnsNull();
       } else {
@@ -403,6 +423,30 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
   @Test
   public void testEncodeNullVarBinary(TestContext ctx) {
     testEncodeBufferValue(ctx, "test_varbinary", BUFFER_NULL_VALUE);
+  }
+
+  @Test
+  public void testEncodeVarBinaryMax(TestContext ctx) {
+    byte[] bytes = new byte[15 * 1024];
+    ThreadLocalRandom.current().nextBytes(bytes);
+    testEncodeBufferValue(ctx, "test_varbinary_max", Buffer.buffer(bytes));
+  }
+
+  @Test
+  public void testEncodeNullVarBinaryMax(TestContext ctx) {
+    testEncodeBufferValue(ctx, "test_varbinary_max", BUFFER_NULL_VALUE);
+  }
+
+  @Test
+  public void testEncodeImage(TestContext ctx) {
+    byte[] bytes = new byte[15 * 1024];
+    ThreadLocalRandom.current().nextBytes(bytes);
+    testEncodeBufferValue(ctx, "test_image", Buffer.buffer(bytes));
+  }
+
+  @Test
+  public void testEncodeNullImage(TestContext ctx) {
+    testEncodeBufferValue(ctx, "test_image", BUFFER_NULL_VALUE);
   }
 
   private void testEncodeBufferValue(TestContext ctx, String columnName, Object value) {

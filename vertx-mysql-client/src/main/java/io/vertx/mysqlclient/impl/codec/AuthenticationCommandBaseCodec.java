@@ -12,7 +12,6 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.util.ReferenceCountUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.impl.command.AuthenticationCommandBase;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
@@ -76,7 +75,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
       } else if (flag == FAST_AUTH_STATUS_FLAG) {
         // fast auth success
       } else {
-        completionHandler.handle(CommandResponse.failure(new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag)));
+        encoder.handleCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag)));
       }
     }
   }
@@ -87,7 +86,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
       byte[] passwordInput = Arrays.copyOf(password, password.length + 1); // need to append 0x00(NULL) to the password
       encryptedPassword = RsaPublicKeyEncryptor.encrypt(passwordInput, authPluginData, serverRsaPublicKeyContent);
     } catch (Exception e) {
-      completionHandler.handle(CommandResponse.failure(e));
+      encoder.handleCommandResponse(CommandResponse.failure(e));
       return;
     }
     sendBytesAsPacket(encryptedPassword);
@@ -105,7 +104,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
       packet.writeBytes(kv);
     } finally {
       if (kv != null) {
-        ReferenceCountUtil.release(kv);
+        kv.release();
       }
     }
   }

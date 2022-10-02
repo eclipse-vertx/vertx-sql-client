@@ -249,3 +249,17 @@ INSERT INTO collector_test
 VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
 -- TCK usage --
+
+DROP TABLE IF EXISTS duplicate_test;
+CREATE TABLE duplicate_test
+(
+  primary_key INT NOT NULL,
+  CONSTRAINT duplicate_test_pk
+    PRIMARY KEY (primary_key)
+);
+INSERT INTO duplicate_test
+VALUES (1);
+
+# testing ProxySQL connectivity
+CREATE USER 'proxysql'@'%' IDENTIFIED BY 'proxysql1234#';
+GRANT ALL ON *.* TO 'proxysql'@'%';

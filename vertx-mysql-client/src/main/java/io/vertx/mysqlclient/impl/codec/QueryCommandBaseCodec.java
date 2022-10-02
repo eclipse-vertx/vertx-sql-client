@@ -27,7 +27,6 @@ import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
 
-import java.nio.charset.StandardCharsets;
 import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
@@ -94,7 +93,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected void handleResultsetColumnDefinitionsDecodingCompleted() {
     commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-    MySQLRowDesc mySQLRowDesc = new MySQLRowDesc(columnDefinitions, format); // use the column definitions if provided by execute or fetch response instead of prepare response
+    MySQLRowDesc mySQLRowDesc = MySQLRowDesc.create(columnDefinitions, format); // use the column definitions if provided by execute or fetch response instead of prepare response
     decoder = new RowResultDecoder<>(cmd.collector(), mySQLRowDesc);
   }
 
@@ -112,7 +111,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     // we need check this is not a row data by checking packet length < 0xFFFFFF
     else if (first == EOF_PACKET_HEADER && payloadLength < 0xFFFFFF) {
       int serverStatusFlags;
-      long affectedRows = -1;
+      int affectedRows = -1;
       long lastInsertId = -1;
       if (isDeprecatingEofFlagEnabled()) {
         OkPacket okPacket = decodeOkPacketPayload(payload);
@@ -129,7 +128,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     }
   }
 
-  protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, long affectedRows, long lastInsertId) {
+  protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows, long lastInsertId) {
     handleSingleResultsetEndPacket(serverStatusFlags, affectedRows, lastInsertId);
     resetIntermediaryResult();
     if (isDecodingCompleted(serverStatusFlags)) {
@@ -142,7 +141,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     return (serverStatusFlags & ServerStatusFlags.SERVER_MORE_RESULTS_EXISTS) == 0;
   }
 
-  private void handleSingleResultsetEndPacket(int serverStatusFlags, long affectedRows, long lastInsertId) {
+  private void handleSingleResultsetEndPacket(int serverStatusFlags, int affectedRows, long lastInsertId) {
     this.result = (serverStatusFlags & ServerStatusFlags.SERVER_STATUS_LAST_ROW_SENT) == 0;
     T result;
     Throwable failure;
@@ -160,8 +159,10 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
       size = 0;
       rowDesc = null;
     }
-    cmd.resultHandler().handleResult((int) affectedRows, size, rowDesc, result, failure);
-    cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
+    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result, failure);
+    if (lastInsertId > 0) {
+      cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
+    }
   }
 
   protected void handleAllResultsetDecodingCompleted() {
@@ -171,7 +172,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     } else {
       response = CommandResponse.success(this.result);
     }
-    completionHandler.handle(response);
+    encoder.handleCommandResponse(response);
   }
 
   private int decodeColumnCountPacketPayload(ByteBuf payload) {

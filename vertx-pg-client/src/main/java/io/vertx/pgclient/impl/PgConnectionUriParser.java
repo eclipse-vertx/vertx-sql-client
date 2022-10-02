@@ -194,6 +194,9 @@ public class PgConnectionUriParser {
           case "search_path":
             properties.put("search_path", value);
             break;
+          case "options":
+            properties.put("options", value);
+            break;
           default:
             configuration.put(key, value);
             break;

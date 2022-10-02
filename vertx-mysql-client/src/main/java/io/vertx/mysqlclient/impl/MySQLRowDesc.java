@@ -20,26 +20,27 @@ import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.impl.RowDesc;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 public class MySQLRowDesc extends RowDesc {
 
   private final ColumnDefinition[] columnDefinitions;
   private final DataFormat dataFormat;
 
-  public MySQLRowDesc(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
-    super(Collections.unmodifiableList(Stream.of(columnDefinitions)
-      .map(ColumnDefinition::name)
-      .collect(Collectors.toList())), Collections.unmodifiableList(Arrays.asList(columnDefinitions)));
+  private MySQLRowDesc(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
+    super(columnDefinitions);
     this.columnDefinitions = columnDefinitions;
     this.dataFormat = dataFormat;
   }
 
+  public static MySQLRowDesc create(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
+    return new MySQLRowDesc(columnDefinitions, dataFormat);
+  }
+
   public ColumnDefinition[] columnDefinitions() {
     return columnDefinitions;
+  }
+
+  public ColumnDefinition get(int index) {
+    return columnDefinitions[index];
   }
 
   public DataFormat dataFormat() {

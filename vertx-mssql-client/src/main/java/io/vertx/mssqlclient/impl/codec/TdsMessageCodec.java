@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -19,7 +19,9 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDecoder, TdsMessageEncoder> {
 
@@ -29,6 +31,7 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   private ChannelHandlerContext chctx;
   private ByteBufAllocator alloc;
   private long transactionDescriptor;
+  private Map<String, CursorData> cursorDataMap;
 
   public TdsMessageCodec(int packetSize) {
     TdsMessageDecoder decoder = new TdsMessageDecoder(this);
@@ -95,5 +98,28 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
 
   void add(MSSQLCommandCodec<?, ?> codec) {
     inflight.add(codec);
+  }
+
+  CursorData getOrCreateCursorData(String cursorId) {
+    if (cursorDataMap == null) {
+      cursorDataMap = new HashMap<>();
+    }
+    CursorData cd = cursorDataMap.get(cursorId);
+    if (cd == null) {
+      cd = new CursorData();
+      cursorDataMap.put(cursorId, cd);
+    }
+    return cd;
+  }
+
+  CursorData removeCursorData(String cursorId) {
+    if (cursorDataMap == null) {
+      return null;
+    }
+    CursorData cd = cursorDataMap.remove(cursorId);
+    if (cursorDataMap.isEmpty()) {
+      cursorDataMap = null;
+    }
+    return cd;
   }
 }

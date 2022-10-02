@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -16,53 +16,70 @@ import io.vertx.mssqlclient.impl.MSSQLRowImpl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
 
+import java.util.Objects;
 import java.util.stream.Collector;
 
-class RowResultDecoder<C, R> extends RowDecoder<C, R> {
+public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
-  final MSSQLRowDesc desc;
+  private static final int FETCH_MISSING = 0x0002;
 
-  private RowStreamTokenType handleType = RowStreamTokenType.ROW;
+  private final MSSQLRowDesc desc;
 
-  RowResultDecoder(Collector<Row, C, R> collector, MSSQLRowDesc desc) {
+  private Row decoded;
+
+  public RowResultDecoder(Collector<Row, C, R> collector, MSSQLRowDesc desc) {
     super(collector);
     this.desc = desc;
   }
 
+  public MSSQLRowDesc desc() {
+    return desc;
+  }
+
   @Override
   public Row decodeRow(int len, ByteBuf in) {
-    switch (handleType) {
-      case ROW:
-        return decodeMssqlRow(len, in);
-      case NBCROW:
-        return decodeMssqlNbcRow(len, in);
-      default:
-        throw new UnsupportedOperationException("Unknown row stream token type");
-    }
-  }
-
-  @Override
-  public void handleRow(int len, ByteBuf in) {
-    this.handleType = RowStreamTokenType.ROW;
-    super.handleRow(len, in);
-  }
-
-  public void handleNbcRow(int len, ByteBuf in) {
-    this.handleType = RowStreamTokenType.NBCROW;
-    super.handleRow(len, in);
-  }
-
-  private Row decodeMssqlRow(int len, ByteBuf in) {
-    Row row = new MSSQLRowImpl(desc);
-    for (int c = 0; c < len; c++) {
-      ColumnData columnData = desc.columnDatas[c];
-      row.addValue(columnData.dataType().decodeValue(in, columnData.metadata()));
-    }
+    Row row = Objects.requireNonNull(decoded);
+    decoded = null;
     return row;
   }
 
-  private Row decodeMssqlNbcRow(int len, ByteBuf in) {
+  public void handleRow(ByteBuf in) {
+    decoded = decodeMssqlRow(in);
+    if (decoded != null) {
+      super.handleRow(-1, in);
+    }
+  }
+
+  public void handleNbcRow(ByteBuf in) {
+    decoded = decodeMssqlNbcRow(in);
+    if (decoded != null) {
+      super.handleRow(-1, in);
+    }
+  }
+
+  private Row decodeMssqlRow(ByteBuf in) {
     Row row = new MSSQLRowImpl(desc);
+    int len = desc.size();
+    for (int c = 0; c < len; c++) {
+      ColumnData columnData = desc.get(c);
+      row.addValue(columnData.dataType().decodeValue(in, columnData.typeInfo()));
+    }
+    return ifNotMissing(in, row);
+  }
+
+  private Row ifNotMissing(ByteBuf in, Row row) {
+    Row result;
+    if (desc.hasRowStat() && in.readIntLE() == FETCH_MISSING) {
+      result = null;
+    } else {
+      result = row;
+    }
+    return result;
+  }
+
+  private Row decodeMssqlNbcRow(ByteBuf in) {
+    Row row = new MSSQLRowImpl(desc);
+    int len = desc.size();
     int nullBitmapByteCount = ((len - 1) >> 3) + 1;
     int nullBitMapStartIdx = in.readerIndex();
     in.skipBytes(nullBitmapByteCount);
@@ -75,15 +92,11 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
       Object decoded = null;
       if ((nullByte & mask) == 0) {
         // not null
-        ColumnData columnData = desc.columnDatas[c];
-        decoded = columnData.dataType().decodeValue(in, columnData.metadata());
+        ColumnData columnData = desc.get(c);
+        decoded = columnData.dataType().decodeValue(in, columnData.typeInfo());
       }
       row.addValue(decoded);
     }
-    return row;
-  }
-
-  enum RowStreamTokenType {
-    ROW, NBCROW, ALTROW
+    return ifNotMissing(in, row);
   }
 }

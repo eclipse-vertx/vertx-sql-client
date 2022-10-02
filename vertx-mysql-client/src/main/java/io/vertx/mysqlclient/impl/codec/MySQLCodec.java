@@ -23,6 +23,7 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
@@ -32,7 +33,7 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
   public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
     inflight = new ArrayDeque<>();
     MySQLEncoder encoder = new MySQLEncoder(inflight, mySQLSocketConnection);
-    MySQLDecoder decoder = new MySQLDecoder(inflight, mySQLSocketConnection);
+    MySQLDecoder decoder = new MySQLDecoder(inflight);
     init(decoder, encoder);
   }
 
@@ -49,6 +50,19 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
       CommandResponse<Object> failure = CommandResponse.failure(failureMsg);
       failure.cmd = (CommandBase) codec.cmd;
       ctx.fireChannelRead(failure);
+    }
+  }
+
+  /**
+   * check the pending command queue and complete handling the command directly if the command request will not receive a server response
+   *
+   * @param inflight pending command queue
+   */
+  static void checkFireAndForgetCommands(Deque<CommandCodec<?, ?>> inflight) {
+    // check if there is any completed command
+    CommandCodec<?, ?> commandCodec;
+    while ((commandCodec = inflight.peek()) != null && commandCodec.expectNoResponsePacket()) {
+      commandCodec.decodePayload(null, 0);
     }
   }
 }
