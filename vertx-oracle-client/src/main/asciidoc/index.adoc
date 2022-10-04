@@ -9,6 +9,7 @@ scalability and low overhead.
 * Event driven
 * Built-in connection pooling
 * Java 8 Date and Time
+* SSL/TLS
 
 *Not supported yet*
 
@@ -198,13 +199,29 @@ You can use Java collectors with the query API:
 {@link examples.OracleClientExamples#collector01Example(io.vertx.sqlclient.SqlClient)}
 ----
 
-The collector processing must not keep a reference on the {@link io.vertx.sqlclient.Row} as
-there is a single row used for processing the entire set.
+The collector processing must not keep a reference on the {@link io.vertx.sqlclient.Row} as there is a single row used for processing the entire set.
 
-The Java `Collectors` provides many interesting predefined collectors, for example you can
-create easily create a string directly from the row set:
+The Java `Collectors` provides many interesting predefined collectors, for example you can create easily create a string directly from the row set:
 
 [source,$lang]
 ----
 {@link examples.OracleClientExamples#collector02Example(io.vertx.sqlclient.SqlClient)}
+----
+
+== Using SSL/TLS
+
+To enable encryption in client options, use the {@link io.vertx.oracleclient.OracleConnectOptions#setSsl} method.
+By default, `ssl` is set to `false`.
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#setSsl}
+----
+
+Encryption can be customized using properties.
+For example, to set a trust store:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#setTrustStore}
 ----

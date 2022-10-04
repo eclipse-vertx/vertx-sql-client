@@ -472,4 +472,17 @@ public class OracleClientExamples {
         }
       });
   }
+
+
+  public void setSsl(OracleConnectOptions oracleConnectOptions) {
+    oracleConnectOptions.setSsl(true);
+  }
+
+  public void setTrustStore(OracleConnectOptions oracleConnectOptions, String pathToTrustStore, String trustStorePassword) {
+    oracleConnectOptions
+      .setSsl(true)
+      .addProperty("javax.net.ssl.trustStore", pathToTrustStore)
+      .addProperty("javax.net.ssl.trustStoreType", "JKS")
+      .addProperty("javax.net.ssl.trustStorePassword", trustStorePassword);
+  }
 }
