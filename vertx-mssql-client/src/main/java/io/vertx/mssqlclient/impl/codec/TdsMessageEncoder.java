@@ -118,8 +118,7 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
         status |= END_OF_MESSAGE;
         payload = tdsMessageContent;
       } else {
-        payload = tdsMessageContent.copy(tdsMessageContent.readerIndex(), payloadLength);
-        tdsMessageContent.skipBytes(payloadLength);
+        payload = tdsMessageContent.readRetainedSlice(payloadLength);
       }
       writeTdsPacket(messageType, status, payloadLength, payload);
       remaining -= payloadLength;
