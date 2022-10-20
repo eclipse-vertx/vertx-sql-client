@@ -11,6 +11,7 @@
 package io.vertx.oracleclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
@@ -286,6 +287,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
     return super.getPreparedStatementCacheSqlFilter();
   }
 
+  @GenIgnore
   @Override
   public OracleConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
     return (OracleConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);
@@ -306,6 +308,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
     return (OracleConnectOptions) super.setProperties(properties);
   }
 
+  @GenIgnore
   @Override
   public OracleConnectOptions addProperty(String key, String value) {
     return (OracleConnectOptions) super.addProperty(key, value);
