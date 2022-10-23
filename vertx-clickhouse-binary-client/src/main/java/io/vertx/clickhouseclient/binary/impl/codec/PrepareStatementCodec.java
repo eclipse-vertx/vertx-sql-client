@@ -58,7 +58,7 @@ public class PrepareStatementCodec extends ClickhouseBinaryCommandCodec<Prepared
       }
     } else {
       completionHandler.handle(CommandResponse.success(new ClickhouseBinaryPreparedStatement(sql, new ClickhouseBinaryParamDesc(Collections.emptyList()),
-        new ClickhouseBinaryRowDesc(Collections.emptyList()), queryInfo, false, psId)));
+        ClickhouseBinaryRowDesc.EMPTY, queryInfo, false, psId)));
     }
   }
 
@@ -74,9 +74,8 @@ public class PrepareStatementCodec extends ClickhouseBinaryCommandCodec<Prepared
         TableColumns columns = (TableColumns)packet;
         Map<String, ClickhouseBinaryColumnDescriptor> data = columns.columnDefinition().getColumnsWithTypes();
 
-        List<String> columnNames = new ArrayList<>(data.keySet());
-        List<ColumnDescriptor> columnTypes = new ArrayList<>(data.values());
-        ClickhouseBinaryRowDesc rowDesc = new ClickhouseBinaryRowDesc(columnNames, columnTypes);
+        ClickhouseBinaryColumnDescriptor[] columnTypes = data.values().toArray(ClickhouseBinaryRowDesc.EMPTY_DESCRIPTORS);
+        ClickhouseBinaryRowDesc rowDesc = new ClickhouseBinaryRowDesc(columnTypes);
         completionHandler.handle(CommandResponse.success(new ClickhouseBinaryPreparedStatement(cmd.sql(),
           new ClickhouseBinaryParamDesc(Collections.emptyList()), rowDesc, queryInfo, true, psId)));
       } else if (packet instanceof Throwable) {

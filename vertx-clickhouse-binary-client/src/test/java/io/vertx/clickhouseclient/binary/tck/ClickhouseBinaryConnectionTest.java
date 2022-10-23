@@ -32,14 +32,14 @@ public class ClickhouseBinaryConnectionTest extends ConnectionTestBase {
   public static ClickhouseResource rule = new ClickhouseResource();
 
   @Rule
-  public TestName name = new TestName();
+  public TestName nameRule = new TestName();
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
     options = new ClickhouseBinaryConnectOptions(rule.options());
     options.addProperty(ClickhouseConstants.OPTION_APPLICATION_NAME,
-      ClickhouseBinaryPreparedQueryCachedTest.class.getSimpleName() + "." + name.getMethodName());
+      this.getClass().getSimpleName() + "." + nameRule.getMethodName());
     connector = ClientConfig.CONNECT.connect(vertx, options);
   }
 

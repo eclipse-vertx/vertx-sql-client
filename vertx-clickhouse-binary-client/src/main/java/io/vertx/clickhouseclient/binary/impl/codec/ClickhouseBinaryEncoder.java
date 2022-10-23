@@ -74,6 +74,9 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
       ClickhouseBinaryCommandCodec<?, ?> c = inflight.poll();
       resp.cmd = (CommandBase) c.cmd;
       chctx.fireChannelRead(resp);
+      if (c instanceof InitCommandCodec) {
+        conn.setInitCommandCodec((InitCommandCodec) c);
+      }
     };
     inflight.add(codec);
     codec.encode(this);

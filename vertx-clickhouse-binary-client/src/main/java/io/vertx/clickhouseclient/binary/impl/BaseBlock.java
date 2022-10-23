@@ -58,8 +58,7 @@ public class BaseBlock {
   }
 
   private ClickhouseBinaryRowDesc buildRowDescriptor(Map<String, ClickhouseBinaryColumnDescriptor> columnsWithTypes) {
-    List<String> columnNames = new ArrayList<>(columnsWithTypes.keySet());
-    List<ColumnDescriptor> columnTypes = new ArrayList<>(columnsWithTypes.values());
-    return new ClickhouseBinaryRowDesc(columnNames, columnTypes);
+    ClickhouseBinaryColumnDescriptor[] columnTypes = columnsWithTypes.values().toArray(ClickhouseBinaryRowDesc.EMPTY_DESCRIPTORS);
+    return new ClickhouseBinaryRowDesc(columnTypes);
   }
 }

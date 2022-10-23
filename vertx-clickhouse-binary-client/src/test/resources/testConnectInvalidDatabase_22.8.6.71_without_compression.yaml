@@ -1,0 +1,49 @@
+peers:
+  - peer: 0
+    host: 127.0.0.1
+    port: 40408
+  - peer: 1
+    host: 127.0.0.1
+    port: 9000
+packets:
+  - packet: 10
+    peer: 0
+    index: 0
+    timestamp: 1665939249.457106986
+    data: !!binary |
+      AERDbGlja0hvdXNlIENsaWNraG91c2VCaW5hcnlDb25uZWN0aW9uVGVzdC50ZXN0Q29ubmVjdElu
+      dmFsaWREYXRhYmFzZRQKqakDD2ludmFsaWREYXRhYmFzZQR0ZXN0BHRlc3Q=
+  - packet: 20
+    peer: 1
+    index: 0
+    timestamp: 1665939249.457535943
+    data: !!binary |
+      AApDbGlja0hvdXNlFgi8qQMDVVRDDDRmMjgxMTZiZjkwMQY=
+  - packet: 26
+    peer: 1
+    index: 1
+    timestamp: 1665939249.457558245
+    data: !!binary |
+      AlEAAAANREI6OkV4Y2VwdGlvbjVEQjo6RXhjZXB0aW9uOiBEYXRhYmFzZSBpbnZhbGlkRGF0YWJh
+      c2UgZG9lc24ndCBleGlzdKQJMC4gREI6OkV4Y2VwdGlvbjo6RXhjZXB0aW9uKHN0ZDo6X18xOjpi
+      YXNpY19zdHJpbmc8Y2hhciwgc3RkOjpfXzE6OmNoYXJfdHJhaXRzPGNoYXI+LCBzdGQ6Ol9fMTo6
+      YWxsb2NhdG9yPGNoYXI+ID4gY29uc3QmLCBpbnQsIGJvb2wpIEAgMHhhM2VjNzNhIGluIC91c3Iv
+      YmluL2NsaWNraG91c2UKMS4gREI6OkRhdGFiYXNlQ2F0YWxvZzo6YXNzZXJ0RGF0YWJhc2VFeGlz
+      dHNVbmxvY2tlZChzdGQ6Ol9fMTo6YmFzaWNfc3RyaW5nPGNoYXIsIHN0ZDo6X18xOjpjaGFyX3Ry
+      YWl0czxjaGFyPiwgc3RkOjpfXzE6OmFsbG9jYXRvcjxjaGFyPiA+IGNvbnN0JikgY29uc3QgQCAw
+      eDE0OGYyOTBkIGluIC91c3IvYmluL2NsaWNraG91c2UKMi4gREI6OkRhdGFiYXNlQ2F0YWxvZzo6
+      YXNzZXJ0RGF0YWJhc2VFeGlzdHMoc3RkOjpfXzE6OmJhc2ljX3N0cmluZzxjaGFyLCBzdGQ6Ol9f
+      MTo6Y2hhcl90cmFpdHM8Y2hhcj4sIHN0ZDo6X18xOjphbGxvY2F0b3I8Y2hhcj4gPiBjb25zdCYp
+      IGNvbnN0IEAgMHgxNDhmMjdhMiBpbiAvdXNyL2Jpbi9jbGlja2hvdXNlCjMuIERCOjpDb250ZXh0
+      OjpzZXRDdXJyZW50RGF0YWJhc2Uoc3RkOjpfXzE6OmJhc2ljX3N0cmluZzxjaGFyLCBzdGQ6Ol9f
+      MTo6Y2hhcl90cmFpdHM8Y2hhcj4sIHN0ZDo6X18xOjphbGxvY2F0b3I8Y2hhcj4gPiBjb25zdCYp
+      IEAgMHgxNDg2MDdhMSBpbiAvdXNyL2Jpbi9jbGlja2hvdXNlCjQuIERCOjpUQ1BIYW5kbGVyOjpy
+      dW5JbXBsKCkgQCAweDE1YzBkZjQ3IGluIC91c3IvYmluL2NsaWNraG91c2UKNS4gREI6OlRDUEhh
+      bmRsZXI6OnJ1bigpIEAgMHgxNWMxZmU5OSBpbiAvdXNyL2Jpbi9jbGlja2hvdXNlCjYuIFBvY286
+      Ok5ldDo6VENQU2VydmVyQ29ubmVjdGlvbjo6c3RhcnQoKSBAIDB4MTg5OGFmNzMgaW4gL3Vzci9i
+      aW4vY2xpY2tob3VzZQo3LiBQb2NvOjpOZXQ6OlRDUFNlcnZlckRpc3BhdGNoZXI6OnJ1bigpIEAg
+      MHgxODk4YzJjZCBpbiAvdXNyL2Jpbi9jbGlja2hvdXNlCjguIFBvY286OlBvb2xlZFRocmVhZDo6
+      cnVuKCkgQCAweDE4YjRlYTI5IGluIC91c3IvYmluL2NsaWNraG91c2UKOS4gUG9jbzo6VGhyZWFk
+      SW1wbDo6cnVubmFibGVFbnRyeSh2b2lkKikgQCAweDE4YjRjMmUyIGluIC91c3IvYmluL2NsaWNr
+      aG91c2UKMTAuID8gQCAweDdmMDQ3NmI0MjYwOSBpbiA/CjExLiBjbG9uZSBAIDB4N2YwNDc2YTY3
+      MTMzIGluID8KAA==

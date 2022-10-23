@@ -55,7 +55,7 @@ public class ClickhouseBinaryDriver implements Driver {
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(),
       "sql", baseConnectOptions.getMetricsName()) : null;
-    PoolImpl pool = new PoolImpl(vertx, this, baseConnectOptions, null, tracer, metrics, 1, options, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, null,  null, closeFuture);
     List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
     ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
     pool.connectionProvider(factory::connect);

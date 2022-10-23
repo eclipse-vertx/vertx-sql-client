@@ -13,17 +13,35 @@
 
 package io.vertx.clickhouseclient.binary;
 
-import java.util.List;
-import java.util.Map;
+import org.testcontainers.shaded.org.bouncycastle.util.Pack;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PacketUtil {
-  public static List<byte[]> filterServerBlocks(Map<String, byte[]> map) {
-    return map.entrySet()
-      .stream()
-      .filter(packet -> !packet.getKey().startsWith("peer0_"))
-      .map(Map.Entry::getValue)
-      .collect(Collectors.toList());
+  public static List<byte[]> filterServerBlocks(Map<String, ?> src) {
+    if (src.containsKey("packets")) {
+      List<Map<String, ?>> packetsMaps = (List<Map<String, ?>>) src.get("packets");
+      List<Packet> packets = new ArrayList<>();
+      for (Map<String, ?> packetFields : packetsMaps) {
+        Packet packet = new Packet((int) packetFields.get("peer"), (int) packetFields.get("index"), (byte[]) packetFields.get("data"));
+        packets.add(packet);
+      }
+      packets.sort(Comparator.comparing(Packet::index));
+      List<byte[]> peer0Packets =
+        packets.stream()
+          .filter(pckt -> pckt.peer() == 1)
+          .map(Packet::data)
+          .collect(Collectors.toList());
+      return peer0Packets;
+    } else {
+      Map<String, byte[]> packets = (Map<String, byte[]>)src;
+      return packets.entrySet()
+        .stream()
+        .filter(packet -> !packet.getKey().startsWith("peer0_"))
+        .map(Map.Entry::getValue)
+        .collect(Collectors.toList());
+    }
   }
 
   public static byte[][] asPrimitiveByteArray(List<byte[]> src) {
@@ -32,5 +50,30 @@ public class PacketUtil {
       ret[i] = src.get(i);
     }
     return ret;
+  }
+}
+
+
+class Packet {
+  private final int peer;
+  private final int index;
+  private final byte[] data;
+
+  Packet(int peer, int index, byte[] data) {
+    this.peer = peer;
+    this.index = index;
+    this.data = data;
+  }
+
+  public int peer() {
+    return peer;
+  }
+
+  public int index() {
+    return index;
+  }
+
+  public byte[] data() {
+    return data;
   }
 }

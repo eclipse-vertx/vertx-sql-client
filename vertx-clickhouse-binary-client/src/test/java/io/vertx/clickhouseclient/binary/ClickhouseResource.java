@@ -54,7 +54,7 @@ public class ClickhouseResource extends ExternalResource {
 
   private static String clickhouseVersion() {
     String version = System.getProperty("embedded.clickhouse.version");
-    return version == null ? "20.10.2" : version;
+    return version == null ? "21.8.15.7-alpine" : version;
   }
 
   @Override

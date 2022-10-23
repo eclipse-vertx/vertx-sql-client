@@ -14,10 +14,12 @@
 package io.vertx.clickhouseclient.binary.alltypes;
 
 import io.vertx.clickhouseclient.binary.impl.codec.columns.Decimal32Column;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;

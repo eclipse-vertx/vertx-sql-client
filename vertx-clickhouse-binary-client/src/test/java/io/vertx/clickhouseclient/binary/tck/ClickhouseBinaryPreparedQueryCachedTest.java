@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 public class ClickhouseBinaryPreparedQueryCachedTest extends PreparedQueryCachedTestBase {
 
   @Rule
-  public TestName name = new TestName();
+  public TestName nameRule = new TestName();
 
   @ClassRule
   public static ClickhouseResource rule = new ClickhouseResource();
@@ -39,7 +39,7 @@ public class ClickhouseBinaryPreparedQueryCachedTest extends PreparedQueryCached
   protected void initConnector() {
     options = new ClickhouseBinaryConnectOptions(rule.options());
     options.addProperty(ClickhouseConstants.OPTION_APPLICATION_NAME,
-      ClickhouseBinaryPreparedQueryCachedTest.class.getSimpleName() + "." + name.getMethodName());
+      this.getClass().getSimpleName() + "." + nameRule.getMethodName());
     connector = ClientConfig.CONNECT.connect(vertx, options);
   }
 

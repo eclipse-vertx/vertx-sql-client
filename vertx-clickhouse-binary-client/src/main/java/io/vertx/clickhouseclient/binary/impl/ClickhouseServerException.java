@@ -24,6 +24,7 @@ public class ClickhouseServerException extends RuntimeException {
     this.code = code;
     this.name = name;
     this.message = message;
+    //TODO smagellan: maybe log stacktraces with specified EOL (useful for log collectors)
     this.stacktrace = stacktrace;
   }
 
@@ -57,5 +58,15 @@ public class ClickhouseServerException extends RuntimeException {
 
   public String getServerStacktrace() {
     return stacktrace;
+  }
+
+  @Override
+  public String toString() {
+    return "ClickhouseServerException{" +
+      "code=" + code +
+      ", name='" + name + '\'' +
+      ", message='" + message + '\'' +
+      ", stacktrace='" + stacktrace + '\'' +
+      '}';
   }
 }

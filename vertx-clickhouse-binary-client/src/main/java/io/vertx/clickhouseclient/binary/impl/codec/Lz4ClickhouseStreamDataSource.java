@@ -140,6 +140,11 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
+  public int readerIndex() {
+    return decompressedData.readerIndex();
+  }
+
+  @Override
   public int readableBytes() {
     return decompressedData.readableBytes();
   }
@@ -205,7 +210,12 @@ public class Lz4ClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
-  public String hexdump() {
+  public String hexDump(int fromIndex, int len) {
+    return ByteBufUtil.hexDump(decompressedData, fromIndex, len);
+  }
+
+  @Override
+  public String hexDump() {
     return ByteBufUtil.hexDump(decompressedData);
   }
 

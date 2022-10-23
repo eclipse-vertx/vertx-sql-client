@@ -33,6 +33,11 @@ public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
+  public int readerIndex() {
+    return source.readerIndex();
+  }
+
+  @Override
   public int readableBytes() {
     return source.readableBytes();
   }
@@ -102,9 +107,16 @@ public class RawClickhouseStreamDataSource implements ClickhouseStreamDataSource
   }
 
   @Override
-  public String hexdump() {
+  public String hexDump() {
     return source != null
-      ? "[" + ByteBufUtil.hexDump(source, 0, source.writerIndex()) + "][" + ByteBufUtil.hexDump(source) + "]"
+      ? ByteBufUtil.hexDump(source)
+      : null;
+  }
+
+  @Override
+  public String hexDump(int fromIndex, int len) {
+    return source != null
+      ? ByteBufUtil.hexDump(source, fromIndex, len)
       : null;
   }
 }

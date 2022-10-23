@@ -22,6 +22,7 @@ public interface ClickhouseStreamDataSource {
   Logger LOG = LoggerFactory.getLogger(ClickhouseStreamDataSource.class);
 
   void moreData(ByteBuf buf, ByteBufAllocator ctx);
+  int readerIndex();
   int readableBytes();
   void skipBytes(int length);
   String readPascalString();
@@ -35,6 +36,9 @@ public interface ClickhouseStreamDataSource {
   ByteBuf readSlice(int nBytes);
   void readBytes(byte[] dst);
   byte readByte();
-  String hexdump();
+  String hexDump(int fromIndex, int len);
+
+  String hexDump();
+
   void finish();
 }

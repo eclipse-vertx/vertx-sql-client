@@ -15,11 +15,14 @@ package io.vertx.clickhouseclient.binary.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryCodec;
+import io.vertx.clickhouseclient.binary.impl.codec.InitCommandCodec;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
 import net.jpountz.lz4.LZ4Factory;
 
@@ -35,6 +38,7 @@ public class ClickhouseBinarySocketConnection extends SocketConnectionBase {
   private String ourCursorId;
   private final LZ4Factory lz4Factory;
 
+  private InitCommandCodec initCommandCodec;
 
   public ClickhouseBinarySocketConnection(NetSocketInternal socket,
                                           boolean cachePreparedStatements,
@@ -52,6 +56,14 @@ public class ClickhouseBinarySocketConnection extends SocketConnectionBase {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
     super.init();
+  }
+
+  public void setInitCommandCodec(InitCommandCodec initCommandCodec) {
+    this.initCommandCodec = initCommandCodec;
+  }
+
+  public InitCommandCodec initCommandCodec() {
+    return initCommandCodec;
   }
 
   void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Promise<Connection> completionHandler) {

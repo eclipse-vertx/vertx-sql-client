@@ -15,9 +15,13 @@ package io.vertx.clickhouseclient.binary.impl.codec.columns;
 
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryColumnDescriptor;
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseStreamDataSource;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
+
 import java.util.BitSet;
 
 public abstract class ClickhouseColumnReader {
+  private static final Logger LOG = LoggerFactory.getLogger(ClickhouseColumnReader.class);
 
   private static final Object NOP_STATE = new Object();
 
@@ -25,6 +29,9 @@ public abstract class ClickhouseColumnReader {
   protected final ClickhouseBinaryColumnDescriptor columnDescriptor;
   protected BitSet nullsMap;
   protected Object itemsArray;
+
+  private long bytesConsumed;
+  private String bufferAsStringConsumed = "";
 
   protected ClickhouseColumnReader(int nRows, ClickhouseBinaryColumnDescriptor columnDescriptor) {
     this.columnDescriptor = columnDescriptor;
@@ -36,8 +43,21 @@ public abstract class ClickhouseColumnReader {
   }
 
   public void readColumn(ClickhouseStreamDataSource in){
+    int idxStart = in.readerIndex();
     readStatePrefix(in);
     readData(in);
+    int idxEnd = in.readerIndex();
+    int bytesRead = idxEnd - idxStart;
+    bytesConsumed += bytesRead;
+    bufferAsStringConsumed += in.hexDump(idxStart, bytesRead);
+  }
+
+  public long bytesConsumed() {
+    return bytesConsumed;
+  }
+
+  public String bufferAsStringConsumed() {
+    return bufferAsStringConsumed;
   }
 
   public int nRows() {
@@ -88,6 +108,7 @@ public abstract class ClickhouseColumnReader {
 
   protected BitSet readNullsMap(ClickhouseStreamDataSource in) {
     if (in.readableBytes() >= nRows) {
+      LOG.debug("readNullsMap");
       BitSet bSet = new BitSet(nRows);
       for (int i = 0; i < nRows; ++i) {
         byte b = in.readByte();
@@ -96,12 +117,21 @@ public abstract class ClickhouseColumnReader {
         }
       }
       return bSet;
+    } else {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("readNullsMap skipped: has " + in.readableBytes() + "; need" + nRows);
+      }
     }
     return null;
   }
 
   public boolean isPartial() {
-    return itemsArray == null || (columnDescriptor.isNullable() && nullsMap == null);
+    boolean ret = itemsArray == null || (columnDescriptor.isNullable() && nullsMap == null);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("isPartial: " + ret + "; itemsArray == null: " + (itemsArray == null) + "; columnDescriptor.isNullable(): " +
+        columnDescriptor.isNullable() + "; nullsMap == null: " + (nullsMap == null));
+    }
+    return ret;
   }
 
   public Object getElement(int rowIdx, Class<?> desired) {

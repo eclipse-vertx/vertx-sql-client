@@ -14,10 +14,15 @@
 package io.vertx.clickhouseclient.binary.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.vertx.clickhouseclient.binary.ClickhouseConstants;
 import io.vertx.clickhouseclient.binary.impl.ClickhouseBinaryDatabaseMetadata;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 
 public class QueryProgressInfoReader {
+  private static final Logger LOG = LoggerFactory.getLogger(QueryProgressInfoReader.class);
+
   private final int serverRevision;
 
   private Integer rows;
@@ -31,6 +36,7 @@ public class QueryProgressInfoReader {
   }
 
   public QueryProgressInfo readFrom(ByteBuf in) {
+    int idxStart = in.readerIndex();
     if (rows == null) {
       rows = ByteBufUtils.readULeb128(in);
       if (rows == null) {
@@ -67,6 +73,11 @@ public class QueryProgressInfoReader {
           return null;
         }
       }
+    }
+    int idxEnd = in.readerIndex();
+    String bufferAsStringConsumed = ByteBufUtil.hexDump(in, idxStart, idxEnd - idxStart);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("bufferAsStringConsumed: " + bufferAsStringConsumed);
     }
     return new QueryProgressInfo(rows, bytes, totalRows, writtenRows, writtenBytes);
   }

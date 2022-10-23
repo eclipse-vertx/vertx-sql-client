@@ -90,7 +90,8 @@ public class PacketReader {
           LOG.debug("packet type: " + packetType);
         }
       } catch (IllegalArgumentException ex) {
-        LOG.error("unknown packet type, dump: " + ByteBufUtil.hexDump(in), ex);
+        LOG.error("unknown packet type, dump: " + ByteBufUtil.hexDump(in));
+        LOG.error("unknown packet type", ex);
         throw ex;
       }
     }
@@ -187,7 +188,7 @@ public class PacketReader {
     ClickhouseBinaryDatabaseMetadata md = metadataReader.readFrom(in);
     if (md != null) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("decoded: HELLO/ClickhouseNativeDatabaseMetadata");
+        LOG.debug("decoded: HELLO/ClickhouseBinaryDatabaseMetadata");
       }
       metadataReader = null;
       packetType = null;
@@ -199,10 +200,12 @@ public class PacketReader {
     if (blockStreamProfileReader == null) {
       blockStreamProfileReader = new BlockStreamProfileInfoReader();
     }
+    int startIdx = in.readerIndex();
     BlockStreamProfileInfo profileInfo = blockStreamProfileReader.readFrom(in);
     if (profileInfo != null) {
       if (LOG.isDebugEnabled()) {
-        LOG.debug("decoded: PROFILE_INFO/BlockStreamProfileInfo " + profileInfo);
+        int endIndex = in.readerIndex();
+        LOG.debug("decoded: PROFILE_INFO/BlockStreamProfileInfo " + profileInfo + ": " + ByteBufUtil.hexDump(in, startIdx, endIndex - startIdx));
       }
       blockStreamProfileReader = null;
       packetType = null;
@@ -277,10 +280,16 @@ public class PacketReader {
 
   private ClickhouseStreamDataSource dataSource(ByteBufAllocator alloc, boolean preferCompressionIfEnabled) {
     if (lz4Factory == null || !preferCompressionIfEnabled) {
+      LOG.debug("dataSource: raw");
       return new RawClickhouseStreamDataSource(md.getStringCharset());
     } else {
+      LOG.debug("dataSource: lz4");
       return new Lz4ClickhouseStreamDataSource(lz4Factory, md.getStringCharset(), alloc);
     }
+  }
+
+  public ServerPacketType packetType() {
+    return packetType;
   }
 
   public boolean isEndOfStream() {

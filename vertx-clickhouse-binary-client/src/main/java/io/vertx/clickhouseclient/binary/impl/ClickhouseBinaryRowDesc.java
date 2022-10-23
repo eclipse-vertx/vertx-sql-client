@@ -13,20 +13,14 @@
 
 package io.vertx.clickhouseclient.binary.impl;
 
-import io.vertx.sqlclient.desc.ColumnDescriptor;
+import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryColumnDescriptor;
 import io.vertx.sqlclient.impl.RowDesc;
 
-import java.util.Collections;
-import java.util.List;
-
 public class ClickhouseBinaryRowDesc extends RowDesc {
-  public static final ClickhouseBinaryRowDesc EMPTY = new ClickhouseBinaryRowDesc(Collections.emptyList(), Collections.emptyList());
+  public static final ClickhouseBinaryColumnDescriptor[] EMPTY_DESCRIPTORS = new ClickhouseBinaryColumnDescriptor[0];
+  public static final ClickhouseBinaryRowDesc EMPTY = new ClickhouseBinaryRowDesc(EMPTY_DESCRIPTORS);
 
-  public ClickhouseBinaryRowDesc(List<String> columnNames) {
-    super(columnNames);
-  }
-
-  public ClickhouseBinaryRowDesc(List<String> columnNames, List<ColumnDescriptor> columnDescriptors) {
-    super(columnNames, columnDescriptors);
+  public ClickhouseBinaryRowDesc(ClickhouseBinaryColumnDescriptor[] columnDescriptors) {
+    super(columnDescriptors);
   }
 }

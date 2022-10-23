@@ -19,6 +19,8 @@ import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseStreamDataSource;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 
+import java.util.Arrays;
+
 public class ArrayColumnReader extends ClickhouseColumnReader {
   private static final Logger LOG = LoggerFactory.getLogger(ArrayColumnReader.class);
 
@@ -61,8 +63,10 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       return null;
     }
     if (curDimension < columnDescriptor.arrayDimensionsCount()) {
+      LOG.debug("reading array slices");
       readAsPerRowSlices(in);
       if (curDimension < columnDescriptor.arrayDimensionsCount()) {
+        LOG.debug("partial read arr1");
         return null;
       }
     }
@@ -72,7 +76,12 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       elementClass = nestedColumn.nullValue().getClass();
     }
     if (elementTypeDescr.isNullable()) {
-      nestedColumnReader.nullsMap = nestedColumnReader.readNullsMap(in);
+      if (nestedColumnReader.nullsMap == null) {
+        nestedColumnReader.nullsMap = nestedColumnReader.readNullsMap(in);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("nestedColumnReader.nullsMap: " + nestedColumnReader.nullsMap);
+        }
+      }
     }
     if (nItems > 0) {
       assert nItems == nestedColumnReader.nRows;
@@ -82,6 +91,7 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       if (nestedColumnReader.isPartial()) {
         nestedColumnReader.itemsArray = nestedColumnReader.readItems(in);
         if (nestedColumnReader.isPartial()) {
+          LOG.debug("partial read arr2");
           return null;
         }
       }
@@ -150,13 +160,20 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
       return;
     }
 
-    perRowsSlice = new int[nRows][][];
-    for (int i = 0; i < nRows; ++i) {
-      perRowsSlice[i] = new int[columnDescriptor.arrayDimensionsCount()][];
+    if (perRowsSlice == null) {
+      perRowsSlice = new int[nRows][][];
+      for (int i = 0; i < nRows; ++i) {
+        perRowsSlice[i] = new int[columnDescriptor.arrayDimensionsCount()][];
+      }
+      curLevelSliceSize = nRows;
     }
-    curLevelSliceSize = nRows;
+
     while (curDimension < columnDescriptor.arrayDimensionsCount()) {
-      if (in.readableBytes() < curLevelSliceSize * Long.BYTES) {
+      int readableBytes = in.readableBytes();
+      if (readableBytes < curLevelSliceSize * Long.BYTES) {
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("ArrayColumnReader: not enough bytes; have + " + readableBytes + "; need " + curLevelSliceSize * Long.SIZE);
+        }
         return;
       }
       long prevSliceElement = 0;
@@ -181,9 +198,15 @@ public class ArrayColumnReader extends ClickhouseColumnReader {
           rowSliceAtDimension[i + 1] = ((int)(prevSliceElement - (lastDimension ? 0L : firstElementInSlice)));
         }
         perRowsSlice[rowIdx][curDimension] = (rowSliceAtDimension);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("rowSliceAtDimension[" + rowIdx + "]:" + Arrays.toString(rowSliceAtDimension));
+        }
       }
       ++curDimension;
       curLevelSliceSize = (int)prevSliceElement;
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("curDimension: " + curDimension + "; columnDescriptor.arrayDimensionsCount(): " + columnDescriptor.arrayDimensionsCount());
+      }
     }
     nItems = curLevelSliceSize;
   }

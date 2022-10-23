@@ -95,7 +95,10 @@ public class ClickhouseColumns {
                                                                          boolean nullable, boolean isArray,
                                                                          boolean isLowCardinality) {
     boolean unsigned = spec.startsWith("U");
-    if (spec.equals("UInt8") || spec.equals("Int8")) {
+    //newer versions (at least clickhouse/clickhouse-server:22.9.3.18) return Bool,
+    //older versions (at least yandex/clickhouse-server:20.10.2) return Int8 for bool types
+    //TODO: maybe change type to JDBCType.BOOLEAN for Bool/Boolean types
+    if (spec.equals("UInt8") || spec.equals("Int8") || spec.equals("Bool") || spec.equals("Boolean")) {
       return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, UInt8ColumnReader.ELEMENT_SIZE, JDBCType.TINYINT, nullable, unsigned, isLowCardinality,
         unsigned ? 0 : -128, unsigned ? 255 : 127);
     } else if (spec.equals("UInt16") || spec.equals("Int16")) {

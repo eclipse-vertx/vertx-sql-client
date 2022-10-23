@@ -20,6 +20,7 @@ import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.vertx.clickhouseclient.binary.impl.ClickhouseBinaryDatabaseMetadata;
+import io.vertx.clickhouseclient.binary.impl.ClickhouseServerException;
 import io.vertx.clickhouseclient.binary.impl.codec.PacketReader;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -62,7 +63,9 @@ public class PacketReaderReplayTest {
       "/select_array_of_nullable_string_without_compression.yaml",
       "/select_empty_array_without_compression.yaml",
       "/ClickhouseBinaryPreparedQueryCachedTest_testConcurrentClose_with_compression.yaml",
-      "/wrong_db_connection_without_compression.yaml"
+      "/wrong_db_connection_without_compression.yaml",
+      "/testConnectInvalidDatabase_20.10.2_without_compression.yaml",
+      "/testConnectInvalidDatabase_22.8.6.71_without_compression.yaml"
     );
     for (String replayFile : replayFiles) {
       boolean compression = replayFile.contains("with_compression");
@@ -111,8 +114,15 @@ public class PacketReaderReplayTest {
   private void readConnInteraction(PooledByteBufAllocator allocator, String fullName) {
     //1st packet: server hello
     PacketReader rdr = new PacketReader(null, fullName, props, lz4Factory);
-    ClickhouseBinaryDatabaseMetadata md = (ClickhouseBinaryDatabaseMetadata)rdr.receivePacket(allocator, buf);
-
+    Object firstPacket = rdr.receivePacket(allocator, buf);
+    //some old versions(e.g. 20.10.2) omit HELLO packet, some sends both HELLO and Exception in case of bad login (e.g. DB does not exist)
+    if (firstPacket instanceof ClickhouseServerException) {
+      ClickhouseServerException exception = (ClickhouseServerException) firstPacket;
+      LOG.info("clickhouse exception: " + exception);
+      return;
+    }
+    ClickhouseBinaryDatabaseMetadata md = (ClickhouseBinaryDatabaseMetadata)firstPacket;
+    LOG.info("db version: " + md.fullVersion());
     do {
       rdr = new PacketReader(md, fullName, props, lz4Factory);
       Object packet = rdr.receivePacket(allocator, buf);

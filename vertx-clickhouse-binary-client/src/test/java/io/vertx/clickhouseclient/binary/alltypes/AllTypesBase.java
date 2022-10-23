@@ -15,6 +15,7 @@ package io.vertx.clickhouseclient.binary.alltypes;
 
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnectOptions;
 import io.vertx.clickhouseclient.binary.ClickhouseBinaryConnection;
+import io.vertx.clickhouseclient.binary.ClickhouseConstants;
 import io.vertx.clickhouseclient.binary.ClickhouseResource;
 import io.vertx.clickhouseclient.binary.Sleep;
 import io.vertx.core.Vertx;
@@ -26,6 +27,7 @@ import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.*;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @RunWith(VertxUnitRunner.class)
 public abstract class AllTypesBase<T> {
@@ -45,6 +48,9 @@ public abstract class AllTypesBase<T> {
 
   @ClassRule
   public static ClickhouseResource rule = new ClickhouseResource();
+
+  @Rule
+  public TestName nameRule = new TestName();
 
   protected ClickhouseBinaryConnectOptions options;
   protected Vertx vertx;
@@ -62,6 +68,8 @@ public abstract class AllTypesBase<T> {
   @Before
   public void setup(TestContext ctx) {
     options = rule.options();
+    options.addProperty(ClickhouseConstants.OPTION_APPLICATION_NAME,
+      this.getClass().getSimpleName() + "." + nameRule.getMethodName());
     vertx = Vertx.vertx();
     ClickhouseBinaryConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("TRUNCATE TABLE " + tableName()).execute(ctx.asyncAssertSuccess());
@@ -85,35 +93,45 @@ public abstract class AllTypesBase<T> {
 
   public abstract List<Tuple> createBatch();
 
-  private List<String> columnsList(boolean hasLowCardinality) {
+  private List<ColumnInfo> allColumnsList(boolean hasLowCardinality) {
     List<String> columns = new ArrayList<>(Arrays.asList("id", "simple_t", "nullable_t", "array_t", "array3_t", "nullable_array_t", "nullable_array3_t"));
     if (hasLowCardinality) {
       columns.addAll(Arrays.asList("simple_lc_t", "nullable_lc_t", "array_lc_t", "array3_lc_t", "nullable_array_lc_t", "nullable_array3_lc_t"));
     }
-    return columns;
+    return columns
+      .stream()
+      .map(nm -> new ColumnInfo(nm, true))
+      .collect(Collectors.toList());
   }
 
   protected  void doTest(TestContext ctx, List<Tuple> batch) {
     String tableName = tableName();
     ClickhouseBinaryConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      List<String> columnsList = columnsList(hasLowCardinality);
-      String columnsStr = String.join(", ", columnsList);
-      String query = "INSERT INTO " + tableName + " (" + columnsStr + ") VALUES";
-      conn.preparedQuery(query)
+      List<ColumnInfo> columnsList = allColumnsList(hasLowCardinality);
+      List<String> insertColumnNames = columnsList.stream().map(ColumnInfo::name).collect(Collectors.toList());
+      String insertColumnsStr = String.join(", ", insertColumnNames);
+      String insertQuery = "INSERT INTO " + tableName + " (" + insertColumnsStr + ") VALUES";
+      conn.preparedQuery(insertQuery)
         .executeBatch(batch, ctx.asyncAssertSuccess(res2 -> {
           Sleep.sleepOrThrow();
-          conn.query("SELECT " + columnsStr + " FROM " + tableName + " ORDER BY id").execute(ctx.asyncAssertSuccess(
+          List<String> selectColumns = columnsList.stream().filter(ColumnInfo::selectEnabled).map(ColumnInfo::name).collect(Collectors.toList());
+          String selectColumnsStr = String.join(", ", selectColumns);
+          conn.query("SELECT " + selectColumnsStr + " FROM " + tableName + " ORDER BY id").execute(ctx.asyncAssertSuccess(
             res3 -> {
               ctx.assertEquals(res3.size(), batch.size(), "row count mismatch");
               int batchIdx = 0;
-              for (Row row : res3) {
-                Number id = row.get(Number.class, "id");
+              for (Row actualRow : res3) {
+                Number id = actualRow.get(Number.class, "id");
                 Tuple expectedRow = batch.get(batchIdx);
                 LOG.info("checking row " + tableSuffix + ":" + id);
                 for (int colIdx = 0; colIdx < expectedRow.size(); ++colIdx) {
-                  String colName = columnsList.get(colIdx);
-                  Object expectedColumnValue = expectedRow.getValue(colIdx);
-                  checker.checkColumn(row, colIdx, colName, (T) expectedColumnValue);
+                  ColumnInfo columnInfo = columnsList.get(colIdx);
+                  if (columnInfo.selectEnabled()) {
+                    String colName = columnInfo.name();
+                    Object expectedColumnValue = expectedRow.getValue(colIdx);
+                    int actualColIdx = actualRow.getColumnIndex(colName);
+                    checker.checkColumn(actualRow, actualColIdx, colName, (T) expectedColumnValue);
+                  }
                 }
                 ++batchIdx;
               }
@@ -186,5 +204,24 @@ class MyColumnChecker<R> {
       }
     }
     checker.forRow(row);
+  }
+}
+
+
+class ColumnInfo {
+  private final String name;
+  private final boolean selectEnabled;
+
+  ColumnInfo(String name, boolean selectEnabled) {
+    this.name = name;
+    this.selectEnabled = selectEnabled;
+  }
+
+  public String name() {
+    return name;
+  }
+
+  public boolean selectEnabled() {
+    return selectEnabled;
   }
 }

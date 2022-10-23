@@ -38,7 +38,7 @@ public class ColumnOrientedBlockReader {
   private Integer nColumns;
   private Integer nRows;
   private Map<String, ClickhouseBinaryColumnDescriptor> colWithTypes;
-  private List<ClickhouseColumnReader> data;
+  private List<ClickhouseColumnReader> columnsData;
 
   private String colName;
   private String colType;
@@ -52,8 +52,9 @@ public class ColumnOrientedBlockReader {
   }
 
   public ColumnOrientedBlock readFrom(ClickhouseStreamDataSource in) {
-
-
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("readFrom: " + in.hexDump());
+    }
     //BlockInputStream.read
     if (blockInfo == null) {
       blockInfo = new BlockInfo();
@@ -97,21 +98,27 @@ public class ColumnOrientedBlockReader {
         columnDescriptor = ClickhouseColumns.columnDescriptorForSpec(colType, colName);
       }
       if (nRows > 0) {
-        if (data == null) {
-          data = new ArrayList<>(nColumns);
+        if (columnsData == null) {
+          columnsData = new ArrayList<>(nColumns);
         }
         if (columnData == null) {
           columnData = ClickhouseColumns.columnForSpec(columnDescriptor, md).reader(nRows);
         }
         if (columnData.isPartial()) {
           if (LOG.isDebugEnabled()) {
-            LOG.debug("reading column " + colName + "[" + nRows + "] of type " + colType);
+            LOG.debug("reading(first or continuation) column " + colName + "[" + nRows + "] of type " + colType);
           }
           columnData.readColumn(in);
           if (columnData.isPartial()) {
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("partial read of " + colName + "; buffer consumed: " + columnData.bufferAsStringConsumed());
+            }
             return null;
           } else {
-            data.add(columnData);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("fully read " + colName + "; buffer consumed: " + columnData.bufferAsStringConsumed());
+            }
+            columnsData.add(columnData);
             columnData = null;
           }
         }
@@ -122,7 +129,7 @@ public class ColumnOrientedBlockReader {
       colType = null;
     }
     if (colWithTypes.size() == nColumns) {
-      return new ColumnOrientedBlock(colWithTypes, data, blockInfo, md);
+      return new ColumnOrientedBlock(colWithTypes, columnsData, blockInfo, md);
     }
     return null;
   }
