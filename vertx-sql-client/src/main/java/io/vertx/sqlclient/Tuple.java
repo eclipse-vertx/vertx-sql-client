@@ -35,8 +35,11 @@ import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 /**
  * A general purpose tuple.
@@ -428,7 +431,16 @@ public interface Tuple {
    * @return the value
    */
   default JsonArray getJsonArray(int pos) {
-    return (JsonArray) getValue(pos);
+    Object val = getValue(pos);
+    if (val == null) return null;
+    if (val instanceof JsonArray) return (JsonArray) val;
+    if (val instanceof Collection) {
+      return new JsonArray(new ArrayList<>(((Collection<?>) val)));
+    }
+    if (val.getClass().isArray()) {
+      return IntStream.range(0, Array.getLength(val)).mapToObj(i -> Array.get(val, i)).collect(JsonArray::new, JsonArray::add, (o1, o2) -> {});
+    }
+    throw new ClassCastException("Invalid JsonArray value type " + val.getClass());
   }
 
   /**

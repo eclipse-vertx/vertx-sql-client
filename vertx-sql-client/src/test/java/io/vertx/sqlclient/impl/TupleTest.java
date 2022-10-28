@@ -472,6 +472,18 @@ public class TupleTest {
   }
 
   @Test
+  public void testGetJsonArrayFromArray() {
+    Tuple tuple = of((Object) new int[]{1, 2, 3});
+    assertEquals(JsonArray.of(1, 2, 3), tuple.getJsonArray(0));
+  }
+
+  @Test
+  public void testGetJsonArrayFromCollection() {
+    Tuple tuple = of(Arrays.asList(1,2,3));
+    assertEquals(JsonArray.of(1, 2, 3), tuple.getJsonArray(0));
+  }
+
+  @Test
   public void testString() {
     String expected = "the-string";
     Tuple tuple = of(expected);
