@@ -402,6 +402,15 @@ public class TupleTest {
   }
 
   @Test
+  public void testPrimitiveLongArray() {
+    Tuple tuple = of((Object)new long[]{5, 2});
+    Long[] res = tuple.getArrayOfLongs(0);
+    assertEquals(2, res.length);
+    assertEquals(5, (long)res[0]);
+    assertEquals(2, (long)res[1]);
+  }
+
+  @Test
   public void testFloatArrayCoercion() {
     Tuple tuple = of((Object)new Double[]{5D, null, Double.MAX_VALUE});
     Float[] res = tuple.getArrayOfFloats(0);
@@ -472,9 +481,17 @@ public class TupleTest {
   }
 
   @Test
-  public void testGetJsonArrayFromArray() {
+  public void testGetJsonArrayFromPrimitiveArray() {
     Tuple tuple = of((Object) new int[]{1, 2, 3});
     assertEquals(JsonArray.of(1, 2, 3), tuple.getJsonArray(0));
+    assertArrayEquals(new Integer[]{1,2,3}, tuple.getArrayOfIntegers(0));
+  }
+
+  @Test
+  public void testGetJsonArrayFromArray() {
+    Tuple tuple = of((Object) new Integer[]{1, 2, 3});
+    assertEquals(JsonArray.of(1, 2, 3), tuple.getJsonArray(0));
+    assertArrayEquals(new Integer[]{1,2,3}, tuple.getArrayOfIntegers(0));
   }
 
   @Test
@@ -542,6 +559,14 @@ public class TupleTest {
     assertEquals(1, tuple.getValue(0));
     assertEquals(2, tuple.getValue(1));
     assertEquals(3, tuple.getValue(2));
+  }
+
+  @Test
+  public void testGetArraysOfIntegerFromEnumArray(){
+    TupleKind[] array = {TupleKind.FROM_ARRAY, TupleKind.WRAP_ARRAY, TupleKind.ELEMENTS};
+    Integer[] expected = Arrays.stream(array).map(Enum::ordinal).toArray(Integer[]::new);
+    Tuple tuple = Tuple.of((Object) array);
+    assertArrayEquals(expected, tuple.getArrayOfIntegers(0));
   }
 
   @Test
