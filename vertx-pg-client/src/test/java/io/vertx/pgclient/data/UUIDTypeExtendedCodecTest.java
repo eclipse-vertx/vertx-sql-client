@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -59,6 +60,8 @@ public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBas
               ColumnChecker.checkColumn(0, "UUID")
                 .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
                 .returns(Tuple::getArrayOfUUIDs, Row::getArrayOfUUIDs, new UUID[]{uuid})
+                .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{uuid.toString()})
+                .returns(Tuple::getJsonArray, Row::getJsonArray, JsonArray.of(uuid))
                 .forRow(result.iterator().next());
               async.complete();
             }));

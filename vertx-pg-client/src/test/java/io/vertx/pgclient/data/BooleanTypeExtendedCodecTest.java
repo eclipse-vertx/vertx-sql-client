@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -53,7 +54,9 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Boolean")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
+              .returns(Tuple::getJsonArray, Row::getJsonArray, JsonArray.of(true))
               .returns(Tuple::getArrayOfBooleans, Row::getArrayOfBooleans, ColumnChecker.toObjectArray(new boolean[]{Boolean.TRUE}))
+              .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, ColumnChecker.toObjectArray(new String[]{Boolean.TRUE.toString()}))
               .forRow(result.iterator().next());
             async.complete();
           }));

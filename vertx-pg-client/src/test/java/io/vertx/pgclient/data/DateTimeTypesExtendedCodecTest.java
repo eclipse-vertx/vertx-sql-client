@@ -522,6 +522,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
                 .returns(Tuple::getArrayOfLocalTimes, Row::getArrayOfLocalTimes, new LocalTime[]{dt.toLocalTime()})
                 .returns(Tuple::getArrayOfLocalDates, Row::getArrayOfLocalDates, new LocalDate[]{dt.toLocalDate()})
                 .returns(Tuple::getArrayOfLocalDateTimes, Row::getArrayOfLocalDateTimes, new LocalDateTime[]{dt})
+                .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{"2017-05-14T19:35:58.237666"})
                 .forRow(result.iterator().next());
               async.complete();
             }));

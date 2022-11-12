@@ -1,5 +1,6 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -65,6 +66,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
             ColumnChecker.checkColumn(0, "Enum")
               .returns(Tuple::getValue, Row::getValue, expected)
               .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, expected)
+              .returns(Tuple::getJsonArray, Row::getJsonArray, JsonArray.of("ok", "unhappy", "happy"))
               .forRow(result.iterator().next());
             async.complete();
           }));
@@ -85,6 +87,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{"unhappy"})
                 .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{"unhappy"})
+                .returns(Tuple::getJsonArray, Row::getJsonArray, JsonArray.of("unhappy"))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -105,6 +108,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{"unhappy", "ok"})
                 .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{"unhappy", "ok"})
+                .returns(Tuple::getJsonArray, Row::getJsonArray, JsonArray.of("unhappy", "ok"))
                 .forRow(result.iterator().next());
               async.complete();
             }));
@@ -125,10 +129,13 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{})
                 .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{})
+                .returns(Tuple::getJsonArray, Row::getJsonArray, new JsonArray())
                 .forRow(result.iterator().next());
               ColumnChecker.checkColumn(1, "Boolean")
                 .returns(Tuple::getValue, Row::getValue, new Boolean[]{true})
                 .returns(Tuple::getArrayOfBooleans, Row::getArrayOfBooleans, new Boolean[]{true})
+                .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{"true"})
+                .returns(Tuple::getJsonArray, Row::getJsonArray, JsonArray.of(true))
                 .forRow(result.iterator().next());
               async.complete();
             }));
