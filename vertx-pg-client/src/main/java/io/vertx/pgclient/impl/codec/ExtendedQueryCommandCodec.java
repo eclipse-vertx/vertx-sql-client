@@ -16,7 +16,7 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.CommandResponse;
@@ -48,7 +48,7 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
           completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
           return;
         } else {
-          for (Tuple param : cmd.paramsList()) {
+          for (TupleInternal param : cmd.paramsList()) {
             encoder.writeBind(ps.bind, cmd.cursorId(), param);
             encoder.writeExecute(cmd.cursorId(), cmd.fetch());
           }

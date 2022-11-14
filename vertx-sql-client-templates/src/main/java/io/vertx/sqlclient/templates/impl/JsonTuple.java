@@ -16,7 +16,7 @@ import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.util.function.Function;
 
-public class JsonTuple implements TupleInternal {
+public class JsonTuple extends TupleInternal {
 
   private final int size;
   private final Function<Integer, String> columnMapping;

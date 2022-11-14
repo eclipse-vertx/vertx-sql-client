@@ -17,20 +17,20 @@ import io.vertx.sqlclient.data.NullValue;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface TupleInternal extends Tuple {
+public abstract class TupleInternal implements Tuple {
 
-  void setValue(int pos, Object value);
+  public abstract void setValue(int pos, Object value);
 
   @Override
-  default Object getValue(int pos) {
+  public Object getValue(int pos) {
     Object val = getValueInternal(pos);
     return val instanceof NullValue ? null : val;
   }
 
-  Object getValueInternal(int pos);
+  public abstract Object getValueInternal(int pos);
 
   @Override
-  default List<Class<?>> types() {
+  public List<Class<?>> types() {
     int len = size();
     List<Class<?>> types = new ArrayList<>(len);
     for (int i = 0; i < len; i++) {

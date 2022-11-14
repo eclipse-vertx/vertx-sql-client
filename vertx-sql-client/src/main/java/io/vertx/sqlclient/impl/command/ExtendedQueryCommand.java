@@ -111,8 +111,8 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   public String prepare() {
     if (ps != null) {
       if (batch) {
-        for (Tuple tuple : (List<Tuple>) tuples) {
-          String msg = ps.prepare((TupleInternal) tuple);
+        for (TupleInternal tuple : (List<TupleInternal>) tuples) {
+          String msg = ps.prepare(tuple);
           if (msg != null) {
             return msg;
           }
@@ -132,8 +132,8 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   /**
    * @return the list of parameters for batch execution
    */
-  public List<Tuple> paramsList() {
-    return batch ? (List<Tuple>) tuples : null;
+  public List<TupleInternal> paramsList() {
+    return batch ? (List<TupleInternal>) tuples : null;
   }
 
   /**
@@ -148,7 +148,7 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
       }
       tuple = list.get(0);
     } else {
-      tuple = (Tuple) tuples;
+      tuple = (TupleInternal) tuples;
     }
     return tuple.types();
   }
@@ -156,8 +156,8 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   /**
    * @return the parameters for query execution
    */
-  public Tuple params() {
-    return batch ? null : (Tuple) tuples;
+  public TupleInternal params() {
+    return batch ? null : (TupleInternal) tuples;
   }
 
   public PreparedStatement preparedStatement() {

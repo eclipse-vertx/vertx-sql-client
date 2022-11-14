@@ -175,7 +175,7 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
 
   @Override
   protected TupleInternal prepexecRequestParams() {
-    return (TupleInternal) cmd.params();
+    return cmd.params();
   }
 
   @Override
