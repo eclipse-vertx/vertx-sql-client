@@ -1,0 +1,11 @@
+[CAUTION]
+====
+At the time of writing, you cannot use the following features if you connect to your database through ProxySQL.
+If you try, you will see this error message:
+
+----
+RECEIVED AN UNKNOWN COMMAND: 28 -- PLEASE REPORT A BUG
+----
+
+This is because the proxy does not handle a type of command (`COM_STMT_FETCH`) that is required to fetch rows from a cursor.
+====
