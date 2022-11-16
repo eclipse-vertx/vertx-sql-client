@@ -20,6 +20,7 @@ import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
+import java.util.BitSet;
 import java.util.List;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.*;
@@ -27,7 +28,7 @@ import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.*;
 class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
   private final List<TupleInternal> params;
-  private final boolean[] bindingFailures;
+  private final BitSet bindingFailures;
   private boolean pipeliningEnabled;
   private int sent;
   private int received;
@@ -35,7 +36,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
     super(cmd);
     params = cmd.paramsList();
-    bindingFailures = new boolean[params.size()];
+    bindingFailures = new BitSet(params.size());
   }
 
   @Override
@@ -67,9 +68,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   }
 
   private void skipBindingFailures() {
-    while (bindingFailures[received]) {
-      received++;
-    }
+    received = bindingFailures.nextClearBit(received);
   }
 
   @Override
@@ -104,7 +103,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       // binding parameters
       String bindMsg = statement.bindParameters(param);
       if (bindMsg != null) {
-        bindingFailures[sent] = true;
+        bindingFailures.set(sent);
         reportError(sent, new NoStackTraceThrowable(bindMsg));
         sent++;
       } else {
