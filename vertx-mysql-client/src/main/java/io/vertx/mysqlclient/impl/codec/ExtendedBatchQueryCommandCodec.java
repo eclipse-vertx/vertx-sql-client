@@ -20,81 +20,107 @@ import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 
+import java.util.BitSet;
 import java.util.List;
 
-import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.CURSOR_TYPE_NO_CURSOR;
+import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.*;
 
 class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
   private final List<TupleInternal> params;
-  private int batchIdx = 0;
+  private final BitSet bindingFailures;
+  private boolean pipeliningEnabled;
+  private int sent;
+  private int received;
 
   ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
     super(cmd);
     params = cmd.paramsList();
+    bindingFailures = new BitSet(params.size());
   }
 
   @Override
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
-
     if (params.isEmpty() && statement.paramDesc.paramDefinitions().length > 0) {
       encoder.handleCommandResponse(CommandResponse.failure("Statement parameter is not set because of the empty batch param list"));
       return;
     }
+    pipeliningEnabled = encoder.socketConnection.pipeliningEnabled();
     encoder.socketConnection.suspendPipeline();
     doExecuteBatch();
-    // Close managed prepare statement
-    MySQLPreparedStatement ps = (MySQLPreparedStatement) this.cmd.ps;
-    if (ps.closeAfterUsage) {
-      sendCloseStatementCommand(ps);
-    }
   }
 
   @Override
   void handleErrorPacketPayload(ByteBuf payload) {
+    skipBindingFailures();
     MySQLException mySQLException = decodeErrorPacketPayload(payload);
-    reportError(batchIdx, mySQLException);
+    reportError(received++, mySQLException);
     // state needs to be reset
     commandHandlerState = CommandHandlerState.INIT;
-    batchIdx++;
+    if (received == params.size()) {
+      super.closePreparedStatement();
+      encoder.socketConnection.resumePipeline();
+      encoder.handleCommandResponse(CommandResponse.failure(failure));
+    } else {
+      doExecuteBatch();
+    }
+  }
+
+  private void skipBindingFailures() {
+    received = bindingFailures.nextClearBit(received);
   }
 
   @Override
   protected void handleSingleResultsetDecodingCompleted(int serverStatusFlags, int affectedRows, long lastInsertId) {
-    batchIdx++;
+    skipBindingFailures();
+    received++;
     super.handleSingleResultsetDecodingCompleted(serverStatusFlags, affectedRows, lastInsertId);
+    doExecuteBatch();
   }
 
   @Override
   protected boolean isDecodingCompleted(int serverStatusFlags) {
-    return super.isDecodingCompleted(serverStatusFlags) && batchIdx == params.size();
+    return super.isDecodingCompleted(serverStatusFlags) && received == params.size();
   }
 
   @Override
   protected void handleAllResultsetDecodingCompleted() {
     encoder.socketConnection.resumePipeline();
+    super.closePreparedStatement();
     super.handleAllResultsetDecodingCompleted();
   }
 
+  @Override
+  protected void closePreparedStatement() {
+    // Handled manually at the end of all executions
+  }
+
   private void doExecuteBatch() {
-    for (int i = 0; i < params.size(); i++) {
-      Tuple param = params.get(i);
+    while (sent < params.size()) {
+      Tuple param = params.get(sent);
       sequenceId = 0;
       // binding parameters
       String bindMsg = statement.bindParameters(param);
       if (bindMsg != null) {
-        reportError(i, new NoStackTraceThrowable(bindMsg));
+        bindingFailures.set(sent);
+        reportError(sent, new NoStackTraceThrowable(bindMsg));
+        sent++;
       } else {
         sendStatementExecuteCommand(statement, statement.sendTypesToServer(), param, CURSOR_TYPE_NO_CURSOR);
+        sent++;
+        if (!pipeliningEnabled) {
+          break;
+        }
       }
     }
   }
 
   private void reportError(int iteration, Throwable error) {
-    if (failure == null) {
-      failure = new MySQLBatchException();
+    MySQLBatchException batchException = (MySQLBatchException) failure;
+    if (batchException == null) {
+      failure = batchException = new MySQLBatchException();
     }
-    ((MySQLBatchException) failure).reportError(iteration, error);
+    batchException.reportError(iteration, error);
   }
 }
