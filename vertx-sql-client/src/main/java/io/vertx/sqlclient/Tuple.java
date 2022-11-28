@@ -231,8 +231,12 @@ public interface Tuple {
   static Tuple of(Object elt1, Object... elts) {
     ArrayTuple tuple = new ArrayTuple(1 + elts.length);
     tuple.addValue(elt1);
-    for (Object elt: elts) {
-      tuple.addValue(elt);
+    if(elts.getClass().isArray()){
+      tuple.addValue(elts);
+    } else {
+      for (Object elt: elts) {
+        tuple.addValue(elt);
+      }
     }
     return tuple;
   }
