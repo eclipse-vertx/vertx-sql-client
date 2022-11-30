@@ -24,7 +24,7 @@ You can start an external database:
 
 [source,bash]
 ----
-docker run -t -i -p 1521:1521 -e ORACLE_PASSWORD=vertx gvenzl/oracle-xe:18-slim
+docker run -t -i -p 1521:1521 -e ORACLE_PASSWORD=vertx gvenzl/oracle-xe:21-slim
 ----
 
 Then run tests against it:

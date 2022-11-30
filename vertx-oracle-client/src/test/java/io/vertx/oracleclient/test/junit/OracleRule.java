@@ -55,7 +55,7 @@ public class OracleRule extends ExternalResource {
 
   private OracleConnectOptions startOracle() throws IOException {
     String containerVersion = System.getProperty("oracle-container.version");
-    containerVersion = isNullOrEmpty(containerVersion) ? "18-slim" : containerVersion;
+    containerVersion = isNullOrEmpty(containerVersion) ? "21-slim" : containerVersion;
 
     String image = IMAGE + ":" + containerVersion;
 
