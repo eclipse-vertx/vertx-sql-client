@@ -4,6 +4,8 @@
 The Reactive MySQL Client is a client for MySQL with a straightforward API focusing on
 scalability and low overhead.
 
+The client is reactive and non-blocking, allowing to handle many database connections with a single thread.
+
 *Features*
 
 * Event driven
