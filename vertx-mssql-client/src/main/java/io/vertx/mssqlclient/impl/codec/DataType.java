@@ -396,9 +396,9 @@ public enum DataType {
       byte[] bytes = new byte[length - 1];
       for (int i = 0; i < bytes.length; i++) bytes[i] = byteBuf.getByte(byteBuf.readerIndex() + bytes.length - 1 - i);
       byteBuf.skipBytes(bytes.length);
-      BigInteger bigInteger = new BigInteger(bytes);
+      BigInteger bigInteger = new BigInteger((0 == sign) ? -1 : 1, bytes);
       BigDecimal bigDecimal = new BigDecimal(bigInteger, typeInfo.scale());
-      return sign == 0 ? bigDecimal.negate() : bigDecimal;
+      return bigDecimal;
     }
 
     @Override
