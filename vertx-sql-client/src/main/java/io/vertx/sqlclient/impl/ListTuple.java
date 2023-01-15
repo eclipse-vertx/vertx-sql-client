@@ -21,7 +21,7 @@ import io.vertx.sqlclient.Tuple;
 
 import java.util.List;
 
-public class ListTuple implements TupleInternal {
+public class ListTuple extends TupleInternal {
 
   private final List<Object> list;
 

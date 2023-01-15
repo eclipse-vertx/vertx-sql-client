@@ -4,7 +4,7 @@
 The Reactive DB2 Client is a client for DB2 with a straightforward API focusing on
 scalability and low overhead.
 
-The client is reactive and non blocking, allowing to handle many database connections with a single thread.
+The client is reactive and non-blocking, allowing to handle many database connections with a single thread.
 
 *Features*
 

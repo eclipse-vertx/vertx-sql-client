@@ -288,3 +288,23 @@ END
 
 GO
 -- Procedure for testing streaming with no cursor
+
+-- Collector API testing
+DROP TABLE IF EXISTS collector_test;
+CREATE TABLE collector_test
+(
+  id           INT,
+  test_int_2   SMALLINT,
+  test_int_4   INT,
+  test_int_8   BIGINT,
+  test_float   FLOAT,
+  test_double  DOUBLE PRECISION,
+  test_varchar VARCHAR(20)
+);
+
+INSERT INTO collector_test
+VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
+INSERT INTO collector_test
+VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
+
+-- TCK usage --

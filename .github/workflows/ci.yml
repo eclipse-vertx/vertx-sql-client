@@ -16,10 +16,10 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        profile: [PostgreSQL-9,PostgreSQL-10,PostgreSQL-11,MySQL-8.0,MySQL-5.6,MySQL-5.7,MariaDB-10.4,MSSQL-2017-latest,MSSQL-2019-latest,DB2-11.5,Oracle-18,SQL-templates]
+        profile: [PostgreSQL-9,PostgreSQL-10,PostgreSQL-11,MySQL-8.0,MySQL-5.6,MySQL-5.7,MariaDB-10.4,MSSQL-2017-latest,MSSQL-2019-latest,DB2-11.5,Oracle-21,SQL-templates]
         jdk: [8, 17]
         exclude:
-          - profile: Oracle-18
+          - profile: Oracle-21
             jdk: 8
           - profile: DB2-11.5
             jdk: 17

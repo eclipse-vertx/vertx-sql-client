@@ -16,6 +16,7 @@ import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.impl.Helper;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.impl.TupleInternal;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import oracle.jdbc.OraclePreparedStatement;
 
@@ -30,9 +31,9 @@ import java.util.stream.Collector;
 public class OraclePreparedBatch<C, R> extends QueryCommand<C, R> {
 
   private final ExtendedQueryCommand<R> query;
-  private final List<Tuple> listParams;
+  private final List<TupleInternal> listParams;
 
-  public OraclePreparedBatch(ExtendedQueryCommand<R> query, Collector<Row, C, R> collector, List<Tuple> listParams) {
+  public OraclePreparedBatch(ExtendedQueryCommand<R> query, Collector<Row, C, R> collector, List<TupleInternal> listParams) {
     super(collector);
     this.query = query;
     this.listParams = listParams;

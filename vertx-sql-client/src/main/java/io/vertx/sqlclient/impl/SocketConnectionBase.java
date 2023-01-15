@@ -37,11 +37,16 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
+import io.vertx.sqlclient.impl.command.CloseStatementCommand;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.impl.command.CompositeCommand;
+import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
 
 import java.util.ArrayDeque;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 /**
@@ -362,6 +367,10 @@ public abstract class SocketConnectionBase implements Connection {
         holder.handleClosed();
       }
     }
+  }
+
+  public boolean pipeliningEnabled() {
+    return pipeliningLimit > 1;
   }
 
   public void suspendPipeline() {

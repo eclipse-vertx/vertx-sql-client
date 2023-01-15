@@ -77,9 +77,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
       packetHeader.writeMediumLE(PACKET_PAYLOAD_LENGTH_LIMIT);
       packetHeader.writeByte(sequenceId++);
       encoder.chctx.write(packetHeader, encoder.chctx.voidPromise());
-      ByteBuf msg = payload.copy(payload.readerIndex(), PACKET_PAYLOAD_LENGTH_LIMIT);
-      payload.skipBytes(PACKET_PAYLOAD_LENGTH_LIMIT);
-      encoder.chctx.write(msg, encoder.chctx.voidPromise());
+      encoder.chctx.write(payload.readRetainedSlice(PACKET_PAYLOAD_LENGTH_LIMIT), encoder.chctx.voidPromise());
     }
 
     // send a packet with last part of the payload

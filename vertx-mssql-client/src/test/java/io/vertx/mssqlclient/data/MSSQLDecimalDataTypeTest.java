@@ -39,4 +39,9 @@ public class MSSQLDecimalDataTypeTest extends MSSQLDataTypeTestBase {
   public void testPreparedQueryLargeDecimal(TestContext ctx) {
     testPreparedQueryDecodeGenericWithoutTable(ctx, "test_decimal", "DECIMAL(30, 10)", "99999999999999999999.9999999999", new BigDecimal("99999999999999999999.9999999999"));
   }
+
+  @Test
+  public void testDecodingDecimal(TestContext ctx) {
+    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_decimal", "DECIMAL(19, 2)", "21474836.48", new BigDecimal("21474836.48"));
+  }
 }

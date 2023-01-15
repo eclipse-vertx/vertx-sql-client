@@ -4,6 +4,8 @@
 The Reactive MSSQL Client is a client for Microsoft SQL Server with a straightforward API focusing on
 scalability and low overhead.
 
+The client is reactive and non-blocking, allowing to handle many database connections with a single thread.
+
 *Features*
 
 * Event driven
@@ -212,7 +214,7 @@ The client can infer the right SQL type when executing a prepared query:
 {@link examples.MSSQLClientExamples#transparentNullHandling}
 ----
 
-Otherwise, you should declare the type explicitely using one of the {@link io.vertx.sqlclient.data.NullValue} constants or the {@link io.vertx.sqlclient.data.NullValue#of} method:
+Otherwise, you should declare the type explicitly using one of the {@link io.vertx.sqlclient.data.NullValue} constants or the {@link io.vertx.sqlclient.data.NullValue#of} method:
 
 [source,$lang]
 ----

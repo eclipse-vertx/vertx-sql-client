@@ -42,7 +42,9 @@ The {@link io.vertx.sqlclient.Row} gives you access to your data by index
 {@link examples.SqlClientExamples#queries05(io.vertx.sqlclient.Row)}
 ----
 
-or by name
+CAUTION: Column indexes start at 0, not at 1.
+
+Alternatively, data can be retrieved by name:
 
 [source,$lang]
 ----

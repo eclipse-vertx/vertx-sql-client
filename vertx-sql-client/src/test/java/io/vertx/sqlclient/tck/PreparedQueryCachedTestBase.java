@@ -119,4 +119,18 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
       }));
     }));
   }
+
+  @Test
+  public void testPreparedQueryParamInitiallyNull(TestContext ctx) {
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of(null), ctx.asyncAssertSuccess(r1 -> {
+          ctx.assertEquals(0, r1.size());
+          ps.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(r2 -> {
+            ctx.assertEquals(1, r2.size());
+          }));
+        }));
+      }));
+    }));
+  }
 }
