@@ -85,7 +85,7 @@ public class ClickhouseBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTest
   @Test
   public void testDouble(TestContext ctx) {
     //Double.MIN_VALUE is too small here
-    //Is 22.9.1.2603 broken? Fails with 'java.lang.AssertionError: Not equals : 4.9E-322 != 4.84E-322'
+    //TODO: Is 22.9.1.2603 broken? Fails with 'java.lang.AssertionError: Not equals : 4.9E-322 != 4.84E-322'
     //22.9.1.2603 docker container is broken due to a 'Poco::Exception. Code: 1000, e.code() = 0, Not found: https_port (version 22.9.1.2603 (official build))'
     //22.8.6.71 (and earlier) is fine
     testEncodeGeneric(ctx, "test_float_8", Double.class, Row::getDouble, (double) 4.9e-322);

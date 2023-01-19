@@ -33,7 +33,7 @@ public class ClickhouseResource extends ExternalResource {
     if (this.server != null) {
       return;
     }
-    DockerImageName imageName = DockerImageName.parse("yandex/clickhouse-server").withTag(clickhouseVersion());
+    DockerImageName imageName = DockerImageName.parse("clickhouse/clickhouse-server").withTag(clickhouseVersion());
     server = new ClickHouseContainer(imageName);
     server.start();
     this.options = (ClickhouseBinaryConnectOptions) new ClickhouseBinaryConnectOptions()

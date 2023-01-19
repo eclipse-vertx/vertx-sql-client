@@ -56,7 +56,7 @@ public class QueryInfo {
     if (endsWithVals) {
       return sql;
     } else {
-      //TODO: make sure there are placeholders only, maybe count placeholders count
+      //TODO: make sure there are placeholders only, maybe count placeholders amount
       int valuesIndex = QueryParsers.valuesPosForLoCaseSql(loCaseSql, typeKeywordPos);
       if (valuesIndex != -1) {
         return sql.substring(0, valuesIndex + VALUES_LENGTH);

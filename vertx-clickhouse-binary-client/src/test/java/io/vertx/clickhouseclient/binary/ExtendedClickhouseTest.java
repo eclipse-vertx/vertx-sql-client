@@ -64,6 +64,8 @@ public class ExtendedClickhouseTest {
           RowStream<Row> stream = ps.createStream(50, ArrayTuple.EMPTY);
           stream.exceptionHandler(err -> {
             LOG.error("exceptionHandler: ", err);
+            ctx.assertEquals(limit, adder.sum());
+            async.complete();
           });
           stream.endHandler(v -> {
             LOG.info("got End of stream");

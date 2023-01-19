@@ -55,7 +55,7 @@ public class ClickhouseBinaryConnectionTest extends ConnectionTestBase {
     ctx.assertTrue(md.productName().toLowerCase().contains("ClickHouse".toLowerCase()));
   }
 
-  //No way to test that reliably with latest ClickHouse versions (see InitCommandCodec); 20.11.2.1 and older work fine
+  //TODO: find a way to test that reliably with latest ClickHouse versions (see InitCommandCodec); 20.11.2.1 and older work fine
   @Override
   @Test
   public void testConnectInvalidDatabase(TestContext ctx) {

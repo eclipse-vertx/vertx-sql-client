@@ -250,7 +250,7 @@ public class ClickHouseCityHash {
   }
 
 
-  //TODO: switch to external jar, see https://github.com/ClickHouse/clickhouse-jdbc/issues/600
+  //TODO: maybe switch to external jar, see https://github.com/ClickHouse/clickhouse-jdbc/issues/600
   public static long[] cityHash128(byte[] s, int pos, int len) {
 
     if (len >= 16) {

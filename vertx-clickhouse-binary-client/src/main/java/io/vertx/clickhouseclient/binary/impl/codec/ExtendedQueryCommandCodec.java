@@ -63,9 +63,9 @@ public class ExtendedQueryCommandCodec<T> extends SimpleQueryCommandCodec<T> {
         ChannelHandlerContext chctx = encoder.chctx();
         PacketForge forge = new PacketForge(encoder.getConn(), chctx);
         ClickhouseBinaryDatabaseMetadata md = encoder.getConn().getDatabaseMetaData();
-        List<Tuple> paramsList = ecmd.paramsList();
+        List<? extends Tuple> paramsList = ecmd.paramsList();
         if (paramsList != null && !paramsList.isEmpty()) {
-          RowOrientedBlock block = new RowOrientedBlock(ps.rowDesc(), paramsList, md);
+          RowOrientedBlock block = new RowOrientedBlock(ps.rowDesc(), (List<Tuple>) paramsList, md);
           forge.sendColumns(block, buf, null);
         }
         forge.sendData(buf, new RowOrientedBlock(ClickhouseBinaryRowDesc.EMPTY, Collections.emptyList(), md),"");

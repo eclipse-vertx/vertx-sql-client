@@ -119,7 +119,7 @@ public class ClickhouseBinaryColumnDescriptor implements ColumnDescriptor {
     return unparsedNativeType;
   }
 
-  //TODO smagellan: remove?
+  //TODO: remove?
   @Deprecated
   public String getUnparsedNativeType() {
     return unparsedNativeType;
