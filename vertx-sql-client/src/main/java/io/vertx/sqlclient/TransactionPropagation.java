@@ -15,15 +15,15 @@ import java.util.function.Function;
 
 /**
  * Defines how the acquired connection will be managed during the execution of the function provided in
- * {@link Pool#withTransaction(TransactionMode, Function)}.
+ * {@link Pool#withTransaction(TransactionPropagation, Function)}.
  */
-public enum TransactionMode {
+public enum TransactionPropagation {
 
   /**
    * The acquired connection is not stored anywhere, making it local to the provided function execution and to
-   * whereever it is passed.
+   * wherever it is passed.
    */
-  DEFAULT,
+  NONE,
 
   /**
    * Keeps the acquired connection stored in the local context for as long as the given function executes.
@@ -31,6 +31,6 @@ public enum TransactionMode {
    * will retrieve this connection from the context instead of creating another.
    * The connection is removed from the local context when the function block has completed.
    */
-  PROPAGATABLE
+  CONTEXT
 
 }

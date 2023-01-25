@@ -155,9 +155,9 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     });
   }
 
-  public <T> Future<@Nullable T> withTransaction(TransactionMode mode,
+  public <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation,
                                                  Function<SqlConnection, Future<@Nullable T>> function) {
-    if (mode == TransactionMode.PROPAGATABLE) {
+    if (txPropagation == TransactionPropagation.CONTEXT) {
       ContextInternal context = (ContextInternal) Vertx.currentContext();
       SqlConnection sqlConnection = context.getLocal(PROPAGATABLE_CONNECTION);
       if (sqlConnection == null) {

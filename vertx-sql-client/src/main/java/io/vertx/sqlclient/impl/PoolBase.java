@@ -72,9 +72,9 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
   }
 
   @Override
-  public <T> Future<@Nullable T> withTransaction(TransactionMode mode,
+  public <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation,
                                                  Function<SqlConnection, Future<@Nullable T>> function) {
-    return delegate.withTransaction(mode, function);
+    return delegate.withTransaction(txPropagation, function);
   }
 
   @Override
