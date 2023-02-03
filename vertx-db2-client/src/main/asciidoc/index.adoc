@@ -1,5 +1,5 @@
 = Reactive DB2 Client
-:PREPARED_PARAMS: `?`​
+:PREPARED_PARAMS: `?`
 
 The Reactive DB2 Client is a client for DB2 with a straightforward API focusing on
 scalability and low overhead.

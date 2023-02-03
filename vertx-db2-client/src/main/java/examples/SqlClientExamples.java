@@ -52,7 +52,7 @@ public class SqlClientExamples {
 
   public void queries02(SqlClient client) {
     client
-      .preparedQuery("SELECT * FROM users WHERE id=$1")
+      .preparedQuery("SELECT * FROM users WHERE id=?")
       .execute(Tuple.of("andy"), ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
@@ -80,7 +80,7 @@ public class SqlClientExamples {
 
   public void queries04(SqlClient client) {
     client
-      .preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)")
+      .preparedQuery("INSERT INTO users (first_name, last_name) VALUES (?, ?)")
       .execute(Tuple.of("Andy", "Guibert"),  ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
@@ -119,7 +119,7 @@ public class SqlClientExamples {
 
     // Execute the prepared batch
     client
-      .preparedQuery("INSERT INTO USERS (id, name) VALUES ($1, $2)")
+      .preparedQuery("INSERT INTO USERS (id, name) VALUES (?, ?)")
       .executeBatch(batch, res -> {
       if (res.succeeded()) {
 
@@ -149,7 +149,7 @@ public class SqlClientExamples {
 
   public void queries10(SqlConnection sqlConnection) {
     sqlConnection
-      .prepare("SELECT * FROM users WHERE id= ?", ar -> {
+      .prepare("SELECT * FROM users WHERE id = ?", ar -> {
         if (ar.succeeded()) {
           PreparedStatement preparedStatement = ar.result();
           preparedStatement.query()
@@ -194,7 +194,7 @@ public class SqlClientExamples {
   }
 
   public void usingConnections02(SqlConnection connection) {
-    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE ?", ar1 -> {
       if (ar1.succeeded()) {
         PreparedStatement pq = ar1.result();
         pq.query().execute(Tuple.of("andy"), ar2 -> {
