@@ -54,9 +54,6 @@ public class ClickhouseBinaryConnectionFactory extends ConnectionFactoryBase {
     } else if ("lz4_unsafe".equals(name)) {
       return LZ4Factory.unsafeInstance();
     }
-    if (!"I_know_uncompressed_connections_are_broken_and_want_to_continue_anyway".equals(name)) {
-      throw new IllegalArgumentException("uncompressed connections are broken");
-    }
     return null;
   }
 
