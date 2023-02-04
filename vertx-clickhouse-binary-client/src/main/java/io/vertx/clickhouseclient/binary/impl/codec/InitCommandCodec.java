@@ -32,8 +32,11 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
 
   private boolean failedLogin;
 
-  InitCommandCodec(InitCommand cmd) {
+  private final boolean ignoreDbName;
+
+  InitCommandCodec(InitCommand cmd, boolean ignoreDbName) {
     super(cmd);
+    this.ignoreDbName = ignoreDbName;
   }
 
   @Override
@@ -48,7 +51,7 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MAJOR, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MINOR, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_REVISION, buf);
-    ByteBufUtils.writePascalString(cmd.database(), buf);
+    ByteBufUtils.writePascalString(ignoreDbName ? "" : cmd.database(), buf);
     ByteBufUtils.writePascalString(cmd.username(), buf);
     ByteBufUtils.writePascalString(cmd.password(), buf);
     encoder.chctx().writeAndFlush(buf, encoder.chctx().voidPromise());

@@ -19,6 +19,7 @@ import io.netty.channel.ChannelPromise;
 import io.vertx.clickhouseclient.binary.impl.ClickhouseBinarySocketConnection;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
@@ -28,6 +29,10 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
 
   private final ArrayDeque<ClickhouseBinaryCommandCodec<?, ?>> inflight;
   private final ClickhouseBinarySocketConnection conn;
+  private final boolean enableExtraSwitchDbCommand = true;
+  private boolean useExtraSwitchDbCommand;
+  private boolean sentSwitchDbCommand;
+  private boolean finishedInit;
 
   private ChannelHandlerContext chctx;
 
@@ -73,9 +78,24 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
     codec.completionHandler = resp -> {
       ClickhouseBinaryCommandCodec<?, ?> c = inflight.poll();
       resp.cmd = (CommandBase) c.cmd;
-      chctx.fireChannelRead(resp);
-      if (c instanceof InitCommandCodec) {
+      boolean initCodecCommand = c instanceof InitCommandCodec;
+      if (initCodecCommand) {
         conn.setInitCommandCodec((InitCommandCodec) c);
+        String db = conn.initCommandCodec().cmd.database();
+        useExtraSwitchDbCommand = enableExtraSwitchDbCommand && !(db == null || db.isEmpty());
+      }
+      if (useExtraSwitchDbCommand && initCodecCommand) {
+        InitCommandCodec initCommandCodec = (InitCommandCodec) c;
+        LOG.info("sending USE db command");
+        String query = "USE " + initCommandCodec.cmd.database() + ";";
+        write(new SimpleQueryCommand(query, false, false, QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER));
+        sentSwitchDbCommand = true;
+      } else {
+        if (sentSwitchDbCommand && !finishedInit) {
+          resp.cmd = (CommandBase)conn.initCommandCodec().cmd;
+          finishedInit = true;
+        }
+        chctx.fireChannelRead(resp);
       }
     };
     inflight.add(codec);
@@ -84,7 +104,7 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
 
   private ClickhouseBinaryCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
     if (cmd instanceof InitCommand) {
-      return new InitCommandCodec((InitCommand) cmd);
+      return new InitCommandCodec((InitCommand) cmd, useExtraSwitchDbCommand);
     } else if (cmd instanceof SimpleQueryCommand) {
       return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd, conn);
     } else if (cmd instanceof CloseConnectionCommand) {
