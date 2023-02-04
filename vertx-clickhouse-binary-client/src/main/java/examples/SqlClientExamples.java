@@ -286,11 +286,16 @@ public class SqlClientExamples {
   }
 
   public void poolConfig01(ClickhouseBinaryConnectOptions server1, ClickhouseBinaryConnectOptions server2, ClickhouseBinaryConnectOptions server3, PoolOptions options) {
-    throw new IllegalStateException("TODO smagellan");
+    ClickhouseBinaryPool pool = ClickhouseBinaryPool.pool(Arrays.asList(server1, server2, server3), options);
   }
 
-  public void poolConfig02(Pool pool, String sql) {
-    throw new IllegalStateException("TODO smagellan");
+  public void poolConfig02(ClickhouseBinaryPool pool, String sql) {
+    pool.connectHandler(conn -> {
+      conn.query(sql).execute().onSuccess(res -> {
+        // Release the connection to the pool, ready to be used by the application
+        conn.close();
+      });
+    });
   }
 
   public void poolSharing1(Vertx vertx, ClickhouseBinaryConnectOptions database, int maxSize) {

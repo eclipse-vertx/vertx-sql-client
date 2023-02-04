@@ -95,20 +95,22 @@ public class ClickhouseColumns {
                                                                          boolean nullable, boolean isArray,
                                                                          boolean isLowCardinality) {
     boolean unsigned = spec.startsWith("U");
-    //newer versions (at least clickhouse/clickhouse-server:22.9.3.18) return Bool,
     //older versions (at least yandex/clickhouse-server:20.10.2) return Int8 for bool types
-    //TODO: maybe change type to JDBCType.BOOLEAN for Bool/Boolean types
-    if (spec.equals("UInt8") || spec.equals("Int8") || spec.equals("Bool") || spec.equals("Boolean")) {
-      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, UInt8ColumnReader.ELEMENT_SIZE, JDBCType.TINYINT, nullable, unsigned, isLowCardinality,
+    //newer versions (at least clickhouse/clickhouse-server:22.9.3.18) return Bool,
+    if (spec.equals("UInt8") || spec.equals("Int8")) {
+      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, SignedInt8ColumnReader.ELEMENT_SIZE, JDBCType.TINYINT, nullable, unsigned, isLowCardinality,
         unsigned ? 0 : -128, unsigned ? 255 : 127);
+    } else if (spec.equals("Bool") || spec.equals("Boolean")) {
+      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, SignedInt8ColumnReader.ELEMENT_SIZE, JDBCType.BOOLEAN, nullable, unsigned, isLowCardinality,
+        0, 1);
     } else if (spec.equals("UInt16") || spec.equals("Int16")) {
-      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16ColumnReader.ELEMENT_SIZE, JDBCType.SMALLINT, nullable, unsigned, isLowCardinality,
+      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, SignedInt16ColumnReader.ELEMENT_SIZE, JDBCType.SMALLINT, nullable, unsigned, isLowCardinality,
         unsigned ? 0 : -32768, unsigned ? 65535 : 32767);
     } if (spec.equals("UInt32") || spec.equals("Int32")) {
-      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec,  isArray, UInt32ColumnReader.ELEMENT_SIZE, JDBCType.INTEGER, nullable, unsigned, isLowCardinality,
+      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec,  isArray, SignedInt32ColumnReader.ELEMENT_SIZE, JDBCType.INTEGER, nullable, unsigned, isLowCardinality,
         unsigned ? 0 : -2147483648L, unsigned ? 4294967295L : 2147483647L);
     } if (spec.equals("UInt64") || spec.equals("Int64")) {
-      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec,  isArray, UInt64ColumnReader.ELEMENT_SIZE, JDBCType.BIGINT, nullable, unsigned, isLowCardinality,
+      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec,  isArray, SignedInt64ColumnReader.ELEMENT_SIZE, JDBCType.BIGINT, nullable, unsigned, isLowCardinality,
         unsigned ? BigInteger.ZERO : new BigInteger("-9223372036854775808"),
         unsigned ? new BigInteger("18446744073709551615") : new BigInteger("9223372036854775807"));
     } if (spec.equals("Int128")) {
@@ -144,7 +146,7 @@ public class ClickhouseColumns {
       return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, enumBitsSize / 8,
         JDBCType.OTHER, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("Nothing".equals(spec)) {
-      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, UInt8ColumnReader.ELEMENT_SIZE,
+      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, SignedInt8ColumnReader.ELEMENT_SIZE,
         JDBCType.NULL, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("Float32".equals(spec)) {
       return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, Float32ColumnReader.ELEMENT_SIZE,
@@ -153,10 +155,10 @@ public class ClickhouseColumns {
       return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, Float64ColumnReader.ELEMENT_SIZE,
         JDBCType.DOUBLE, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("Date".equals(spec)) {
-      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, UInt16ColumnReader.ELEMENT_SIZE,
+      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, SignedInt16ColumnReader.ELEMENT_SIZE,
         JDBCType.DATE, nullable, true, isLowCardinality, 0, 65535, null, null);
     } else if (spec.startsWith(INTERVAL_PREFIX)) {
-      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, UInt64ColumnReader.ELEMENT_SIZE,
+      return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, SignedInt64ColumnReader.ELEMENT_SIZE,
         JDBCType.OTHER, nullable, false, isLowCardinality, null, null, null, null);
     } else if ("IPv4".equals(spec)) {
       return new ClickhouseBinaryColumnDescriptor(name, unparsedSpec, spec, isArray, IPv4Column.ELEMENT_SIZE,
@@ -205,12 +207,14 @@ public class ClickhouseColumns {
     JDBCType jdbcType = descr.jdbcType();
     if (jdbcType == JDBCType.TINYINT || jdbcType == JDBCType.NULL) {
       return new UInt8Column(descr);
+    } else if (jdbcType == JDBCType.BOOLEAN) {
+      return new BooleanColumn(descr);
     } else if (jdbcType == JDBCType.SMALLINT) {
       return new UInt16Column(descr);
     } else if (jdbcType == JDBCType.INTEGER) {
       return new UInt32Column(descr);
     } else if (jdbcType == JDBCType.BIGINT) {
-      if (descr.getElementSize() == UInt64ColumnReader.ELEMENT_SIZE) {
+      if (descr.getElementSize() == SignedInt64ColumnReader.ELEMENT_SIZE) {
         return new UInt64Column(descr);
       } else if (descr.getElementSize() == Int128Column.ELEMENT_SIZE) {
         return new Int128Column(descr);

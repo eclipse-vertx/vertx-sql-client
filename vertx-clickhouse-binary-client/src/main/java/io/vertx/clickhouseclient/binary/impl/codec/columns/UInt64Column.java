@@ -30,7 +30,10 @@ public class UInt64Column extends ClickhouseColumn {
 
   @Override
   public ClickhouseColumnReader reader(int nRows) {
-    return new UInt64ColumnReader(nRows, descriptor);
+    if (descriptor.isUnsigned()) {
+      return new UnsignedInt64ColumnReader(nRows, descriptor);
+    }
+    return new SignedInt64ColumnReader(nRows, descriptor);
   }
 
   @Override

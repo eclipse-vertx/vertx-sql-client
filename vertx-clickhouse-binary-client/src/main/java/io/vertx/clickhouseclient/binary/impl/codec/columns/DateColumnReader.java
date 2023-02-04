@@ -17,7 +17,7 @@ import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryColumnDescrip
 
 import java.time.LocalDate;
 
-public class DateColumnReader extends UInt16ColumnReader {
+public class DateColumnReader extends UnsignedInt16ColumnReader {
   public static final LocalDate[] EMPTY_ARRAY = new LocalDate[0];
 
   public static final LocalDate MIN_VALUE = LocalDate.of(1970, 1, 1);

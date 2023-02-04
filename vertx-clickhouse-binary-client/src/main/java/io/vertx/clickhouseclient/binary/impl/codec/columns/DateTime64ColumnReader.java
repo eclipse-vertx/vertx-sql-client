@@ -38,7 +38,7 @@ public class DateTime64ColumnReader extends ClickhouseColumnReader {
       OffsetDateTime[] data = new OffsetDateTime[nRows];
       for (int i = 0; i < nRows; ++i) {
         if (nullsMap == null || !nullsMap.get(i)) {
-          BigInteger bi = UInt64ColumnReader.unsignedBi(in.readLongLE());
+          BigInteger bi = SignedInt64ColumnReader.unsignedBi(in.readLongLE());
           long seconds = bi.divide(invTickSize).longValueExact();
           long nanos = bi.remainder(invTickSize).longValueExact();
           OffsetDateTime dt = Instant.ofEpochSecond(seconds, nanos).atZone(zoneId).toOffsetDateTime();

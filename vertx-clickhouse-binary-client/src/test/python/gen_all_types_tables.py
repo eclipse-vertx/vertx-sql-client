@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
-ELEMENTARY_TYPES = ['Int8', 'UInt8', 'Int16', 'UInt16', 'Int32', 'UInt32', 'Int64', 'UInt64', 'Int128', 'String',
+ELEMENTARY_TYPES = [ 'Boolean',
+                     'Int8', 'UInt8', 'Int16', 'UInt16', 'Int32', 'UInt32', 'Int64', 'UInt64', 'Int128', 'String',
                     {'table': 'FixedString', 'type': 'FixedString(12)'},
                     'DateTime', {'table': 'datetime64', 'type': 'DateTime64(3)'}, 'Date', 'UUID',
                     {'table': 'Decimal32', 'type': 'Decimal32(4)'},

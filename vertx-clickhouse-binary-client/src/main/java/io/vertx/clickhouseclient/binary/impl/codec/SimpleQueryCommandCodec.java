@@ -113,7 +113,7 @@ public class SimpleQueryCommandCodec<T> extends ClickhouseBinaryQueryCommandBase
         }
         if (packet instanceof Throwable) {
           Throwable t = (Throwable) packet;
-          LOG.error("unknown packet type or server exception", t);
+          LOG.debug("unknown packet type or server exception", t);
           notifyOperationUpdate(false, t);
         }
       }

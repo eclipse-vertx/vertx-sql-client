@@ -61,11 +61,6 @@ public class ClickhouseBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTest
   }
 
   @Test
-  public void testBoolean(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_boolean", Byte.class, JDBCType.TINYINT, (byte) 1);
-  }
-
-  @Test
   public void testSelectAll(TestContext ctx) {
     //no time support
     connector.connect(ctx.asyncAssertSuccess(conn -> {
@@ -99,8 +94,8 @@ public class ClickhouseBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTest
         ctx.assertEquals(Numeric.create(999.99), row.getValue("test_numeric"));
         ctx.assertEquals(Numeric.create(12345), row.get(Numeric.class, 6));
         ctx.assertEquals(Numeric.create(12345), row.getValue("test_decimal"));
-        ctx.assertEquals((byte)1, row.getValue(7));
-        ctx.assertEquals((byte)1, row.getValue("test_boolean"));
+        ctx.assertEquals(true, row.getValue(7));
+        ctx.assertEquals(true, row.getValue("test_boolean"));
         ctx.assertEquals("testchar", row.getString(8));
         ctx.assertEquals("testchar", row.getString("test_char"));
         ctx.assertEquals("testvarchar", row.getString(9));

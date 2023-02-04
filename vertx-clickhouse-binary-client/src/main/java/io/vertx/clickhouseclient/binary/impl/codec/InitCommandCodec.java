@@ -18,7 +18,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.vertx.clickhouseclient.binary.ClickhouseConstants;
 import io.vertx.clickhouseclient.binary.impl.ClickhouseBinaryDatabaseMetadata;
 import io.vertx.clickhouseclient.binary.impl.ClickhouseServerException;
-import io.vertx.core.Handler;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.Connection;
@@ -76,11 +75,14 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
         }
         //caveat: there should be another way to distinguish failed/success logins for adjacent HELLO + Exception packets
         if (in.readableBytes() == 0) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("logged in");
+          }
           completionHandler.handle(CommandResponse.success(null));
           return;
         }
         failedLogin = true;
-        //in.readableBytes() != 0 => failed login
+        //in.readableBytes() != 0 => failed login (wrong credentials, non-existent db, etc), there should be an incoming Exception packet
         handleFailedLogin(ctx, in);
       } else if (packet.getClass() == ClickhouseServerException.class) {
         //easy case: no HELLO packet, just an exception

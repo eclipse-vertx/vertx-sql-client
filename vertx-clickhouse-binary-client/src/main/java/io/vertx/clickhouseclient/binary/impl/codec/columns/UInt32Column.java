@@ -27,7 +27,10 @@ public class UInt32Column extends ClickhouseColumn {
 
   @Override
   public ClickhouseColumnReader reader(int nRows) {
-    return new UInt32ColumnReader(nRows, descriptor);
+    if (descriptor.isUnsigned()) {
+      return new UnsignedInt32ColumnReader(nRows, descriptor);
+    }
+    return new SignedInt32ColumnReader(nRows, descriptor);
   }
 
   @Override

@@ -3,41 +3,13 @@ package io.vertx.clickhouseclient.binary.impl.codec.columns;
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryColumnDescriptor;
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseStreamDataSource;
 
-import java.util.BitSet;
-
-
-public class BooleanColumnReader extends ClickhouseColumnReader {
+public class BooleanColumnReaderAsArray extends ClickhouseColumnReader {
   public static final int ELEMENT_SIZE = 1;
-  protected BooleanColumnReader(int nRows, ClickhouseBinaryColumnDescriptor columnDescriptor) {
+  protected BooleanColumnReaderAsArray(int nRows, ClickhouseBinaryColumnDescriptor columnDescriptor) {
     super(nRows, columnDescriptor);
   }
 
-  @Override
-  protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    return columnDescriptor.isArray() ? super.getElementInternal(rowIdx, desired) : ((BitSet)itemsArray).get(rowIdx);
-  }
-
-
   protected Object readItems(ClickhouseStreamDataSource in) {
-    return columnDescriptor.isArray() ? readItemsArray(in) : readItemsBitSet(in);
-  }
-
-  protected Object readItemsBitSet(ClickhouseStreamDataSource in) {
-    if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
-      BitSet data = new BitSet(nRows);
-      for (int i = 0; i < nRows; ++i) {
-        if (nullsMap == null || !nullsMap.get(i)) {
-          data.set(i, in.readBoolean());
-        } else {
-          in.skipBytes(ELEMENT_SIZE);
-        }
-      }
-      return data;
-    }
-    return null;
-  }
-
-  protected Object readItemsArray(ClickhouseStreamDataSource in) {
     if (in.readableBytes() >= ELEMENT_SIZE * nRows) {
       boolean[] data = new boolean[nRows];
       for (int i = 0; i < nRows; ++i) {

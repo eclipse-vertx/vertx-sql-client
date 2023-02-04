@@ -19,7 +19,7 @@ import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class IPv4ColumnReader extends UInt32ColumnReader {
+public class IPv4ColumnReader extends UnsignedInt32ColumnReader {
 
   public IPv4ColumnReader(int nRows, ClickhouseBinaryColumnDescriptor descriptor) {
     super(nRows, descriptor);

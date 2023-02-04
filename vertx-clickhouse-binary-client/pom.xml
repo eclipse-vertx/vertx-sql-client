@@ -159,7 +159,7 @@
               <embedded.clickhouse.version>${embedded.clickhouse.version}</embedded.clickhouse.version>
               <connection.uri>${connection.uri}</connection.uri>
               <!-- TODO: implement encryption -->
-              <tls.connection.uri>${tls.connection.uri}</tls.connection.uri>
+              <!--tls.connection.uri>${tls.connection.uri}</tls.connection.uri-->
             </systemPropertyVariables>
           </configuration>
         </plugin>

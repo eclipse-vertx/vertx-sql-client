@@ -15,14 +15,13 @@ package io.vertx.clickhouseclient.binary.impl.codec.columns;
 
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryColumnDescriptor;
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseStreamDataSource;
-import io.vertx.sqlclient.data.Numeric;
 
 import java.math.BigInteger;
 
-public class UInt64ColumnReader extends ClickhouseColumnReader {
+public class SignedInt64ColumnReader extends ClickhouseColumnReader {
   public static final int ELEMENT_SIZE = 8;
 
-  public UInt64ColumnReader(int nRows, ClickhouseBinaryColumnDescriptor columnDescriptor) {
+  public SignedInt64ColumnReader(int nRows, ClickhouseBinaryColumnDescriptor columnDescriptor) {
     super(nRows, columnDescriptor);
   }
 
@@ -46,18 +45,15 @@ public class UInt64ColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    long element = ((long[])this.itemsArray)[rowIdx];
-    if (columnDescriptor.isUnsigned()) {
-      return Numeric.create(unsignedBi(element));
-    }
-    return element;
+    return primitive(rowIdx);
+  }
+
+  protected long primitive(int rowIdx) {
+    return ((long[]) this.itemsArray)[rowIdx];
   }
 
   @Override
   protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
-    if (columnDescriptor.isUnsigned()) {
-      return new Numeric[dim1][dim2];
-    }
     if (desired == long.class) {
       return new long[dim1][dim2];
     }
@@ -66,9 +62,6 @@ public class UInt64ColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object allocateOneDimArray(Class<?> desired, int length) {
-    if (columnDescriptor.isUnsigned()) {
-      return new Numeric[length];
-    }
     if (desired == long.class) {
       return new long[length];
     }

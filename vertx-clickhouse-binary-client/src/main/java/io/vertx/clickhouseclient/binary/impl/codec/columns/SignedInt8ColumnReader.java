@@ -16,10 +16,10 @@ package io.vertx.clickhouseclient.binary.impl.codec.columns;
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryColumnDescriptor;
 import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseStreamDataSource;
 
-public class UInt8ColumnReader extends ClickhouseColumnReader {
+public class SignedInt8ColumnReader extends ClickhouseColumnReader {
   public static final int ELEMENT_SIZE = 1;
 
-  public UInt8ColumnReader(int nRows, ClickhouseBinaryColumnDescriptor columnDescriptor) {
+  public SignedInt8ColumnReader(int nRows, ClickhouseBinaryColumnDescriptor columnDescriptor) {
     super(nRows, columnDescriptor);
   }
 
@@ -41,21 +41,15 @@ public class UInt8ColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    byte element = ((byte[])this.itemsArray)[rowIdx];
-    if (columnDescriptor.isUnsigned()) {
-      return (short)Byte.toUnsignedInt(element);
-    }
-    return element;
+    return primitive(rowIdx);
+  }
+
+  protected byte primitive(int rowIdx) {
+    return ((byte[]) this.itemsArray)[rowIdx];
   }
 
   @Override
   protected Object[] allocateTwoDimArray(Class<?> desired, int dim1, int dim2) {
-    if (columnDescriptor.isUnsigned()) {
-      if (desired == short.class) {
-        return new short[dim1][dim2];
-      }
-      return new Short[dim1][dim2];
-    }
     if (desired == byte.class) {
       return new byte[dim1][dim2];
     }
@@ -64,12 +58,6 @@ public class UInt8ColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object allocateOneDimArray(Class<?> desired, int length) {
-    if (columnDescriptor.isUnsigned()) {
-      if (desired == short.class) {
-        return new short[length];
-      }
-      return new Short[length];
-    }
     if (desired == byte.class) {
       return new byte[length];
     }

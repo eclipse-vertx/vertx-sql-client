@@ -60,9 +60,4 @@ public class ClickhouseBinaryTextDataTypeDecodeTest extends TextDataTypeDecodeTe
   public void testTime(TestContext ctx) {
     //no time support
   }
-
-  @Test
-  public void testBoolean(TestContext ctx) {
-    testDecodeGeneric(ctx, "test_boolean", Byte.class, (byte)1);
-  }
 }

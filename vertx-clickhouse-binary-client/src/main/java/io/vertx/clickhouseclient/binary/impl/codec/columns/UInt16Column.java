@@ -28,7 +28,10 @@ public class UInt16Column extends ClickhouseColumn {
 
   @Override
   public ClickhouseColumnReader reader(int nRows) {
-    return new UInt16ColumnReader(nRows, descriptor);
+    if (descriptor.isUnsigned()) {
+      return new UnsignedInt16ColumnReader(nRows, descriptor);
+    }
+    return new SignedInt16ColumnReader(nRows, descriptor);
   }
 
   @Override

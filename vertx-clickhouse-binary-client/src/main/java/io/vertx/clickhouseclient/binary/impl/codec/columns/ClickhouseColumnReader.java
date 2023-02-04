@@ -28,6 +28,7 @@ public abstract class ClickhouseColumnReader {
   protected final int nRows;
   protected final ClickhouseBinaryColumnDescriptor columnDescriptor;
   protected BitSet nullsMap;
+  //TODO: parametrize class with type of itemsArray?
   protected Object itemsArray;
 
   private long bytesConsumed;

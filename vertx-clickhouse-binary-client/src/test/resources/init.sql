@@ -8,8 +8,7 @@ CREATE TABLE immutable
 (
   id      Int32,
   message varchar(2048)
-) engine = MergeTree()
-         ORDER BY (id);
+) engine = Memory();
 
 INSERT INTO immutable (id, message) VALUES (1, 'fortune: No such file or directory');
 INSERT INTO immutable (id, message) VALUES (2, 'A computer scientist is someone who fixes things that aren''t broken.');
@@ -31,8 +30,7 @@ CREATE TABLE mutable
 (
   id  Int32,
   val varchar(2048)
-) engine = MergeTree()
-           ORDER BY (id);
+) engine = Memory();
 
 -- basic data type table --
 -- used by TCK
@@ -51,15 +49,14 @@ CREATE TABLE basicdatatype
     test_char    Nullable(FixedString(8)),
     test_varchar Nullable(String(20)),
     test_date    Nullable(DATE)
-) engine = MergeTree()
-        ORDER BY (id);
+) engine = Memory();
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8,
                           test_float_4, test_float_8, test_numeric, test_decimal,
                           test_boolean, test_char, test_varchar,
                           test_date)
 VALUES (1, 32767, 2147483647, 9223372036854775807,
         3.40282E38, 1.7976931348623157E308, 999.99, 12345,
-        1, 'testchar', 'testvarchar',
+        true, 'testchar', 'testvarchar',
         '2019-01-01');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8,
                           test_float_4, test_float_8, test_numeric, test_decimal,
@@ -67,7 +64,7 @@ INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8,
                           test_date)
 VALUES (2, 32767, 2147483647, 9223372036854775807,
         3.40282E38, 1.7976931348623157E308, 999.99, 12345,
-        1, 'testchar', 'testvarchar',
+        true, 'testchar', 'testvarchar',
         '2019-01-01');
 INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8,
                           test_float_4, test_float_8, test_numeric, test_decimal,
@@ -86,8 +83,7 @@ CREATE TABLE collector_test
     test_float   Float32,
     test_double  Float64,
     test_varchar VARCHAR(20)
-) engine = MergeTree()
-          ORDER BY (id);
+) engine = Memory();
 INSERT INTO collector_test VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WORLD');
 INSERT INTO collector_test VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
@@ -105,8 +101,7 @@ CREATE TABLE Fortune
 (
     id      Int32,
     message String
-) engine = MergeTree()
-           ORDER BY (id);
+) engine = Memory();
 
 INSERT INTO Fortune (id, message)
 VALUES (1, 'fortune: No such file or directory');
@@ -139,6 +134,22 @@ VALUES (12, 'フレームワークのベンチマーク');
 --almost all possible supported types tables(maybe except experimental ones)
 set allow_suspicious_low_cardinality_types=true;
 set allow_experimental_bigint_types=true;
+DROP TABLE IF EXISTS vertx_test_boolean;
+CREATE TABLE vertx_test_boolean (
+    id Int8,
+    simple_t Boolean,
+    nullable_t Nullable(Boolean),
+    array_t Array(Boolean),
+    array3_t Array(Array(Array(Boolean))),
+    nullable_array_t Array(Nullable(Boolean)),
+    nullable_array3_t Array(Array(Array(Nullable(Boolean)))),
+    simple_lc_t LowCardinality(Boolean),
+    nullable_lc_t LowCardinality(Nullable(Boolean)),
+    array_lc_t Array(LowCardinality(Boolean)),
+    array3_lc_t Array(Array(Array(LowCardinality(Boolean)))),
+    nullable_array_lc_t Array(LowCardinality(Nullable(Boolean))),
+    nullable_array3_lc_t Array(Array(Array(LowCardinality(Nullable(Boolean)))))
+) engine = Memory();
 DROP TABLE IF EXISTS vertx_test_int8;
 CREATE TABLE vertx_test_int8 (
     id Int8,

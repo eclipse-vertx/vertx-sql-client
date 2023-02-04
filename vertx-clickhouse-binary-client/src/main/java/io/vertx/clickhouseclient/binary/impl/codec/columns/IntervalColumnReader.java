@@ -17,7 +17,7 @@ import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryColumnDescrip
 
 import java.time.Duration;
 
-public class IntervalColumnReader extends UInt64ColumnReader {
+public class IntervalColumnReader extends SignedInt64ColumnReader {
   private final Duration multiplier;
 
   public IntervalColumnReader(int nRows, ClickhouseBinaryColumnDescriptor descriptor, Duration multiplier) {

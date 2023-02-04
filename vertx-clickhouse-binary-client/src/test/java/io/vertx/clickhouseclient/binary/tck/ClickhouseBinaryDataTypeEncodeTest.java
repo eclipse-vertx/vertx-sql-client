@@ -78,21 +78,24 @@ public class ClickhouseBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTest
   }
 
   @Test
-  public void testBoolean(TestContext ctx) {
-    testEncodeGeneric(ctx, "test_boolean", Byte.class, null, (byte)0);
+  @Override
+  public void testDouble(TestContext ctx) {
+    //Double.MIN_VALUE does not work here (due to 4.9E-324 != 0.0 error)
+    //22.9.1.2603: Fails with 'java.lang.AssertionError: Not equals : 4.9E-322 != 4.84E-322'
+    //No way to test with 22.9.1.2603: docker container is broken due to a 'Poco::Exception. Code: 1000, e.code() = 0, Not found: https_port (version 22.9.1.2603 (official build))'
+    //22.8.6.71 (and earlier) is fine
+    testEncodeGeneric(ctx, "test_float_8", Double.class, Row::getDouble, (double) Double.MIN_VALUE * 2);
   }
 
   @Test
-  public void testDouble(TestContext ctx) {
-    //Double.MIN_VALUE is too small here
-    //TODO: Is 22.9.1.2603 broken? Fails with 'java.lang.AssertionError: Not equals : 4.9E-322 != 4.84E-322'
-    //22.9.1.2603 docker container is broken due to a 'Poco::Exception. Code: 1000, e.code() = 0, Not found: https_port (version 22.9.1.2603 (official build))'
-    //22.8.6.71 (and earlier) is fine
-    testEncodeGeneric(ctx, "test_float_8", Double.class, Row::getDouble, (double) 4.9e-322);
+  @Override
+  public void testFloat4(TestContext ctx) {
+    testEncodeGeneric(ctx, "test_float_4", Float.class, Row::getFloat, -2.402823e38F);
   }
 
   //no time support, copied and modified test from parent
   @Test
+  @Override
   public void testNullValues(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn

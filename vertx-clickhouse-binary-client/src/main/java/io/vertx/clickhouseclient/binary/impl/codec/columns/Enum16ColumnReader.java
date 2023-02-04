@@ -17,7 +17,7 @@ import io.vertx.clickhouseclient.binary.impl.codec.ClickhouseBinaryColumnDescrip
 
 import java.util.Map;
 
-public class Enum16ColumnReader extends UInt16ColumnReader implements EnumColumnReader {
+public class Enum16ColumnReader extends SignedInt16ColumnReader implements EnumColumnReader {
   public static final int ELEMENT_SIZE = 2;
   private final EnumColumnDecoder columnRecoder;
 
