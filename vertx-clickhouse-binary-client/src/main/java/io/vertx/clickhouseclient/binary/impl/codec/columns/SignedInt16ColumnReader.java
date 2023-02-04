@@ -41,11 +41,15 @@ public class UInt16ColumnReader extends ClickhouseColumnReader {
 
   @Override
   protected Object getElementInternal(int rowIdx, Class<?> desired) {
-    short element = ((short[])this.itemsArray)[rowIdx];
+    short element = element(rowIdx);
     if (columnDescriptor.isUnsigned()) {
       return Short.toUnsignedInt(element);
     }
     return element;
+  }
+
+  protected short element(int rowIdx) {
+    return ((short[]) this.itemsArray)[rowIdx];
   }
 
   @Override
