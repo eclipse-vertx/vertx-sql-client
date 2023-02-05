@@ -31,9 +31,7 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
   private final ClickhouseBinarySocketConnection conn;
 
   private InitCommand initCommand;
-  private boolean useExtraSwitchDbCommand;
-  private boolean sentSwitchDbCommand;
-  private boolean finishedInit;
+  private DbSwitchState dbSwitchState;
 
   private ChannelHandlerContext chctx;
 
@@ -80,21 +78,22 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
       ClickhouseBinaryCommandCodec<?, ?> c = inflight.poll();
       resp.cmd = (CommandBase) c.cmd;
       boolean initCodecCommand = c instanceof InitCommandCodec;
+      InitCommandCodec initCommandCodec = initCodecCommand ? (InitCommandCodec) c : null;
       if (initCodecCommand) {
-        this.initCommand = ((InitCommandCodec) c).cmd;
-        String db = this.initCommand.database();
-        useExtraSwitchDbCommand = !(db == null || db.isEmpty());
+        this.initCommand = initCommandCodec.cmd;
+        String dbName = initCommand.database();
+        dbSwitchState = (dbName == null || dbName.isEmpty()) ? null : DbSwitchState.NeedDbSwitch;
       }
-      if (useExtraSwitchDbCommand && initCodecCommand) {
-        InitCommandCodec initCommandCodec = (InitCommandCodec) c;
-        LOG.info("sending USE db command");
+      if (dbSwitchState == DbSwitchState.NeedDbSwitch && initCodecCommand) {
         String query = "USE " + initCommandCodec.cmd.database() + ";";
+        LOG.info("sending '" + query + "' command");
+
         write(new SimpleQueryCommand(query, false, false, QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER));
-        sentSwitchDbCommand = true;
+        dbSwitchState = DbSwitchState.SentSwitchCommand;
       } else {
-        if (sentSwitchDbCommand && !finishedInit) {
+        if (dbSwitchState == DbSwitchState.SentSwitchCommand) {
           resp.cmd = (CommandBase)initCommand;
-          finishedInit = true;
+          dbSwitchState = DbSwitchState.SwitchedDb;
         }
         chctx.fireChannelRead(resp);
       }
@@ -145,5 +144,11 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
     CommandResponse<Object> resp = CommandResponse.failure(ex);
     resp.cmd = cmd;
     chctx.fireChannelRead(resp);
+  }
+
+  private enum DbSwitchState {
+    NeedDbSwitch,
+    SentSwitchCommand,
+    SwitchedDb
   }
 }
