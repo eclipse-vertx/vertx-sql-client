@@ -29,7 +29,8 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
 
   private final ArrayDeque<ClickhouseBinaryCommandCodec<?, ?>> inflight;
   private final ClickhouseBinarySocketConnection conn;
-  private final boolean enableExtraSwitchDbCommand = true;
+
+  private InitCommand initCommand;
   private boolean useExtraSwitchDbCommand;
   private boolean sentSwitchDbCommand;
   private boolean finishedInit;
@@ -80,9 +81,9 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
       resp.cmd = (CommandBase) c.cmd;
       boolean initCodecCommand = c instanceof InitCommandCodec;
       if (initCodecCommand) {
-        conn.setInitCommandCodec((InitCommandCodec) c);
-        String db = conn.initCommandCodec().cmd.database();
-        useExtraSwitchDbCommand = enableExtraSwitchDbCommand && !(db == null || db.isEmpty());
+        this.initCommand = ((InitCommandCodec) c).cmd;
+        String db = this.initCommand.database();
+        useExtraSwitchDbCommand = !(db == null || db.isEmpty());
       }
       if (useExtraSwitchDbCommand && initCodecCommand) {
         InitCommandCodec initCommandCodec = (InitCommandCodec) c;
@@ -92,7 +93,7 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
         sentSwitchDbCommand = true;
       } else {
         if (sentSwitchDbCommand && !finishedInit) {
-          resp.cmd = (CommandBase)conn.initCommandCodec().cmd;
+          resp.cmd = (CommandBase)initCommand;
           finishedInit = true;
         }
         chctx.fireChannelRead(resp);
@@ -104,7 +105,7 @@ public class ClickhouseBinaryEncoder extends ChannelOutboundHandlerAdapter {
 
   private ClickhouseBinaryCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
     if (cmd instanceof InitCommand) {
-      return new InitCommandCodec((InitCommand) cmd, useExtraSwitchDbCommand);
+      return new InitCommandCodec((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
       return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd, conn);
     } else if (cmd instanceof CloseConnectionCommand) {

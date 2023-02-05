@@ -16,35 +16,20 @@ package io.vertx.clickhouseclient.binary.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import io.vertx.clickhouseclient.binary.impl.ClickhouseBinarySocketConnection;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.List;
 
 public class ClickhouseBinaryDecoder extends ByteToMessageDecoder {
-  private static final Logger LOG = LoggerFactory.getLogger(ClickhouseBinaryDecoder.class);
-
   private final ArrayDeque<ClickhouseBinaryCommandCodec<?, ?>> inflight;
-  private final ClickhouseBinarySocketConnection conn;
 
-  public ClickhouseBinaryDecoder(ArrayDeque<ClickhouseBinaryCommandCodec<?, ?>> inflight, ClickhouseBinarySocketConnection conn) {
+  public ClickhouseBinaryDecoder(ArrayDeque<ClickhouseBinaryCommandCodec<?, ?>> inflight) {
     this.inflight = inflight;
-    this.conn = conn;
   }
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     ClickhouseBinaryCommandCodec<?, ?> codec = inflight.peek();
-    if (codec == null) {
-      InitCommandCodec initCommandCodec = conn.initCommandCodec();
-      if (initCommandCodec != null) {
-        LOG.info("handling failed login after server HELLO packet");
-        initCommandCodec.handleFailedLogin(ctx, in);
-      }
-      return;
-    }
     codec.decode(ctx, in);
   }
 }

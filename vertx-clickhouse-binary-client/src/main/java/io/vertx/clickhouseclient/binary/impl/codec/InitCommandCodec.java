@@ -30,13 +30,8 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
   private PacketReader packetReader;
   private String fullClientName;
 
-  private boolean failedLogin;
-
-  private final boolean ignoreDbName;
-
-  InitCommandCodec(InitCommand cmd, boolean ignoreDbName) {
+  InitCommandCodec(InitCommand cmd) {
     super(cmd);
-    this.ignoreDbName = ignoreDbName;
   }
 
   @Override
@@ -51,7 +46,10 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MAJOR, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_VERSION_MINOR, buf);
     ByteBufUtils.writeULeb128(ClickhouseConstants.CLIENT_REVISION, buf);
-    ByteBufUtils.writePascalString(ignoreDbName ? "" : cmd.database(), buf);
+    //Do not send db-name explicitly: it is almost impossible to catch exception-after-hello packet in newer versions (e.g. database does not exist).
+    //Instead, send explicit 'USE db-name' after hello packet if db-name is non-empty.
+    //Old versions answer with Exception-only (no HELLO/metadata packet)
+    ByteBufUtils.writePascalString("", buf);
     ByteBufUtils.writePascalString(cmd.username(), buf);
     ByteBufUtils.writePascalString(cmd.password(), buf);
     encoder.chctx().writeAndFlush(buf, encoder.chctx().voidPromise());
@@ -62,9 +60,6 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
 
   @Override
   void decode(ChannelHandlerContext ctx, ByteBuf in) {
-    if (failedLogin) {
-      handleFailedLogin(ctx, in);
-    }
     if (packetReader == null) {
       packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), fullClientName, cmd.properties(), encoder.getConn().lz4Factory());
     }
@@ -76,19 +71,8 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
         if (LOG.isDebugEnabled()) {
           LOG.debug("connected to server: " + md + "; readableBytes: " + in.readableBytes());
         }
-        //caveat: there should be another way to distinguish failed/success logins for adjacent HELLO + Exception packets
-        if (in.readableBytes() == 0) {
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("logged in");
-          }
-          completionHandler.handle(CommandResponse.success(null));
-          return;
-        }
-        failedLogin = true;
-        //in.readableBytes() != 0 => failed login (wrong credentials, non-existent db, etc), there should be an incoming Exception packet
-        handleFailedLogin(ctx, in);
+        completionHandler.handle(CommandResponse.success(null));
       } else if (packet.getClass() == ClickhouseServerException.class) {
-        //easy case: no HELLO packet, just an exception
         ClickhouseServerException exc = (ClickhouseServerException)packet;
         completionHandler.handle(CommandResponse.failure(exc));
       } else {
@@ -97,20 +81,6 @@ public class InitCommandCodec extends ClickhouseBinaryCommandCodec<Connection, I
         completionHandler.handle(CommandResponse.failure(new RuntimeException(msg)));
       }
       packetReader = null;
-    }
-  }
-
-  void handleFailedLogin(ChannelHandlerContext ctx, ByteBuf in) {
-    if (packetReader.packetType() == ServerPacketType.HELLO) {
-      //traces of the previous HELLO packet, need to recreate the packetReader
-      packetReader = new PacketReader(encoder.getConn().getDatabaseMetaData(), fullClientName, cmd.properties(), encoder.getConn().lz4Factory());
-    }
-    ClickhouseServerException exc = (ClickhouseServerException) packetReader.receivePacket(ctx.alloc(), in);
-    if (exc != null) {
-      if (LOG.isInfoEnabled()) {
-        LOG.info("handling failed login: " + exc);
-      }
-      completionHandler.handle(CommandResponse.failure(exc));
     }
   }
 }

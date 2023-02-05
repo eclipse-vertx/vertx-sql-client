@@ -33,7 +33,7 @@ public class ClickhouseBinaryCodec extends CombinedChannelDuplexHandler<Clickhou
   public ClickhouseBinaryCodec(ClickhouseBinarySocketConnection conn) {
     inflight = new ArrayDeque<>();
     ClickhouseBinaryEncoder encoder = new ClickhouseBinaryEncoder(inflight, conn);
-    ClickhouseBinaryDecoder decoder = new ClickhouseBinaryDecoder(inflight, conn);
+    ClickhouseBinaryDecoder decoder = new ClickhouseBinaryDecoder(inflight);
     init(decoder, encoder);
   }
 
