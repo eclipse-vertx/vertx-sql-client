@@ -15,11 +15,12 @@
  */
 package io.vertx.db2client.impl.codec;
 
-import java.util.ArrayDeque;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.db2client.impl.DB2SocketConnection;
+import io.vertx.sqlclient.ClosedChannelException;
+
+import java.util.ArrayDeque;
 
 public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encoder> {
 
@@ -33,18 +34,16 @@ public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encode
     DB2Decoder decoder = new DB2Decoder(inflight);
     init(decoder, encoder);
   }
-  
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands("Failed to read any response from the server, the underlying connection may have been lost unexpectedly.");
+    clearInflightCommands(ClosedChannelException.INSTANCE);
     super.channelInactive(ctx);
   }
 
-  private void clearInflightCommands(String failureMsg) {
+  private void clearInflightCommands(Throwable failure) {
     for (CommandCodec<?, ?> commandCodec : inflight) {
-      commandCodec.cmd.fail(failureMsg);
+      commandCodec.cmd.fail(failure);
     }
   }
-
 }
