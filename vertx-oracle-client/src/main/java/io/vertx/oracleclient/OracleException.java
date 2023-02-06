@@ -11,34 +11,21 @@
 
 package io.vertx.oracleclient;
 
-import io.vertx.core.VertxException;
+import io.vertx.sqlclient.DatabaseException;
+
+import java.sql.SQLException;
 
 /**
- * A {@link RuntimeException} thrown when a Reactive Oracle Client error occurs.
+ * The {@link DatabaseException} for Oracle.
  */
-public class OracleException extends VertxException {
+public class OracleException extends DatabaseException {
 
-  public OracleException(String message) {
-    super(message);
+  public OracleException(String message, int errorCode, String sqlState) {
+    super(message, errorCode, sqlState);
   }
 
-  public OracleException(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public OracleException(Throwable cause) {
-    super(cause);
-  }
-
-  public OracleException(String message, boolean noStackTrace) {
-    super(message, noStackTrace);
-  }
-
-  public OracleException(String message, Throwable cause, boolean noStackTrace) {
-    super(message, cause, noStackTrace);
-  }
-
-  public OracleException(Throwable cause, boolean noStackTrace) {
-    super(cause, noStackTrace);
+  public OracleException(SQLException e) {
+    super(e.getMessage(), e.getErrorCode(), e.getSQLState());
+    initCause(e);
   }
 }

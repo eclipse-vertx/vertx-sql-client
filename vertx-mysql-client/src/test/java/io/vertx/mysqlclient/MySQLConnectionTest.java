@@ -15,6 +15,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.ClosedChannelException;
 import io.vertx.sqlclient.Row;
 import org.junit.After;
 import org.junit.Before;
@@ -75,7 +76,7 @@ public class MySQLConnectionTest extends MySQLTestBase {
   public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn1 -> {
       conn1.query("DO SLEEP(20)").execute(ctx.asyncAssertFailure(t -> {
-        ctx.assertEquals("Fail to read any response from the server, the underlying connection might get lost unexpectedly.", t.getMessage());
+        ctx.assertTrue(t instanceof ClosedChannelException);
       }));
       MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn2 -> {
         conn2.query("SHOW PROCESSLIST").execute(ctx.asyncAssertSuccess(processRes -> {

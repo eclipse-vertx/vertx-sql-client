@@ -11,13 +11,15 @@
 
 package io.vertx.mssqlclient;
 
+import io.vertx.sqlclient.DatabaseException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link RuntimeException} signals that an error occurred.
+ * The {@link DatabaseException} for MS SQL Server.
  */
-public class MSSQLException extends RuntimeException {
+public class MSSQLException extends DatabaseException {
 
   private final int number;
   private final byte state;
@@ -29,7 +31,7 @@ public class MSSQLException extends RuntimeException {
   private List<MSSQLException> additional;
 
   public MSSQLException(int number, byte state, byte severity, String message, String serverName, String procedureName, int lineNumber) {
-    super(null, null, false, false);
+    super(null, number, null);
     this.number = number;
     this.state = state;
     this.severity = severity;

@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.json.Json;
+import io.vertx.sqlclient.DatabaseException;
 
 /**
  * PostgreSQL error including all <a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">fields
@@ -25,7 +26,7 @@ import io.vertx.core.json.Json;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgException extends RuntimeException {
+public class PgException extends DatabaseException {
 
   private static String formatMessage(String errorMessage, String severity, String code) {
     StringBuilder sb = new StringBuilder();
@@ -66,7 +67,7 @@ public class PgException extends RuntimeException {
   private final String constraint;
 
   public PgException(String errorMessage, String severity, String code, String detail) {
-    super(formatMessage(errorMessage, severity, code));
+    super(formatMessage(errorMessage, severity, code), 0, code);
     this.errorMessage = errorMessage;
     this.severity = severity;
     this.code = code;
@@ -89,7 +90,7 @@ public class PgException extends RuntimeException {
   public PgException(String errorMessage, String severity, String code, String detail, String hint, String position,
                      String internalPosition, String internalQuery, String where, String file, String line, String routine,
                      String schema, String table, String column, String dataType, String constraint) {
-    super(formatMessage(errorMessage, severity, code));
+    super(formatMessage(errorMessage, severity, code), 0, code);
     this.errorMessage = errorMessage;
     this.severity = severity;
     this.code = code;

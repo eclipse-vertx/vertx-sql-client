@@ -11,45 +11,14 @@
 
 package io.vertx.mysqlclient;
 
+import io.vertx.sqlclient.DatabaseException;
+
 /**
- * {@code MySQLException} is the class representing that a MySQL error packet is received from the server,
- * This usually signals that an error occurred during a connection establishment or command executions.
+ * The {@link DatabaseException} for MySQL.
  */
-public class MySQLException extends RuntimeException {
-  private final int errorCode;
-  private final String sqlState;
+public class MySQLException extends DatabaseException {
 
   public MySQLException(String message, int errorCode, String sqlState) {
-    super(message);
-    this.errorCode = errorCode;
-    this.sqlState = sqlState;
-  }
-
-  /**
-   * Get the error code in the error message sent from MySQL server.
-   *
-   * @return the error code
-   */
-  public int getErrorCode() {
-    return errorCode;
-  }
-
-  /**
-   * Get the SQL state in the error message sent from MySQL server.
-   *
-   * @return the SQL state
-   */
-  public String getSqlState() {
-    return sqlState;
-  }
-
-  /**
-   * Get the error message in the error message sent from MySQL server.
-   *
-   * @return the error message
-   */
-  @Override
-  public String getMessage() {
-    return super.getMessage();
+    super(message, errorCode, sqlState);
   }
 }
