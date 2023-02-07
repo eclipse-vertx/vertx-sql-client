@@ -95,8 +95,8 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
 
     // 2. Create and set up an SSLHelper and SSLHandler
     SSLHelper helper = new SSLHelper(options, options.getApplicationLayerProtocols());
-    return helper.init(options.getSslOptions(), context).compose(provider -> {
-      SslHandler sslHandler = provider.createSslHandler(context.owner(), socket.remoteAddress(), null, false);
+    return helper.buildChannelProvider(options.getSslOptions(), context).compose(provider -> {
+      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, false);
 
       // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
       TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
