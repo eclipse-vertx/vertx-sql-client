@@ -37,6 +37,11 @@ public class OraclePreparedQueryTest extends PreparedQueryTestBase {
   }
 
   @Override
+  protected boolean cursorRequiresTx() {
+    return false;
+  }
+
+  @Override
   @Test
   @Ignore("unsupported")
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
@@ -49,55 +54,6 @@ public class OraclePreparedQueryTest extends PreparedQueryTestBase {
       ctx.assertEquals("Invalid column index", t.getMessage());
     };
     super.testPreparedQueryParamCoercionQuantityError(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore("to be investigated")
-  public void testQueryCursor(TestContext ctx) {
-    super.testQueryCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore("to be investigated")
-  public void testQueryCloseCursor(TestContext ctx) {
-    super.testQueryCloseCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore("to be investigated")
-  public void testQueryStreamCloseCursor(TestContext ctx) {
-    super.testQueryStreamCloseCursor(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore("to be investigated")
-  public void testStreamQuery(TestContext ctx) {
-    super.testStreamQuery(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore("to be investigated")
-  public void testStreamQueryPauseInBatch(TestContext ctx) {
-    super.testStreamQueryPauseInBatch(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore("to be investigated")
-  public void testStreamQueryPauseInBatchFromAnotherThread(TestContext ctx) {
-    super.testStreamQueryPauseInBatchFromAnotherThread(ctx);
-  }
-
-  @Override
-  @Test
-  @Ignore("to be investigated")
-  public void testStreamQueryPauseResume(TestContext ctx) {
-    super.testStreamQueryPauseResume(ctx);
   }
 }
 

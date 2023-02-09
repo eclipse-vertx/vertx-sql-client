@@ -11,12 +11,12 @@ scalability and low overhead.
 * Java 8 Date and Time
 * SSL/TLS
 * RxJava API
+* Cursor
+* Row streaming
 
 *Not supported yet*
 
 * Prepared queries caching
-* Cursor
-* Row streaming
 * Stored Procedures
 
 WARNING: this module is in tech preview

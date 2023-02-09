@@ -84,9 +84,10 @@ public abstract class PreparedQueryTestBase {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .prepare(statement("SELECT id, message from immutable where id=", ""))
+        .compose(PreparedStatement::close)
         .onComplete(ctx.asyncAssertSuccess(result -> {
-        conn.close();
-      }));
+          conn.close();
+        }));
     }));
   }
 

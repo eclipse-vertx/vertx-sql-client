@@ -12,6 +12,8 @@ package io.vertx.sqlclient;
 
 import io.vertx.core.VertxException;
 
+import java.sql.SQLException;
+
 /**
  * Base class for database failures.
  */
@@ -22,6 +24,12 @@ public abstract class DatabaseException extends VertxException {
 
   protected DatabaseException(String message, int errorCode, String sqlState) {
     super(message, true);
+    this.errorCode = errorCode;
+    this.sqlState = sqlState;
+  }
+
+  public DatabaseException(String message, int errorCode, String sqlState, SQLException cause) {
+    super(message, cause, true);
     this.errorCode = errorCode;
     this.sqlState = sqlState;
   }
