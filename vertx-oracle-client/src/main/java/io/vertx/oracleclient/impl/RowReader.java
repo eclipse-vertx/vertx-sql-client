@@ -13,128 +13,158 @@ package io.vertx.oracleclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.oracleclient.OracleException;
 import io.vertx.oracleclient.impl.commands.OraclePreparedQuery;
+import io.vertx.oracleclient.impl.commands.OracleResponse;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.RowDesc;
 import oracle.jdbc.OracleResultSet;
 
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Flow;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-import static io.vertx.oracleclient.impl.Helper.convertSqlValue;
+import static io.vertx.oracleclient.impl.Helper.*;
 
-public class RowReader<R, A> implements Flow.Subscriber<Row>, Function<oracle.jdbc.OracleRow, Row> {
+public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jdbc.OracleRow, Row> {
 
-  private final List<String> types;
-  private final Flow.Publisher<Row> publisher;
+  private static final Logger LOG = LoggerFactory.getLogger(RowReader.class);
+
   private final ContextInternal context;
+  private final List<String> types;
   private final RowDesc description;
-  private final QueryResultHandler<R> handler;
-  private volatile Flow.Subscription subscription;
-  private final Promise<Void> subscriptionPromise;
-  private Promise<Void> readPromise;
-  private volatile boolean completed;
-  private volatile Throwable failed;
-  private final Collector<Row, A, R> collector;
-  private A accumulator;
-  private int count;
-  private final AtomicInteger toRead = new AtomicInteger();
+  private final Statement resultSetStatement;
 
-  private final AtomicBoolean wip = new AtomicBoolean();
+  // The following fields must be read/updated on the RowReader context
 
-  public RowReader(OracleResultSet ors, Collector<Row, A, R> collector, Promise<Void> subscriptionPromise, QueryResultHandler<R> handler, ContextInternal context) throws SQLException {
-    int cols = ors.getMetaData().getColumnCount();
-    types = new ArrayList<>(cols);
-    for (int i = 1; i <= cols; i++) {
-      types.add(ors.getMetaData().getColumnClassName(i));
-    }
-    this.publisher = ors.publisherOracle(this);
-    this.description = OracleRowDesc.create(ors.getMetaData());
-    this.subscriptionPromise = subscriptionPromise;
-    this.handler = handler;
+  private final Collector<Row, C, R> collector;
+
+  // The following fields become non-null depending on the state  of the RowReader
+  // The states are: subscribing, subscribed, fetching, fetched, closing, closed
+
+  private Flow.Subscription subscription;
+  private Promise<OracleResponse<R>> readPromise;
+  private ArrayDeque<Row> queue;
+  private int fetchSize;
+  private Promise<Void> closePromise;
+
+  public RowReader(ContextInternal context, Collector<Row, C, R> collector, OracleResultSet ors) throws SQLException {
     this.context = context;
     this.collector = collector;
-  }
-
-  public static <R> Future<RowReader<R, ?>> create(OracleResultSet ors,
-                                                   Collector<Row, ?, R> collector,
-                                                   ContextInternal context,
-                                                   QueryResultHandler<R> handler) throws SQLException {
-    Promise<Void> promise = context.promise();
-    RowReader<R, ?> reader = new RowReader<>(ors, collector, promise, handler, context);
-    reader.subscribe();
-    return promise.future().map(reader);
-  }
-
-  public Future<Void> read(int fetchSize) {
-    if (subscription == null) {
-      return context.failedFuture(new IllegalStateException("Not subscribed"));
+    resultSetStatement = ors.getStatement();
+    ResultSetMetaData metaData = ors.getMetaData();
+    int cols = metaData.getColumnCount();
+    types = new ArrayList<>(cols);
+    for (int i = 1; i <= cols; i++) {
+      types.add(metaData.getColumnClassName(i));
     }
-    if (completed) {
-      return context.succeededFuture();
-    }
-    if (failed != null) {
-      return context.failedFuture(failed);
-    }
-    if (wip.compareAndSet(false, true)) {
-      toRead.set(fetchSize);
-      accumulator = collector.supplier().get();
-      count = 0;
-      readPromise = context.promise();
-      subscription.request(fetchSize);
-      return readPromise.future();
-    } else {
-      return context.failedFuture(new IllegalStateException("Read already in progress"));
-    }
-  }
-
-  private void subscribe() {
-    this.publisher.subscribe(this);
+    Flow.Publisher<Row> publisher = ors.publisherOracle(this);
+    description = OracleRowDesc.create(metaData);
+    publisher.subscribe(this);
   }
 
   @Override
-  public void onSubscribe(Flow.Subscription subscription) {
-    this.subscription = subscription;
-    context.runOnContext(x -> this.subscriptionPromise.complete(null));
+  public void onSubscribe(Flow.Subscription sub) {
+    context.runOnContext(v -> {
+      if (closePromise != null) {
+        sub.cancel();
+        return;
+      }
+      subscription = sub;
+    });
+  }
+
+  public Future<OracleResponse<R>> read(int fetchSize) {
+    Promise<OracleResponse<R>> promise = context.owner().promise();
+    context.runOnContext(v -> {
+      if (closePromise != null) {
+        promise.fail("RowReader is closed");
+        return;
+      }
+      if (subscription == null) {
+        promise.fail("Subscription is not ready yet");
+        return;
+      }
+      if (readPromise != null) {
+        promise.fail("Read is already in progress");
+        return;
+      }
+      this.fetchSize = fetchSize;
+      readPromise = context.promise();
+      if (queue == null) {
+        queue = new ArrayDeque<>(fetchSize + 1);
+        executeBlocking(context, () -> subscription.request(fetchSize + 1));
+      } else {
+        executeBlocking(context, () -> subscription.request(fetchSize));
+      }
+      readPromise.future().onComplete(promise);
+    });
+    return promise.future();
   }
 
   @Override
   public void onNext(Row item) {
-    collector.accumulator().accept(accumulator, item);
-    count++;
-    if (toRead.decrementAndGet() == 0 && wip.compareAndSet(true, false)) {
-      R result = collector.finisher().apply(accumulator);
-      try {
-        handler.handleResult(count, count, description, result, null);
-      } catch (Exception e) {
-        e.printStackTrace();
+    context.runOnContext(v -> {
+      if (closePromise != null) {
+        return;
       }
-      readPromise.complete();
-    }
+      queue.add(item);
+      if (queue.size() > fetchSize) {
+        OracleResponse<R> response = createResponse();
+        readPromise.complete(response);
+        readPromise = null;
+      }
+    });
   }
 
   @Override
   public void onError(Throwable throwable) {
-    if (wip.compareAndSet(true, false)) {
-      failed = throwable;
-      handler.handleResult(0, 0, description, null, throwable);
-    }
+    context.runOnContext(v -> {
+      if (closePromise != null) {
+        LOG.trace("Dropping subscription failure", throwable);
+        return;
+      }
+      closePromise = context.promise();
+      executeBlocking(context, () -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
+      readPromise.fail(throwable);
+    });
   }
 
   @Override
   public void onComplete() {
-    if (wip.compareAndSet(true, false)) {
-      completed = true;
-      context.runOnContext(x -> readPromise.complete(null));
+    context.runOnContext(v -> {
+      if (closePromise != null) {
+        return;
+      }
+      closePromise = context.promise();
+      executeBlocking(context, () -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
+      OracleResponse<R> response = createResponse();
+      queue = null;
+      readPromise.complete(response);
+    });
+  }
+
+  private OracleResponse<R> createResponse() {
+    OracleResponse<R> response = new OracleResponse<>(-1);
+    BiConsumer<C, Row> accumulator = collector.accumulator();
+    C container = collector.supplier().get();
+    int size = 0;
+    Row row;
+    while (size < fetchSize && (row = queue.poll()) != null) {
+      size++;
+      accumulator.accept(container, row);
     }
+    response.push(collector.finisher().apply(container), description, size);
+    return response;
   }
 
   @Override
@@ -161,5 +191,33 @@ public class RowReader<R, A> implements Flow.Subscriber<Row>, Function<oracle.jd
     } catch (ClassNotFoundException e) {
       return null;
     }
+  }
+
+  public Future<Void> close() {
+    Promise<Void> promise = context.owner().promise();
+    context.runOnContext(v -> {
+      if (closePromise != null) {
+        closePromise.future().onComplete(promise);
+        return;
+      }
+      closePromise = context.promise();
+      closePromise.future().onComplete(promise);
+      if (subscription != null) {
+        subscription.cancel();
+      }
+      if (readPromise != null) {
+        readPromise.fail("Subscription has been canceled");
+      }
+      executeBlocking(context, () -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
+    });
+    return promise.future();
+  }
+
+  public Future<Boolean> hasMore() {
+    Promise<Boolean> promise = context.owner().promise();
+    context.runOnContext(v -> {
+      promise.complete(queue != null && !queue.isEmpty());
+    });
+    return promise.future();
   }
 }

@@ -12,18 +12,11 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import oracle.jdbc.OracleConnection;
-
-import java.sql.SQLException;
-import java.sql.Statement;
 
 public abstract class AbstractCommand<T> extends CommandBase<T> {
 
   public abstract Future<T> execute(OracleConnection conn, ContextInternal context);
-
-  protected void applyStatementOptions(Statement statement) throws SQLException {
-  }
 
 }

@@ -25,7 +25,6 @@ public class OracleException extends DatabaseException {
   }
 
   public OracleException(SQLException e) {
-    super(e.getMessage(), e.getErrorCode(), e.getSQLState());
-    initCause(e);
+    super(e.getMessage(), e.getErrorCode(), e.getSQLState(), e);
   }
 }

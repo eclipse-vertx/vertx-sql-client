@@ -81,9 +81,12 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPrepare(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare(statement("SELECT id, message from immutable where id=", ""), ctx.asyncAssertSuccess(result -> {
-        conn.close();
-      }));
+      conn
+        .prepare(statement("SELECT id, message from immutable where id=", ""))
+        .compose(PreparedStatement::close)
+        .onComplete(ctx.asyncAssertSuccess(result -> {
+          conn.close();
+        }));
     }));
   }
 

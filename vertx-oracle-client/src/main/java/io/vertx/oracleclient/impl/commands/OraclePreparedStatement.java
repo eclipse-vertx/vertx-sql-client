@@ -22,7 +22,6 @@ public class OraclePreparedStatement implements io.vertx.sqlclient.impl.Prepared
 
   private final String sql;
   private final RowDesc rowDesc;
-  private final ParamDesc paramDesc;
 
   public OraclePreparedStatement(String sql, java.sql.PreparedStatement preparedStatement) throws SQLException {
     ResultSetMetaData metaData = preparedStatement.getMetaData();
@@ -34,12 +33,11 @@ public class OraclePreparedStatement implements io.vertx.sqlclient.impl.Prepared
     }
     this.sql = sql;
     this.rowDesc = rowDesc;
-    this.paramDesc = new ParamDesc();
   }
 
   @Override
   public ParamDesc paramDesc() {
-    return paramDesc;
+    throw new UnsupportedOperationException();
   }
 
   @Override
