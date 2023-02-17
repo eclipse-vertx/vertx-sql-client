@@ -202,7 +202,7 @@ NOTE: Configuring parameters in connection URI will override the default propert
 === environment variables
 
 You can also use environment variables to set default connection setting values, this is useful
-when you want to avoid hard-coding database connection information. You can refer to the https://www.postgresql.org/docs/9.6/static/libpq-envars.html[official documentation]
+when you want to avoid hard-coding database connection information. You can refer to the https://www.postgresql.org/docs/current/libpq-envars.html[official documentation]
 for more details. The following parameters are supported:
 
 * `PGHOST`
