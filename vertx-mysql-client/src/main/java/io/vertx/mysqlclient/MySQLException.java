@@ -18,7 +18,15 @@ import io.vertx.sqlclient.DatabaseException;
  */
 public class MySQLException extends DatabaseException {
 
-  public MySQLException(String message, int errorCode, String sqlState) {
-    super(message, errorCode, sqlState);
+  public MySQLException(String errorMessage, int errorCode, String sqlState) {
+    super(formatMessage(errorMessage, errorCode, sqlState), errorCode, sqlState);
+  }
+
+  private static String formatMessage(String errorMessage, int errorCode, String sqlState) {
+    return "{" +
+      "errorMessage=" + errorMessage +
+      ", errorCode=" + errorCode +
+      ", sqlState=" + sqlState +
+      "}";
   }
 }

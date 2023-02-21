@@ -24,10 +24,14 @@ public class DB2Exception extends DatabaseException {
   private static final long serialVersionUID = -1793293963771077543L;
 
   public DB2Exception(int errorCode, String sqlState) {
-    super("An error occurred with a DB2 operation. SQLCODE=" + errorCode + "  SQLSTATE=" + sqlState, errorCode, sqlState);
+    super(formatMessage(null, errorCode, sqlState), errorCode, sqlState);
   }
 
   public DB2Exception(String message, int errorCode, String sqlState) {
-    super(message, errorCode, sqlState);
+    super(formatMessage(message, errorCode, sqlState), errorCode, sqlState);
+  }
+
+  private static String formatMessage(String message, int errorCode, String sqlState) {
+    return (message != null ? message : "An error occurred with a DB2 operation") + ", SQLCODE=" + errorCode + "  SQLSTATE=" + sqlState;
   }
 }
