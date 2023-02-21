@@ -261,10 +261,4 @@ public class PgException extends DatabaseException {
   public String getInternalQuery() {
     return internalQuery;
   }
-
-  private static void append(StringBuffer stringBuffer, String key, String value) {
-    if (value != null) {
-      stringBuffer.append(", \"").append(key).append("\": ").append(Json.encode(value));
-    }
-  }
 }
