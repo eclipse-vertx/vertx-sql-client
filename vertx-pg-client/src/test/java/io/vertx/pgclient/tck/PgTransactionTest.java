@@ -15,21 +15,19 @@
  */
 package io.vertx.pgclient.tck;
 
-import io.vertx.core.Future;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.PgException;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.TransactionTestBase;
+import org.junit.ClassRule;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class PgTransactionTest extends TransactionTestBase {
@@ -85,7 +83,7 @@ public class PgTransactionTest extends TransactionTestBase {
         .onComplete(ctx.asyncAssertFailure(failure -> {
           PgException pgEx = (PgException) failure;
           // foreign key constraint violation
-          ctx.assertEquals("23503", pgEx.getCode());
+          ctx.assertEquals("23503", pgEx.getSqlState());
         }));
     }));
   }
@@ -99,7 +97,7 @@ public class PgTransactionTest extends TransactionTestBase {
         .onComplete(ctx.asyncAssertSuccess(v -> {
           res.client.exceptionHandler(err -> {
             PgException pgErr = (PgException) err;
-            ctx.assertEquals("25P03", pgErr.getCode());
+            ctx.assertEquals("25P03", pgErr.getSqlState());
             async.countDown();
           });
           res.client.closeHandler(v2 -> {

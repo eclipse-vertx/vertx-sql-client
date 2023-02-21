@@ -24,14 +24,30 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.data.*;
-import io.vertx.sqlclient.*;
+import io.vertx.pgclient.data.Box;
+import io.vertx.pgclient.data.Circle;
+import io.vertx.pgclient.data.Interval;
+import io.vertx.pgclient.data.Line;
+import io.vertx.pgclient.data.LineSegment;
+import io.vertx.pgclient.data.Path;
+import io.vertx.pgclient.data.Point;
+import io.vertx.pgclient.data.Polygon;
+import io.vertx.sqlclient.Cursor;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowIterator;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.RowStream;
+import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.reflect.Array;
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
@@ -160,7 +176,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
       conn.prepare("invalid", ctx.asyncAssertFailure(err -> {
         PgException pgErr = (PgException) err;
-        ctx.assertEquals(ErrorCodes.syntax_error, pgErr.getCode());
+        ctx.assertEquals(ErrorCodes.syntax_error, pgErr.getSqlState());
         async.complete();
       }));
     }));
@@ -284,7 +300,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           cursor.read(1, ctx.asyncAssertFailure(err -> {
             PgException pgErr = (PgException) err;
             // This fails expectedly because the portal is closed
-            ctx.assertEquals("34000", pgErr.getCode()); // invalid_cursor_name
+            ctx.assertEquals("34000", pgErr.getSqlState()); // invalid_cursor_name
           }));
         }));
       }));

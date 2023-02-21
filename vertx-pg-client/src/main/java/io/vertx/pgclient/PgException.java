@@ -50,7 +50,6 @@ public class PgException extends DatabaseException {
 
   private final String errorMessage;
   private final String severity;
-  private final String code;
   private final String detail;
   private final String hint;
   private final String position;
@@ -70,7 +69,6 @@ public class PgException extends DatabaseException {
     super(formatMessage(errorMessage, severity, code), 0, code);
     this.errorMessage = errorMessage;
     this.severity = severity;
-    this.code = code;
     this.detail = detail;
     this.hint = null;
     this.position = null;
@@ -93,7 +91,6 @@ public class PgException extends DatabaseException {
     super(formatMessage(errorMessage, severity, code), 0, code);
     this.errorMessage = errorMessage;
     this.severity = severity;
-    this.code = code;
     this.detail = detail;
     this.hint = hint;
     this.position = position;
@@ -128,13 +125,22 @@ public class PgException extends DatabaseException {
   }
 
   /**
+   * @deprecated use {@link #getSqlState()} instead
+   */
+  @Deprecated
+  public String getCode() {
+    return getSqlState();
+  }
+
+  /**
    * @return the SQLSTATE code for the error
    * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'S' field</a>,
    * <a href="https://www.postgresql.org/docs/current/errcodes-appendix.html">value list</a>),
    * it is never localized
    */
-  public String getCode() {
-    return code;
+  @Override
+  public String getSqlState() {
+    return super.getSqlState();
   }
 
   /**
