@@ -13,7 +13,7 @@ package io.vertx.sqlclient;
 import io.vertx.core.VertxException;
 
 /**
- * Base class for SQL Client database access failures.
+ * Base class for database failures.
  */
 public abstract class DatabaseException extends VertxException {
 
