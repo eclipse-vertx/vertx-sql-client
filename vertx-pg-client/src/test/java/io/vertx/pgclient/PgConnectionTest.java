@@ -19,7 +19,7 @@ package io.vertx.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.ClosedChannelException;
+import io.vertx.sqlclient.ClosedConnectionException;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
@@ -125,7 +125,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
   public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
     connector.accept(ctx.asyncAssertSuccess(conn1 -> {
       conn1.query("SELECT pg_sleep(20)").execute(ctx.asyncAssertFailure(t -> {
-        ctx.assertTrue(t instanceof ClosedChannelException);
+        ctx.assertTrue(t instanceof ClosedConnectionException);
       }));
       connector.accept(ctx.asyncAssertSuccess(conn2 -> {
         conn2.query("SELECT * FROM pg_stat_activity WHERE state = 'active' AND query = 'SELECT pg_sleep(20)'").execute(ctx.asyncAssertSuccess(statRes -> {

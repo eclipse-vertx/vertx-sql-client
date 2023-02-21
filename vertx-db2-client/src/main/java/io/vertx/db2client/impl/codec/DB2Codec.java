@@ -18,7 +18,7 @@ package io.vertx.db2client.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.db2client.impl.DB2SocketConnection;
-import io.vertx.sqlclient.ClosedChannelException;
+import io.vertx.sqlclient.ClosedConnectionException;
 
 import java.util.ArrayDeque;
 
@@ -37,7 +37,7 @@ public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encode
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands(ClosedChannelException.INSTANCE);
+    clearInflightCommands(ClosedConnectionException.INSTANCE);
     super.channelInactive(ctx);
   }
 

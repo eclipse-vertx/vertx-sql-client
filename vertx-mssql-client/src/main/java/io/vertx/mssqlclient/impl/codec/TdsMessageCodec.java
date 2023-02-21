@@ -14,7 +14,7 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
-import io.vertx.sqlclient.ClosedChannelException;
+import io.vertx.sqlclient.ClosedConnectionException;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -64,7 +64,7 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    fail(ctx, ClosedChannelException.INSTANCE);
+    fail(ctx, ClosedConnectionException.INSTANCE);
     super.channelInactive(ctx);
   }
 

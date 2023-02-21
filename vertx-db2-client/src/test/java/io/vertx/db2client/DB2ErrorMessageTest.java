@@ -19,7 +19,7 @@ import io.vertx.db2client.impl.drda.SQLState;
 import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.ClosedChannelException;
+import io.vertx.sqlclient.ClosedConnectionException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -39,7 +39,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
             ex.getErrorCode() == SqlCode.CONNECTION_REFUSED,
           "Wrong SQL code received.  Expecting " + SqlCode.DATABASE_NOT_FOUND + " or " + SqlCode.CONNECTION_REFUSED + ", but received " + ex.getErrorCode());
         assertContains(ctx, ex.getSqlState(), "2E000", SQLState.AUTH_DATABASE_CONNECTION_REFUSED);
-      } else if (!(err instanceof ClosedChannelException)) {//GitHub actions build is sometimes losing the connection to the DB in this test for some reason
+      } else if (!(err instanceof ClosedConnectionException)) {//GitHub actions build is sometimes losing the connection to the DB in this test for some reason
         ctx.fail("The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getName());
       }
     }));

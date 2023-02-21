@@ -19,7 +19,7 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
-import io.vertx.sqlclient.ClosedChannelException;
+import io.vertx.sqlclient.ClosedConnectionException;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -40,7 +40,7 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands(ctx, ClosedChannelException.INSTANCE);
+    clearInflightCommands(ctx, ClosedConnectionException.INSTANCE);
     super.channelInactive(ctx);
   }
 

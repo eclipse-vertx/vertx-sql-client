@@ -15,11 +15,11 @@ import io.vertx.core.VertxException;
 /**
  * When a client operation fails with this exception, the underlying connection may have been lost unexpectedly.
  */
-public class ClosedChannelException extends VertxException {
+public class ClosedConnectionException extends VertxException {
 
-  public static ClosedChannelException INSTANCE = new ClosedChannelException();
+  public static ClosedConnectionException INSTANCE = new ClosedConnectionException();
 
-  private ClosedChannelException() {
+  private ClosedConnectionException() {
     super("Failed to read any response from the server, the underlying connection may have been lost unexpectedly.", true);
   }
 }
