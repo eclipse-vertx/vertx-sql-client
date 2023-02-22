@@ -23,7 +23,11 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.ProxyServer;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlClient;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.SqlClientInternal;
 import org.junit.After;
 import org.junit.Before;
@@ -137,9 +141,9 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
           client
             .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
             .execute(Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
-            ctx.assertEquals("23505", ((PgException) err).getCode());
-            async.complete();
-          }));
+              ctx.assertEquals("23505", ((PgException) err).getSqlState());
+              async.complete();
+            }));
         }));
       });
     }));

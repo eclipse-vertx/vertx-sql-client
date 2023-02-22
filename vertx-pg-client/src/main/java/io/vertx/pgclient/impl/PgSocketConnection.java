@@ -30,8 +30,15 @@ import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
-import io.vertx.sqlclient.impl.*;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.impl.QueryResultHandler;
+import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.InitCommand;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.impl.command.TxCommand;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
@@ -161,8 +168,8 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   public boolean isIndeterminatePreparedStatementError(Throwable error) {
     if (error instanceof PgException) {
-      String code = ((PgException) error).getCode();
-      return "42P18".equals(code) || "42804".equals(code) || "42P08".equals(code);
+      String sqlState = ((PgException) error).getSqlState();
+      return "42P18".equals(sqlState) || "42804".equals(sqlState) || "42P08".equals(sqlState);
     }
     return false;
   }

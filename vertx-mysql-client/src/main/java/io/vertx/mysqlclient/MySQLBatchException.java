@@ -11,6 +11,8 @@
 
 package io.vertx.mysqlclient;
 
+import io.vertx.core.VertxException;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,14 +21,14 @@ import java.util.Map;
  * {@code MySQLBatchException} is thrown if an error occurs during executions when using {@link io.vertx.sqlclient.PreparedQuery#executeBatch(List)}.
  * The client will try to execute with all the params no matter if one iteration of the executions fails, the iteration count is counted from zero.
  */
-public class MySQLBatchException extends RuntimeException {
+public class MySQLBatchException extends VertxException {
   /**
    * A mapping between the iteration count and errors, the key is consistent with the batching param list index.
    */
   private final Map<Integer, Throwable> iterationError = new HashMap<>();
 
   public MySQLBatchException() {
-    super("Error occurs during batch execution");
+    super("Error occurs during batch execution", true);
   }
 
   /**

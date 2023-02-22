@@ -70,6 +70,6 @@ public abstract class PgTestBase {
    */
   static boolean hasSqlstateCode(Throwable throwable, String code) {
     return throwable instanceof PgException &&
-        code.equals(((PgException) throwable).getCode());
+      code.equals(((PgException) throwable).getSqlState());
   }
 }

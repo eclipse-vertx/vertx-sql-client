@@ -15,52 +15,23 @@
  */
 package io.vertx.db2client;
 
-/**
- * A {@link RuntimeException} signals that an error occurred.
- */
-public class DB2Exception extends RuntimeException {
-  private static final long serialVersionUID = 4249056398546361175L;
+import io.vertx.sqlclient.DatabaseException;
 
-  private final int errorCode;
-  private final String sqlState;
-  
+/**
+ * The {@link DatabaseException} for DB2.
+ */
+public class DB2Exception extends DatabaseException {
+  private static final long serialVersionUID = -1793293963771077543L;
+
   public DB2Exception(int errorCode, String sqlState) {
-    super("An error occurred with a DB2 operation. SQLCODE=" + errorCode + "  SQLSTATE=" + sqlState);
-    this.errorCode = errorCode;
-    this.sqlState = sqlState;
+    super(formatMessage(null, errorCode, sqlState), errorCode, sqlState);
   }
 
   public DB2Exception(String message, int errorCode, String sqlState) {
-    super(message);
-    this.errorCode = errorCode;
-    this.sqlState = sqlState;
+    super(formatMessage(message, errorCode, sqlState), errorCode, sqlState);
   }
 
-  /**
-   * Get the error code in the error message sent from DB2 server.
-   *
-   * @return the error code
-   */
-  public int getErrorCode() {
-    return errorCode;
-  }
-
-  /**
-   * Get the SQL state in the error message sent from DB2 server.
-   *
-   * @return the SQL state
-   */
-  public String getSqlState() {
-    return sqlState;
-  }
-
-  /**
-   * Get the error message in the error message sent from DB2 server.
-   *
-   * @return the error message
-   */
-  @Override
-  public String getMessage() {
-    return super.getMessage();
+  private static String formatMessage(String message, int errorCode, String sqlState) {
+    return (message != null ? message : "An error occurred with a DB2 operation") + ", SQLCODE=" + errorCode + "  SQLSTATE=" + sqlState;
   }
 }

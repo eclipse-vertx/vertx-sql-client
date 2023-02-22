@@ -1,15 +1,13 @@
 package io.vertx.db2client.tck;
 
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.tck.PreparedQueryTestBase;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 
 public abstract class DB2PreparedQueryTestBase extends PreparedQueryTestBase {
 
@@ -48,7 +46,7 @@ public abstract class DB2PreparedQueryTestBase extends PreparedQueryTestBase {
   @Override
   public void testPrepareError(TestContext ctx) {
     msgVerifier = (err) -> {
-      ctx.assertEquals("The object '" + rule.options().getUser().toUpperCase() +".DOES_NOT_EXIST' provided is not defined", err.getMessage());
+      ctx.assertTrue(err.getMessage().startsWith("The object '" + rule.options().getUser().toUpperCase() + ".DOES_NOT_EXIST' provided is not defined"));
     };
     super.testPrepareError(ctx);
   }

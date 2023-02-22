@@ -15,16 +15,15 @@
  */
 package io.vertx.db2client;
 
-import static io.vertx.db2client.junit.TestUtil.assertContains;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.db2client.impl.drda.SQLState;
 import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.ClosedConnectionException;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static io.vertx.db2client.junit.TestUtil.*;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2ErrorMessageTest extends DB2TestBase {
@@ -33,18 +32,15 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   public void testConnectInvalidDatabase(TestContext ctx) {
     options.setDatabase("DB_DOES_NOT_EXIST");
     DB2Connection.connect(vertx, options, ctx.asyncAssertFailure(err -> {
-      ctx.assertTrue(err instanceof DB2Exception || err instanceof NoStackTraceThrowable, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
-      if (err instanceof DB2Exception) { 
+      if (err instanceof DB2Exception) {
         DB2Exception ex = (DB2Exception) err;
         assertContains(ctx, ex.getMessage(), "provided was not found", "The connection was closed by the database server");
         ctx.assertTrue(ex.getErrorCode() == SqlCode.DATABASE_NOT_FOUND ||
             ex.getErrorCode() == SqlCode.CONNECTION_REFUSED,
-            "Wrong SQL code received.  Expecting " + SqlCode.DATABASE_NOT_FOUND + " or " + SqlCode.CONNECTION_REFUSED + ", but received " + ex.getErrorCode());
+          "Wrong SQL code received.  Expecting " + SqlCode.DATABASE_NOT_FOUND + " or " + SqlCode.CONNECTION_REFUSED + ", but received " + ex.getErrorCode());
         assertContains(ctx, ex.getSqlState(), "2E000", SQLState.AUTH_DATABASE_CONNECTION_REFUSED);
-      } else {
-        //TODO remove this if the GHAction build stops failing
-        //GitHub actions build is losing the connection to the DB in this test for some reason
-        assertContains(ctx, err.getMessage(), "Failed to read any response from the server, the underlying connection may have been lost unexpectedly.");
+      } else if (!(err instanceof ClosedConnectionException)) {//GitHub actions build is sometimes losing the connection to the DB in this test for some reason
+        ctx.fail("The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getName());
       }
     }));
   }
@@ -228,7 +224,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
         conn.query("INSERT INTO immutable (id, message) VALUES (1, 'a duplicate key')").execute(ctx.asyncAssertFailure(err -> {
             ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
             DB2Exception ex = (DB2Exception) err;
-            
+
             assertContains(ctx, ex.getMessage(), "Duplicate keys were detected on table ");//Db2/z doesn't send back table name + options.getUser().toUpperCase() + ".IMMUTABLE");
             ctx.assertEquals(SqlCode.DUPLICATE_KEYS_DETECTED, ex.getErrorCode());
           }));
@@ -285,11 +281,11 @@ public class DB2ErrorMessageTest extends DB2TestBase {
           }));
       }));
     }
-    
-    //This test has to be run manually, I haven't found a good way to automate stopping a DB2 connection that doesn't end gracefully
-    //To run this, uncomment @Test and use mvn test -Dtest=DB2ErrorMessageTest#testInflightCommandsFailWhenConnectionClosed 
-    //During the 60 second wait call 'docker kill <container_id>', docker stop will end gracefully, so it has to be docker kill.
-    //@Test 
+
+  //This test has to be run manually, I haven't found a good way to automate stopping a DB2 connection that doesn't end gracefully
+  //To run this, uncomment @Test and use mvn test -Dtest=DB2ErrorMessageTest#testInflightCommandsFailWhenConnectionClosed
+  //During the 60 second wait call 'docker kill <container_id>', docker stop will end gracefully, so it has to be docker kill.
+  //@Test
     public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
       DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn1 -> {
         conn1.query("CALL dbms_alert.sleep(60)").execute(ctx.asyncAssertFailure(t -> {

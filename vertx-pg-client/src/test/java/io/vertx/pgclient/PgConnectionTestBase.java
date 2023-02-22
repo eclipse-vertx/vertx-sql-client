@@ -23,7 +23,12 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.ProxyServer;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.TransactionRollbackException;
+import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -274,14 +279,14 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
       conn
         .query("INSERT INTO Fortune (id, message) VALUES (1, 'Duplicate')")
         .execute(ctx.asyncAssertFailure(err -> {
-        ctx.assertEquals("23505", ((PgException) err).getCode());
-        conn
-          .query("SELECT 1000")
-          .execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          ctx.assertEquals(1000, result.iterator().next().getInteger(0));
-          async.complete();
-        }));
+          ctx.assertEquals("23505", ((PgException) err).getSqlState());
+          conn
+            .query("SELECT 1000")
+            .execute(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              ctx.assertEquals(1000, result.iterator().next().getInteger(0));
+              async.complete();
+            }));
       }));
     }));
   }
@@ -296,14 +301,14 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
       conn
         .preparedQuery("INSERT INTO World (id, randomnumber) VALUES ($1, $2)")
         .executeBatch(batch, ctx.asyncAssertFailure(err -> {
-        ctx.assertEquals("23505", ((PgException) err).getCode());
-        conn
-          .preparedQuery("SELECT 1000")
-          .execute(ctx.asyncAssertSuccess(result -> {
-          ctx.assertEquals(1, result.size());
-          ctx.assertEquals(1000, result.iterator().next().getInteger(0));
-          async.complete();
-        }));
+          ctx.assertEquals("23505", ((PgException) err).getSqlState());
+          conn
+            .preparedQuery("SELECT 1000")
+            .execute(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              ctx.assertEquals(1000, result.iterator().next().getInteger(0));
+              async.complete();
+            }));
       }));
     }));
   }

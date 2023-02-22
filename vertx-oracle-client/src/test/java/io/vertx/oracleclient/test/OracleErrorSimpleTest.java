@@ -23,8 +23,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(VertxUnitRunner.class)
 public class OracleErrorSimpleTest extends OracleTestBase {
@@ -42,9 +41,14 @@ public class OracleErrorSimpleTest extends OracleTestBase {
   @Test
   public void testMetadata(TestContext ctx) {
     pool.withConnection(conn -> conn.query("DROP TABLE u_dont_exist").execute(), ctx.asyncAssertFailure(t -> {
-      assertTrue(t.getClass().getName(), t instanceof OracleException);
-      assertEquals(0, t.getStackTrace().length);
-      assertTrue(t.getMessage().contains("ORA-00942") && t.getMessage().contains("u_dont_exist"));
+      if (!(t instanceof OracleException)) {
+        fail(t.getClass().getName());
+      }
+      OracleException e = (OracleException) t;
+      assertEquals(0, e.getStackTrace().length);
+      assertEquals(942, e.getErrorCode());
+      assertEquals("42000", e.getSqlState());
+      assertTrue(t.getMessage().contains("u_dont_exist"));
     }));
   }
 

@@ -55,7 +55,7 @@ public class DB2PreparedQueryCachedTest extends PreparedQueryCachedTestBase {
   @Override
   public void testPrepareError(TestContext ctx) {
     msgVerifier = (err) -> {
-      ctx.assertEquals("The object '" + rule.options().getUser().toUpperCase() + ".DOES_NOT_EXIST' provided is not defined", err.getMessage());
+      ctx.assertTrue(err.getMessage().startsWith("The object '" + rule.options().getUser().toUpperCase() + ".DOES_NOT_EXIST' provided is not defined"));
     };
     super.testPrepareError(ctx);
   }

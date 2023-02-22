@@ -11,10 +11,8 @@
 
 package io.vertx.pgclient;
 
-import org.junit.Test;
-
-import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.impl.codec.ResponseHelper;
+import org.junit.Test;
 
 import static org.junit.Assert.*;
 
@@ -25,7 +23,7 @@ public class PgExceptionTest {
     PgException pgException = new PgException("myMessage", "mySeverity", "myCode", "myDetail");
     assertEquals("myMessage", pgException.getErrorMessage());
     assertEquals("mySeverity", pgException.getSeverity());
-    assertEquals("myCode", pgException.getCode());
+    assertEquals("myCode", pgException.getSqlState());
     assertEquals("myDetail", pgException.getDetail());
 
     assertEquals("mySeverity: myMessage (myCode)", pgException.getMessage());
@@ -41,7 +39,7 @@ public class PgExceptionTest {
     PgException pgException = ResponseHelper.getCompletePgException();
     assertEquals("myMessage", pgException.getErrorMessage());
     assertEquals("mySeverity", pgException.getSeverity());
-    assertEquals("myCode", pgException.getCode());
+    assertEquals("myCode", pgException.getSqlState());
     assertEquals("myDetail", pgException.getDetail());
 
     // getMessage() should return a valid JsonObject with all fields

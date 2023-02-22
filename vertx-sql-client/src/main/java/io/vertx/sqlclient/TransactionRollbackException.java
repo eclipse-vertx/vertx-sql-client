@@ -16,16 +16,16 @@
  */
 package io.vertx.sqlclient;
 
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.VertxException;
 
 /**
- * A transaction that allows to control the transaction and receive events.
+ * Failure reported to the {@link Transaction#completion()} future when the database server reports the current transaction is failed.
  */
-public class TransactionRollbackException extends NoStackTraceThrowable {
+public class TransactionRollbackException extends VertxException {
 
   public static TransactionRollbackException INSTANCE = new TransactionRollbackException();
 
   private TransactionRollbackException() {
-    super("Rollback");
+    super("Rollback", true);
   }
 }

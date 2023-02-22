@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.json.Json;
+import io.vertx.sqlclient.DatabaseException;
 
 /**
  * PostgreSQL error including all <a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">fields
@@ -25,7 +26,7 @@ import io.vertx.core.json.Json;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgException extends RuntimeException {
+public class PgException extends DatabaseException {
 
   private static String formatMessage(String errorMessage, String severity, String code) {
     StringBuilder sb = new StringBuilder();
@@ -49,7 +50,6 @@ public class PgException extends RuntimeException {
 
   private final String errorMessage;
   private final String severity;
-  private final String code;
   private final String detail;
   private final String hint;
   private final String position;
@@ -66,10 +66,9 @@ public class PgException extends RuntimeException {
   private final String constraint;
 
   public PgException(String errorMessage, String severity, String code, String detail) {
-    super(formatMessage(errorMessage, severity, code));
+    super(formatMessage(errorMessage, severity, code), 0, code);
     this.errorMessage = errorMessage;
     this.severity = severity;
-    this.code = code;
     this.detail = detail;
     this.hint = null;
     this.position = null;
@@ -89,10 +88,9 @@ public class PgException extends RuntimeException {
   public PgException(String errorMessage, String severity, String code, String detail, String hint, String position,
                      String internalPosition, String internalQuery, String where, String file, String line, String routine,
                      String schema, String table, String column, String dataType, String constraint) {
-    super(formatMessage(errorMessage, severity, code));
+    super(formatMessage(errorMessage, severity, code), 0, code);
     this.errorMessage = errorMessage;
     this.severity = severity;
-    this.code = code;
     this.detail = detail;
     this.hint = hint;
     this.position = position;
@@ -127,13 +125,22 @@ public class PgException extends RuntimeException {
   }
 
   /**
+   * @deprecated use {@link #getSqlState()} instead
+   */
+  @Deprecated
+  public String getCode() {
+    return getSqlState();
+  }
+
+  /**
    * @return the SQLSTATE code for the error
    * (<a href="https://www.postgresql.org/docs/current/protocol-error-fields.html">'S' field</a>,
    * <a href="https://www.postgresql.org/docs/current/errcodes-appendix.html">value list</a>),
    * it is never localized
    */
-  public String getCode() {
-    return code;
+  @Override
+  public String getSqlState() {
+    return super.getSqlState();
   }
 
   /**
@@ -253,11 +260,5 @@ public class PgException extends RuntimeException {
    */
   public String getInternalQuery() {
     return internalQuery;
-  }
-
-  private static void append(StringBuffer stringBuffer, String key, String value) {
-    if (value != null) {
-      stringBuffer.append(", \"").append(key).append("\": ").append(Json.encode(value));
-    }
   }
 }

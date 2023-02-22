@@ -11,29 +11,29 @@
 
 package io.vertx.mssqlclient;
 
+import io.vertx.sqlclient.DatabaseException;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A {@link RuntimeException} signals that an error occurred.
+ * The {@link DatabaseException} for MS SQL Server.
  */
-public class MSSQLException extends RuntimeException {
+public class MSSQLException extends DatabaseException {
 
-  private final int number;
   private final byte state;
   private final byte severity;
-  private final String message;
+  private final String errorMessage;
   private final String serverName;
   private final String procedureName;
   private final int lineNumber;
   private List<MSSQLException> additional;
 
-  public MSSQLException(int number, byte state, byte severity, String message, String serverName, String procedureName, int lineNumber) {
-    super(null, null, false, false);
-    this.number = number;
+  public MSSQLException(int number, byte state, byte severity, String errorMessage, String serverName, String procedureName, int lineNumber) {
+    super(formatMessage(number, state, severity, errorMessage, serverName, procedureName, lineNumber), number, null);
     this.state = state;
     this.severity = severity;
-    this.message = message;
+    this.errorMessage = errorMessage;
     this.serverName = serverName;
     this.procedureName = procedureName;
     this.lineNumber = lineNumber;
@@ -46,8 +46,12 @@ public class MSSQLException extends RuntimeException {
     additional.add(e);
   }
 
+  /**
+   * @deprecated use {@link #getErrorCode()} instead
+   */
+  @Deprecated
   public int number() {
-    return number;
+    return getErrorCode();
   }
 
   public byte state() {
@@ -59,7 +63,7 @@ public class MSSQLException extends RuntimeException {
   }
 
   public String errorMessage() {
-    return message;
+    return errorMessage;
   }
 
   public String serverName() {
@@ -74,14 +78,20 @@ public class MSSQLException extends RuntimeException {
     return lineNumber;
   }
 
-  @Override
-  public String getMessage() {
+  /**
+   * @return additional errors reported by the client, or {@code null}
+   */
+  public List<MSSQLException> additional() {
+    return additional;
+  }
+
+  private static String formatMessage(int number, byte state, byte severity, String errorMessage, String serverName, String procedureName, int lineNumber) {
     StringBuilder sb = new StringBuilder("{")
       .append("number=").append(number)
       .append(", state=").append(state)
       .append(", severity=").append(severity);
-    if (message != null && !message.isEmpty()) {
-      sb.append(", message='").append(message).append('\'');
+    if (errorMessage != null && !errorMessage.isEmpty()) {
+      sb.append(", message='").append(errorMessage).append('\'');
     }
     if (serverName != null && !serverName.isEmpty()) {
       sb.append(", serverName='").append(serverName).append('\'');
@@ -90,9 +100,6 @@ public class MSSQLException extends RuntimeException {
       sb.append(", procedureName='").append(procedureName).append('\'');
     }
     sb.append(", lineNumber=").append(lineNumber);
-    if (additional != null) {
-      sb.append(", additional=").append(additional);
-    }
     return sb.append('}').toString();
   }
 }

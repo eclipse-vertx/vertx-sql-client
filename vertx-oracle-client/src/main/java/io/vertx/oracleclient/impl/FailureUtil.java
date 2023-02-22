@@ -20,11 +20,11 @@ public class FailureUtil {
 
   public static Throwable sanitize(Throwable t) {
     if (t instanceof SQLException) {
-      SQLException se = (SQLException) t;
-      Throwable cause = se.getCause();
+      SQLException e = (SQLException) t;
+      Throwable cause = e.getCause();
       if (cause instanceof OracleDatabaseException) {
-        OracleDatabaseException oae = (OracleDatabaseException) cause;
-        return new OracleException(oae.toString(), true);
+        OracleDatabaseException ode = (OracleDatabaseException) cause;
+        return new OracleException(ode.toString(), e.getErrorCode(), e.getSQLState());
       }
     }
     return t;
