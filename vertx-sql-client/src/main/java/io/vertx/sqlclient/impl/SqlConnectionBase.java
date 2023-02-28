@@ -166,6 +166,11 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   @Override
+  public Transaction transaction() {
+    return tx;
+  }
+
+  @Override
   boolean autoCommit() {
     return tx == null;
   }

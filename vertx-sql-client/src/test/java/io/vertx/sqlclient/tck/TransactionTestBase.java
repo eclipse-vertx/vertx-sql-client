@@ -308,4 +308,45 @@ public abstract class TransactionTestBase {
         }));
     }));
   }
+
+  @Test
+  public void testWithPropagatableConnectionTransactionCommit(TestContext ctx) {
+    Async async = ctx.async();
+    Pool pool = createPool();
+    vertx.runOnContext(handler -> {
+    pool.withTransaction(TransactionPropagation.CONTEXT, c ->
+      pool.withTransaction(TransactionPropagation.CONTEXT, conn ->
+        conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty()).flatMap(v ->
+        pool.withTransaction(TransactionPropagation.CONTEXT, conn ->
+          conn.query("INSERT INTO mutable (id, val) VALUES (2, 'hello-2')").execute().mapEmpty())).flatMap(v2 ->
+        c.query("INSERT INTO mutable (id, val) VALUES (3, 'hello-3')").execute().mapEmpty())
+    ).onComplete(ctx.asyncAssertSuccess(v -> pool
+      .query("SELECT id, val FROM mutable")
+      .execute(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(3, rows.size());
+        ctx.assertNull(Vertx.currentContext().getLocal("propagatable_connection"));
+        async.complete();
+      }))));
+    });
+  }
+
+  @Test
+  public void testWithPropagatableConnectionTransactionRollback(TestContext ctx) {
+    Async async = ctx.async();
+    Pool pool = createPool();
+    Throwable failure = new Throwable();
+    vertx.runOnContext(handler -> {
+      pool.withTransaction(TransactionPropagation.CONTEXT, c ->
+        pool.withTransaction(TransactionPropagation.CONTEXT, conn ->
+          conn.query("INSERT INTO mutable (id, val) VALUES (1, 'hello-1')").execute().mapEmpty().flatMap(
+            v -> Future.failedFuture(failure)))
+      ).onComplete(ctx.asyncAssertFailure(v -> pool
+        .query("SELECT id, val FROM mutable")
+        .execute(ctx.asyncAssertSuccess(rows -> {
+          ctx.assertEquals(0, rows.size());
+          ctx.assertNull(Vertx.currentContext().getLocal("propagatable_connection"));
+          async.complete();
+        }))));
+    });
+  }
 }

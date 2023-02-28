@@ -93,6 +93,11 @@ public interface SqlConnection extends SqlClient {
   Future<Transaction> begin();
 
   /**
+   * @return the current transaction if it exists, otherwise null
+   */
+  Transaction transaction();
+
+  /**
    * @return whether the connection uses SSL
    */
   boolean isSSL();

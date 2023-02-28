@@ -17,21 +17,19 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.Objects;
 import java.util.function.Function;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -52,6 +50,8 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
+
+  private static final String PROPAGATABLE_CONNECTION = "propagatable_connection";
 
   public PoolImpl(VertxInternal vertx,
                   Driver driver,
@@ -153,6 +153,48 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
       conn.init(wrapper);
       return wrapper;
     });
+  }
+
+  public <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation,
+                                                 Function<SqlConnection, Future<@Nullable T>> function) {
+    if (txPropagation == TransactionPropagation.CONTEXT) {
+      ContextInternal context = (ContextInternal) Vertx.currentContext();
+      SqlConnection sqlConnection = context.getLocal(PROPAGATABLE_CONNECTION);
+      if (sqlConnection == null) {
+        return startPropagatableConnection(function);
+      }
+      return context.succeededFuture(sqlConnection)
+        .flatMap(conn -> function.apply(conn)
+          .onFailure(err -> {
+            if (!(err instanceof TransactionRollbackException)) {
+              conn.transaction().rollback();
+            }
+          }));
+    }
+    return withTransaction(function);
+  }
+
+  private <T> Future<@Nullable T> startPropagatableConnection(Function<SqlConnection, Future<@Nullable T>> function) {
+    ContextInternal context = (ContextInternal) Vertx.currentContext();
+    return getConnection().onComplete(handler -> context.putLocal(PROPAGATABLE_CONNECTION, handler.result()))
+      .flatMap(conn -> conn
+        .begin()
+        .flatMap(tx -> function
+          .apply(conn)
+          .compose(
+            res -> tx
+              .commit()
+              .flatMap(v -> context.succeededFuture(res)),
+            err -> {
+              if (err instanceof TransactionRollbackException) {
+                return context.failedFuture(err);
+              } else {
+                return tx
+                  .rollback()
+                  .compose(v -> context.failedFuture(err), failure -> context.failedFuture(err));
+              }
+            }))
+        .onComplete(ar -> conn.close(v -> context.removeLocal(PROPAGATABLE_CONNECTION))));
   }
 
   @Override

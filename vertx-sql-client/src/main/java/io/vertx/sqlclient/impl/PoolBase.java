@@ -15,6 +15,7 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -23,14 +24,7 @@ import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PrepareOptions;
-import io.vertx.sqlclient.PreparedQuery;
-import io.vertx.sqlclient.Query;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
@@ -75,6 +69,12 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
     return delegate.preparedQuery(sql);
+  }
+
+  @Override
+  public <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation,
+                                                 Function<SqlConnection, Future<@Nullable T>> function) {
+    return delegate.withTransaction(txPropagation, function);
   }
 
   @Override
