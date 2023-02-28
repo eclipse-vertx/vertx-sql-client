@@ -51,7 +51,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
 
-  private static final String PROPAGATABLE_CONNECTION = "propagatable_connection";
+  public static final String PROPAGATABLE_CONNECTION = "propagatable_connection";
 
   public PoolImpl(VertxInternal vertx,
                   Driver driver,
@@ -155,28 +155,9 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     });
   }
 
-  public <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation,
-                                                 Function<SqlConnection, Future<@Nullable T>> function) {
-    if (txPropagation == TransactionPropagation.CONTEXT) {
-      ContextInternal context = (ContextInternal) Vertx.currentContext();
-      SqlConnection sqlConnection = context.getLocal(PROPAGATABLE_CONNECTION);
-      if (sqlConnection == null) {
-        return startPropagatableConnection(function);
-      }
-      return context.succeededFuture(sqlConnection)
-        .flatMap(conn -> function.apply(conn)
-          .onFailure(err -> {
-            if (!(err instanceof TransactionRollbackException)) {
-              conn.transaction().rollback();
-            }
-          }));
-    }
-    return withTransaction(function);
-  }
-
-  private <T> Future<@Nullable T> startPropagatableConnection(Function<SqlConnection, Future<@Nullable T>> function) {
+  public static <T> Future<@Nullable T> startPropagatableConnection(Pool pool, Function<SqlConnection, Future<@Nullable T>> function) {
     ContextInternal context = (ContextInternal) Vertx.currentContext();
-    return getConnection().onComplete(handler -> context.putLocal(PROPAGATABLE_CONNECTION, handler.result()))
+    return pool.getConnection().onComplete(handler -> context.putLocal(PROPAGATABLE_CONNECTION, handler.result()))
       .flatMap(conn -> conn
         .begin()
         .flatMap(tx -> function

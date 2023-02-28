@@ -31,9 +31,13 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
+
+import static io.vertx.sqlclient.impl.PoolImpl.startPropagatableConnection;
 
 /**
  * A connection pool which reuses a number of SQL connections.
@@ -168,7 +172,23 @@ public interface Pool extends SqlClient {
    * Like {@link #withTransaction(Function, Handler)} but allows for setting the mode, defining how the acquired
    * connection is managed during the execution of the function.
    */
-  <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation, Function<SqlConnection, Future<@Nullable T>> function);
+  default <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation, Function<SqlConnection, Future<@Nullable T>> function) {
+    if (txPropagation == TransactionPropagation.CONTEXT) {
+      ContextInternal context = (ContextInternal) Vertx.currentContext();
+      SqlConnection sqlConnection = context.getLocal(PoolImpl.PROPAGATABLE_CONNECTION);
+      if (sqlConnection == null) {
+        return startPropagatableConnection(this, function);
+      }
+      return context.succeededFuture(sqlConnection)
+        .flatMap(conn -> function.apply(conn)
+          .onFailure(err -> {
+            if (!(err instanceof TransactionRollbackException)) {
+              conn.transaction().rollback();
+            }
+          }));
+    }
+    return withTransaction(function);
+  }
 
   /**
    * Get a connection from the pool and execute the given {@code function}.
