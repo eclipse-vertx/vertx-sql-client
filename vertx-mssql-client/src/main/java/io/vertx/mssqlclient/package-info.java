@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-@ModuleGen(name = "vertx-mssql-client", groupPackage = "io.vertx")
+@ModuleGen(name = "vertx-mssql-client", groupPackage = "io.vertx", checkCallbackDeprecation = true)
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.ModuleGen;

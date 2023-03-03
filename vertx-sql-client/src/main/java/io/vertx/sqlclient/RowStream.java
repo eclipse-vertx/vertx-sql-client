@@ -64,6 +64,7 @@ public interface RowStream<T> extends ReadStream<T> {
    *
    * @param completionHandler the completion handler for this operation
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> completionHandler);
 
 }

@@ -40,6 +40,7 @@ public interface DB2Connection extends SqlConnection {
    * @param connectOptions the options for the connection
    * @param handler        the handler called with the connection or the failure
    */
+  @Deprecated
   static void connect(Vertx vertx, DB2ConnectOptions connectOptions, Handler<AsyncResult<DB2Connection>> handler) {
     Future<DB2Connection> fut = connect(vertx, connectOptions);
     if (handler != null) {
@@ -59,6 +60,7 @@ public interface DB2Connection extends SqlConnection {
    * Like {@link #connect(Vertx, DB2ConnectOptions, Handler)} with options build
    * from {@code connectionUri}.
    */
+  @Deprecated
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<DB2Connection>> handler) {
     connect(vertx, fromUri(connectionUri), handler);
   }
@@ -72,6 +74,7 @@ public interface DB2Connection extends SqlConnection {
   }
 
   @Override
+  @Deprecated
   DB2Connection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   @Override
@@ -87,6 +90,7 @@ public interface DB2Connection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   DB2Connection ping(Handler<AsyncResult<Void>> handler);
 
   /**
@@ -102,6 +106,7 @@ public interface DB2Connection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   DB2Connection debug(Handler<AsyncResult<Void>> handler);
 
   /**

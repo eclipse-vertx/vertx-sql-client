@@ -15,7 +15,7 @@
  *
  */
 
-@ModuleGen(name = "vertx-pg-client", groupPackage = "io.vertx")
+@ModuleGen(name = "vertx-pg-client", groupPackage = "io.vertx", checkCallbackDeprecation = true)
 package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.ModuleGen;

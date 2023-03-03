@@ -142,6 +142,7 @@ public interface SqlTemplate<I, R> {
    * @param parameters the query parameters
    * @param handler the result handler
    */
+  @Deprecated
   void execute(I parameters, Handler<AsyncResult<R>> handler);
 
   /**
@@ -157,6 +158,7 @@ public interface SqlTemplate<I, R> {
    * @param batch the batch
    * @param handler the result handler
    */
+  @Deprecated
   void executeBatch(List<I> batch, Handler<AsyncResult<R>> handler);
 
   /**

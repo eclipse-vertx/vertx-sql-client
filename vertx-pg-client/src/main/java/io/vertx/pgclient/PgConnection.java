@@ -52,6 +52,7 @@ public interface PgConnection extends SqlConnection {
    * @param options the connect options
    * @param handler the handler called with the connection or the failure
    */
+  @Deprecated
   static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
     Future<PgConnection> fut = connect(vertx, options);
     if (handler != null) {
@@ -69,6 +70,7 @@ public interface PgConnection extends SqlConnection {
   /**
    * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from the environment variables.
    */
+  @Deprecated
   static void connect(Vertx vertx, Handler<AsyncResult<PgConnection>> handler) {
     connect(vertx, PgConnectOptions.fromEnv(), handler);
   }
@@ -83,6 +85,7 @@ public interface PgConnection extends SqlConnection {
   /**
    * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from {@code connectionUri}.
    */
+  @Deprecated
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<PgConnection>> handler) {
     connect(vertx, PgConnectOptions.fromUri(connectionUri), handler);
   }
@@ -122,6 +125,7 @@ public interface PgConnection extends SqlConnection {
    * @param handler the handler notified if cancelling request is sent
    * @return a reference to this, so the API can be used fluently
    */
+  @Deprecated
   PgConnection cancelRequest(Handler<AsyncResult<Void>> handler);
 
   /**
@@ -138,6 +142,7 @@ public interface PgConnection extends SqlConnection {
    * {@inheritDoc}
    */
   @Fluent
+  @Deprecated
   @Override
   PgConnection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 

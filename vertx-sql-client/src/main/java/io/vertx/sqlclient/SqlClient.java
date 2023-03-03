@@ -59,6 +59,7 @@ public interface SqlClient {
    *
    * @param handler the completion handler
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> handler);
 
   /**

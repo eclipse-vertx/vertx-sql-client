@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
-@ModuleGen(name = "vertx-oracle-client", groupPackage = "io.vertx")
+@ModuleGen(name = "vertx-oracle-client", groupPackage = "io.vertx", checkCallbackDeprecation = true)
 package io.vertx.oracleclient;
 
 import io.vertx.codegen.annotations.ModuleGen;

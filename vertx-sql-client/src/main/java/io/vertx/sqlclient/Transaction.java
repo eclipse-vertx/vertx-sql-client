@@ -35,6 +35,7 @@ public interface Transaction {
   /**
    * Like {@link #commit} with an handler to be notified when the transaction commit has completed
    */
+  @Deprecated
   void commit(Handler<AsyncResult<Void>> handler);
 
   /**
@@ -45,11 +46,13 @@ public interface Transaction {
   /**
    * Like {@link #rollback} with an handler to be notified when the transaction rollback has completed
    */
+  @Deprecated
   void rollback(Handler<AsyncResult<Void>> handler);
 
   /**
    * Like {@link #completion()} but with a callback
    */
+  @Deprecated
   void completion(Handler<AsyncResult<Void>> handler);
 
   /**
