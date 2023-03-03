@@ -36,6 +36,7 @@ public interface MSSQLConnection extends SqlConnection {
    * @param connectOptions the options for the connection
    * @param handler        the handler called with the connection or the failure
    */
+  @Deprecated
   static void connect(Vertx vertx, MSSQLConnectOptions connectOptions, Handler<AsyncResult<MSSQLConnection>> handler) {
     Future<MSSQLConnection> fut = MSSQLConnectionImpl.connect(vertx, connectOptions);
     if (handler != null) {
@@ -53,6 +54,7 @@ public interface MSSQLConnection extends SqlConnection {
   /**
    * Like {@link #connect(Vertx, MSSQLConnectOptions, Handler)} with options built from {@code connectionUri}.
    */
+  @Deprecated
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MSSQLConnection>> handler) {
     connect(vertx, fromUri(connectionUri), handler);
   }
@@ -69,6 +71,7 @@ public interface MSSQLConnection extends SqlConnection {
    */
   @Fluent
   @Override
+  @Deprecated
   MSSQLConnection prepare(String s, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**

@@ -41,6 +41,7 @@ public interface PreparedQuery<T> extends Query<T> {
    *
    * @param handler the handler receiving the response
    */
+  @Deprecated
   void execute(Tuple tuple, Handler<AsyncResult<T>> handler);
 
   /**
@@ -54,6 +55,7 @@ public interface PreparedQuery<T> extends Query<T> {
    * @param batch the batch of tuples
    * @param handler the handler receiving the response
    */
+  @Deprecated
   void executeBatch(List<Tuple> batch, Handler<AsyncResult<T>> handler);
 
   /**

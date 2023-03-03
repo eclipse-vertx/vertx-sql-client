@@ -15,7 +15,7 @@
  *
  */
 
-@ModuleGen(name = "vertx-sql-templates", groupPackage = "io.vertx")
+@ModuleGen(name = "vertx-sql-templates", groupPackage = "io.vertx", checkCallbackDeprecation = true)
 package io.vertx.sqlclient.templates;
 
 import io.vertx.codegen.annotations.ModuleGen;

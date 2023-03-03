@@ -34,6 +34,7 @@ public interface Cursor {
    * @param count the amount of rows to read
    * @param handler the handler for the result
    */
+  @Deprecated
   void read(int count, Handler<AsyncResult<RowSet<Row>>> handler);
 
   /**
@@ -59,6 +60,7 @@ public interface Cursor {
   /**
    * Like {@link #close()} but with a {@code completionHandler} called when the cursor has been released.
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> completionHandler);
 
   /**

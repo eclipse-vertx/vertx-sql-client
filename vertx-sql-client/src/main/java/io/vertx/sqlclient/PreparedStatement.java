@@ -89,6 +89,7 @@ public interface PreparedStatement {
   /**
    * Like {@link #close()} but notifies the {@code completionHandler} when it's closed.
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> completionHandler);
 
 }

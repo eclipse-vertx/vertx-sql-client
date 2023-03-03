@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@ModuleGen(name = "vertx-db2-client", groupPackage = "io.vertx")
+@ModuleGen(name = "vertx-db2-client", groupPackage = "io.vertx", checkCallbackDeprecation = true)
 package io.vertx.db2client;
 
 import io.vertx.codegen.annotations.ModuleGen;

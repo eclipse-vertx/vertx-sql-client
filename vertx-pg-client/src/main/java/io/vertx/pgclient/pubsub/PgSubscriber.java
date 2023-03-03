@@ -84,6 +84,7 @@ public interface PgSubscriber {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   PgSubscriber connect(Handler<AsyncResult<Void>> handler);
 
   /**
@@ -132,6 +133,7 @@ public interface PgSubscriber {
   /**
    * Close the subscriber, the retry policy will not be invoked.
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> handler);
 
 }

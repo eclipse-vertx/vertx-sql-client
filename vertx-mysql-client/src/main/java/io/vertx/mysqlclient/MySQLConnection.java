@@ -49,6 +49,7 @@ public interface MySQLConnection extends SqlConnection {
    * @param connectOptions the options for the connection
    * @param handler the handler called with the connection or the failure
    */
+  @Deprecated
   static void connect(Vertx vertx, MySQLConnectOptions connectOptions, Handler<AsyncResult<MySQLConnection>> handler) {
     Future<MySQLConnection> fut = connect(vertx, connectOptions);
     if (handler != null) {
@@ -66,6 +67,7 @@ public interface MySQLConnection extends SqlConnection {
   /**
    * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} with options built from {@code connectionUri}.
    */
+  @Deprecated
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MySQLConnection>> handler) {
     connect(vertx, fromUri(connectionUri), handler);
   }
@@ -82,6 +84,7 @@ public interface MySQLConnection extends SqlConnection {
    */
   @Fluent
   @Override
+  @Deprecated
   MySQLConnection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
@@ -105,6 +108,7 @@ public interface MySQLConnection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   MySQLConnection ping(Handler<AsyncResult<Void>> handler);
 
   /**
@@ -120,6 +124,7 @@ public interface MySQLConnection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler);
 
   /**
@@ -134,6 +139,7 @@ public interface MySQLConnection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler);
 
   /**
@@ -150,6 +156,7 @@ public interface MySQLConnection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler);
 
   /**
@@ -164,6 +171,7 @@ public interface MySQLConnection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler);
 
   /**
@@ -178,6 +186,7 @@ public interface MySQLConnection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   MySQLConnection debug(Handler<AsyncResult<Void>> handler);
 
   /**
@@ -193,6 +202,7 @@ public interface MySQLConnection extends SqlConnection {
    * @return a reference to this, so the API can be used fluently
    */
   @Fluent
+  @Deprecated
   MySQLConnection changeUser(MySQLAuthOptions options, Handler<AsyncResult<Void>> handler);
 
   /**

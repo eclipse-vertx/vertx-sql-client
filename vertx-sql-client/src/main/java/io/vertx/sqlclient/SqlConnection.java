@@ -40,6 +40,7 @@ public interface SqlConnection extends SqlClient {
    * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
+  @Deprecated
   SqlConnection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
@@ -54,6 +55,7 @@ public interface SqlConnection extends SqlClient {
    * @param handler the handler notified with the prepared query asynchronously
    */
   @Fluent
+  @Deprecated
   SqlConnection prepare(String sql, PrepareOptions options, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
@@ -85,6 +87,7 @@ public interface SqlConnection extends SqlClient {
    * <p/>
    * When the connection is explicitely closed, any inflight transaction is rollbacked.
    */
+  @Deprecated
   void begin(Handler<AsyncResult<Transaction>> handler);
 
   /**
@@ -107,6 +110,7 @@ public interface SqlConnection extends SqlClient {
    *
    * @param handler the completion handler
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> handler);
 
   /**

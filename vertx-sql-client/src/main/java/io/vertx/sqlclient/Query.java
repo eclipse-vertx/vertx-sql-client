@@ -39,6 +39,7 @@ public interface Query<T> {
    *
    * @param handler the handler receiving the response
    */
+  @Deprecated
   void execute(Handler<AsyncResult<T>> handler);
 
   /**

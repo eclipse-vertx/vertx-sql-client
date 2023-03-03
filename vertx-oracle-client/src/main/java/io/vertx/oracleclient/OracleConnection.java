@@ -38,6 +38,7 @@ public interface OracleConnection extends SqlConnection {
    * @param connectOptions the options for the connection
    * @param handler the handler called with the connection or the failure
    */
+  @Deprecated
   static void connect(Vertx vertx, OracleConnectOptions connectOptions, Handler<AsyncResult<OracleConnection>> handler) {
     Objects.requireNonNull(handler);
     OracleConnectionImpl.connect(vertx, connectOptions).onComplete(handler);
@@ -53,6 +54,7 @@ public interface OracleConnection extends SqlConnection {
   /**
    * Like {@link #connect(Vertx, OracleConnectOptions, Handler)} with options built from {@code connectionUri}.
    */
+  @Deprecated
   static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<OracleConnection>> handler) {
     connect(vertx, fromUri(connectionUri), handler);
   }
@@ -69,6 +71,7 @@ public interface OracleConnection extends SqlConnection {
    */
   @Fluent
   @Override
+  @Deprecated
   OracleConnection prepare(String s, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**

@@ -95,6 +95,7 @@ public interface Pool extends SqlClient {
    *
    * @param handler the handler that will get the connection result
    */
+  @Deprecated
   void getConnection(Handler<AsyncResult<SqlConnection>> handler);
 
   /**
@@ -136,6 +137,7 @@ public interface Pool extends SqlClient {
    * @param function the code to execute
    * @param handler the result handler
    */
+  @Deprecated
   default <T> void withTransaction(Function<SqlConnection, Future<@Nullable T>> function, Handler<AsyncResult<@Nullable T>> handler) {
     Future<T> res = withTransaction(function);
     if (handler != null) {
@@ -201,6 +203,7 @@ public interface Pool extends SqlClient {
    * @param function the code to execute
    * @param handler the result handler
    */
+  @Deprecated
   default <T> void withConnection(Function<SqlConnection, Future<@Nullable T>> function, Handler<AsyncResult<@Nullable T>> handler) {
     Future<T> res = withConnection(function);
     if (handler != null) {
@@ -220,6 +223,7 @@ public interface Pool extends SqlClient {
    *
    * @param handler the completion handler
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> handler);
 
   /**
