@@ -40,3 +40,18 @@ After the transaction completes, the connection is returned to the pool and the 
 ----
 {@link examples.SqlClientExamples#transaction03(io.vertx.sqlclient.Pool)}
 ----
+
+=== Context-based connection propagation
+
+The acquired connection is kept in the local context by passing
+{@link io.vertx.sqlclient.TransactionPropagation.CONTEXT}.
+
+Any following calls to
+{@link io.vertx.sqlclient.Pool#withTransaction} within the passed function will retrieve this instead of retrieving a new connection and starting another transaction.
+
+The connection is removed from the local context once the provided function completes.
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#transaction04(io.vertx.sqlclient.Pool)}
+----

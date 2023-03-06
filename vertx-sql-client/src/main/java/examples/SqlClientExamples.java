@@ -23,18 +23,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -309,6 +298,21 @@ public class SqlClientExamples {
         System.out.println("Transaction failed " + ar.cause().getMessage());
       }
     });
+  }
+
+  public void transaction04(Pool pool) {
+    pool.withTransaction(TransactionPropagation.CONTEXT, connection -> connection
+      .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+      .execute()
+      .flatMap(res -> pool
+        .withTransaction(TransactionPropagation.CONTEXT, theSameConnection ->
+          theSameConnection
+            .query("INSERT INTO Color (color_name) VALUES ('Red')")
+            .execute()
+            .mapEmpty()
+        )
+      )
+    );
   }
 
   public void usingCursors01(SqlConnection connection) {
