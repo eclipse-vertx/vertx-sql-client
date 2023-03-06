@@ -301,7 +301,8 @@ public class SqlClientExamples {
   }
 
   public void transaction04(Pool pool) {
-    pool.withTransaction(TransactionPropagation.CONTEXT, connection -> connection
+    pool.withTransaction(TransactionPropagation.CONTEXT, connection ->
+      connection
       .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
       .execute()
       .flatMap(res -> pool
