@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -24,6 +24,8 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
+import oracle.jdbc.OracleTypes;
+import oracle.sql.TIMESTAMPTZ;
 
 import java.sql.*;
 import java.time.Instant;
@@ -243,7 +245,14 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
 
             OracleRow keys = new OracleRow(keysDesc);
             for (int i = 1; i <= cols; i++) {
-              Object res = Helper.convertSqlValue(keysRS.getObject(i));
+              Class<?> colJdbcClass = getJdbcClass(i, metaData);
+              final Object value;
+              if (colJdbcClass != null) {
+                value = keysRS.getObject(i, colJdbcClass);
+              } else {
+                value = keysRS.getObject(i);
+              }
+              Object res = Helper.convertSqlValue(value);
               keys.addValue(res);
             }
 
@@ -251,6 +260,21 @@ public abstract class QueryCommand<C, R> extends AbstractCommand<OracleResponse<
           }
         }
       }
+    }
+  }
+
+  private static Class<?> getJdbcClass(
+          int index, ResultSetMetaData resultSetMetaData) throws SQLException {
+    int jdbcType = resultSetMetaData.getColumnType(index);
+    switch (jdbcType) {
+      case Types.DATE:
+      case Types.TIMESTAMP:
+        return Timestamp.class;
+      case OracleTypes.TIMESTAMPTZ:
+      case Types.TIMESTAMP_WITH_TIMEZONE:
+        return TIMESTAMPTZ.class;
+      default:
+        return null;
     }
   }
 }
