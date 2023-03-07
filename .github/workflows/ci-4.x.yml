@@ -1,0 +1,68 @@
+name: CI (4.x)
+on:
+  schedule:
+    - cron: '0 4 * * *'
+jobs:
+  CI:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'PostgreSQL-9'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'PostgreSQL-10'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'PostgreSQL-11'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'MySQL-8.0'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'MySQL-5.6'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'MySQL-5.7'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'MariaDB-10.4'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'MSSQL-2017-latest'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'MSSQL-2019-latest'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'DB2-11.5'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'Oracle-21'
+          - os: ubuntu-latest
+            jdk: 8
+            profile: 'SQL-templates'
+          - os: ubuntu-latest
+            jdk: 17
+            profile: 'PostgreSQL-11'
+          - os: ubuntu-latest
+            jdk: 17
+            profile: 'MySQL-5.7'
+          - os: ubuntu-latest
+            jdk: 17
+            profile: 'MySQL-5.7'
+          - os: ubuntu-latest
+            jdk: 17
+            profile: 'MSSQL-2019-latest'
+          - os: ubuntu-latest
+            jdk: 17
+            profile: 'Oracle-21'
+    uses: ./.github/workflows/ci.yml
+    with:
+      branch: 4.x
+      jdk: ${{ matrix.jdk }}
+      os: ${{ matrix.os }}
+      profile: ${{ matrix.profile }}
+      deploy: ${{ matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
+    secrets: inherit
