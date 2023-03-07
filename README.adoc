@@ -1,6 +1,7 @@
 = The Reactive SQL Client
 
-image:https://github.com/eclipse-vertx/vertx-sql-client/workflows/CI/badge.svg?branch=master["Build Status", link="https://github.com/eclipse-vertx/vertx-sql-client/actions?query=workflow%3ACI"]
+image:https://github.com/eclipse-vertx/vertx-sql-client/actions/workflows/ci-5.x.yml/badge.svg["Build Status (5.x)",link="https://github.com/eclipse-vertx/vertx-sql-client/actions/workflows/ci-5.x.yml"]
+image:https://github.com/eclipse-vertx/vertx-sql-client/actions/workflows/ci-4.x.yml/badge.svg["Build Status (4.x)",link="https://github.com/eclipse-vertx/vertx-sql-client/actions/workflows/ci-4.x.yml"]
 
 * Simple API focusing on scalability and low overhead.
 * Reactive and non-blocking which able to handle many database connections with a single thread.
