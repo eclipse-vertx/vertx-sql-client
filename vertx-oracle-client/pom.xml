@@ -177,7 +177,7 @@
     <profile>
       <id>Java8</id>
       <activation>
-        <jdk>[1.8,11)</jdk>
+        <jdk>[1.8,17)</jdk>
       </activation>
       <build>
         <plugins>
