@@ -60,3 +60,11 @@ jobs:
       profile: ${{ matrix.profile }}
       deploy: ${{ matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
     secrets: inherit
+  Deploy:
+    name: Deploy to OSSRH
+    if: ${{ github.repository_owner == 'eclipse-vertx' && (github.event_name == 'push' || github.event_name == 'schedule') }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      branch: 4.x
+      jdk: 8
+    secrets: inherit
