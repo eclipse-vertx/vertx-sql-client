@@ -45,9 +45,6 @@ jobs:
             profile: 'DB2-11.5'
           - os: ubuntu-latest
             jdk: 8
-            profile: 'Oracle-21'
-          - os: ubuntu-latest
-            jdk: 8
             profile: 'SQL-templates'
           - os: ubuntu-latest
             jdk: 17
@@ -61,9 +58,6 @@ jobs:
           - os: ubuntu-latest
             jdk: 17
             profile: 'MSSQL-2019-latest'
-          - os: ubuntu-latest
-            jdk: 17
-            profile: 'Oracle-21'
     uses: ./.github/workflows/ci.yml
     with:
       branch: ${{ github.head_ref || github.ref_name }}
