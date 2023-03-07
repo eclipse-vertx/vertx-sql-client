@@ -48,10 +48,13 @@ jobs:
             profile: 'MySQL-5.7'
           - os: ubuntu-latest
             jdk: 17
-            profile: 'MySQL-5.7'
+            profile: 'MariaDB-10.4'
           - os: ubuntu-latest
             jdk: 17
             profile: 'MSSQL-2019-latest'
+          - os: ubuntu-latest
+            jdk: 17
+            profile: 'Oracle-21'
     uses: ./.github/workflows/ci.yml
     with:
       branch: 4.x
