@@ -1,0 +1,32 @@
+peers:
+  - peer: 0
+    host: 127.0.0.1
+    port: 38066
+  - peer: 1
+    host: 127.0.0.1
+    port: 9000
+packets:
+  - packet: 10
+    peer: 0
+    index: 0
+    timestamp: 1665938677.585407195
+    data: !!binary |
+      AERDbGlja0hvdXNlIENsaWNraG91c2VCaW5hcnlDb25uZWN0aW9uVGVzdC50ZXN0Q29ubmVjdElu
+      dmFsaWREYXRhYmFzZRQKqakDD2ludmFsaWREYXRhYmFzZQR0ZXN0BHRlc3Q=
+  - packet: 22
+    peer: 1
+    index: 0
+    timestamp: 1665938677.586282510
+    data: !!binary |
+      AlEAAAANREI6OkV4Y2VwdGlvbjdEQjo6RXhjZXB0aW9uOiBEYXRhYmFzZSBgaW52YWxpZERhdGFi
+      YXNlYCBkb2Vzbid0IGV4aXN0rgQwLiBEQjo6VENQSGFuZGxlcjo6cnVuSW1wbCgpIEAgMHhlNTY5
+      OTcyIGluIC91c3IvYmluL2NsaWNraG91c2UKMS4gREI6OlRDUEhhbmRsZXI6OnJ1bigpIEAgMHhl
+      NTc3MWI3IGluIC91c3IvYmluL2NsaWNraG91c2UKMi4gUG9jbzo6TmV0OjpUQ1BTZXJ2ZXJDb25u
+      ZWN0aW9uOjpzdGFydCgpIEAgMHgxMGQ0ZjcxZiBpbiAvdXNyL2Jpbi9jbGlja2hvdXNlCjMuIFBv
+      Y286Ok5ldDo6VENQU2VydmVyRGlzcGF0Y2hlcjo6cnVuKCkgQCAweDEwZDUxMTJlIGluIC91c3Iv
+      YmluL2NsaWNraG91c2UKNC4gUG9jbzo6UG9vbGVkVGhyZWFkOjpydW4oKSBAIDB4MTBlODIzZTkg
+      aW4gL3Vzci9iaW4vY2xpY2tob3VzZQo1LiBQb2NvOjpUaHJlYWRJbXBsOjpydW5uYWJsZUVudHJ5
+      KHZvaWQqKSBAIDB4MTBlN2UzMWEgaW4gL3Vzci9iaW4vY2xpY2tob3VzZQo2LiBzdGFydF90aHJl
+      YWQgQCAweDk2MDkgaW4gL3Vzci9saWIveDg2XzY0LWxpbnV4LWdudS9saWJwdGhyZWFkLTIuMzEu
+      c28KNy4gY2xvbmUgQCAweDEyMjI5MyBpbiAvdXNyL2xpYi94ODZfNjQtbGludXgtZ251L2xpYmMt
+      Mi4zMS5zbwoA
