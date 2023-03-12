@@ -87,7 +87,7 @@ public class PgPoolTest extends PgPoolTestBase {
     Async async = ctx.async();
     PgPool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-      conn.close(ctx.asyncAssertSuccess(v1 -> {
+      conn.close().onComplete(ctx.asyncAssertSuccess(v1 -> {
         pool.close(v2 -> {
           async.complete();
         });
@@ -179,7 +179,7 @@ public class PgPoolTest extends PgPoolTestBase {
     PgPool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
     pool.getConnection(ctx.asyncAssertSuccess(v -> {
       pool.getConnection(ctx.asyncAssertFailure(err -> {
-        v.close(ctx.asyncAssertSuccess(vv -> {
+        v.close().onComplete(ctx.asyncAssertSuccess(vv -> {
           async.complete();
         }));
       }));
@@ -211,7 +211,7 @@ public class PgPoolTest extends PgPoolTestBase {
     Async async = ctx.async(poolSize + 1);
     PgPool pool = PgPool.pool(options, new PoolOptions().setMaxSize(poolSize));
     AtomicReference<PgConnection> ctrlConnRef = new AtomicReference<>();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(ctrlConn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(ctrlConn -> {
       ctrlConnRef.set(ctrlConn);
       for (int i = 0; i < poolSize; i++) {
         vertx.setTimer(10 * (i + 1), l -> {
@@ -415,7 +415,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Repeat(50)
   public void testNoConnectionLeaks(TestContext ctx) {
     Async killConnections = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       Collector<Row, ?, List<Integer>> collector = mapping(row -> row.getInteger(0), toList());
       String sql = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = $1";
       PreparedQuery<SqlResult<List<Integer>>> preparedQuery = conn.preparedQuery(sql).collecting(collector);

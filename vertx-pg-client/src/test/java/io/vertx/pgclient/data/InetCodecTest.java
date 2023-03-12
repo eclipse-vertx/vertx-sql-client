@@ -29,7 +29,7 @@ public class InetCodecTest extends DataTypeTestBase {
   private void testDecodeINET(TestContext ctx, BiFunction<SqlClient, String, Query<RowSet<Row>>> a) throws Exception {
     InetAddress addr1 = Inet4Address.getByName("0.1.2.3");
     InetAddress addr2 = Inet6Address.getByName("2001:0db8:0a0b:12f0:0000:0000:0000:0001");
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       a.apply(conn, "SELECT " +
         "'0.1.2.3'::INET," +
         "'0.1.2.3/4'::INET," +
@@ -57,7 +57,7 @@ public class InetCodecTest extends DataTypeTestBase {
   public void testBinaryEncodeINET(TestContext ctx) throws Exception {
     InetAddress addr1 = Inet4Address.getByName("0.1.2.3");
     InetAddress addr2 = Inet6Address.getByName("2001:0db8:0a0b:12f0:0000:0000:0000:0001");
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT ($1::INET)::VARCHAR, ($2::INET)::VARCHAR, ($3::INET)::VARCHAR, ($4::INET)::VARCHAR").execute(Tuple.of(
         new Inet().setAddress(addr1),
         new Inet().setAddress(addr1).setNetmask(4),
@@ -82,7 +82,7 @@ public class InetCodecTest extends DataTypeTestBase {
   @Test
   public void testBinaryDecodeINETArray(TestContext ctx) throws Exception {
     InetAddress addr1 = Inet4Address.getByName("0.1.2.3");
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT ARRAY['0.1.2.3'::INET,'0.1.2.3/4'::INET]")
         .execute(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(1, rows.size());
@@ -101,7 +101,7 @@ public class InetCodecTest extends DataTypeTestBase {
   @Test
   public void testBinaryEncodeINETArray(TestContext ctx) throws Exception {
     InetAddress addr1 = Inet4Address.getByName("0.1.2.3");
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT ($1::INET[])::VARCHAR[]").execute(Tuple.of(
         new Inet[]{new Inet().setAddress(addr1), new Inet().setAddress(addr1).setNetmask(4)}
         ),

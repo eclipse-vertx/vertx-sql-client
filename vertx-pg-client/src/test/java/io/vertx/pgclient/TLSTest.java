@@ -45,7 +45,7 @@ public class TLSTest {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -55,7 +55,7 @@ public class TLSTest {
     PgConnectOptions options = new PgConnectOptions(rule.options())
       .setSslMode(SslMode.REQUIRE)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"));
-    PgConnection.connect(vertx, options.setSslMode(SslMode.REQUIRE), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options.setSslMode(SslMode.REQUIRE)).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       conn
         .query("SELECT * FROM Fortune WHERE id=1")
@@ -72,7 +72,7 @@ public class TLSTest {
   @Test
   public void testTLSTrustAll(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, rule.options().setSslMode(SslMode.REQUIRE).setTrustAll(true), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, rule.options().setSslMode(SslMode.REQUIRE).setTrustAll(true)).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       async.complete();
     }));
@@ -81,7 +81,7 @@ public class TLSTest {
   @Test
   public void testTLSInvalidCertificate(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, rule.options().setSslMode(SslMode.REQUIRE), ctx.asyncAssertFailure(err -> {
+    PgConnection.connect(vertx, rule.options().setSslMode(SslMode.REQUIRE)).onComplete(ctx.asyncAssertFailure(err -> {
 //      ctx.assertEquals(err.getClass(), VertxException.class);
       ctx.assertEquals(err.getMessage(), "SSL handshake failed");
       async.complete();
@@ -93,7 +93,7 @@ public class TLSTest {
     Async async = ctx.async();
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.DISABLE);
-    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options)).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       async.complete();
     }));
@@ -104,7 +104,7 @@ public class TLSTest {
     Async async = ctx.async();
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.ALLOW);
-    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options)).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       async.complete();
     }));
@@ -116,7 +116,7 @@ public class TLSTest {
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.PREFER)
       .setTrustAll(true);
-    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options)).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       async.complete();
     }));
@@ -127,7 +127,7 @@ public class TLSTest {
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.VERIFY_CA)
       .setTrustAll(true);
-    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertFailure(error -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options)).onComplete(ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Trust options must be specified under verify-full or verify-ca sslmode", error.getMessage());
     }));
   }
@@ -136,7 +136,7 @@ public class TLSTest {
   public void testSslModeVerifyFullConf(TestContext ctx) {
     PgConnectOptions options = rule.options()
       .setSslMode(SslMode.VERIFY_FULL);
-    PgConnection.connect(vertx, new PgConnectOptions(options), ctx.asyncAssertFailure(error -> {
+    PgConnection.connect(vertx, new PgConnectOptions(options)).onComplete(ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Host verification algorithm must be specified under verify-full sslmode", error.getMessage());
     }));
   }

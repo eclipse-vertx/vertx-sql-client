@@ -69,8 +69,8 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
 
   private void testDecodeJson(TestContext ctx, String tableName) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"NullValue\", \"Null\" FROM \"" + tableName + "\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\").onComplete(\"NullValue\").onComplete(\"Null\" FROM \"" + tableName + "\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
@@ -145,7 +145,7 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
 
   private void testEncodeJson(TestContext ctx, String tableName) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"" + tableName + "\" SET " +
           "\"JsonObject\" = $1, " +
           "\"JsonArray\" = $2, " +

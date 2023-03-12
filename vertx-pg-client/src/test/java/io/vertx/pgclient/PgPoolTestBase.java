@@ -44,7 +44,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected PgPool createPool(PgConnectOptions connectOptions, int size) {

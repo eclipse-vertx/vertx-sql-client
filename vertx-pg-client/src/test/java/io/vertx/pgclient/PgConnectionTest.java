@@ -34,7 +34,7 @@ import java.util.List;
 public class PgConnectionTest extends PgConnectionTestBase {
 
   public PgConnectionTest() {
-    connector = (handler) -> PgConnection.connect(vertx, options, ar -> {
+    connector = (handler) -> PgConnection.connect(vertx, options).onComplete(ar -> {
       handler.handle(ar.map(p -> p));
     });
   }
@@ -55,7 +55,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         insertIntoTestTable(ctx, conn, 10, () -> {
-          conn.prepare("UPDATE Test SET val=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
+          conn.prepare("UPDATE Test SET val=$1 WHERE id=$2").onComplete(ctx.asyncAssertSuccess(ps -> {
             List<Tuple> batch = new ArrayList<>();
             batch.add(Tuple.of("val0", 0));
             batch.add(Tuple.of("val1", 1));
@@ -65,7 +65,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
                 result = result.next();
               }
               ctx.assertNull(result);
-              ps.close(ctx.asyncAssertSuccess(v -> {
+              ps.close().onComplete(ctx.asyncAssertSuccess(v -> {
                 async.complete();
               }));
             }));

@@ -13,9 +13,11 @@ public class CustomTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase
   public void testCustomType(TestContext ctx) {
     Async async = ctx.async();
     String expected = "Anytown";
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT (address).city FROM \"CustomDataType\"").execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT (address).city FROM \"CustomDataType\"")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(2, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "city")

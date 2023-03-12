@@ -42,7 +42,7 @@ public class DB2SimpleQueryUriTest extends DB2SimpleQueryTest {
     connector = new Connector<SqlConnection>() {
       @Override
       public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-        DB2Connection.connect(vertx, uri, ar -> {
+        DB2Connection.connect(vertx, uri).onComplete(ar -> {
           if (ar.succeeded()) {
             handler.handle(Future.succeededFuture(ar.result()));
           } else {

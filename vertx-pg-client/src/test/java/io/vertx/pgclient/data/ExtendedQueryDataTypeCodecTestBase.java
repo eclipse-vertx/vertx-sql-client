@@ -46,7 +46,7 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
 
   protected <T> void testGeneric(TestContext ctx, String sql, T[] expected, BiFunction<Row, Integer, T> getter) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = Stream.of(expected).map(Tuple::of).collect(Collectors.toList());
       conn.preparedQuery(sql).executeBatch(batch,
         ctx.asyncAssertSuccess(result -> {
@@ -66,7 +66,7 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
 
   protected <T> void testDecode(TestContext ctx, String sql, BiFunction<Row, Integer, T> getter, T... expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery(sql).execute(
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(result.size(), 1);
@@ -84,7 +84,7 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
 
   protected <T> void testEncode(TestContext ctx, String sql, Tuple tuple, String... expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery(sql).execute(tuple,
         ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(result.size(), 1);

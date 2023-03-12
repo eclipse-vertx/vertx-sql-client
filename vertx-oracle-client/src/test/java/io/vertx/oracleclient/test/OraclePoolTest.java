@@ -237,7 +237,7 @@ public class OraclePoolTest extends OracleTestBase {
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
       ctx.assertEquals(1, hookCount.get());
       conn.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
-        conn.close(ctx.asyncAssertSuccess());
+        conn.close().onComplete(ctx.asyncAssertSuccess());
       }));
     }));
   }
@@ -275,7 +275,7 @@ public class OraclePoolTest extends OracleTestBase {
             ctx.assertTrue(Vertx.currentContext() == duplicated);
             conn.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res2 -> {
               ctx.assertTrue(Vertx.currentContext() == duplicated);
-              conn.close(ctx.asyncAssertSuccess(v -> {
+              conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
                 ctx.assertTrue(Vertx.currentContext() == duplicated);
                 async.complete();
               }));

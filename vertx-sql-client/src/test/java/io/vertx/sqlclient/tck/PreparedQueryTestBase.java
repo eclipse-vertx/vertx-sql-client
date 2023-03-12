@@ -75,7 +75,7 @@ public abstract class PreparedQueryTestBase {
   public void tearDown(TestContext ctx) {
     msgVerifier = null;
     connector.close();
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -90,7 +90,7 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPrepareError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(error -> {
+      conn.prepare("SELECT whatever from DOES_NOT_EXIST").onComplete(ctx.asyncAssertFailure(error -> {
         if (msgVerifier != null) {
           msgVerifier.accept(error);
         }
@@ -259,9 +259,9 @@ public abstract class PreparedQueryTestBase {
         Cursor cursor = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
         cursor.read(4, ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(4, results.size());
-          cursor.close(ctx.asyncAssertSuccess(v1 -> {
+          cursor.close().onComplete(ctx.asyncAssertSuccess(v1 -> {
             ctx.assertTrue(cursor.isClosed());
-            ps.close(ctx.asyncAssertSuccess(v2 -> {
+            ps.close().onComplete(ctx.asyncAssertSuccess(v2 -> {
               async.complete();
             }));
           }));
@@ -282,9 +282,9 @@ public abstract class PreparedQueryTestBase {
           if (rows.size() == 4) {
             Cursor cursor = ((RowStreamInternal) stream).cursor();
             ctx.assertFalse(cursor.isClosed());
-            stream.close(ctx.asyncAssertSuccess(v1 -> {
+            stream.close().onComplete(ctx.asyncAssertSuccess(v1 -> {
               ctx.assertTrue(cursor.isClosed());
-              ps.close(ctx.asyncAssertSuccess(v2 -> {
+              ps.close().onComplete(ctx.asyncAssertSuccess(v2 -> {
                 async.complete();
               }));
             }));
@@ -298,7 +298,7 @@ public abstract class PreparedQueryTestBase {
   public void testStreamQuery(TestContext ctx) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(ps -> {
         RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
         List<Tuple> rows = new ArrayList<>();
         AtomicInteger ended = new AtomicInteger();
@@ -330,7 +330,7 @@ public abstract class PreparedQueryTestBase {
   private void testStreamQueryPauseInBatch(TestContext ctx, Executor executor) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(ps -> {
         RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
         List<Tuple> rows = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger ended = new AtomicInteger();
@@ -360,7 +360,7 @@ public abstract class PreparedQueryTestBase {
   public void testStreamQueryPauseResume(TestContext ctx) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(ps -> {
         RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
         List<Tuple> rows = new ArrayList<>();
         AtomicInteger ended = new AtomicInteger();

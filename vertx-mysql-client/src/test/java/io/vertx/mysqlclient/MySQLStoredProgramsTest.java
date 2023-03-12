@@ -35,12 +35,12 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testMultiStatement(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 1; SELECT \'test\';").execute(ctx.asyncAssertSuccess(result -> {
         Row row1 = result.iterator().next();
         ctx.assertEquals(1, row1.getInteger(0));
@@ -54,7 +54,7 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
 
   @Test
   public void testMultiResult(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE ins ( id INT );").execute(ctx.asyncAssertSuccess(createTable -> {
         conn.query("DROP PROCEDURE IF EXISTS multi;").execute(ctx.asyncAssertSuccess(cleanProcedure -> {
           conn.query("CREATE PROCEDURE multi()\n" +
@@ -100,7 +100,7 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
   @Test
   public void testInParameters(TestContext ctx) {
     // example borrowed from https://dev.mysql.com/doc/refman/8.0/en/stored-programs-defining.html
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("DROP PROCEDURE IF EXISTS dorepeat;").execute(ctx.asyncAssertSuccess(cleanProcedure -> {
         conn.query("CREATE PROCEDURE dorepeat(p1 INT)\n" +
           "BEGIN\n" +
@@ -124,7 +124,7 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
 
   @Test
   public void testOutParameters(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("DROP PROCEDURE IF EXISTS test_out_parameter;").execute(ctx.asyncAssertSuccess(cleanProcedure -> {
         conn.query("CREATE PROCEDURE test_out_parameter(OUT p1 VARCHAR(20))\n" +
           "BEGIN\n" +
@@ -146,7 +146,7 @@ public class MySQLStoredProgramsTest extends MySQLTestBase {
 
   @Test
   public void testInOutParameters(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("DROP PROCEDURE IF EXISTS test_inout_parameter;").execute(ctx.asyncAssertSuccess(cleanProcedure -> {
         conn.query("CREATE PROCEDURE test_inout_parameter(INOUT p1 INT)\n" +
           "BEGIN\n" +

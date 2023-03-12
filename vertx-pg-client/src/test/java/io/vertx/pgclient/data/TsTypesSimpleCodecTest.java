@@ -16,7 +16,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void test_ts_query(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 'fat & rat'::tsquery as \"TsQuery\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -34,7 +34,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void test_ts_query_null(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT null::tsquery as \"TsQuery\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -50,7 +50,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void test_ts_query_array(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT ARRAY ['fat & rat'::tsquery ] as \"TsQuery\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -70,7 +70,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void test_ts_vector_simple(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT 'a fat cat sat on a mat and ate a fat rat'::tsvector as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -88,7 +88,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void test_ts_vector_null(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT null::tsvector as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -103,7 +103,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void test_ts_vector_parsed(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT to_tsvector('english', 'The Fat Rats') as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
@@ -121,7 +121,7 @@ public class TsTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
   @Test
   public void test_ts_vector_array(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT ARRAY['a fat cat sat on a mat and ate a fat rat'::tsvector] as \"TsVector\"").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();

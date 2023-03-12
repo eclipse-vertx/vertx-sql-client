@@ -55,7 +55,7 @@ public abstract class MetricsTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected Pool getPool() {
@@ -80,7 +80,7 @@ public abstract class MetricsTestBase {
     };
     Pool pool = createPool(vertx);
     ctx.assertEquals(0, closeCount.get());
-    pool.close(ctx.asyncAssertSuccess(v -> {
+    pool.close().onComplete(ctx.asyncAssertSuccess(v -> {
       ctx.assertEquals(1, closeCount.get());
     }));
   }
@@ -165,7 +165,7 @@ public abstract class MetricsTestBase {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         fn.apply(conn).onComplete(ar -> {
           ctx.assertEquals(!fail, ar.succeeded());
-          conn.close(ctx.asyncAssertSuccess(v3 -> {
+          conn.close().onComplete(ctx.asyncAssertSuccess(v3 -> {
             vertx.runOnContext(v4 -> {
               if (fail) {
                 ctx.assertNull(responseMetric.get());

@@ -27,7 +27,7 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
 
   @Test
   public void testBinaryDecodeAll(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT * FROM datatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();

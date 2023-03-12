@@ -30,8 +30,11 @@ import java.util.function.Consumer;
 public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
   @Test
   public void testBinaryDecodeAll(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT `test_year`, `test_timestamp`, `test_datetime` FROM datatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT `test_year`, `test_timestamp`, `test_datetime` FROM datatype WHERE id = 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(3, row.size());
@@ -157,9 +160,15 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
   }
 
   private void testEncodeTime(TestContext ctx, Duration param, Duration expected) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE basicdatatype SET `test_time` = ?" + " WHERE id = 2").execute(Tuple.tuple().addValue(param), ctx.asyncAssertSuccess(updateResult -> {
-        conn.preparedQuery("SELECT `test_time` FROM basicdatatype WHERE id = 2").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("UPDATE basicdatatype SET `test_time` = ?" + " WHERE id = 2")
+        .execute(Tuple.tuple().addValue(param))
+        .onComplete(ctx.asyncAssertSuccess(updateResult -> {
+        conn
+          .preparedQuery("SELECT `test_time` FROM basicdatatype WHERE id = 2")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ctx.assertEquals(expected, row.getValue(0));
@@ -171,9 +180,15 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
   }
 
   private void testEncodeTime(TestContext ctx, LocalTime param, Duration expectedDuration, LocalTime expectedLocalTime) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE basicdatatype SET `test_time` = ?" + " WHERE id = 2").execute(Tuple.tuple().addValue(param), ctx.asyncAssertSuccess(updateResult -> {
-        conn.preparedQuery("SELECT `test_time` FROM basicdatatype WHERE id = 2").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("UPDATE basicdatatype SET `test_time` = ?" + " WHERE id = 2")
+        .execute(Tuple.tuple().addValue(param))
+        .onComplete(ctx.asyncAssertSuccess(updateResult -> {
+        conn
+          .preparedQuery("SELECT `test_time` FROM basicdatatype WHERE id = 2")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ctx.assertEquals(expectedDuration, row.getValue(0));
@@ -196,8 +211,11 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
 
   @Override
   protected void testDecodeGeneric(TestContext ctx, String data, String dataType, Consumer<Row> valueAccessor, String columnName) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT CAST(\'" + data + "\' AS " + dataType + ") " + columnName).execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT CAST(\'" + data + "\' AS " + dataType + ") " + columnName)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         valueAccessor.accept(row);

@@ -54,7 +54,7 @@ public class MySQLPooledConnectionTest extends MySQLTestBase {
     if (pool != null) {
       pool.close();
     }
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test

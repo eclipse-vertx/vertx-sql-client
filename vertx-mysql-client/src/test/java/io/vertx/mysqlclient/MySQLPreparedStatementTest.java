@@ -39,13 +39,13 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testContinuousPreparedQueriesWithSameTypeParameters(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT id, message FROM immutable WHERE id = ? AND message = ?", ctx.asyncAssertSuccess(preparedQuery -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT id, message FROM immutable WHERE id = ? AND message = ?").onComplete(ctx.asyncAssertSuccess(preparedQuery -> {
         preparedQuery.query().execute(Tuple.of(1, "fortune: No such file or directory"), ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
           preparedQuery.query().execute(Tuple.of(4, "After enough decimal places, nobody gives a damn."), ctx.asyncAssertSuccess(res2 -> {
@@ -59,8 +59,8 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
 
   @Test
   public void testContinuousPreparedQueriesWithDifferentTypeParameters(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT id, message FROM immutable WHERE id = ? AND message = ?", ctx.asyncAssertSuccess(preparedQuery -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT id, message FROM immutable WHERE id = ? AND message = ?").onComplete(ctx.asyncAssertSuccess(preparedQuery -> {
         preparedQuery.query().execute(Tuple.of("1", "fortune: No such file or directory"), ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
           preparedQuery.query().execute(Tuple.of(4, "A bad random number generator: 1, 1, 1, 1, 1, 4.33e+67, 1, 1, 1"), ctx.asyncAssertSuccess(res2 -> {
@@ -75,7 +75,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   @Test
   public void testContinuousOneShotPreparedQueriesWithDifferentTypeParameters(TestContext ctx) {
     options.setCachePreparedStatements(true);
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
         .execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
@@ -96,7 +96,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   @Test
   public void testContinuousOneShotPreparedQueriesWithBindingFailure(TestContext ctx) {
     options.setCachePreparedStatements(true);
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
         .execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
@@ -118,7 +118,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   @Test
   public void testContinuousOneShotPreparedBatchWithBindingFailure(TestContext ctx) {
     options.setCachePreparedStatements(true);
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT id, message FROM immutable WHERE id = ?")
         .execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
@@ -150,7 +150,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   private void testPreparedStatements(TestContext ctx, MySQLConnectOptions options, int num, int expected) {
     Assume.assumeFalse(MySQLTestBase.rule.isUsingMySQL5_6() || MySQLTestBase.rule.isUsingMariaDB());
     Async async = ctx.async();
-    MySQLConnection.connect(vertx, options.setUser("root").setPassword("password"), ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options.setUser("root").setPassword("password")).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertEquals(0, res1.size());
         AtomicInteger count = new AtomicInteger(num);
@@ -163,7 +163,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
               ctx.assertEquals(num - 1, val);
               conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res3 -> {
                 ctx.assertEquals(expected, res3.size());
-                conn.close(ctx.asyncAssertSuccess(v -> {
+                conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
                   async.complete();
                 }));
               }));
@@ -182,7 +182,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
       .setPassword("password")
       .setCachePreparedStatements(false);
     Async async = ctx.async();
-    MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, connectOptions).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertEquals(0, res1.size());
         conn.preparedQuery("INSERT INTO duplicate_test VALUES (?)").execute(Tuple.of(1), ctx.asyncAssertFailure(failure -> {
@@ -195,7 +195,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
           ctx.assertEquals("23000", e.getSqlState());
           conn.query("SELECT * FROM performance_schema.prepared_statements_instances").execute(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals(0, res2.size());
-            conn.close(ctx.asyncAssertSuccess(v -> {
+            conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
               async.complete();
             }));
           }));

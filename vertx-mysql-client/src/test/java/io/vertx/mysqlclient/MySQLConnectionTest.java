@@ -35,7 +35,7 @@ public class MySQLConnectionTest extends MySQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -49,7 +49,7 @@ public class MySQLConnectionTest extends MySQLTestBase {
       "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
       "5QIDAQAB\n" +
       "-----END PUBLIC KEY-----\n"));
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.close();
     }));
   }
@@ -57,7 +57,7 @@ public class MySQLConnectionTest extends MySQLTestBase {
   @Test
   public void testAuthenticationWithEncryptPasswordByServerPublicKeyInPath(TestContext ctx) {
     options.setServerRsaPublicKeyPath("tls/files/public_key.pem");
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.close();
     }));
   }
@@ -67,18 +67,18 @@ public class MySQLConnectionTest extends MySQLTestBase {
     options.setUser("emptypassuser")
       .setPassword("")
       .setDatabase("emptyschema");
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.close();
     }));
   }
 
   @Test
   public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn1 -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn1 -> {
       conn1.query("DO SLEEP(20)").execute(ctx.asyncAssertFailure(t -> {
         ctx.assertTrue(t instanceof ClosedConnectionException);
       }));
-      MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn2 -> {
+      MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn2 -> {
         conn2.query("SHOW PROCESSLIST").execute(ctx.asyncAssertSuccess(processRes -> {
           for (Row row : processRes) {
             Long id = row.getLong("Id");

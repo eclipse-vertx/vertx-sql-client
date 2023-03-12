@@ -13,8 +13,8 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
   @Test
   public void test_tsquery_and_tsvector(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT to_tsvector('english', $1 ) @@ to_tsquery('english', $2 ) as \"TsQuery\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT to_tsvector('english', $1 ) @@ to_tsquery('english', $2 ) as \"TsQuery\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
             .addString("postgraduate")
@@ -35,8 +35,8 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
   @Test
   public void test_tsvector(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT c \"TsVector\" FROM ( VALUES ( to_tsvector ('english', $1 ) )) as t (c)",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT c \"TsVector\" FROM ( VALUES ( to_tsvector ('english', $1 ) )) as t (c)").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
             .addString("postgraduate"), ctx.asyncAssertSuccess(result -> {
@@ -57,8 +57,8 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
   @Test
   public void test_tsvector_array(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT c \"TsVector\" FROM ( VALUES ( ARRAY[to_tsvector ('english', $1 ), to_tsvector ('english', $2 )] )) as t (c) GROUP BY c",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT c \"TsVector\" FROM ( VALUES ( ARRAY[to_tsvector ('english', $1 ), to_tsvector ('english', $2 )] )) as t (c) GROUP BY c").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
             .addString("postgraduate")
@@ -81,8 +81,8 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
   @Test
   public void test_tsquery(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT c \"TsQuery\" FROM ( VALUES ( to_tsquery ('english', $1 ) )) as t (c)",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT c \"TsQuery\" FROM ( VALUES ( to_tsquery ('english', $1 ) )) as t (c)").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
             .addString("Fat:ab & Cats"), ctx.asyncAssertSuccess(result -> {
@@ -103,8 +103,8 @@ public class TsTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase
   @Test
   public void test_tsquery_array(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT c \"TsQuery\" FROM ( VALUES ( ARRAY[to_tsquery ('english', $1 ), to_tsquery ('english', $2 )] )) as t (c)",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT c \"TsQuery\" FROM ( VALUES ( ARRAY[to_tsquery ('english', $1 ), to_tsquery ('english', $2 )] )) as t (c)").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
             .addString("Fat:ab & Cats")

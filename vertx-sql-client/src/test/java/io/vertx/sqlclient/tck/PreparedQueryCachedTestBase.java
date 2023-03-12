@@ -52,12 +52,12 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
     options.setPreparedStatementCacheMaxSize(1024);
 
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement1 -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(preparedStatement1 -> {
         preparedStatement1.query().execute(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(12, res1.size());
           preparedStatement1.close(); // no response from server, we need to wait for some time here
           vertx.setTimer(2000, id -> {
-            conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement2 -> {
+            conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(preparedStatement2 -> {
               preparedStatement2.query().execute(ctx.asyncAssertSuccess(res2 -> {
                 ctx.assertEquals(12, res2.size());
                 conn.close();
@@ -74,12 +74,12 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
   @Test
   public void testConcurrentClose(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement1 -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(preparedStatement1 -> {
         preparedStatement1.query().execute(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(12, res1.size());
           preparedStatement1.close();
           // send another prepare command directly
-          conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement2 -> {
+          conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(preparedStatement2 -> {
             preparedStatement2.query().execute(ctx.asyncAssertSuccess(res2 -> {
               ctx.assertEquals(12, res2.size());
               conn.close();

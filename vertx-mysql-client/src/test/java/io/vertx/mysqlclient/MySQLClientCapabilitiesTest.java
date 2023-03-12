@@ -38,7 +38,7 @@ public class MySQLClientCapabilitiesTest extends MySQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
 
@@ -54,7 +54,7 @@ public class MySQLClientCapabilitiesTest extends MySQLTestBase {
 
   private void testAffectedRowsClientCapability(TestContext ctx, boolean useAffectedRows, int expectedRowCount) {
     MySQLConnectOptions connectOptions = options.setUseAffectedRows(useAffectedRows);
-    MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, connectOptions).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query(PREPARE_TESTING_TABLE_DATA).execute(ctx.asyncAssertSuccess(res0 -> {
         conn
           .query("UPDATE vehicle SET type = 'bike' WHERE id = 1;").execute(ctx.asyncAssertSuccess(res1 -> {

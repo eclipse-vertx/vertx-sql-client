@@ -40,25 +40,25 @@ public class MSSQLConnectionTest extends MSSQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testConnectWithEmptyProperties(TestContext ctx) {
     options.setProperties(new HashMap<>());
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(SqlConnection::close));
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(SqlConnection::close));
   }
 
   @Test
   public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn1 -> {
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn1 -> {
       conn1.query("WAITFOR DELAY '00:00:20'").execute(ctx.asyncAssertFailure(t -> {
         ctx.verify(v -> {
           assertThat(t, instanceOf(MSSQLException.class));
           assertEquals("Cannot continue the execution because the session is in the kill state.", ((MSSQLException) t).errorMessage());
         });
       }));
-      MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn2 -> {
+      MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn2 -> {
         conn2.preparedQuery("EXEC sp_who;").execute(ctx.asyncAssertSuccess(processRes -> {
           for (Row row : processRes) {
             Short spid = row.getShort("spid");

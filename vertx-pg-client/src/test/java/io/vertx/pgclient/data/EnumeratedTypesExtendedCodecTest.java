@@ -12,8 +12,8 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
   @Test
   public void testDecodeEnum(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"currentMood\" FROM \"EnumDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"currentMood\" FROM \"EnumDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
@@ -33,8 +33,8 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
   @Test
   public void testEncodeEnum(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"EnumDataType\" SET \"currentMood\" = $1  WHERE \"id\" = $2 RETURNING \"currentMood\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"EnumDataType\" SET \"currentMood\" = $1  WHERE \"id\" = $2 RETURNING \"currentMood\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
               .addString("happy")
@@ -57,8 +57,8 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
   public void testDecodeEnumArray(TestContext ctx) {
     final String[] expected = new String[]{"ok", "unhappy", "happy"};
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Enum\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Enum\" FROM \"ArrayDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
             .addInteger(1), ctx.asyncAssertSuccess(result -> {
@@ -75,8 +75,8 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
   @Test
   public void testEncodeEnumArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
               .addArrayOfString(new String[]{"unhappy"})
@@ -95,8 +95,8 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
   @Test
   public void testEncodeEnumArrayMultipleValues(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
               .addArrayOfString(new String[]{"unhappy", "ok"})
@@ -115,8 +115,8 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
   @Test
   public void testEncodeEnumArrayEmptyValues(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\", \"Boolean\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\").onComplete(\"Boolean\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
           p.query().execute(Tuple.tuple()
               .addArrayOfString(new String[]{})

@@ -38,7 +38,7 @@ public class OracleBrokenPooledConnectionTest extends OracleTestBase {
   @After
   public void tearDown(TestContext ctx) throws Exception {
     if (pool != null) {
-      pool.close(ctx.asyncAssertSuccess());
+      pool.close().onComplete(ctx.asyncAssertSuccess());
     }
   }
 

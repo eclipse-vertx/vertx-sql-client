@@ -43,7 +43,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
 
@@ -51,7 +51,7 @@ public class MySQLQueryTest extends MySQLTestBase {
   public void testLastInsertIdWithDefaultValue(TestContext ctx) {
     // Test with our own property
     PropertyKind<Long> property = PropertyKind.create("last-inserted-id", Long.class);
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
         Long lastInsertId1 = createTableResult.property(property);
         ctx.assertNull(lastInsertId1);
@@ -70,7 +70,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testLastInsertIdWithSpecifiedValue(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
         Long lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
         ctx.assertNull(lastInsertId1);
@@ -115,7 +115,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testCachePreparedStatementWithSameSql(TestContext ctx) {
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
@@ -133,7 +133,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testCachePreparedStatementBatchWithSameSql(TestContext ctx) {
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
@@ -158,7 +158,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testAutoClosingNonCacheOneShotPreparedQueryStatement(TestContext ctx) {
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false)).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
@@ -177,7 +177,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testAutoClosingNonCacheOneShotPreparedBatchStatement(TestContext ctx) {
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false)).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res0 -> {
         Row row = res0.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
@@ -207,7 +207,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     }
     String expected = sb.toString();
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT REPEAT('abcde', 4000000)").execute(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Row row = rowSet.iterator().next();
@@ -228,7 +228,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     Buffer buffer = Buffer.buffer(data);
     ctx.assertTrue(buffer.length() > 0xFFFFFF);
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("UPDATE datatype SET `LongBlob` = ? WHERE id = 2").execute(Tuple.of(buffer), ctx.asyncAssertSuccess(v -> {
         conn.preparedQuery("SELECT id, `LongBlob` FROM datatype WHERE id = 2").execute(ctx.asyncAssertSuccess(rowSet -> {
           Row row = rowSet.iterator().next();
@@ -256,7 +256,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     }
     fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
       fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
-        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
           conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
             conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
               conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {
@@ -300,7 +300,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     Buffer fileData = Buffer.buffer();
     fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
       fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
-        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
           conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
             conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
               conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {
@@ -329,7 +329,7 @@ public class MySQLQueryTest extends MySQLTestBase {
     ctx.assertTrue(fileData.length() > 0xFFFFFF);
     fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
       fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
-        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+        MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
           conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
             conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
               conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {

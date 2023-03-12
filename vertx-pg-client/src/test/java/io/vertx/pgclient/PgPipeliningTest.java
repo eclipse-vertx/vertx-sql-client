@@ -68,7 +68,7 @@ public class PgPipeliningTest extends PgTestBase {
     int times = 128;
     Async async = ctx.async(times);
     PgConnectOptions options = new PgConnectOptions(this.options).setPipeliningLimit(1);
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       for (int i = 0;i < times;i++) {
         operation.accept(conn, async);
       }

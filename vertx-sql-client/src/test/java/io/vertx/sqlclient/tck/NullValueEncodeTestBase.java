@@ -43,7 +43,7 @@ public abstract class NullValueEncodeTestBase {
   @After
   public void tearDown(TestContext ctx) {
     connector.close();
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test

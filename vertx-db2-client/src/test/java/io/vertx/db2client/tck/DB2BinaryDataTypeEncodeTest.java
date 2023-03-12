@@ -84,10 +84,12 @@ public class DB2BinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("UPDATE basicdatatype SET test_boolean = ? WHERE id = 2")
-        .execute(Tuple.tuple().addValue(false), ctx.asyncAssertSuccess(updateResult -> {
+        .execute(Tuple.tuple().addValue(false))
+        .onComplete(ctx.asyncAssertSuccess(updateResult -> {
         conn
           .preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 2")
-          .execute(ctx.asyncAssertSuccess(result -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ctx.assertEquals((short) 0, row.getValue(0));

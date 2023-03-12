@@ -37,7 +37,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
   @Test
   public void testOneShotPreparedQueryCacheRefreshOnTableSchemaChange(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT * FROM unstable WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
         ctx.assertEquals(1, res1.size());
         Tuple row1 = res1.iterator().next();
@@ -83,7 +83,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   private void testPreparedStatements(TestContext ctx, PgConnectOptions options, int num, int expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertEquals(0, res1.size());
         AtomicInteger count = new AtomicInteger(num);
@@ -96,7 +96,7 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
               ctx.assertEquals(num - 1, val);
               conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res3 -> {
                 ctx.assertEquals(expected, res3.size());
-                conn.close(ctx.asyncAssertSuccess(v -> {
+                conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
                   async.complete();
                 }));
               }));
