@@ -64,17 +64,18 @@ public class PgClientExamples {
     // A simple query
     client
       .query("SELECT * FROM users WHERE id='julien'")
-      .execute(ar -> {
-      if (ar.succeeded()) {
-        RowSet<Row> result = ar.result();
-        System.out.println("Got " + result.size() + " rows ");
-      } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
-      }
+      .execute()
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          RowSet<Row> result = ar.result();
+          System.out.println("Got " + result.size() + " rows ");
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
 
-      // Now close the pool
-      client.close();
-    });
+        // Now close the pool
+        client.close();
+      });
   }
 
   public void configureFromEnv(Vertx vertx) {
@@ -83,9 +84,10 @@ public class PgClientExamples {
     PgPool pool = PgPool.pool();
 
     // Create the connection from the environment variables
-    PgConnection.connect(vertx, res -> {
-      // Handling your connection
-    });
+    PgConnection.connect(vertx)
+      .onComplete(res -> {
+        // Handling your connection
+      });
   }
 
   public void configureFromDataObject(Vertx vertx) {
@@ -104,9 +106,10 @@ public class PgClientExamples {
     // Create the pool from the data object
     PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
 
-    pool.getConnection(ar -> {
-      // Handling your connection
-    });
+    pool.getConnection()
+      .onComplete(ar -> {
+        // Handling your connection
+      });
   }
 
   public void configureDefaultSchema() {
@@ -128,9 +131,11 @@ public class PgClientExamples {
     PgPool pool = PgPool.pool(connectionUri);
 
     // Create the connection from the connection URI
-    PgConnection.connect(vertx, connectionUri, res -> {
-      // Handling your connection
-    });
+    PgConnection
+      .connect(vertx, connectionUri)
+      .onComplete(res -> {
+        // Handling your connection
+      });
   }
 
   public void connecting01() {
@@ -303,31 +308,33 @@ public class PgClientExamples {
   public void typeMapping01(Pool pool) {
     pool
       .query("SELECT 1::BIGINT \"VAL\"")
-      .execute(ar -> {
-      RowSet<Row> rowSet = ar.result();
-      Row row = rowSet.iterator().next();
+      .execute()
+      .onComplete(ar -> {
+        RowSet<Row> rowSet = ar.result();
+        Row row = rowSet.iterator().next();
 
-      // Stored as java.lang.Long
-      Object value = row.getValue(0);
+        // Stored as java.lang.Long
+        Object value = row.getValue(0);
 
-      // Convert to java.lang.Integer
-      Integer intValue = row.getInteger(0);
-    });
+        // Convert to java.lang.Integer
+        Integer intValue = row.getInteger(0);
+      });
   }
 
   public void typeMapping02(Pool pool) {
     pool
       .query("SELECT 1::BIGINT \"VAL\"")
-      .execute(ar -> {
-      RowSet<Row> rowSet = ar.result();
-      Row row = rowSet.iterator().next();
+      .execute()
+      .onComplete(ar -> {
+        RowSet<Row> rowSet = ar.result();
+        Row row = rowSet.iterator().next();
 
-      // Stored as java.lang.Long
-      Object value = row.getValue(0);
+        // Stored as java.lang.Long
+        Object value = row.getValue(0);
 
-      // Convert to java.lang.Integer
-      Integer intValue = row.getInteger(0);
-    });
+        // Convert to java.lang.Integer
+        Integer intValue = row.getInteger(0);
+      });
   }
 
   public void pubsub01(PgConnection connection) {
@@ -338,7 +345,8 @@ public class PgClientExamples {
 
     connection
       .query("LISTEN some-channel")
-      .execute(ar -> {
+      .execute()
+      .onComplete(ar -> {
       System.out.println("Subscribed to channel");
     });
   }
@@ -358,7 +366,9 @@ public class PgClientExamples {
       System.out.println("Received " + payload);
     });
 
-    subscriber.connect(ar -> {
+    subscriber
+      .connect()
+      .onComplete(ar -> {
       if (ar.succeeded()) {
 
         // Or you can set the channel after connect
@@ -379,7 +389,9 @@ public class PgClientExamples {
       .setPassword("secret")
     );
 
-    subscriber.connect(ar -> {
+    subscriber
+      .connect()
+      .onComplete(ar -> {
         if (ar.succeeded()) {
           // Complex channel name - name in PostgreSQL requires a quoted ID
           subscriber.channel("Complex.Channel.Name").handler(payload -> {
@@ -388,7 +400,8 @@ public class PgClientExamples {
           subscriber.channel("Complex.Channel.Name").subscribeHandler(subscribed -> {
             subscriber.actualConnection()
               .query("NOTIFY \"Complex.Channel.Name\", 'msg'")
-              .execute(notified -> {
+              .execute()
+              .onComplete(notified -> {
                 System.out.println("Notified \"Complex.Channel.Name\"");
               });
           });
@@ -401,7 +414,8 @@ public class PgClientExamples {
             // The following simple channel identifier is forced to lower case
             subscriber.actualConnection()
               .query("NOTIFY Simple_CHANNEL, 'msg'")
-              .execute(notified -> {
+              .execute()
+              .onComplete(notified -> {
                 System.out.println("Notified simple_channel");
               });
           });
@@ -453,7 +467,9 @@ public class PgClientExamples {
       .setSslMode(SslMode.VERIFY_CA)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
 
-    PgConnection.connect(vertx, options, res -> {
+    PgConnection
+      .connect(vertx, options)
+      .onComplete(res -> {
       if (res.succeeded()) {
         // Connected with SSL
       } else {
@@ -504,7 +520,8 @@ public class PgClientExamples {
   public void infinitySpecialValue(SqlClient client) {
     client
       .query("SELECT 'infinity'::DATE \"LocalDate\"")
-      .execute(ar -> {
+      .execute()
+      .onComplete(ar -> {
         if (ar.succeeded()) {
           Row row = ar.result().iterator().next();
           System.out.println(row.getLocalDate("LocalDate").equals(LocalDate.MAX));
@@ -517,7 +534,8 @@ public class PgClientExamples {
   public void customType01Example(SqlClient client) {
     client
       .preparedQuery("SELECT address, (address).city FROM address_book WHERE id=$1")
-      .execute(Tuple.of(3),  ar -> {
+      .execute(Tuple.of(3))
+      .onComplete(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -532,7 +550,8 @@ public class PgClientExamples {
   public void customType02Example(SqlClient client) {
     client
       .preparedQuery("INSERT INTO address_book (id, address) VALUES ($1, $2)")
-      .execute(Tuple.of(3, "('Anytown', 'Second Ave', false)"),  ar -> {
+      .execute(Tuple.of(3, "('Anytown', 'Second Ave', false)"))
+      .onComplete(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());
@@ -546,7 +565,8 @@ public class PgClientExamples {
   public void tsQuery01Example(SqlClient client) {
     client
       .preparedQuery("SELECT to_tsvector( $1 ) @@ to_tsquery( $2 )")
-      .execute(Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
+      .execute(Tuple.of("fat cats ate fat rats", "fat & rat"))
+      .onComplete(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -561,7 +581,8 @@ public class PgClientExamples {
   public void tsQuery02Example(SqlClient client) {
     client
       .preparedQuery("SELECT to_tsvector( $1 ), to_tsquery( $2 )")
-      .execute(Tuple.of("fat cats ate fat rats", "fat & rat"),  ar -> {
+      .execute(Tuple.of("fat cats ate fat rats", "fat & rat"))
+      .onComplete(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -576,7 +597,8 @@ public class PgClientExamples {
   public void enumeratedType01Example(SqlClient client) {
     client
       .preparedQuery("INSERT INTO colors VALUES ($2)")
-      .execute(Tuple.of("red"),  res -> {
+      .execute(Tuple.of("red"))
+      .onComplete(res -> {
         // ...
       });
   }
@@ -613,7 +635,8 @@ public class PgClientExamples {
     // Run the query with the collector
     client.query("SELECT * FROM users")
       .collecting(collector)
-      .execute(ar -> {
+      .execute()
+      .onComplete(ar -> {
       if (ar.succeeded()) {
         SqlResult<Map<Long, String>> result = ar.result();
 
@@ -635,7 +658,11 @@ public class PgClientExamples {
     );
 
     // Run the query with the collector
-    client.query("SELECT * FROM users").collecting(collector).execute(ar -> {
+    client
+      .query("SELECT * FROM users")
+      .collecting(collector)
+      .execute()
+      .onComplete(ar -> {
         if (ar.succeeded()) {
           SqlResult<String> result = ar.result();
 
@@ -651,7 +678,8 @@ public class PgClientExamples {
   public void cancelRequest(PgConnection connection) {
     connection
       .query("SELECT pg_sleep(20)")
-      .execute(ar -> {
+      .execute()
+      .onComplete(ar -> {
       if (ar.succeeded()) {
         // imagine this is a long query and is still running
         System.out.println("Query success");
@@ -660,7 +688,9 @@ public class PgClientExamples {
         System.out.println("Failed to query due to " + ar.cause().getMessage());
       }
     });
-    connection.cancelRequest(ar -> {
+    connection
+      .cancelRequest()
+      .onComplete(ar -> {
       if (ar.succeeded()) {
         System.out.println("Cancelling request has been sent");
       } else {
