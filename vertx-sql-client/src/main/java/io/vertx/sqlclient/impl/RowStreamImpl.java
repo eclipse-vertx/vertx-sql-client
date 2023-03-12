@@ -90,7 +90,7 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
         return this;
       }
     }
-    c.read(fetch, this);
+    c.read(fetch).onComplete(this);
     return this;
   }
 
@@ -206,7 +206,7 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
               break;
             } else if (cursor.hasMore()) {
               readInProgress = true;
-              cursor.read(fetch, this);
+              cursor.read(fetch).onComplete(this);
               break;
             } else {
               cursor.close();

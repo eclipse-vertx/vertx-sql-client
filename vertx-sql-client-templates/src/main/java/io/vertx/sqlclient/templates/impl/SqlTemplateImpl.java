@@ -70,7 +70,8 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
 
     queryMapper
       .apply(client.preparedQuery(sqlTemplate.getSql()))
-      .execute(tupleMapper.apply(parameters), handler);
+      .execute(tupleMapper.apply(parameters))
+      .onComplete(handler);
   }
 
   @Override
@@ -86,7 +87,8 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
       .executeBatch(batch
         .stream()
         .map(tupleMapper)
-        .collect(Collectors.toList()), handler);
+        .collect(Collectors.toList()))
+      .onComplete(handler);
   }
 
   @Override
