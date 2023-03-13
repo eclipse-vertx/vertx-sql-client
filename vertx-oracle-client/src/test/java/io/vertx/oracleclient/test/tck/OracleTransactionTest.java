@@ -60,9 +60,9 @@ public class OracleTransactionTest extends TransactionTestBase {
     int count = 5000;
     Async async = ctx.async(count);
     for (int i = 0; i < count; i++) {
-      pool.withTransaction(conn -> {
-        return conn.query("SELECT 1 FROM DUAL").execute();
-      }, ctx.asyncAssertSuccess(v -> async.countDown()));
+      pool
+        .withTransaction(conn -> conn.query("SELECT 1 FROM DUAL").execute())
+        .onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
     }
   }
 }

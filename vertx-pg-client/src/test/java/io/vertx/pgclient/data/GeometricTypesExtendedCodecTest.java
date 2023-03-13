@@ -105,8 +105,9 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeGeometric(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"" + "GeometricDataType" + "\" SET " +
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .prepare("UPDATE \"" + "GeometricDataType" + "\" SET " +
           "\"Point\" = $1, " +
           "\"Line\" = $2, " +
           "\"Lseg\" = $3, " +
@@ -115,8 +116,8 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
           "\"OpenPath\" = $6, " +
           "\"Polygon\" = $7, " +
           "\"Circle\" = $8 " +
-          "WHERE \"id\" = $9 RETURNING \"Point\", \"Line\", \"Lseg\", \"Box\", \"ClosedPath\", \"OpenPath\", \"Polygon\", \"Circle\"",
-        ctx.asyncAssertSuccess(p -> {
+          "WHERE \"id\" = $9 RETURNING \"Point\", \"Line\", \"Lseg\", \"Box\", \"ClosedPath\", \"OpenPath\", \"Polygon\", \"Circle\"")
+        .onComplete(ctx.asyncAssertSuccess(p -> {
           Point point = new Point(2.0, 3.0);
           Line line = new Line(2.0, 3.0, 4.0);
           LineSegment lineSegment = new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0));
@@ -126,7 +127,8 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
           Polygon polygon = new Polygon(Arrays.asList(new Point(2.0, 2.0), new Point(3.0, 3.0), new Point(4.0, 2.0)));
           Circle circle = new Circle(new Point(1.0, 1.0), 3.0);
           int id = 2;
-          p.query().execute(Tuple.tuple()
+          p.query()
+            .execute(Tuple.tuple()
             .addValue(point)
             .addValue(line)
             .addValue(lineSegment)
@@ -135,7 +137,8 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             .addValue(closedPath)
             .addValue(polygon)
             .addValue(circle)
-            .addInteger(id), ctx.asyncAssertSuccess(result -> {
+            .addInteger(id))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -180,8 +183,9 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeGeometricArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"" + "ArrayDataType" + "\" SET " +
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .prepare("UPDATE \"" + "ArrayDataType" + "\" SET " +
           "\"Point\" = $1, " +
           "\"Line\" = $2, " +
           "\"Lseg\" = $3, " +
@@ -190,8 +194,8 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
           "\"OpenPath\" = $6, " +
           "\"Polygon\" = $7, " +
           "\"Circle\" = $8 " +
-          "WHERE \"id\" = $9 RETURNING \"Point\", \"Line\", \"Lseg\", \"Box\", \"ClosedPath\", \"OpenPath\", \"Polygon\", \"Circle\"",
-        ctx.asyncAssertSuccess(p -> {
+          "WHERE \"id\" = $9 RETURNING \"Point\", \"Line\", \"Lseg\", \"Box\", \"ClosedPath\", \"OpenPath\", \"Polygon\", \"Circle\"")
+        .onComplete(ctx.asyncAssertSuccess(p -> {
           Point[] points = {new Point(2.0, 2.0), new Point(1.0, 1.0)};
           Line[] lines = {new Line(3.0, 2.0, 1.0), new Line(2.0, 3.0, 4.0)};
           LineSegment[] lineSegments = {new LineSegment(new Point(1.0, 1.0), new Point(-3.0, -2.0)), new LineSegment(new Point(2.0, 2.0), new Point(3.0, 3.0))};
@@ -204,7 +208,9 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             new Polygon(Arrays.asList(new Point(0.0, 0.0), new Point(0.0, 1.0), new Point(1.0, 2.0), new Point(2.0, 1.0), new Point(2.0, 0.0)))};
           Circle[] circles = {new Circle(new Point(1.0, 1.0), 3.0), new Circle(new Point(2.0, 2.0), 2.0)};
           int id = 2;
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
             .addValue(points)
             .addValue(lines)
             .addValue(lineSegments)
@@ -213,7 +219,8 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
             .addValue(closedPaths)
             .addValue(polygons)
             .addValue(circles)
-            .addInteger(id), ctx.asyncAssertSuccess(result -> {
+            .addInteger(id))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();

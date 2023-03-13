@@ -16,6 +16,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlClient;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,13 +70,17 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   private void uriTest(TestContext context, String uri) throws UnsupportedEncodingException {
     client = MySQLPool.pool(uri);
-    client.getConnection(context.asyncAssertSuccess(conn -> conn.close()));
+    client
+      .getConnection()
+      .onComplete(context.asyncAssertSuccess(SqlClient::close));
   }
 
   @Test
   public void simpleConnect(TestContext context) {
     client = MySQLPool.pool(new MySQLConnectOptions(options), new PoolOptions());
-    client.getConnection(context.asyncAssertSuccess(conn -> conn.close()));
+    client
+      .getConnection()
+      .onComplete(context.asyncAssertSuccess(SqlClient::close));
   }
 
   @Test
@@ -84,7 +89,9 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
     try {
       client = MySQLPool.pool(vertx, new MySQLConnectOptions(options), new PoolOptions());
       Async async = context.async();
-      client.getConnection(context.asyncAssertSuccess(conn -> {
+      client
+        .getConnection()
+        .onComplete(context.asyncAssertSuccess(conn -> {
         async.complete();
         conn.close();
       }));
@@ -97,7 +104,9 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
   @Test
   public void testIgnoreSslMode(TestContext context) {
     client = MySQLPool.pool(new MySQLConnectOptions(options).setSslMode(SslMode.REQUIRED), new PoolOptions());
-    client.getConnection(context.asyncAssertSuccess(conn -> {
+    client
+      .getConnection()
+      .onComplete(context.asyncAssertSuccess(conn -> {
       assertFalse(conn.isSSL());
       conn.close();
     }));

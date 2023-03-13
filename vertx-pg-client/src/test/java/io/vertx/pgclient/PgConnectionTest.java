@@ -19,10 +19,7 @@ package io.vertx.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.ClosedConnectionException;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -34,7 +31,7 @@ import java.util.List;
 public class PgConnectionTest extends PgConnectionTestBase {
 
   public PgConnectionTest() {
-    connector = (handler) -> PgConnection.connect(vertx, options, ar -> {
+    connector = (handler) -> PgConnection.connect(vertx, options).onComplete(ar -> {
       handler.handle(ar.map(p -> p));
     });
   }
@@ -43,7 +40,10 @@ public class PgConnectionTest extends PgConnectionTestBase {
   public void testSettingSchema(TestContext ctx) {
     options.addProperty("search_path", "myschema");
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW search_path;").execute(ctx.asyncAssertSuccess(pgRowSet -> {
+      conn
+        .query("SHOW search_path;")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(pgRowSet -> {
         ctx.assertEquals("myschema", pgRowSet.iterator().next().getString("search_path"));
       }));
     }));
@@ -55,17 +55,20 @@ public class PgConnectionTest extends PgConnectionTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
         insertIntoTestTable(ctx, conn, 10, () -> {
-          conn.prepare("UPDATE Test SET val=$1 WHERE id=$2", ctx.asyncAssertSuccess(ps -> {
+          conn.prepare("UPDATE Test SET val=$1 WHERE id=$2").onComplete(ctx.asyncAssertSuccess(ps -> {
             List<Tuple> batch = new ArrayList<>();
             batch.add(Tuple.of("val0", 0));
             batch.add(Tuple.of("val1", 1));
-            ps.query().executeBatch(batch, ctx.asyncAssertSuccess(result -> {
+            ps
+              .query()
+              .executeBatch(batch)
+              .onComplete(ctx.asyncAssertSuccess(result -> {
               for (int i = 0;i < 2;i++) {
                 ctx.assertEquals(1, result.rowCount());
                 result = result.next();
               }
               ctx.assertNull(result);
-              ps.close(ctx.asyncAssertSuccess(v -> {
+              ps.close().onComplete(ctx.asyncAssertSuccess(v -> {
                 async.complete();
               }));
             }));
@@ -83,9 +86,10 @@ public class PgConnectionTest extends PgConnectionTestBase {
       for (int i = 0;i < num;i++) {
         conn
           .query("SELECT id, randomnumber from WORLD")
-          .execute(ar -> {
+          .execute()
+          .onComplete(ar -> {
           if (ar.succeeded()) {
-            SqlResult result = ar.result();
+            RowSet<Row> result = ar.result();
             ctx.assertEquals(10000, result.size());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
@@ -107,11 +111,14 @@ public class PgConnectionTest extends PgConnectionTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn
         .query("SELECT pg_sleep(10)")
-        .execute(ctx.asyncAssertFailure(error -> {
+        .execute()
+        .onComplete(ctx.asyncAssertFailure(error -> {
         ctx.assertTrue(hasSqlstateCode(error, ERRCODE_QUERY_CANCELED), error.getMessage());
         async.countDown();
       }));
-      ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
+      ((PgConnection)conn)
+        .cancelRequest()
+        .onComplete(ctx.asyncAssertSuccess());
 
       conn.closeHandler(v -> {
         ctx.assertEquals(1, async.count());
@@ -124,15 +131,24 @@ public class PgConnectionTest extends PgConnectionTestBase {
   @Test
   public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
     connector.accept(ctx.asyncAssertSuccess(conn1 -> {
-      conn1.query("SELECT pg_sleep(20)").execute(ctx.asyncAssertFailure(t -> {
+      conn1
+        .query("SELECT pg_sleep(20)")
+        .execute()
+        .onComplete(ctx.asyncAssertFailure(t -> {
         ctx.assertTrue(t instanceof ClosedConnectionException);
       }));
       connector.accept(ctx.asyncAssertSuccess(conn2 -> {
-        conn2.query("SELECT * FROM pg_stat_activity WHERE state = 'active' AND query = 'SELECT pg_sleep(20)'").execute(ctx.asyncAssertSuccess(statRes -> {
+        conn2
+          .query("SELECT * FROM pg_stat_activity WHERE state = 'active' AND query = 'SELECT pg_sleep(20)'")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(statRes -> {
           for (Row row : statRes) {
             Integer id = row.getInteger("pid");
             // kill the connection
-            conn2.query(String.format("SELECT pg_terminate_backend(%d);", id)).execute(ctx.asyncAssertSuccess(v -> conn2.close()));
+            conn2
+              .query(String.format("SELECT pg_terminate_backend(%d);", id))
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(v -> conn2.close()));
             break;
           }
         }));

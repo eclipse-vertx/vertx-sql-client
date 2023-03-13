@@ -15,7 +15,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
 
 /**
- * MySQL set options which can be used by {@link MySQLConnection#setOption(MySQLSetOption, Handler)}.
+ * MySQL set options which can be used by {@link MySQLConnection#setOption(MySQLSetOption)}.
  */
 @VertxGen
 public enum MySQLSetOption {

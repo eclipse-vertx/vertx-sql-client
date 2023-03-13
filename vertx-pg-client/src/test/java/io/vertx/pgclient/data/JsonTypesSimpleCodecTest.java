@@ -27,8 +27,9 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
 
   private void testJson(TestContext ctx, String type) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT " +
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT " +
           "'  {\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []   }'::" + type + " \"JsonObject\"," +
           "'  [1,true,null,9.5,\"Hi\" ] '::" + type + " \"JsonArray\"," +
           "' true '::" + type + " \"TrueValue\"," +
@@ -37,8 +38,9 @@ public class JsonTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
           "' 7.502 '::" + type + " \"Number1\"," +
           "' 8 '::" + type + " \"Number2\"," +
           "'\" Really Awesome! \"'::" + type + " \"Text\"," +
-          "NULL::" + type + " \"Null\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+          "NULL::" + type + " \"Null\"")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
           JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
           ctx.assertEquals(1, result.size());

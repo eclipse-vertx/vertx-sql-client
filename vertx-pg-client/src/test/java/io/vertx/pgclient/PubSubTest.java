@@ -47,7 +47,7 @@ public class PubSubTest extends PgTestBase {
     if (subscriber != null) {
       subscriber.close();
     }
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -63,10 +63,11 @@ public class PubSubTest extends PgTestBase {
   public void testNotify(TestContext ctx, String channelName) {
     String quotedChannelName = "\"" + channelName.replace("\"", "\"\"") + "\"";
     Async async = ctx.async(2);
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .query("LISTEN " + quotedChannelName)
-        .execute(ctx.asyncAssertSuccess(result1 -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result1 -> {
         conn.notificationHandler(notification -> {
           ctx.assertEquals(channelName, notification.getChannel());
           ctx.assertEquals("the message", notification.getPayload());
@@ -74,7 +75,8 @@ public class PubSubTest extends PgTestBase {
         });
         conn
           .query("NOTIFY " + quotedChannelName + ", 'the message'")
-          .execute(ctx.asyncAssertSuccess(result2 -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result2 -> {
           async.countDown();
         }));
       }));
@@ -107,10 +109,18 @@ public class PubSubTest extends PgTestBase {
       notifiedLatch.countDown();
     });
     Async connectLatch = ctx.async();
-    subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
+    subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
     connectLatch.awaitSuccess(10000);
-    subscriber.actualConnection().query("NOTIFY " + quotedChannel1Name + ", 'msg1'").execute(ctx.asyncAssertSuccess());
-    subscriber.actualConnection().query("NOTIFY " + quotedChannel2Name + ", 'msg2'").execute(ctx.asyncAssertSuccess());
+    subscriber
+      .actualConnection()
+      .query("NOTIFY " + quotedChannel1Name + ", 'msg1'")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess());
+    subscriber
+      .actualConnection()
+      .query("NOTIFY " + quotedChannel2Name + ", 'msg2'")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess());
     notifiedLatch.awaitSuccess(10000);
   }
 
@@ -143,7 +153,7 @@ public class PubSubTest extends PgTestBase {
       String quotedChannelName = "\"" + channelName.replace("\"", "\"\"") + "\"";
       subscriber = PgSubscriber.subscriber(vertx, options);
       Async connectLatch = ctx.async();
-      subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
+      subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
       connectLatch.awaitSuccess(10000);
       PgChannel channel = subscriber.channel(channelName);
       Async subscribedLatch = ctx.async();
@@ -154,7 +164,11 @@ public class PubSubTest extends PgTestBase {
         notifiedLatch.countDown();
       });
       subscribedLatch.awaitSuccess(10000);
-      subscriber.actualConnection().query("NOTIFY " + quotedChannelName + ", 'msg'").execute(ctx.asyncAssertSuccess());
+      subscriber
+        .actualConnection()
+        .query("NOTIFY " + quotedChannelName + ", 'msg'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess());
       notifiedLatch.awaitSuccess(10000);
     }
 
@@ -162,7 +176,7 @@ public class PubSubTest extends PgTestBase {
   public void testSubscribeNotifyWithUnquotedId(TestContext ctx) {
       subscriber = PgSubscriber.subscriber(vertx, options);
       Async connectLatch = ctx.async();
-      subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
+      subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
       connectLatch.awaitSuccess(10000);
       PgChannel channel = subscriber.channel("the_channel");
       Async subscribedLatch = ctx.async();
@@ -173,7 +187,11 @@ public class PubSubTest extends PgTestBase {
         notifiedLatch.countDown();
       });
       subscribedLatch.awaitSuccess(10000);
-      subscriber.actualConnection().query("NOTIFY The_Channel, 'msg'").execute(ctx.asyncAssertSuccess());
+      subscriber
+        .actualConnection()
+        .query("NOTIFY The_Channel, 'msg'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess());
       notifiedLatch.awaitSuccess(10000);
     }
 
@@ -190,7 +208,7 @@ public class PubSubTest extends PgTestBase {
   public void testUnsubscribe(TestContext ctx, String channelName) {
     subscriber = PgSubscriber.subscriber(vertx, options);
     Async connectLatch = ctx.async();
-    subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
+    subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
     connectLatch.awaitSuccess(10000);
     PgChannel sub = subscriber.channel("the_channel");
     Async endLatch = ctx.async();
@@ -256,7 +274,7 @@ public class PubSubTest extends PgTestBase {
           break;
       }
     });
-    subscriber.connect(ar -> { });
+    subscriber.connect();
     sub.handler(notif -> { });
     connect1Latch.awaitSuccess(10000);
     AtomicInteger count = new AtomicInteger();
@@ -299,7 +317,7 @@ public class PubSubTest extends PgTestBase {
     sub.handler(notif -> {
     });
     Async connectLatch = ctx.async();
-    subscriber.connect(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
+    subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connectLatch.complete()));
     connectLatch.awaitSuccess(10000);
     Async closeLatch = ctx.async();
     subscriber.closeHandler(v -> closeLatch.complete());

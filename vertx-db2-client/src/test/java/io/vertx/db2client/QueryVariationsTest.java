@@ -25,8 +25,10 @@ public class QueryVariationsTest extends DB2TestBase {
   @Test
   public void testFetchFirst(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("select message from immutable order by id fetch first 1 rows only").execute(
-        ctx.asyncAssertSuccess(rowSet -> {
+      conn
+        .query("select message from immutable order by id fetch first 1 rows only")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
           ctx.assertEquals(1, rowSet.size());
           ctx.assertEquals(Arrays.asList("MESSAGE"), rowSet.columnsNames());
           RowIterator<Row> rows = rowSet.iterator();
@@ -42,11 +44,13 @@ public class QueryVariationsTest extends DB2TestBase {
   @Test
   public void testRenamedColumns(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id AS THE_ID," +
+      conn
+        .query("SELECT id AS THE_ID," +
                    "message AS \"the message\"" +
           "FROM immutable " +
-          "WHERE id = 10").execute(
-          ctx.asyncAssertSuccess(rowSet -> {
+          "WHERE id = 10")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         ctx.assertEquals(Arrays.asList("THE_ID", "the message"), rowSet.columnsNames());
         RowIterator<Row> rows = rowSet.iterator();
@@ -65,10 +69,12 @@ public class QueryVariationsTest extends DB2TestBase {
   @Test
   public void testSubquery(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id,message FROM immutable " +
+      conn
+        .query("SELECT id,message FROM immutable " +
           "WHERE message IN " +
-          "(SELECT message FROM immutable WHERE id = '4' OR id = '7')").execute(
-          ctx.asyncAssertSuccess(rowSet -> {
+          "(SELECT message FROM immutable WHERE id = '4' OR id = '7')")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(2, rowSet.size());
         ctx.assertEquals(Arrays.asList("ID", "MESSAGE"), rowSet.columnsNames());
         RowIterator<Row> rows = rowSet.iterator();
@@ -88,11 +94,12 @@ public class QueryVariationsTest extends DB2TestBase {
   @Test
   public void testSubqueryPrepared(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT id,message FROM immutable " +
+      conn
+        .preparedQuery("SELECT id,message FROM immutable " +
           "WHERE message IN " +
-          "(SELECT message FROM immutable WHERE id = ? OR id = ?)").execute(
-          Tuple.of(4, 7),
-          ctx.asyncAssertSuccess(rowSet -> {
+          "(SELECT message FROM immutable WHERE id = ? OR id = ?)")
+        .execute(Tuple.of(4, 7))
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(2, rowSet.size());
         ctx.assertEquals(Arrays.asList("ID", "MESSAGE"), rowSet.columnsNames());
         RowIterator<Row> rows = rowSet.iterator();
@@ -112,9 +119,11 @@ public class QueryVariationsTest extends DB2TestBase {
   @Test
   public void testLikeQuery(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id,message FROM immutable " +
-          "WHERE message LIKE '%computer%'").execute(
-          ctx.asyncAssertSuccess(rowSet -> {
+      conn
+        .query("SELECT id,message FROM immutable " +
+          "WHERE message LIKE '%computer%'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(2, rowSet.size());
         ctx.assertEquals(Arrays.asList("ID", "MESSAGE"), rowSet.columnsNames());
         RowIterator<Row> rows = rowSet.iterator();
@@ -174,18 +183,24 @@ public class QueryVariationsTest extends DB2TestBase {
       assumeFalse("TODO: Sequences behave differently on DB2/z and need to be implemented properly", rule.isZOS());
 
     connect(ctx.asyncAssertSuccess(con -> {
-      con.query("values nextval for my_seq")
-      .execute(ctx.asyncAssertSuccess(rowSet1 -> {
+      con
+        .query("values nextval for my_seq")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet1 -> {
         // Initially the sequence should be N (where N >= 1)
         int startingSeq = assertSequenceResult(ctx, rowSet1, seqVal -> {
           ctx.assertTrue(seqVal >= 1, "Sequence value was not >= 1. Value: " + seqVal);
         });
-        con.query("VALUES nextval for my_seq")
-        .execute(ctx.asyncAssertSuccess(rowSet2 -> {
+        con
+          .query("VALUES nextval for my_seq")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(rowSet2 -> {
           // Next the sequence should be N+1
           assertSequenceResult(ctx, rowSet2, seqVal -> ctx.assertEquals(startingSeq + 1, seqVal));
-          con.query("VALUES nextval for my_seq")
-          .execute(ctx.asyncAssertSuccess(rowSet3 -> {
+          con
+            .query("VALUES nextval for my_seq")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(rowSet3 -> {
             // Finally, the sequence should be N+2
             assertSequenceResult(ctx, rowSet3, seqVal -> ctx.assertEquals(startingSeq + 2, seqVal));
           }));
@@ -202,18 +217,24 @@ public class QueryVariationsTest extends DB2TestBase {
       assumeFalse("TODO: Sequences behave differently on DB2/z and need to be implemented properly", rule.isZOS());
 
     connect(ctx.asyncAssertSuccess(con -> {
-      con.preparedQuery("VALUES nextval for my_seq")
-      .execute(ctx.asyncAssertSuccess(rowSet1 -> {
+      con
+        .preparedQuery("VALUES nextval for my_seq")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet1 -> {
         // Initially the sequence should be N (where N >= 1)
         int startingSeq = assertSequenceResult(ctx, rowSet1, seqVal -> {
           ctx.assertTrue(seqVal >= 1, "Sequence value was not >= 1. Value: " + seqVal);
         });
-        con.preparedQuery("values nextval for my_seq")
-        .execute(ctx.asyncAssertSuccess(rowSet2 -> {
+        con
+          .preparedQuery("values nextval for my_seq")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(rowSet2 -> {
           // Next the sequence should be N+1
           assertSequenceResult(ctx, rowSet2, seqVal -> ctx.assertEquals(startingSeq + 1, seqVal));
-          con.preparedQuery("values nextval for my_seq")
-          .execute(ctx.asyncAssertSuccess(rowSet3 -> {
+          con
+            .preparedQuery("values nextval for my_seq")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(rowSet3 -> {
             // Finally, the sequence should be N+2
             assertSequenceResult(ctx, rowSet3, seqVal -> ctx.assertEquals(startingSeq + 2, seqVal));
           }));
@@ -221,27 +242,33 @@ public class QueryVariationsTest extends DB2TestBase {
       }));
     }));
   }
-  
+
   /**
    * Test comment in query
    */
   @Test
   public void testComment(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(con -> {
-      con.query("SELECT id,message FROM immutable " +
+      con
+        .query("SELECT id,message FROM immutable " +
           "WHERE message IN " +
-          "(SELECT message FROM immutable WHERE id = '4' OR id = '7') -- comment").execute(
-        ctx.asyncAssertSuccess(rowSet -> {
+          "(SELECT message FROM immutable WHERE id = '4' OR id = '7') -- comment")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(2, rowSet.size());
-        con.query("SELECT id,message FROM immutable " +
+        con
+          .query("SELECT id,message FROM immutable " +
             "WHERE message IN " +
-            "(SELECT message FROM immutable WHERE id = '4' OR id = '7') /* test comment */").execute(
-          ctx.asyncAssertSuccess(rowSet2 -> {
+            "(SELECT message FROM immutable WHERE id = '4' OR id = '7') /* test comment */")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(rowSet2 -> {
           ctx.assertEquals(2, rowSet.size());
-          con.query("/* /* test comment */*/ /* /* Overly */ /*Complicated*/ /* Comment  */*/SELECT id,message FROM immutable " +
+          con
+            .query("/* /* test comment */*/ /* /* Overly */ /*Complicated*/ /* Comment  */*/SELECT id,message FROM immutable " +
               "WHERE message IN " +
-              "(SELECT message FROM immutable WHERE id = '4' OR id = '7')").execute(
-            ctx.asyncAssertSuccess(rowSet3 -> {
+              "(SELECT message FROM immutable WHERE id = '4' OR id = '7')")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(rowSet3 -> {
             ctx.assertEquals(2, rowSet.size());
           }));
         }));
@@ -259,5 +286,4 @@ public class QueryVariationsTest extends DB2TestBase {
         validation.accept(seqVal);
         return seqVal;
   }
-
 }

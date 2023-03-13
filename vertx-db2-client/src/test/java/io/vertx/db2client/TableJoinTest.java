@@ -21,13 +21,15 @@ public class TableJoinTest extends DB2TestBase {
   @Test
   public void testColumnRename(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT immutable.id AS \"IMM ID\"," +
+      conn
+        .query("SELECT immutable.id AS \"IMM ID\"," +
                           "immutable.message AS IMM_MSG," +
                     "Fortune.id AS FORT_ID," +
                           "Fortune.message AS \"fortune msg\" FROM immutable " +
                 "INNER JOIN Fortune ON (immutable.id + 1) = Fortune.id " +
-          "WHERE immutable.id=1").execute(
-          ctx.asyncAssertSuccess(rowSet -> {
+          "WHERE immutable.id=1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         ctx.assertEquals(Arrays.asList("IMM ID", "IMM_MSG", "FORT_ID", "fortune msg"), rowSet.columnsNames());
         Row row = rowSet.iterator().next();
@@ -47,10 +49,12 @@ public class TableJoinTest extends DB2TestBase {
   @Test
   public void testInnerJoin(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT immutable.id,immutable.message,Fortune.id,Fortune.message FROM immutable " +
+      conn
+        .query("SELECT immutable.id,immutable.message,Fortune.id,Fortune.message FROM immutable " +
                 "INNER JOIN Fortune ON (immutable.id + 1) = Fortune.id " +
-          "WHERE immutable.id=1").execute(
-          ctx.asyncAssertSuccess(rowSet -> {
+          "WHERE immutable.id=1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         ctx.assertEquals(Arrays.asList("ID", "MESSAGE", "ID", "MESSAGE"), rowSet.columnsNames());
         Row row = rowSet.iterator().next();
@@ -86,10 +90,12 @@ public class TableJoinTest extends DB2TestBase {
 
   private void testJoin(TestContext ctx, String joinType) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT * FROM immutable " +
+      conn
+        .preparedQuery("SELECT * FROM immutable " +
                 joinType + " Fortune ON (immutable.id + 1) = Fortune.id " +
-          "WHERE immutable.id=1").execute(
-          ctx.asyncAssertSuccess(rowSet -> {
+          "WHERE immutable.id=1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         ctx.assertEquals(Arrays.asList("ID", "MESSAGE", "ID", "MESSAGE"), rowSet.columnsNames());
         Row row = rowSet.iterator().next();
@@ -101,5 +107,4 @@ public class TableJoinTest extends DB2TestBase {
       }));
     }));
   }
-
 }

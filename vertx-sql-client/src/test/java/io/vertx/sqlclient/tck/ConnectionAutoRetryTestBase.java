@@ -49,7 +49,7 @@ public abstract class ConnectionAutoRetryTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected abstract void initialConnector(int proxyPort);

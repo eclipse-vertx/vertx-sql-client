@@ -37,13 +37,15 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testPingCommand(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.ping(ctx.asyncAssertSuccess(v -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .ping()
+        .onComplete(ctx.asyncAssertSuccess(v -> {
         conn.close();
       }));
     }));
@@ -51,11 +53,19 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeSchema(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT DATABASE();").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT DATABASE();")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals("testschema", result.iterator().next().getString(0));
-        conn.specifySchema("emptyschema", ctx.asyncAssertSuccess(v -> {
-          conn.query("SELECT DATABASE();").execute(ctx.asyncAssertSuccess(result2 -> {
+        conn
+          .specifySchema("emptyschema")
+          .onComplete(ctx.asyncAssertSuccess(v -> {
+          conn
+            .query("SELECT DATABASE();")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(result2 -> {
             ctx.assertEquals("emptyschema", result2.iterator().next().getString(0));
             conn.close();
           }));
@@ -66,10 +76,15 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeToInvalidSchema(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT DATABASE();").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT DATABASE();")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals("testschema", result.iterator().next().getString(0));
-        conn.specifySchema("invalidschema", ctx.asyncAssertFailure(error -> {
+        conn
+          .specifySchema("invalidschema")
+          .onComplete(ctx.asyncAssertFailure(error -> {
           conn.close();
         }));
       }));
@@ -78,8 +93,10 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testStatistics(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.getInternalStatistics(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .getInternalStatistics()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertTrue(!result.isEmpty());
         conn.close();
       }));
@@ -88,9 +105,11 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testSetOption(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       // CLIENT_MULTI_STATEMENTS is on by default
-      conn.query("SELECT 1; SELECT 2;").execute(ctx.asyncAssertSuccess(rowSet1 -> {
+      conn.query("SELECT 1; SELECT 2;")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet1 -> {
         ctx.assertEquals(1, rowSet1.size());
         Row row1 = rowSet1.iterator().next();
         ctx.assertEquals(1, row1.getInteger(0));
@@ -99,9 +118,14 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
         Row row2 = rowSet2.iterator().next();
         ctx.assertEquals(2, row2.getInteger(0));
 
-        conn.setOption(MySQLSetOption.MYSQL_OPTION_MULTI_STATEMENTS_OFF, ctx.asyncAssertSuccess(v -> {
+        conn
+          .setOption(MySQLSetOption.MYSQL_OPTION_MULTI_STATEMENTS_OFF)
+          .onComplete(ctx.asyncAssertSuccess(v -> {
           // CLIENT_MULTI_STATEMENTS is off now
-          conn.query("SELECT 1; SELECT 2;").execute(ctx.asyncAssertFailure(error -> {
+          conn
+            .query("SELECT 1; SELECT 2;")
+            .execute()
+            .onComplete(ctx.asyncAssertFailure(error -> {
             conn.close();
           }));
         }));
@@ -112,11 +136,22 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
   @Test
   public void testResetConnection(TestContext ctx) {
     Assume.assumeFalse(rule.isUsingMySQL5_6());
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE temp (temp INTEGER)").execute(ctx.asyncAssertSuccess(res1 -> {
-        conn.query("SELECT * FROM temp").execute(ctx.asyncAssertSuccess(res2 -> {
-          conn.resetConnection(ctx.asyncAssertSuccess(res3 -> {
-            conn.query("SELECT * FROM temp").execute(ctx.asyncAssertFailure(error -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("CREATE TEMPORARY TABLE temp (temp INTEGER)")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
+        conn
+          .query("SELECT * FROM temp")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res2 -> {
+          conn
+            .resetConnection()
+            .onComplete(ctx.asyncAssertSuccess(res3 -> {
+            conn
+              .query("SELECT * FROM temp")
+              .execute()
+              .onComplete(ctx.asyncAssertFailure(error -> {
               conn.close();
             }));
           }));
@@ -127,8 +162,11 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeUser(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT current_user()").execute(ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT current_user()")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);
         ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
@@ -136,8 +174,13 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
           .setUser("superuser")
           .setPassword("password")
           .setDatabase("emptyschema");
-        conn.changeUser(changeUserOptions, ctx.asyncAssertSuccess(v2 -> {
-          conn.query("SELECT current_user();SELECT database();").execute(ctx.asyncAssertSuccess(res2 -> {
+        conn
+          .changeUser(changeUserOptions)
+          .onComplete(ctx.asyncAssertSuccess(v2 -> {
+          conn
+            .query("SELECT current_user();SELECT database();")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("superuser@%", res2.iterator().next().getString(0));
             ctx.assertEquals("emptyschema", res2.next().iterator().next().getValue(0));
             conn.close();
@@ -149,8 +192,11 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeUserAuthWithServerRsaPublicKey(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT current_user()").execute(ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT current_user()")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);
         ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
@@ -167,8 +213,13 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
             "7ha1P+ZOgPBlV037KDQMS6cUh9vTablEHsMLhDZanymXzzjBkL+wH/b9cdL16LkQ\n" +
             "5QIDAQAB\n" +
             "-----END PUBLIC KEY-----\n"));
-        conn.changeUser(changeUserOptions, ctx.asyncAssertSuccess(v2 -> {
-          conn.query("SELECT current_user();SELECT database();").execute(ctx.asyncAssertSuccess(res2 -> {
+        conn
+          .changeUser(changeUserOptions)
+          .onComplete(ctx.asyncAssertSuccess(v2 -> {
+          conn
+            .query("SELECT current_user();SELECT database();")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("superuser@%", res2.iterator().next().getString(0));
             ctx.assertEquals("emptyschema", res2.next().iterator().next().getValue(0));
             conn.close();

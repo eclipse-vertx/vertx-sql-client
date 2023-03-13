@@ -43,7 +43,7 @@ public abstract class NullValueEncodeTestBase {
   @After
   public void tearDown(TestContext ctx) {
     connector.close();
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -229,7 +229,10 @@ public abstract class NullValueEncodeTestBase {
   private void testEncodeNull(TestContext ctx, NullValue nullValue) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       Tuple.tuple();
-      conn.preparedQuery(statement("SELECT ", "")).execute(Tuple.of(nullValue), ctx.asyncAssertSuccess(rs -> {
+      conn
+        .preparedQuery(statement("SELECT ", ""))
+        .execute(Tuple.of(nullValue))
+        .onComplete(ctx.asyncAssertSuccess(rs -> {
         Row row = rs.iterator().next();
         ctx.assertNull(row.getValue(0));
       }));

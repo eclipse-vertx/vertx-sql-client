@@ -125,12 +125,12 @@ public class ProxyServer {
   }
 
   public void listen(int port, String host, Handler<AsyncResult<Void>> completionHandler) {
-    server.listen(port, host, ar -> completionHandler.handle(ar.mapEmpty()));
+    server.listen(port, host).onComplete(ar -> completionHandler.handle(ar.mapEmpty()));
   }
 
   private void handle(NetSocket clientSocket) {
     clientSocket.pause();
-    client.connect(port, host, ar -> {
+    client.connect(port, host).onComplete(ar -> {
       if (ar.succeeded()) {
         NetSocket serverSocket = ar.result();
         serverSocket.pause();

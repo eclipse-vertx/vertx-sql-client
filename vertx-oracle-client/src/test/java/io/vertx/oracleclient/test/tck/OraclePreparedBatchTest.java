@@ -46,7 +46,10 @@ public class OraclePreparedBatchTest extends PreparedBatchTestBase {
   @Override
   public void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("TRUNCATE TABLE mutable").execute(result -> {
+      conn
+        .preparedQuery("TRUNCATE TABLE mutable")
+        .execute()
+        .onComplete(result -> {
         conn.close();
       });
     }));
@@ -68,18 +71,26 @@ public class OraclePreparedBatchTest extends PreparedBatchTestBase {
       fut.onComplete(result -> {
         ctx.assertFalse(result.failed());
         ctx.assertEquals(4, result.result().rowCount());
-        conn.preparedQuery("SELECT * FROM mutable WHERE id=?")
-          .execute(Tuple.of(79991), ctx.asyncAssertSuccess(rows1 -> {
+        conn
+          .preparedQuery("SELECT * FROM mutable WHERE id=?")
+          .execute(Tuple.of(79991))
+          .onComplete(ctx.asyncAssertSuccess(rows1 -> {
             verify(rows1, ctx, 79991, "batch one");
-            conn.preparedQuery("SELECT * FROM mutable WHERE id=?")
-              .execute(Tuple.of(79992), ctx.asyncAssertSuccess((ar2) -> {
+            conn
+              .preparedQuery("SELECT * FROM mutable WHERE id=?")
+              .execute(Tuple.of(79992))
+              .onComplete(ctx.asyncAssertSuccess((ar2) -> {
                 verify(ar2, ctx, 79992, "batch two");
-                conn.preparedQuery(this.statement("SELECT * FROM mutable WHERE id=", ""))
-                  .execute(Tuple.of(79993), ctx.asyncAssertSuccess((ar3) -> {
+                conn
+                  .preparedQuery(this.statement("SELECT * FROM mutable WHERE id=", ""))
+                  .execute(Tuple.of(79993))
+                  .onComplete(ctx.asyncAssertSuccess((ar3) -> {
                     verify(ar3, ctx, 79993, "batch three");
-                    conn.preparedQuery(
+                    conn
+                      .preparedQuery(
                       this.statement("SELECT * FROM mutable WHERE id=", ""))
-                      .execute(Tuple.of(79994), ctx.asyncAssertSuccess((ar4) -> {
+                      .execute(Tuple.of(79994))
+                      .onComplete(ctx.asyncAssertSuccess((ar4) -> {
                         verify(ar4, ctx, 79994, "batch four");
                         async.complete();
                       }));
@@ -108,8 +119,10 @@ public class OraclePreparedBatchTest extends PreparedBatchTestBase {
     Async async = ctx.async();
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = new ArrayList<>();
-      conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""))
-        .executeBatch(batch, ctx.asyncAssertFailure(err -> {
+      conn
+        .preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""))
+        .executeBatch(batch)
+        .onComplete(ctx.asyncAssertFailure(err -> {
           async.complete();
         }));
     }));
@@ -121,8 +134,10 @@ public class OraclePreparedBatchTest extends PreparedBatchTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = new ArrayList<>();
       batch.add(Tuple.of(1, 2));
-      conn.preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""))
-        .executeBatch(batch, ctx.asyncAssertFailure(err -> {
+      conn
+        .preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""))
+        .executeBatch(batch)
+        .onComplete(ctx.asyncAssertFailure(err -> {
           async.complete();
         }));
     }));

@@ -26,8 +26,8 @@ public class DB2PingTest extends DB2TestBase {
 
   @Test
   public void testPingCommand(TestContext ctx) {
-    DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.ping(ctx.asyncAssertSuccess(v -> {
+    DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.ping().onComplete(ctx.asyncAssertSuccess(v -> {
         conn.close();
       }));
     }));

@@ -53,7 +53,9 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
 
   @Override
   public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
-    delegate.getConnection(handler);
+    delegate
+      .getConnection()
+      .onComplete(handler);
   }
 
   @Override

@@ -37,19 +37,23 @@ public class OracleColumnDescriptorTest extends OracleTestBase {
 
   @Test
   public void testMetadata(TestContext ctx) {
-    pool.withConnection(conn -> conn.query("SELECT id, val FROM mutable").execute(), ctx.asyncAssertSuccess(rows -> {
-      ctx.assertNotNull(rows.columnDescriptors());
-      ctx.assertNotNull(rows.columnsNames());
-      ctx.assertEquals("ID", rows.columnsNames().get(0));
-      ctx.assertEquals("VAL", rows.columnsNames().get(1));
-      ctx.assertEquals(2, rows.columnDescriptors().size());
-      ctx.assertEquals("NUMBER", rows.columnDescriptors().get(0).typeName());
-      ctx.assertEquals("VARCHAR2", rows.columnDescriptors().get(1).typeName());
-    }));
+    pool
+      .withConnection(conn -> conn
+        .query("SELECT id, val FROM mutable")
+        .execute())
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertNotNull(rows.columnDescriptors());
+        ctx.assertNotNull(rows.columnsNames());
+        ctx.assertEquals("ID", rows.columnsNames().get(0));
+        ctx.assertEquals("VAL", rows.columnsNames().get(1));
+        ctx.assertEquals(2, rows.columnDescriptors().size());
+        ctx.assertEquals("NUMBER", rows.columnDescriptors().get(0).typeName());
+        ctx.assertEquals("VARCHAR2", rows.columnDescriptors().get(1).typeName());
+      }));
   }
 
   @After
   public void tearDown(TestContext ctx) throws Exception {
-    pool.close(ctx.asyncAssertSuccess());
+    pool.close().onComplete(ctx.asyncAssertSuccess());
   }
 }

@@ -59,30 +59,45 @@ public class MySQLPoolTest extends MySQLTestBase {
     if (pool != null) {
       pool.close();
     }
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testContinuouslyConnecting(TestContext ctx) {
     Async async = ctx.async(3);
-    pool.getConnection(ctx.asyncAssertSuccess(conn1 -> async.countDown()));
-    pool.getConnection(ctx.asyncAssertSuccess(conn2 -> async.countDown()));
-    pool.getConnection(ctx.asyncAssertSuccess(conn3 -> async.countDown()));
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn1 -> async.countDown()));
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn2 -> async.countDown()));
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn3 -> async.countDown()));
     async.await();
   }
 
   @Test
   public void testContinuouslyQuery(TestContext ctx) {
     Async async = ctx.async(3);
-    pool.preparedQuery("SELECT 1").execute(ctx.asyncAssertSuccess(res1 -> {
+    pool
+      .preparedQuery("SELECT 1")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(res1 -> {
       ctx.assertEquals(1, res1.size());
       async.countDown();
     }));
-    pool.preparedQuery("SELECT 2").execute(ctx.asyncAssertSuccess(res1 -> {
+    pool
+      .preparedQuery("SELECT 2")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(res1 -> {
       ctx.assertEquals(1, res1.size());
       async.countDown();
     }));
-    pool.preparedQuery("SELECT 3").execute(ctx.asyncAssertSuccess(res1 -> {
+    pool
+      .preparedQuery("SELECT 3")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(res1 -> {
       ctx.assertEquals(1, res1.size());
       async.countDown();
     }));
@@ -99,7 +114,10 @@ public class MySQLPoolTest extends MySQLTestBase {
       int numRequests = 1500;
       Async async = ctx.async(numRequests);
       for (int i = 0;i < numRequests;i++) {
-        pool.preparedQuery("SELECT * FROM Fortune WHERE id=?").execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+        pool
+          .preparedQuery("SELECT * FROM Fortune WHERE id=?")
+          .execute(Tuple.of(1))
+          .onComplete(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(1, results.size());
           Tuple row = results.iterator().next();
           ctx.assertEquals(1, row.getInteger(0));
@@ -118,13 +136,24 @@ public class MySQLPoolTest extends MySQLTestBase {
     Async async = ctx.async();
     PoolOptions poolOptions = new PoolOptions().setMaxSize(1);
     MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
-    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET SESSION wait_timeout=3;").execute(ctx.asyncAssertSuccess(wait -> {
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SET SESSION wait_timeout=3;")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(wait -> {
         vertx.setTimer(5000, id -> {
-          conn.query("SELECT 'vertx'").execute(ctx.asyncAssertFailure(err -> {
+          conn
+            .query("SELECT 'vertx'")
+            .execute()
+            .onComplete(ctx.asyncAssertFailure(err -> {
             ctx.assertEquals("Connection is not active now, current status: CLOSED", err.getMessage());
             conn.close(); // close should have no effect here
-            pool.query("SELECT 'mysql'").execute(ctx.asyncAssertSuccess(res -> {
+            pool
+              .query("SELECT 'mysql'")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(res -> {
               // the pool will construct a new connection and use it
               ctx.assertEquals(1, res.size());
               Row row = res.iterator().next();
@@ -142,12 +171,20 @@ public class MySQLPoolTest extends MySQLTestBase {
     Async async = ctx.async();
     PoolOptions poolOptions = new PoolOptions().setMaxSize(1);
     MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
-    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET SESSION wait_timeout=3;").execute(ctx.asyncAssertSuccess(wait -> {
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SET SESSION wait_timeout=3;")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(wait -> {
         conn.close(); // return it back to the pool
         vertx.setTimer(5000, id -> {
           // the query should succeed using a new connection
-          pool.query("SELECT 'vertx'").execute(ctx.asyncAssertSuccess(res -> {
+          pool
+            .query("SELECT 'vertx'")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res -> {
             ctx.assertEquals(1, res.size());
             Row row = res.iterator().next();
             ctx.assertEquals("vertx", row.getString(0));
@@ -164,10 +201,14 @@ public class MySQLPoolTest extends MySQLTestBase {
     Tuple params = Tuple.of(options.getUser(), options.getDatabase());
 
     Async killConnections = ctx.async();
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       String sql = "SELECT ID FROM INFORMATION_SCHEMA.PROCESSLIST WHERE ID <> CONNECTION_ID() AND User = ? AND db = ?";
       Collector<Row, ?, List<Integer>> collector = mapping(row -> row.getInteger(0), toList());
-      conn.preparedQuery(sql).collecting(collector).execute(params, ctx.asyncAssertSuccess(ids -> {
+      conn
+        .preparedQuery(sql)
+        .collecting(collector)
+        .execute(params)
+        .onComplete(ctx.asyncAssertSuccess(ids -> {
         CompositeFuture killAll = ids.value().stream()
           .<Future>map(connId -> conn.query("KILL " + connId).execute())
           .collect(Collectors.collectingAndThen(toList(), CompositeFuture::all));
@@ -189,12 +230,18 @@ public class MySQLPoolTest extends MySQLTestBase {
     Async async = ctx.async();
     AtomicInteger cid = new AtomicInteger();
     vertx.getOrCreateContext().runOnContext(v -> {
-      pool.preparedQuery(sql).execute(params, ctx.asyncAssertSuccess(rs1 -> {
+      pool
+        .preparedQuery(sql)
+        .execute(params)
+        .onComplete(ctx.asyncAssertSuccess(rs1 -> {
         Row row1 = rs1.iterator().next();
         cid.set(row1.getInteger("cid"));
         ctx.assertEquals(1, row1.getInteger("cnt"));
         vertx.setTimer(2 * idleTimeout, l -> {
-          pool.preparedQuery(sql).execute(params, ctx.asyncAssertSuccess(rs2 -> {
+          pool
+            .preparedQuery(sql)
+            .execute(params)
+            .onComplete(ctx.asyncAssertSuccess(rs2 -> {
             Row row2 = rs2.iterator().next();
             ctx.assertEquals(1, row2.getInteger("cnt"));
             ctx.assertNotEquals(cid.get(), row2.getInteger("cid"));

@@ -47,7 +47,8 @@ public class PgPipeliningTest extends PgTestBase {
     repeat(ctx, (conn, async) -> {
       conn
         .preparedQuery("SELECT $1 :: VARCHAR")
-        .execute(Tuple.of(3), ctx.asyncAssertFailure(err -> {
+        .execute(Tuple.of(3))
+        .onComplete(ctx.asyncAssertFailure(err -> {
           async.countDown();
         }));
     });
@@ -58,7 +59,8 @@ public class PgPipeliningTest extends PgTestBase {
     repeat(ctx, (conn, async) -> {
       conn
         .preparedQuery("invalid")
-        .execute(ctx.asyncAssertFailure(err -> {
+        .execute()
+        .onComplete(ctx.asyncAssertFailure(err -> {
           async.countDown();
         }));
     });
@@ -68,7 +70,7 @@ public class PgPipeliningTest extends PgTestBase {
     int times = 128;
     Async async = ctx.async(times);
     PgConnectOptions options = new PgConnectOptions(this.options).setPipeliningLimit(1);
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       for (int i = 0;i < times;i++) {
         operation.accept(conn, async);
       }

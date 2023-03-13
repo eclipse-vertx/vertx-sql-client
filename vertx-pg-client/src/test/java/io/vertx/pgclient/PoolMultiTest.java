@@ -44,7 +44,7 @@ public class PoolMultiTest {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -78,9 +78,12 @@ public class PoolMultiTest {
     CompositeFuture.all((List)futures).onComplete(ctx.asyncAssertSuccess(c -> {
       for (int i = 0;i < count;i++) {
         SqlConnection conn = futures.get(i).result();
-        conn.query("SELECT user").execute(ctx.asyncAssertSuccess(res -> {
+        conn
+          .query("SELECT user")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res -> {
           users.add(res.iterator().next().getString(0));
-          conn.close(ctx.asyncAssertSuccess(v -> {
+          conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
             async.countDown();
           }));
         }));

@@ -34,7 +34,7 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
       if (pool == null) {
         pool = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions().setMaxSize(1));
       }
-      pool.getConnection(handler);
+      pool.getConnection().onComplete(handler);
     };
   }
 
@@ -62,17 +62,29 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn1 -> {
       deleteFromTestTable(ctx, conn1, () -> {
         conn1.begin();
-        conn1.query("INSERT INTO Test (id, val) VALUES (5, 'some-value')").execute(ctx.asyncAssertSuccess());
-        conn1.query("SELECT txid_current()").execute(ctx.asyncAssertSuccess(result -> {
+        conn1
+          .query("INSERT INTO Test (id, val) VALUES (5, 'some-value')")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess());
+        conn1
+          .query("SELECT txid_current()")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           Long txid1 = result.iterator().next().getLong(0);
           conn1.close();
           // It will be the same connection
           connector.accept(ctx.asyncAssertSuccess(conn2 -> {
-            conn2.query("SELECT id FROM Test WHERE id=5").execute(ctx.asyncAssertSuccess(result2 -> {
+            conn2
+              .query("SELECT id FROM Test WHERE id=5")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(result2 -> {
               ctx.assertEquals(0, result2.size());
               done.countDown();
             }));
-            conn2.query("SELECT txid_current()").execute(ctx.asyncAssertSuccess(result2 -> {
+            conn2
+              .query("SELECT txid_current()")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(result2 -> {
               Long txid2 = result.iterator().next().getLong(0);
               ctx.assertEquals(txid1, txid2);
               done.countDown();

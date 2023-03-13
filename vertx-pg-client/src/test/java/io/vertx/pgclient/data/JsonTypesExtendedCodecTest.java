@@ -69,10 +69,17 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
 
   private void testDecodeJson(TestContext ctx, String tableName) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"NullValue\", \"Null\" FROM \"" + tableName + "\" WHERE \"id\" = $1",
+    PgConnection
+      .connect(vertx, options)
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .prepare("SELECT \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"NullValue\", \"Null\" FROM \"" + tableName + "\" WHERE \"id\" = $1")
+        .onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple().addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -145,8 +152,9 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
 
   private void testEncodeJson(TestContext ctx, String tableName) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"" + tableName + "\" SET " +
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .prepare("UPDATE \"" + tableName + "\" SET " +
           "\"JsonObject\" = $1, " +
           "\"JsonArray\" = $2, " +
           "\"Number\" = $3, " +
@@ -155,11 +163,13 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
           "\"BooleanFalse\" = $6, " +
           "\"NullValue\" = $7, " +
           "\"Null\" = $8 " +
-          "WHERE \"id\" = $9 RETURNING \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"NullValue\", \"Null\"",
-        ctx.asyncAssertSuccess(p -> {
+          "WHERE \"id\" = $9 RETURNING \"JsonObject\", \"JsonArray\", \"Number\", \"String\", \"BooleanTrue\", \"BooleanFalse\", \"NullValue\", \"Null\"")
+        .onComplete(ctx.asyncAssertSuccess(p -> {
           JsonObject object = new JsonObject("{\"str\":\"blah\", \"int\" : 1, \"float\" : 3.5, \"object\": {}, \"array\" : []}");
           JsonArray array = new JsonArray("[1,true,null,9.5,\"Hi\"]");
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
             .addValue(object)
             .addValue(array)
             .addValue(4)
@@ -168,7 +178,8 @@ public class JsonTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBa
             .addValue(false)
             .addValue(Tuple.JSON_NULL)
             .addValue(null)
-            .addInteger(2), ctx.asyncAssertSuccess(result -> {
+            .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();

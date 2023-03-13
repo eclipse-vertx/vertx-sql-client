@@ -38,7 +38,7 @@ public enum ClientConfig {
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          DB2Connection.connect(vertx, new DB2ConnectOptions(options), ar -> {
+          DB2Connection.connect(vertx, new DB2ConnectOptions(options)).onComplete(ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {
@@ -61,7 +61,9 @@ public enum ClientConfig {
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          pool.getConnection(ar -> {
+          pool
+            .getConnection()
+            .onComplete(ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {

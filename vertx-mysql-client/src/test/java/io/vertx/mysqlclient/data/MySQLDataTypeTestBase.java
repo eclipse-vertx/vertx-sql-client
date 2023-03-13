@@ -37,7 +37,7 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected <T> void testTextDecodeGenericWithTable(TestContext ctx,
@@ -52,8 +52,11 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
   protected <T> void testTextDecodeGenericWithTable(TestContext ctx,
                                                     String columnName,
                                                     BiConsumer<Row, String> expected) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT `" + columnName + "` FROM datatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT `" + columnName + "` FROM datatype WHERE id = 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         expected.accept(row, columnName);
@@ -74,8 +77,11 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
   protected <T> void testBinaryDecodeGenericWithTable(TestContext ctx,
                                                       String columnName,
                                                       BiConsumer<Row, String> expected) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         expected.accept(row, columnName);
@@ -88,9 +94,15 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
                                              String columnName,
                                              Object param,
                                              BiConsumer<Row, String> valueAccessor) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE datatype SET `" + columnName + "` = ?" + " WHERE id = 2").execute(Tuple.tuple().addValue(param), ctx.asyncAssertSuccess(updateResult -> {
-        conn.preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 2").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("UPDATE datatype SET `" + columnName + "` = ?" + " WHERE id = 2")
+        .execute(Tuple.tuple().addValue(param))
+        .onComplete(ctx.asyncAssertSuccess(updateResult -> {
+        conn
+          .preparedQuery("SELECT `" + columnName + "` FROM datatype WHERE id = 2")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           valueAccessor.accept(row, columnName);
@@ -110,8 +122,11 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
   }
 
   protected void testBinaryDecode(TestContext ctx, String sql, Tuple params, Consumer<RowSet<Row>> checker) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(sql).execute(params, ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(sql)
+        .execute(params)
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         checker.accept(result);
         conn.close();
       }));
@@ -119,8 +134,11 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
   }
 
   protected void testBinaryDecode(TestContext ctx, String sql, Consumer<RowSet<Row>> checker) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(sql).execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(sql)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         checker.accept(result);
         conn.close();
       }));
@@ -128,8 +146,11 @@ public abstract class MySQLDataTypeTestBase extends MySQLTestBase {
   }
 
   protected void testTextDecode(TestContext ctx, String sql, Consumer<RowSet<Row>> checker) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query(sql).execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query(sql)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         checker.accept(result);
         conn.close();
       }));

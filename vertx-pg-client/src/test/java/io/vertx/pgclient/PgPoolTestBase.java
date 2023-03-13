@@ -44,7 +44,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected PgPool createPool(PgConnectOptions connectOptions, int size) {
@@ -59,10 +59,15 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
+      pool
+        .getConnection()
+        .onComplete(ctx.asyncAssertSuccess(conn -> {
+        conn
+          .query("SELECT id, randomnumber from WORLD")
+          .execute()
+          .onComplete(ar -> {
           if (ar.succeeded()) {
-            SqlResult result = ar.result();
+            RowSet<Row> result = ar.result();
             ctx.assertEquals(10000, result.size());
           } else {
             ctx.assertEquals("closed", ar.cause().getMessage());
@@ -80,7 +85,10 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
+      pool
+        .query("SELECT id, randomnumber from WORLD")
+        .execute()
+        .onComplete(ar -> {
         if (ar.succeeded()) {
           SqlResult<?> result = ar.result();
           ctx.assertEquals(10000, result.size());
@@ -107,9 +115,12 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 1);
     for (int i = 0;i < num;i++) {
-      pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1").execute(Tuple.of(i + 1), ar -> {
+      pool
+        .preparedQuery("SELECT id, randomnumber from WORLD where id=$1")
+        .execute(Tuple.of(i + 1))
+        .onComplete(ar -> {
         if (ar.succeeded()) {
-          SqlResult result = ar.result();
+          RowSet<Row> result = ar.result();
           ctx.assertEquals(1, result.size());
         } else {
           ar.cause().printStackTrace();
@@ -126,9 +137,12 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ar -> {
+      pool
+        .query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9")
+        .execute()
+        .onComplete(ar -> {
         if (ar.succeeded()) {
-          SqlResult result = ar.result();
+          RowSet<Row> result = ar.result();
           ctx.assertEquals(1, result.rowCount());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -144,9 +158,12 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Async async = ctx.async(num);
     PgPool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
-      pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1").execute(Tuple.of(9), ar -> {
+      pool
+        .preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1")
+        .execute(Tuple.of(9))
+        .onComplete(ar -> {
         if (ar.succeeded()) {
-          SqlResult result = ar.result();
+          RowSet<Row> result = ar.result();
           ctx.assertEquals(1, result.rowCount());
         } else {
           ctx.assertEquals("closed", ar.cause().getMessage());
@@ -167,12 +184,22 @@ public abstract class PgPoolTestBase extends PgTestBase {
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
       PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
-      pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
+      pool
+        .getConnection()
+        .onComplete(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
-          conn1.query("never-read").execute(ctx.asyncAssertFailure(err -> {
-            pool.getConnection(ctx.asyncAssertSuccess(conn2 -> {
-              conn2.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v3 -> {
+          conn1
+            .query("never-read")
+            .execute()
+            .onComplete(ctx.asyncAssertFailure(err -> {
+            pool
+              .getConnection()
+              .onComplete(ctx.asyncAssertSuccess(conn2 -> {
+              conn2
+                .query("SELECT id, randomnumber from WORLD")
+                .execute()
+                .onComplete(ctx.asyncAssertSuccess(v3 -> {
                 async.complete();
               }));
             }));
@@ -186,13 +213,20 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testCancelRequest(TestContext ctx) {
     Async async = ctx.async();
     PgPool pool = createPool(options, 4);
-    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT pg_sleep(10)").execute(ctx.asyncAssertFailure(error -> {
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT pg_sleep(10)")
+        .execute()
+        .onComplete(ctx.asyncAssertFailure(error -> {
         ctx.assertTrue(hasSqlstateCode(error, ERRCODE_QUERY_CANCELED), error.getMessage());
         conn.close();
         async.complete();
       }));
-      ((PgConnection)conn).cancelRequest(ctx.asyncAssertSuccess());
+      ((PgConnection)conn)
+        .cancelRequest()
+        .onComplete(ctx.asyncAssertSuccess());
     }));
   }
 
@@ -204,9 +238,13 @@ public abstract class PgPoolTestBase extends PgTestBase {
     Function<SqlConnection, Future<RowSet<Row>>> failure = conn -> conn.query("SELECT does_not_exist").execute();
     for (int i = 0;i < 10;i++) {
       if (i % 2 == 0) {
-        pool.withConnection(success, ctx.asyncAssertSuccess(v -> async.countDown()));
+        pool
+          .withConnection(success)
+          .onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
       } else {
-        pool.withConnection(failure, ctx.asyncAssertFailure(v -> async.countDown()));
+        pool
+          .withConnection(failure)
+          .onComplete(ctx.asyncAssertFailure(v -> async.countDown()));
       }
     }
   }

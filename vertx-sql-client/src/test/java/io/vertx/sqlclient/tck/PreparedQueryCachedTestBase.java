@@ -32,8 +32,13 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
       }
       for (int i = 0; i < 10; i++) {
         Async async = asyncs[i];
-        conn.prepare(statement("SELECT * FROM Fortune WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-          ps.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+        conn
+          .prepare(statement("SELECT * FROM Fortune WHERE id=", ""))
+          .onComplete(ctx.asyncAssertSuccess(ps -> {
+          ps
+            .query()
+            .execute(Tuple.of(1))
+            .onComplete(ctx.asyncAssertSuccess(results -> {
             ctx.assertEquals(1, results.size());
             Tuple row = results.iterator().next();
             ctx.assertEquals(1, row.getInteger(0));
@@ -52,13 +57,19 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
     options.setPreparedStatementCacheMaxSize(1024);
 
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement1 -> {
-        preparedStatement1.query().execute(ctx.asyncAssertSuccess(res1 -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(preparedStatement1 -> {
+        preparedStatement1
+          .query()
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(12, res1.size());
           preparedStatement1.close(); // no response from server, we need to wait for some time here
           vertx.setTimer(2000, id -> {
-            conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement2 -> {
-              preparedStatement2.query().execute(ctx.asyncAssertSuccess(res2 -> {
+            conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(preparedStatement2 -> {
+              preparedStatement2
+                .query()
+                .execute()
+                .onComplete(ctx.asyncAssertSuccess(res2 -> {
                 ctx.assertEquals(12, res2.size());
                 conn.close();
                 async.complete();
@@ -74,13 +85,19 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
   @Test
   public void testConcurrentClose(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement1 -> {
-        preparedStatement1.query().execute(ctx.asyncAssertSuccess(res1 -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(preparedStatement1 -> {
+        preparedStatement1
+          .query()
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(12, res1.size());
           preparedStatement1.close();
           // send another prepare command directly
-          conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(preparedStatement2 -> {
-            preparedStatement2.query().execute(ctx.asyncAssertSuccess(res2 -> {
+          conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(preparedStatement2 -> {
+            preparedStatement2
+              .query()
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(res2 -> {
               ctx.assertEquals(12, res2.size());
               conn.close();
             }));
@@ -94,7 +111,10 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
   public void testSqlLimitDoesNotAffectQuery(TestContext ctx) {
     options.setPreparedStatementCacheSqlLimit(1);
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT * FROM immutable").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .preparedQuery("SELECT * FROM immutable")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(12, res.size());
         conn.close();
       }));
@@ -107,11 +127,20 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
     options.setPreparedStatementCacheMaxSize(1);
 
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT * FROM immutable").execute(ctx.asyncAssertSuccess(res1 -> {
+      conn
+        .preparedQuery("SELECT * FROM immutable")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertEquals(12, res1.size());
-        conn.preparedQuery("SELECT * FROM mutable").execute(ctx.asyncAssertSuccess(res2 -> {
+        conn
+          .preparedQuery("SELECT * FROM mutable")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res2 -> {
           // the first stmt should be evicted, query again to check if it's ok
-          conn.preparedQuery("SELECT * FROM immutable").execute(ctx.asyncAssertSuccess(res3 -> {
+          conn
+            .preparedQuery("SELECT * FROM immutable")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res3 -> {
             ctx.assertEquals(12, res1.size());
             conn.close();
           }));
@@ -123,10 +152,18 @@ public abstract class PreparedQueryCachedTestBase extends PreparedQueryTestBase 
   @Test
   public void testPreparedQueryParamInitiallyNull(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-        ps.query().execute(Tuple.of(null), ctx.asyncAssertSuccess(r1 -> {
+      conn
+        .prepare(statement("SELECT * FROM immutable WHERE id=", ""))
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
+        ps
+          .query()
+          .execute(Tuple.of(null))
+          .onComplete(ctx.asyncAssertSuccess(r1 -> {
           ctx.assertEquals(0, r1.size());
-          ps.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(r2 -> {
+          ps
+            .query()
+            .execute(Tuple.of(1))
+            .onComplete(ctx.asyncAssertSuccess(r2 -> {
             ctx.assertEquals(1, r2.size());
           }));
         }));

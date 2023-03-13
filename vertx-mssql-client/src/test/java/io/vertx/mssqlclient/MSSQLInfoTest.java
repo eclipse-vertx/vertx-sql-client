@@ -40,15 +40,15 @@ public class MSSQLInfoTest extends MSSQLTestBase {
   public void setup(TestContext ctx) {
     vertx = Vertx.vertx();
     options = new MSSQLConnectOptions(MSSQLTestBase.options);
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> this.connection = conn));
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> this.connection = conn));
   }
 
   @After
   public void tearDown(TestContext ctx) {
     if (connection != null) {
-      connection.close(ctx.asyncAssertSuccess());
+      connection.close().onComplete(ctx.asyncAssertSuccess());
     }
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -61,7 +61,7 @@ public class MSSQLInfoTest extends MSSQLTestBase {
       infos.add(e);
       async.complete();
     });
-    connection.query(String.format("PRINT '%s'", msg)).execute(ctx.asyncAssertSuccess());
+    connection.query(String.format("PRINT '%s'", msg)).execute().onComplete(ctx.asyncAssertSuccess());
 
     async.await();
 

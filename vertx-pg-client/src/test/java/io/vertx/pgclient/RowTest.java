@@ -55,7 +55,7 @@ public class RowTest extends PgTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   private static <T> Function<String, T> accessor(Row row, Class<T> type) {
@@ -81,9 +81,11 @@ public class RowTest extends PgTestBase {
   @Test
   public void testGetNonExistingRows(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 1 \"foo\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT 1 \"foo\"")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           List<Function<String, ?>> functions = Arrays.asList(
             row::getValue,
@@ -156,9 +158,11 @@ public class RowTest extends PgTestBase {
   @Test
   public void testGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2 \"foo\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT 2 \"foo\"")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           ctx.assertEquals("foo",row.getColumnName(0));
           async.complete();
@@ -169,9 +173,11 @@ public class RowTest extends PgTestBase {
   @Test
   public void testNotEqualGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2 \"foo\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT 2 \"foo\"")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           ctx.assertNotEquals("bar",row.getColumnName(0));
           async.complete();
@@ -182,9 +188,11 @@ public class RowTest extends PgTestBase {
   @Test
   public void testNegativeGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2 \"foo\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT 2 \"foo\"")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           ctx.assertNull(row.getColumnName(-1));
           async.complete();
@@ -195,9 +203,11 @@ public class RowTest extends PgTestBase {
   @Test
   public void testPreventLengthMaxIndexOutOfBoundGetColumnNameRows(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 2 \"foo\"").execute(
-        ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT 2 \"foo\"")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           ctx.assertNull(row.getColumnName(1));
           async.complete();
@@ -208,8 +218,9 @@ public class RowTest extends PgTestBase {
   @Test
   public void testToJsonObject(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT " +
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT " +
         "2::smallint \"small_int\"," +
         "2::integer \"integer\"," +
         "2::bigint \"bigint\"," +
@@ -226,8 +237,9 @@ public class RowTest extends PgTestBase {
         "E'\\\\x010203'::bytea \"buffer\"," +
         "'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'::uuid \"uuid\"," +
         "ARRAY[1, 2, 3] \"array\""
-      ).execute(
-        ctx.asyncAssertSuccess(result -> {
+      )
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           Row row = result.iterator().next();
           JsonObject json = row.toJson();
           ctx.assertEquals((short)2, json.getValue("small_int"));

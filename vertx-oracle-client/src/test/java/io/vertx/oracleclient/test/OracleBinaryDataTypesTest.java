@@ -45,7 +45,7 @@ public class OracleBinaryDataTypesTest extends OracleTestBase {
 
   @After
   public void tearDown(TestContext ctx) throws Exception {
-    pool.close(ctx.asyncAssertSuccess());
+    pool.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -61,10 +61,12 @@ public class OracleBinaryDataTypesTest extends OracleTestBase {
   private void testEncode(TestContext ctx, String columnName, Buffer expected, Function<Buffer, Object> input) {
     pool
       .preparedQuery("UPDATE binary_data_types SET " + columnName + " = ? WHERE id = 2")
-      .execute(Tuple.of(input.apply(expected)), ctx.asyncAssertSuccess(updateResult -> {
+      .execute(Tuple.of(input.apply(expected)))
+      .onComplete(ctx.asyncAssertSuccess(updateResult -> {
         pool
           .preparedQuery("SELECT " + columnName + " FROM binary_data_types WHERE id = 2")
-          .execute(ctx.asyncAssertSuccess(result -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             Row row = result.iterator().next();
             ctx.assertEquals(1, row.size());
@@ -87,7 +89,8 @@ public class OracleBinaryDataTypesTest extends OracleTestBase {
   private <T> void testDecode(TestContext ctx, String columnName, JDBCType jdbcType, Buffer expected) {
     pool
       .preparedQuery("SELECT " + columnName + " FROM binary_data_types WHERE id = 1")
-      .execute(ctx.asyncAssertSuccess(result -> {
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.get(Buffer.class, 0));
@@ -102,10 +105,12 @@ public class OracleBinaryDataTypesTest extends OracleTestBase {
   public void testEncodeNull(TestContext ctx) {
     pool
       .preparedQuery("UPDATE binary_data_types SET test_raw = ?, test_blob = ? WHERE id = 2")
-      .execute(Tuple.tuple().addValue(null).addValue(null), ctx.asyncAssertSuccess(updateResult -> {
+      .execute(Tuple.tuple().addValue(null).addValue(null))
+      .onComplete(ctx.asyncAssertSuccess(updateResult -> {
         pool
           .preparedQuery("SELECT * FROM binary_data_types WHERE id = 2")
-          .execute(ctx.asyncAssertSuccess(result -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             Row row = result.iterator().next();
             ctx.assertEquals(3, row.size());
@@ -121,7 +126,8 @@ public class OracleBinaryDataTypesTest extends OracleTestBase {
   public void testDecodeNull(TestContext ctx) {
     pool
       .preparedQuery("SELECT test_raw, test_blob FROM binary_data_types WHERE id = 3")
-      .execute(ctx.asyncAssertSuccess(result -> {
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(2, row.size());

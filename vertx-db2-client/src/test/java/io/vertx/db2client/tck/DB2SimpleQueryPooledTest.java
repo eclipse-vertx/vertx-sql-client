@@ -34,7 +34,10 @@ public class DB2SimpleQueryPooledTest extends SimpleQueryTestBase {
     @Override
     protected void cleanTestTable(TestContext ctx) {
         connect(ctx.asyncAssertSuccess(conn -> {
-            conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
+            conn
+              .query("DELETE FROM mutable")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(result -> {
                 conn.close();
             }));
         }));

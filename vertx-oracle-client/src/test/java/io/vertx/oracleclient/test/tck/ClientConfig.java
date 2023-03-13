@@ -32,7 +32,7 @@ public enum ClientConfig {
 
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          OracleConnection.connect(vertx, new OracleConnectOptions(options), ar -> {
+          OracleConnection.connect(vertx, new OracleConnectOptions(options)).onComplete(ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {
@@ -56,7 +56,7 @@ public enum ClientConfig {
       return new Connector<>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          pool.getConnection(ar -> {
+          pool.getConnection().onComplete(ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {

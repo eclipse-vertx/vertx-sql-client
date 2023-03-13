@@ -24,7 +24,7 @@ public abstract class ContextTest extends PgTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected abstract Context createContext();
@@ -34,11 +34,12 @@ public abstract class ContextTest extends PgTestBase {
     Async async = testCtx.async();
     Context connCtx = createContext();
     connCtx.runOnContext(v1 -> {
-      PgConnection.connect(vertx, options, testCtx.asyncAssertSuccess(conn -> {
+      PgConnection.connect(vertx, options).onComplete(testCtx.asyncAssertSuccess(conn -> {
         testCtx.assertEquals(connCtx, Vertx.currentContext());
         conn
           .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
-          .execute(testCtx.asyncAssertSuccess(result -> {
+          .execute()
+          .onComplete(testCtx.asyncAssertSuccess(result -> {
           testCtx.assertEquals(connCtx, Vertx.currentContext());
           async.complete();
         }));
@@ -54,11 +55,12 @@ public abstract class ContextTest extends PgTestBase {
     connCtx.runOnContext(v1 -> {
       PgPool pool = PgPool.pool(vertx, options, new PoolOptions());
       appCtx.runOnContext(v -> {
-        pool.getConnection(testCtx.asyncAssertSuccess(conn -> {
+        pool.getConnection().onComplete(testCtx.asyncAssertSuccess(conn -> {
           testCtx.assertEquals(appCtx, Vertx.currentContext());
           conn
             .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
-            .execute(testCtx.asyncAssertSuccess(result -> {
+            .execute()
+            .onComplete(testCtx.asyncAssertSuccess(result -> {
             testCtx.assertEquals(appCtx, Vertx.currentContext());
             async.complete();
           }));
@@ -77,7 +79,8 @@ public abstract class ContextTest extends PgTestBase {
       appCtx.runOnContext(v -> {
         pool
           .query("SELECT *  FROM (VALUES ('Hello world')) t1 (col1) WHERE 1 = 1")
-          .execute(testCtx.asyncAssertSuccess(result -> {
+          .execute()
+          .onComplete(testCtx.asyncAssertSuccess(result -> {
             testCtx.assertEquals(appCtx, Vertx.currentContext());
             async.complete();
           }));

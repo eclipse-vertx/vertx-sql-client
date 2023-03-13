@@ -53,7 +53,9 @@ public class OraclePoolTest extends OracleTestBase {
     if (!pools.isEmpty()) {
       Async async = ctx.async(pools.size());
       for (OraclePool pool : pools) {
-        pool.close(ar -> {
+        pool
+          .close()
+          .onComplete(ar -> {
           async.countDown();
         });
       }
@@ -79,8 +81,13 @@ public class OraclePoolTest extends OracleTestBase {
     Async async = ctx.async(num);
     OraclePool pool = createPool(options, 40);
     for (int i = 0; i < num; i++) {
-      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
-        conn.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(rows -> {
+      pool
+        .getConnection()
+        .onComplete(ctx.asyncAssertSuccess(conn -> {
+        conn
+          .query("SELECT id, randomnumber FROM WORLD")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(rows -> {
           ctx.assertEquals(100, rows.size());
           conn.close();
           async.countDown();
@@ -95,7 +102,10 @@ public class OraclePoolTest extends OracleTestBase {
     Async async = ctx.async(num);
     OraclePool pool = createPool(options, 40);
     for (int i = 0; i < num; i++) {
-      pool.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(rows -> {
+      pool
+        .query("SELECT id, randomnumber FROM WORLD")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(100, rows.size());
         async.countDown();
       }));
@@ -109,7 +119,9 @@ public class OraclePoolTest extends OracleTestBase {
     OraclePool pool = createPool(options, 1);
     for (int i = 0; i < num; i++) {
       PreparedQuery<RowSet<Row>> preparedQuery = pool.preparedQuery("SELECT id, randomnumber FROM WORLD WHERE id=?");
-      preparedQuery.execute(Tuple.of(i + 1), ctx.asyncAssertSuccess(rows -> {
+      preparedQuery
+        .execute(Tuple.of(i + 1))
+        .onComplete(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(1, rows.size());
         async.countDown();
       }));
@@ -122,7 +134,10 @@ public class OraclePoolTest extends OracleTestBase {
     Async async = ctx.async(num);
     OraclePool pool = createPool(options, 4);
     for (int i = 0; i < num; i++) {
-      pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(rows -> {
+      pool
+        .query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(1, rows.rowCount());
         async.countDown();
       }));
@@ -135,7 +150,10 @@ public class OraclePoolTest extends OracleTestBase {
     Async async = ctx.async(num);
     OraclePool pool = createPool(options, 4);
     for (int i = 0; i < num; i++) {
-      pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = ?").execute(Tuple.of(9), ar -> {
+      pool
+        .preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = ?")
+        .execute(Tuple.of(9))
+        .onComplete(ar -> {
         if (ar.succeeded()) {
           RowSet<Row> result = ar.result();
           ctx.assertEquals(1, result.rowCount());
@@ -155,9 +173,13 @@ public class OraclePoolTest extends OracleTestBase {
     Function<SqlConnection, Future<RowSet<Row>>> failure = conn -> conn.query("SELECT 1 FROM does_not_exist").execute();
     for (int i = 0; i < 10; i++) {
       if (i % 2 == 0) {
-        pool.withConnection(success, ctx.asyncAssertSuccess(v -> async.countDown()));
+        pool
+          .withConnection(success)
+          .onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
       } else {
-        pool.withConnection(failure, ctx.asyncAssertFailure(v -> async.countDown()));
+        pool
+          .withConnection(failure)
+          .onComplete(ctx.asyncAssertFailure(v -> async.countDown()));
       }
     }
   }
@@ -166,7 +188,10 @@ public class OraclePoolTest extends OracleTestBase {
   public void testAuthFailure(TestContext ctx) {
     Async async = ctx.async();
     OraclePool pool = createPool(new OracleConnectOptions(options).setPassword("wrong"), 1);
-    pool.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertFailure(v2 -> {
+    pool
+      .query("SELECT id, randomnumber FROM WORLD")
+      .execute()
+      .onComplete(ctx.asyncAssertFailure(v2 -> {
       async.complete();
     }));
   }
@@ -188,7 +213,10 @@ public class OraclePoolTest extends OracleTestBase {
   public void testRunStandalone(TestContext ctx) {
     Async async = ctx.async();
     OraclePool pool = createPool(new OracleConnectOptions(options), new PoolOptions());
-    pool.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(v -> {
+    pool
+      .query("SELECT id, randomnumber FROM WORLD")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(v -> {
       async.complete();
     }));
     async.await(4000);
@@ -198,8 +226,12 @@ public class OraclePoolTest extends OracleTestBase {
   public void testMaxWaitQueueSize(TestContext ctx) {
     Async async = ctx.async();
     OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
-    pool.getConnection(ctx.asyncAssertSuccess(v -> {
-      pool.getConnection(ctx.asyncAssertFailure(err -> {
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(v -> {
+      pool
+        .getConnection()
+        .onComplete(ctx.asyncAssertFailure(err -> {
         async.complete();
       }));
     }));
@@ -214,7 +246,10 @@ public class OraclePoolTest extends OracleTestBase {
     int numRequests = 2;
     Async async = ctx.async(numRequests);
     for (int i = 0; i < numRequests; i++) {
-      pool.preparedQuery("SELECT * FROM Fortune WHERE id=?").execute(Tuple.of(1), ctx.asyncAssertSuccess(results -> {
+      pool
+        .preparedQuery("SELECT * FROM Fortune WHERE id=?")
+        .execute(Tuple.of(1))
+        .onComplete(ctx.asyncAssertSuccess(results -> {
         ctx.assertEquals(1, results.size());
         Tuple row = results.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
@@ -234,10 +269,15 @@ public class OraclePoolTest extends OracleTestBase {
       });
     };
     OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
-    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertEquals(1, hookCount.get());
-      conn.query("SELECT id, randomnumber FROM WORLD").execute(ctx.asyncAssertSuccess(v2 -> {
-        conn.close(ctx.asyncAssertSuccess());
+      conn
+        .query("SELECT id, randomnumber FROM WORLD")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(v2 -> {
+        conn.close().onComplete(ctx.asyncAssertSuccess());
       }));
     }));
   }
@@ -248,11 +288,17 @@ public class OraclePoolTest extends OracleTestBase {
     Async async = ctx.async();
     vertx.runOnContext(v1 -> {
       ContextInternal current = (ContextInternal) Vertx.currentContext();
-      pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res1 -> {
+      pool
+        .query("SELECT 1 FROM DUAL")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertTrue(Vertx.currentContext() == current);
         ContextInternal duplicated = current.duplicate();
         duplicated.runOnContext(v2 -> {
-          pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res2 -> {
+          pool
+            .query("SELECT 1 FROM DUAL")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertTrue(Vertx.currentContext() == duplicated);
             async.complete();
           }));
@@ -267,15 +313,23 @@ public class OraclePoolTest extends OracleTestBase {
     Async async = ctx.async();
     vertx.runOnContext(v1 -> {
       ContextInternal current = (ContextInternal) Vertx.currentContext();
-      pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res1 -> {
+      pool
+        .query("SELECT 1 FROM DUAL")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertTrue(Vertx.currentContext() == current);
         ContextInternal duplicated = current.duplicate();
         duplicated.runOnContext(v2 -> {
-          pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+          pool
+            .getConnection()
+            .onComplete(ctx.asyncAssertSuccess(conn -> {
             ctx.assertTrue(Vertx.currentContext() == duplicated);
-            conn.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(res2 -> {
+            conn
+              .query("SELECT 1 FROM DUAL")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(res2 -> {
               ctx.assertTrue(Vertx.currentContext() == duplicated);
-              conn.close(ctx.asyncAssertSuccess(v -> {
+              conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
                 ctx.assertTrue(Vertx.currentContext() == duplicated);
                 async.complete();
               }));

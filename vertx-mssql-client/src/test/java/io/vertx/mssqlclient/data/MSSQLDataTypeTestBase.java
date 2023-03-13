@@ -85,7 +85,7 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected <T> void testQueryDecodeGenericWithoutTable(TestContext ctx,
@@ -93,10 +93,11 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                                         String type,
                                                         String value,
                                                         Consumer<Row> checker) {
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .query("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           checker.accept(row);
@@ -121,10 +122,11 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                                                 String type,
                                                                 String value,
                                                                 Consumer<Row> checker) {
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT CAST(" + value + " AS " + type + ") AS " + columnName)
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           checker.accept(row);
@@ -149,10 +151,11 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                             String columnName,
                                             String rowIdentifier,
                                             Consumer<Row> checker) {
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .query(String.format("SELECT %s FROM %s WHERE id = %s", columnName, tableName, rowIdentifier))
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           checker.accept(row);
@@ -167,10 +170,11 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                                     String columnName,
                                                     String rowIdentifier,
                                                     Consumer<Row> checker) {
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery(String.format("SELECT %s FROM %s WHERE id = %s", columnName, tableName, rowIdentifier))
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           checker.accept(row);
@@ -184,12 +188,14 @@ public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
                                                     String columnName,
                                                     T param,
                                                     Consumer<Row> checker) {
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery(String.format("UPDATE %s SET %s = @p1 WHERE id = 2", tableName, columnName))
-        .execute(Tuple.of(param), ctx.asyncAssertSuccess(updateRes -> {
+        .execute(Tuple.of(param))
+        .onComplete(ctx.asyncAssertSuccess(updateRes -> {
           conn.preparedQuery(String.format("SELECT %s FROM %s WHERE id = 2", columnName, tableName))
-            .execute(ctx.asyncAssertSuccess(result -> {
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               Row row = result.iterator().next();
               checker.accept(row);

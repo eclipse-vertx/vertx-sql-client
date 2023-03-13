@@ -43,7 +43,7 @@ public class SharedPoolTest extends PgTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -57,11 +57,12 @@ public class SharedPoolTest extends PgTestBase {
         pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
         pool
           .query("SELECT pg_sleep(0.5);SELECT count(*) FROM pg_stat_activity WHERE application_name LIKE '%vertx%'")
-          .execute(ctx.asyncAssertSuccess(rows -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(rows -> {
           ctx.assertTrue(rows.next().iterator().next().getInteger(0) <= maxSize);
         }));
       }
-    }, new DeploymentOptions().setInstances(instances), ctx.asyncAssertSuccess());
+    }, new DeploymentOptions().setInstances(instances)).onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -78,9 +79,10 @@ public class SharedPoolTest extends PgTestBase {
         pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
         pool
           .query("SELECT 1")
-          .execute(ctx.asyncAssertSuccess(res -> latch.countDown()));
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res -> latch.countDown()));
       }
-    }, new DeploymentOptions().setInstances(instances), ctx.asyncAssertSuccess(deployment::set));
+    }, new DeploymentOptions().setInstances(instances)).onComplete(ctx.asyncAssertSuccess(deployment::set));
     latch.awaitSuccess(20_000);
     vertx.undeploy(deployment.get())
       .compose(v -> PgConnection.connect(vertx, options))
@@ -121,10 +123,11 @@ public class SharedPoolTest extends PgTestBase {
               .<Void>mapEmpty()
               .onComplete(startPromise);
           }
-        }, new DeploymentOptions().setInstances(instances), ctx.asyncAssertSuccess(id -> {
+        }, new DeploymentOptions().setInstances(instances)).onComplete(ctx.asyncAssertSuccess(id -> {
           pool
             .query(COUNT_CONNECTIONS_QUERY)
-            .execute(ctx.asyncAssertSuccess(res1 -> {
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res1 -> {
               int num1 = res1.iterator().next().getInteger(0);
               ctx.assertTrue(num1 <= maxSize);
               vertx.undeploy(id)

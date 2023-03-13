@@ -50,8 +50,11 @@ public class OracleCollectorTest extends CollectorTestBase {
     TestingCollectorObject expected = new TestingCollectorObject(1, (short) 32767, 2147483647, 9223372036854775807L,
       123.456F, 1.234567D, "HELLO,WORLD");
     this.connector.connect(ctx.asyncAssertSuccess((conn) -> {
-      conn.query("SELECT * FROM test_collector WHERE id = 1").collecting(collector)
-        .execute(ctx.asyncAssertSuccess((result) -> {
+      conn
+        .query("SELECT * FROM test_collector WHERE id = 1")
+        .collecting(collector)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess((result) -> {
           Map<Integer, TestingCollectorObject> map = result.value();
           TestingCollectorObject actual = map.get(1);
           ctx.assertEquals(expected, actual);
@@ -79,9 +82,11 @@ public class OracleCollectorTest extends CollectorTestBase {
       123.456f, 1.234567d, "HELLO,WORLD");
 
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT * FROM test_collector WHERE id = 1")
+      conn
+        .preparedQuery("SELECT * FROM test_collector WHERE id = 1")
         .collecting(collector)
-        .execute(ctx.asyncAssertSuccess(result -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           Map<Integer, TestingCollectorObject> map = result.value();
           TestingCollectorObject actual = map.get(1);
           ctx.assertEquals(expected, actual);
@@ -166,9 +171,11 @@ public class OracleCollectorTest extends CollectorTestBase {
   private void testCollectorFailure(Async async, TestContext ctx, Throwable cause,
     Collector<Row, Object, Object> collector) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT * FROM test_collector WHERE id = 1")
+      conn
+        .query("SELECT * FROM test_collector WHERE id = 1")
         .collecting(collector)
-        .execute(ctx.asyncAssertFailure(result -> {
+        .execute()
+        .onComplete(ctx.asyncAssertFailure(result -> {
           ctx.assertEquals(cause, result);
           conn.close();
           async.complete();
