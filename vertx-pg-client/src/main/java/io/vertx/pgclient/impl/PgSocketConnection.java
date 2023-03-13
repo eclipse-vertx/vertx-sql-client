@@ -85,7 +85,7 @@ public class PgSocketConnection extends SocketConnectionBase {
     buffer.appendInt(processId);
     buffer.appendInt(secretKey);
 
-    socket.write(buffer).onComplete(ar -> {
+    socket.write(buffer, ar -> {
       if (ar.succeeded()) {
         // directly close this connection
         if (status == Status.CONNECTED) {

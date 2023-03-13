@@ -19,7 +19,6 @@ package io.vertx.mysqlclient.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
@@ -100,8 +99,8 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     }
   }
 
-  public Future<Void> upgradeToSsl() {
-    return socket.upgradeToSsl();
+  public void upgradeToSsl(Handler<AsyncResult<Void>> completionHandler) {
+    socket.upgradeToSsl(completionHandler);
   }
 
   @Override

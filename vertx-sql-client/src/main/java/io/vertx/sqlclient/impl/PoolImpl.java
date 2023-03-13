@@ -175,7 +175,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   .compose(v -> context.failedFuture(err), failure -> context.failedFuture(err));
               }
             }))
-        .onComplete(ar -> conn.close().onComplete(v -> context.removeLocal(PROPAGATABLE_CONNECTION))));
+        .onComplete(ar -> conn.close(v -> context.removeLocal(PROPAGATABLE_CONNECTION))));
   }
 
   @Override

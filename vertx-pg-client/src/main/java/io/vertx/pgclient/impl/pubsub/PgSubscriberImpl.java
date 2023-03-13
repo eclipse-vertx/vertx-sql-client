@@ -168,7 +168,7 @@ public class PgSubscriberImpl implements PgSubscriber {
   }
 
   private void doConnect(Handler<AsyncResult<Void>> completionHandler) {
-    PgConnection.connect(vertx, options).onComplete(ar -> handleConnectResult(completionHandler, ar));
+    PgConnection.connect(vertx, options, ar -> handleConnectResult(completionHandler, ar));
   }
 
   private synchronized void handleConnectResult(Handler<AsyncResult<Void>> completionHandler, AsyncResult<PgConnection> ar1) {
@@ -191,7 +191,7 @@ public class PgSubscriberImpl implements PgSubscriber {
             return channel.quotedName;
           })
           .collect(Collectors.joining(";LISTEN ", "LISTEN ", ""));
-        conn.query(sql).execute().onComplete(ar2 -> {
+        conn.query(sql).execute(ar2 -> {
           if (ar2.failed()) {
             log.error("Cannot LISTEN to channels", ar2.cause());
             conn.close();
@@ -224,7 +224,7 @@ public class PgSubscriberImpl implements PgSubscriber {
         if (conn != null) {
           subscribed = true;
           String sql = "LISTEN " + quotedName;
-          conn.query(sql).execute().onComplete(ar -> {
+          conn.query(sql).execute(ar -> {
             if (ar.succeeded()) {
               Handler<Void> handler = sub.subscribeHandler;
               if (handler != null) {
@@ -243,7 +243,7 @@ public class PgSubscriberImpl implements PgSubscriber {
       if (subs.isEmpty()) {
         channels.remove(name, this);
         if (conn != null) {
-          conn.query("UNLISTEN " + quotedName).execute().onComplete(ar -> {
+          conn.query("UNLISTEN " + quotedName).execute(ar -> {
             if (ar.failed()) {
               log.error("Cannot UNLISTEN channel " + name, ar.cause());
             }

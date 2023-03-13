@@ -59,17 +59,18 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
     byteBuf.release();
     switch (b) {
       case PgProtocolConstants.MESSAGE_TYPE_SSL_YES: {
-        conn
-          .socket()
-          .upgradeToSsl()
-          .onComplete(ar -> {
-            if (ar.succeeded()) {
-              ctx.pipeline().remove(this);
-              upgradePromise.complete();
-            } else {
+        Handler handler = o -> {
+          if (o instanceof AsyncResult) {
+            AsyncResult res = (AsyncResult) o;
+            if (res.failed()) {
               // Connection close will fail the promise
+              return;
             }
-        });
+          }
+          ctx.pipeline().remove(this);
+          upgradePromise.complete();
+        };
+        conn.socket().upgradeToSsl(handler);
         break;
       }
       case PgProtocolConstants.MESSAGE_TYPE_SSL_NO: {
