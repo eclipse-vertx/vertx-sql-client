@@ -59,7 +59,7 @@ public class MySQLPoolTest extends MySQLTestBase {
     if (pool != null) {
       pool.close();
     }
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -164,7 +164,7 @@ public class MySQLPoolTest extends MySQLTestBase {
     Tuple params = Tuple.of(options.getUser(), options.getDatabase());
 
     Async killConnections = ctx.async();
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       String sql = "SELECT ID FROM INFORMATION_SCHEMA.PROCESSLIST WHERE ID <> CONNECTION_ID() AND User = ? AND db = ?";
       Collector<Row, ?, List<Integer>> collector = mapping(row -> row.getInteger(0), toList());
       conn.preparedQuery(sql).collecting(collector).execute(params, ctx.asyncAssertSuccess(ids -> {

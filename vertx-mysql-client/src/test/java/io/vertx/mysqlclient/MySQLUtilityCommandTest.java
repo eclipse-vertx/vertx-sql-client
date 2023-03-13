@@ -37,12 +37,12 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testPingCommand(TestContext ctx) {
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.ping(ctx.asyncAssertSuccess(v -> {
         conn.close();
       }));
@@ -51,7 +51,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeSchema(TestContext ctx) {
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT DATABASE();").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals("testschema", result.iterator().next().getString(0));
         conn.specifySchema("emptyschema", ctx.asyncAssertSuccess(v -> {
@@ -66,7 +66,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeToInvalidSchema(TestContext ctx) {
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT DATABASE();").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals("testschema", result.iterator().next().getString(0));
         conn.specifySchema("invalidschema", ctx.asyncAssertFailure(error -> {
@@ -78,7 +78,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testStatistics(TestContext ctx) {
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.getInternalStatistics(ctx.asyncAssertSuccess(result -> {
         ctx.assertTrue(!result.isEmpty());
         conn.close();
@@ -88,7 +88,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testSetOption(TestContext ctx) {
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       // CLIENT_MULTI_STATEMENTS is on by default
       conn.query("SELECT 1; SELECT 2;").execute(ctx.asyncAssertSuccess(rowSet1 -> {
         ctx.assertEquals(1, rowSet1.size());
@@ -112,7 +112,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
   @Test
   public void testResetConnection(TestContext ctx) {
     Assume.assumeFalse(rule.isUsingMySQL5_6());
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("CREATE TEMPORARY TABLE temp (temp INTEGER)").execute(ctx.asyncAssertSuccess(res1 -> {
         conn.query("SELECT * FROM temp").execute(ctx.asyncAssertSuccess(res2 -> {
           conn.resetConnection(ctx.asyncAssertSuccess(res3 -> {
@@ -127,7 +127,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeUser(TestContext ctx) {
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT current_user()").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);
@@ -149,7 +149,7 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testChangeUserAuthWithServerRsaPublicKey(TestContext ctx) {
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT current_user()").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);

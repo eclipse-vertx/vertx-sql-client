@@ -33,7 +33,7 @@ public enum ClientConfig {
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
           //TODO remove this when we have data object support for connect options
           MSSQLConnectOptions connectOptions = new MSSQLConnectOptions(options);
-          MSSQLConnection.connect(vertx, connectOptions).onComplete(ar -> {
+          MSSQLConnection.connect(vertx, connectOptions, ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {
@@ -56,7 +56,7 @@ public enum ClientConfig {
       return new Connector<SqlClient>() {
         @Override
         public void connect(Handler<AsyncResult<SqlClient>> handler) {
-          pool.getConnection().onComplete(ar -> {
+          pool.getConnection(ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {

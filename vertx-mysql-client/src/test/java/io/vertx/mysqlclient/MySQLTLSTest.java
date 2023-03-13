@@ -58,14 +58,14 @@ public class MySQLTLSTest {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
 //  @Test
 //  @Ignore("We do not configure to enforce TLS on the client side for the testing")
 //  public void testFailWithTlsDisabled(TestContext ctx) {
 //    options.setSslMode(SslMode.DISABLED);
-//    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(error -> {
+//    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
 //      // TLS support is forced to be enabled on the client side
 //    }));
 //  }
@@ -73,7 +73,7 @@ public class MySQLTLSTest {
   @Test
   public void testSuccessWithDisabledSslMode(TestContext ctx) {
     options.setSslMode(SslMode.DISABLED);
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
@@ -90,7 +90,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
@@ -107,7 +107,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
@@ -124,7 +124,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, nonTlsOptions).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, nonTlsOptions, ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
@@ -141,7 +141,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
@@ -155,7 +155,7 @@ public class MySQLTLSTest {
     options.setSslMode(SslMode.REQUIRED);
     options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
 
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
@@ -169,7 +169,7 @@ public class MySQLTLSTest {
     options.setSslMode(SslMode.REQUIRED);
     options.setTrustAll(true);
 
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
@@ -186,7 +186,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
@@ -203,7 +203,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Trust options must be specified under VERIFY_CA ssl-mode.", error.getMessage());
     }));
   }
@@ -231,7 +231,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.", error.getMessage());
     }));
   }
@@ -240,7 +240,7 @@ public class MySQLTLSTest {
   public void testConnFail(TestContext ctx) {
     options.setSslMode(SslMode.REQUIRED);
 
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
     }));
   }
 
@@ -249,7 +249,7 @@ public class MySQLTLSTest {
     options.setSslMode(SslMode.REQUIRED);
     options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
 
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT current_user()").execute(ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);

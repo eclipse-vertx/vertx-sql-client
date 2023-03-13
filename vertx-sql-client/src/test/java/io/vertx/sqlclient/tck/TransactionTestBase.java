@@ -85,7 +85,7 @@ public abstract class TransactionTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   protected void cleanTestTable(TestContext ctx) {

@@ -64,7 +64,7 @@ public abstract class TracingTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   protected abstract Pool createPool(Vertx vertx);
@@ -127,7 +127,7 @@ public abstract class TracingTestBase {
       Context context = Vertx.currentContext();
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         fn.apply(conn).onComplete(ctx.asyncAssertSuccess(v2 -> {
-          conn.close().onComplete(ctx.asyncAssertSuccess(v3 -> {
+          conn.close(ctx.asyncAssertSuccess(v3 -> {
             vertx.runOnContext(v4 -> {
               completed.await(2000);
               ctx.assertEquals(context, requestContext.get());
@@ -190,7 +190,7 @@ public abstract class TracingTestBase {
           throw failure;
         })
         .execute(Tuple.of(1), ctx.asyncAssertFailure(err -> {
-          conn.close().onComplete(ctx.asyncAssertSuccess(v1 -> {
+          conn.close(ctx.asyncAssertSuccess(v1 -> {
             vertx.runOnContext(v2 -> {
               completed.await(2000);
               ctx.assertEquals(1, called.get());

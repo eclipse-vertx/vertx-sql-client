@@ -47,7 +47,7 @@ public class PubSubTest extends PgTestBase {
     if (subscriber != null) {
       subscriber.close();
     }
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -63,7 +63,7 @@ public class PubSubTest extends PgTestBase {
   public void testNotify(TestContext ctx, String channelName) {
     String quotedChannelName = "\"" + channelName.replace("\"", "\"\"") + "\"";
     Async async = ctx.async(2);
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
         .query("LISTEN " + quotedChannelName)
         .execute(ctx.asyncAssertSuccess(result1 -> {

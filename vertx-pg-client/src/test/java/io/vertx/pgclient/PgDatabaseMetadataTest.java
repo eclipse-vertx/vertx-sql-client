@@ -34,7 +34,7 @@ public class PgDatabaseMetadataTest {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -60,7 +60,7 @@ public class PgDatabaseMetadataTest {
     Async async = ctx.async();
     try {
       PgConnectOptions options = rule.startServer(containerVersion);
-      PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
         ctx.assertEquals(expectedFull, conn.databaseMetadata().fullVersion());
         ctx.assertEquals(expectedMajor, conn.databaseMetadata().majorVersion());
         ctx.assertEquals(expectedMinor, conn.databaseMetadata().minorVersion());

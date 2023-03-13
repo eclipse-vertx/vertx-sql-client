@@ -158,6 +158,6 @@ public abstract class DataTypeTestBase extends PgTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 }

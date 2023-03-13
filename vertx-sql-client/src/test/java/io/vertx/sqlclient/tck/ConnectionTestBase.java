@@ -41,7 +41,7 @@ public abstract class ConnectionTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -79,7 +79,7 @@ public abstract class ConnectionTestBase {
       conn.closeHandler(v -> {
         closedAsync.complete();
       });
-      conn.close().onComplete(ctx.asyncAssertSuccess(v -> closeAsync.complete()));
+      conn.close(ctx.asyncAssertSuccess(v -> closeAsync.complete()));
     }));
     closedAsync.await();
   }
@@ -89,9 +89,7 @@ public abstract class ConnectionTestBase {
   public void testCloseWithErrorInProgress(TestContext ctx) {
     Async async = ctx.async(2);
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT whatever from DOES_NOT_EXIST")
-        .execute()
-        .onComplete(ctx.asyncAssertFailure(err -> {
+      conn.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(err -> {
         ctx.assertEquals(2, async.count());
         async.countDown();
       }));
@@ -108,9 +106,7 @@ public abstract class ConnectionTestBase {
   public void testCloseWithQueryInProgress(TestContext ctx) {
     Async async = ctx.async(2);
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, message from immutable")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result -> {
+      conn.query("SELECT id, message from immutable").execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(2, async.count());
         ctx.assertEquals(12, result.size());
         async.countDown();
@@ -123,7 +119,7 @@ public abstract class ConnectionTestBase {
     }));
     async.await();
   }
-
+  
   @Test
   public void testDatabaseMetaData(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
@@ -136,7 +132,7 @@ public abstract class ConnectionTestBase {
       validateDatabaseMetaData(ctx, md);
     }));
   }
-
+  
   protected abstract void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md);
-
+  
 }

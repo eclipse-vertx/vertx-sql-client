@@ -50,6 +50,6 @@ public class OracleColumnDescriptorTest extends OracleTestBase {
 
   @After
   public void tearDown(TestContext ctx) throws Exception {
-    pool.close().onComplete(ctx.asyncAssertSuccess());
+    pool.close(ctx.asyncAssertSuccess());
   }
 }

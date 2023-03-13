@@ -37,12 +37,12 @@ import io.vertx.sqlclient.Tuple;
 public class DB2DataTypeTest extends DB2TestBase {
 
 
-  // Enum for enum testing
+  // Enum for enum testing 
   enum Days {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
   }
 
-
+	
   /**
    * In DB2 the FLOAT and DOUBLE column types both map to an 8-byte
    * double-precision column (i.e. Java double). Ensure that a Java
@@ -51,14 +51,10 @@ public class DB2DataTypeTest extends DB2TestBase {
   @Test
   public void testFloatIntoFloatColumn(TestContext ctx) {
       connect(ctx.asyncAssertSuccess(conn -> {
-          conn
-            .preparedQuery("INSERT INTO db2_types (id,test_float) VALUES (?, ?)")
-            .execute(Tuple.of(1, 5.0f))
-            .onComplete(ctx.asyncAssertSuccess(insertResult -> {
-               conn
-                 .preparedQuery("SELECT id,test_float FROM db2_types WHERE id = 1")
-                 .execute()
-                 .onComplete(ctx.asyncAssertSuccess(rows -> {
+          conn.preparedQuery("INSERT INTO db2_types (id,test_float) VALUES (?, ?)")
+            .execute(Tuple.of(1, 5.0f), ctx.asyncAssertSuccess(insertResult -> {
+               conn.preparedQuery("SELECT id,test_float FROM db2_types WHERE id = 1")
+                 .execute(ctx.asyncAssertSuccess(rows -> {
                    ctx.assertEquals(1, rows.size());
                    Row row = rows.iterator().next();
                    ctx.assertEquals(1, row.getInteger(0));
@@ -76,14 +72,10 @@ public class DB2DataTypeTest extends DB2TestBase {
   @Test
   public void testByteIntoSmallIntColumn(TestContext ctx) {
       connect(ctx.asyncAssertSuccess(conn -> {
-          conn
-            .preparedQuery("INSERT INTO db2_types (id,test_byte) VALUES (?, ?)")
-            .execute(Tuple.of(2, (byte) 0xCA))
-            .onComplete(ctx.asyncAssertSuccess(insertResult -> {
-               conn
-                 .preparedQuery("SELECT id,test_byte FROM db2_types WHERE id = 2")
-                 .execute()
-                 .onComplete(ctx.asyncAssertSuccess(rows -> {
+          conn.preparedQuery("INSERT INTO db2_types (id,test_byte) VALUES (?, ?)")
+            .execute(Tuple.of(2, (byte) 0xCA), ctx.asyncAssertSuccess(insertResult -> {
+               conn.preparedQuery("SELECT id,test_byte FROM db2_types WHERE id = 2")
+                 .execute(ctx.asyncAssertSuccess(rows -> {
                    ctx.assertEquals(1, rows.size());
                    Row row = rows.iterator().next();
                    ctx.assertEquals(2, row.getInteger(0));
@@ -97,14 +89,10 @@ public class DB2DataTypeTest extends DB2TestBase {
   public void testByteArrayIntoVarchar(TestContext ctx) {
     byte[] expected = "hello world".getBytes();
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .preparedQuery("INSERT INTO db2_types (id,test_bytes) VALUES (?, ?)")
-        .execute(Tuple.of(3, "hello world".getBytes()))
-        .onComplete(ctx.asyncAssertSuccess(insertResult -> {
-            conn
-              .preparedQuery("SELECT id,test_bytes FROM db2_types WHERE id = 3")
-              .execute()
-              .onComplete(ctx.asyncAssertSuccess(rows -> {
+      conn.preparedQuery("INSERT INTO db2_types (id,test_bytes) VALUES (?, ?)")
+          .execute(Tuple.of(3, "hello world".getBytes()), ctx.asyncAssertSuccess(insertResult -> {
+            conn.preparedQuery("SELECT id,test_bytes FROM db2_types WHERE id = 3")
+                .execute(ctx.asyncAssertSuccess(rows -> {
                   ctx.assertEquals(1, rows.size());
                   Row row = rows.iterator().next();
                   ctx.assertEquals(3, row.getInteger(0));
@@ -120,14 +108,10 @@ public class DB2DataTypeTest extends DB2TestBase {
   public void testByteBufIntoVarchar(TestContext ctx) {
     byte[] expected = "hello world".getBytes();
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .preparedQuery("INSERT INTO db2_types (id,test_bytes) VALUES (?, ?)")
-        .execute(Tuple.of(4, Buffer.buffer(expected)))
-        .onComplete(ctx.asyncAssertSuccess(insertResult -> {
-            conn
-              .preparedQuery("SELECT id,test_bytes FROM db2_types WHERE id = 4")
-              .execute()
-              .onComplete(ctx.asyncAssertSuccess(rows -> {
+      conn.preparedQuery("INSERT INTO db2_types (id,test_bytes) VALUES (?, ?)")
+          .execute(Tuple.of(4, Buffer.buffer(expected)), ctx.asyncAssertSuccess(insertResult -> {
+            conn.preparedQuery("SELECT id,test_bytes FROM db2_types WHERE id = 4")
+                .execute(ctx.asyncAssertSuccess(rows -> {
                   ctx.assertEquals(1, rows.size());
                   Row row = rows.iterator().next();
                   ctx.assertEquals(4, row.getInteger(0));
@@ -143,14 +127,10 @@ public class DB2DataTypeTest extends DB2TestBase {
   public void testTimestamp(TestContext ctx) {
     LocalDateTime now = LocalDateTime.now();
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .preparedQuery("INSERT INTO db2_types (id,test_tstamp) VALUES (?,?)")
-        .execute(Tuple.of(5, now))
-        .onComplete(ctx.asyncAssertSuccess(insertResult -> {
-           conn
-             .preparedQuery("SELECT id,test_tstamp FROM db2_types WHERE id = ?")
-             .execute(Tuple.of(5))
-             .onComplete(ctx.asyncAssertSuccess(rows -> {
+      conn.preparedQuery("INSERT INTO db2_types (id,test_tstamp) VALUES (?,?)")
+        .execute(Tuple.of(5, now), ctx.asyncAssertSuccess(insertResult -> {
+           conn.preparedQuery("SELECT id,test_tstamp FROM db2_types WHERE id = ?")
+             .execute(Tuple.of(5), ctx.asyncAssertSuccess(rows -> {
           ctx.assertEquals(1, rows.size());
           Row row = rows.iterator().next();
           int nowNanos = now.getNano() - (1000 * now.get(ChronoField.MICRO_OF_SECOND));
@@ -166,15 +146,9 @@ public class DB2DataTypeTest extends DB2TestBase {
   public void testUUID(TestContext ctx) {
     UUID uuid = UUID.randomUUID();
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .preparedQuery("INSERT INTO db2_types (id,test_vchar) VALUES (?,?)")
-        .execute(Tuple.of(6, uuid))
-        .onComplete(
+      conn.preparedQuery("INSERT INTO db2_types (id,test_vchar) VALUES (?,?)").execute(Tuple.of(6, uuid),
           ctx.asyncAssertSuccess(insertResult -> {
-            conn
-              .preparedQuery("SELECT id,test_vchar FROM db2_types WHERE id = ?")
-              .execute(Tuple.of(6))
-              .onComplete(
+            conn.preparedQuery("SELECT id,test_vchar FROM db2_types WHERE id = ?").execute(Tuple.of(6),
                 ctx.asyncAssertSuccess(rows -> {
                   ctx.assertEquals(1, rows.size());
                   Row row = rows.iterator().next();
@@ -194,28 +168,22 @@ public class DB2DataTypeTest extends DB2TestBase {
     final String msg = "insert data for testRowId";
     connect(ctx.asyncAssertSuccess(conn -> {
       // Insert some data
-      conn
-        .preparedQuery("INSERT INTO ROWTEST (message) VALUES ('" + msg + "')")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(insertResult -> {
+      conn.preparedQuery("INSERT INTO ROWTEST (message) VALUES ('" + msg + "')")
+        .execute(ctx.asyncAssertSuccess(insertResult -> {
            // Find it by msg
-           conn
-             .preparedQuery("SELECT * FROM ROWTEST WHERE message = '" + msg + "'")
-             .execute()
-             .onComplete(ctx.asyncAssertSuccess(rows -> {
+           conn.preparedQuery("SELECT * FROM ROWTEST WHERE message = '" + msg + "'")
+             .execute(ctx.asyncAssertSuccess(rows -> {
                RowId rowId = verifyRowId(ctx, rows, msg);
                // Now find it by rowid
-               conn
-                 .preparedQuery("SELECT * FROM ROWTEST WHERE id = ?")
-                 .execute(Tuple.of(rowId))
-                 .onComplete(ctx.asyncAssertSuccess(rows2 -> {
+               conn.preparedQuery("SELECT * FROM ROWTEST WHERE id = ?")
+                 .execute(Tuple.of(rowId), ctx.asyncAssertSuccess(rows2 -> {
                    verifyRowId(ctx, rows2, msg);
                  }));
              }));
         }));
     }));
   }
-
+  
   /**
    * Test to support using enum string values in the Row and Tuple methods.
    */
@@ -223,12 +191,9 @@ public class DB2DataTypeTest extends DB2TestBase {
   public void testUsingEnumNameValue(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("INSERT INTO db2_types (id,test_vchar) VALUES (?, ?)")
-       .execute(Tuple.of(10, Days.WEDNESDAY))
-        .onComplete(ctx.asyncAssertSuccess(insertResult -> {
-         conn
-           .preparedQuery("SELECT id,test_vchar FROM db2_types WHERE id = 10")
-           .execute()
-           .onComplete(ctx.asyncAssertSuccess(rows -> {
+       .execute(Tuple.of(10, Days.WEDNESDAY), ctx.asyncAssertSuccess(insertResult -> {
+         conn.preparedQuery("SELECT id,test_vchar FROM db2_types WHERE id = 10")
+          .execute(ctx.asyncAssertSuccess(rows -> {
            ctx.assertEquals(1, rows.size());
            Row row = rows.iterator().next();
            ctx.assertEquals(10, row.getInteger(0));
@@ -245,12 +210,9 @@ public class DB2DataTypeTest extends DB2TestBase {
   public void testUsingEnumOrdinalValue(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("INSERT INTO db2_types (id,test_int) VALUES (?, ?)")
-       .execute(Tuple.of(11, Days.FRIDAY.ordinal()))
-        .onComplete(ctx.asyncAssertSuccess(insertResult -> {
-         conn
-           .preparedQuery("SELECT id,test_int FROM db2_types WHERE id = 11")
-           .execute()
-           .onComplete(ctx.asyncAssertSuccess(rows -> {
+       .execute(Tuple.of(11, Days.FRIDAY.ordinal()), ctx.asyncAssertSuccess(insertResult -> {
+         conn.preparedQuery("SELECT id,test_int FROM db2_types WHERE id = 11")
+          .execute(ctx.asyncAssertSuccess(rows -> {
            ctx.assertEquals(1, rows.size());
            Row row = rows.iterator().next();
            ctx.assertEquals(11, row.getInteger(0));
@@ -259,7 +221,7 @@ public class DB2DataTypeTest extends DB2TestBase {
        }));
      }));
   }
-
+  
   private RowId verifyRowId(TestContext ctx, RowSet<Row> rows, String msg) {
     ctx.assertEquals(1, rows.size());
     Row row = rows.iterator().next();

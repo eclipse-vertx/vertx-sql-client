@@ -43,7 +43,7 @@ public class SharedPoolTest extends PgTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test

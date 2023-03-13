@@ -140,7 +140,7 @@ public class DataObjectTypesTest extends PgTemplateTestBase {
     SqlTemplate<Map<String, Object>, RowSet<TestDataObject>> template = SqlTemplate
       .forQuery(connection, "SELECT #{value} :: " + sqlType + " \"" + column + "\"")
       .mapTo(TestDataObjectRowMapper.INSTANCE);
-    template.execute(Collections.singletonMap("value", value)).onComplete(ctx.asyncAssertSuccess(result -> {
+    template.execute(Collections.singletonMap("value", value), ctx.asyncAssertSuccess(result -> {
       ctx.assertEquals(1, result.size());
       ctx.assertEquals(expected, getter.apply(result.iterator().next()));
       async.complete();

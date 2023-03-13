@@ -105,7 +105,7 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeGeometric(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"" + "GeometricDataType" + "\" SET " +
           "\"Point\" = $1, " +
           "\"Line\" = $2, " +
@@ -180,7 +180,7 @@ public class GeometricTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeGeometricArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"" + "ArrayDataType" + "\" SET " +
           "\"Point\" = $1, " +
           "\"Line\" = $2, " +

@@ -26,14 +26,14 @@ public class CloseConnectionTest extends PgTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testCloseConnection(TestContext ctx) {
     testCloseConnection(ctx, () -> {
       PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-        conn.close().onComplete(ctx.asyncAssertSuccess());
+        conn.close(ctx.asyncAssertSuccess());
       }));
     });
   }
@@ -43,8 +43,8 @@ public class CloseConnectionTest extends PgTestBase {
     testCloseConnection(ctx, () -> {
       PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(1));
       pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
-        conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
-          pool.close().onComplete(ctx.asyncAssertSuccess());
+        conn.close(ctx.asyncAssertSuccess(v -> {
+          pool.close(ctx.asyncAssertSuccess());
         }));
       }));
     });
@@ -57,7 +57,7 @@ public class CloseConnectionTest extends PgTestBase {
       ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, options);
       pool.connectionProvider(factory::connect);
       pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
-        conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
+        conn.close(ctx.asyncAssertSuccess(v -> {
           factory.close(Promise.promise());
         }));
       }));

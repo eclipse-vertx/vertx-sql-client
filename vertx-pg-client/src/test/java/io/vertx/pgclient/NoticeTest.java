@@ -45,13 +45,13 @@ public class NoticeTest extends PgTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testHandleNotice(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       List<PgNotice> notices = new ArrayList<>();
       conn.noticeHandler(notices::add);
       conn

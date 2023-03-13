@@ -39,13 +39,13 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testTx(TestContext ctx) {
     Async async = ctx.async();
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("BEGIN").execute(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(0, result1.size());
         ctx.assertNotNull(result1.iterator());
@@ -69,7 +69,7 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
 
   private void testTransactionCommit(TestContext ctx, Executor exec) {
     Async done = ctx.async();
-    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromMutableTable(ctx, conn, () -> {
         exec.execute(() -> {
           conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
@@ -111,7 +111,7 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
 
   private void testTransactionRollback(TestContext ctx, Executor exec) {
     Async done = ctx.async();
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromMutableTable(ctx, conn, () -> {
         exec.execute(() -> {
           conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
@@ -145,7 +145,7 @@ public class MySQLConnectionTestBase extends MySQLTestBase {
   @Test
   public void testTransactionAbort(TestContext ctx) {
     Async done = ctx.async(2);
-    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       deleteFromMutableTable(ctx, conn, () -> {
         conn.begin().onComplete(ctx.asyncAssertSuccess(tx -> {
           tx.completion().onComplete(ctx.asyncAssertFailure(err -> {

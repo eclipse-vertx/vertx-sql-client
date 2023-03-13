@@ -35,7 +35,7 @@ public abstract class PipeliningQueryTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   protected abstract void init();
@@ -140,7 +140,7 @@ public abstract class PipeliningQueryTestBase {
         conn.prepare("SELECT " + currentIter).onComplete(ctx.asyncAssertSuccess(ps -> {
           ps.query().execute().onComplete(ctx.asyncAssertSuccess(res -> {
             checkSequentialQueryResult(ctx, res, currentIter, orderCheckCounter);
-            ps.close().onComplete(ctx.asyncAssertSuccess(v -> {
+            ps.close(ctx.asyncAssertSuccess(v -> {
               latch.countDown();
             }));
           }));

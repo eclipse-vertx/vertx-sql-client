@@ -64,7 +64,7 @@ public class UnixDomainSocketTest {
   @After
   public void after(TestContext ctx) {
     if (client != null) {
-      client.close().onComplete(ctx.asyncAssertSuccess());
+      client.close(ctx.asyncAssertSuccess());
     }
   }
 

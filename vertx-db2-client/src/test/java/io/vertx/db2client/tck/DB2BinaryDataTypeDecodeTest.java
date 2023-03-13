@@ -73,8 +73,7 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 1")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result -> {
+        .execute(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals((short) 1, row.getValue(0));

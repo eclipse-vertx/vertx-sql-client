@@ -95,7 +95,7 @@ public abstract class DriverTestBase {
       Async async = ctx.async();
       Pool pool = fact.apply(vertx);
       pool.getConnection(ctx.asyncAssertSuccess(ar -> {
-        ar.close().onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+        ar.close(ctx.asyncAssertSuccess(v -> async.complete()));
       }));
       async.await(20_000);
     } finally {
@@ -108,7 +108,7 @@ public abstract class DriverTestBase {
     try {
       Async async = ctx.async();
       pool.getConnection(ctx.asyncAssertSuccess(ar -> {
-        ar.close().onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+        ar.close(ctx.asyncAssertSuccess(v -> async.complete()));
       }));
       async.await(20_000);
     } finally {

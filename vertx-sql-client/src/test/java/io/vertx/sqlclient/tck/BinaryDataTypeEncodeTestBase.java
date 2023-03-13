@@ -113,13 +113,11 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
                 .addValue(null)
                 .addValue(null)
                 .addValue(null)
-                .addValue(null))
-            .onComplete(
+                .addValue(null),
                 ctx.asyncAssertSuccess(updateResult -> {
             conn
               .preparedQuery("SELECT * FROM basicdatatype WHERE id = 2")
-              .execute()
-              .onComplete(ctx.asyncAssertSuccess(result -> {
+              .execute(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               Row row = result.iterator().next();
               ctx.assertEquals(13, row.size());
@@ -141,12 +139,10 @@ public abstract class BinaryDataTypeEncodeTestBase extends DataTypeTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery(statement("UPDATE basicdatatype SET " + columnName + " = ", " WHERE id = 2"))
-        .execute(Tuple.tuple().addValue(expected))
-        .onComplete(ctx.asyncAssertSuccess(updateResult -> {
+        .execute(Tuple.tuple().addValue(expected), ctx.asyncAssertSuccess(updateResult -> {
         conn
           .preparedQuery("SELECT " + columnName + " FROM basicdatatype WHERE id = 2")
-          .execute()
-          .onComplete(ctx.asyncAssertSuccess(result -> {
+          .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ctx.assertEquals(1, row.size());

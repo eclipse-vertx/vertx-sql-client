@@ -18,12 +18,12 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeName(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"CharacterDataType\" SET \"Name\" = upper($1) WHERE \"id\" = $2 RETURNING \"Name\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CharacterDataType\" SET \"Name\" = upper($1) WHERE \"id\" = $2 RETURNING \"Name\"",
         ctx.asyncAssertSuccess(p -> {
-          p.query()
-            .execute(Tuple.tuple().addString("vert.x").addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+            .addString("vert.x")
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -46,12 +46,12 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeChar(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"CharacterDataType\" SET \"SingleChar\" = upper($1) WHERE \"id\" = $2 RETURNING \"SingleChar\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CharacterDataType\" SET \"SingleChar\" = upper($1) WHERE \"id\" = $2 RETURNING \"SingleChar\"",
         ctx.asyncAssertSuccess(p -> {
-          p.query()
-            .execute(Tuple.tuple().addString("b").addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+            .addString("b")
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -74,12 +74,12 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeFixedChar(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"CharacterDataType\" SET \"FixedChar\" = upper($1) WHERE \"id\" = $2 RETURNING \"FixedChar\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CharacterDataType\" SET \"FixedChar\" = upper($1) WHERE \"id\" = $2 RETURNING \"FixedChar\"",
         ctx.asyncAssertSuccess(p -> {
-          p.query()
-            .execute(Tuple.tuple().addString("no").addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+            .addString("no")
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -102,12 +102,12 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeText(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"CharacterDataType\" SET \"Text\" = upper($1) WHERE \"id\" = $2 RETURNING \"Text\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CharacterDataType\" SET \"Text\" = upper($1) WHERE \"id\" = $2 RETURNING \"Text\"",
         ctx.asyncAssertSuccess(p -> {
-          p.query()
-            .execute(Tuple.tuple().addString("Hello World").addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+            .addString("Hello World")
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -130,12 +130,12 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeVarCharacter(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"CharacterDataType\" SET \"VarCharacter\" = upper($1) WHERE \"id\" = $2 RETURNING \"VarCharacter\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CharacterDataType\" SET \"VarCharacter\" = upper($1) WHERE \"id\" = $2 RETURNING \"VarCharacter\"",
         ctx.asyncAssertSuccess(p -> {
-          p.query()
-            .execute(Tuple.tuple().addString("Great!").addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+            .addString("Great!")
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -159,12 +159,10 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
     }
     String value = builder.toString();
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT $1::VARCHAR(" + len + ")").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1::VARCHAR(" + len + ")",
         ctx.asyncAssertSuccess(p -> {
-          p.query()
-            .execute(Tuple.of(value))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.of(value), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(value, result.iterator().next().getString(0));
             async.complete();
           }));
@@ -180,12 +178,13 @@ public class CharacterTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecT
   @Test
   public void testEncodeStringArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Text\" = $1  WHERE \"id\" = $2 RETURNING \"Text\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Text\" = $1  WHERE \"id\" = $2 RETURNING \"Text\"",
         ctx.asyncAssertSuccess(p -> {
-          p.query()
-            .execute(Tuple.tuple().addArrayOfString(new String[]{"Knock, knock.Who’s there?"}).addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+              .addArrayOfString(new String[]{"Knock, knock.Who’s there?"})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Text")
                 .returns(Tuple::getValue, Row::getValue, new String[]{"Knock, knock.Who’s there?"})
                 .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{"Knock, knock.Who’s there?"})

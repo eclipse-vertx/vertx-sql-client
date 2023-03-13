@@ -46,9 +46,9 @@ public abstract class MSSQLEncryptionTestBase {
   @After
   public void tearDown(TestContext ctx) {
     if (connection != null) {
-      connection.close().onComplete(ctx.asyncAssertSuccess());
+      connection.close(ctx.asyncAssertSuccess());
     }
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   protected void connect(Handler<AsyncResult<MSSQLConnection>> handler) {
@@ -68,8 +68,7 @@ public abstract class MSSQLEncryptionTestBase {
   private void asyncAssertConnectionEncrypted(TestContext ctx, boolean expected) {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT encrypt_option FROM sys.dm_exec_connections WHERE session_id = @@SPID")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(rows -> {
+        .execute(ctx.asyncAssertSuccess(rows -> {
           ctx.assertEquals(1, rows.size());
           Row row = rows.iterator().next();
           String encryptOption = row.getString("encrypt_option");

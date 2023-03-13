@@ -13,12 +13,13 @@ public class CustomTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
   public void testEncodeCustomType(TestContext ctx) {
     Async async = ctx.async();
     String actual = "('Othercity',\" 'Second Ave'\",f)";
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"CustomDataType\" SET \"address\" = $1  WHERE \"id\" = $2 RETURNING \"address\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CustomDataType\" SET \"address\" = $1  WHERE \"id\" = $2 RETURNING \"address\"",
         ctx.asyncAssertSuccess(p -> {
-          p.query()
-            .execute(Tuple.tuple().addString("('Othercity', 'Second Ave', false)").addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+              .addString("('Othercity', 'Second Ave', false)")
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();

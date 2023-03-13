@@ -57,7 +57,7 @@ public abstract class DB2TestBase {
   @After
   public void tearDown(TestContext ctx) {
     connector.close();
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   protected void initConnector() {

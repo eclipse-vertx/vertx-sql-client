@@ -65,7 +65,7 @@ public abstract class SimpleQueryTestBase {
   @After
   public void tearDown(TestContext ctx) {
     connector.close();
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test

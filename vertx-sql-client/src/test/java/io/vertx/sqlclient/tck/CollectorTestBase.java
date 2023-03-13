@@ -50,7 +50,7 @@ public abstract class CollectorTestBase {
   @After
   public void tearDown(TestContext ctx) {
     connector.close();
-    vertx.close().onComplete(ctx.asyncAssertSuccess());
+    vertx.close(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -72,8 +72,7 @@ public abstract class CollectorTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM collector_test WHERE id = 1")
         .collecting(collector)
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result -> {
+        .execute(ctx.asyncAssertSuccess(result -> {
         Map<Integer, TestingCollectorObject> map = result.value();
         TestingCollectorObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
@@ -101,8 +100,7 @@ public abstract class CollectorTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT * FROM collector_test WHERE id = 1")
         .collecting(collector)
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result -> {
+        .execute(ctx.asyncAssertSuccess(result -> {
         Map<Integer, TestingCollectorObject> map = result.value();
         TestingCollectorObject actual = map.get(1);
         ctx.assertEquals(expected, actual);
@@ -187,8 +185,7 @@ public abstract class CollectorTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT * FROM collector_test WHERE id = 1")
         .collecting(collector)
-        .execute()
-        .onComplete(ctx.asyncAssertFailure(result -> {
+        .execute(ctx.asyncAssertFailure(result -> {
         ctx.assertEquals(cause, result);
         conn.close();
       }));

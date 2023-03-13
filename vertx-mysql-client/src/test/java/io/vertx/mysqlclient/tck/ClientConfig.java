@@ -37,7 +37,7 @@ public enum ClientConfig {
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          MySQLConnection.connect(vertx, new MySQLConnectOptions(options)).onComplete(ar -> {
+          MySQLConnection.connect(vertx, new MySQLConnectOptions(options), ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {
@@ -60,7 +60,7 @@ public enum ClientConfig {
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {
-          pool.getConnection().onComplete(ar -> {
+          pool.getConnection(ar -> {
             if (ar.succeeded()) {
               handler.handle(Future.succeededFuture(ar.result()));
             } else {

@@ -20,13 +20,13 @@ public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBas
   @Test
   public void testEncodeUUID(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"CharacterDataType\" SET \"uuid\" = $1 WHERE \"id\" = $2 RETURNING \"uuid\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"CharacterDataType\" SET \"uuid\" = $1 WHERE \"id\" = $2 RETURNING \"uuid\"",
         ctx.asyncAssertSuccess(p -> {
           UUID uuid = UUID.fromString("92b53cf1-2ad0-49f9-be9d-ca48966e43ee");
-          p.query()
-            .execute(Tuple.tuple().addUUID(uuid).addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+            .addUUID(uuid)
+            .addInteger(2), ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -48,13 +48,14 @@ public class UUIDTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBas
   @Test
   public void testEncodeUUIDArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"UUID\" = $1  WHERE \"id\" = $2 RETURNING \"UUID\"").onComplete(
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"UUID\" = $1  WHERE \"id\" = $2 RETURNING \"UUID\"",
         ctx.asyncAssertSuccess(p -> {
           final UUID uuid = UUID.fromString("6f790482-b5bd-438b-a8b7-4a0bed747011");
-          p.query()
-            .execute(Tuple.tuple().addArrayOfUUID(new UUID[]{uuid}).addInteger(2))
-            .onComplete(ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.tuple()
+              .addArrayOfUUID(new UUID[]{uuid})
+              .addInteger(2)
+            , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "UUID")
                 .returns(Tuple::getValue, Row::getValue, new UUID[]{uuid})
                 .returns(Tuple::getArrayOfUUIDs, Row::getArrayOfUUIDs, new UUID[]{uuid})

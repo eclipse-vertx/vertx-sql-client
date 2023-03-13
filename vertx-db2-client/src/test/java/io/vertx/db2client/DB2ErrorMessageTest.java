@@ -31,7 +31,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   @Test
   public void testConnectInvalidDatabase(TestContext ctx) {
     options.setDatabase("DB_DOES_NOT_EXIST");
-    DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(err -> {
+    DB2Connection.connect(vertx, options, ctx.asyncAssertFailure(err -> {
       if (err instanceof DB2Exception) {
         DB2Exception ex = (DB2Exception) err;
         assertContains(ctx, ex.getMessage(), "provided was not found", "The connection was closed by the database server");
@@ -48,7 +48,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   @Test
   public void testConnectInvalidUsername(TestContext ctx) {
     options.setUser("INVALID_USER_FOR_TESTING");
-    DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(err -> {
+    DB2Connection.connect(vertx, options, ctx.asyncAssertFailure(err -> {
       ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
       DB2Exception ex = (DB2Exception) err;
       assertContains(ctx, ex.getMessage(), "Invalid credentials");
@@ -60,7 +60,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   @Test
   public void testConnectInvalidPassword(TestContext ctx) {
     options.setPassword("INVALID_PASSWORD_FOR_TESTING");
-    DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(err -> {
+    DB2Connection.connect(vertx, options, ctx.asyncAssertFailure(err -> {
       ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
       DB2Exception ex = (DB2Exception) err;
       assertContains(ctx, ex.getMessage(), "Invalid credentials");
@@ -108,7 +108,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   @Test
   // This should cause sqlCode=-104 sqlState=42601 to be returned from the server
   public void testQueryBlankTable(TestContext ctx) {
-    DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, message FROM ").execute(ctx.asyncAssertFailure(err -> {
         ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
         DB2Exception ex = (DB2Exception) err;
@@ -122,7 +122,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   @Test
   // This should cause sqlCode=-204 sqlState=42704 to be returned from the server
   public void testInvalidTableQuery(TestContext ctx) {
-    DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT id, message FROM TABLE_DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(err -> {
         ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
         DB2Exception ex = (DB2Exception) err;
@@ -136,7 +136,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   @Test
   // This should cause sqlCode=-206 sqlState=42703 to be returned from the server
   public void testInvalidColumnQuery(TestContext ctx) {
-    DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT INVALID_COLUMN FROM immutable").execute(ctx.asyncAssertFailure(err -> {
         ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
         DB2Exception ex = (DB2Exception) err;
@@ -150,7 +150,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   @Test
   // This should cause sqlCode=-104 sqlState=42601 to be returned from the server
   public void testInvalidQuery(TestContext ctx) {
-    DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.query("KJHDKJAHDQWEUWHQDDA:SHDL:KASHDJ").execute(ctx.asyncAssertFailure(err -> {
         ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
         DB2Exception ex = (DB2Exception) err;
@@ -167,7 +167,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
    */
   @Test
   public void testMismatchingInsertedColumns(TestContext ctx) {
-      DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
         conn.query("INSERT INTO basicdatatype (id, test_int_2) VALUES (99,24,25)").execute(ctx.asyncAssertFailure(err -> {
             ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
             DB2Exception ex = (DB2Exception) err;
@@ -183,7 +183,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
    */
   @Test
     public void testRepeatedColumnReference(TestContext ctx) {
-      DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
         conn.query("INSERT INTO basicdatatype (id, test_int_2, test_int_2) VALUES (99,24,25)").execute(ctx.asyncAssertFailure(err -> {
             ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
             DB2Exception ex = (DB2Exception) err;
@@ -200,7 +200,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
    */
     @Test
     public void testAmbiguousColumnName(TestContext ctx) {
-      DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
         conn.query("SELECT immutable.id AS IMM_ID," +
             "Fortune.id AS FORT_ID," +
             "message FROM immutable " +
@@ -220,7 +220,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
      */
     @Test
     public void testDuplicateKeys(TestContext ctx) {
-      DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
         conn.query("INSERT INTO immutable (id, message) VALUES (1, 'a duplicate key')").execute(ctx.asyncAssertFailure(err -> {
             ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
             DB2Exception ex = (DB2Exception) err;
@@ -237,7 +237,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
      */
     @Test
     public void testCreateTableNullPrimaryKey(TestContext ctx) {
-      DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
         conn.query("CREATE TABLE fruits (id INTEGER PRIMARY KEY, name VARCHAR(50) NOT NULL)").execute(ctx.asyncAssertFailure(err -> {
             ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
             DB2Exception ex = (DB2Exception) err;
@@ -254,7 +254,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
      */
     @Test
     public void testInsertIntoGeneratedAlwaysColumn(TestContext ctx) {
-      DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
         conn.query("INSERT INTO Fortune (id,message) VALUES (25, 'hello world')").execute(ctx.asyncAssertFailure(err -> {
             ctx.assertTrue(err instanceof DB2Exception, "The error message returned is of the wrong type.  It should be a DB2Exception, but it was of type " + err.getClass().getSimpleName());
             DB2Exception ex = (DB2Exception) err;
@@ -266,7 +266,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
 
     @Test
     public void testDuplicateObject(TestContext ctx) {
-      DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
         conn.query("CREATE TABLE Fortune (\n" +
             "  id       integer       NOT NULL GENERATED AS IDENTITY (START WITH 1, INCREMENT BY 1),\n" +
             "  message  varchar(2048),\n" +
@@ -287,7 +287,7 @@ public class DB2ErrorMessageTest extends DB2TestBase {
   //During the 60 second wait call 'docker kill <container_id>', docker stop will end gracefully, so it has to be docker kill.
   //@Test
     public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
-      DB2Connection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn1 -> {
+      DB2Connection.connect(vertx, options, ctx.asyncAssertSuccess(conn1 -> {
         conn1.query("CALL dbms_alert.sleep(60)").execute(ctx.asyncAssertFailure(t -> {
           ctx.assertEquals("Failed to read any response from the server, the underlying connection may have been lost unexpectedly.", t.getMessage());
         }));

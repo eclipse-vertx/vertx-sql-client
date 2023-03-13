@@ -42,15 +42,9 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
 
   private void testDate(TestContext ctx, String value, LocalDate ld) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SET TIME ZONE 'UTC'")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(v -> {
-        conn
-          .query("SELECT '" + value + "'::DATE \"LocalDate\"")
-          .execute()
-          .onComplete(ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
+        conn.query("SELECT '" + value + "'::DATE \"LocalDate\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "LocalDate")
@@ -67,11 +61,9 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
   @Test
   public void testTime(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '17:55:04.905120'::TIME \"LocalTime\"")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '17:55:04.905120'::TIME \"LocalTime\"").execute(ctx.asyncAssertSuccess(result -> {
           LocalTime lt = LocalTime.parse("17:55:04.905120");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
@@ -88,11 +80,9 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
   @Test
   public void testTimeTz(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '17:55:04.90512+03:07'::TIMETZ \"OffsetTime\"")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '17:55:04.90512+03:07'::TIMETZ \"OffsetTime\"").execute(ctx.asyncAssertSuccess(result -> {
           OffsetTime ot = OffsetTime.parse("17:55:04.905120+03:07");
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
@@ -128,11 +118,9 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
 
   private void testTimestamp(TestContext ctx, String value, LocalDateTime expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT '" + value + "'::TIMESTAMP \"LocalDateTime\"")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT '" + value + "'::TIMESTAMP \"LocalDateTime\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "LocalDateTime")
@@ -169,15 +157,9 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
 
   private void testTimestampTz(TestContext ctx, String value, OffsetDateTime expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SET TIME ZONE 'UTC'")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(v -> {
-        conn
-          .query("SELECT '" + value + "'::TIMESTAMPTZ \"OffsetDateTime\"")
-          .execute()
-          .onComplete(ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SET TIME ZONE 'UTC'").execute(ctx.asyncAssertSuccess(v -> {
+        conn.query("SELECT '" + value + "'::TIMESTAMPTZ \"OffsetDateTime\"").execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "OffsetDateTime")
@@ -198,11 +180,9 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
   @Test
   public void testInterval(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("SELECT '10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL \"Interval\"")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT '10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL \"Interval\"")
+        .execute(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           Interval interval = Interval.of()
