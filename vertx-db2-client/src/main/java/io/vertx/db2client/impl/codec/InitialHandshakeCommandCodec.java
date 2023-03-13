@@ -115,7 +115,6 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         connectRequest.completeCommand();
 
         int lenOfPayload = packet.writerIndex() - packetStartIdx;
-        System.out.println("packet length: " + lenOfPayload);
         sendPacket(packet, lenOfPayload);
         status = ConnectionState.AUTHENTICATING;
         break;
