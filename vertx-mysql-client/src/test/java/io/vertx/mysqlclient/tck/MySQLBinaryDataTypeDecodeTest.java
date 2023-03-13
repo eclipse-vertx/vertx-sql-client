@@ -59,7 +59,10 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   @Override
   public void testBoolean(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
+      conn
+        .preparedQuery("SELECT test_boolean FROM basicdatatype WHERE id = 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(true, row.getBoolean(0));
@@ -82,7 +85,8 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
   public void testSelectAll(TestContext ctx) {
   // MySQL TIME type is mapped to java.time.Duration so we need to override here
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-        conn.preparedQuery("SELECT " +
+        conn
+          .preparedQuery("SELECT " +
           "test_int_2," +
           "test_int_4," +
           "test_int_8," +
@@ -95,7 +99,9 @@ public class MySQLBinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase 
           "test_varchar," +
           "test_date," +
           "test_time " +
-          "from basicdatatype where id = 1").execute(ctx.asyncAssertSuccess(result -> {
+          "from basicdatatype where id = 1")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ctx.assertEquals(12, row.size());

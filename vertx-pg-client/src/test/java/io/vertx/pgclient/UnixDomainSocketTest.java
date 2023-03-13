@@ -23,6 +23,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import org.junit.*;
 import org.junit.runner.RunWith;
@@ -64,7 +65,7 @@ public class UnixDomainSocketTest {
   @After
   public void after(TestContext ctx) {
     if (client != null) {
-      client.close(ctx.asyncAssertSuccess());
+      client.close().onComplete(ctx.asyncAssertSuccess());
     }
   }
 
@@ -73,14 +74,18 @@ public class UnixDomainSocketTest {
     assumeTrue(options.isUsingDomainSocket());
     String uri = "postgresql://postgres:postgres@/postgres?host=" + options.getHost() + "&port=" + options.getPort();
     client = PgPool.pool(uri);
-    client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
+    client
+      .getConnection()
+      .onComplete(context.asyncAssertSuccess(SqlClient::close));
   }
 
   @Test
   public void simpleConnect(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
     client = PgPool.pool(new PgConnectOptions(options), new PoolOptions());
-    client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close(context.asyncAssertSuccess())));
+    client
+      .getConnection()
+      .onComplete(context.asyncAssertSuccess(pgConnection -> pgConnection.close().onComplete(context.asyncAssertSuccess())));
   }
 
   @Test
@@ -90,7 +95,9 @@ public class UnixDomainSocketTest {
     try {
       client = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions());
       Async async = context.async();
-      client.getConnection(context.asyncAssertSuccess(pgConnection -> {
+      client
+        .getConnection()
+        .onComplete(context.asyncAssertSuccess(pgConnection -> {
         async.complete();
         pgConnection.close();
       }));
@@ -104,7 +111,9 @@ public class UnixDomainSocketTest {
   public void testIgnoreSslMode(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
     client = PgPool.pool(new PgConnectOptions(options).setSslMode(SslMode.REQUIRE), new PoolOptions());
-    client.getConnection(context.asyncAssertSuccess(pgConnection -> {
+    client
+      .getConnection()
+      .onComplete(context.asyncAssertSuccess(pgConnection -> {
       assertFalse(pgConnection.isSSL());
       pgConnection.close();
     }));

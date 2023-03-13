@@ -37,19 +37,31 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
   @Test
   public void testOneShotPreparedQueryCacheRefreshOnTableSchemaChange(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options(), ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT * FROM unstable WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertSuccess(res1 -> {
+    PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT * FROM unstable WHERE id=$1")
+        .execute(Tuple.of(1))
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertEquals(1, res1.size());
         Tuple row1 = res1.iterator().next();
         ctx.assertEquals(1, row1.getInteger(0));
         ctx.assertEquals("fortune: No such file or directory", row1.getString(1));
 
         // change table schema
-        conn.query("ALTER TABLE unstable DROP COLUMN message").execute(ctx.asyncAssertSuccess(dropColumn -> {
+        conn
+          .query("ALTER TABLE unstable DROP COLUMN message")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(dropColumn -> {
           // failure due to schema change
-          conn.preparedQuery("SELECT * FROM unstable WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertFailure(failure -> {
+          conn
+            .preparedQuery("SELECT * FROM unstable WHERE id=$1")
+            .execute(Tuple.of(1))
+            .onComplete(ctx.asyncAssertFailure(failure -> {
             // recover because the cache is refreshed
-            conn.preparedQuery("SELECT * FROM unstable WHERE id=$1").execute(Tuple.of(1), ctx.asyncAssertSuccess(res2 -> {
+            conn
+              .preparedQuery("SELECT * FROM unstable WHERE id=$1")
+              .execute(Tuple.of(1))
+              .onComplete(ctx.asyncAssertSuccess(res2 -> {
               ctx.assertEquals(1, res2.size());
               Tuple row2 = res2.iterator().next();
               ctx.assertEquals(1, row2.getInteger(0));
@@ -83,20 +95,29 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
 
   private void testPreparedStatements(TestContext ctx, PgConnectOptions options, int num, int expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res1 -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT * FROM pg_prepared_statements")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         ctx.assertEquals(0, res1.size());
         AtomicInteger count = new AtomicInteger(num);
         for (int i = 0;i < num;i++) {
           int val = i;
-          conn.preparedQuery("SELECT " + i).execute(Tuple.tuple(), ctx.asyncAssertSuccess(res2 -> {
+          conn
+            .preparedQuery("SELECT " + i)
+            .execute(Tuple.tuple())
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals(1, res2.size());
             ctx.assertEquals(val, res2.iterator().next().getInteger(0));
             if (count.decrementAndGet() == 0) {
               ctx.assertEquals(num - 1, val);
-              conn.query("SELECT * FROM pg_prepared_statements").execute(ctx.asyncAssertSuccess(res3 -> {
+              conn
+                .query("SELECT * FROM pg_prepared_statements")
+                .execute()
+                .onComplete(ctx.asyncAssertSuccess(res3 -> {
                 ctx.assertEquals(expected, res3.size());
-                conn.close(ctx.asyncAssertSuccess(v -> {
+                conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
                   async.complete();
                 }));
               }));

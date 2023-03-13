@@ -22,10 +22,12 @@ public class BinaryDataTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     byte[] bytes = new byte[len];
     r.nextBytes(bytes);
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT $1::BYTEA \"Bytea\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1::BYTEA \"Bytea\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.of(Buffer.buffer(bytes)), ctx.asyncAssertSuccess(result -> {
+          p.query()
+            .execute(Tuple.of(Buffer.buffer(bytes)))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Bytea")
               .returns(Tuple::getValue, Row::getValue, Buffer.buffer(bytes))
               .<Buffer>returns(Tuple::getBuffer, Row::getBuffer, buffer -> {
@@ -46,10 +48,10 @@ public class BinaryDataTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     byte[] bytes = new byte[len];
     r.nextBytes(bytes);
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT ARRAY[$1::BYTEA] \"Bytea\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT ARRAY[$1::BYTEA] \"Bytea\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.of(Buffer.buffer(bytes)), ctx.asyncAssertSuccess(result -> {
+          p.query().execute(Tuple.of(Buffer.buffer(bytes))).onComplete(ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Bytea")
               .returns(Tuple::getValue, Row::getValue, new Buffer[]{Buffer.buffer(bytes)})
               .returns(Tuple::getArrayOfBuffers, Row::getArrayOfBuffers, new Buffer[]{Buffer.buffer(bytes)})

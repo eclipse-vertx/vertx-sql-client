@@ -37,15 +37,15 @@ public class MSSQLMultipleTdsPacketsTest extends MSSQLTestBase {
   public void setup(TestContext ctx) {
     vertx = Vertx.vertx();
     options = new MSSQLConnectOptions(MSSQLTestBase.options);
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> this.connection = conn));
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> this.connection = conn));
   }
 
   @After
   public void tearDown(TestContext ctx) {
     if (connection != null) {
-      connection.close(ctx.asyncAssertSuccess());
+      connection.close().onComplete(ctx.asyncAssertSuccess());
     }
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -54,9 +54,9 @@ public class MSSQLMultipleTdsPacketsTest extends MSSQLTestBase {
       .mapToObj(i -> Tuple.of(UUID.randomUUID().toString()))
       .collect(toList());
     connection.query("TRUNCATE TABLE EntityWithIdentity")
-      .execute(ctx.asyncAssertSuccess(truncate -> {
+      .execute().onComplete(ctx.asyncAssertSuccess(truncate -> {
         connection.preparedQuery("INSERT INTO EntityWithIdentity (name) OUTPUT INSERTED.id, INSERTED.name VALUES (@p1)")
-          .executeBatch(batch, ctx.asyncAssertSuccess(result -> {
+          .executeBatch(batch).onComplete(ctx.asyncAssertSuccess(result -> {
             for (Tuple tuple : batch) {
               Row row = result.iterator().next();
               ctx.assertNotNull(row.getInteger("id"));

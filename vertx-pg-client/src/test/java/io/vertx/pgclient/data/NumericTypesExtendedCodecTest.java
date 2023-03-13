@@ -15,10 +15,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeInt2(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT $1 :: INT2 \"Short\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1 :: INT2 \"Short\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple().addShort((short) 32767), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple().addShort((short) 32767))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -41,10 +44,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeInt2(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"NumericDataType\" SET \"Short\" = $1 WHERE \"id\" = $2 RETURNING \"Short\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"NumericDataType\" SET \"Short\" = $1 WHERE \"id\" = $2 RETURNING \"Short\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.of(Short.MIN_VALUE, 2), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.of(Short.MIN_VALUE, 2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -67,10 +73,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeInt4(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT $1 :: INT4 \"Integer\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1 :: INT4 \"Integer\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple().addInteger(Integer.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple().addInteger(Integer.MAX_VALUE))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -93,13 +102,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeInt4(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"NumericDataType\" SET \"Integer\" = $1 WHERE \"id\" = $2 RETURNING \"Integer\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"NumericDataType\" SET \"Integer\" = $1 WHERE \"id\" = $2 RETURNING \"Integer\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addInteger(Integer.MIN_VALUE)
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
@@ -122,10 +133,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeInt8(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT $1 :: INT8 \"Long\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1 :: INT8 \"Long\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple().addLong(Long.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple().addLong(Long.MAX_VALUE))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -148,13 +162,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeInt8(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"NumericDataType\" SET \"Long\" = $1 WHERE \"id\" = $2 RETURNING \"Long\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"NumericDataType\" SET \"Long\" = $1 WHERE \"id\" = $2 RETURNING \"Long\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addLong(Long.MIN_VALUE)
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
@@ -177,10 +193,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeFloat4(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT $1 :: FLOAT4\"Float\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1 :: FLOAT4\"Float\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple().addFloat(Float.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple().addFloat(Float.MAX_VALUE))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -203,13 +222,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeFloat4(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"NumericDataType\" SET \"Float\" = $1 WHERE \"id\" = $2 RETURNING \"Float\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"NumericDataType\" SET \"Float\" = $1 WHERE \"id\" = $2 RETURNING \"Float\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addFloat(Float.MIN_VALUE)
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
@@ -232,10 +253,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeFloat8(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT $1 :: FLOAT8\"Double\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1 :: FLOAT8\"Double\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple().addDouble(Double.MAX_VALUE), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple().addDouble(Double.MAX_VALUE))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -258,13 +282,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeFloat8(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"NumericDataType\" SET \"Double\" = $1 WHERE \"id\" = $2 RETURNING \"Double\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"NumericDataType\" SET \"Double\" = $1 WHERE \"id\" = $2 RETURNING \"Double\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addDouble(Double.MIN_VALUE)
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
@@ -287,10 +313,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeSerial2(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"SmallSerial\" FROM \"NumericDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"SmallSerial\" FROM \"NumericDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.of(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.of(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -313,10 +342,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeSerial2(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"NumericDataType\" SET \"SmallSerial\" = $1 WHERE \"id\" = $2 RETURNING \"SmallSerial\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"NumericDataType\" SET \"SmallSerial\" = $1 WHERE \"id\" = $2 RETURNING \"SmallSerial\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.of(Short.MIN_VALUE, 2), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.of(Short.MIN_VALUE, 2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -339,10 +371,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeSerial4(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Serial\" FROM \"NumericDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Serial\" FROM \"NumericDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple().addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -365,13 +400,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeSerial4(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"NumericDataType\" SET \"Serial\" = $1 WHERE \"id\" = $2 RETURNING \"Serial\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"NumericDataType\" SET \"Serial\" = $1 WHERE \"id\" = $2 RETURNING \"Serial\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addInteger(Integer.MIN_VALUE)
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
@@ -394,10 +431,13 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeSerial8(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"BigSerial\" FROM \"NumericDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"BigSerial\" FROM \"NumericDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple().addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple().addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             ctx.assertEquals(1, result.rowCount());
             Row row = result.iterator().next();
@@ -420,13 +460,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeSerial8(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"NumericDataType\" SET \"BigSerial\" = $1 WHERE \"id\" = $2 RETURNING \"BigSerial\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"NumericDataType\" SET \"BigSerial\" = $1 WHERE \"id\" = $2 RETURNING \"BigSerial\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addLong(Long.MIN_VALUE)
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ctx.assertEquals(1, result.size());
               ctx.assertEquals(1, result.rowCount());
               Row row = result.iterator().next();
@@ -501,11 +543,14 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeShortArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Short\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Short\" FROM \"ArrayDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple()
+            .addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Short")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{1}))
               .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{1}))
@@ -524,13 +569,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeShortArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Short\" = $1  WHERE \"id\" = $2 RETURNING \"Short\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Short\" = $1  WHERE \"id\" = $2 RETURNING \"Short\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addArrayOfShort(new Short[]{2, 3, 4})
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Short")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new short[]{2, 3, 4}))
                 .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{2, 3, 4}))
@@ -549,11 +596,14 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeIntArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Integer\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Integer\" FROM \"ArrayDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple()
+            .addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Integer")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{2}))
               .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{2}))
@@ -572,13 +622,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeIntArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"",
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Integer\" = $1  WHERE \"id\" = $2 RETURNING \"Integer\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addArrayOfInteger(new Integer[]{3, 4, 5, 6})
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Integer")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new int[]{3, 4, 5, 6}))
                 .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{3, 4, 5, 6}))
@@ -597,11 +649,14 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeLongArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Long\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Long\" FROM \"ArrayDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple()
+            .addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Long")
               .returns(Tuple::getValue, Row::getValue, new Long[]{3L})
               .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, new Short[]{(short)3})
@@ -620,13 +675,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeLongArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Long\" = $1  WHERE \"id\" = $2 RETURNING \"Long\"",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Long\" = $1  WHERE \"id\" = $2 RETURNING \"Long\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addArrayOfLong(new Long[]{4L, 5L, 6L, 7L, 8L})
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Long")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new long[]{4, 5, 6, 7, 8}))
                 .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{4, 5, 6, 7, 8}))
@@ -645,11 +702,14 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeFloatArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Float\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Float\" FROM \"ArrayDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple()
+            .addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Float")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{4.1f}))
               .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{(short)4.1f}))
@@ -668,13 +728,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeFloatArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Float\" = $1  WHERE \"id\" = $2 RETURNING \"Float\"",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Float\" = $1  WHERE \"id\" = $2 RETURNING \"Float\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addArrayOfFloat(new Float[]{5.2f, 5.3f, 5.4f})
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Float")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new float[]{5.2f, 5.3f, 5.4f}))
                 .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{(short)5.2f, (short)5.3f, (short)5.4f}))
@@ -693,11 +755,14 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeDoubleArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Double\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Double\" FROM \"ArrayDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple()
+            .addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ColumnChecker.checkColumn(0, "Double")
               .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{5.2}))
               .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{(short)5}))
@@ -716,13 +781,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeDoubleArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addArrayOfDouble(new Double[]{6.3})
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Double")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{6.3}))
                 .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{(short)6.3}))
@@ -741,13 +808,15 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeEmptyArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Double\" = $1  WHERE \"id\" = $2 RETURNING \"Double\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addArrayOfDouble(new Double[]{})
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Double")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new double[]{}))
                 .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, ColumnChecker.toObjectArray(new short[]{}))
@@ -766,11 +835,14 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testDecodeNumericArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT \"Numeric\" FROM \"ArrayDataType\" WHERE \"id\" = $1",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT \"Numeric\" FROM \"ArrayDataType\" WHERE \"id\" = $1").onComplete(
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
-            .addInteger(1), ctx.asyncAssertSuccess(result -> {
+          p
+            .query()
+            .execute(Tuple.tuple()
+            .addInteger(1))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             Numeric[] expected = {
               Numeric.create(0),
               Numeric.create(1),
@@ -795,17 +867,19 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   @Test
   public void testEncodeNumericArray(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Numeric\" = $1  WHERE \"id\" = $2 RETURNING \"Numeric\"",
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("UPDATE \"ArrayDataType\" SET \"Numeric\" = $1  WHERE \"id\" = $2 RETURNING \"Numeric\"").onComplete(
         ctx.asyncAssertSuccess(p -> {
           Numeric[] expected = {
             Numeric.create(0),
             Numeric.create(10000),
           };
-          p.query().execute(Tuple.tuple()
+          p
+            .query()
+            .execute(Tuple.tuple()
               .addValue(expected)
-              .addInteger(2)
-            , ctx.asyncAssertSuccess(result -> {
+              .addInteger(2))
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Numeric")
                 .returns(Tuple::getValue, Row::getValue, expected)
                 .returns(Tuple::getArrayOfShorts, Row::getArrayOfShorts, new Short[]{expected[0].shortValue(), expected[1].shortValue()})

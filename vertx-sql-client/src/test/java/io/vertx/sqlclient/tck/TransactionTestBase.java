@@ -51,10 +51,14 @@ public abstract class TransactionTestBase {
   protected void initConnector() {
     connector = handler -> {
       Pool pool = getPool();
-      pool.getConnection(ar1 -> {
+      pool
+        .getConnection()
+        .onComplete(ar1 -> {
         if (ar1.succeeded()) {
           SqlConnection conn = ar1.result();
-          conn.begin(ar2 -> {
+          conn
+            .begin()
+            .onComplete(ar2 -> {
             if (ar2.succeeded()) {
               Transaction tx = ar2.result();
               tx.completion().onComplete(ar3 -> {
@@ -85,13 +89,16 @@ public abstract class TransactionTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected void cleanTestTable(TestContext ctx) {
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("TRUNCATE TABLE mutable").execute(ctx.asyncAssertSuccess(result -> {
-        res.tx.commit(ctx.asyncAssertSuccess());
+      res.client
+        .query("TRUNCATE TABLE mutable")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
+        res.tx.commit().onComplete(ctx.asyncAssertSuccess());
       }));
     }));
   }
@@ -100,11 +107,18 @@ public abstract class TransactionTestBase {
   public void testReleaseConnectionOnCommit(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(result -> {
+      res.client
+        .query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-        res.tx.commit(ctx.asyncAssertSuccess(v1 -> {
+        res.tx
+          .commit()
+          .onComplete(ctx.asyncAssertSuccess(v1 -> {
           // Try acquire a connection
-          pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
+          pool
+            .getConnection()
+            .onComplete(ctx.asyncAssertSuccess(v2 -> {
             async.complete();
           }));
         }));
@@ -117,11 +131,18 @@ public abstract class TransactionTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
       res.tx.completion().onComplete(ctx.asyncAssertFailure(err -> ctx.assertEquals(TransactionRollbackException.INSTANCE, err)));
-      res.client.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ctx.asyncAssertSuccess(result -> {
+      res.client
+        .query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-        res.tx.rollback(ctx.asyncAssertSuccess(v1 -> {
+        res.tx
+          .rollback()
+          .onComplete(ctx.asyncAssertSuccess(v1 -> {
           // Try acquire a connection
-          pool.getConnection(ctx.asyncAssertSuccess(v2 -> {
+          pool
+            .getConnection()
+            .onComplete(ctx.asyncAssertSuccess(v2 -> {
             async.complete();
           }));
         }));
@@ -133,11 +154,18 @@ public abstract class TransactionTestBase {
   public void testCommitWithPreparedQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.preparedQuery(statement("INSERT INTO mutable (id, val) VALUES (", ",", ")"))
-        .execute(Tuple.of(13, "test message1"), ctx.asyncAssertSuccess(result -> {
+      res.client
+        .preparedQuery(statement("INSERT INTO mutable (id, val) VALUES (", ",", ")"))
+        .execute(Tuple.of(13, "test message1"))
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-          res.tx.commit(ctx.asyncAssertSuccess(v1 -> {
-            res.client.query("SELECT id, val from mutable where id = 13").execute(ctx.asyncAssertSuccess(rowSet -> {
+          res.tx
+            .commit()
+            .onComplete(ctx.asyncAssertSuccess(v1 -> {
+            res.client
+              .query("SELECT id, val from mutable where id = 13")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(13, row.getInteger("id"));
@@ -153,12 +181,18 @@ public abstract class TransactionTestBase {
   public void testCommitWithQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("INSERT INTO mutable (id, val) VALUES (14, 'test message2')")
-        .execute(ctx.asyncAssertSuccess(result -> {
+      res.client
+        .query("INSERT INTO mutable (id, val) VALUES (14, 'test message2')")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-          res.tx.commit(ctx.asyncAssertSuccess(v1 -> {
-          res.client.query("SELECT id, val from mutable where id = 14")
-            .execute(ctx.asyncAssertSuccess(rowSet -> {
+          res.tx
+            .commit()
+            .onComplete(ctx.asyncAssertSuccess(v1 -> {
+          res.client
+            .query("SELECT id, val from mutable where id = 14")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(14, row.getInteger("id"));
@@ -174,12 +208,18 @@ public abstract class TransactionTestBase {
   public void testRollbackData(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("UPDATE immutable SET message = 'roll me back' WHERE id = 7")
-        .execute(ctx.asyncAssertSuccess(result -> {
+      res.client
+        .query("UPDATE immutable SET message = 'roll me back' WHERE id = 7")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
-          res.tx.rollback(ctx.asyncAssertSuccess(v1 -> {
-          res.client.query("SELECT id, message from immutable where id = 7")
-            .execute(ctx.asyncAssertSuccess(rowSet -> {
+          res.tx
+            .rollback()
+            .onComplete(ctx.asyncAssertSuccess(v1 -> {
+          res.client
+            .query("SELECT id, message from immutable where id = 7")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(rowSet -> {
             ctx.assertEquals(1, rowSet.size());
             Row row = rowSet.iterator().next();
             ctx.assertEquals(7, row.getInteger("id"));
@@ -196,23 +236,33 @@ public abstract class TransactionTestBase {
     Pool nonTxPool = nonTxPool();
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("INSERT INTO mutable (id, val) VALUES (15, 'wait for it...')")
-        .execute(ctx.asyncAssertSuccess(result -> {
+      res.client
+        .query("INSERT INTO mutable (id, val) VALUES (15, 'wait for it...')")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.rowCount());
         // Should find the data within the same transaction
-          res.client.query("SELECT id, val from mutable WHERE id = 15")
-          .execute(ctx.asyncAssertSuccess(txRows -> {
+          res.client
+            .query("SELECT id, val from mutable WHERE id = 15")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(txRows -> {
           ctx.assertEquals(1, txRows.size());
           Row r = txRows.iterator().next();
           ctx.assertEquals(15, r.getInteger("id"));
           ctx.assertEquals("wait for it...", r.getString("val"));
           // Should NOT find the data from outside of the transaction
-          nonTxPool.query("SELECT id, val from mutable WHERE id = 15")
-            .execute(ctx.asyncAssertSuccess(notFound -> {
+          nonTxPool
+            .query("SELECT id, val from mutable WHERE id = 15")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(notFound -> {
             ctx.assertEquals(0, notFound.size());
-              res.tx.commit(ctx.asyncAssertSuccess(nonTxRows -> {
-              nonTxPool.query("SELECT id, val from mutable WHERE id = 15")
-                .execute(ctx.asyncAssertSuccess(nonTxFound -> {
+              res.tx
+                .commit()
+                .onComplete(ctx.asyncAssertSuccess(nonTxRows -> {
+              nonTxPool
+                .query("SELECT id, val from mutable WHERE id = 15")
+                .execute()
+                .onComplete(ctx.asyncAssertSuccess(nonTxFound -> {
                 // After commiting the transaction, the data should be visible from other connections
                 ctx.assertEquals(1, nonTxFound.size());
                 Row nonTxRow = nonTxFound.iterator().next();
@@ -231,10 +281,17 @@ public abstract class TransactionTestBase {
   public void testFailureWithPendingQueries(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(v -> {
+      res.client
+        .query("SELECT whatever from DOES_NOT_EXIST")
+        .execute()
+        .onComplete(ctx.asyncAssertFailure(v -> {
       }));
-      res.client.query("SELECT id, val FROM mutable").execute(ctx.asyncAssertSuccess(err -> {
-        res.tx.commit(ctx.asyncAssertSuccess(v -> {
+      res.client
+        .query("SELECT id, val FROM mutable")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(err -> {
+        res.tx.commit()
+          .onComplete(ctx.asyncAssertSuccess(v -> {
           async.complete();
         }));
       }));
@@ -256,7 +313,8 @@ public abstract class TransactionTestBase {
       .onComplete(ctx.asyncAssertSuccess(v -> {
         pool
           .query("SELECT id, val FROM mutable")
-          .execute(ctx.asyncAssertSuccess(rows -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(rows -> {
             ctx.assertEquals(2, rows.size());
             async.complete();
         }));
@@ -278,7 +336,8 @@ public abstract class TransactionTestBase {
         ctx.assertEquals(failure, err);
         pool
           .query("SELECT id, val FROM mutable")
-          .execute(ctx.asyncAssertSuccess(rows -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(rows -> {
             ctx.assertEquals(0, rows.size());
             async.complete();
           }));
@@ -302,7 +361,8 @@ public abstract class TransactionTestBase {
       ctx.assertEquals(err, failure.get());
       pool
         .query("SELECT id, val FROM mutable")
-        .execute(ctx.asyncAssertSuccess(rows -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rows -> {
           ctx.assertEquals(0, rows.size());
           async.complete();
         }));
@@ -322,7 +382,8 @@ public abstract class TransactionTestBase {
         c.query("INSERT INTO mutable (id, val) VALUES (3, 'hello-3')").execute().mapEmpty())
     ).onComplete(ctx.asyncAssertSuccess(v -> pool
       .query("SELECT id, val FROM mutable")
-      .execute(ctx.asyncAssertSuccess(rows -> {
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(3, rows.size());
         ctx.assertNull(Vertx.currentContext().getLocal("propagatable_connection"));
         async.complete();
@@ -342,7 +403,8 @@ public abstract class TransactionTestBase {
             v -> Future.failedFuture(failure)))
       ).onComplete(ctx.asyncAssertFailure(v -> pool
         .query("SELECT id, val FROM mutable")
-        .execute(ctx.asyncAssertSuccess(rows -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rows -> {
           ctx.assertEquals(0, rows.size());
           ctx.assertNull(Vertx.currentContext().getLocal("propagatable_connection"));
           async.complete();

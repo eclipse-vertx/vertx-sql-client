@@ -33,7 +33,7 @@ public class MySQLAuthenticationPluginTest extends MySQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -67,8 +67,11 @@ public class MySQLAuthenticationPluginTest extends MySQLTestBase {
   }
 
   private void verifyConnection(TestContext ctx, MySQLConnectOptions connectOptions) {
-    MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT 1;").execute(ctx.asyncAssertSuccess(res -> {
+    MySQLConnection.connect(vertx, connectOptions).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT 1;")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         Row row = res.iterator().next();
         ctx.assertEquals(1, row.size());
         ctx.assertEquals(1, row.getInteger(0));

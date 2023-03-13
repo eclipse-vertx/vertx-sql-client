@@ -131,11 +131,20 @@ public class JsonBinaryCodecTest extends JsonDataTypeTest {
 
   @Test
   public void testDecodeJsonUsingTable(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE json_test(test_json JSON);").execute(ctx.asyncAssertSuccess(c -> {
-        conn.query("INSERT INTO json_test VALUE ('{\"phrase\": \"à tout à l''heure\"}');\n" +
-          "INSERT INTO json_test VALUE ('{\"emoji\": \"\uD83D\uDE00\uD83E\uDD23\uD83D\uDE0A\uD83D\uDE07\uD83D\uDE33\uD83D\uDE31\"}');").execute(ctx.asyncAssertSuccess(i -> {
-          conn.preparedQuery("SELECT test_json FROM json_test").execute(ctx.asyncAssertSuccess(res -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("CREATE TEMPORARY TABLE json_test(test_json JSON);")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(c -> {
+        conn
+          .query("INSERT INTO json_test VALUE ('{\"phrase\": \"à tout à l''heure\"}');\n" +
+          "INSERT INTO json_test VALUE ('{\"emoji\": \"\uD83D\uDE00\uD83E\uDD23\uD83D\uDE0A\uD83D\uDE07\uD83D\uDE33\uD83D\uDE31\"}');")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(i -> {
+          conn
+            .preparedQuery("SELECT test_json FROM json_test")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res -> {
             ctx.assertEquals(2, res.size());
             RowIterator<Row> iterator = res.iterator();
             Row row1 = iterator.next();
@@ -158,8 +167,11 @@ public class JsonBinaryCodecTest extends JsonDataTypeTest {
 
   @Override
   protected void testDecodeJson(TestContext ctx, String script, Object expected, Consumer<Row> checker) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(script).execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(script)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(expected, row.getValue(0));
@@ -179,10 +191,19 @@ public class JsonBinaryCodecTest extends JsonDataTypeTest {
   }
 
   private void testEncodeJson(TestContext ctx, Tuple params, Object expected, Consumer<Row> checker, String insertScript) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(CREATE_TABLE).execute(ctx.asyncAssertSuccess(createTable -> {
-        conn.preparedQuery(insertScript).execute(params, ctx.asyncAssertSuccess(insert -> {
-          conn.preparedQuery(QUERY_JSON).execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(CREATE_TABLE)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(createTable -> {
+        conn
+          .preparedQuery(insertScript)
+          .execute(params)
+          .onComplete(ctx.asyncAssertSuccess(insert -> {
+          conn
+            .preparedQuery(QUERY_JSON)
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             Row row = result.iterator().next();
             ctx.assertEquals(expected, row.getValue(0));

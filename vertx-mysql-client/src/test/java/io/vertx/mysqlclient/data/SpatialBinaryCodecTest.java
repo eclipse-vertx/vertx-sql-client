@@ -188,8 +188,11 @@ public class SpatialBinaryCodecTest extends SpatialDataTypeCodecTestBase {
   }
 
   private void testBinaryEncodeGeometry(TestContext ctx, Object param, Consumer<RowSet<Row>> checker) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("SELECT ST_AsText(ST_GeomFromWKB(?)) AS test_geometry;").execute(Tuple.of(param), ctx.asyncAssertSuccess(res -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT ST_AsText(ST_GeomFromWKB(?)) AS test_geometry;")
+        .execute(Tuple.of(param))
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         checker.accept(res);
         conn.close();
       }));

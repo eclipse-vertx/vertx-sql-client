@@ -12,9 +12,11 @@ public class EnumeratedTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTest
   @Test
   public void testEnum(TestContext ctx) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT \"currentMood\" FROM \"EnumDataType\" WHERE \"id\" = 5").execute(ctx.asyncAssertSuccess(result -> {
+        .query("SELECT \"currentMood\" FROM \"EnumDataType\" WHERE \"id\" = 5")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(1, result.size());
           Row row = result.iterator().next();
           ColumnChecker.checkColumn(0, "currentMood")

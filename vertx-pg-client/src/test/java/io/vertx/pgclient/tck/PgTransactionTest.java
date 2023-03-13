@@ -64,10 +64,18 @@ public class PgTransactionTest extends TransactionTestBase {
   public void testFailureWithPendingQueries(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.client.query("SELECT whatever from DOES_NOT_EXIST").execute(ctx.asyncAssertFailure(v -> {
+      res.client
+        .query("SELECT whatever from DOES_NOT_EXIST")
+        .execute()
+        .onComplete(ctx.asyncAssertFailure(v -> {
       }));
-      res.client.query("SELECT id, val FROM mutable").execute(ctx.asyncAssertFailure(err -> {
-        res.tx.rollback(ctx.asyncAssertSuccess(v -> {
+      res.client
+        .query("SELECT id, val FROM mutable")
+        .execute()
+        .onComplete(ctx.asyncAssertFailure(err -> {
+        res.tx
+          .rollback()
+          .onComplete(ctx.asyncAssertSuccess(v -> {
           async.complete();
         }));
       }));

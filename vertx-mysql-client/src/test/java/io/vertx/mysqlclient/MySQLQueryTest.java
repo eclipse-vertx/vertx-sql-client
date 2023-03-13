@@ -43,7 +43,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
 
@@ -51,14 +51,23 @@ public class MySQLQueryTest extends MySQLTestBase {
   public void testLastInsertIdWithDefaultValue(TestContext ctx) {
     // Test with our own property
     PropertyKind<Long> property = PropertyKind.create("last-inserted-id", Long.class);
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(createTableResult -> {
         Long lastInsertId1 = createTableResult.property(property);
         ctx.assertNull(lastInsertId1);
-        conn.query("INSERT INTO last_insert_id(val) VALUES('test')").execute(ctx.asyncAssertSuccess(insertResult1 -> {
+        conn
+          .query("INSERT INTO last_insert_id(val) VALUES('test')")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(insertResult1 -> {
           Long lastInsertId2 = insertResult1.property(property);
           ctx.assertEquals(1L, lastInsertId2);
-          conn.query("INSERT INTO last_insert_id(val) VALUES('test2')").execute(ctx.asyncAssertSuccess(insertResult2 -> {
+          conn
+            .query("INSERT INTO last_insert_id(val) VALUES('test2')")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(insertResult2 -> {
             Long lastInsertId3 = insertResult2.property(property);
             ctx.assertEquals(2L, lastInsertId3);
             conn.close();
@@ -70,17 +79,29 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testLastInsertIdWithSpecifiedValue(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));").execute(ctx.asyncAssertSuccess(createTableResult -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("CREATE TEMPORARY TABLE last_insert_id(id INTEGER PRIMARY KEY AUTO_INCREMENT, val VARCHAR(20));")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(createTableResult -> {
         Long lastInsertId1 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
         ctx.assertNull(lastInsertId1);
-        conn.query("ALTER TABLE last_insert_id AUTO_INCREMENT=1234").execute(ctx.asyncAssertSuccess(alterTableResult -> {
+        conn
+          .query("ALTER TABLE last_insert_id AUTO_INCREMENT=1234")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(alterTableResult -> {
           Long lastInsertId2 = createTableResult.property(MySQLClient.LAST_INSERTED_ID);
           ctx.assertNull(lastInsertId2);
-          conn.query("INSERT INTO last_insert_id(val) VALUES('test')").execute(ctx.asyncAssertSuccess(insertResult1 -> {
+          conn
+            .query("INSERT INTO last_insert_id(val) VALUES('test')")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(insertResult1 -> {
             Long lastInsertId3 = insertResult1.property(MySQLClient.LAST_INSERTED_ID);
             ctx.assertEquals(1234L, lastInsertId3);
-            conn.query("INSERT INTO last_insert_id(val) VALUES('test2')").execute(ctx.asyncAssertSuccess(insertResult2 -> {
+            conn
+              .query("INSERT INTO last_insert_id(val) VALUES('test2')")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(insertResult2 -> {
               Long lastInsertId4 = insertResult2.property(MySQLClient.LAST_INSERTED_ID);
               ctx.assertEquals(1235L, lastInsertId4);
               conn.close();
@@ -94,9 +115,14 @@ public class MySQLQueryTest extends MySQLTestBase {
   @Test
   public void testCachePreparedStatementWithDifferentSql(TestContext ctx) {
     // we set the cache size to be the same with max_prepared_stmt_count
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)
-      .setPreparedStatementCacheMaxSize(1024), ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection
+      .connect(vertx, options.setCachePreparedStatements(true)
+      .setPreparedStatementCacheMaxSize(1024))
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
@@ -104,7 +130,10 @@ public class MySQLQueryTest extends MySQLTestBase {
         for (int i = 0; i < (1024 + 256); i++) {
           String value = "value-" + i;
           for (int j = 0; j < 2; j++) {
-            conn.preparedQuery("SELECT '" + value + "'").execute(ctx.asyncAssertSuccess(res2 -> {
+            conn
+              .preparedQuery("SELECT '" + value + "'")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(res2 -> {
               ctx.assertEquals(value, res2.iterator().next().getString(0));
             }));
           }
@@ -115,15 +144,21 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testCachePreparedStatementWithSameSql(TestContext ctx) {
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
         ctx.assertEquals(1024, maxPreparedStatementCount);
 
         for (int i = 0; i < 2000; i++) {
-          conn.preparedQuery("SELECT 'test'").execute(ctx.asyncAssertSuccess(res2 -> {
+          conn
+            .preparedQuery("SELECT 'test'")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("test", res2.iterator().next().getString(0));
           }));
         }
@@ -133,8 +168,11 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testCachePreparedStatementBatchWithSameSql(TestContext ctx) {
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true), ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(true)).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
@@ -145,7 +183,10 @@ public class MySQLQueryTest extends MySQLTestBase {
           List<Tuple> tuples = new ArrayList<>();
           tuples.add(Tuple.of(val));
           tuples.add(Tuple.of(val + 1));
-          conn.preparedQuery("Select cast(? AS CHAR)").executeBatch(tuples, ctx.asyncAssertSuccess(res2 -> {
+          conn
+            .preparedQuery("Select cast(? AS CHAR)")
+            .executeBatch(tuples)
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             String v1 = res2.iterator().next().getString(0);
             String v2 = res2.next().iterator().next().getString(0);
             ctx.assertEquals("" + val, v1);
@@ -158,8 +199,11 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testAutoClosingNonCacheOneShotPreparedQueryStatement(TestContext ctx) {
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false)).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         Row row = res1.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
@@ -167,7 +211,10 @@ public class MySQLQueryTest extends MySQLTestBase {
 
         for (int i = 0; i < 2000; i++) {
           // if we don't close the statement automatically in the codec, the statement handles would leak and raise an statement limit error
-          conn.preparedQuery("SELECT 'test'").execute(ctx.asyncAssertSuccess(res2 -> {
+          conn
+            .preparedQuery("SELECT 'test'")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("test", res2.iterator().next().getString(0));
           }));
         }
@@ -177,8 +224,11 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testAutoClosingNonCacheOneShotPreparedBatchStatement(TestContext ctx) {
-    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false), ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'").execute(ctx.asyncAssertSuccess(res0 -> {
+    MySQLConnection.connect(vertx, options.setCachePreparedStatements(false)).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SHOW VARIABLES LIKE 'max_prepared_stmt_count'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res0 -> {
         Row row = res0.iterator().next();
         int maxPreparedStatementCount = Integer.parseInt(row.getString(1));
         ctx.assertEquals("max_prepared_stmt_count", row.getString(0));
@@ -187,7 +237,10 @@ public class MySQLQueryTest extends MySQLTestBase {
         for (int i = 0; i < 2000; i++) {
           // if we don't close the statement automatically in the codec, the statement handles would leak and raise an statement limit error
           List<Tuple> params = Arrays.asList(Tuple.of(1), Tuple.of(2), Tuple.of(3));
-          conn.preparedQuery("SELECT CAST(? AS CHAR)").executeBatch(params, ctx.asyncAssertSuccess(res1 -> {
+          conn
+            .preparedQuery("SELECT CAST(? AS CHAR)")
+            .executeBatch(params)
+            .onComplete(ctx.asyncAssertSuccess(res1 -> {
             ctx.assertEquals("1", res1.iterator().next().getString(0));
             RowSet<Row> res2 = res1.next();
             ctx.assertEquals("2", res2.iterator().next().getString(0));
@@ -207,8 +260,11 @@ public class MySQLQueryTest extends MySQLTestBase {
     }
     String expected = sb.toString();
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT REPEAT('abcde', 4000000)").execute(ctx.asyncAssertSuccess(rowSet -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT REPEAT('abcde', 4000000)")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Row row = rowSet.iterator().next();
         ctx.assertTrue(row.getString(0).getBytes().length > 0xFFFFFF);
@@ -228,9 +284,15 @@ public class MySQLQueryTest extends MySQLTestBase {
     Buffer buffer = Buffer.buffer(data);
     ctx.assertTrue(buffer.length() > 0xFFFFFF);
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("UPDATE datatype SET `LongBlob` = ? WHERE id = 2").execute(Tuple.of(buffer), ctx.asyncAssertSuccess(v -> {
-        conn.preparedQuery("SELECT id, `LongBlob` FROM datatype WHERE id = 2").execute(ctx.asyncAssertSuccess(rowSet -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("UPDATE datatype SET `LongBlob` = ? WHERE id = 2")
+        .execute(Tuple.of(buffer))
+        .onComplete(ctx.asyncAssertSuccess(v -> {
+        conn
+          .preparedQuery("SELECT id, `LongBlob` FROM datatype WHERE id = 2")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(rowSet -> {
           Row row = rowSet.iterator().next();
           ctx.assertEquals(2, row.getInteger(0));
           ctx.assertEquals(2, row.getInteger("id"));
@@ -254,12 +316,25 @@ public class MySQLQueryTest extends MySQLTestBase {
         .appendString("Whistler,Gwen,bird,NULL,1997-12-09,NULL")
         .appendString("\n");
     }
-    fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
-      fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
-        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-          conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
-            conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
-              conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {
+    fileSystem
+      .createTempFile(null, null)
+      .onComplete(ctx.asyncAssertSuccess(filename -> {
+      fileSystem
+        .writeFile(filename, fileData)
+        .onComplete(ctx.asyncAssertSuccess(write -> {
+        MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+          conn
+            .query("TRUNCATE TABLE localinfile")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(cleanup -> {
+            conn
+              .query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(v -> {
+              conn
+                .query("SELECT * FROM localinfile")
+                .execute()
+                .onComplete(ctx.asyncAssertSuccess(rowSet -> {
                 ctx.assertEquals(30000, rowSet.size());
                 RowIterator<Row> iterator = rowSet.iterator();
                 for (int i = 0; i < 10000; i++) {
@@ -298,12 +373,25 @@ public class MySQLQueryTest extends MySQLTestBase {
   public void testLocalInfileRequestEmptyFile(TestContext ctx) {
     FileSystem fileSystem = vertx.fileSystem();
     Buffer fileData = Buffer.buffer();
-    fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
-      fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
-        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-          conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
-            conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
-              conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {
+    fileSystem
+      .createTempFile(null, null)
+      .onComplete(ctx.asyncAssertSuccess(filename -> {
+      fileSystem
+        .writeFile(filename, fileData)
+        .onComplete(ctx.asyncAssertSuccess(write -> {
+        MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+          conn
+            .query("TRUNCATE TABLE localinfile")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(cleanup -> {
+            conn
+              .query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(v -> {
+              conn
+                .query("SELECT * FROM localinfile")
+                .execute()
+                .onComplete(ctx.asyncAssertSuccess(rowSet -> {
                 ctx.assertEquals(0, rowSet.size());
                 conn.close();
               }));
@@ -327,12 +415,25 @@ public class MySQLQueryTest extends MySQLTestBase {
         .appendString("\n");
     }
     ctx.assertTrue(fileData.length() > 0xFFFFFF);
-    fileSystem.createTempFile(null, null, ctx.asyncAssertSuccess(filename -> {
-      fileSystem.writeFile(filename, fileData, ctx.asyncAssertSuccess(write -> {
-        MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-          conn.query("TRUNCATE TABLE localinfile").execute(ctx.asyncAssertSuccess(cleanup -> {
-            conn.query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';").execute(ctx.asyncAssertSuccess(v -> {
-              conn.query("SELECT * FROM localinfile").execute(ctx.asyncAssertSuccess(rowSet -> {
+    fileSystem
+      .createTempFile(null, null)
+      .onComplete(ctx.asyncAssertSuccess(filename -> {
+      fileSystem
+        .writeFile(filename, fileData)
+        .onComplete(ctx.asyncAssertSuccess(write -> {
+        MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+          conn
+            .query("TRUNCATE TABLE localinfile")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(cleanup -> {
+            conn
+              .query("LOAD DATA LOCAL INFILE '" + filename + "' INTO TABLE localinfile FIELDS TERMINATED BY ',' ENCLOSED BY '\"' LINES TERMINATED BY '\\n';")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(v -> {
+              conn
+                .query("SELECT * FROM localinfile")
+                .execute()
+                .onComplete(ctx.asyncAssertSuccess(rowSet -> {
                 ctx.assertEquals(600000, rowSet.size());
                 RowIterator<Row> iterator = rowSet.iterator();
                 for (int i = 0; i < 200000; i++) {

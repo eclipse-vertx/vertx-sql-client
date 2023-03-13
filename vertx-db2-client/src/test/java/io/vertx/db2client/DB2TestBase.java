@@ -57,7 +57,7 @@ public abstract class DB2TestBase {
   @After
   public void tearDown(TestContext ctx) {
     connector.close();
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected void initConnector() {
@@ -71,7 +71,10 @@ public abstract class DB2TestBase {
 
   protected void cleanTestTable(TestContext ctx, String table) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("DELETE FROM " + table).execute(ctx.asyncAssertSuccess(result -> {
+      conn
+        .query("DELETE FROM " + table)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));

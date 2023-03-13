@@ -22,6 +22,6 @@ public class OracleGeneratedKeysTest extends OracleGeneratedKeysTestBase {
 
   @Override
   protected <T> void withSqlClient(Function<SqlClient, Future<T>> function, Handler<AsyncResult<T>> handler) {
-    pool.withConnection(function::apply, handler);
+    pool.withConnection(function::apply).onComplete(handler);
   }
 }

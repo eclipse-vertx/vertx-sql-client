@@ -35,8 +35,11 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                        ColumnChecker.SerializableBiFunction<Row, String, T> byNameGetter,
                                        T expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT '" + data + "' :: " + dataType + " \"" + columnName + "\"").execute(ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT '" + data + "' :: " + dataType + " \"" + columnName + "\"")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ColumnChecker.checkColumn(0, columnName)
@@ -75,10 +78,15 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                         String columnName,
                                         ColumnChecker checker) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'").execute(
-        ctx.asyncAssertSuccess(res -> {
-          conn.query("SELECT " + arrayData + " \"" + columnName + "\"").execute(ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SET TIME ZONE 'UTC'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
+          conn
+            .query("SELECT " + arrayData + " \"" + columnName + "\"")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(result -> {
             ctx.assertEquals(1, result.size());
             Row row = result.iterator().next();
             checker.forRow(row);
@@ -95,10 +103,16 @@ public abstract class SimpleQueryDataTypeCodecTestBase extends DataTypeTestBase 
                                         ColumnChecker.SerializableBiFunction<Row, String, Object> byNameGetter,
                                         Object... expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SET TIME ZONE 'UTC'").execute(
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SET TIME ZONE 'UTC'")
+        .execute()
+        .onComplete(
         ctx.asyncAssertSuccess(res -> {
-          conn.query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1").execute(
+          conn
+            .query("SELECT \"" + columnName + "\" FROM \"" + tableName + "\" WHERE \"id\" = 1")
+            .execute()
+            .onComplete(
             ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, columnName)
                 .returns(Tuple::getValue, Row::getValue, expected)

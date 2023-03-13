@@ -59,7 +59,7 @@ public class PgScramConnectionTest {
     options.setUser("saslscram");
     options.setPassword("saslscrampwd");
 
-    PgConnection.connect(vertx, options,
+    PgConnection.connect(vertx, options).onComplete(
         ctx.asyncAssertSuccess(ar -> {
           ctx.assertNotNull(ar);
           async.complete();
@@ -69,7 +69,7 @@ public class PgScramConnectionTest {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
 }

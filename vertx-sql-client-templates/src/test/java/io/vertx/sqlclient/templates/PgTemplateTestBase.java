@@ -59,7 +59,7 @@ public abstract class PgTemplateTestBase {
   public void setup(TestContext ctx) {
     vertx = Vertx.vertx();
     Async async = ctx.async();
-    PgConnection.connect(vertx, connectOptions(), ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, connectOptions()).onComplete(ctx.asyncAssertSuccess(conn -> {
       connection = conn;
       async.complete();
     }));
@@ -71,7 +71,7 @@ public abstract class PgTemplateTestBase {
     if (connection != null) {
       connection.close();
     }
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected <P, T, V> void testGet(TestContext ctx,
@@ -88,7 +88,9 @@ public abstract class PgTemplateTestBase {
       .forQuery(connection, "SELECT #{" + paramName + "} :: " + sqlType + " \"" + column + "\"")
       .mapFrom(paramsMapper)
       .mapTo(rowMapper);
-    template.execute(params, ctx.asyncAssertSuccess(result -> {
+    template
+      .execute(params)
+      .onComplete(ctx.asyncAssertSuccess(result -> {
       ctx.assertEquals(1, result.size());
       ctx.assertEquals(expected, extractor.apply(result.iterator().next()));
       async.complete();

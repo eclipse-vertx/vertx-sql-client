@@ -38,7 +38,7 @@ public class OracleBrokenPooledConnectionTest extends OracleTestBase {
   @After
   public void tearDown(TestContext ctx) throws Exception {
     if (pool != null) {
-      pool.close(ctx.asyncAssertSuccess());
+      pool.close().onComplete(ctx.asyncAssertSuccess());
     }
   }
 
@@ -52,13 +52,22 @@ public class OracleBrokenPooledConnectionTest extends OracleTestBase {
     });
     pool = OraclePool.pool(vertx, new OracleConnectOptions(options).setPort(8080), new PoolOptions().setMaxSize(1));
     proxy.listen(8080, options.getHost(), ctx.asyncAssertSuccess(listen -> {
-      pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(executed -> {
+      pool
+        .query("SELECT 1 FROM DUAL")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(executed -> {
         ProxyServer.Connection proxyConn1 = proxyConn.get();
         ctx.assertNotNull(proxyConn1);
         Async async = ctx.async();
         proxyConn1.clientCloseHandler(onClose1 -> {
-          pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertFailure(ignored -> {
-            pool.query("SELECT 1 FROM DUAL").execute(ar -> {
+          pool
+            .query("SELECT 1 FROM DUAL")
+            .execute()
+            .onComplete(ctx.asyncAssertFailure(ignored -> {
+            pool
+              .query("SELECT 1 FROM DUAL")
+              .execute()
+              .onComplete(ar -> {
               if (ar.succeeded()) {
                 async.complete();
               } else {

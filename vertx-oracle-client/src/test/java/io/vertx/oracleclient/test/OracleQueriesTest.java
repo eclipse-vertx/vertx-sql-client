@@ -48,7 +48,10 @@ public class OracleQueriesTest extends OracleTestBase {
 
   @Test
   public void testCurrentTimestampType(TestContext ctx) {
-    pool.query("SELECT CURRENT_TIMESTAMP FROM dual").execute(ctx.asyncAssertSuccess(rows -> {
+    pool
+      .query("SELECT CURRENT_TIMESTAMP FROM dual")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
       ctx.verify(v -> {
         assertEquals(1, rows.size());
         Object value = rows.iterator().next().getValue(0);
@@ -71,6 +74,6 @@ public class OracleQueriesTest extends OracleTestBase {
 
   @After
   public void tearDown(TestContext ctx) throws Exception {
-    pool.close(ctx.asyncAssertSuccess());
+    pool.close().onComplete(ctx.asyncAssertSuccess());
   }
 }

@@ -43,7 +43,8 @@ public abstract class PreparedQueryTestBase {
     for (int i = 0; i < 10; i++) {
       client
         .query("INSERT INTO mutable (id, val) VALUES (" + i + ", 'Whatever-" + i + "')")
-        .execute(ctx.asyncAssertSuccess(r1 -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
         if (count.incrementAndGet() == amount) {
           completionHandler.run();
@@ -75,13 +76,15 @@ public abstract class PreparedQueryTestBase {
   public void tearDown(TestContext ctx) {
     msgVerifier = null;
     connector.close();
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testPrepare(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare(statement("SELECT id, message from immutable where id=", ""), ctx.asyncAssertSuccess(result -> {
+      conn
+        .prepare(statement("SELECT id, message from immutable where id=", ""))
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));
@@ -90,7 +93,7 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPrepareError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT whatever from DOES_NOT_EXIST", ctx.asyncAssertFailure(error -> {
+      conn.prepare("SELECT whatever from DOES_NOT_EXIST").onComplete(ctx.asyncAssertFailure(error -> {
         if (msgVerifier != null) {
           msgVerifier.accept(error);
         }
@@ -103,7 +106,8 @@ public abstract class PreparedQueryTestBase {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""))
-        .execute(Tuple.of(1), ctx.asyncAssertSuccess(rowSet -> {
+        .execute(Tuple.of(1))
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Tuple row = rowSet.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
@@ -118,7 +122,8 @@ public abstract class PreparedQueryTestBase {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery(statement("SELECT * FROM immutable WHERE id=", ""))
-        .execute(Tuple.wrap(Arrays.asList(1)), ctx.asyncAssertSuccess(rowSet -> {
+        .execute(Tuple.wrap(Arrays.asList(1)))
+        .onComplete(ctx.asyncAssertSuccess(rowSet -> {
         ctx.assertEquals(1, rowSet.size());
         Tuple row = rowSet.iterator().next();
         ctx.assertEquals(1, row.getInteger(0));
@@ -131,8 +136,13 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedQueryParamCoercionTypeError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-        ps.query().execute(Tuple.of("1"), ctx.asyncAssertFailure(error -> {
+      conn
+        .prepare(statement("SELECT * FROM immutable WHERE id=", ""))
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
+        ps
+          .query()
+          .execute(Tuple.of("1"))
+          .onComplete(ctx.asyncAssertFailure(error -> {
           if (msgVerifier != null) {
             msgVerifier.accept(error);
           } else {
@@ -146,8 +156,13 @@ public abstract class PreparedQueryTestBase {
   @Test
   public void testPreparedQueryParamCoercionQuantityError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare(statement("SELECT * FROM immutable WHERE id=", ""), ctx.asyncAssertSuccess(ps -> {
-        ps.query().execute(Tuple.of(1, 2), ctx.asyncAssertFailure(error -> {
+      conn
+        .prepare(statement("SELECT * FROM immutable WHERE id=", ""))
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
+        ps
+          .query()
+          .execute(Tuple.of(1, 2))
+          .onComplete(ctx.asyncAssertFailure(error -> {
           if (msgVerifier != null) {
             msgVerifier.accept(error);
           } else {
@@ -163,15 +178,18 @@ public abstract class PreparedQueryTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')")
-        .execute(ctx.asyncAssertSuccess(r1 -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
         conn
           .preparedQuery("UPDATE mutable SET val = 'Rocks!' WHERE id = 2")
-          .execute(ctx.asyncAssertSuccess(res1 -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.rowCount());
           conn
             .preparedQuery("SELECT val FROM mutable WHERE id = 2")
-            .execute(ctx.asyncAssertSuccess(res2 -> {
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("Rocks!", res2.iterator().next().getValue(0));
             conn.close();
           }));
@@ -185,15 +203,18 @@ public abstract class PreparedQueryTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("INSERT INTO mutable (id, val) VALUES (2, 'Whatever')")
-        .execute(ctx.asyncAssertSuccess(r1 -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
         conn
           .preparedQuery(statement("UPDATE mutable SET val = ", " WHERE id = ", ""))
-          .execute(Tuple.of("Rocks Again!!", 2), ctx.asyncAssertSuccess(res1 -> {
+          .execute(Tuple.of("Rocks Again!!", 2))
+          .onComplete(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.rowCount());
           conn
             .preparedQuery(statement("SELECT val FROM mutable WHERE id = ", ""))
-            .execute(Tuple.of(2), ctx.asyncAssertSuccess(res2 -> {
+            .execute(Tuple.of(2))
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("Rocks Again!!", res2.iterator().next().getValue(0));
             conn.close();
           }));
@@ -207,8 +228,8 @@ public abstract class PreparedQueryTestBase {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery(
         statement("INSERT INTO mutable (val, id) VALUES (", ",", ")"))
-        .execute(Tuple.of(null, 1),
-        ctx.asyncAssertFailure(error -> {
+        .execute(Tuple.of(null, 1))
+        .onComplete(ctx.asyncAssertFailure(error -> {
           if (msgVerifier != null) {
             msgVerifier.accept(error);
           }
@@ -220,7 +241,10 @@ public abstract class PreparedQueryTestBase {
   private void testCursor(TestContext ctx, Handler<SqlConnection> test) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
       if (cursorRequiresTx()) {
-        conn.query("BEGIN").execute(ctx.asyncAssertSuccess(begin -> {
+        conn
+          .query("BEGIN")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(begin -> {
           test.handle(conn);
         }));
       } else {
@@ -234,13 +258,19 @@ public abstract class PreparedQueryTestBase {
   public void testQueryCursor(TestContext ctx) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare(statement("SELECT * FROM immutable WHERE id=", " OR id=", " OR id=", " OR id=", " OR id=", " OR id=", ""), ctx.asyncAssertSuccess(ps -> {
+      conn
+        .prepare(statement("SELECT * FROM immutable WHERE id=", " OR id=", " OR id=", " OR id=", " OR id=", " OR id=", ""))
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
         Cursor query = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
-        query.read(4, ctx.asyncAssertSuccess(result -> {
+        query
+          .read(4)
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertNotNull(result.columnsNames());
           ctx.assertEquals(4, result.size());
           ctx.assertTrue(query.hasMore());
-          query.read(4, ctx.asyncAssertSuccess(result2 -> {
+          query
+            .read(4)
+            .onComplete(ctx.asyncAssertSuccess(result2 -> {
             ctx.assertNotNull(result2.columnsNames());
             ctx.assertEquals(2, result2.size());
             ctx.assertFalse(query.hasMore());
@@ -255,13 +285,17 @@ public abstract class PreparedQueryTestBase {
   public void testQueryCloseCursor(TestContext ctx) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare(statement("SELECT * FROM immutable WHERE id="," OR id=", " OR id=", " OR id=", " OR id=", " OR id=",""), ctx.asyncAssertSuccess(ps -> {
+      conn
+        .prepare(statement("SELECT * FROM immutable WHERE id="," OR id=", " OR id=", " OR id=", " OR id=", " OR id=",""))
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
         Cursor cursor = ps.cursor(Tuple.of(1, 8, 4, 11, 2, 9));
-        cursor.read(4, ctx.asyncAssertSuccess(results -> {
+        cursor
+          .read(4)
+          .onComplete(ctx.asyncAssertSuccess(results -> {
           ctx.assertEquals(4, results.size());
-          cursor.close(ctx.asyncAssertSuccess(v1 -> {
+          cursor.close().onComplete(ctx.asyncAssertSuccess(v1 -> {
             ctx.assertTrue(cursor.isClosed());
-            ps.close(ctx.asyncAssertSuccess(v2 -> {
+            ps.close().onComplete(ctx.asyncAssertSuccess(v2 -> {
               async.complete();
             }));
           }));
@@ -274,7 +308,9 @@ public abstract class PreparedQueryTestBase {
   public void testQueryStreamCloseCursor(TestContext ctx) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare(statement("SELECT * FROM immutable WHERE id=", " OR id=", " OR id=", " OR id=", " OR id=", " OR id=", ""), ctx.asyncAssertSuccess(ps -> {
+      conn
+        .prepare(statement("SELECT * FROM immutable WHERE id=", " OR id=", " OR id=", " OR id=", " OR id=", " OR id=", ""))
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
         RowStream<Row> stream = ps.createStream(4, Tuple.of(1, 8, 4, 11, 2, 9));
         List<Row> rows = new ArrayList<>();
         stream.handler(row -> {
@@ -282,9 +318,9 @@ public abstract class PreparedQueryTestBase {
           if (rows.size() == 4) {
             Cursor cursor = ((RowStreamInternal) stream).cursor();
             ctx.assertFalse(cursor.isClosed());
-            stream.close(ctx.asyncAssertSuccess(v1 -> {
+            stream.close().onComplete(ctx.asyncAssertSuccess(v1 -> {
               ctx.assertTrue(cursor.isClosed());
-              ps.close(ctx.asyncAssertSuccess(v2 -> {
+              ps.close().onComplete(ctx.asyncAssertSuccess(v2 -> {
                 async.complete();
               }));
             }));
@@ -298,7 +334,7 @@ public abstract class PreparedQueryTestBase {
   public void testStreamQuery(TestContext ctx) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(ps -> {
         RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
         List<Tuple> rows = new ArrayList<>();
         AtomicInteger ended = new AtomicInteger();
@@ -330,7 +366,7 @@ public abstract class PreparedQueryTestBase {
   private void testStreamQueryPauseInBatch(TestContext ctx, Executor executor) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(ps -> {
         RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
         List<Tuple> rows = Collections.synchronizedList(new ArrayList<>());
         AtomicInteger ended = new AtomicInteger();
@@ -360,7 +396,7 @@ public abstract class PreparedQueryTestBase {
   public void testStreamQueryPauseResume(TestContext ctx) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
-      conn.prepare("SELECT * FROM immutable", ctx.asyncAssertSuccess(ps -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(ps -> {
         RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
         List<Tuple> rows = new ArrayList<>();
         AtomicInteger ended = new AtomicInteger();
@@ -379,7 +415,10 @@ public abstract class PreparedQueryTestBase {
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("TRUNCATE TABLE mutable").execute(ctx.asyncAssertSuccess(result -> {
+      conn
+        .preparedQuery("TRUNCATE TABLE mutable")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));

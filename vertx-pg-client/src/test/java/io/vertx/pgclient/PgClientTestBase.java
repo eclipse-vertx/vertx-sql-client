@@ -58,7 +58,7 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -75,8 +75,10 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
   public void testMultipleQuery(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT id, message from FORTUNE LIMIT 1;SELECT message, id from FORTUNE LIMIT 1")
-        .execute(ctx.asyncAssertSuccess(result1 -> {
+      conn
+        .query("SELECT id, message from FORTUNE LIMIT 1;SELECT message, id from FORTUNE LIMIT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(1, result1.size());
         ctx.assertEquals(Arrays.asList("id", "message"), result1.columnsNames());
         Tuple row1 = result1.iterator().next();
@@ -102,7 +104,8 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
       deleteFromTestTable(ctx, client, () -> {
         client
           .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
-          .execute(Tuple.of(14, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
+          .execute(Tuple.of(14, "SomeMessage"))
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(14, result.iterator().next().getInteger("id"));
           async.complete();
         }));
@@ -120,7 +123,8 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
           Tuple.of(15, "SomeMessage2"));
         client
           .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
-          .executeBatch(batch, ctx.asyncAssertSuccess(r1 -> {
+          .executeBatch(batch)
+          .onComplete(ctx.asyncAssertSuccess(r1 -> {
             ctx.assertEquals(14, r1.iterator().next().getInteger("id"));
             RowSet<Row> r2 = r1.next();
             ctx.assertEquals(15, r2.iterator().next().getInteger("id"));
@@ -136,11 +140,13 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
     connector.accept(ctx.asyncAssertSuccess(client -> {
       deleteFromTestTable(ctx, client, () -> {
         client.preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
-          .execute(Tuple.of(15, "SomeMessage"), ctx.asyncAssertSuccess(result -> {
+          .execute(Tuple.of(15, "SomeMessage"))
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(15, result.iterator().next().getInteger("id"));
           client
             .preparedQuery("INSERT INTO Test (id, val) VALUES ($1, $2) RETURNING id")
-            .execute(Tuple.of(15, "SomeMessage"), ctx.asyncAssertFailure(err -> {
+            .execute(Tuple.of(15, "SomeMessage"))
+            .onComplete(ctx.asyncAssertFailure(err -> {
               ctx.assertEquals("23505", ((PgException) err).getSqlState());
               async.complete();
             }));
@@ -184,7 +190,8 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
       batch.add(Tuple.tuple());
       conn
         .preparedQuery("SELECT count(id) FROM World")
-        .executeBatch(batch, ctx.asyncAssertSuccess(result -> {
+        .executeBatch(batch)
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(result.size(), result.next().size());
         async.complete();
       }));
@@ -214,12 +221,14 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn
         .query("BEGIN")
-        .execute(ctx.asyncAssertSuccess(result1 -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result1 -> {
         ctx.assertEquals(0, result1.size());
         ctx.assertNotNull(result1.iterator());
         conn
           .query("COMMIT")
-          .execute(ctx.asyncAssertSuccess(result2 -> {
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result2 -> {
           ctx.assertEquals(0, result2.size());
           async.complete();
         }));
@@ -231,12 +240,18 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
   public void testGrouping(TestContext ctx) {
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       ((SqlClientInternal)conn).group(client -> {
-        client.query("SHOW TIME ZONE").execute(ctx.asyncAssertSuccess(res -> {
+        client
+          .query("SHOW TIME ZONE")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res -> {
           ctx.assertEquals(1, res.size());
           Row row = res.iterator().next();
           ctx.assertEquals("PST8PDT", row.getString(0));
         }));
-        conn.query("SET TIME ZONE 'PST8PDT'").execute(ctx.asyncAssertSuccess());
+        conn
+          .query("SET TIME ZONE 'PST8PDT'")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess());
       });
     }));
   }

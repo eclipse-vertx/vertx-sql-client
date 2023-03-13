@@ -45,7 +45,10 @@ public class DB2PreparedQueryCachedTest extends PreparedQueryCachedTestBase {
   protected void cleanTestTable(TestContext ctx) {
       // use DELETE FROM because DB2 does not support TRUNCATE TABLE
       connect(ctx.asyncAssertSuccess(conn -> {
-          conn.query("DELETE FROM mutable").execute(ctx.asyncAssertSuccess(result -> {
+          conn
+            .query("DELETE FROM mutable")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(result -> {
               conn.close();
           }));
       }));

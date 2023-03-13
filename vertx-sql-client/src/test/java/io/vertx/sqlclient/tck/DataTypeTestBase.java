@@ -50,7 +50,7 @@ public abstract class DataTypeTestBase {
   @After
   public void tearDown(TestContext ctx) {
     connector.close();
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected void verifyTypeName(TestContext ctx, ColumnDescriptor columnDescriptor) {

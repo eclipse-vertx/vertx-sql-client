@@ -46,10 +46,12 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
 
   protected <T> void testGeneric(TestContext ctx, String sql, T[] expected, BiFunction<Row, Integer, T> getter) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       List<Tuple> batch = Stream.of(expected).map(Tuple::of).collect(Collectors.toList());
-      conn.preparedQuery(sql).executeBatch(batch,
-        ctx.asyncAssertSuccess(result -> {
+      conn
+        .preparedQuery(sql)
+        .executeBatch(batch)
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           for (T n : expected) {
             ctx.assertEquals(result.size(), 1);
             Iterator<Row> it = result.iterator();
@@ -66,9 +68,11 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
 
   protected <T> void testDecode(TestContext ctx, String sql, BiFunction<Row, Integer, T> getter, T... expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(sql).execute(
-        ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(sql)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(result.size(), 1);
           Iterator<Row> it = result.iterator();
           Row row = it.next();
@@ -84,9 +88,11 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
 
   protected <T> void testEncode(TestContext ctx, String sql, Tuple tuple, String... expected) {
     Async async = ctx.async();
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery(sql).execute(tuple,
-        ctx.asyncAssertSuccess(result -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(sql)
+        .execute(tuple)
+        .onComplete(ctx.asyncAssertSuccess(result -> {
           ctx.assertEquals(result.size(), 1);
           Iterator<Row> it = result.iterator();
           Row row = it.next();

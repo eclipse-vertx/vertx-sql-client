@@ -48,7 +48,10 @@ public abstract class PgTestBase {
   }
 
   static void deleteFromTestTable(TestContext ctx, SqlClient client, Runnable completionHandler) {
-    client.query("DELETE FROM Test").execute(ctx.asyncAssertSuccess(result -> completionHandler.run()));
+    client
+      .query("DELETE FROM Test")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(result -> completionHandler.run()));
   }
 
   static void insertIntoTestTable(TestContext ctx, SqlClient client, int amount, Runnable completionHandler) {
@@ -56,7 +59,8 @@ public abstract class PgTestBase {
     for (int i = 0;i < 10;i++) {
       client
         .query("INSERT INTO Test (id, val) VALUES (" + i + ", 'Whatever-" + i + "')")
-        .execute(ctx.asyncAssertSuccess(r1 -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(r1 -> {
         ctx.assertEquals(1, r1.rowCount());
         if (count.incrementAndGet() == amount) {
           completionHandler.run();

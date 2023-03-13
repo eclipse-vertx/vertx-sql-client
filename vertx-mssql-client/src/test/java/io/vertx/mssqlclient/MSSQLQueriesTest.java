@@ -50,35 +50,41 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   public void setup(TestContext ctx) {
     vertx = Vertx.vertx();
     options = new MSSQLConnectOptions(MSSQLTestBase.options);
-    MSSQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> this.connection = conn));
+    MSSQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> this.connection = conn));
   }
 
   @After
   public void tearDown(TestContext ctx) {
     if (connection != null) {
-      connection.close(ctx.asyncAssertSuccess());
+      connection.close().onComplete(ctx.asyncAssertSuccess());
     }
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
   public void testSimpleQueryOrderBy(TestContext ctx) {
-    connection.query("SELECT message FROM immutable ORDER BY message DESC")
-      .execute(ctx.asyncAssertSuccess(rs -> ctx.assertTrue(rs.size() > 1)));
+    connection
+      .query("SELECT message FROM immutable ORDER BY message DESC")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(rs -> ctx.assertTrue(rs.size() > 1)));
   }
 
   @Test
   public void testPreparedQueryOrderBy(TestContext ctx) {
-    connection.preparedQuery("SELECT message FROM immutable WHERE id BETWEEN @p1 AND @p2 ORDER BY message DESC")
-      .execute(Tuple.of(4, 9), ctx.asyncAssertSuccess(rs -> ctx.assertEquals(6, rs.size())));
+    connection
+      .preparedQuery("SELECT message FROM immutable WHERE id BETWEEN @p1 AND @p2 ORDER BY message DESC")
+      .execute(Tuple.of(4, 9))
+      .onComplete( ctx.asyncAssertSuccess(rs -> ctx.assertEquals(6, rs.size())));
   }
 
   @Test
   @Repeat(50)
   public void testQueryCurrentTimestamp(TestContext ctx) {
     LocalDateTime start = LocalDateTime.now(Clock.systemUTC());
-    connection.query("SELECT current_timestamp")
-      .execute(ctx.asyncAssertSuccess(rs -> {
+    connection
+      .query("SELECT current_timestamp")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(rs -> {
         Object value = rs.iterator().next().getValue(0);
         ctx.assertTrue(value instanceof LocalDateTime);
         LocalDateTime localDateTime = (LocalDateTime) value;
@@ -88,20 +94,28 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
 
   @Test
   public void testCreateTable(TestContext ctx) {
-    connection.query("drop table if exists Basic")
-      .execute(ctx.asyncAssertSuccess(drop -> {
-        connection.preparedQuery("create table Basic (id int, dessimal numeric(19,2), primary key (id))")
-          .execute(ctx.asyncAssertSuccess(create -> {
-            connection.preparedQuery("INSERT INTO Basic (id, dessimal) values (3, @p1)")
-              .execute(Tuple.of(NullValue.BigDecimal), ctx.asyncAssertSuccess());
+    connection
+      .query("drop table if exists Basic")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(drop -> {
+        connection
+          .preparedQuery("create table Basic (id int, dessimal numeric(19,2), primary key (id))")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(create -> {
+            connection
+              .preparedQuery("INSERT INTO Basic (id, dessimal) values (3, @p1)")
+              .execute(Tuple.of(NullValue.BigDecimal))
+              .onComplete(ctx.asyncAssertSuccess());
           }));
       }));
   }
 
   @Test
   public void testInsertReturning(TestContext ctx) {
-    connection.preparedQuery("insert into EntityWithIdentity (name) OUTPUT INSERTED.id, INSERTED.name VALUES (@p1)")
-      .execute(Tuple.of("John"), ctx.asyncAssertSuccess(result -> {
+    connection
+      .preparedQuery("insert into EntityWithIdentity (name) OUTPUT INSERTED.id, INSERTED.name VALUES (@p1)")
+      .execute(Tuple.of("John"))
+      .onComplete(ctx.asyncAssertSuccess(result -> {
         Row row = result.iterator().next();
         ctx.assertNotNull(row.getInteger("id"));
         ctx.assertEquals("John", row.getString("name"));
@@ -110,8 +124,10 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
 
   @Test
   public void testQueryNonExisting(TestContext ctx) {
-    connection.preparedQuery("DELETE FROM Fonky.Family")
-      .execute(Tuple.tuple(), ctx.asyncAssertFailure(t -> {
+    connection
+      .preparedQuery("DELETE FROM Fonky.Family")
+      .execute(Tuple.tuple())
+      .onComplete(ctx.asyncAssertFailure(t -> {
         ctx.verify(unused -> {
           assertThat(t, is(instanceOf(MSSQLException.class)));
         });
@@ -135,8 +151,10 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
       "FROM information_schema.columns\n" +
       "ORDER BY table_catalog, table_schema, table_name, column_name, ordinal_position";
 
-    connection.preparedQuery(sql)
-      .execute(Tuple.tuple(), ctx.asyncAssertSuccess(rows -> {
+    connection
+      .preparedQuery(sql)
+      .execute(Tuple.tuple())
+      .onComplete( ctx.asyncAssertSuccess(rows -> {
         ctx.assertTrue(rows.size() > 0);
       }));
   }
@@ -145,7 +163,9 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
   public void testExecuteStoredProcedure(TestContext ctx) {
     Async async = ctx.async();
     List<Row> rows = Collections.synchronizedList(new ArrayList<>());
-    connection.prepare("EXEC GetFortune", ctx.asyncAssertSuccess(ps -> {
+    connection
+      .prepare("EXEC GetFortune")
+      .onComplete(ctx.asyncAssertSuccess(ps -> {
       ps.createStream(2)
         .exceptionHandler(ctx::fail)
         .endHandler(v -> {

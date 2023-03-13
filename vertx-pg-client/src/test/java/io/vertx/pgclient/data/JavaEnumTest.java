@@ -34,10 +34,11 @@ public class JavaEnumTest extends ExtendedQueryDataTypeCodecTestBase {
   }
 
   private void testJavaEnumToColumn(TestContext ctx, String value, String sqlType) {
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT * FROM (VALUES (" + value + " :: " + sqlType + ")) AS t (c)")
-        .execute(ctx.asyncAssertSuccess(v -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(v -> {
           RowIterator<Row> it = v.iterator();
           ctx.assertTrue(it.hasNext());
           Row row = it.next();
@@ -67,10 +68,11 @@ public class JavaEnumTest extends ExtendedQueryDataTypeCodecTestBase {
   }
 
   private void testJavaEnumToArrayColumn(TestContext ctx, String value, String sqlType) {
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT * FROM (VALUES (" + value + " :: " + sqlType + ")) AS t (c)")
-        .execute(ctx.asyncAssertSuccess(v -> {
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(v -> {
           RowIterator<Row> it = v.iterator();
           ctx.assertTrue(it.hasNext());
           Row row = it.next();
@@ -112,10 +114,11 @@ public class JavaEnumTest extends ExtendedQueryDataTypeCodecTestBase {
   }
 
   private void testJavaEnumToParam(TestContext ctx, Object expected, String sqlType) {
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT $1 :: " + sqlType + " \"c\"")
-        .execute(Tuple.of(Mood.happy), ctx.asyncAssertSuccess(v -> {
+        .execute(Tuple.of(Mood.happy))
+        .onComplete(ctx.asyncAssertSuccess(v -> {
           RowIterator<Row> it = v.iterator();
           ctx.assertTrue(it.hasNext());
           Row row = it.next();
@@ -155,10 +158,11 @@ public class JavaEnumTest extends ExtendedQueryDataTypeCodecTestBase {
   }
 
   private void testJavaEnumToArrayParam(TestContext ctx, Object expected, String sqlType) {
-    PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery("SELECT $1 :: " + sqlType + " \"c\"")
-        .execute(Tuple.of(new Mood[]{Mood.happy}), ctx.asyncAssertSuccess(v -> {
+        .execute(Tuple.of(new Mood[]{Mood.happy}))
+        .onComplete(ctx.asyncAssertSuccess(v -> {
           RowIterator<Row> it = v.iterator();
           ctx.assertTrue(it.hasNext());
           Row row = it.next();

@@ -32,7 +32,10 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
 
   protected void cleanTestTable(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.query("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
+      conn
+        .query("TRUNCATE TABLE mutable;")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));
@@ -53,8 +56,11 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
   @Test
   public void testPrepareError(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT whatever FROM DOES_NOT_EXIST", ctx.asyncAssertSuccess(ps -> {
-        ps.query().execute(ctx.asyncAssertFailure(error -> {
+      conn.prepare("SELECT whatever FROM DOES_NOT_EXIST").onComplete(ctx.asyncAssertSuccess(ps -> {
+        ps
+          .query()
+          .execute()
+          .onComplete(ctx.asyncAssertFailure(error -> {
           ctx.assertTrue(error instanceof MSSQLException);
           MSSQLException e = (MSSQLException) error;
           ctx.assertEquals("Invalid object name 'DOES_NOT_EXIST'.", e.errorMessage());
@@ -83,7 +89,7 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
   public void failureWhenPreparingCursor(TestContext ctx) {
     Async async = ctx.async();
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT invalid_function()", ctx.asyncAssertSuccess(ps -> {
+      conn.prepare("SELECT invalid_function()").onComplete(ctx.asyncAssertSuccess(ps -> {
         ps.createStream(50)
           .exceptionHandler(error -> {
             ctx.assertTrue(error instanceof MSSQLException);

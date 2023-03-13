@@ -54,15 +54,18 @@ public class MySQLCollationTest extends MySQLTestBase {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
 
   @Test
   public void testConnectionCollation(TestContext ctx) {
     MySQLConnectOptions connectOptions = options.setCollation("gbk_chinese_ci");
-    MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'collation_connection';").execute(ctx.asyncAssertSuccess(res -> {
+    MySQLConnection.connect(vertx, connectOptions).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SHOW VARIABLES LIKE 'collation_connection';")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         Row row = res.iterator().next();
         ctx.assertEquals("gbk_chinese_ci", row.getString("Value"));
         conn.close();
@@ -73,10 +76,16 @@ public class MySQLCollationTest extends MySQLTestBase {
   @Test
   public void testConnectionCharset(TestContext ctx) {
     MySQLConnectOptions connectOptions = options.setCollation(null).setCharset("gbk");
-    MySQLConnection.connect(vertx, connectOptions, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SHOW VARIABLES LIKE 'collation_connection';").execute(ctx.asyncAssertSuccess(res -> {
+    MySQLConnection.connect(vertx, connectOptions).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SHOW VARIABLES LIKE 'collation_connection';")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals("gbk_chinese_ci", res.iterator().next().getString("Value"));
-        conn.query("SHOW VARIABLES LIKE 'character_set_connection';").execute(ctx.asyncAssertSuccess(res2 -> {
+        conn
+          .query("SHOW VARIABLES LIKE 'character_set_connection';")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res2 -> {
           ctx.assertEquals("gbk", res2.iterator().next().getString("Value"));
           conn.close();
         }));
@@ -127,8 +136,9 @@ public class MySQLCollationTest extends MySQLTestBase {
   @Test
   public void testEmoji(TestContext ctx) {
     // use these for tests 😀🤣😊😇😳😱👍🖐⚽
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("CREATE TEMPORARY TABLE emoji(\n" +
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("CREATE TEMPORARY TABLE emoji(\n" +
         "\tid INTEGER,\n" +
         "\texpression VARCHAR(10)\n" +
         ");\n" +
@@ -140,8 +150,13 @@ public class MySQLCollationTest extends MySQLTestBase {
         "INSERT INTO emoji VALUES (6, '\uD83D\uDE31');\n" +
         "INSERT INTO emoji VALUES (7, '\uD83D\uDC4D');\n" +
         "INSERT INTO emoji VALUES (8, '\uD83D\uDD90');\n" +
-        "INSERT INTO emoji VALUES (9, '\u26bd');").execute(ctx.asyncAssertSuccess(res0 -> {
-        conn.query("SELECT id, expression FROM emoji").execute(ctx.asyncAssertSuccess(res1 -> {
+        "INSERT INTO emoji VALUES (9, '\u26bd');")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res0 -> {
+        conn
+          .query("SELECT id, expression FROM emoji")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res1 -> {
           RowIterator<Row> iterator = res1.iterator();
           Row row1 = iterator.next();
           ctx.assertEquals(1, row1.getInteger("id"));
@@ -177,9 +192,14 @@ public class MySQLCollationTest extends MySQLTestBase {
   }
 
   private void testBinary(TestContext ctx, String prepareDataSql) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query(prepareDataSql).execute(ctx.asyncAssertSuccess(res0 -> {
-        conn.preparedQuery("SELECT id, city_name FROM chinese_city where city_name = ?").execute(Tuple.tuple().addString("\u5317\u4EAC"), ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query(prepareDataSql)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res0 -> {
+        conn.preparedQuery("SELECT id, city_name FROM chinese_city where city_name = ?")
+          .execute(Tuple.tuple().addString("\u5317\u4EAC"))
+          .onComplete(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(1, res1.size());
           Row row = res1.iterator().next();
           ctx.assertEquals(1, row.getInteger("id"));
@@ -191,9 +211,15 @@ public class MySQLCollationTest extends MySQLTestBase {
   }
 
   private void testText(TestContext ctx, String prepareDataSql) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query(prepareDataSql).execute(ctx.asyncAssertSuccess(res0 -> {
-        conn.query("SELECT id, city_name FROM chinese_city").execute(ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query(prepareDataSql)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res0 -> {
+        conn
+          .query("SELECT id, city_name FROM chinese_city")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(res1 -> {
           ctx.assertEquals(6, res1.size());
           RowIterator<Row> iterator = res1.iterator();
           Row row1 = iterator.next();

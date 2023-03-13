@@ -46,17 +46,18 @@ public class MSSQLClientExamples {
     // A simple query
     client
       .query("SELECT * FROM users WHERE id='julien'")
-      .execute(ar -> {
-      if (ar.succeeded()) {
-        RowSet result = ar.result();
-        System.out.println("Got " + result.size() + " rows ");
-      } else {
-        System.out.println("Failure: " + ar.cause().getMessage());
-      }
+      .execute()
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          RowSet<Row> result = ar.result();
+          System.out.println("Got " + result.size() + " rows ");
+        } else {
+          System.out.println("Failure: " + ar.cause().getMessage());
+        }
 
-      // Now close the pool
-      client.close();
-    });
+        // Now close the pool
+        client.close();
+      });
   }
 
   public void configureFromDataObject(Vertx vertx) {
@@ -75,9 +76,10 @@ public class MSSQLClientExamples {
     // Create the pool from the data object
     MSSQLPool pool = MSSQLPool.pool(vertx, connectOptions, poolOptions);
 
-    pool.getConnection(ar -> {
-      // Handling your connection
-    });
+    pool.getConnection()
+      .onComplete(ar -> {
+        // Handling your connection
+      });
   }
 
   public void configureFromUri(Vertx vertx) {
@@ -89,9 +91,10 @@ public class MSSQLClientExamples {
     MSSQLPool pool = MSSQLPool.pool(connectionUri);
 
     // Create the connection from the connection URI
-    MSSQLConnection.connect(vertx, connectionUri, res -> {
-      // Handling your connection
-    });
+    MSSQLConnection.connect(vertx, connectionUri)
+      .onComplete(res -> {
+        // Handling your connection
+      });
   }
 
   public void connecting01() {
@@ -195,7 +198,8 @@ public class MSSQLClientExamples {
     // Run the query with the collector
     client.query("SELECT * FROM users")
       .collecting(collector)
-      .execute(ar -> {
+      .execute()
+      .onComplete(ar -> {
         if (ar.succeeded()) {
           SqlResult<Map<Long, String>> result = ar.result();
 
@@ -219,7 +223,8 @@ public class MSSQLClientExamples {
     // Run the query with the collector
     client.query("SELECT * FROM users")
       .collecting(collector)
-      .execute(ar -> {
+      .execute()
+      .onComplete(ar -> {
         if (ar.succeeded()) {
           SqlResult<String> result = ar.result();
 
@@ -239,7 +244,8 @@ public class MSSQLClientExamples {
   public void enumeratedType01Example(SqlClient client) {
     client
       .preparedQuery("INSERT INTO colors VALUES (@p1)")
-      .execute(Tuple.of(Color.red),  res -> {
+      .execute(Tuple.of(Color.red))
+      .onComplete(res -> {
         // ...
       });
   }
@@ -265,7 +271,8 @@ public class MSSQLClientExamples {
       .addString(null);
     client
       .preparedQuery("INSERT INTO movies (id, title, plot) VALUES (@p1, @p2, @p3)")
-      .execute(tuple, res -> {
+      .execute(tuple)
+      .onComplete(res -> {
         // ...
       });
   }
@@ -274,7 +281,8 @@ public class MSSQLClientExamples {
     Tuple tuple = Tuple.of(17, "The Man Who Knew Too Much", NullValue.String);
     client
       .preparedQuery("INSERT INTO movies (id, title, plot) VALUES (@p1, @p2, @p3)")
-      .execute(tuple, res -> {
+      .execute(tuple)
+      .onComplete(res -> {
         // ...
       });
   }
@@ -282,7 +290,8 @@ public class MSSQLClientExamples {
   public void identityColumn(SqlClient client) {
     client
       .preparedQuery("INSERT INTO movies (title) OUTPUT INSERTED.id VALUES (@p1)")
-      .execute(Tuple.of("The Man Who Knew Too Much"), res -> {
+      .execute(Tuple.of("The Man Who Knew Too Much"))
+      .onComplete(res -> {
         if (res.succeeded()) {
           Row row = res.result().iterator().next();
           System.out.println(row.getLong("id"));

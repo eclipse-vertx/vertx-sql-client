@@ -64,7 +64,7 @@ public abstract class TracingTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   protected abstract Pool createPool(Vertx vertx);
@@ -125,9 +125,11 @@ public abstract class TracingTestBase {
     Async async = ctx.async();
     vertx.runOnContext(v1 -> {
       Context context = Vertx.currentContext();
-      pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      pool
+        .getConnection()
+        .onComplete(ctx.asyncAssertSuccess(conn -> {
         fn.apply(conn).onComplete(ctx.asyncAssertSuccess(v2 -> {
-          conn.close(ctx.asyncAssertSuccess(v3 -> {
+          conn.close().onComplete(ctx.asyncAssertSuccess(v3 -> {
             vertx.runOnContext(v4 -> {
               completed.await(2000);
               ctx.assertEquals(context, requestContext.get());
@@ -156,10 +158,13 @@ public abstract class TracingTestBase {
         completed.complete();
       }
     };
-    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery(statement("SELECT * FROM undefined_table WHERE id = ", ""))
-        .execute(Tuple.of(0), ctx.asyncAssertFailure(err -> {
+        .execute(Tuple.of(0))
+        .onComplete(ctx.asyncAssertFailure(err -> {
           conn.close();
         }));
     }));
@@ -183,14 +188,17 @@ public abstract class TracingTestBase {
       }
     };
     Async async = ctx.async();
-    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+    pool
+      .getConnection()
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .preparedQuery(sql)
         .mapping(row -> {
           throw failure;
         })
-        .execute(Tuple.of(1), ctx.asyncAssertFailure(err -> {
-          conn.close(ctx.asyncAssertSuccess(v1 -> {
+        .execute(Tuple.of(1))
+        .onComplete(ctx.asyncAssertFailure(err -> {
+          conn.close().onComplete(ctx.asyncAssertSuccess(v1 -> {
             vertx.runOnContext(v2 -> {
               completed.await(2000);
               ctx.assertEquals(1, called.get());

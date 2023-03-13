@@ -45,7 +45,9 @@ public class MySQLPooledConnectionTest extends MySQLTestBase {
       if (pool == null) {
         pool = MySQLPool.pool(vertx, options, new PoolOptions().setMaxSize(1));
       }
-      pool.getConnection(handler);
+      pool
+        .getConnection()
+        .onComplete(handler);
     };
   }
 
@@ -54,7 +56,7 @@ public class MySQLPooledConnectionTest extends MySQLTestBase {
     if (pool != null) {
       pool.close();
     }
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -66,17 +68,29 @@ public class MySQLPooledConnectionTest extends MySQLTestBase {
     connector.accept(ctx.asyncAssertSuccess(conn1 -> {
       deleteFromMutableTable(ctx, conn1, () -> {
         conn1.begin();
-        conn1.query("INSERT INTO mutable (id, val) VALUES (5, 'some-value')").execute(ctx.asyncAssertSuccess());
-        conn1.query(txnIdSql).execute(ctx.asyncAssertSuccess(result -> {
+        conn1
+          .query("INSERT INTO mutable (id, val) VALUES (5, 'some-value')")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess());
+        conn1
+          .query(txnIdSql)
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result -> {
           Object txid1 = result.iterator().next().getValue(0);
           conn1.close();
           // It will be the same connection
           connector.accept(ctx.asyncAssertSuccess(conn2 -> {
-            conn2.query("SELECT id FROM mutable WHERE id=5").execute(ctx.asyncAssertSuccess(result2 -> {
+            conn2
+              .query("SELECT id FROM mutable WHERE id=5")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(result2 -> {
               ctx.assertEquals(0, result2.size());
               done.countDown();
             }));
-            conn2.query(txnIdSql).execute(ctx.asyncAssertSuccess(result2 -> {
+            conn2
+              .query(txnIdSql)
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(result2 -> {
               Object txid2 = result.iterator().next().getValue(0);
               ctx.assertEquals(txid1, txid2);
               done.countDown();

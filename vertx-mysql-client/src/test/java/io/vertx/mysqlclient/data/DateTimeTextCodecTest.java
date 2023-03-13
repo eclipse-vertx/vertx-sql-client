@@ -25,8 +25,11 @@ import java.util.function.Consumer;
 public class DateTimeTextCodecTest extends DateTimeCodecTest {
   @Test
   public void testTextDecodeAll(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT `test_year`, `test_timestamp`, `test_datetime` FROM datatype WHERE id = 1").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT `test_year`, `test_timestamp`, `test_datetime` FROM datatype WHERE id = 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         ctx.assertEquals(3, row.size());
@@ -58,8 +61,11 @@ public class DateTimeTextCodecTest extends DateTimeCodecTest {
 
   @Override
   protected void testDecodeGeneric(TestContext ctx, String data, String dataType, Consumer<Row> valueAccessor, String columnName) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT CAST(\'" + data + "\' AS " + dataType + ") " + columnName).execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT CAST(\'" + data + "\' AS " + dataType + ") " + columnName)
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
         Row row = result.iterator().next();
         valueAccessor.accept(row);

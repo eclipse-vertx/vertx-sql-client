@@ -40,7 +40,11 @@ public class OracleErrorSimpleTest extends OracleTestBase {
 
   @Test
   public void testMetadata(TestContext ctx) {
-    pool.withConnection(conn -> conn.query("DROP TABLE u_dont_exist").execute(), ctx.asyncAssertFailure(t -> {
+    pool
+      .withConnection(conn -> conn
+        .query("DROP TABLE u_dont_exist")
+        .execute())
+      .onComplete(ctx.asyncAssertFailure(t -> {
       if (!(t instanceof OracleException)) {
         fail(t.getClass().getName());
       }
@@ -54,6 +58,6 @@ public class OracleErrorSimpleTest extends OracleTestBase {
 
   @After
   public void tearDown(TestContext ctx) throws Exception {
-    pool.close(ctx.asyncAssertSuccess());
+    pool.close().onComplete(ctx.asyncAssertSuccess());
   }
 }

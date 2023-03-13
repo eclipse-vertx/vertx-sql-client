@@ -59,11 +59,15 @@ public abstract class OracleGeneratedKeysTestBase extends OracleTestBase {
   @Before
   public void setUp(TestContext ctx) throws Exception {
     pool = OraclePool.pool(vertx, oracle.options(), new PoolOptions());
-    pool.withConnection(conn -> {
-      return conn.query(DROP).execute()
+    pool
+      .withConnection(conn -> {
+      return conn
+        .query(DROP)
+        .execute()
         .otherwiseEmpty()
         .compose(v -> conn.query(CREATE).execute());
-    }, ctx.asyncAssertSuccess());
+    })
+      .onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -115,6 +119,6 @@ public abstract class OracleGeneratedKeysTestBase extends OracleTestBase {
 
   @After
   public void tearDown(TestContext ctx) throws Exception {
-    pool.close(ctx.asyncAssertSuccess());
+    pool.close().onComplete(ctx.asyncAssertSuccess());
   }
 }

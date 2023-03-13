@@ -58,14 +58,14 @@ public class MySQLTLSTest {
 
   @After
   public void tearDown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
 //  @Test
 //  @Ignore("We do not configure to enforce TLS on the client side for the testing")
 //  public void testFailWithTlsDisabled(TestContext ctx) {
 //    options.setSslMode(SslMode.DISABLED);
-//    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
+//    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(error -> {
 //      // TLS support is forced to be enabled on the client side
 //    }));
 //  }
@@ -73,9 +73,12 @@ public class MySQLTLSTest {
   @Test
   public void testSuccessWithDisabledSslMode(TestContext ctx) {
     options.setSslMode(SslMode.DISABLED);
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
-      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -90,9 +93,12 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -107,9 +113,12 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
-      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -124,9 +133,12 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, nonTlsOptions, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, nonTlsOptions).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
-      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -141,9 +153,12 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -155,9 +170,12 @@ public class MySQLTLSTest {
     options.setSslMode(SslMode.REQUIRED);
     options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -169,9 +187,12 @@ public class MySQLTLSTest {
     options.setSslMode(SslMode.REQUIRED);
     options.setTrustAll(true);
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -186,9 +207,12 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
-      conn.query("SELECT 1").execute(ctx.asyncAssertSuccess(res -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals(1, res.size());
         conn.close();
       }));
@@ -203,7 +227,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Trust options must be specified under VERIFY_CA ssl-mode.", error.getMessage());
     }));
   }
@@ -231,7 +255,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.", error.getMessage());
     }));
   }
@@ -240,7 +264,7 @@ public class MySQLTLSTest {
   public void testConnFail(TestContext ctx) {
     options.setSslMode(SslMode.REQUIRED);
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
     }));
   }
 
@@ -249,8 +273,11 @@ public class MySQLTLSTest {
     options.setSslMode(SslMode.REQUIRED);
     options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
 
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("SELECT current_user()").execute(ctx.asyncAssertSuccess(res1 -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT current_user()")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(res1 -> {
         Row row1 = res1.iterator().next();
         String username = row1.getString(0);
         ctx.assertEquals("mysql", username.substring(0, username.lastIndexOf('@')));
@@ -258,8 +285,13 @@ public class MySQLTLSTest {
           .setUser("superuser")
           .setPassword("password")
           .setDatabase("emptyschema");
-        conn.changeUser(changeUserOptions, ctx.asyncAssertSuccess(v2 -> {
-          conn.query("SELECT current_user();SELECT database();").execute(ctx.asyncAssertSuccess(res2 -> {
+        conn
+          .changeUser(changeUserOptions)
+          .onComplete(ctx.asyncAssertSuccess(v2 -> {
+          conn
+            .query("SELECT current_user();SELECT database();")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(res2 -> {
             ctx.assertEquals("superuser@%", res2.iterator().next().getString(0));
             ctx.assertEquals("emptyschema", res2.next().iterator().next().getValue(0));
             conn.close();

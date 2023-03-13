@@ -37,8 +37,8 @@ public class MSSQLPreparedQueryTest extends MSSQLPreparedQueryTestBase {
   @Test
   public void closePreparedNotExecuted(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT * FROM IMMUTABLE WHERE id = @p1", ctx.asyncAssertSuccess(ps -> {
-        ps.close(ctx.asyncAssertSuccess());
+      conn.prepare("SELECT * FROM IMMUTABLE WHERE id = @p1").onComplete(ctx.asyncAssertSuccess(ps -> {
+        ps.close().onComplete(ctx.asyncAssertSuccess());
       }));
     }));
   }
@@ -46,16 +46,22 @@ public class MSSQLPreparedQueryTest extends MSSQLPreparedQueryTestBase {
   @Test
   public void closePreparedExecuted(TestContext ctx) {
     connector.connect(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("SELECT * FROM IMMUTABLE WHERE id = @p1", ctx.asyncAssertSuccess(ps -> {
-        ps.query().execute(Tuple.of(3), ctx.asyncAssertSuccess(rs -> {
+      conn.prepare("SELECT * FROM IMMUTABLE WHERE id = @p1").onComplete(ctx.asyncAssertSuccess(ps -> {
+        ps
+          .query()
+          .execute(Tuple.of(3))
+          .onComplete( ctx.asyncAssertSuccess(rs -> {
           Row row = rs.iterator().next();
           ctx.assertEquals(3, row.getInteger(0));
           ctx.assertEquals("After enough decimal places, nobody gives a damn.", row.getString(1));
-          ps.query().execute(Tuple.of(7), ctx.asyncAssertSuccess(rs2 -> {
+          ps
+            .query()
+            .execute(Tuple.of(7))
+            .onComplete(ctx.asyncAssertSuccess(rs2 -> {
             Row row2 = rs2.iterator().next();
             ctx.assertEquals(7, row2.getInteger(0));
             ctx.assertEquals("Any program that runs right is obsolete.", row2.getString(1));
-            ps.close(ctx.asyncAssertSuccess());
+            ps.close().onComplete(ctx.asyncAssertSuccess());
           }));
         }));
       }));

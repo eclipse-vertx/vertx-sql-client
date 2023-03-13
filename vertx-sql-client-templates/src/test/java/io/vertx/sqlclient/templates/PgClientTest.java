@@ -42,7 +42,9 @@ public class PgClientTest extends PgTemplateTestBase {
     Map<String, Object> params = new HashMap<>();
     params.put("id", 1);
     params.put("randomnumber", 10);
-    template.execute(params, ctx.asyncAssertSuccess(res -> {
+    template
+      .execute(params)
+      .onComplete(ctx.asyncAssertSuccess(res -> {
       ctx.assertEquals(1, res.size());
       Row row = res.iterator().next();
       ctx.assertEquals(1, row.getInteger(0));
@@ -60,7 +62,9 @@ public class PgClientTest extends PgTemplateTestBase {
     Map<String, Object> params2 = new HashMap<>();
     params1.put("id", 2);
     params1.put("randomnumber", 20);
-    template.executeBatch(Arrays.asList(params1, params2), ctx.asyncAssertSuccess(res -> {
+    template
+      .executeBatch(Arrays.asList(params1, params2))
+      .onComplete(ctx.asyncAssertSuccess(res -> {
       ctx.assertEquals(1, res.size());
       Row row = res.iterator().next();
       ctx.assertEquals(2, row.getInteger(0));
@@ -83,7 +87,9 @@ public class PgClientTest extends PgTemplateTestBase {
      .<World>forQuery(connection, "SELECT #{id} :: INT4 \"id\", #{randomnumber} :: INT4 \"randomnumber\"")
       .mapFrom(World.class)
      .mapTo(World.class);
-   template.execute(w, ctx.asyncAssertSuccess(res -> {
+   template
+     .execute(w)
+     .onComplete(ctx.asyncAssertSuccess(res -> {
      ctx.assertEquals(1, res.size());
      World world = res.iterator().next();
      ctx.assertEquals(1, world.id);
@@ -98,7 +104,9 @@ public class PgClientTest extends PgTemplateTestBase {
       .forQuery(connection, "SELECT #{value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .mapTo(LocalDateTimePojo.class);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
-    template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {
+    template
+      .execute(Collections.singletonMap("value", ldt))
+      .onComplete(ctx.asyncAssertSuccess(result -> {
       ctx.assertEquals(1, result.size());
       ctx.assertEquals(ldt, result.iterator().next().localDateTime);
     }));
@@ -110,7 +118,9 @@ public class PgClientTest extends PgTemplateTestBase {
       .forQuery(connection, "SELECT #{value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .mapTo(LocalDateTimeDataObjectRowMapper.INSTANCE);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
-    template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {
+    template
+      .execute(Collections.singletonMap("value", ldt))
+      .onComplete(ctx.asyncAssertSuccess(result -> {
       ctx.assertEquals(1, result.size());
       ctx.assertEquals(ldt, result.iterator().next().getLocalDateTime());
     }));
@@ -122,7 +132,9 @@ public class PgClientTest extends PgTemplateTestBase {
       .forQuery(connection, "SELECT #{value} :: TIMESTAMP WITHOUT TIME ZONE \"localDateTime\"")
       .collecting(LocalDateTimeDataObjectRowMapper.COLLECTOR);
     LocalDateTime ldt = LocalDateTime.parse("2017-05-14T19:35:58.237666");
-    template.execute(Collections.singletonMap("value", ldt), ctx.asyncAssertSuccess(result -> {
+    template
+      .execute(Collections.singletonMap("value", ldt))
+      .onComplete(ctx.asyncAssertSuccess(result -> {
       ctx.assertEquals(1, result.size());
       ctx.assertEquals(ldt, result.value().get(0).getLocalDateTime());
     }));
@@ -161,7 +173,9 @@ public class PgClientTest extends PgTemplateTestBase {
       .put("integer", 4)
       .put("string", "hello world")
       .put("boolean", true);
-    template.execute(params, ctx.asyncAssertSuccess(res -> {
+    template
+      .execute(params)
+      .onComplete(ctx.asyncAssertSuccess(res -> {
       ctx.assertEquals(1, res.size());
       Row row = res.iterator().next();
       ctx.assertEquals(4, row.getInteger(0));
@@ -172,8 +186,14 @@ public class PgClientTest extends PgTemplateTestBase {
 
   @Test
   public void testInsertJsonObject(TestContext ctx) {
-    connection.query("DROP TABLE IF EXISTS distributors").execute(ctx.asyncAssertSuccess(dropped -> {
-      connection.query("CREATE TABLE distributors(name VARCHAR(40), attrs JSONB)").execute(ctx.asyncAssertSuccess(created -> {
+    connection
+      .query("DROP TABLE IF EXISTS distributors")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(dropped -> {
+      connection
+        .query("CREATE TABLE distributors(name VARCHAR(40), attrs JSONB)")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(created -> {
 
         MyObject value = new MyObject();
         value.setName("foo");
@@ -188,8 +208,12 @@ public class PgClientTest extends PgTemplateTestBase {
         SqlTemplate
           .forQuery(connection, "INSERT INTO distributors (name,attrs) VALUES(#{name},#{attributes})")
           .mapFrom(MyObject.class)
-          .execute(value, ctx.asyncAssertSuccess(inserted -> {
-            connection.query("SELECT name, attrs FROM distributors").execute(ctx.asyncAssertSuccess(rows -> {
+          .execute(value)
+          .onComplete(ctx.asyncAssertSuccess(inserted -> {
+            connection
+              .query("SELECT name, attrs FROM distributors")
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(rows -> {
               ctx.verify(v -> {
                 assertEquals(1, rows.size());
                 Row row = rows.iterator().next();

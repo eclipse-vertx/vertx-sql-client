@@ -45,7 +45,7 @@ public abstract class MySQLBatchInsertExceptionTestBase extends MySQLTestBase {
 
   @After
   public void teardown(TestContext ctx) {
-    vertx.close(ctx.asyncAssertSuccess());
+    vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
@@ -94,8 +94,11 @@ public abstract class MySQLBatchInsertExceptionTestBase extends MySQLTestBase {
   }
 
   private void cleanTestTable(TestContext ctx) {
-    MySQLConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      conn.query("TRUNCATE TABLE mutable;").execute(ctx.asyncAssertSuccess(result -> {
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("TRUNCATE TABLE mutable;")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
         conn.close();
       }));
     }));
