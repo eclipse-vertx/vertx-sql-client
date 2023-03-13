@@ -54,18 +54,17 @@ public class OracleClientExamples {
     // A simple query
     client
       .query("SELECT * FROM users WHERE id='julien'")
-      .execute()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          RowSet<Row> result = ar.result();
-          System.out.println("Got " + result.size() + " rows ");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
+      .execute(ar -> {
+      if (ar.succeeded()) {
+        RowSet<Row> result = ar.result();
+        System.out.println("Got " + result.size() + " rows ");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
 
-        // Now close the pool
-        client.close();
-      });
+      // Now close the pool
+      client.close();
+    });
   }
 
   public void configureFromDataObject(Vertx vertx) {
@@ -84,11 +83,9 @@ public class OracleClientExamples {
     // Create the pool from the data object
     OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
 
-    pool
-      .getConnection()
-      .onComplete(ar -> {
-        // Handling your connection
-      });
+    pool.getConnection(ar -> {
+      // Handling your connection
+    });
   }
 
   public void configureFromUri(Vertx vertx) {
@@ -219,24 +216,21 @@ public class OracleClientExamples {
   public void implicitTypeConversionExample(SqlClient client) {
     client
       .preparedQuery("SELECT * FROM students WHERE updated_time = ?")
-      .execute(Tuple.of(LocalTime.of(19, 10, 25)))
-      .onComplete(ar -> {
-        // handle the results
-      });
+      .execute(Tuple.of(LocalTime.of(19, 10, 25)), ar -> {
+      // handle the results
+    });
     // this will also work with implicit type conversion
     client
       .preparedQuery("SELECT * FROM students WHERE updated_time = ?")
-      .execute(Tuple.of("19:10:25"))
-      .onComplete(ar -> {
-        // handle the results
-      });
+      .execute(Tuple.of("19:10:25"), ar -> {
+      // handle the results
+    });
   }
 
   public void booleanExample01(SqlClient client) {
     client
       .query("SELECT graduated FROM students WHERE id = 0")
-      .execute()
-      .onComplete(ar -> {
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rowSet = ar.result();
         for (Row row : rowSet) {
@@ -253,14 +247,13 @@ public class OracleClientExamples {
   public void booleanExample02(SqlClient client) {
     client
       .preparedQuery("UPDATE students SET graduated = ? WHERE id = 0")
-      .execute(Tuple.of(true))
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("Updated with the boolean value");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+      .execute(Tuple.of(true), ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Updated with the boolean value");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void jsonExample() {
@@ -298,8 +291,7 @@ public class OracleClientExamples {
   public void enumeratedType01Example(SqlClient client) {
     client
       .preparedQuery("INSERT INTO colors VALUES (?)")
-      .execute(Tuple.of(Color.red))
-      .onComplete(res -> {
+      .execute(Tuple.of(Color.red), res -> {
         // ...
       });
   }
@@ -321,35 +313,33 @@ public class OracleClientExamples {
   public void geometryExample01(SqlClient client) {
     client
       .query("SELECT ST_AsText(g) FROM geom;")
-      .execute()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          // Fetch the spatial data in WKT format
-          RowSet<Row> result = ar.result();
-          for (Row row : result) {
-            String wktString = row.getString(0);
-          }
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
+      .execute(ar -> {
+      if (ar.succeeded()) {
+        // Fetch the spatial data in WKT format
+        RowSet<Row> result = ar.result();
+        for (Row row : result) {
+          String wktString = row.getString(0);
         }
-      });
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void geometryExample02(SqlClient client) {
     client
       .query("SELECT ST_AsBinary(g) FROM geom;")
-      .execute()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          // Fetch the spatial data in WKB format
-          RowSet<Row> result = ar.result();
-          for (Row row : result) {
-            Buffer wkbValue = row.getBuffer(0);
-          }
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
+      .execute(ar -> {
+      if (ar.succeeded()) {
+        // Fetch the spatial data in WKB format
+        RowSet<Row> result = ar.result();
+        for (Row row : result) {
+          Buffer wkbValue = row.getBuffer(0);
         }
-      });
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void collector01Example(SqlClient client) {
@@ -360,10 +350,7 @@ public class OracleClientExamples {
       row -> row.getString("last_name"));
 
     // Run the query with the collector
-    client.query("SELECT * FROM users")
-      .collecting(collector)
-      .execute()
-      .onComplete(ar -> {
+    client.query("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<Map<Long, String>> result = ar.result();
 
@@ -385,10 +372,7 @@ public class OracleClientExamples {
     );
 
     // Run the query with the collector
-    client.query("SELECT * FROM users")
-      .collecting(collector)
-      .execute()
-      .onComplete(ar -> {
+    client.query("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<String> result = ar.result();
 
@@ -407,15 +391,12 @@ public class OracleClientExamples {
       "  SELECT 1;\n" +
       "  INSERT INTO ins VALUES (1);\n" +
       "  INSERT INTO ins VALUES (2);\n" +
-      "END;")
-      .execute()
-      .onComplete(ar1 -> {
+      "END;").execute(ar1 -> {
       if (ar1.succeeded()) {
         // create stored procedure success
         client
           .query("CALL multi();")
-          .execute()
-          .onComplete(ar2 -> {
+          .execute(ar2 -> {
           if (ar2.succeeded()) {
             // handle the result
             RowSet<Row> result1 = ar2.result();
@@ -445,16 +426,14 @@ public class OracleClientExamples {
     OraclePrepareOptions options = new OraclePrepareOptions()
       .setAutoGeneratedKeysIndexes(new JsonArray().add("ID"));
 
-    client.preparedQuery(sql, options)
-      .execute(Tuple.of("john", 3))
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          RowSet<Row> result = ar.result();
+    client.preparedQuery(sql, options).execute(Tuple.of("john", 3), ar -> {
+      if (ar.succeeded()) {
+        RowSet<Row> result = ar.result();
 
-          Row generated = result.property(OracleClient.GENERATED_KEYS);
-          Long id = generated.getLong("ID");
-        }
-      });
+        Row generated = result.property(OracleClient.GENERATED_KEYS);
+        Long id = generated.getLong("ID");
+      }
+    });
   }
 
   public void retrieveGeneratedKeyByIndex(SqlClient client) {
@@ -464,16 +443,14 @@ public class OracleClientExamples {
     OraclePrepareOptions options = new OraclePrepareOptions()
       .setAutoGeneratedKeysIndexes(new JsonArray().add("1"));
 
-    client.preparedQuery(sql, options)
-      .execute(Tuple.of("john", 3))
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          RowSet<Row> result = ar.result();
+    client.preparedQuery(sql, options).execute(Tuple.of("john", 3), ar -> {
+      if (ar.succeeded()) {
+        RowSet<Row> result = ar.result();
 
-          Row generated = result.property(OracleClient.GENERATED_KEYS);
-          Long id = generated.getLong("ID");
-        }
-      });
+        Row generated = result.property(OracleClient.GENERATED_KEYS);
+        Long id = generated.getLong("ID");
+      }
+    });
   }
 
   public void blobUsage(SqlClient client, Buffer imageBuffer, Long id) {

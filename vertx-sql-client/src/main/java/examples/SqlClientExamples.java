@@ -46,8 +46,7 @@ public class SqlClientExamples {
   public void queries01(SqlClient client) {
     client
       .query("SELECT * FROM users WHERE id='julien'")
-      .execute()
-      .onComplete(ar -> {
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> result = ar.result();
         System.out.println("Got " + result.size() + " rows ");
@@ -61,8 +60,7 @@ public class SqlClientExamples {
   public void queries02(SqlClient client) {
     client
       .preparedQuery("SELECT * FROM users WHERE id=$1")
-      .execute(Tuple.of("julien"))
-      .onComplete(ar -> {
+      .execute(Tuple.of("julien"), ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println("Got " + rows.size() + " rows ");
@@ -75,8 +73,7 @@ public class SqlClientExamples {
   public void queries03(SqlClient client) {
     client
       .preparedQuery("SELECT first_name, last_name FROM users")
-      .execute()
-      .onComplete(ar -> {
+      .execute(ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         for (Row row : rows) {
@@ -91,8 +88,7 @@ public class SqlClientExamples {
   public void queries04(SqlClient client) {
     client
       .preparedQuery("INSERT INTO users (first_name, last_name) VALUES ($1, $2)")
-      .execute(Tuple.of("Julien", "Viet"))
-      .onComplete(ar -> {
+      .execute(Tuple.of("Julien", "Viet"),  ar -> {
       if (ar.succeeded()) {
         RowSet<Row> rows = ar.result();
         System.out.println(rows.rowCount());
@@ -130,8 +126,7 @@ public class SqlClientExamples {
     // Execute the prepared batch
     client
       .preparedQuery("INSERT INTO USERS (id, name) VALUES ($1, $2)")
-      .executeBatch(batch)
-      .onComplete(res -> {
+      .executeBatch(batch, res -> {
       if (res.succeeded()) {
 
         // Process rows
@@ -148,8 +143,7 @@ public class SqlClientExamples {
     connectOptions.setCachePreparedStatements(true);
     client
       .preparedQuery("SELECT * FROM users WHERE id=$1")
-      .execute(Tuple.of("julien"))
-      .onComplete(ar -> {
+      .execute(Tuple.of("julien"), ar -> {
         if (ar.succeeded()) {
           RowSet<Row> rows = ar.result();
           System.out.println("Got " + rows.size() + " rows ");
@@ -161,13 +155,11 @@ public class SqlClientExamples {
 
   public void queries10(SqlConnection sqlConnection) {
     sqlConnection
-      .prepare("SELECT * FROM users WHERE id=$1")
-      .onComplete(ar -> {
+      .prepare("SELECT * FROM users WHERE id=$1", ar -> {
         if (ar.succeeded()) {
           PreparedStatement preparedStatement = ar.result();
           preparedStatement.query()
-            .execute(Tuple.of("julien"))
-            .onComplete(ar2 -> {
+            .execute(Tuple.of("julien"), ar2 -> {
               if (ar2.succeeded()) {
                 RowSet<Row> rows = ar2.result();
                 System.out.println("Got " + rows.size() + " rows ");
@@ -184,20 +176,17 @@ public class SqlClientExamples {
 
   public void usingConnections01(Vertx vertx, Pool pool) {
 
-    pool.getConnection()
-      .onComplete(ar1 -> {
+    pool.getConnection(ar1 -> {
       if (ar1.succeeded()) {
         SqlConnection connection = ar1.result();
 
         connection
           .query("SELECT * FROM users WHERE id='julien'")
-          .execute()
-          .onComplete(ar2 -> {
+          .execute(ar2 -> {
           if (ar1.succeeded()) {
             connection
               .query("SELECT * FROM users WHERE id='paulo'")
-              .execute()
-              .onComplete(ar3 -> {
+              .execute(ar3 -> {
               // Do something with rows and return the connection to the pool
               connection.close();
             });
@@ -211,13 +200,10 @@ public class SqlClientExamples {
   }
 
   public void usingConnections02(SqlConnection connection) {
-    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1")
-      .onComplete(ar1 -> {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar1 -> {
       if (ar1.succeeded()) {
         PreparedStatement pq = ar1.result();
-        pq.query()
-          .execute(Tuple.of("julien"))
-          .onComplete(ar2 -> {
+        pq.query().execute(Tuple.of("julien"), ar2 -> {
           if (ar2.succeeded()) {
             // All rows
             RowSet<Row> rows = ar2.result();
@@ -246,35 +232,28 @@ public class SqlClientExamples {
   }
 
   public void transaction01(Pool pool) {
-    pool
-      .getConnection()
-      .onComplete(res -> {
+    pool.getConnection(res -> {
       if (res.succeeded()) {
 
         // Transaction must use a connection
         SqlConnection conn = res.result();
 
         // Begin the transaction
-        conn
-          .begin()
-          .onComplete(ar0 -> {
+        conn.begin(ar0 -> {
           if (ar0.succeeded()) {
             Transaction tx = ar0.result();
 
             // Various statements
             conn
               .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
-              .execute()
-              .onComplete(ar1 -> {
+              .execute(ar1 -> {
                 if (ar1.succeeded()) {
                   conn
                     .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
-                    .execute()
-                    .onComplete(ar2 -> {
+                    .execute(ar2 -> {
                       if (ar2.succeeded()) {
                         // Commit the transaction
-                        tx.commit()
-                          .onComplete(ar3 -> {
+                        tx.commit(ar3 -> {
                           if (ar3.succeeded()) {
                             System.out.println("Transaction succeeded");
                           } else {
@@ -333,16 +312,12 @@ public class SqlClientExamples {
   }
 
   public void usingCursors01(SqlConnection connection) {
-    connection
-      .prepare("SELECT * FROM users WHERE first_name LIKE $1")
-      .onComplete(ar0 -> {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar0 -> {
       if (ar0.succeeded()) {
         PreparedStatement pq = ar0.result();
 
         // Cursors require to run within a transaction
-        connection
-          .begin()
-          .onComplete(ar1 -> {
+        connection.begin(ar1 -> {
           if (ar1.succeeded()) {
             Transaction tx = ar1.result();
 
@@ -350,9 +325,7 @@ public class SqlClientExamples {
             Cursor cursor = pq.cursor(Tuple.of("julien"));
 
             // Read 50 rows
-            cursor
-              .read(50)
-              .onComplete(ar2 -> {
+            cursor.read(50, ar2 -> {
               if (ar2.succeeded()) {
                 RowSet<Row> rows = ar2.result();
 
@@ -372,9 +345,7 @@ public class SqlClientExamples {
   }
 
   public void usingCursors02(Cursor cursor) {
-    cursor
-      .read(50)
-      .onComplete(ar2 -> {
+    cursor.read(50, ar2 -> {
       if (ar2.succeeded()) {
         // Close the cursor
         cursor.close();
@@ -383,16 +354,12 @@ public class SqlClientExamples {
   }
 
   public void usingCursors03(SqlConnection connection) {
-    connection
-      .prepare("SELECT * FROM users WHERE first_name LIKE $1")
-      .onComplete(ar0 -> {
+    connection.prepare("SELECT * FROM users WHERE first_name LIKE $1", ar0 -> {
       if (ar0.succeeded()) {
         PreparedStatement pq = ar0.result();
 
         // Streams require to run within a transaction
-        connection
-          .begin()
-          .onComplete(ar1 -> {
+        connection.begin(ar1 -> {
           if (ar1.succeeded()) {
             Transaction tx = ar1.result();
 

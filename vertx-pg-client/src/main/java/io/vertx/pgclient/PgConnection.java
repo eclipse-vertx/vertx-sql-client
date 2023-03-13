@@ -129,11 +129,6 @@ public interface PgConnection extends SqlConnection {
   PgConnection cancelRequest(Handler<AsyncResult<Void>> handler);
 
   /**
-   * Like {@link #cancelRequest(Handler)} but returns a {@code Future} of the asynchronous result
-   */
-  Future<Void> cancelRequest();
-
-  /**
    * @return The process ID of the target backend
    */
   int processId();

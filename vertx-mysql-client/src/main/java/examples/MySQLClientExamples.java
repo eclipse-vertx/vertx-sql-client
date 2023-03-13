@@ -51,18 +51,17 @@ public class MySQLClientExamples {
     // A simple query
     client
       .query("SELECT * FROM users WHERE id='julien'")
-      .execute()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          RowSet<Row> result = ar.result();
-          System.out.println("Got " + result.size() + " rows ");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
+      .execute(ar -> {
+      if (ar.succeeded()) {
+        RowSet<Row> result = ar.result();
+        System.out.println("Got " + result.size() + " rows ");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
 
-        // Now close the pool
-        client.close();
-      });
+      // Now close the pool
+      client.close();
+    });
   }
 
   public void configureFromDataObject(Vertx vertx) {
@@ -81,10 +80,9 @@ public class MySQLClientExamples {
     // Create the pool from the data object
     MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
 
-    pool.getConnection()
-      .onComplete(ar -> {
-        // Handling your connection
-      });
+    pool.getConnection(ar -> {
+      // Handling your connection
+    });
   }
 
   public void configureConnectionCharset() {
@@ -126,10 +124,9 @@ public class MySQLClientExamples {
     MySQLPool pool = MySQLPool.pool(connectionUri);
 
     // Create the connection from the connection URI
-    MySQLConnection.connect(vertx, connectionUri)
-      .onComplete(res -> {
-        // Handling your connection
-      });
+    MySQLConnection.connect(vertx, connectionUri, res -> {
+      // Handling your connection
+    });
   }
 
   public void connecting01() {
@@ -266,8 +263,7 @@ public class MySQLClientExamples {
   public void lastInsertId(SqlClient client) {
     client
       .query("INSERT INTO test(val) VALUES ('v1')")
-      .execute()
-      .onComplete(ar -> {
+      .execute(ar -> {
         if (ar.succeeded()) {
           RowSet<Row> rows = ar.result();
           long lastInsertId = rows.property(MySQLClient.LAST_INSERTED_ID);
@@ -281,48 +277,44 @@ public class MySQLClientExamples {
   public void implicitTypeConversionExample(SqlClient client) {
     client
       .preparedQuery("SELECT * FROM students WHERE updated_time = ?")
-      .execute(Tuple.of(LocalTime.of(19, 10, 25)))
-      .onComplete(ar -> {
-        // handle the results
-      });
+      .execute(Tuple.of(LocalTime.of(19, 10, 25)), ar -> {
+      // handle the results
+    });
     // this will also work with implicit type conversion
     client
       .preparedQuery("SELECT * FROM students WHERE updated_time = ?")
-      .execute(Tuple.of("19:10:25"))
-      .onComplete(ar -> {
-        // handle the results
-      });
+      .execute(Tuple.of("19:10:25"), ar -> {
+      // handle the results
+    });
   }
 
   public void booleanExample01(SqlClient client) {
     client
       .query("SELECT graduated FROM students WHERE id = 0")
-      .execute()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          RowSet<Row> rowSet = ar.result();
-          for (Row row : rowSet) {
-            int pos = row.getColumnIndex("graduated");
-            Byte value = row.get(Byte.class, pos);
-            Boolean graduated = row.getBoolean("graduated");
-          }
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
+      .execute(ar -> {
+      if (ar.succeeded()) {
+        RowSet<Row> rowSet = ar.result();
+        for (Row row : rowSet) {
+          int pos = row.getColumnIndex("graduated");
+          Byte value = row.get(Byte.class, pos);
+          Boolean graduated = row.getBoolean("graduated");
         }
-      });
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void booleanExample02(SqlClient client) {
     client
       .preparedQuery("UPDATE students SET graduated = ? WHERE id = 0")
-      .execute(Tuple.of(true))
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("Updated with the boolean value");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+      .execute(Tuple.of(true), ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Updated with the boolean value");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void jsonExample() {
@@ -360,8 +352,7 @@ public class MySQLClientExamples {
   public void enumeratedType01Example(SqlClient client) {
     client
       .preparedQuery("INSERT INTO colors VALUES (?)")
-      .execute(Tuple.of(Color.red))
-      .onComplete(res -> {
+      .execute(Tuple.of(Color.red),  res -> {
         // ...
       });
   }
@@ -383,54 +374,51 @@ public class MySQLClientExamples {
   public void geometryExample01(SqlClient client) {
     client
       .query("SELECT ST_AsText(g) FROM geom;")
-      .execute()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          // Fetch the spatial data in WKT format
-          RowSet<Row> result = ar.result();
-          for (Row row : result) {
-            String wktString = row.getString(0);
-          }
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
+      .execute(ar -> {
+      if (ar.succeeded()) {
+        // Fetch the spatial data in WKT format
+        RowSet<Row> result = ar.result();
+        for (Row row : result) {
+          String wktString = row.getString(0);
         }
-      });
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void geometryExample02(SqlClient client) {
     client
       .query("SELECT ST_AsBinary(g) FROM geom;")
-      .execute()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          // Fetch the spatial data in WKB format
-          RowSet<Row> result = ar.result();
-          for (Row row : result) {
-            Buffer wkbValue = row.getBuffer(0);
-          }
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
+      .execute(ar -> {
+      if (ar.succeeded()) {
+        // Fetch the spatial data in WKB format
+        RowSet<Row> result = ar.result();
+        for (Row row : result) {
+          Buffer wkbValue = row.getBuffer(0);
         }
-      });
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void geometryExample03(SqlClient client) {
     client
       .query("SELECT g FROM geom;")
-      .execute()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          // Fetch the spatial data as a Vert.x Data Object
-          RowSet<Row> result = ar.result();
-          for (Row row : result) {
-            Point point = row.get(Point.class, 0);
-            System.out.println("Point x: " + point.getX());
-            System.out.println("Point y: " + point.getY());
-          }
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
+      .execute(ar -> {
+      if (ar.succeeded()) {
+        // Fetch the spatial data as a Vert.x Data Object
+        RowSet<Row> result = ar.result();
+        for (Row row : result) {
+          Point point = row.get(Point.class, 0);
+          System.out.println("Point x: " + point.getX());
+          System.out.println("Point y: " + point.getY());
         }
-      });
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void geometryExample04(SqlClient client) {
@@ -438,14 +426,13 @@ public class MySQLClientExamples {
     // Send as a WKB representation
     client
       .preparedQuery("INSERT INTO geom VALUES (ST_GeomFromWKB(?))")
-      .execute(Tuple.of(point))
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("Success");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+      .execute(Tuple.of(point), ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Success");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void collector01Example(SqlClient client) {
@@ -456,10 +443,7 @@ public class MySQLClientExamples {
       row -> row.getString("last_name"));
 
     // Run the query with the collector
-    client.query("SELECT * FROM users")
-      .collecting(collector)
-      .execute()
-      .onComplete(ar -> {
+    client.query("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<Map<Long, String>> result = ar.result();
 
@@ -481,10 +465,7 @@ public class MySQLClientExamples {
     );
 
     // Run the query with the collector
-    client.query("SELECT * FROM users")
-      .collecting(collector)
-      .execute()
-      .onComplete(ar -> {
+    client.query("SELECT * FROM users").collecting(collector).execute(ar -> {
         if (ar.succeeded()) {
           SqlResult<String> result = ar.result();
 
@@ -503,15 +484,12 @@ public class MySQLClientExamples {
       "  SELECT 1;\n" +
       "  INSERT INTO ins VALUES (1);\n" +
       "  INSERT INTO ins VALUES (2);\n" +
-      "END;")
-      .execute()
-      .onComplete(ar1 -> {
+      "END;").execute(ar1 -> {
       if (ar1.succeeded()) {
         // create stored procedure success
         client
           .query("CALL multi();")
-          .execute()
-          .onComplete(ar2 -> {
+          .execute(ar2 -> {
           if (ar2.succeeded()) {
             // handle the result
             RowSet<Row> result1 = ar2.result();
@@ -582,32 +560,29 @@ public class MySQLClientExamples {
       .setSslMode(SslMode.VERIFY_CA)
       .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
 
-    MySQLConnection.connect(vertx, options)
-      .onComplete(res -> {
-        if (res.succeeded()) {
-          // Connected with SSL
-        } else {
-          System.out.println("Could not connect " + res.cause());
-        }
-      });
+    MySQLConnection.connect(vertx, options, res -> {
+      if (res.succeeded()) {
+        // Connected with SSL
+      } else {
+        System.out.println("Could not connect " + res.cause());
+      }
+    });
   }
 
   public void pingExample(MySQLConnection connection) {
-    connection.ping().onComplete(ar -> {
+    connection.ping(ar -> {
       System.out.println("The server has responded to the PING");
     });
   }
 
   public void resetConnectionExample(MySQLConnection connection) {
-    connection
-      .resetConnection()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("Connection has been reset now");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+    connection.resetConnection(ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Connection has been reset now");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void changeUserExample(MySQLConnection connection) {
@@ -615,62 +590,52 @@ public class MySQLClientExamples {
       .setUser("newuser")
       .setPassword("newpassword")
       .setDatabase("newdatabase");
-    connection
-      .changeUser(authenticationOptions)
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("User of current connection has been changed.");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+    connection.changeUser(authenticationOptions, ar -> {
+      if (ar.succeeded()) {
+        System.out.println("User of current connection has been changed.");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void initDbExample(MySQLConnection connection) {
-    connection
-      .specifySchema("newschema")
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("Default schema changed to newschema");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+    connection.specifySchema("newschema", ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Default schema changed to newschema");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void statisticsExample(MySQLConnection connection) {
-    connection
-      .getInternalStatistics()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("Statistics: " + ar.result());
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+    connection.getInternalStatistics(ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Statistics: " + ar.result());
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void debugExample(MySQLConnection connection) {
-    connection
-      .debug()
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("Debug info dumped to server's STDOUT");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+    connection.debug(ar -> {
+      if (ar.succeeded()) {
+        System.out.println("Debug info dumped to server's STDOUT");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 
   public void setOptionExample01(MySQLConnection connection) {
-    connection
-      .setOption(MySQLSetOption.MYSQL_OPTION_MULTI_STATEMENTS_OFF)
-      .onComplete(ar -> {
-        if (ar.succeeded()) {
-          System.out.println("CLIENT_MULTI_STATEMENTS is off now");
-        } else {
-          System.out.println("Failure: " + ar.cause().getMessage());
-        }
-      });
+    connection.setOption(MySQLSetOption.MYSQL_OPTION_MULTI_STATEMENTS_OFF, ar -> {
+      if (ar.succeeded()) {
+        System.out.println("CLIENT_MULTI_STATEMENTS is off now");
+      } else {
+        System.out.println("Failure: " + ar.cause().getMessage());
+      }
+    });
   }
 }

@@ -127,11 +127,6 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   }
 
   @Override
-  public Future<Void> cancelRequest() {
-    return Future.future(this::cancelRequest);
-  }
-
-  @Override
   public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
