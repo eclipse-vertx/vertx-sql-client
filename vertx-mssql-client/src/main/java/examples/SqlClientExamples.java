@@ -18,18 +18,22 @@ package examples;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLPool;
+import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Source
+@SuppressWarnings("unused")
 public class SqlClientExamples {
 
   public void queries01(SqlClient client) {
@@ -410,5 +414,20 @@ public class SqlClientExamples {
       .setShared(true)
       .setName("my-pool")
       .setEventLoopSize(4));
+  }
+
+  public void dynamicPoolConfig(Vertx vertx, MSSQLPool pool) {
+    pool.connectionProvider(ctx -> {
+      Future<MSSQLConnectOptions> fut = retrieveOptions();
+      return fut.compose(connectOptions -> {
+        // Do not forget to close later
+        ConnectionFactory factory = MSSQLDriver.INSTANCE.createConnectionFactory(vertx, connectOptions);
+        return factory.connect(ctx);
+      });
+    });
+  }
+
+  private Future<MSSQLConnectOptions> retrieveOptions() {
+    return null;
   }
 }

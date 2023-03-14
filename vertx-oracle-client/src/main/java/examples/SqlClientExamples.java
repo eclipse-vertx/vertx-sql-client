@@ -16,27 +16,22 @@
  */
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.oracleclient.OraclePool;
+import io.vertx.oracleclient.spi.OracleDriver;
+import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @Source
+@SuppressWarnings("unused")
 public class SqlClientExamples {
 
   public void queries01(SqlClient client) {
@@ -343,4 +338,18 @@ public class SqlClientExamples {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 
+  public void dynamicPoolConfig(Vertx vertx, OraclePool pool) {
+    pool.connectionProvider(ctx -> {
+      Future<OracleConnectOptions> fut = retrieveOptions();
+      return fut.compose(connectOptions -> {
+        // Do not forget to close later
+        ConnectionFactory factory = OracleDriver.INSTANCE.createConnectionFactory(vertx, connectOptions);
+        return factory.connect(ctx);
+      });
+    });
+  }
+
+  private Future<OracleConnectOptions> retrieveOptions() {
+    return null;
+  }
 }
