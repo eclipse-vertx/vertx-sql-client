@@ -94,27 +94,27 @@ public class CommandHandler implements Connection {
 
   public Future<Void> afterAcquire() {
     PromiseInternal<Void> promise = context.owner().promise();
-    context.executeBlocking(prom -> {
+    context.<Void>executeBlocking(prom -> {
       try {
         connection.beginRequest();
         prom.complete();
       } catch (SQLException e) {
         prom.fail(e);
       }
-    }, false, promise);
+    }, false).onComplete(promise);
     return promise.future();
   }
 
   public Future<Void> beforeRecycle() {
     PromiseInternal<Void> promise = context.owner().promise();
-    context.executeBlocking(prom -> {
+    context.<Void>executeBlocking(prom -> {
       try {
         connection.endRequest();
         prom.complete();
       } catch (SQLException e) {
         prom.fail(e);
       }
-    }, false, promise);
+    }, false).onComplete(promise);
     return promise.future();
   }
 
