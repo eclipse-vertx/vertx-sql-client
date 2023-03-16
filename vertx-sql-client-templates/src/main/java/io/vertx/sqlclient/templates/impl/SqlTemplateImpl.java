@@ -1,8 +1,6 @@
 package io.vertx.sqlclient.templates.impl;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Row;
@@ -66,29 +64,10 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
   }
 
   @Override
-  public void execute(I parameters, Handler<AsyncResult<R>> handler) {
-
-    queryMapper
-      .apply(client.preparedQuery(sqlTemplate.getSql()))
-      .execute(tupleMapper.apply(parameters))
-      .onComplete(handler);
-  }
-
-  @Override
   public Future<R> execute(I params) {
     return queryMapper
       .apply(client.preparedQuery(sqlTemplate.getSql()))
       .execute(tupleMapper.apply(params));
-  }
-
-  @Override
-  public void executeBatch(List<I> batch, Handler<AsyncResult<R>> handler) {
-    queryMapper.apply(client.preparedQuery(sqlTemplate.getSql()))
-      .executeBatch(batch
-        .stream()
-        .map(tupleMapper)
-        .collect(Collectors.toList()))
-      .onComplete(handler);
   }
 
   @Override

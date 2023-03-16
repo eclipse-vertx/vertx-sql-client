@@ -17,9 +17,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 
 /**
  * A transaction.
@@ -33,27 +31,9 @@ public interface Transaction {
   Future<Void> commit();
 
   /**
-   * Like {@link #commit} with an handler to be notified when the transaction commit has completed
-   */
-  @Deprecated
-  void commit(Handler<AsyncResult<Void>> handler);
-
-  /**
    * Rollback the transaction and release the associated resources.
    */
   Future<Void> rollback();
-
-  /**
-   * Like {@link #rollback} with an handler to be notified when the transaction rollback has completed
-   */
-  @Deprecated
-  void rollback(Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #completion()} but with a callback
-   */
-  @Deprecated
-  void completion(Handler<AsyncResult<Void>> handler);
 
   /**
    * Return the transaction completion {@code Future} that

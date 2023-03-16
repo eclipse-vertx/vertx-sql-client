@@ -141,18 +141,12 @@ public class PgSubscriberImpl implements PgSubscriber {
   }
 
   @Override
-  public synchronized PgSubscriber connect(Handler<AsyncResult<Void>> handler) {
-    if (closed) {
-      closed = false;
-      tryConnect(0, handler);
-    }
-    return this;
-  }
-
-  @Override
   public Future<Void> connect() {
     Promise<Void> promise = Promise.promise();
-    connect(promise);
+    if (closed) {
+      closed = false;
+      tryConnect(0, promise);
+    }
     return promise.future();
   }
 
@@ -344,11 +338,6 @@ public class PgSubscriberImpl implements PgSubscriber {
       }
     }
     return Future.succeededFuture();
-  }
-
-  @Override
-  public void close(Handler<AsyncResult<Void>> handler) {
-    close().onComplete(handler);
   }
 
   @Override

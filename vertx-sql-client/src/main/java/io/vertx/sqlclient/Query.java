@@ -19,9 +19,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -37,13 +35,7 @@ public interface Query<T> {
   /**
    * Execute the query.
    *
-   * @param handler the handler receiving the response
-   */
-  @Deprecated
-  void execute(Handler<AsyncResult<T>> handler);
-
-  /**
-   * Like {@link #execute(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the result
    */
   Future<T> execute();
 

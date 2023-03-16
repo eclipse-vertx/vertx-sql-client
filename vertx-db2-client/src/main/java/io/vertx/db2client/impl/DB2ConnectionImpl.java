@@ -15,9 +15,7 @@
  */
 package io.vertx.db2client.impl;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -49,22 +47,8 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
   }
 
   @Override
-  public DB2Connection ping(Handler<AsyncResult<Void>> handler) {
-    Future<Void> fut = ping();
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-    return this;
-  }
-
-  @Override
   public Future<Void> ping() {
     return schedule(context, new PingCommand());
-  }
-
-  @Override
-  public DB2Connection debug(Handler<AsyncResult<Void>> handler) {
-    throw new UnsupportedOperationException("Debug command not implemented");
   }
 
   @Override

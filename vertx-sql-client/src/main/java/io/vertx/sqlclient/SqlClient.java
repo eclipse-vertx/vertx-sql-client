@@ -57,13 +57,7 @@ public interface SqlClient {
   /**
    * Close the client and release the associated resources.
    *
-   * @param handler the completion handler
-   */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #close(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified once the client is closed
    */
   Future<Void> close();
 

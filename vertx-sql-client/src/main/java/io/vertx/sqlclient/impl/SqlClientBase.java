@@ -17,7 +17,6 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -105,13 +104,8 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
     }
 
     @Override
-    public void execute(Handler<AsyncResult<R>> handler) {
-      execute(promise(handler));
-    }
-
-    @Override
     public Future<R> execute() {
-      Promise<R> promise = promise();
+      PromiseInternal<R> promise = promise();
       execute(promise);
       return promise.future();
     }
@@ -156,25 +150,15 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
     }
 
     @Override
-    public void execute(Tuple tuple, Handler<AsyncResult<R>> handler) {
-      execute(tuple, promise(handler));
-    }
-
-    @Override
     public Future<R> execute(Tuple tuple) {
-      Promise<R> promise = promise();
+      PromiseInternal<R> promise = promise();
       execute(tuple, promise);
       return promise.future();
     }
 
     @Override
-    public void executeBatch(List<Tuple> batch, Handler<AsyncResult<R>> handler) {
-      executeBatch(batch, promise(handler));
-    }
-
-    @Override
     public Future<R> executeBatch(List<Tuple> batch) {
-      Promise<R> promise = promise();
+      PromiseInternal<R> promise = promise();
       executeBatch(batch, promise);
       return promise.future();
     }
@@ -197,11 +181,6 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
 
     public GroupingClient() {
       super(SqlClientBase.this.driver, SqlClientBase.this.tracer, SqlClientBase.this.metrics);
-    }
-
-    @Override
-    public void close(Handler<AsyncResult<Void>> handler) {
-      throw new UnsupportedOperationException();
     }
 
     @Override

@@ -19,7 +19,6 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
@@ -37,14 +36,7 @@ public interface SqlConnection extends SqlClient {
    * Create a prepared statement using the given {@code sql} string.
    *
    * @param sql the sql
-   * @param handler the handler notified with the prepared query asynchronously
-   */
-  @Fluent
-  @Deprecated
-  SqlConnection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
-
-  /**
-   * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the prepared statement
    */
   Future<PreparedStatement> prepare(String sql);
 
@@ -52,14 +44,7 @@ public interface SqlConnection extends SqlClient {
    * Create a prepared statement using the given {@code sql} string.
    *
    * @param sql the sql
-   * @param handler the handler notified with the prepared query asynchronously
-   */
-  @Fluent
-  @Deprecated
-  SqlConnection prepare(String sql, PrepareOptions options, Handler<AsyncResult<PreparedStatement>> handler);
-
-  /**
-   * Like {@link #prepare(String, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the prepared statement
    */
   Future<PreparedStatement> prepare(String sql, PrepareOptions options);
 
@@ -86,12 +71,8 @@ public interface SqlConnection extends SqlClient {
    * this transaction.
    * <p/>
    * When the connection is explicitely closed, any inflight transaction is rollbacked.
-   */
-  @Deprecated
-  void begin(Handler<AsyncResult<Transaction>> handler);
-
-  /**
-   * Like {@link #begin(Handler)} but returns a {@code Future} of the asynchronous result
+   *
+   * @return a future notified with the transactino
    */
   Future<Transaction> begin();
 
@@ -104,14 +85,6 @@ public interface SqlConnection extends SqlClient {
    * @return whether the connection uses SSL
    */
   boolean isSSL();
-
-  /**
-   * Close the current connection after all the pending commands have been processed.
-   *
-   * @param handler the completion handler
-   */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> handler);
 
   /**
    * @return The static metadata about the backend database server for this connection

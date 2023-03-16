@@ -72,10 +72,6 @@ public class TemplateBuilderTest {
       throw new UnsupportedOperationException();
     }
     @Override
-    public void close(Handler<AsyncResult<Void>> handler) {
-      throw new UnsupportedOperationException();
-    }
-    @Override
     public Future<Void> close() {
       throw new UnsupportedOperationException();
     }

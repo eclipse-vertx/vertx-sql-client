@@ -22,8 +22,6 @@ import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
@@ -175,12 +173,6 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
     return tx == null;
   }
 
-  @Override
-  public void begin(Handler<AsyncResult<Transaction>> handler) {
-    Future<Transaction> fut = begin();
-    fut.onComplete(handler);
-  }
-
   public void handleEvent(Object event) {
   }
 
@@ -189,11 +181,6 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
     Promise<Void> promise = promise();
     close(promise);
     return promise.future();
-  }
-
-  @Override
-  public void close(Handler<AsyncResult<Void>> handler) {
-    close(promise(handler));
   }
 
   private void close(Promise<Void> promise) {

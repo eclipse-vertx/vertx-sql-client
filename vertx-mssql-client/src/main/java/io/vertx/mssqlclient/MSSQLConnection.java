@@ -13,7 +13,6 @@ package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -34,45 +33,18 @@ public interface MSSQLConnection extends SqlConnection {
    *
    * @param vertx          the vertx instance
    * @param connectOptions the options for the connection
-   * @param handler        the handler called with the connection or the failure
-   */
-  @Deprecated
-  static void connect(Vertx vertx, MSSQLConnectOptions connectOptions, Handler<AsyncResult<MSSQLConnection>> handler) {
-    Future<MSSQLConnection> fut = MSSQLConnectionImpl.connect(vertx, connectOptions);
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-  }
-
-  /**
-   * Like {@link #connect(Vertx, MSSQLConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the connection or the failure
    */
   static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions connectOptions) {
     return MSSQLConnectionImpl.connect(vertx, connectOptions);
   }
 
   /**
-   * Like {@link #connect(Vertx, MSSQLConnectOptions, Handler)} with options built from {@code connectionUri}.
-   */
-  @Deprecated
-  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MSSQLConnection>> handler) {
-    connect(vertx, fromUri(connectionUri), handler);
-  }
-
-  /**
-   * Like {@link #connect(Vertx, String, Handler)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #connect(Vertx, MSSQLConnectOptions)} with options built from {@code connectionUri}.
    */
   static Future<MSSQLConnection> connect(Vertx vertx, String connectionUri) {
     return connect(vertx, fromUri(connectionUri));
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  @Deprecated
-  MSSQLConnection prepare(String s, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
    * {@inheritDoc}

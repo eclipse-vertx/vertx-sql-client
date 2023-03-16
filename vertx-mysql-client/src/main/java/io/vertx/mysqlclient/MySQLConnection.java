@@ -13,13 +13,11 @@ package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
-import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
@@ -42,50 +40,24 @@ import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
  */
 @VertxGen
 public interface MySQLConnection extends SqlConnection {
+
   /**
    * Create a connection to MySQL server with the given {@code connectOptions}.
    *
    * @param vertx the vertx instance
    * @param connectOptions the options for the connection
-   * @param handler the handler called with the connection or the failure
-   */
-  @Deprecated
-  static void connect(Vertx vertx, MySQLConnectOptions connectOptions, Handler<AsyncResult<MySQLConnection>> handler) {
-    Future<MySQLConnection> fut = connect(vertx, connectOptions);
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-  }
-
-  /**
-   * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the connection or the failure
    */
   static Future<MySQLConnection> connect(Vertx vertx, MySQLConnectOptions connectOptions) {
     return MySQLConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), connectOptions);
   }
 
   /**
-   * Like {@link #connect(Vertx, MySQLConnectOptions, Handler)} with options built from {@code connectionUri}.
-   */
-  @Deprecated
-  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<MySQLConnection>> handler) {
-    connect(vertx, fromUri(connectionUri), handler);
-  }
-
-  /**
-   * Like {@link #connect(Vertx, String, Handler)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #connect(Vertx, MySQLConnectOptions)} with options built from {@code connectionUri}.
    */
   static Future<MySQLConnection> connect(Vertx vertx, String connectionUri) {
     return connect(vertx, fromUri(connectionUri));
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Override
-  @Deprecated
-  MySQLConnection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
    * {@inheritDoc}
@@ -104,15 +76,7 @@ public interface MySQLConnection extends SqlConnection {
   /**
    * Send a PING command to check if the server is alive.
    *
-   * @param handler the handler notified when the server responses to client
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Deprecated
-  MySQLConnection ping(Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #ping(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the server response
    */
   Future<Void> ping();
 
@@ -120,30 +84,14 @@ public interface MySQLConnection extends SqlConnection {
    * Send a INIT_DB command to change the default schema of the connection.
    *
    * @param schemaName name of the schema to change to
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Deprecated
-  MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #specifySchema(String, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the execution result
    */
   Future<Void> specifySchema(String schemaName);
 
   /**
    * Send a STATISTICS command to get a human readable string of the server internal status.
    *
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Deprecated
-  MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler);
-
-  /**
-   * Like {@link #getInternalStatistics(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the execution result
    */
   Future<String> getInternalStatistics();
 
@@ -152,61 +100,28 @@ public interface MySQLConnection extends SqlConnection {
    * Send a SET_OPTION command to set options for the current connection.
    *
    * @param option the options to set
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Deprecated
-  MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #setOption(MySQLSetOption, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the execution result
    */
   Future<Void> setOption(MySQLSetOption option);
 
   /**
    * Send a RESET_CONNECTION command to reset the session state.
    *
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Deprecated
-  MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #resetConnection(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the execution result
    */
   Future<Void> resetConnection();
 
   /**
    * Send a DEBUG command to dump debug information to the server's stdout.
    *
-   * @param handler the handler notified with the execution result
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Deprecated
-  MySQLConnection debug(Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #debug(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the execution result
    */
   Future<Void> debug();
 
   /**
    * Send a CHANGE_USER command to change the user of the current connection, this operation will also reset connection state.
    *
-   * @param options authentication options
-   * @param handler the handler
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Fluent
-  @Deprecated
-  MySQLConnection changeUser(MySQLAuthOptions options, Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #changeUser(MySQLAuthOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the execution result
    */
   Future<Void> changeUser(MySQLAuthOptions options);
 

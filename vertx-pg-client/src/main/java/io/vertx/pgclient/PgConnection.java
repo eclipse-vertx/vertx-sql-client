@@ -19,7 +19,6 @@ package io.vertx.pgclient;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.PgConnectionImpl;
-import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
@@ -50,48 +49,21 @@ public interface PgConnection extends SqlConnection {
    *
    * @param vertx the vertx instance
    * @param options the connect options
-   * @param handler the handler called with the connection or the failure
-   */
-  @Deprecated
-  static void connect(Vertx vertx, PgConnectOptions options, Handler<AsyncResult<PgConnection>> handler) {
-    Future<PgConnection> fut = connect(vertx, options);
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-  }
-
-  /**
-   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the connection or the failure
    */
   static Future<PgConnection> connect(Vertx vertx, PgConnectOptions options) {
     return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options);
   }
 
   /**
-   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from the environment variables.
-   */
-  @Deprecated
-  static void connect(Vertx vertx, Handler<AsyncResult<PgConnection>> handler) {
-    connect(vertx, PgConnectOptions.fromEnv(), handler);
-  }
-
-  /**
-   * Like {@link #connect(Vertx, Handler)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #connect(Vertx, PgConnectOptions)} with options build from the environment variables.
    */
   static Future<PgConnection> connect(Vertx vertx) {
     return connect(vertx, PgConnectOptions.fromEnv());
   }
 
   /**
-   * Like {@link #connect(Vertx, PgConnectOptions, Handler)} with options build from {@code connectionUri}.
-   */
-  @Deprecated
-  static void connect(Vertx vertx, String connectionUri, Handler<AsyncResult<PgConnection>> handler) {
-    connect(vertx, PgConnectOptions.fromUri(connectionUri), handler);
-  }
-
-  /**
-   * Like {@link #connect(Vertx, String, Handler)} but returns a {@code Future} of the asynchronous result
+   * Like {@link #connect(Vertx, PgConnectOptions)} with options build from {@code connectionUri}.
    */
   static Future<PgConnection> connect(Vertx vertx, String connectionUri) {
     return connect(vertx, PgConnectOptions.fromUri(connectionUri));
@@ -142,14 +114,6 @@ public interface PgConnection extends SqlConnection {
    * @return The secret key for the target backend
    */
   int secretKey();
-
-  /**
-   * {@inheritDoc}
-   */
-  @Fluent
-  @Deprecated
-  @Override
-  PgConnection prepare(String sql, Handler<AsyncResult<PreparedStatement>> handler);
 
   /**
    * {@inheritDoc}

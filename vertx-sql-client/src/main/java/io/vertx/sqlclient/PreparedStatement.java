@@ -18,9 +18,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.ArrayTuple;
 
 /**
@@ -85,11 +83,5 @@ public interface PreparedStatement {
    * Close the prepared query and release its resources.
    */
   Future<Void> close();
-
-  /**
-   * Like {@link #close()} but notifies the {@code completionHandler} when it's closed.
-   */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> completionHandler);
 
 }

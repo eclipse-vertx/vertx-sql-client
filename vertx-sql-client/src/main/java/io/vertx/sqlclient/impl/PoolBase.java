@@ -16,7 +16,6 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -49,13 +48,6 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
   @Override
   public void group(Handler<SqlClient> block) {
 
-  }
-
-  @Override
-  public void getConnection(Handler<AsyncResult<SqlConnection>> handler) {
-    delegate
-      .getConnection()
-      .onComplete(handler);
   }
 
   @Override
@@ -99,12 +91,6 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options) {
     return delegate.preparedQuery(sql, options);
-  }
-
-  @Override
-  public void close(Handler<AsyncResult<Void>> handler) {
-    ContextInternal closingCtx = vertx.getOrCreateContext();
-    closeFuture.close(handler != null ? closingCtx.promise(handler) : null);
   }
 
   @Override

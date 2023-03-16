@@ -26,7 +26,6 @@ import java.util.ServiceLoader;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -93,13 +92,7 @@ public interface Pool extends SqlClient {
   /**
    * Get a connection from the pool.
    *
-   * @param handler the handler that will get the connection result
-   */
-  @Deprecated
-  void getConnection(Handler<AsyncResult<SqlConnection>> handler);
-
-  /**
-   * Like {@link #getConnection(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the {@link SqlConnection}
    */
   Future<SqlConnection> getConnection();
 
@@ -135,18 +128,7 @@ public interface Pool extends SqlClient {
    * Otherwise it is given a failure result.
    *
    * @param function the code to execute
-   * @param handler the result handler
-   */
-  @Deprecated
-  default <T> void withTransaction(Function<SqlConnection, Future<@Nullable T>> function, Handler<AsyncResult<@Nullable T>> handler) {
-    Future<T> res = withTransaction(function);
-    if (handler != null) {
-      res.onComplete(handler);
-    }
-  }
-
-  /**
-   * Like {@link #withTransaction(Function, Handler)} but returns a {@code Future} of the asynchronous result.
+   * @return a future notified with the result
    */
   default <T> Future<@Nullable T> withTransaction(Function<SqlConnection, Future<@Nullable T>> function) {
     return getConnection()
@@ -171,7 +153,7 @@ public interface Pool extends SqlClient {
   }
 
   /**
-   * Like {@link #withTransaction(Function, Handler)} but allows for setting the mode, defining how the acquired
+   * Like {@link #withTransaction(Function)} but allows for setting the mode, defining how the acquired
    * connection is managed during the execution of the function.
    */
   default <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation, Function<SqlConnection, Future<@Nullable T>> function) {
@@ -201,30 +183,11 @@ public interface Pool extends SqlClient {
    * Otherwise it is given a failure result.
    *
    * @param function the code to execute
-   * @param handler the result handler
-   */
-  @Deprecated
-  default <T> void withConnection(Function<SqlConnection, Future<@Nullable T>> function, Handler<AsyncResult<@Nullable T>> handler) {
-    Future<T> res = withConnection(function);
-    if (handler != null) {
-      res.onComplete(handler);
-    }
-  }
-
-  /**
-   * Like {@link #withConnection(Function, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the result
    */
   default <T> Future<@Nullable T> withConnection(Function<SqlConnection, Future<@Nullable T>> function) {
     return getConnection().flatMap(conn -> function.apply(conn).onComplete(ar -> conn.close()));
   }
-
-  /**
-   * Close the pool and release the associated resources.
-   *
-   * @param handler the completion handler
-   */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> handler);
 
   /**
    * Set an handler called when the pool has established a connection to the database.

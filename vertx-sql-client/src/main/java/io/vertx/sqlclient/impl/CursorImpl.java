@@ -67,14 +67,6 @@ public class CursorImpl implements Cursor {
   }
 
   @Override
-  public void read(int count, Handler<AsyncResult<RowSet<Row>>> handler) {
-    Future<RowSet<Row>> fut = read(count);
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-  }
-
-  @Override
   public synchronized Future<RowSet<Row>> read(int count) {
     PromiseInternal<RowSet<Row>> promise = context.promise();
     ps.withPreparedStatement(ps.options(), params, ar -> {
@@ -99,11 +91,6 @@ public class CursorImpl implements Cursor {
   @Override
   public synchronized boolean isClosed() {
     return closed;
-  }
-
-  @Override
-  public synchronized void close(Handler<AsyncResult<Void>> completionHandler) {
-    close (context.promise(completionHandler));
   }
 
   @Override

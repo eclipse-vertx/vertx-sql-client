@@ -18,9 +18,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 
 /**
  * A cursor that reads progressively rows from the database, it is useful for reading very large result sets.
@@ -32,13 +30,7 @@ public interface Cursor {
    * Read rows from the cursor, the result is provided asynchronously to the {@code handler}.
    *
    * @param count the amount of rows to read
-   * @param handler the handler for the result
-   */
-  @Deprecated
-  void read(int count, Handler<AsyncResult<RowSet<Row>>> handler);
-
-  /**
-   * Like {@link #read(int, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the result
    */
   Future<RowSet<Row>> read(int count);
 
@@ -56,12 +48,6 @@ public interface Cursor {
    * It should be called for prepared queries executed with a fetch size.
    */
   Future<Void> close();
-
-  /**
-   * Like {@link #close()} but with a {@code completionHandler} called when the cursor has been released.
-   */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> completionHandler);
 
   /**
    * @return whether the cursor is closed

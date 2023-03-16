@@ -160,11 +160,6 @@ public class TransactionImpl implements Transaction {
   }
 
   @Override
-  public void completion(Handler<AsyncResult<Void>> handler) {
-    completion().onComplete(handler);
-  }
-
-  @Override
   public Future<Void> completion() {
     return completion.future().flatMap(k -> {
       if (k == TxCommand.Kind.COMMIT) {

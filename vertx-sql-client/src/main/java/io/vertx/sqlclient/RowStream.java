@@ -19,7 +19,6 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.streams.ReadStream;
@@ -58,13 +57,5 @@ public interface RowStream<T> extends ReadStream<T> {
    * Close the stream and release the resources.
    */
   Future<Void> close();
-
-  /**
-   * Close the stream and release the resources.
-   *
-   * @param completionHandler the completion handler for this operation
-   */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> completionHandler);
 
 }

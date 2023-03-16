@@ -22,7 +22,6 @@ import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.impl.pubsub.PgSubscriberImpl;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 
@@ -73,19 +72,11 @@ public interface PgSubscriber {
   PgChannel channel(String name);
 
   /**
-   * Like {@link #connect(Handler)} but with a future of the result
-   */
-  Future<Void> connect();
-
-  /**
    * Connect the subscriber to Postgres.
    *
-   * @param handler the handler notified of the connection success or failure
-   * @return a reference to this, so the API can be used fluently
+   * @return a future notified of the connection success or failure
    */
-  @Fluent
-  @Deprecated
-  PgSubscriber connect(Handler<AsyncResult<Void>> handler);
+  Future<Void> connect();
 
   /**
    * Set the reconnect policy that is executed when the subscriber is disconnected.
@@ -126,14 +117,8 @@ public interface PgSubscriber {
   boolean closed();
 
   /**
-   * Like {@link #close(Handler)} but with a future of the result
-   */
-  Future<Void> close();
-
-  /**
    * Close the subscriber, the retry policy will not be invoked.
    */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> handler);
+  Future<Void> close();
 
 }

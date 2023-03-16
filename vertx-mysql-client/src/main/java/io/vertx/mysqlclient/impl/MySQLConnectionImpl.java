@@ -49,26 +49,8 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
   }
 
   @Override
-  public MySQLConnection ping(Handler<AsyncResult<Void>> handler) {
-    Future<Void> fut = ping();
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-    return this;
-  }
-
-  @Override
   public Future<Void> ping() {
     return schedule(context, new PingCommand());
-  }
-
-  @Override
-  public MySQLConnection specifySchema(String schemaName, Handler<AsyncResult<Void>> handler) {
-    Future<Void> fut = specifySchema(schemaName);
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-    return this;
   }
 
   @Override
@@ -77,26 +59,8 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
   }
 
   @Override
-  public MySQLConnection getInternalStatistics(Handler<AsyncResult<String>> handler) {
-    Future<String> fut = getInternalStatistics();
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-    return this;
-  }
-
-  @Override
   public Future<String> getInternalStatistics() {
     return schedule(context, new StatisticsCommand());
-  }
-
-  @Override
-  public MySQLConnection setOption(MySQLSetOption option, Handler<AsyncResult<Void>> handler) {
-    Future<Void> fut = setOption(option);
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-    return this;
   }
 
   @Override
@@ -105,40 +69,13 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
   }
 
   @Override
-  public MySQLConnection resetConnection(Handler<AsyncResult<Void>> handler) {
-    Future<Void> fut = resetConnection();
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-    return this;
-  }
-
-  @Override
   public Future<Void> resetConnection() {
     return schedule(context, new ResetConnectionCommand());
   }
 
   @Override
-  public MySQLConnection debug(Handler<AsyncResult<Void>> handler) {
-    Future<Void> fut = debug();
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-    return this;
-  }
-
-  @Override
   public Future<Void> debug() {
     return schedule(context, new DebugCommand());
-  }
-
-  @Override
-  public MySQLConnection changeUser(MySQLAuthOptions options, Handler<AsyncResult<Void>> handler) {
-    Future<Void> fut = changeUser(options);
-    if (handler != null) {
-      fut.onComplete(handler);
-    }
-    return this;
   }
 
   @Override

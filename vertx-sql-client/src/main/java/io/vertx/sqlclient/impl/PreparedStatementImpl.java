@@ -198,14 +198,6 @@ class PreparedStatementImpl implements PreparedStatement {
     return new RowStreamImpl(this, context, fetch, args);
   }
 
-  @Override
-  public void close(Handler<AsyncResult<Void>> completionHandler) {
-    Future<Void> fut = close();
-    if (completionHandler != null) {
-      fut.onComplete(completionHandler);
-    }
-  }
-
   void closeCursor(String cursorId, Promise<Void> promise) {
     future.onComplete(ar -> {
       if (ar.succeeded()) {
@@ -239,23 +231,13 @@ class PreparedStatementImpl implements PreparedStatement {
     }
 
     @Override
-    public void execute(Handler<AsyncResult<R>> handler) {
-      execute(ArrayTuple.EMPTY, handler);
-    }
-
-    @Override
     public Future<R> execute() {
       return execute(ArrayTuple.EMPTY);
     }
 
     @Override
-    public void execute(Tuple args, Handler<AsyncResult<R>> handler) {
-      execute(args, context.promise(handler));
-    }
-
-    @Override
     public Future<R> execute(Tuple args) {
-      Promise<R> promise = context.promise();
+      PromiseInternal<R> promise = context.promise();
       execute(args, promise);
       return promise.future();
     }

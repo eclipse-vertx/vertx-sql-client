@@ -165,14 +165,6 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
     }
   }
 
-  @Override
-  public void close(Handler<AsyncResult<Void>> completionHandler) {
-    Future<Void> fut = close();
-    if (completionHandler != null) {
-      fut.onComplete(completionHandler);
-    }
-  }
-
   private void checkPending() {
     synchronized (RowStreamImpl.this) {
       if (emitting) {

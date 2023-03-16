@@ -19,9 +19,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 
 import java.util.List;
 import java.util.function.Function;
@@ -39,13 +37,7 @@ public interface PreparedQuery<T> extends Query<T> {
   /**
    * Execute the query.
    *
-   * @param handler the handler receiving the response
-   */
-  @Deprecated
-  void execute(Tuple tuple, Handler<AsyncResult<T>> handler);
-
-  /**
-   * Like {@link #execute(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the result
    */
   Future<T> execute(Tuple tuple);
 
@@ -53,13 +45,7 @@ public interface PreparedQuery<T> extends Query<T> {
    * Execute the query with a batch of tuples.
    *
    * @param batch the batch of tuples
-   * @param handler the handler receiving the response
-   */
-  @Deprecated
-  void executeBatch(List<Tuple> batch, Handler<AsyncResult<T>> handler);
-
-  /**
-   * Like {@link #executeBatch(List, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the result
    */
   Future<T> executeBatch(List<Tuple> batch);
 

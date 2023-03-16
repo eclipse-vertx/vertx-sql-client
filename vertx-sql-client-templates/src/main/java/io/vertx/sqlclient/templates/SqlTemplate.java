@@ -13,9 +13,7 @@ package io.vertx.sqlclient.templates;
 
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
@@ -139,14 +137,8 @@ public interface SqlTemplate<I, R> {
   /**
    * Execute the query with the {@code parameters}
    *
-   * @param parameters the query parameters
-   * @param handler the result handler
-   */
-  @Deprecated
-  void execute(I parameters, Handler<AsyncResult<R>> handler);
-
-  /**
-   * Like {@link #execute(Object, Handler)} but returns a {@code Future} of the asynchronous result
+   * @param params the query parameters
+   * @return a future notified with the result
    */
   Future<R> execute(I params);
 
@@ -156,13 +148,7 @@ public interface SqlTemplate<I, R> {
    * <p>Each item in the batch is mapped to a tuple.
    *
    * @param batch the batch
-   * @param handler the result handler
-   */
-  @Deprecated
-  void executeBatch(List<I> batch, Handler<AsyncResult<R>> handler);
-
-  /**
-   * Like {@link #executeBatch(List, Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified with the result
    */
   Future<R> executeBatch(List<I> batch);
 
