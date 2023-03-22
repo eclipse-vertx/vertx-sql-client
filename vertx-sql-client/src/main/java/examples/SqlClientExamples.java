@@ -20,27 +20,16 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.Driver;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class SqlClientExamples {
 
   public void queries01(SqlClient client) {
@@ -465,5 +454,21 @@ public class SqlClientExamples {
       .setShared(true)
       .setName("my-pool")
       .setEventLoopSize(4));
+  }
+
+
+  public void dynamicPoolConfig(Vertx vertx, Pool pool, Driver driver) {
+    pool.connectionProvider(ctx -> {
+      Future<SqlConnectOptions> fut = retrieveOptions();
+      return fut.compose(connectOptions -> {
+        // Do not forget to close later
+        ConnectionFactory factory = driver.createConnectionFactory(vertx, connectOptions);
+        return factory.connect(ctx);
+      });
+    });
+  }
+
+  private Future<SqlConnectOptions> retrieveOptions() {
+    return null;
   }
 }

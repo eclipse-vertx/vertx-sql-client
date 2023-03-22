@@ -22,3 +22,18 @@ has been created and before it is inserted in the pool.
 ----
 
 Once you are done with the connection, you should simply close it to signal the pool to use it.
+
+=== Dynamic connection provider
+
+By default, the pool create connections using {@link io.vertx.sqlclient.spi.ConnectionFactory#connect ConnectionFactory#connect}.
+
+But you can provide your own implementation in {@link io.vertx.sqlclient.Pool#connectionProvider Pool#connectionProvider}.
+
+Since the provider is asynchronous, it can be used to provide dynamic pool configuration (e.g. password rotation).
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#dynamicPoolConfig}
+----
+
+CAUTION: When the connection factory becomes useless (e.g. because of a new configuration) it must be closed to release its resources.
