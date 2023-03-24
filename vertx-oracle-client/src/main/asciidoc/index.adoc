@@ -10,10 +10,10 @@ scalability and low overhead.
 * Built-in connection pooling
 * Java 8 Date and Time
 * SSL/TLS
+* RxJava API
 
 *Not supported yet*
 
-* RxJava API
 * Prepared queries caching
 * Cursor
 * Row streaming
