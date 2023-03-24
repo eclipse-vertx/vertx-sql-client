@@ -17,17 +17,18 @@ import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
+import io.vertx.oracleclient.impl.commands.PrepareStatementCommand;
+import io.vertx.oracleclient.impl.commands.SimpleQueryCommand;
 import io.vertx.oracleclient.impl.commands.*;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.QueryResultHandler;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.impl.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import oracle.jdbc.OracleConnection;
 
 import java.sql.SQLException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static io.vertx.oracleclient.impl.Helper.*;
 
@@ -36,6 +37,8 @@ public class CommandHandler implements Connection {
   private final ContextInternal context;
   private final OracleConnectOptions options;
   private Holder holder;
+  @SuppressWarnings("rawtypes")
+  private ConcurrentMap<String, RowReader> cursors = new ConcurrentHashMap<>();
 
   public CommandHandler(ContextInternal ctx, OracleConnectOptions options, OracleConnection oc) {
     this.context = ctx;
@@ -123,7 +126,7 @@ public class CommandHandler implements Connection {
   public <R> Future<R> schedule(ContextInternal contextInternal, CommandBase<R> commandBase) {
     Future<R> result;
     if (commandBase instanceof io.vertx.sqlclient.impl.command.SimpleQueryCommand) {
-      result = (Future<R>) handle((io.vertx.sqlclient.impl.command.SimpleQueryCommand) commandBase);
+      result = (Future<R>) handle((io.vertx.sqlclient.impl.command.SimpleQueryCommand<?>) commandBase);
     } else if (commandBase instanceof io.vertx.sqlclient.impl.command.PrepareStatementCommand) {
       result = (Future<R>) handle((io.vertx.sqlclient.impl.command.PrepareStatementCommand) commandBase);
     } else if (commandBase instanceof ExtendedQueryCommand) {
@@ -132,6 +135,10 @@ public class CommandHandler implements Connection {
       result = handle((TxCommand<R>) commandBase);
     } else if (commandBase instanceof PingCommand) {
       result = (Future<R>) handle((PingCommand) commandBase);
+    } else if (commandBase instanceof CloseStatementCommand) {
+      result = context.succeededFuture();
+    } else if (commandBase instanceof CloseCursorCommand) {
+      result = (Future<R>) handle((CloseCursorCommand) commandBase);
     } else {
       result = context.failedFuture("Not yet implemented " + commandBase);
     }
@@ -158,14 +165,22 @@ public class CommandHandler implements Connection {
     });
   }
 
+  private Future<Void> handle(CloseCursorCommand cmd) {
+    RowReader<?, ?> reader = cursors.remove(cmd.id());
+    if (reader == null) {
+      return context.succeededFuture();
+    }
+    return reader.close();
+  }
+
   private Future<Integer> handle(PingCommand ping) {
     return ping.execute(connection, context);
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
-  private <R> Future<Boolean> handle(io.vertx.sqlclient.impl.command.SimpleQueryCommand command) {
-    QueryCommand<?, R> action = new SimpleQueryCommand<>(command.sql(), command.collector());
-    return handle(action, command.resultHandler());
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  private <R> Future<Boolean> handle(io.vertx.sqlclient.impl.command.SimpleQueryCommand cmd) {
+    QueryCommand<?, R> action = new SimpleQueryCommand<>(cmd, cmd.collector());
+    return action.execute(connection, context);
   }
 
   private Future<PreparedStatement> handle(io.vertx.sqlclient.impl.command.PrepareStatementCommand command) {
@@ -173,27 +188,23 @@ public class CommandHandler implements Connection {
     return action.execute(connection, context);
   }
 
-  private <R> Future<Boolean> handle(QueryCommand<?, R> action, QueryResultHandler<R> handler) {
-    Future<OracleResponse<R>> fut = action.execute(connection, context);
-    return fut
-      .onSuccess(ar -> ar.handle(handler)).map(false)
-      .onFailure(t -> holder.handleException(t));
-
-  }
-
-  private <R> Future<Boolean> handle(ExtendedQueryCommand<R> command) {
-    if (command.cursorId() != null) {
-      QueryCommand<?, R> cmd = new OracleCursorQueryCommand<>(command, command.params());
-      return cmd.execute(connection, context)
-        .map(false);
+  @SuppressWarnings("unchecked")
+  private <R> Future<Boolean> handle(ExtendedQueryCommand<R> cmd) {
+    AbstractCommand<Boolean> action;
+    String cursorId = cmd.cursorId();
+    if (cursorId != null) {
+      RowReader<?, R> rowReader = cursors.get(cursorId);
+      if (rowReader != null) {
+        action = new OracleCursorFetchCommand<>(cmd, rowReader);
+      } else {
+        action = new OracleCursorQueryCommand<>(cmd, cmd.collector(), rr -> cursors.put(cursorId, rr));
+      }
+    } else if (cmd.isBatch()) {
+      action = new OraclePreparedBatch<>(cmd, cmd.collector());
+    } else {
+      action = new OraclePreparedQuery<>(cmd, cmd.collector());
     }
-
-    QueryCommand<?, R> action =
-      command.isBatch() ?
-        new OraclePreparedBatch<>(command, command.collector(), command.paramsList())
-        : new OraclePreparedQuery<>(command, command.collector(), command.params());
-
-    return handle(action, command.resultHandler());
+    return action.execute(connection, context);
   }
 
   private <R> Future<R> handle(TxCommand<R> command) {
