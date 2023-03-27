@@ -18,20 +18,25 @@ import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
 import oracle.jdbc.OracleConnection;
 
-public class OracleCursorFetchCommand<C, R> extends AbstractCommand<Boolean> {
+public class OracleCursorFetchCommand<C, R> extends OracleCommand<Boolean> {
 
   private final QueryResultHandler<R> resultHandler;
   private final int fetch;
   private final RowReader<C, R> rowReader;
 
-  public OracleCursorFetchCommand(ExtendedQueryCommand<R> cmd, RowReader<C, R> rowReader) {
+  private OracleCursorFetchCommand(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<R> cmd, RowReader<C, R> rowReader) {
+    super(oracleConnection, connectionContext);
     resultHandler = cmd.resultHandler();
     fetch = cmd.fetch();
     this.rowReader = rowReader;
   }
 
+  public static <U, V> OracleCursorFetchCommand<U, V> create(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<V> cmd, RowReader<U, V> rowReader) {
+    return new OracleCursorFetchCommand<>(oracleConnection, connectionContext, cmd, rowReader);
+  }
+
   @Override
-  public Future<Boolean> execute(OracleConnection conn, ContextInternal context) {
+  protected Future<Boolean> execute() {
     return rowReader.read(fetch).compose(oracleResponse -> {
       oracleResponse.handle(resultHandler);
       return rowReader.hasMore();
