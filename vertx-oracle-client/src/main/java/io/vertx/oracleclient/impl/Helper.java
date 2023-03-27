@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,19 +12,13 @@ package io.vertx.oracleclient.impl;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.oracleclient.OracleException;
 import io.vertx.sqlclient.Tuple;
 import oracle.sql.TIMESTAMPTZ;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Flow;
 import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
 
 public class Helper {
 
@@ -76,66 +70,6 @@ public class Helper {
     } catch (SQLException sqlException) {
       throw new OracleException(sqlException);
     }
-  }
-
-  public static <T> Future<T> first(Flow.Publisher<T> publisher, ContextInternal context) {
-    Promise<T> promise = context.promise();
-    publisher.subscribe(new Flow.Subscriber<>() {
-      volatile Flow.Subscription subscription;
-
-      @Override
-      public void onSubscribe(Flow.Subscription subscription) {
-        this.subscription = subscription;
-        subscription.request(1);
-      }
-
-      @Override
-      public void onNext(T item) {
-        context.runOnContext(x -> promise.tryComplete(item));
-        subscription.cancel();
-      }
-
-      @Override
-      public void onError(Throwable throwable) {
-        promise.fail(sanitize(throwable));
-      }
-
-      @Override
-      public void onComplete() {
-        // Use tryComplete as the completion signal can be sent even if we cancelled.
-        // Also for Publisher<Void> we would get in this case.
-        promise.tryComplete(null);
-      }
-    });
-    return promise.future();
-  }
-
-  public static <T> Future<List<T>> collect(Flow.Publisher<T> publisher, ContextInternal context) {
-    Promise<List<T>> promise = context.promise();
-    publisher.subscribe(new Flow.Subscriber<>() {
-      final List<T> list = new ArrayList<>();
-
-      @Override
-      public void onSubscribe(Flow.Subscription subscription) {
-        subscription.request(Long.MAX_VALUE);
-      }
-
-      @Override
-      public void onNext(T item) {
-        list.add(item);
-      }
-
-      @Override
-      public void onError(Throwable throwable) {
-        promise.fail(sanitize(throwable));
-      }
-
-      @Override
-      public void onComplete() {
-        promise.complete(list);
-      }
-    });
-    return promise.future();
   }
 
   public static Object convertSqlValue(Object value) throws SQLException {
