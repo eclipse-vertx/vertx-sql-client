@@ -98,11 +98,6 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   @Override
-  protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
-    return context.promise(handler);
-  }
-
-  @Override
   public void handleClosed() {
     Handler<Void> handler = closeHandler;
     if (handler != null) {

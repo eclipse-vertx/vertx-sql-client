@@ -57,8 +57,6 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
 
   protected abstract <T> PromiseInternal<T> promise();
 
-  protected abstract <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler);
-
   @Override
   public Driver driver() {
     return driver;
@@ -196,11 +194,6 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
     @Override
     protected <T> PromiseInternal<T> promise() {
       return SqlClientBase.this.promise();
-    }
-
-    @Override
-    protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
-      return SqlClientBase.this.promise(handler);
     }
 
     @Override

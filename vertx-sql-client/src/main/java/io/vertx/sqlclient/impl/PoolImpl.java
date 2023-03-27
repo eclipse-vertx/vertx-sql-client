@@ -117,11 +117,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   }
 
   @Override
-  protected <T> PromiseInternal<T> promise(Handler<AsyncResult<T>> handler) {
-    return vertx.promise(handler);
-  }
-
-  @Override
   public Future<SqlConnection> getConnection() {
     ContextInternal current = vertx.getOrCreateContext();
     if (pipeliningLimit > 1) {
