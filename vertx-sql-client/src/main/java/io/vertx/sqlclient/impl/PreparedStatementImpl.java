@@ -246,13 +246,9 @@ class PreparedStatementImpl implements PreparedStatement {
       PreparedStatementImpl.this.execute(args, 0, null, false, builder, promise);
     }
 
-    public void executeBatch(List<Tuple> argsList, Handler<AsyncResult<R>> handler) {
-      executeBatch(argsList, context.promise(handler));
-    }
-
     @Override
     public Future<R> executeBatch(List<Tuple> argsList) {
-      Promise<R> promise = context.promise();
+      PromiseInternal<R> promise = context.promise();
       executeBatch(argsList, promise);
       return promise.future();
     }

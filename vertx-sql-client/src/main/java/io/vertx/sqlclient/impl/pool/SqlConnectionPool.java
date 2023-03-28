@@ -103,27 +103,25 @@ public class SqlConnectionPool {
 
   private final PoolConnector<PooledConnection> connector = new PoolConnector<PooledConnection>() {
     @Override
-    public void connect(EventLoopContext context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<PooledConnection>>> handler) {
+    public Future<ConnectResult<PooledConnection>> connect(EventLoopContext context, Listener listener) {
       Future<SqlConnection> future = connectionProvider.apply(context);
-      future.onComplete(ar -> {
-        if (ar.succeeded()) {
-          SqlConnectionBase res = (SqlConnectionBase) ar.result();
-          Connection conn = res.unwrap();
-          if (conn.isValid()) {
-            PooledConnection pooled = new PooledConnection(res.factory(), conn, listener);
-            conn.init(pooled);
-            Handler<PooledConnection> connectionHandler = hook.get();
-            if (connectionHandler != null) {
-              pooled.poolResultHandler = handler;
-              connectionHandler.handle(pooled);
-            } else {
-              handler.handle(Future.succeededFuture(new ConnectResult<>(pooled, pipeliningLimit, 0)));
-            }
+      return future.compose(res -> {
+        SqlConnectionBase connBase = (SqlConnectionBase) res;
+        Connection conn = connBase.unwrap();
+        if (conn.isValid()) {
+          PooledConnection pooled = new PooledConnection(connBase.factory(), conn, listener);
+          conn.init(pooled);
+          Handler<PooledConnection> connectionHandler = hook.get();
+          if (connectionHandler != null) {
+            Promise<ConnectResult<PooledConnection>> p = Promise.promise();
+            pooled.poolCallback = p;
+            connectionHandler.handle(pooled);
+            return p.future();
           } else {
-            handler.handle(Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION));
+            return Future.succeededFuture(new ConnectResult<>(pooled, pipeliningLimit, 0));
           }
         } else {
-          handler.handle(Future.failedFuture(ar.cause()));
+          return Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION);
         }
       });
     }
@@ -261,7 +259,7 @@ public class SqlConnectionPool {
     private final Connection conn;
     private final PoolConnector.Listener listener;
     private Holder holder;
-    private Handler<AsyncResult<ConnectResult<PooledConnection>>> poolResultHandler;
+    private Promise<ConnectResult<PooledConnection>> poolCallback;
     private Lease<PooledConnection> lease;
     public long expirationTimestamp;
 
@@ -332,11 +330,11 @@ public class SqlConnectionPool {
         promise.fail(msg);
       } else {
         this.holder = null;
-        Handler<AsyncResult<ConnectResult<PooledConnection>>> resultHandler = poolResultHandler;
+        Promise<ConnectResult<PooledConnection>> resultHandler = poolCallback;
         if (resultHandler != null) {
-          poolResultHandler = null;
+          poolCallback = null;
           promise.complete();
-          resultHandler.handle(Future.succeededFuture(new ConnectResult<>(this, pipeliningLimit, 0)));
+          resultHandler.complete(new ConnectResult<>(this, pipeliningLimit, 0));
           return;
         }
         if (beforeRecycle == null) {
@@ -360,10 +358,10 @@ public class SqlConnectionPool {
       if (holder != null) {
         holder.handleClosed();
       }
-      Handler<AsyncResult<ConnectResult<PooledConnection>>> resultHandler = poolResultHandler;
+      Promise<ConnectResult<PooledConnection>> resultHandler = poolCallback;
       if (resultHandler != null) {
-        poolResultHandler = null;
-        resultHandler.handle(Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION));
+        poolCallback = null;
+        resultHandler.fail(ConnectionBase.CLOSED_EXCEPTION);
       }
       listener.onRemove();
     }
