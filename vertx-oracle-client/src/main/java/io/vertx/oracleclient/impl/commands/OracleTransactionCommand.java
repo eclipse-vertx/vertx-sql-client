@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,57 +12,60 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.oracleclient.impl.Helper;
 import io.vertx.oracleclient.impl.Helper.SQLFutureMapper;
 import io.vertx.sqlclient.impl.command.TxCommand;
 import oracle.jdbc.OracleConnection;
 
-import static io.vertx.oracleclient.impl.Helper.executeBlocking;
 import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 import static io.vertx.sqlclient.impl.command.TxCommand.Kind.COMMIT;
 
-public class OracleTransactionCommand<R> extends AbstractCommand<R> {
+public class OracleTransactionCommand<R> extends OracleCommand<R> {
 
   private final TxCommand<R> op;
 
-  public OracleTransactionCommand(TxCommand<R> op) {
+  private OracleTransactionCommand(OracleConnection oracleConnection, ContextInternal connectionContext, TxCommand<R> op) {
+    super(oracleConnection, connectionContext);
     this.op = op;
   }
 
+  public static <U> OracleTransactionCommand<U> create(OracleConnection oracleConnection, ContextInternal connectionContext, TxCommand<U> cmd) {
+    return new OracleTransactionCommand<>(oracleConnection, connectionContext, cmd);
+  }
+
   @Override
-  public Future<R> execute(OracleConnection conn, ContextInternal context) {
+  protected Future<R> execute() {
     Future<Void> result;
     if (op.kind == BEGIN) {
-      result = begin(conn, context);
+      result = begin();
     } else if (op.kind == COMMIT) {
-      result = commit(conn, context);
+      result = commit();
     } else {
-      result = rollback(conn, context);
+      result = rollback();
     }
     return result.map(op.result);
   }
 
-  private Future<Void> begin(OracleConnection conn, ContextInternal context) {
-    return executeBlocking(context, () -> {
-      int isolation = conn.getTransactionIsolation();
-      conn.setAutoCommit(false);
-      conn.setTransactionIsolation(isolation);
+  private Future<Void> begin() {
+    return executeBlocking(() -> {
+      int isolation = oracleConnection.getTransactionIsolation();
+      oracleConnection.setAutoCommit(false);
+      oracleConnection.setTransactionIsolation(isolation);
     });
   }
 
-  private Future<Void> commit(OracleConnection conn, ContextInternal context) {
-    return executeBlocking(context, () -> conn.getAutoCommit())
+  private Future<Void> commit() {
+    return executeBlocking(() -> oracleConnection.getAutoCommit())
       .compose((SQLFutureMapper<Boolean, Void>) autoCommit -> {
-        return autoCommit ? Future.succeededFuture() : Helper.first(conn.commitAsyncOracle(), context);
+        return autoCommit ? Future.succeededFuture() : first(oracleConnection.commitAsyncOracle());
       })
-      .eventually(v -> executeBlocking(context, () -> conn.setAutoCommit(true)));
+      .eventually(v -> executeBlocking(() -> oracleConnection.setAutoCommit(true)));
   }
 
-  private Future<Void> rollback(OracleConnection conn, ContextInternal context) {
-    return executeBlocking(context, () -> conn.getAutoCommit())
+  private Future<Void> rollback() {
+    return executeBlocking(() -> oracleConnection.getAutoCommit())
       .compose((SQLFutureMapper<Boolean, Void>) autoCommit -> {
-        return autoCommit ? Future.succeededFuture() : Helper.first(conn.rollbackAsyncOracle(), context);
+        return autoCommit ? Future.succeededFuture() : first(oracleConnection.rollbackAsyncOracle());
       })
-      .eventually(v -> executeBlocking(context, () -> conn.setAutoCommit(true)));
+      .eventually(v -> executeBlocking(() -> oracleConnection.setAutoCommit(true)));
   }
 }

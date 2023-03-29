@@ -22,8 +22,7 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.OracleDataSource;
 
-import java.sql.SQLException;
-
+import static io.vertx.oracleclient.impl.Helper.executeBlocking;
 import static io.vertx.oracleclient.impl.OracleDatabaseHelper.createDataSource;
 
 public class OracleConnectionFactory implements ConnectionFactory {
@@ -45,14 +44,10 @@ public class OracleConnectionFactory implements ConnectionFactory {
   public Future<SqlConnection> connect(Context context) {
     ContextInternal ctx = (ContextInternal) context;
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
-    return context.<OracleConnection>executeBlocking(prom -> {
-      try {
-        prom.complete(datasource.createConnectionBuilder().build());
-      } catch (SQLException e) {
-        prom.fail(e);
-      }
-    }).map(ora -> {
-      CommandHandler conn = new CommandHandler((ContextInternal) context, options, ora);
+    return executeBlocking(context, () -> {
+      OracleConnection orac = datasource.createConnectionBuilder().build();
+      OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
+      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, options, orac, metadata);
       OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn, tracer, null);
       conn.init(msConn);
       return msConn;

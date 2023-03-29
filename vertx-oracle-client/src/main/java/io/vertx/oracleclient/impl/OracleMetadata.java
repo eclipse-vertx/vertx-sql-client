@@ -13,31 +13,39 @@ package io.vertx.oracleclient.impl;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 
-public class OracleMetadataImpl implements DatabaseMetadata {
-  private final DatabaseMetaData metadata;
+public class OracleMetadata implements DatabaseMetadata {
 
-  public OracleMetadataImpl(DatabaseMetaData metadata) {
-    this.metadata = metadata;
+  private final String productName;
+  private final String fullVersion;
+  private final int majorVersion;
+  private final int minorVersion;
+
+  public OracleMetadata(DatabaseMetaData metadata) throws SQLException {
+    productName = metadata.getDatabaseProductName();
+    fullVersion = metadata.getDatabaseProductVersion();
+    majorVersion = metadata.getDatabaseMajorVersion();
+    minorVersion = metadata.getDatabaseMinorVersion();
   }
 
   @Override
   public String productName() {
-    return Helper.getOrHandleSQLException(metadata::getDatabaseProductName);
+    return productName;
   }
 
   @Override
   public String fullVersion() {
-    return Helper.getOrHandleSQLException(metadata::getDatabaseProductVersion);
+    return fullVersion;
   }
 
   @Override
   public int majorVersion() {
-    return Helper.getOrHandleSQLException(metadata::getDatabaseMajorVersion);
+    return majorVersion;
   }
 
   @Override
   public int minorVersion() {
-    return Helper.getOrHandleSQLException(metadata::getDatabaseMinorVersion);
+    return minorVersion;
   }
 }
