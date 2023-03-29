@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -8,15 +8,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
+
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.sqlclient.impl.command.CommandBase;
 import oracle.jdbc.OracleConnection;
 
-public abstract class AbstractCommand<T> extends CommandBase<T> {
+public class OracleCloseStatementCommand extends OracleCommand<Void> {
 
-  public abstract Future<T> execute(OracleConnection conn, ContextInternal context);
+  public OracleCloseStatementCommand(OracleConnection oracleConnection, ContextInternal connectionContext) {
+    super(oracleConnection, connectionContext);
+  }
 
+  @Override
+  protected Future<Void> execute() {
+    return Future.succeededFuture();
+  }
 }

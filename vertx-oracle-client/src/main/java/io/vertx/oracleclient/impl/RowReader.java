@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -16,7 +16,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.oracleclient.OracleException;
-import io.vertx.oracleclient.impl.commands.OraclePreparedQuery;
+import io.vertx.oracleclient.impl.commands.OraclePreparedQueryCommand;
 import io.vertx.oracleclient.impl.commands.OracleResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDesc;
@@ -187,7 +187,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
 
   private static Class<?> getType(String cn) {
     try {
-      return OraclePreparedQuery.class.getClassLoader().loadClass(cn);
+      return OraclePreparedQueryCommand.class.getClassLoader().loadClass(cn);
     } catch (ClassNotFoundException e) {
       return null;
     }
