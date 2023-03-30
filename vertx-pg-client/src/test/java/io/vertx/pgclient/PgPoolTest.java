@@ -363,8 +363,52 @@ public class PgPoolTest extends PgPoolTestBase {
 
     poolOptions
       .setPoolCleanerPeriod(pooleCleanerPeriod)
+      .setMaxLifetime(0)
       .setIdleTimeout(idleTimeout)
       .setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+    options.setPort(8080);
+    options.setHost("localhost");
+    PgPool pool = createPool(options, poolOptions);
+
+    // Create a connection that remains in the pool
+    pool
+      .getConnection()
+      .flatMap(SqlClient::close)
+      .onComplete(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testPoolMaxLifetime(TestContext ctx) {
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
+    int pooleCleanerPeriod = 100;
+    int maxLifetime = 3000;
+    Async latch = ctx.async();
+    proxy.proxyHandler(conn -> {
+      proxyConn.set(conn);
+      long now = System.currentTimeMillis();
+      conn.clientCloseHandler(v -> {
+        long lifetime = System.currentTimeMillis() - now;
+        int delta = 500;
+        int lowerBound = maxLifetime - pooleCleanerPeriod - delta;
+        int upperBound = maxLifetime + pooleCleanerPeriod + delta;
+        ctx.assertTrue(lifetime >= lowerBound, "Was expecting connection to be closed in more than " + lowerBound + ": " + lifetime);
+        ctx.assertTrue(lifetime <= upperBound, "Was expecting connection to be closed in less than " + upperBound + ": "+ lifetime);
+        latch.complete();
+      });
+      conn.connect();
+    });
+
+    // Start proxy
+    Async listenLatch = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(res -> listenLatch.complete()));
+    listenLatch.awaitSuccess(20_000);
+
+    poolOptions
+      .setPoolCleanerPeriod(pooleCleanerPeriod)
+      .setIdleTimeout(0)
+      .setMaxLifetime(maxLifetime)
+      .setMaxLifetimeUnit(TimeUnit.MILLISECONDS);
     options.setPort(8080);
     options.setHost("localhost");
     PgPool pool = createPool(options, poolOptions);
