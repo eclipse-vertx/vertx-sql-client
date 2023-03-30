@@ -45,6 +45,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final CloseFuture closeFuture;
   private final long idleTimeout;
   private final long connectionTimeout;
+  private final long maxLifetime;
   private final long cleanerPeriod;
   private final int pipeliningLimit;
   private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
@@ -66,20 +67,23 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
 
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
+    this.maxLifetime = MILLISECONDS.convert(poolOptions.getMaxLifetime(), poolOptions.getMaxLifetimeUnit());
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.pipeliningLimit = pipeliningLimit;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, afterAcquire, beforeRecycle, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer,
+      afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipeliningLimit,
+      poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
   }
 
   public Pool init() {
     closeFuture.add(this);
-    if (idleTimeout > 0 && cleanerPeriod > 0) {
+    if ((idleTimeout > 0 || maxLifetime > 0) && cleanerPeriod > 0) {
       synchronized (this) {
         timerID = vertx.setTimer(cleanerPeriod, id -> {
-          checkExpired();
+          runEviction();
         });
       }
     }
@@ -94,17 +98,17 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     return this;
   }
 
-  private void checkExpired() {
+  private void runEviction() {
     synchronized (this) {
       if (timerID == -1) {
         // Cancelled
         return;
       }
       timerID = vertx.setTimer(cleanerPeriod, id -> {
-        checkExpired();
+        runEviction();
       });
     }
-    pool.checkExpired();
+    pool.evict();
   }
 
   @Override

@@ -45,6 +45,16 @@ public class PoolOptionsConverter {
             obj.setIdleTimeoutUnit(java.util.concurrent.TimeUnit.valueOf((String)member.getValue()));
           }
           break;
+        case "maxLifetime":
+          if (member.getValue() instanceof Number) {
+            obj.setMaxLifetime(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "maxLifetimeUnit":
+          if (member.getValue() instanceof String) {
+            obj.setMaxLifetimeUnit(java.util.concurrent.TimeUnit.valueOf((String)member.getValue()));
+          }
+          break;
         case "maxSize":
           if (member.getValue() instanceof Number) {
             obj.setMaxSize(((Number)member.getValue()).intValue());
@@ -87,6 +97,10 @@ public class PoolOptionsConverter {
     json.put("idleTimeout", obj.getIdleTimeout());
     if (obj.getIdleTimeoutUnit() != null) {
       json.put("idleTimeoutUnit", obj.getIdleTimeoutUnit().name());
+    }
+    json.put("maxLifetime", obj.getMaxLifetime());
+    if (obj.getMaxLifetimeUnit() != null) {
+      json.put("maxLifetimeUnit", obj.getMaxLifetimeUnit().name());
     }
     json.put("maxSize", obj.getMaxSize());
     json.put("maxWaitQueueSize", obj.getMaxWaitQueueSize());
