@@ -34,6 +34,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.SqlCredentialsProvider;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
@@ -78,13 +79,13 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
-    return doConnect(server, context).flatMap(conn -> {
+  protected Future<Connection> doConnectInternal(SocketAddress server, SqlCredentialsProvider credentialsProvider, String database, EventLoopContext context) {
+    return credentialsProvider.getCredentials(context).flatMap(credentials -> doConnect(server, context).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
-      return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
+      return Future.<Connection>future(p -> socket.sendStartupMessage(credentials.username, credentials.password, database, properties, p))
         .map(conn);
-    });
+    }));
   }
 
   public void cancelRequest(SocketAddress server, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {

@@ -27,6 +27,7 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.SqlCredentialsProvider;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
@@ -51,12 +52,14 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
-    return netClient.connect(server).flatMap(so -> {
-      DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
-        preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
-      conn.init();
-      return Future.future(p -> conn.sendStartupMessage(username, password, database, properties, p));
+  protected Future<Connection> doConnectInternal(SocketAddress server, SqlCredentialsProvider credentialsProvider, String database, EventLoopContext context) {
+    return credentialsProvider.getCredentials(context).flatMap(credentials -> {
+      return netClient.connect(server).flatMap(so -> {
+        DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
+          preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+        conn.init();
+        return Future.future(p -> conn.sendStartupMessage(credentials.username, credentials.password, database, properties, p));
+      });
     });
   }
 

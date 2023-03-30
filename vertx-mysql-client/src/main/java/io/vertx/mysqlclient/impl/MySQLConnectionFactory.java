@@ -25,6 +25,7 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.SqlCredentialsProvider;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
@@ -113,20 +114,22 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
+  protected Future<Connection> doConnectInternal(SocketAddress server, SqlCredentialsProvider credentialsProvider, String database, EventLoopContext context) {
     if (sslMode == SslMode.PREFERRED) {
-      return doConnect(server, username, password, database, sslMode, context).recover(err -> doConnect(server, username, password, database, SslMode.DISABLED, context));
+      return doConnect(server, credentialsProvider, database, sslMode, context).recover(err -> doConnect(server, credentialsProvider, database, SslMode.DISABLED, context));
     } else {
-      return doConnect(server, username, password, database, sslMode, context);
+      return doConnect(server, credentialsProvider, database, sslMode, context);
     }
   }
 
-  private Future<Connection> doConnect(SocketAddress server, String username, String password, String database, SslMode sslMode, EventLoopContext context) {
-    Future<NetSocket> fut = netClient.connect(server);
-    return fut.flatMap(so -> {
-      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
-      conn.init();
-      return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
+  private Future<Connection> doConnect(SocketAddress server, SqlCredentialsProvider credentialsProvider, String database, SslMode sslMode, EventLoopContext context) {
+    return credentialsProvider.getCredentials(context).flatMap(credentials -> {
+      Future<NetSocket> fut = netClient.connect(server);
+      return fut.flatMap(so -> {
+        MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+        conn.init();
+        return Future.future(promise -> conn.sendStartupMessage(credentials.username, credentials.password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
+      });
     });
   }
 

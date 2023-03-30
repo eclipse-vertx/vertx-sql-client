@@ -22,6 +22,7 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetClientBuilder;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlCredentialsProvider;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.Collections;
@@ -40,8 +41,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   protected final Map<String, String> properties;
   protected final SqlConnectOptions options;
   protected final SocketAddress server;
-  protected final String user;
-  protected final String password;
+  protected final SqlCredentialsProvider credentialsProvider;
   protected final String database;
 
   // cache
@@ -67,8 +67,11 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     this.properties = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
     this.server = options.getSocketAddress();
     this.options = options;
-    this.user = options.getUser();
-    this.password = options.getPassword();
+    if (options.getCredentialsProvider() != null) {
+      this.credentialsProvider = options.getCredentialsProvider();
+    } else {
+      this.credentialsProvider = new SqlCredentialsProvider.Static(options.getUser(), options.getPassword());
+    }
     this.database = options.getDatabase();
 
     this.cachePreparedStatements = options.getCachePreparedStatements();
@@ -96,7 +99,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
 
   public Future<Connection> connect(EventLoopContext context) {
     PromiseInternal<Connection> promise = context.promise();
-    context.emit(promise, p -> doConnectWithRetry(server, user, password, database, p, reconnectAttempts));
+    context.emit(promise, p -> doConnectWithRetry(server, credentialsProvider, database, p, reconnectAttempts));
     return promise.future();
   }
 
@@ -105,15 +108,15 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     clientCloseFuture.close(promise);
   }
 
-  private void doConnectWithRetry(SocketAddress server, String username, String password, String database, PromiseInternal<Connection> promise, int remainingAttempts) {
+  private void doConnectWithRetry(SocketAddress server, SqlCredentialsProvider credentialsProvider, String database, PromiseInternal<Connection> promise, int remainingAttempts) {
     EventLoopContext ctx = (EventLoopContext) promise.context();
-    doConnectInternal(server, username, password, database, ctx).onComplete(ar -> {
+    doConnectInternal(server, credentialsProvider, database, ctx).onComplete(ar -> {
       if (ar.succeeded()) {
         promise.complete(ar.result());
       } else {
         if (remainingAttempts > 0) {
           ctx.owner().setTimer(reconnectInterval, id -> {
-            doConnectWithRetry(server, username, password, database, promise, remainingAttempts - 1);
+            doConnectWithRetry(server, credentialsProvider, database, promise, remainingAttempts - 1);
           });
         } else {
           promise.fail(ar.cause());
@@ -139,6 +142,6 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   /**
    * Establish a connection to the server.
    */
-  protected abstract Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context);
+  protected abstract Future<Connection> doConnectInternal(SocketAddress server, SqlCredentialsProvider credentialsProvider, String database, EventLoopContext context);
 
 }

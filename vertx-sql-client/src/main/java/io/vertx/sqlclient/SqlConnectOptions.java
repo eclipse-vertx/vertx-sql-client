@@ -72,6 +72,7 @@ public class SqlConnectOptions extends NetClientOptions {
 
   private String host;
   private int port;
+  private SqlCredentialsProvider credentialsProvider;
   private String user;
   private String password;
   private String database;
@@ -96,6 +97,7 @@ public class SqlConnectOptions extends NetClientOptions {
     super(other);
     this.host = other.host;
     this.port = other.port;
+    this.credentialsProvider = other.credentialsProvider;
     this.user = other.user;
     this.password = other.password;
     this.database = other.database;
@@ -190,6 +192,15 @@ public class SqlConnectOptions extends NetClientOptions {
   public SqlConnectOptions setPassword(String password) {
     Objects.requireNonNull(password, "Password can not be null");
     this.password = password;
+    return this;
+  }
+
+  public SqlCredentialsProvider getCredentialsProvider() {
+    return credentialsProvider;
+  }
+
+  public SqlConnectOptions setCredentialsProvider(SqlCredentialsProvider credentialsProvider) {
+    this.credentialsProvider = credentialsProvider;
     return this;
   }
 
