@@ -65,6 +65,11 @@ public class PoolOptionsConverter {
             obj.setMaxWaitQueueSize(((Number)member.getValue()).intValue());
           }
           break;
+        case "minSize":
+          if (member.getValue() instanceof Number) {
+            obj.setMinSize(((Number)member.getValue()).intValue());
+          }
+          break;
         case "name":
           if (member.getValue() instanceof String) {
             obj.setName((String)member.getValue());
@@ -104,6 +109,7 @@ public class PoolOptionsConverter {
     }
     json.put("maxSize", obj.getMaxSize());
     json.put("maxWaitQueueSize", obj.getMaxWaitQueueSize());
+    json.put("minSize", obj.getMinSize());
     if (obj.getName() != null) {
       json.put("name", obj.getName());
     }
