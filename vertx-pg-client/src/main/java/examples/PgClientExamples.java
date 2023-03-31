@@ -732,4 +732,8 @@ public class PgClientExamples {
         }
       });
   }
+
+  public void pgBouncer(PgConnectOptions connectOptions) {
+    connectOptions.setUseLayer7Proxy(true);
+  }
 }
