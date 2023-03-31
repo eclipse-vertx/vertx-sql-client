@@ -50,6 +50,7 @@ import java.util.function.Predicate;
 public class PgSocketConnection extends SocketConnectionBase {
 
   private PgCodec codec;
+  private final boolean useLayer7Proxy;
   public int processId;
   public int secretKey;
   public PgDatabaseMetadata dbMetaData;
@@ -59,13 +60,15 @@ public class PgSocketConnection extends SocketConnectionBase {
                             int preparedStatementCacheSize,
                             Predicate<String> preparedStatementCacheSqlFilter,
                             int pipeliningLimit,
+                            boolean useLayer7Proxy,
                             EventLoopContext context) {
     super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    this.useLayer7Proxy = useLayer7Proxy;
   }
 
   @Override
   public void init() {
-    codec = new PgCodec();
+    codec = new PgCodec(useLayer7Proxy);
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
     super.init();

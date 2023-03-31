@@ -20,6 +20,7 @@ The client is reactive and non-blocking, allowing to handle many database connec
 * SSL/TLS
 * Unix domain socket
 * HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
+* Proxy (level 4 and 7) support
 
 == Usage
 
@@ -564,11 +565,31 @@ All https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION[
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
 
-== Using a proxy
+== Using a level 4 proxy
 
-You can also configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy.
+You can configure the client to use an HTTP/1.x CONNECT, SOCKS4a or SOCKS5 level 4 proxy.
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#_using_a_proxy_for_client_connections[Vert.x documentation].
+
+== Using a level 7 proxy
+
+Level 7 proxies can load balance queries on several connections to the actual database. When it happens, the client can be confused by the lack of session affinity and unwanted errors can happen like _ERROR: unnamed prepared statement does not exist (26000)_.
+
+Supported proxies:
+
+- https://www.pgbouncer.org[PgBouncer] configured with `_pool_mode=transaction`.
+
+You can configure the client to interact differently to the proxy:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#pgBouncer}
+----
+
+When doing so, prepared statement cannot be cached and therefore
+
+- prepared statement caching must be disabled
+- explicit prepared statement can only live within the scope of a transaction, it means you can use cursors but the prepared statement for the cursor must be created and destroyed within the scope of a transaction
 
 == Advanced pool configuration
 

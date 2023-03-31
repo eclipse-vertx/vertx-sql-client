@@ -29,9 +29,9 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
 
   private final ArrayDeque<PgCommandCodec<?, ?>> inflight = new ArrayDeque<>();
 
-  public PgCodec() {
+  public PgCodec(boolean useLayer7Proxy) {
     PgDecoder decoder = new PgDecoder(inflight);
-    PgEncoder encoder = new PgEncoder(inflight);
+    PgEncoder encoder = new PgEncoder(useLayer7Proxy, inflight);
     init(decoder, encoder);
   }
 
