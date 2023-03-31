@@ -12,12 +12,15 @@
 package io.vertx.sqlclient.tck;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.SqlCredentialsProvider;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import org.junit.After;
@@ -68,6 +71,22 @@ public abstract class ConnectionTestBase {
   public void testConnectInvalidUsername(TestContext ctx) {
     options.setUser("invalidUsername");
     connect(ctx.asyncAssertFailure(err -> {
+    }));
+  }
+
+  @Test
+  public void testCredentialsProvider(TestContext ctx) {
+    SqlCredentialsProvider.Credentials credentials =
+      new SqlCredentialsProvider.Credentials(options.getUser(), options.getPassword());
+    options.setCredentialsProvider(new SqlCredentialsProvider() {
+      @Override
+      public Future<Credentials> getCredentials(Context context) {
+        return Future.succeededFuture(credentials);
+      }
+    });
+    options.setUser("invalidUsername");
+    options.setPassword("invalidPassword");
+    connect(ctx.asyncAssertSuccess(err -> {
     }));
   }
 
