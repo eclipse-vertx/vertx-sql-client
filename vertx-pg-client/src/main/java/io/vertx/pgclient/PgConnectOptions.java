@@ -111,6 +111,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
+  public static final boolean DEFAULT_USE_LAYER_7_PROXY = false;
   public static final Map<String, String> DEFAULT_PROPERTIES;
 
   static {
@@ -124,6 +125,7 @@ public class PgConnectOptions extends SqlConnectOptions {
 
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
   private SslMode sslMode = DEFAULT_SSLMODE;
+  private boolean useLayer7Proxy = DEFAULT_USE_LAYER_7_PROXY;
 
   public PgConnectOptions() {
     super();
@@ -232,6 +234,25 @@ public class PgConnectOptions extends SqlConnectOptions {
    */
   public PgConnectOptions setSslMode(SslMode sslmode) {
     this.sslMode = sslmode;
+    return this;
+  }
+
+  /**
+   * @return whether the client interacts with a layer 7 proxy instead of a server
+   */
+  public boolean getUseLayer7Proxy() {
+    return useLayer7Proxy;
+  }
+
+  /**
+   * Set the client to use a layer 7 (application) proxy compatible protocol, set to {@code true} when the client
+   * interacts with a layer 7 proxy like PgBouncer instead of a server. Prepared statement caching must be disabled.
+   *
+   * @param useLayer7Proxy whether to use a layer 7 proxy instead of a server
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PgConnectOptions setUseLayer7Proxy(boolean useLayer7Proxy) {
+    this.useLayer7Proxy = useLayer7Proxy;
     return this;
   }
 
