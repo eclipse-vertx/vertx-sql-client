@@ -62,12 +62,14 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   private static final byte SYNC = 'S';
 
   private final ArrayDeque<PgCommandCodec<?, ?>> inflight;
+  final boolean useLayer7Proxy;
   private ChannelHandlerContext ctx;
   private ByteBuf out;
   private final HexSequence psSeq = new HexSequence(); // used for generating named prepared statement name
   boolean closeSent;
 
-  PgEncoder(ArrayDeque<PgCommandCodec<?, ?>> inflight) {
+  PgEncoder(boolean useLayer7Proxy, ArrayDeque<PgCommandCodec<?, ?>> inflight) {
+    this.useLayer7Proxy = useLayer7Proxy;
     this.inflight = inflight;
   }
 

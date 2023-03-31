@@ -45,9 +45,13 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
 
   private SslMode sslMode;
   private int pipeliningLimit;
+  private boolean useLayer7Proxy;
 
   public PgConnectionFactory(VertxInternal context, PgConnectOptions options) {
     super(context, options);
+    if (options.getCachePreparedStatements() && options.getUseLayer7Proxy()) {
+      throw new IllegalArgumentException("Prepared statement caching must be disabled when using proxy mode");
+    }
   }
 
   @Override
@@ -55,6 +59,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     PgConnectOptions options = (PgConnectOptions) connectOptions;
     this.pipeliningLimit = options.getPipeliningLimit();
     this.sslMode = options.isUsingDomainSocket() ? SslMode.DISABLE : options.getSslMode();
+    this.useLayer7Proxy = options.getUseLayer7Proxy();
 
     // check ssl mode here
     switch (sslMode) {
@@ -162,6 +167,6 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
   }
 
   private PgSocketConnection newSocketConnection(EventLoopContext context, NetSocketInternal socket) {
-    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
   }
 }

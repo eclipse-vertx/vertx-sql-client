@@ -48,12 +48,18 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
           completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
           return;
         } else {
+          if (encoder.useLayer7Proxy) {
+            encoder.writeParse(ps.sql, ps.bind.statement, new DataType[0]);
+          }
           for (TupleInternal param : cmd.paramsList()) {
             encoder.writeBind(ps.bind, cmd.cursorId(), param);
             encoder.writeExecute(cmd.cursorId(), cmd.fetch());
           }
         }
       } else {
+        if (encoder.useLayer7Proxy && ps.bind.statement.length == 1) {
+          encoder.writeParse(ps.sql, ps.bind.statement, new DataType[0]);
+        }
         encoder.writeBind(ps.bind, cmd.cursorId(), cmd.params());
         encoder.writeExecute(cmd.cursorId(), cmd.fetch());
       }

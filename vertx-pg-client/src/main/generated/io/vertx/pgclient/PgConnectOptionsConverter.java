@@ -30,6 +30,11 @@ public class PgConnectOptionsConverter {
             obj.setSslMode(io.vertx.pgclient.SslMode.valueOf((String)member.getValue()));
           }
           break;
+        case "useLayer7Proxy":
+          if (member.getValue() instanceof Boolean) {
+            obj.setUseLayer7Proxy((Boolean)member.getValue());
+          }
+          break;
       }
     }
   }
@@ -43,5 +48,6 @@ public class PgConnectOptionsConverter {
     if (obj.getSslMode() != null) {
       json.put("sslMode", obj.getSslMode().name());
     }
+    json.put("useLayer7Proxy", obj.getUseLayer7Proxy());
   }
 }
