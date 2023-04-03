@@ -18,6 +18,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.SqlCredentials;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.SqlCredentialsProvider;
@@ -76,11 +77,10 @@ public abstract class ConnectionTestBase {
 
   @Test
   public void testCredentialsProvider(TestContext ctx) {
-    SqlCredentialsProvider.Credentials credentials =
-      new SqlCredentialsProvider.Credentials(options.getUser(), options.getPassword());
+    SqlCredentials credentials = new SqlCredentials(options.getUser(), options.getPassword());
     options.setCredentialsProvider(new SqlCredentialsProvider() {
       @Override
-      public Future<Credentials> getCredentials(Context context) {
+      public Future<SqlCredentials> getCredentials(Context context) {
         return Future.succeededFuture(credentials);
       }
     });

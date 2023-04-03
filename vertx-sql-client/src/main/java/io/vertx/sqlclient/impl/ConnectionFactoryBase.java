@@ -70,7 +70,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     if (options.getCredentialsProvider() != null) {
       this.credentialsProvider = options.getCredentialsProvider();
     } else {
-      this.credentialsProvider = new SqlCredentialsProvider.Static(options.getUser(), options.getPassword());
+      this.credentialsProvider = new StaticSqlCredentialsProvider(options.getUser(), options.getPassword());
     }
     this.database = options.getDatabase();
 
