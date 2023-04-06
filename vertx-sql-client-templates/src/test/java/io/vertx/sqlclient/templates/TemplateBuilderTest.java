@@ -25,6 +25,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 
@@ -47,7 +48,15 @@ public class TemplateBuilderTest {
           throw new UnsupportedOperationException();
         }
         @Override
+        public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+          throw new UnsupportedOperationException();
+        }
+        @Override
         public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+          throw new UnsupportedOperationException();
+        }
+        @Override
+        public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database) {
           throw new UnsupportedOperationException();
         }
         @Override

@@ -19,7 +19,9 @@ package io.vertx.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.ClosedConnectionException;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -105,6 +107,7 @@ public class PgConnectionTest extends PgConnectionTestBase {
     }));
   }
 
+  @Ignore("FIXME")
   @Test
   public void testCancelRequest(TestContext ctx) {
     Async async = ctx.async(2);

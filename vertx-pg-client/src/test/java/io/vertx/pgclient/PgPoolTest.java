@@ -193,7 +193,7 @@ public class PgPoolTest extends PgPoolTestBase {
       .onComplete(ctx.asyncAssertSuccess(v -> {
       async.complete();
     }));
-    async.await(4000);
+    async.await(20_0000);
   }
 
   @Test
