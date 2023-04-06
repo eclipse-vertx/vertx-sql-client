@@ -111,14 +111,16 @@ public class UnixDomainSocketTest {
   }
 
   @Test
-  public void testNativeTransportMustBeEnabled() {
+  public void testNativeTransportMustBeEnabled(TestContext ctx) {
     Vertx vertx = Vertx.vertx();
     try {
-      PgPool.pool(vertx, PgConnectOptions.fromUri("postgresql:///dbname?host=/var/lib/postgresql"), new PoolOptions());
-      fail();
-    } catch (IllegalArgumentException expected) {
-      // Expected
-      assertEquals(ConnectionFactoryBase.NATIVE_TRANSPORT_REQUIRED, expected.getMessage());
+      PgPool pool = PgPool.pool(vertx, PgConnectOptions.fromUri("postgresql:///dbname?host=/var/lib/postgresql"), new PoolOptions());
+      Async async = ctx.async();
+      pool.getConnection().onComplete(ctx.asyncAssertFailure(err -> {
+        assertEquals(ConnectionFactoryBase.NATIVE_TRANSPORT_REQUIRED, err.getMessage());
+        async.complete();
+      }));
+      async.await(20_000);
     } finally {
       vertx.close();
     }

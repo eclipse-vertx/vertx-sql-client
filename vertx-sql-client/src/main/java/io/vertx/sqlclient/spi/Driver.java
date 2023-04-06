@@ -31,12 +31,62 @@ import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * An entry point to the Vertx Reactive SQL Client
  * Every driver must implement this interface.
  */
 public interface Driver {
+
+  /**
+   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   *
+   * <p> The returned pool will automatically closed when {@code vertx} is not {@code null} and is closed or when the creating
+   * context is closed (e.g verticle undeployment).
+   *
+   * @param vertx the Vertx instance to be used with the connection pool or {@code null} to create an auto closed Vertx instance
+   * @param databases the list of databases
+   * @param options the options for creating the pool
+   * @return the connection pool
+   */
+  default Pool createPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options) {
+    VertxInternal vx;
+    if (vertx == null) {
+      if (Vertx.currentContext() != null) {
+        throw new IllegalStateException("Running in a Vertx context => use Pool#pool(Vertx, SqlConnectOptions, PoolOptions) instead");
+      }
+      VertxOptions vertxOptions = new VertxOptions();
+      SqlConnectOptions database = databases.get();
+      if (database.isUsingDomainSocket()) {
+        vertxOptions.setPreferNativeTransport(true);
+      }
+      vx = (VertxInternal) Vertx.vertx(vertxOptions);
+    } else {
+      vx = (VertxInternal) vertx;
+    }
+    CloseFuture closeFuture = new CloseFuture();
+    Pool pool;
+    try {
+      pool = newPool(vx, databases, options, closeFuture);
+    } catch (Exception e) {
+      if (vertx == null) {
+        vx.close();
+      }
+      throw e;
+    }
+    if (vertx == null) {
+      closeFuture.future().onComplete(ar -> vx.close());
+    } else {
+      ContextInternal ctx = vx.getContext();
+      if (ctx != null) {
+        ctx.addCloseHook(closeFuture);
+      } else {
+        vx.addCloseHook(closeFuture);
+      }
+    }
+    return pool;
+  }
 
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
@@ -101,6 +151,19 @@ public interface Driver {
   Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture);
 
   /**
+   * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
+   *
+   * This method is not meant to be used directly by users, instead they should use {@link #createPool(Vertx, List, PoolOptions)}.
+   *
+   * @param vertx the Vertx instance to be used with the connection pool
+   * @param databases the list of databases
+   * @param options the options for creating the pool
+   * @param closeFuture the close future
+   * @return the connection pool
+   */
+  Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture);
+
+  /**
    * Create a connection factory to the given {@code database}.
    *
    * @param vertx the Vertx instance t
@@ -108,6 +171,15 @@ public interface Driver {
    * @return the connection factory
    */
   ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database);
+
+  /**
+   * Create a connection factory to the given {@code database}.
+   *
+   * @param vertx the Vertx instance t
+   * @param database the database to connect to
+   * @return the connection factory
+   */
+  ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database);
 
   /**
    * @return {@code true} if the driver accepts the {@code connectOptions}, {@code false} otherwise

@@ -38,31 +38,26 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PgConnectionFactory extends ConnectionFactoryBase {
 
-  private SslMode sslMode;
-  private int pipeliningLimit;
-  private boolean useLayer7Proxy;
-
-  public PgConnectionFactory(VertxInternal context, PgConnectOptions options) {
+  public PgConnectionFactory(VertxInternal context, Supplier<PgConnectOptions> options) {
     super(context, options);
-    if (options.getCachePreparedStatements() && options.getUseLayer7Proxy()) {
-      throw new IllegalArgumentException("Prepared statement caching must be disabled when using proxy mode");
-    }
   }
 
   @Override
   protected void initializeConfiguration(SqlConnectOptions connectOptions) {
-    PgConnectOptions options = (PgConnectOptions) connectOptions;
-    this.pipeliningLimit = options.getPipeliningLimit();
-    this.sslMode = options.isUsingDomainSocket() ? SslMode.DISABLE : options.getSslMode();
-    this.useLayer7Proxy = options.getUseLayer7Proxy();
+  }
 
-    // check ssl mode here
-    switch (sslMode) {
+  private void checkSslMode(PgConnectOptions options) {
+    switch (options.getSslMode()) {
       case VERIFY_FULL:
         String hostnameVerificationAlgorithm = options.getHostnameVerificationAlgorithm();
         if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
@@ -83,8 +78,18 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
-    return doConnect(server, context).flatMap(conn -> {
+  protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
+    try {
+      checkSslMode((PgConnectOptions) options);
+    } catch (Exception e) {
+      return context.failedFuture(e);
+    }
+    String username = options.getUser();
+    String password = options.getPassword();
+    String database = options.getDatabase();
+    SocketAddress server = options.getSocketAddress();
+    Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
+    return doConnect(server, context, (PgConnectOptions) options).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
@@ -93,7 +98,8 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
   }
 
   public void cancelRequest(SocketAddress server, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
-    doConnect(server, vertx.createEventLoopContext()).onComplete(ar -> {
+    // NOT GOOD
+    doConnect(server, vertx.createEventLoopContext(), (PgConnectOptions) options).onComplete(ar -> {
       if (ar.succeeded()) {
         PgSocketConnection conn = (PgSocketConnection) ar.result();
         conn.sendCancelRequestMessage(processId, secretKey, handler);
@@ -103,22 +109,23 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     });
   }
 
-  private Future<Connection> doConnect(SocketAddress server, EventLoopContext context) {
+  private Future<Connection> doConnect(SocketAddress server, EventLoopContext context, PgConnectOptions options) {
+    SslMode sslMode = options.isUsingDomainSocket() ? SslMode.DISABLE : options.getSslMode();
     Future<Connection> connFuture;
     switch (sslMode) {
       case DISABLE:
-        connFuture = doConnect(server, context,false);
+        connFuture = doConnect(server, context, false, options);
         break;
       case ALLOW:
-        connFuture = doConnect(server, context,false).recover(err -> doConnect(server, context,true));
+        connFuture = doConnect(server, context,false, options).recover(err -> doConnect(server, context,true, options));
         break;
       case PREFER:
-        connFuture = doConnect(server, context,true).recover(err -> doConnect(server, context,false));
+        connFuture = doConnect(server, context,true, options).recover(err -> doConnect(server, context,false, options));
         break;
       case REQUIRE:
       case VERIFY_CA:
       case VERIFY_FULL:
-        connFuture = doConnect(server, context, true);
+        connFuture = doConnect(server, context, true, options);
         break;
       default:
         return context.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
@@ -126,15 +133,15 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     return connFuture;
   }
 
-  private Future<Connection> doConnect(SocketAddress server, EventLoopContext context, boolean ssl) {
+  private Future<Connection> doConnect(SocketAddress server, EventLoopContext context, boolean ssl, PgConnectOptions options) {
     Future<NetSocket> soFut;
     try {
-      soFut = netClient.connect(server, (String) null);
+      soFut = netClient(options).connect(server, (String) null);
     } catch (Exception e) {
       // Client is closed
       return context.failedFuture(e);
     }
-    Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so));
+    Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so, options));
     if (ssl && !server.isDomainSocket()) {
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
@@ -152,10 +159,13 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context) {
+  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
+    if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
+      return contextInternal.failedFuture(new IllegalArgumentException(NATIVE_TRANSPORT_REQUIRED));
+    }
     PromiseInternal<SqlConnection> promise = contextInternal.promise();
-    connect(asEventLoopContext(contextInternal))
+    connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
         QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
         PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn, tracer, null);
@@ -166,7 +176,12 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     return promise.future();
   }
 
-  private PgSocketConnection newSocketConnection(EventLoopContext context, NetSocketInternal socket) {
-    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
+  private PgSocketConnection newSocketConnection(EventLoopContext context, NetSocketInternal socket, PgConnectOptions options) {
+    boolean cachePreparedStatements = options.getCachePreparedStatements();
+    int preparedStatementCacheMaxSize = options.getPreparedStatementCacheMaxSize();
+    Predicate<String> preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
+    int pipeliningLimit = options.getPipeliningLimit();
+    boolean useLayer7Proxy = options.getUseLayer7Proxy();
+    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
   }
 }

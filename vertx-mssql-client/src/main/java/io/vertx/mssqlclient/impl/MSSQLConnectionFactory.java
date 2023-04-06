@@ -17,6 +17,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
@@ -28,17 +29,15 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
+import java.util.Map;
+import java.util.function.Supplier;
+
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
-  private final int desiredPacketSize;
-  private final boolean clientConfigSsl;
-
-  public MSSQLConnectionFactory(VertxInternal vertx, MSSQLConnectOptions options) {
+  public MSSQLConnectionFactory(VertxInternal vertx, Supplier<MSSQLConnectOptions> options) {
     super(vertx, options);
-    desiredPacketSize = options.getPacketSize();
-    clientConfigSsl = options.isSsl();
   }
 
   @Override
@@ -48,23 +47,27 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected void configureNetClientOptions(NetClientOptions netClientOptions) {
-    // Always start unencrypted, the connection will be upgraded if client and server agree
     netClientOptions.setSsl(false);
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
-    return connectOrRedirect(server, username, password, database, context, 0);
+  protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
+    return connectOrRedirect((MSSQLConnectOptions) options, context, 0);
   }
 
-  private Future<Connection> connectOrRedirect(SocketAddress server, String username, String password, String database, EventLoopContext context, int redirections) {
+  private Future<Connection> connectOrRedirect(MSSQLConnectOptions options, EventLoopContext context, int redirections) {
     if (redirections > 1) {
       return context.failedFuture("The client can be redirected only once");
     }
+    SocketAddress server = options.getSocketAddress();
+    boolean clientSslConfig = options.isSsl();
+    int desiredPacketSize = options.getPacketSize();
+    // Always start unencrypted, the connection will be upgraded if client and server agree
+    NetClient netClient = netClient(new NetClientOptions(options).setSsl(false));
     return netClient.connect(server)
-      .map(so -> createSocketConnection(so, context))
-      .compose(conn -> conn.sendPreLoginMessage(clientConfigSsl)
-        .compose(encryptionLevel -> login(conn, username, password, database, encryptionLevel, context))
+      .map(so -> createSocketConnection(so, desiredPacketSize, context))
+      .compose(conn -> conn.sendPreLoginMessage(clientSslConfig)
+        .compose(encryptionLevel -> login(conn, options, encryptionLevel, context))
       )
       .compose(connBase -> {
         MSSQLSocketConnection conn = (MSSQLSocketConnection) connBase;
@@ -74,18 +77,19 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
         }
         Promise<Void> closePromise = context.promise();
         conn.close(null, closePromise);
-        return closePromise.future().transform(v -> connectOrRedirect(alternateServer, username, password, database, context, redirections + 1));
+        return closePromise.future().transform(v -> connectOrRedirect(options, context, redirections + 1));
       });
   }
 
-  private MSSQLSocketConnection createSocketConnection(NetSocket so, EventLoopContext context) {
+  private MSSQLSocketConnection createSocketConnection(NetSocket so, int desiredPacketSize, EventLoopContext context) {
     MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, desiredPacketSize, false, 0, sql -> true, 1, context);
     conn.init();
     return conn;
   }
 
-  private Future<Connection> login(MSSQLSocketConnection conn, String username, String password, String database, Byte encryptionLevel, EventLoopContext context) {
-    if (clientConfigSsl && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
+  private Future<Connection> login(MSSQLSocketConnection conn, MSSQLConnectOptions options, Byte encryptionLevel, EventLoopContext context) {
+    boolean clientSslConfig = options.isSsl();
+    if (clientSslConfig && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
       Promise<Void> closePromise = context.promise();
       conn.close(null, closePromise);
       return closePromise.future().transform(v -> context.failedFuture("The client is configured for encryption but the server does not support it"));
@@ -93,20 +97,24 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     Future<Void> future;
     if (encryptionLevel != ENCRYPT_NOT_SUP) {
       // Start connection encryption ...
-      future = conn.enableSsl(clientConfigSsl, encryptionLevel, (MSSQLConnectOptions) options);
+      future = conn.enableSsl(clientSslConfig, encryptionLevel, (MSSQLConnectOptions) options);
     } else {
       // ... unless the client did not require encryption and the server does not support it
       future = context.succeededFuture();
     }
+    String username = options.getUser();
+    String password = options.getPassword();
+    String database = options.getDatabase();
+    Map<String, String> properties = options.getProperties();
     return future.compose(v -> conn.sendLoginMessage(username, password, database, properties));
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context) {
+  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
     ContextInternal ctx = (ContextInternal) context;
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     Promise<SqlConnection> promise = ctx.promise();
-    connect(asEventLoopContext(ctx))
+    connect(asEventLoopContext(ctx), options)
       .map(conn -> {
         MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn, tracer, null);
         conn.init(msConn);

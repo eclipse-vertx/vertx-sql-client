@@ -36,21 +36,19 @@ import io.vertx.core.Vertx;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
+import java.util.function.Supplier;
+
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
-  public static Future<PgConnection> connect(ContextInternal context, PgConnectOptions options) {
-    if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
-      return context.failedFuture("Native transport is not available");
-    } else {
-      PgConnectionFactory client;
-      try {
-        client = new PgConnectionFactory(context.owner(), options);
-      } catch (Exception e) {
-        return context.failedFuture(e);
-      }
-      context.addCloseHook(client);
-      return (Future) client.connect(context);
+  public static Future<PgConnection> connect(ContextInternal context, Supplier<PgConnectOptions> options) {
+    PgConnectionFactory client;
+    try {
+      client = new PgConnectionFactory(context.owner(), options);
+    } catch (Exception e) {
+      return context.failedFuture(e);
     }
+    context.addCloseHook(client);
+    return (Future) client.connect(context);
   }
 
   private volatile Handler<PgNotification> notificationHandler;

@@ -36,7 +36,7 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
     }
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(ctx.owner(), options);
+      client = new MySQLConnectionFactory(ctx.owner(), () -> options);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }

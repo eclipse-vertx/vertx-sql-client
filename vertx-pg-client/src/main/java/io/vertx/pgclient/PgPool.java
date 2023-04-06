@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -33,6 +34,7 @@ import io.vertx.sqlclient.SqlConnection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * A {@link Pool pool} of {@link PgConnection PostgreSQL connections}.
@@ -125,6 +127,14 @@ public interface PgPool extends Pool {
    * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, List<PgConnectOptions> databases, PoolOptions poolOptions) {
+    return (PgPool) PgDriver.INSTANCE.createPool(vertx, databases, poolOptions);
+  }
+
+  /**
+   * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  @GenIgnore
+  static PgPool pool(Vertx vertx, Supplier<PgConnectOptions> databases, PoolOptions poolOptions) {
     return (PgPool) PgDriver.INSTANCE.createPool(vertx, databases, poolOptions);
   }
 
