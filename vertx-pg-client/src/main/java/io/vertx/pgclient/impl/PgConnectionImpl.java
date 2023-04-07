@@ -133,7 +133,8 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      ((PgConnectionFactory)factory).cancelRequest(conn.server(), this.processId(), this.secretKey(), handler);
+      PgSocketConnection unwrap = (PgSocketConnection) conn.unwrap();
+      ((PgConnectionFactory)factory).cancelRequest(unwrap.options, this.processId(), this.secretKey(), handler);
     } else {
       context.runOnContext(v -> cancelRequest(handler));
     }

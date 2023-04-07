@@ -97,9 +97,8 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     });
   }
 
-  public void cancelRequest(SocketAddress server, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
-    // NOT GOOD
-    doConnect(server, vertx.createEventLoopContext(), (PgConnectOptions) options).onComplete(ar -> {
+  public void cancelRequest(PgConnectOptions options, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
+    doConnect(options.getSocketAddress(), vertx.createEventLoopContext(), options).onComplete(ar -> {
       if (ar.succeeded()) {
         PgSocketConnection conn = (PgSocketConnection) ar.result();
         conn.sendCancelRequestMessage(processId, secretKey, handler);
@@ -182,6 +181,8 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     Predicate<String> preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
     int pipeliningLimit = options.getPipeliningLimit();
     boolean useLayer7Proxy = options.getUseLayer7Proxy();
-    return new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
+    PgSocketConnection conn = new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
+    conn.options = options;
+    return conn;
   }
 }
