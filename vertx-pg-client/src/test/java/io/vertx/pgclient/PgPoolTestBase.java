@@ -24,7 +24,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.*;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -183,7 +182,6 @@ public abstract class PgPoolTestBase extends PgTestBase {
     }));
   }
 
-  @Ignore("FIXME")
   @Test
   public void testCancelRequest(TestContext ctx) {
     Async async = ctx.async();

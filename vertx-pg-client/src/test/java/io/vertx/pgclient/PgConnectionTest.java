@@ -102,7 +102,6 @@ public class PgConnectionTest extends PgConnectionTestBase {
     }));
   }
 
-  @Ignore("FIXME")
   @Test
   public void testCancelRequest(TestContext ctx) {
     Async async = ctx.async(2);

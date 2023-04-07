@@ -26,6 +26,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.PgCodec;
@@ -54,6 +55,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   public int processId;
   public int secretKey;
   public PgDatabaseMetadata dbMetaData;
+  PgConnectOptions options;
 
   public PgSocketConnection(NetSocketInternal socket,
                             boolean cachePreparedStatements,
