@@ -39,14 +39,14 @@ import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Supplier;
 
-public class MSSQLDriver implements Driver {
+public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
 
   private static final String SHARED_CLIENT_KEY = "__vertx.shared.mssqlclient";
 
   public static final MSSQLDriver INSTANCE = new MSSQLDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<MSSQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -57,13 +57,13 @@ public class MSSQLDriver implements Driver {
     return new MSSQLPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<MSSQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(databases.get());
     QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
     PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, null, null, closeFuture);
-    ConnectionFactory factory = createConnectionFactory(vertx, databases);
+    ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(factory::connect);
     pool.init();
     closeFuture.add(factory);
@@ -82,12 +82,12 @@ public class MSSQLDriver implements Driver {
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+  public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx, MSSQLConnectOptions database) {
     return new MSSQLConnectionFactory((VertxInternal) vertx, () -> MSSQLConnectOptions.wrap(database));
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database) {
+  public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx, Supplier<MSSQLConnectOptions> database) {
     return new MSSQLConnectionFactory((VertxInternal) vertx, () -> MSSQLConnectOptions.wrap(database.get()));
   }
 
@@ -98,7 +98,7 @@ public class MSSQLDriver implements Driver {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     return new MSSQLConnectionImpl(context, factory, conn, tracer, metrics);
   }
 }

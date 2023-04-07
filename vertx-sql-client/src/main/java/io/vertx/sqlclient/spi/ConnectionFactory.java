@@ -17,7 +17,7 @@ import java.util.function.Supplier;
 /**
  * A connection factory, can be obtained from {@link Driver#createConnectionFactory}
  */
-public interface ConnectionFactory extends Closeable {
+public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeable {
 
   static <T> Supplier<T> roundRobinSupplier(List<T> factories) {
     return new Supplier<T>() {
@@ -34,28 +34,28 @@ public interface ConnectionFactory extends Closeable {
   /**
    * @return a connection factory that connects with a round-robin policy
    */
-  static ConnectionFactory roundRobinSelector(List<ConnectionFactory> factories) {
+  static <C extends SqlConnectOptions> ConnectionFactory<C> roundRobinSelector(List<ConnectionFactory<C>> factories) {
     if (factories.size() == 1) {
       return factories.get(0);
     } else {
-      return new ConnectionFactory() {
+      return new ConnectionFactory<C>() {
         int idx = 0;
         @Override
         public Future<SqlConnection> connect(Context context) {
-          ConnectionFactory f = factories.get(idx);
+          ConnectionFactory<C> f = factories.get(idx);
           idx = (idx + 1) % factories.size();
           return f.connect(context);
         }
         @Override
-        public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
-          ConnectionFactory f = factories.get(idx);
+        public Future<SqlConnection> connect(Context context, C options) {
+          ConnectionFactory<C> f = factories.get(idx);
           idx = (idx + 1) % factories.size();
           return f.connect(context, options);
         }
         @Override
         public void close(Promise<Void> promise) {
           List<Future> list = new ArrayList<>(factories.size());
-          for (ConnectionFactory factory : factories) {
+          for (ConnectionFactory<C> factory : factories) {
             Promise<Void> p = Promise.promise();
             factory.close(p);
             list.add(p.future());
@@ -82,6 +82,6 @@ public interface ConnectionFactory extends Closeable {
    * @param context the context
    * @return the future connection
    */
-  Future<SqlConnection> connect(Context context, SqlConnectOptions options);
+  Future<SqlConnection> connect(Context context, C options);
 
 }

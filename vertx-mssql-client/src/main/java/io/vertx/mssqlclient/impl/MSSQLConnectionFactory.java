@@ -34,7 +34,7 @@ import java.util.function.Supplier;
 
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
-public class MSSQLConnectionFactory extends ConnectionFactoryBase {
+public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOptions> {
 
   public MSSQLConnectionFactory(VertxInternal vertx, Supplier<MSSQLConnectOptions> options) {
     super(vertx, options);
@@ -51,8 +51,8 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
-    return connectOrRedirect((MSSQLConnectOptions) options, context, 0);
+  protected Future<Connection> doConnectInternal(MSSQLConnectOptions options, EventLoopContext context) {
+    return connectOrRedirect(options, context, 0);
   }
 
   private Future<Connection> connectOrRedirect(MSSQLConnectOptions options, EventLoopContext context, int redirections) {
@@ -97,7 +97,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     Future<Void> future;
     if (encryptionLevel != ENCRYPT_NOT_SUP) {
       // Start connection encryption ...
-      future = conn.enableSsl(clientSslConfig, encryptionLevel, (MSSQLConnectOptions) options);
+      future = conn.enableSsl(clientSslConfig, encryptionLevel, options);
     } else {
       // ... unless the client did not require encryption and the server does not support it
       future = context.succeededFuture();
@@ -110,7 +110,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
+  public Future<SqlConnection> connect(Context context, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) context;
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     Promise<SqlConnection> promise = ctx.promise();

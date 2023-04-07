@@ -36,7 +36,7 @@ import java.util.function.Supplier;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
-public class MySQLConnectionFactory extends ConnectionFactoryBase {
+public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOptions> {
 
   public MySQLConnectionFactory(VertxInternal vertx, Supplier<MySQLConnectOptions> options) {
     super(vertx, options);
@@ -51,9 +51,8 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
-    MySQLConnectOptions mySQLOptions = (MySQLConnectOptions) options;
-    SslMode sslMode = mySQLOptions.isUsingDomainSocket() ? SslMode.DISABLED : mySQLOptions.getSslMode();
+  protected Future<Connection> doConnectInternal(MySQLConnectOptions options, EventLoopContext context) {
+    SslMode sslMode = options.isUsingDomainSocket() ? SslMode.DISABLED : options.getSslMode();
     switch (sslMode) {
       case VERIFY_IDENTITY:
         String hostnameVerificationAlgorithm = options.getHostnameVerificationAlgorithm();
@@ -68,12 +67,12 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
         }
         break;
     }
-    int capabilitiesFlag = capabilitiesFlags(mySQLOptions);
+    int capabilitiesFlag = capabilitiesFlags(options);
     options.setSsl(false);
     if (sslMode == SslMode.PREFERRED) {
-      return doConnect(mySQLOptions, sslMode, capabilitiesFlag, context).recover(err -> doConnect(mySQLOptions, SslMode.DISABLED, capabilitiesFlag, context));
+      return doConnect(options, sslMode, capabilitiesFlag, context).recover(err -> doConnect(options, SslMode.DISABLED, capabilitiesFlag, context));
     } else {
-      return doConnect(mySQLOptions, sslMode, capabilitiesFlag, context);
+      return doConnect(options, sslMode, capabilitiesFlag, context);
     }
   }
 
@@ -140,7 +139,7 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
+  public Future<SqlConnection> connect(Context context, MySQLConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
     QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
     Promise<SqlConnection> promise = contextInternal.promise();

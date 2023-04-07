@@ -46,7 +46,7 @@ import java.util.function.Supplier;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class PgConnectionFactory extends ConnectionFactoryBase {
+public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions> {
 
   public PgConnectionFactory(VertxInternal context, Supplier<PgConnectOptions> options) {
     super(context, options);
@@ -78,9 +78,9 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
+  protected Future<Connection> doConnectInternal(PgConnectOptions options, EventLoopContext context) {
     try {
-      checkSslMode((PgConnectOptions) options);
+      checkSslMode(options);
     } catch (Exception e) {
       return context.failedFuture(e);
     }
@@ -158,7 +158,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
+  public Future<SqlConnection> connect(Context context, PgConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
     if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
       return contextInternal.failedFuture(new IllegalArgumentException(NATIVE_TRANSPORT_REQUIRED));

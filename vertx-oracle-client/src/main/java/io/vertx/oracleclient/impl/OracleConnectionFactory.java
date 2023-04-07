@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 import static io.vertx.oracleclient.impl.Helper.executeBlocking;
 import static io.vertx.oracleclient.impl.OracleDatabaseHelper.createDataSource;
 
-public class OracleConnectionFactory implements ConnectionFactory {
+public class OracleConnectionFactory implements ConnectionFactory<OracleConnectOptions> {
 
   private final Supplier<OracleConnectOptions> options;
   private final Map<JsonObject, OracleDataSource> datasources;
@@ -65,15 +65,14 @@ public class OracleConnectionFactory implements ConnectionFactory {
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
+  public Future<SqlConnection> connect(Context context, OracleConnectOptions options) {
     OracleDataSource datasource = getDatasource(options);
-    OracleConnectOptions oracleOptions = (OracleConnectOptions) options;
     ContextInternal ctx = (ContextInternal) context;
     QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     return executeBlocking(context, () -> {
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
-      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, oracleOptions, orac, metadata);
+      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, options, orac, metadata);
       OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn, tracer, null);
       conn.init(msConn);
       return msConn;

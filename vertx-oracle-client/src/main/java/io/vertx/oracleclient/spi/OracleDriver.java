@@ -33,14 +33,14 @@ import io.vertx.sqlclient.spi.Driver;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class OracleDriver implements Driver {
+public class OracleDriver implements Driver<OracleConnectOptions> {
 
   private static final String SHARED_CLIENT_KEY = "__vertx.shared.oracleclient";
 
   public static final OracleDriver INSTANCE = new OracleDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<OracleConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -51,7 +51,7 @@ public class OracleDriver implements Driver {
     return new OraclePoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<OracleConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     OracleConnectOptions baseConnectOptions = OracleConnectOptions.wrap(databases.get());
     QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vertx.metricsSPI();
@@ -59,7 +59,7 @@ public class OracleDriver implements Driver {
     Function<Connection, Future<Void>> afterAcquire = conn -> ((OracleJdbcConnection) conn).afterAcquire();
     Function<Connection, Future<Void>> beforeRecycle = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
     PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, afterAcquire, beforeRecycle, closeFuture);
-    ConnectionFactory factory = createConnectionFactory(vertx, databases);
+    ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(factory::connect);
     pool.init();
     closeFuture.add(factory);
@@ -78,17 +78,17 @@ public class OracleDriver implements Driver {
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+  public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx, OracleConnectOptions database) {
     return new OracleConnectionFactory((VertxInternal) vertx, () -> OracleConnectOptions.wrap(database));
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database) {
+  public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx, Supplier<OracleConnectOptions> database) {
     return new OracleConnectionFactory((VertxInternal) vertx, () -> OracleConnectOptions.wrap(database.get()));
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<OracleConnectOptions> factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     return new OracleConnectionImpl(context, factory, conn, tracer, metrics);
   }
 }

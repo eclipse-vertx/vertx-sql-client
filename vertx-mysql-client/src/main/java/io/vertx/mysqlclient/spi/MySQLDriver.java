@@ -36,14 +36,14 @@ import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Supplier;
 
-public class MySQLDriver implements Driver {
+public class MySQLDriver implements Driver<MySQLConnectOptions> {
 
   private static final String SHARED_CLIENT_KEY = "__vertx.shared.mysqlclient";
 
   public static final MySQLDriver INSTANCE = new MySQLDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<MySQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -54,7 +54,7 @@ public class MySQLDriver implements Driver {
     return new MySQLPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<MySQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     MySQLConnectOptions baseConnectOptions = MySQLConnectOptions.wrap(databases.get());
     QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vertx.metricsSPI();
@@ -62,7 +62,7 @@ public class MySQLDriver implements Driver {
     boolean pipelinedPool = options instanceof MySQLPoolOptions && ((MySQLPoolOptions) options).isPipelined();
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
     PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, null, null, closeFuture);
-    ConnectionFactory factory = createConnectionFactory(vertx, databases);
+    ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(factory::connect);
     pool.init();
     closeFuture.add(factory);
@@ -81,17 +81,17 @@ public class MySQLDriver implements Driver {
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+  public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx, MySQLConnectOptions database) {
     return new MySQLConnectionFactory((VertxInternal) vertx, () -> MySQLConnectOptions.wrap(database));
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database) {
+  public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx, Supplier<MySQLConnectOptions> database) {
     return new MySQLConnectionFactory((VertxInternal) vertx, () -> MySQLConnectOptions.wrap(database.get()));
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MySQLConnectOptions> factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     return new MySQLConnectionImpl(context, factory, conn, tracer, metrics);
   }
 }

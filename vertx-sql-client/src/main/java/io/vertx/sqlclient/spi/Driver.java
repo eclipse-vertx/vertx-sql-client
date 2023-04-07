@@ -37,7 +37,7 @@ import java.util.function.Supplier;
  * An entry point to the Vertx Reactive SQL Client
  * Every driver must implement this interface.
  */
-public interface Driver {
+public interface Driver<C extends SqlConnectOptions> {
 
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
@@ -50,7 +50,7 @@ public interface Driver {
    * @param options the options for creating the pool
    * @return the connection pool
    */
-  default Pool createPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options) {
+  default Pool createPool(Vertx vertx, Supplier<C> databases, PoolOptions options) {
     VertxInternal vx;
     if (vertx == null) {
       if (Vertx.currentContext() != null) {
@@ -99,7 +99,7 @@ public interface Driver {
    * @param options the options for creating the pool
    * @return the connection pool
    */
-  default Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
+  default Pool createPool(Vertx vertx, List<C> databases, PoolOptions options) {
     return createPool(vertx, ConnectionFactory.roundRobinSupplier(databases), options);
   }
 
@@ -114,7 +114,7 @@ public interface Driver {
    * @param closeFuture the close future
    * @return the connection pool
    */
-  default Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  default Pool newPool(Vertx vertx, List<C> databases, PoolOptions options, CloseFuture closeFuture) {
     return newPool(vertx, ConnectionFactory.roundRobinSupplier(databases), options, closeFuture);
   }
 
@@ -129,7 +129,7 @@ public interface Driver {
    * @param closeFuture the close future
    * @return the connection pool
    */
-  Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture);
+  Pool newPool(Vertx vertx, Supplier<C> databases, PoolOptions options, CloseFuture closeFuture);
 
   /**
    * Create a connection factory to the given {@code database}.
@@ -138,7 +138,7 @@ public interface Driver {
    * @param database the database to connect to
    * @return the connection factory
    */
-  ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database);
+  ConnectionFactory<C> createConnectionFactory(Vertx vertx, C database);
 
   /**
    * Create a connection factory to the given {@code database}.
@@ -147,7 +147,7 @@ public interface Driver {
    * @param database the database to connect to
    * @return the connection factory
    */
-  ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database);
+  ConnectionFactory<C> createConnectionFactory(Vertx vertx, Supplier<C> database);
 
   /**
    * @return {@code true} if the driver accepts the {@code connectOptions}, {@code false} otherwise
@@ -181,7 +181,7 @@ public interface Driver {
     return current;
   }
 
-  default SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  default SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<C> factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     return new SqlConnectionBase<>(context, factory, conn, this, tracer, metrics);
   }
 }

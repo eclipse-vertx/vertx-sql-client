@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class DB2ConnectionFactory extends ConnectionFactoryBase {
+public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOptions> {
 
   public DB2ConnectionFactory(VertxInternal vertx, Supplier<DB2ConnectOptions> options) {
     super(vertx, options);
@@ -53,7 +53,7 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
+  protected Future<Connection> doConnectInternal(DB2ConnectOptions options, EventLoopContext context) {
     SocketAddress server = options.getSocketAddress();
     boolean cachePreparedStatements = options.getCachePreparedStatements();
     int preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
@@ -62,7 +62,7 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase {
     String password = options.getPassword();
     String database = options.getDatabase();
     Map<String, String> properties = options.getProperties();
-    int pipeliningLimit = ((DB2ConnectOptions) options).getPipeliningLimit();
+    int pipeliningLimit = options.getPipeliningLimit();
     NetClient netClient = netClient(options);
     return netClient.connect(server).flatMap(so -> {
       DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
@@ -73,7 +73,7 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
+  public Future<SqlConnection> connect(Context context, DB2ConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
     QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
     Promise<SqlConnection> promise = contextInternal.promise();

@@ -36,14 +36,14 @@ import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Supplier;
 
-public class DB2Driver implements Driver {
+public class DB2Driver implements Driver<DB2ConnectOptions> {
 
   private static final String SHARED_CLIENT_KEY = "__vertx.shared.db2client";
 
   public static final DB2Driver INSTANCE = new DB2Driver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<DB2ConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -54,7 +54,7 @@ public class DB2Driver implements Driver {
     return new DB2PoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<DB2ConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     DB2ConnectOptions baseConnectOptions = DB2ConnectOptions.wrap(databases.get());
     QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vertx.metricsSPI();
@@ -62,7 +62,7 @@ public class DB2Driver implements Driver {
     boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
     PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, null, null, closeFuture);
-    ConnectionFactory factory = createConnectionFactory(vertx, databases);
+    ConnectionFactory<DB2ConnectOptions> factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(factory::connect);
     pool.init();
     closeFuture.add(factory);
@@ -81,17 +81,17 @@ public class DB2Driver implements Driver {
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+  public ConnectionFactory<DB2ConnectOptions> createConnectionFactory(Vertx vertx, DB2ConnectOptions database) {
     return new DB2ConnectionFactory((VertxInternal) vertx, () -> DB2ConnectOptions.wrap(database));
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database) {
+  public ConnectionFactory<DB2ConnectOptions> createConnectionFactory(Vertx vertx, Supplier<DB2ConnectOptions> database) {
     return new DB2ConnectionFactory((VertxInternal) vertx, () -> DB2ConnectOptions.wrap(database.get()));
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<DB2ConnectOptions> factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
     return new DB2ConnectionImpl(context, factory, conn, tracer, metrics);
   }
 }

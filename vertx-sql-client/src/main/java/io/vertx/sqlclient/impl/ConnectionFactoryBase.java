@@ -33,18 +33,18 @@ import java.util.function.Supplier;
 /**
  * An base connection factory for creating database connections
  */
-public abstract class ConnectionFactoryBase implements ConnectionFactory {
+public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> implements ConnectionFactory<C> {
 
   public static final String NATIVE_TRANSPORT_REQUIRED = "The Vertx instance must use a native transport in order to connect to connect through domain sockets";
 
   protected final VertxInternal vertx;
   private final Map<JsonObject, NetClient> clients;
-  protected final Supplier<? extends SqlConnectOptions> options;
+  protected final Supplier<C> options;
 
   // close hook
   protected final CloseFuture clientCloseFuture = new CloseFuture();
 
-  protected ConnectionFactoryBase(VertxInternal vertx, Supplier<? extends SqlConnectOptions> options) {
+  protected ConnectionFactoryBase(VertxInternal vertx, Supplier<C> options) {
     this.vertx = vertx;
     this.options = options;
     this.clients = new HashMap<>();
@@ -79,7 +79,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     }
   }
 
-  public Future<Connection> connect(EventLoopContext context, SqlConnectOptions options) {
+  public Future<Connection> connect(EventLoopContext context, C options) {
     PromiseInternal<Connection> promise = context.promise();
     context.emit(promise, p -> doConnectWithRetry(options, p, options.getReconnectAttempts()));
     return promise.future();
@@ -95,7 +95,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     clientCloseFuture.close(promise);
   }
 
-  private void doConnectWithRetry(SqlConnectOptions options, PromiseInternal<Connection> promise, int remainingAttempts) {
+  private void doConnectWithRetry(C options, PromiseInternal<Connection> promise, int remainingAttempts) {
     EventLoopContext ctx = (EventLoopContext) promise.context();
     doConnectInternal(options, ctx).onComplete(ar -> {
       if (ar.succeeded()) {
@@ -129,6 +129,6 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   /**
    * Establish a connection to the server.
    */
-  protected abstract Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context);
+  protected abstract Future<Connection> doConnectInternal(C options, EventLoopContext context);
 
 }
