@@ -63,7 +63,7 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
     PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, null, null, closeFuture);
     ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(factory::connect);
+    pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);
     return pool;

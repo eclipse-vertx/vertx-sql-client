@@ -48,7 +48,7 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
       return context.failedFuture(e);
     }
     context.addCloseHook(client);
-    return (Future) client.connect(context);
+    return (Future) client.connect(context, options.get());
   }
 
   private volatile Handler<PgNotification> notificationHandler;

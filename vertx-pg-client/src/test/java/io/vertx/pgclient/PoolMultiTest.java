@@ -61,7 +61,7 @@ public class PoolMultiTest {
       int idx = 0;
       @Override
       public Future<SqlConnection> apply(Context context) {
-        return (idx++ % 2 == 0 ? provider1 : provider2).connect(context);
+        return (idx++ % 2 == 0 ? provider1 : provider2).connect(context, idx++ % 2 == 0 ? db1.options() : db2.options());
       }
     });
     testLoadBalancing(ctx, pool);

@@ -64,7 +64,7 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
     PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, null, null, closeFuture);
     ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(factory::connect);
+    pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);
     return pool;

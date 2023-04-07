@@ -48,7 +48,7 @@ public class PgDriver implements Driver<PgConnectOptions> {
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
     PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, null, null, closeFuture);
     ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(factory::connect);
+    pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);
     return pool;

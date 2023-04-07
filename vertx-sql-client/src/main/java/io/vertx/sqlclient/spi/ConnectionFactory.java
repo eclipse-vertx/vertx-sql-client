@@ -10,7 +10,6 @@ import io.vertx.sqlclient.SqlConnection;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -41,12 +40,6 @@ public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeabl
       return new ConnectionFactory<C>() {
         int idx = 0;
         @Override
-        public Future<SqlConnection> connect(Context context) {
-          ConnectionFactory<C> f = factories.get(idx);
-          idx = (idx + 1) % factories.size();
-          return f.connect(context);
-        }
-        @Override
         public Future<SqlConnection> connect(Context context, C options) {
           ConnectionFactory<C> f = factories.get(idx);
           idx = (idx + 1) % factories.size();
@@ -67,14 +60,6 @@ public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeabl
       };
     }
   }
-
-  /**
-   * Create a connection using the given {@code context}.
-   *
-   * @param context the context
-   * @return the future connection
-   */
-  Future<SqlConnection> connect(Context context);
 
   /**
    * Create a connection using the given {@code context}.

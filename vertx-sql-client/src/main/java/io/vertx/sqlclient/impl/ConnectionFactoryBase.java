@@ -10,7 +10,6 @@
  */
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.CloseFuture;
@@ -23,7 +22,6 @@ import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.impl.NetClientBuilder;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.HashMap;
@@ -83,11 +81,6 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
     PromiseInternal<Connection> promise = context.promise();
     context.emit(promise, p -> doConnectWithRetry(options, p, options.getReconnectAttempts()));
     return promise.future();
-  }
-
-  @Override
-  public Future<SqlConnection> connect(Context context) {
-    return connect(context, options.get());
   }
 
   @Override

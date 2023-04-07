@@ -33,6 +33,6 @@ public class OracleConnectionImpl extends SqlConnectionBase<OracleConnectionImpl
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     OracleConnectionFactory client = new OracleConnectionFactory(ctx.owner(), () -> options);
     ctx.addCloseHook(client);
-    return (Future) client.connect(ctx);
+    return (Future) client.connect(ctx, options);
   }
 }

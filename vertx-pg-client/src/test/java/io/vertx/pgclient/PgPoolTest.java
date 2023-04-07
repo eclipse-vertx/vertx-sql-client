@@ -593,7 +593,7 @@ public class PgPoolTest extends PgPoolTestBase {
       ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, options);
       PgPool pool = createPool(options, new PoolOptions().setMaxSize(1));
       pool.connectionProvider(context -> {
-        Future<SqlConnection> fut = factory.connect(context);
+        Future<SqlConnection> fut = factory.connect(context, options);
         if (immediately) {
           return fut.map(conn -> {
             conn.close();

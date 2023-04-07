@@ -344,7 +344,7 @@ public class SqlClientExamples {
       return fut.compose(connectOptions -> {
         // Do not forget to close later
         ConnectionFactory factory = OracleDriver.INSTANCE.createConnectionFactory(vertx, connectOptions);
-        return factory.connect(ctx);
+        return factory.connect(ctx, connectOptions);
       });
     });
   }

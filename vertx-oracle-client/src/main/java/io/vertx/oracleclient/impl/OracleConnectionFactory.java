@@ -46,11 +46,6 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
     promise.complete();
   }
 
-  @Override
-  public Future<SqlConnection> connect(Context context) {
-    return connect(context, options.get());
-  }
-
   private OracleDataSource getDatasource(SqlConnectOptions options) {
     JsonObject key = options.toJson();
     OracleDataSource datasource;

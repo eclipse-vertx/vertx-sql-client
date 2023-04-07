@@ -39,7 +39,7 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
       return ctx.failedFuture(e);
     }
     ctx.addCloseHook(client);
-    return (Future) client.connect(ctx);
+    return (Future) client.connect(ctx, options);
   }
 
   public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {

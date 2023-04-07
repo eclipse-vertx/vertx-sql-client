@@ -41,7 +41,7 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
       return ctx.failedFuture(e);
     }
     ctx.addCloseHook(client);
-    return (Future)client.connect(ctx);
+    return (Future)client.connect(ctx, options);
   }
 
   public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {

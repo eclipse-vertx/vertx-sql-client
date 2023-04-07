@@ -38,7 +38,7 @@ public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> 
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner(), () -> options);
     ctx.addCloseHook(client);
-    return (Future)client.connect(ctx);
+    return (Future)client.connect(ctx, options);
   }
 
   @Override
