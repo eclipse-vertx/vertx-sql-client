@@ -8,7 +8,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.impl.*;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -29,34 +28,6 @@ public class PgDriver implements Driver {
   private static final String SHARED_CLIENT_KEY = "__vertx.shared.pgclient";
 
   public static final PgDriver INSTANCE = new PgDriver();
-
-  @Override
-  public PgPool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    VertxInternal vx = (VertxInternal) vertx;
-    PoolImpl pool;
-    if (options.isShared()) {
-      pool = vx.createSharedClient(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, cf));
-    } else {
-      pool = newPoolImpl(vx, databases, options, closeFuture);
-    }
-    return new PgPoolImpl(vx, closeFuture, pool);
-  }
-
-  private PoolImpl newPoolImpl(VertxInternal vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    PgConnectOptions baseConnectOptions = PgConnectOptions.wrap(databases.get(0));
-    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    boolean pipelinedPool = options instanceof PgPoolOptions && ((PgPoolOptions) options).isPipelined();
-    int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, null, null, closeFuture);
-    List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
-    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
-    pool.connectionProvider(factory::connect);
-    pool.init();
-    closeFuture.add(factory);
-    return pool;
-  }
 
   @Override
   public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {

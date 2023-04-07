@@ -100,41 +100,7 @@ public interface Driver {
    * @return the connection pool
    */
   default Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
-    VertxInternal vx;
-    if (vertx == null) {
-      if (Vertx.currentContext() != null) {
-        throw new IllegalStateException("Running in a Vertx context => use Pool#pool(Vertx, SqlConnectOptions, PoolOptions) instead");
-      }
-      VertxOptions vertxOptions = new VertxOptions();
-      SqlConnectOptions database = databases.get(0);
-      if (database.isUsingDomainSocket()) {
-        vertxOptions.setPreferNativeTransport(true);
-      }
-      vx = (VertxInternal) Vertx.vertx(vertxOptions);
-    } else {
-      vx = (VertxInternal) vertx;
-    }
-    CloseFuture closeFuture = new CloseFuture();
-    Pool pool;
-    try {
-      pool = newPool(vx, databases, options, closeFuture);
-    } catch (Exception e) {
-      if (vertx == null) {
-        vx.close();
-      }
-      throw e;
-    }
-    if (vertx == null) {
-      closeFuture.future().onComplete(ar -> vx.close());
-    } else {
-      ContextInternal ctx = vx.getContext();
-      if (ctx != null) {
-        ctx.addCloseHook(closeFuture);
-      } else {
-        vx.addCloseHook(closeFuture);
-      }
-    }
-    return pool;
+    return createPool(vertx, ConnectionFactory.roundRobinSupplier(databases), options);
   }
 
   /**
@@ -148,7 +114,9 @@ public interface Driver {
    * @param closeFuture the close future
    * @return the connection pool
    */
-  Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture);
+  default Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+    return newPool(vertx, ConnectionFactory.roundRobinSupplier(databases), options, closeFuture);
+  }
 
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
