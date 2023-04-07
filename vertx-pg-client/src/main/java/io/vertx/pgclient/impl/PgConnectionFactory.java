@@ -52,10 +52,6 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     super(context, options);
   }
 
-  @Override
-  protected void initializeConfiguration(SqlConnectOptions connectOptions) {
-  }
-
   private void checkSslMode(PgConnectOptions options) {
     switch (options.getSslMode()) {
       case VERIFY_FULL:
@@ -70,11 +66,6 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
         }
         break;
     }
-  }
-
-  @Override
-  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
-    netClientOptions.setSsl(false);
   }
 
   @Override

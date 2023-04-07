@@ -43,16 +43,6 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
   }
 
   @Override
-  protected void initializeConfiguration(SqlConnectOptions connectOptions) {
-    DB2ConnectOptions options = (DB2ConnectOptions) connectOptions;
-  }
-
-  @Override
-  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
-    // currently no-op
-  }
-
-  @Override
   protected Future<Connection> doConnectInternal(DB2ConnectOptions options, EventLoopContext context) {
     SocketAddress server = options.getSocketAddress();
     boolean cachePreparedStatements = options.getCachePreparedStatements();
