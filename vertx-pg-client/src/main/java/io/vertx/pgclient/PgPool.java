@@ -31,7 +31,6 @@ import io.vertx.core.Vertx;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -108,7 +107,7 @@ public interface PgPool extends Pool {
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, PgConnectOptions database, PoolOptions options) {
-    return pool(vertx, Collections.singletonList(database), options);
+    return pool(vertx, () -> database, options);
   }
 
   /**
@@ -131,7 +130,20 @@ public interface PgPool extends Pool {
   }
 
   /**
-   * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
+   * Create a connection pool to the PostgreSQL {@code databases}. The supplier is called
+   * to provide the options when a new connection is created by the pool.
+   *
+   * @param databases the databases supplier
+   * @param poolOptions the options for creating the pool
+   * @return the connection pool
+   */
+  @GenIgnore
+  static PgPool pool(Supplier<PgConnectOptions> databases, PoolOptions poolOptions) {
+    return pool(null, databases, poolOptions);
+  }
+
+  /**
+   * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
   @GenIgnore
   static PgPool pool(Vertx vertx, Supplier<PgConnectOptions> databases, PoolOptions poolOptions) {
@@ -201,7 +213,7 @@ public interface PgPool extends Pool {
    * Like {@link #client(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, PgConnectOptions database, PoolOptions options) {
-    return client(vertx, Collections.singletonList(database), options);
+    return client(vertx, () -> database, options);
   }
 
   /**
@@ -220,6 +232,27 @@ public interface PgPool extends Pool {
    * @return the pooled client
    */
   static SqlClient client(List<PgConnectOptions> databases, PoolOptions options) {
+    return client(null, databases, options);
+  }
+
+  /**
+   * Like {@link #client(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  @GenIgnore
+  static SqlClient client(Vertx vertx, Supplier<PgConnectOptions> databases, PoolOptions options) {
+    return PgDriver.INSTANCE.createPool(vertx, databases, new PgPoolOptions(options).setPipelined(true));
+  }
+
+  /**
+   * Create a client backed by a connection pool to the PostgreSQL {@code databases}. The supplier is called
+   * to provide the options when a new connection is created by the pool.
+   *
+   * @param databases the databases supplier
+   * @param options the options for creating the pool
+   * @return the pooled client
+   */
+  @GenIgnore
+  static SqlClient client(Supplier<PgConnectOptions> databases, PoolOptions options) {
     return client(null, databases, options);
   }
 

@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -20,9 +21,9 @@ import io.vertx.core.Vertx;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
 
@@ -75,7 +76,7 @@ public interface MSSQLPool extends Pool {
    * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MSSQLPool pool(Vertx vertx, MSSQLConnectOptions database, PoolOptions options) {
-    return pool(vertx, Collections.singletonList(database), options);
+    return pool(vertx, () -> database, options);
   }
 
   /**
@@ -94,6 +95,27 @@ public interface MSSQLPool extends Pool {
    * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MSSQLPool pool(Vertx vertx, List<MSSQLConnectOptions> databases, PoolOptions options) {
+    return (MSSQLPool) MSSQLDriver.INSTANCE.createPool(vertx, databases, options);
+  }
+
+  /**
+   * Create a connection pool to the SQL Server {@code databases}. The supplier is called
+   * to provide the options when a new connection is created by the pool.
+   *
+   * @param databases the databases supplier
+   * @param options the options for creating the pool
+   * @return the connection pool
+   */
+  @GenIgnore
+  static MSSQLPool pool(Supplier<MSSQLConnectOptions> databases, PoolOptions options) {
+    return pool(null, databases, options);
+  }
+
+  /**
+   * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  @GenIgnore
+  static MSSQLPool pool(Vertx vertx, Supplier<MSSQLConnectOptions> databases, PoolOptions options) {
     return (MSSQLPool) MSSQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
 
