@@ -49,7 +49,7 @@ public class PoolMultiTest {
 
   @Test
   public void testListLoadBalancing(TestContext ctx) {
-    testLoadBalancing(ctx, PgPool.pool(vertx, ConnectionFactory.roundRobinSupplier(Arrays.asList(db1.options(), db2.options())),new PoolOptions().setMaxSize(5)));
+    testLoadBalancing(ctx, PgPool.pool(vertx, Arrays.asList(db1.options(), db2.options()),new PoolOptions().setMaxSize(5)));
   }
 
   @Test

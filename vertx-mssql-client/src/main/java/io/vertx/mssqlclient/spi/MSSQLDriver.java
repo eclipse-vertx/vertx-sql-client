@@ -23,7 +23,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
@@ -38,9 +37,7 @@ import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class MSSQLDriver implements Driver {
 
@@ -50,24 +47,6 @@ public class MSSQLDriver implements Driver {
 
   @Override
   public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    return null;
-  }
-
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(databases.get());
-    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, null, null, closeFuture);
-    ConnectionFactory factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(factory::connect);
-    pool.init();
-    closeFuture.add(factory);
-    return pool;
-  }
-
-  @Override
-  public MSSQLPool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -78,14 +57,13 @@ public class MSSQLDriver implements Driver {
     return new MSSQLPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(databases.get(0));
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+    MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(databases.get());
     QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
     PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, null, null, closeFuture);
-    List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
-    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
+    ConnectionFactory factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(factory::connect);
     pool.init();
     closeFuture.add(factory);
