@@ -416,15 +416,11 @@ public class SqlClientExamples {
       .setEventLoopSize(4));
   }
 
-  public void dynamicPoolConfig(Vertx vertx, MSSQLPool pool) {
-    // Do not forget to close later
-    ConnectionFactory factory = MSSQLDriver.INSTANCE.createConnectionFactory(vertx);
-    pool.connectionProvider(ctx -> {
-      Future<MSSQLConnectOptions> fut = retrieveOptions();
-      return fut.compose(connectOptions -> {
-        return factory.connect(ctx, connectOptions);
-      });
-    });
+  public void dynamicPoolConfig(Vertx vertx, PoolOptions poolOptions) {
+    MSSQLPool pool = MSSQLPool.pool(vertx, () -> {
+      Future<MSSQLConnectOptions> connectOptions = retrieveOptions();
+      return connectOptions;
+    }, poolOptions);
   }
 
   private Future<MSSQLConnectOptions> retrieveOptions() {

@@ -407,15 +407,11 @@ public class SqlClientExamples {
       .setEventLoopSize(4));
   }
 
-  public void dynamicPoolConfig(Vertx vertx, DB2Pool pool) {
-    // Do not forget to close later
-    ConnectionFactory factory = DB2Driver.INSTANCE.createConnectionFactory(vertx);
-    pool.connectionProvider(ctx -> {
-      Future<DB2ConnectOptions> fut = retrieveOptions();
-      return fut.compose(connectOptions -> {
-        return factory.connect(ctx, connectOptions);
-      });
-    });
+  public void dynamicPoolConfig(Vertx vertx, PoolOptions poolOptions) {
+    DB2Pool pool = DB2Pool.pool(vertx, () -> {
+      Future<DB2ConnectOptions> connectOptions = retrieveOptions();
+      return connectOptions;
+    }, poolOptions);
   }
 
   private Future<DB2ConnectOptions> retrieveOptions() {
