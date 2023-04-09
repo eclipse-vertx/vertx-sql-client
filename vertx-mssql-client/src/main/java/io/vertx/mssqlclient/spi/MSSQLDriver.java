@@ -20,8 +20,6 @@ import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
@@ -59,10 +57,7 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
 
   private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<MSSQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(databases.get());
-    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, null, null, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, 1, options, null, null, closeFuture);
     ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
@@ -98,7 +93,7 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    return new MSSQLConnectionImpl(context, factory, conn, tracer, metrics);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection conn) {
+    return new MSSQLConnectionImpl(context, factory, conn);
   }
 }

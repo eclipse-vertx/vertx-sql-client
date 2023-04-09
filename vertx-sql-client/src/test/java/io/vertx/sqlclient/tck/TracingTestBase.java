@@ -74,24 +74,44 @@ public abstract class TracingTestBase {
   @Test
   public void testTraceSimpleQuery(TestContext ctx) {
     String sql = "SELECT * FROM immutable WHERE id=1";
-    testTraceQuery(ctx, sql, Collections.emptyList(), conn -> conn.query(sql).execute());
+    testTraceQuery(ctx, sql, Collections.emptyList(), pool -> pool.withConnection(conn -> conn.query(sql).execute()));
+  }
+
+  @Test
+  public void testTracePooledSimpleQuery(TestContext ctx) {
+    String sql = "SELECT * FROM immutable WHERE id=1";
+    testTraceQuery(ctx, sql, Collections.emptyList(), pool -> pool.query(sql).execute());
   }
 
   @Test
   public void testTracePreparedQuery(TestContext ctx) {
     String sql = statement("SELECT * FROM immutable WHERE id = ", "");
     Tuple tuple = Tuple.of(1);
-    testTraceQuery(ctx, sql, Collections.singletonList(tuple), conn -> conn.preparedQuery(sql).execute(tuple));
+    testTraceQuery(ctx, sql, Collections.singletonList(tuple), pool -> pool.withConnection(conn -> conn.preparedQuery(sql).execute(tuple)));
+  }
+
+  @Test
+  public void testTracePooledPreparedQuery(TestContext ctx) {
+    String sql = statement("SELECT * FROM immutable WHERE id = ", "");
+    Tuple tuple = Tuple.of(1);
+    testTraceQuery(ctx, sql, Collections.singletonList(tuple), pool -> pool.preparedQuery(sql).execute(tuple));
   }
 
   @Test
   public void testTraceBatchQuery(TestContext ctx) {
     String sql = statement("SELECT * FROM immutable WHERE id = ", "");
     List<Tuple> tuples = Arrays.asList(Tuple.of(1), Tuple.of(2));
-    testTraceQuery(ctx, sql, tuples, conn -> conn.preparedQuery(sql).executeBatch(tuples));
+    testTraceQuery(ctx, sql, tuples, pool -> pool.withConnection(conn -> conn.preparedQuery(sql).executeBatch(tuples)));
   }
 
-  public void testTraceQuery(TestContext ctx, String expectedSql, List<Tuple> expectedTuples, Function<SqlClient, Future<?>> fn) {
+  @Test
+  public void testTracePooledBatchQuery(TestContext ctx) {
+    String sql = statement("SELECT * FROM immutable WHERE id = ", "");
+    List<Tuple> tuples = Arrays.asList(Tuple.of(1), Tuple.of(2));
+    testTraceQuery(ctx, sql, tuples, pool -> pool.preparedQuery(sql).executeBatch(tuples));
+  }
+
+  public void testTraceQuery(TestContext ctx, String expectedSql, List<Tuple> expectedTuples, Function<Pool, Future<?>> fn) {
     AtomicBoolean called = new AtomicBoolean();
     AtomicReference<Context> requestContext = new AtomicReference<>();
     AtomicReference<Context> responseContext = new AtomicReference<>();
@@ -125,20 +145,14 @@ public abstract class TracingTestBase {
     Async async = ctx.async();
     vertx.runOnContext(v1 -> {
       Context context = Vertx.currentContext();
-      pool
-        .getConnection()
-        .onComplete(ctx.asyncAssertSuccess(conn -> {
-        fn.apply(conn).onComplete(ctx.asyncAssertSuccess(v2 -> {
-          conn.close().onComplete(ctx.asyncAssertSuccess(v3 -> {
-            vertx.runOnContext(v4 -> {
-              completed.await(2000);
-              ctx.assertEquals(context, requestContext.get());
-              ctx.assertEquals(context, responseContext.get());
-              ctx.assertTrue(called.get());
-              async.complete();
-            });
-          }));
-        }));
+      fn.apply(pool).onComplete(ctx.asyncAssertSuccess(v2 -> {
+        vertx.runOnContext(v4 -> {
+          completed.await(2000);
+          ctx.assertEquals(context, requestContext.get());
+          ctx.assertEquals(context, responseContext.get());
+          ctx.assertTrue(called.get());
+          async.complete();
+        });
       }));
     });
   }

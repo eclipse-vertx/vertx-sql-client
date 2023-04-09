@@ -20,13 +20,14 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.impl.command.*;
 import io.vertx.core.*;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
+import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
+import io.vertx.sqlclient.impl.tracing.QueryReporter;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.Driver;
@@ -43,8 +44,8 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   protected final ConnectionFactory factory;
   protected final Connection conn;
 
-  public SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, Driver driver, QueryTracer tracer, ClientMetrics metrics) {
-    super(driver, tracer, metrics);
+  public SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, Driver driver) {
+    super(driver);
     this.context = context;
     this.factory = factory;
     this.conn = conn;
@@ -69,10 +70,10 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   public Future<PreparedStatement> prepare(String sql, PrepareOptions options) {
     return schedule(context, new PrepareStatementCommand(sql, options, true))
       .compose(
-      cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, cr, autoCommit())),
+      cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, context, cr, autoCommit())),
       err -> {
         if (conn.isIndeterminatePreparedStatementError(err)) {
-          return Future.succeededFuture(PreparedStatementImpl.create(conn, tracer, metrics, context, options, sql, autoCommit()));
+          return Future.succeededFuture(PreparedStatementImpl.create(conn, context, options, sql, autoCommit()));
         } else {
           return Future.failedFuture(err);
         }
@@ -113,7 +114,20 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
       tx.schedule(cmd, promise);
       return promise.future();
     } else {
-      return conn.schedule(context, cmd);
+      QueryReporter queryReporter;
+      VertxTracer tracer = context.owner().tracer();
+      ClientMetrics metrics = conn.metrics();
+      if (!(conn instanceof SqlConnectionPool.PooledConnection) && cmd instanceof QueryCommandBase && (tracer != null || metrics != null)) {
+        queryReporter = new QueryReporter(tracer, metrics, context, (QueryCommandBase<?>) cmd, conn);
+        queryReporter.before();
+        return conn
+          .schedule(context, cmd)
+          .andThen(ar -> {
+            queryReporter.after(ar);
+          });
+      } else {
+        return conn.schedule(context, cmd);
+      }
     }
   }
 

@@ -5,8 +5,6 @@ import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.impl.*;
 import io.vertx.sqlclient.Pool;
@@ -15,7 +13,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -41,12 +38,9 @@ public class PgDriver implements Driver<PgConnectOptions> {
 
   private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<PgConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
     PgConnectOptions baseConnectOptions = PgConnectOptions.wrap(databases.get());
-    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
     boolean pipelinedPool = options instanceof PgPoolOptions && ((PgPoolOptions) options).isPipelined();
     int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, null, null, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, pipeliningLimit, options, null, null, closeFuture);
     ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
@@ -82,7 +76,7 @@ public class PgDriver implements Driver<PgConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<PgConnectOptions> factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn, tracer, metrics);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<PgConnectOptions> factory, Connection conn) {
+    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn);
   }
 }

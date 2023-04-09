@@ -18,7 +18,6 @@ package io.vertx.db2client.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
@@ -42,8 +41,8 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
     return (Future) client.connect(ctx, options);
   }
 
-  public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, DB2Driver.INSTANCE, tracer, metrics);
+  public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
+    super(context, factory, conn, DB2Driver.INSTANCE);
   }
 
   @Override

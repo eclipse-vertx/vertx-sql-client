@@ -19,10 +19,15 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.net.impl.pool.*;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.tracing.VertxTracer;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.impl.tracing.QueryReporter;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
@@ -157,15 +162,16 @@ public class SqlConnectionPool {
     pool.acquire(context, 0, p);
     return p.future().compose(lease -> {
       PooledConnection pooled = lease.get();
+      Connection conn = pooled.conn;
       Future<R> future;
       if (afterAcquire != null) {
-        future = afterAcquire.apply(pooled.conn)
+        future = afterAcquire.apply(conn)
           .compose(v -> pooled.schedule(context, cmd))
-          .eventually(v -> beforeRecycle.apply(pooled.conn));
+          .eventually(v -> beforeRecycle.apply(conn));
       } else {
         future = pooled.schedule(context, cmd);
       }
-      return future.onComplete(v -> {
+      return future.andThen(ar -> {
         pooled.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
         lease.recycle();
       });
@@ -269,6 +275,26 @@ public class SqlConnectionPool {
       this.listener = listener;
     }
 
+    @Override
+    public ClientMetrics metrics() {
+      return conn.metrics();
+    }
+
+    @Override
+    public TracingPolicy tracingPolicy() {
+      return conn.tracingPolicy();
+    }
+
+    @Override
+    public String database() {
+      return conn.database();
+    }
+
+    @Override
+    public String user() {
+      return conn.user();
+    }
+
     public ConnectionFactory factory() {
       return factory;
     }
@@ -295,7 +321,20 @@ public class SqlConnectionPool {
 
     @Override
     public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
-      return conn.schedule(context, cmd);
+      QueryReporter queryReporter;
+      VertxTracer tracer = vertx.tracer();
+      ClientMetrics metrics = conn.metrics();
+      if (cmd instanceof QueryCommandBase && (tracer != null || metrics != null)) {
+        queryReporter = new QueryReporter(tracer, metrics, context, (QueryCommandBase<?>) cmd, conn);
+        queryReporter.before();
+      } else {
+        queryReporter = null;
+      }
+      Future<R> fut = conn.schedule(context, cmd);
+      if (queryReporter != null) {
+        fut = fut.andThen(queryReporter::after);
+      }
+      return fut;
     }
 
     /**

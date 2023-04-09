@@ -22,15 +22,14 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
-import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -55,7 +54,9 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
     int pipeliningLimit = options.getPipeliningLimit();
     NetClient netClient = netClient(options);
     return netClient.connect(server).flatMap(so -> {
-      DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, cachePreparedStatements,
+      VertxMetrics vertxMetrics = vertx.metricsSPI();
+      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+      DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, metrics, options, cachePreparedStatements,
         preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();
       return Future.future(p -> conn.sendStartupMessage(username, password, database, properties, p));
@@ -65,11 +66,10 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
   @Override
   public Future<SqlConnection> connect(Context context, DB2ConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
-    QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
     Promise<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn, tracer, null);
+        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn);
         conn.init(db2Connection);
         return (SqlConnection)db2Connection;
       }).onComplete(promise);

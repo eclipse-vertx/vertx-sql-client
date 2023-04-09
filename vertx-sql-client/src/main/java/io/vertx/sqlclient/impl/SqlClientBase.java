@@ -19,7 +19,6 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
@@ -30,11 +29,9 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.sqlclient.impl.command.CompositeCommand;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
@@ -44,13 +41,9 @@ import java.util.stream.Collector;
 public abstract class SqlClientBase implements SqlClientInternal, CommandScheduler {
 
   protected final Driver driver;
-  protected final QueryTracer tracer;
-  protected final ClientMetrics metrics;
 
-  public SqlClientBase(Driver driver, QueryTracer tracer, ClientMetrics metrics) {
+  public SqlClientBase(Driver driver) {
     this.driver = driver;
-    this.tracer = tracer;
-    this.metrics = metrics;
   }
 
   protected abstract ContextInternal context();
@@ -64,7 +57,7 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
 
   @Override
   public Query<RowSet<Row>> query(String sql) {
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new QueryImpl<>(autoCommit(), false, sql, builder);
   }
 
@@ -75,7 +68,7 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
 
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options) {
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(tracer, metrics, RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedQueryImpl<>(autoCommit(), false, sql, options, builder);
   }
 
@@ -178,7 +171,7 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
     private CompositeCommand composite = new CompositeCommand();
 
     public GroupingClient() {
-      super(SqlClientBase.this.driver, SqlClientBase.this.tracer, SqlClientBase.this.metrics);
+      super(SqlClientBase.this.driver);
     }
 
     @Override

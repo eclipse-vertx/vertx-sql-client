@@ -181,7 +181,7 @@ public interface Driver<C extends SqlConnectOptions> {
     return current;
   }
 
-  default SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<C> factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    return new SqlConnectionBase<>(context, factory, conn, this, tracer, metrics);
+  default SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<C> factory, Connection conn) {
+    return new SqlConnectionBase<>(context, factory, conn, this);
   }
 }
