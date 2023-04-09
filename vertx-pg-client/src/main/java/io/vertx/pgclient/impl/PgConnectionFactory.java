@@ -40,15 +40,14 @@ import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions> {
 
-  public PgConnectionFactory(VertxInternal context, Supplier<PgConnectOptions> options) {
-    super(context, options);
+  public PgConnectionFactory(VertxInternal context) {
+    super(context);
   }
 
   private void checkSslMode(PgConnectOptions options) {

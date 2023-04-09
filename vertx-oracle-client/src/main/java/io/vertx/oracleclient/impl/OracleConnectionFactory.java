@@ -27,18 +27,15 @@ import oracle.jdbc.datasource.OracleDataSource;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static io.vertx.oracleclient.impl.Helper.executeBlocking;
 import static io.vertx.oracleclient.impl.OracleDatabaseHelper.createDataSource;
 
 public class OracleConnectionFactory implements ConnectionFactory<OracleConnectOptions> {
 
-  private final Supplier<OracleConnectOptions> options;
   private final Map<JsonObject, OracleDataSource> datasources;
 
-  public OracleConnectionFactory(VertxInternal vertx, Supplier<OracleConnectOptions> options) {
-    this.options = options;
+  public OracleConnectionFactory(VertxInternal vertx) {
     this.datasources = new HashMap<>();
   }
 

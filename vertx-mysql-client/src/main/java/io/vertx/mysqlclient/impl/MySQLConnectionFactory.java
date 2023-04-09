@@ -32,14 +32,13 @@ import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOptions> {
 
-  public MySQLConnectionFactory(VertxInternal vertx, Supplier<MySQLConnectOptions> options) {
-    super(vertx, options);
+  public MySQLConnectionFactory(VertxInternal vertx) {
+    super(vertx);
   }
 
   @Override

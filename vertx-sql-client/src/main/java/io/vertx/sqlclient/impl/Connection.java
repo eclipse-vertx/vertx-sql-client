@@ -49,6 +49,8 @@ public interface Connection extends CommandScheduler  {
 
   boolean isValid();
 
+  int pipeliningLimit();
+
   DatabaseMetadata getDatabaseMetaData();
 
   void close(Holder holder, Promise<Void> promise);

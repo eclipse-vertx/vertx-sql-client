@@ -102,6 +102,11 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
+  public int pipeliningLimit() {
+    return pipeliningLimit;
+  }
+
+  @Override
   public TracingPolicy tracingPolicy() {
     return connectOptions().getTracingPolicy();
   }

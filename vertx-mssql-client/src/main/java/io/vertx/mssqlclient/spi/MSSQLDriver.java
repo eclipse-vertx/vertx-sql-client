@@ -15,6 +15,7 @@
  */
 package io.vertx.mssqlclient.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -31,7 +32,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -44,7 +44,12 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
   public static final MSSQLDriver INSTANCE = new MSSQLDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<MSSQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public MSSQLConnectOptions downcast(SqlConnectOptions connectOptions) {
+    return connectOptions instanceof MSSQLConnectOptions ? (MSSQLConnectOptions) connectOptions : new MSSQLConnectOptions(connectOptions);
+  }
+
+  @Override
+  public Pool newPool(Vertx vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -55,14 +60,18 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
     return new MSSQLPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<MSSQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(databases.get());
-    PoolImpl pool = new PoolImpl(vertx, this, 1, options, null, null, closeFuture);
-    ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
+    PoolImpl pool = new PoolImpl(vertx, this, false, options, null, null, closeFuture);
+    ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx);
+    pool.connectionProvider(context -> databases.get().compose(connectOptions -> factory.connect(context, connectOptions)));
     pool.init();
     closeFuture.add(factory);
     return pool;
+  }
+
+  @Override
+  public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx) {
+    return new MSSQLConnectionFactory((VertxInternal) vertx);
   }
 
   @Override
@@ -74,16 +83,6 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
   @Override
   public boolean acceptsOptions(SqlConnectOptions options) {
     return options instanceof MSSQLConnectOptions || SqlConnectOptions.class.equals(options.getClass());
-  }
-
-  @Override
-  public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx, MSSQLConnectOptions database) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx, () -> MSSQLConnectOptions.wrap(database));
-  }
-
-  @Override
-  public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx, Supplier<MSSQLConnectOptions> database) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx, () -> MSSQLConnectOptions.wrap(database.get()));
   }
 
   @Override

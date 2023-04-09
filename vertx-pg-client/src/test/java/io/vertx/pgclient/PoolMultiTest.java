@@ -55,13 +55,12 @@ public class PoolMultiTest {
   @Test
   public void testAsyncLoadBalancing(TestContext ctx) {
     PgPool pool = PgPool.pool(vertx, new PoolOptions().setMaxSize(5));
-    ConnectionFactory provider1 = PgDriver.INSTANCE.createConnectionFactory(vertx, db1.options());
-    ConnectionFactory provider2 = PgDriver.INSTANCE.createConnectionFactory(vertx, db2.options());
+    ConnectionFactory provider = PgDriver.INSTANCE.createConnectionFactory(vertx);
     pool.connectionProvider(new Function<Context, Future<SqlConnection>>() {
       int idx = 0;
       @Override
       public Future<SqlConnection> apply(Context context) {
-        return (idx++ % 2 == 0 ? provider1 : provider2).connect(context, idx++ % 2 == 0 ? db1.options() : db2.options());
+        return provider.connect(context, idx++ % 2 == 0 ? db1.options() : db2.options());
       }
     });
     testLoadBalancing(ctx, pool);
@@ -99,7 +98,7 @@ public class PoolMultiTest {
     } else if (cn1 == 3) {
       assertEquals(2, cn2);
     } else {
-      ctx.fail();
+      ctx.fail(" " + cn1 + " / " + cn2);
     }
   }
 }

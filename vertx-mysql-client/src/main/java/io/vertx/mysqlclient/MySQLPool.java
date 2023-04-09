@@ -24,6 +24,7 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 
 import java.util.List;
 import java.util.function.Function;
@@ -80,7 +81,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions database, PoolOptions options) {
-    return pool(vertx, () -> database, options);
+    return pool(vertx, SingletonSupplier.wrap(database), options);
   }
 
   /**
@@ -111,7 +112,7 @@ public interface MySQLPool extends Pool {
    * @return the connection pool
    */
   @GenIgnore
-  static MySQLPool pool(Supplier<MySQLConnectOptions> databases, PoolOptions options) {
+  static MySQLPool pool(Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
     return pool(null, databases, options);
   }
 
@@ -119,7 +120,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
   @GenIgnore
-  static MySQLPool pool(Vertx vertx, Supplier<MySQLConnectOptions> databases, PoolOptions options) {
+  static MySQLPool pool(Vertx vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
     return (MySQLPool) MySQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
   /**
@@ -157,14 +158,14 @@ public interface MySQLPool extends Pool {
    * @return the client
    */
   static SqlClient client(MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(null, () -> connectOptions, poolOptions);
+    return client(null, SingletonSupplier.wrap(connectOptions), poolOptions);
   }
 
   /**
    * Like {@link #client(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(vertx, () -> connectOptions, poolOptions);
+    return client(vertx, SingletonSupplier.wrap(connectOptions), poolOptions);
   }
 
   /**
@@ -190,7 +191,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #client(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
   @GenIgnore
-  static SqlClient client(Vertx vertx, Supplier<MySQLConnectOptions> mySQLConnectOptions, PoolOptions options) {
+  static SqlClient client(Vertx vertx, Supplier<Future<MySQLConnectOptions>> mySQLConnectOptions, PoolOptions options) {
     return MySQLDriver.INSTANCE.createPool(vertx, mySQLConnectOptions, new MySQLPoolOptions(options).setPipelined(true));
   }
 
@@ -203,7 +204,7 @@ public interface MySQLPool extends Pool {
    * @return the pooled client
    */
   @GenIgnore
-  static SqlClient client(Supplier<MySQLConnectOptions> databases, PoolOptions options) {
+  static SqlClient client(Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
     return client(null, databases, options);
   }
 

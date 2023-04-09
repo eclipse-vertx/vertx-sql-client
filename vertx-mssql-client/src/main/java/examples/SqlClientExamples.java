@@ -417,11 +417,11 @@ public class SqlClientExamples {
   }
 
   public void dynamicPoolConfig(Vertx vertx, MSSQLPool pool) {
+    // Do not forget to close later
+    ConnectionFactory factory = MSSQLDriver.INSTANCE.createConnectionFactory(vertx);
     pool.connectionProvider(ctx -> {
       Future<MSSQLConnectOptions> fut = retrieveOptions();
       return fut.compose(connectOptions -> {
-        // Do not forget to close later
-        ConnectionFactory factory = MSSQLDriver.INSTANCE.createConnectionFactory(vertx, connectOptions);
         return factory.connect(ctx, connectOptions);
       });
     });

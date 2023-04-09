@@ -18,14 +18,14 @@ import java.util.function.Supplier;
  */
 public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeable {
 
-  static <T> Supplier<T> roundRobinSupplier(List<T> factories) {
-    return new Supplier<T>() {
+  static <T> Supplier<Future<T>> roundRobinSupplier(List<T> factories) {
+    return new Supplier<Future<T>>() {
       AtomicLong idx = new AtomicLong();
       @Override
-      public T get() {
+      public Future<T> get() {
         long val = idx.getAndIncrement();
         T f = factories.get((int)val % factories.size());
-        return f;
+        return Future.succeededFuture(f);
       }
     };
   }

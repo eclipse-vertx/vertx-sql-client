@@ -36,8 +36,8 @@ import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOptions> {
 
-  public MSSQLConnectionFactory(VertxInternal vertx, Supplier<MSSQLConnectOptions> options) {
-    super(vertx, options);
+  public MSSQLConnectionFactory(VertxInternal vertx) {
+    super(vertx);
   }
 
   @Override

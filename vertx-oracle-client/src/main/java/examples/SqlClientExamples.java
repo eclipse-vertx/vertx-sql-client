@@ -339,11 +339,11 @@ public class SqlClientExamples {
   }
 
   public void dynamicPoolConfig(Vertx vertx, OraclePool pool) {
+    // Do not forget to close later
+    ConnectionFactory factory = OracleDriver.INSTANCE.createConnectionFactory(vertx);
     pool.connectionProvider(ctx -> {
       Future<OracleConnectOptions> fut = retrieveOptions();
       return fut.compose(connectOptions -> {
-        // Do not forget to close later
-        ConnectionFactory factory = OracleDriver.INSTANCE.createConnectionFactory(vertx, connectOptions);
         return factory.connect(ctx, connectOptions);
       });
     });

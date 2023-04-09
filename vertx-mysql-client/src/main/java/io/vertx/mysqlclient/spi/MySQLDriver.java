@@ -15,6 +15,7 @@
  */
 package io.vertx.mysqlclient.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -40,7 +41,12 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
   public static final MySQLDriver INSTANCE = new MySQLDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<MySQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public MySQLConnectOptions downcast(SqlConnectOptions connectOptions) {
+    return connectOptions instanceof MySQLConnectOptions ? (MySQLConnectOptions) connectOptions : new MySQLConnectOptions(connectOptions);
+  }
+
+  @Override
+  public Pool newPool(Vertx vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -51,13 +57,11 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
     return new MySQLPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<MySQLConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    MySQLConnectOptions baseConnectOptions = MySQLConnectOptions.wrap(databases.get());
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     boolean pipelinedPool = options instanceof MySQLPoolOptions && ((MySQLPoolOptions) options).isPipelined();
-    int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    PoolImpl pool = new PoolImpl(vertx, this, pipeliningLimit, options, null, null, closeFuture);
-    ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, closeFuture);
+    ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx);
+    pool.connectionProvider(context -> databases.get().compose(connectOptions -> factory.connect(context, connectOptions)));
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -75,13 +79,8 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
   }
 
   @Override
-  public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx, MySQLConnectOptions database) {
-    return new MySQLConnectionFactory((VertxInternal) vertx, () -> MySQLConnectOptions.wrap(database));
-  }
-
-  @Override
-  public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx, Supplier<MySQLConnectOptions> database) {
-    return new MySQLConnectionFactory((VertxInternal) vertx, () -> MySQLConnectOptions.wrap(database.get()));
+  public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx) {
+    return new MySQLConnectionFactory((VertxInternal) vertx);
   }
 
   @Override

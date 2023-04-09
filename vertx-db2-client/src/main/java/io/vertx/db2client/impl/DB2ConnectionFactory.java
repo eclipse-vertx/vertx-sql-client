@@ -33,12 +33,11 @@ import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
 import java.util.Map;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOptions> {
 
-  public DB2ConnectionFactory(VertxInternal vertx, Supplier<DB2ConnectOptions> options) {
-    super(vertx, options);
+  public DB2ConnectionFactory(VertxInternal vertx) {
+    super(vertx);
   }
 
   @Override

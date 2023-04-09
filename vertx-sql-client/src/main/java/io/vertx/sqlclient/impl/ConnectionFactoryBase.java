@@ -37,14 +37,12 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
 
   protected final VertxInternal vertx;
   private final Map<JsonObject, NetClient> clients;
-  protected final Supplier<C> options;
 
   // close hook
   protected final CloseFuture clientCloseFuture = new CloseFuture();
 
-  protected ConnectionFactoryBase(VertxInternal vertx, Supplier<C> options) {
+  protected ConnectionFactoryBase(VertxInternal vertx) {
     this.vertx = vertx;
-    this.options = options;
     this.clients = new HashMap<>();
   }
 

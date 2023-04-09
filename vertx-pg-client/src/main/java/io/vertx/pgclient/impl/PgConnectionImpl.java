@@ -34,7 +34,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Supplier;
 
@@ -43,7 +42,7 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   public static Future<PgConnection> connect(ContextInternal context, Supplier<PgConnectOptions> options) {
     PgConnectionFactory client;
     try {
-      client = new PgConnectionFactory(context.owner(), options);
+      client = new PgConnectionFactory(context.owner());
     } catch (Exception e) {
       return context.failedFuture(e);
     }

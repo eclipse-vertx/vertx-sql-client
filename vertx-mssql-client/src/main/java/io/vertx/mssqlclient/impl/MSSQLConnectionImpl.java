@@ -34,7 +34,7 @@ public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> 
 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
-    MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner(), () -> options);
+    MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner());
     ctx.addCloseHook(client);
     return (Future)client.connect(ctx, options);
   }

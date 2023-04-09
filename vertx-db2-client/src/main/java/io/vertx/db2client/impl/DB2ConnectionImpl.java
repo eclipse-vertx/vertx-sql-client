@@ -24,7 +24,6 @@ import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.db2client.spi.DB2Driver;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> implements DB2Connection {
@@ -33,7 +32,7 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     DB2ConnectionFactory client;
     try {
-      client = new DB2ConnectionFactory(ctx.owner(), () -> options);
+      client = new DB2ConnectionFactory(ctx.owner());
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }

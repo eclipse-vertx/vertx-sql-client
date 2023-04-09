@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -40,7 +41,12 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
   public static final DB2Driver INSTANCE = new DB2Driver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<DB2ConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public DB2ConnectOptions downcast(SqlConnectOptions connectOptions) {
+    return connectOptions instanceof DB2ConnectOptions ? (DB2ConnectOptions) connectOptions : new DB2ConnectOptions(connectOptions);
+  }
+
+  @Override
+  public Pool newPool(Vertx vertx, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -51,13 +57,11 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
     return new DB2PoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<DB2ConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    DB2ConnectOptions baseConnectOptions = DB2ConnectOptions.wrap(databases.get());
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
-    int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    PoolImpl pool = new PoolImpl(vertx, this, pipeliningLimit, options, null, null, closeFuture);
-    ConnectionFactory<DB2ConnectOptions> factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, closeFuture);
+    ConnectionFactory<DB2ConnectOptions> factory = createConnectionFactory(vertx);
+    pool.connectionProvider(context -> databases.get().compose(connectOptions -> factory.connect(context, connectOptions)));
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -75,13 +79,8 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
   }
 
   @Override
-  public ConnectionFactory<DB2ConnectOptions> createConnectionFactory(Vertx vertx, DB2ConnectOptions database) {
-    return new DB2ConnectionFactory((VertxInternal) vertx, () -> DB2ConnectOptions.wrap(database));
-  }
-
-  @Override
-  public ConnectionFactory<DB2ConnectOptions> createConnectionFactory(Vertx vertx, Supplier<DB2ConnectOptions> database) {
-    return new DB2ConnectionFactory((VertxInternal) vertx, () -> DB2ConnectOptions.wrap(database.get()));
+  public ConnectionFactory<DB2ConnectOptions> createConnectionFactory(Vertx vertx) {
+    return new DB2ConnectionFactory((VertxInternal) vertx);
   }
 
   @Override

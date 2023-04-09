@@ -63,6 +63,11 @@ public class OracleJdbcConnection implements Connection {
   }
 
   @Override
+  public int pipeliningLimit() {
+    return 1;
+  }
+
+  @Override
   public TracingPolicy tracingPolicy() {
     return options.getTracingPolicy();
   }

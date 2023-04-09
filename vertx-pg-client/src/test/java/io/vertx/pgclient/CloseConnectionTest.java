@@ -59,7 +59,7 @@ public class CloseConnectionTest extends PgTestBase {
   public void testCloseNetSocket(TestContext ctx) {
     testCloseConnection(ctx, () -> {
       PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(1));
-      ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, options);
+      ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx);
       pool.connectionProvider(new Function<Context, Future<SqlConnection>>() {
         @Override
         public Future<SqlConnection> apply(Context context) {

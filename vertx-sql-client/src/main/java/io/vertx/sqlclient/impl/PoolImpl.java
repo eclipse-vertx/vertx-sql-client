@@ -44,7 +44,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final long idleTimeout;
   private final long connectionTimeout;
   private final long cleanerPeriod;
-  private final int pipeliningLimit;
+  private final boolean pipelined;
   private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
@@ -53,7 +53,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
 
   public PoolImpl(VertxInternal vertx,
                   Driver driver,
-                  int pipeliningLimit,
+                  boolean pipelined,
                   PoolOptions poolOptions,
                   Function<Connection, Future<Void>> afterAcquire,
                   Function<Connection, Future<Void>> beforeRecycle,
@@ -64,9 +64,9 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
-    this.pipeliningLimit = pipeliningLimit;
+    this.pipelined = pipelined;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, afterAcquire, beforeRecycle, vertx, idleTimeout, poolOptions.getMaxSize(), pipeliningLimit, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, afterAcquire, beforeRecycle, vertx, idleTimeout, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
   }
 
@@ -115,7 +115,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   @Override
   public Future<SqlConnection> getConnection() {
     ContextInternal current = vertx.getOrCreateContext();
-    if (pipeliningLimit > 1) {
+    if (pipelined) {
       return current.failedFuture("Cannot acquire a connection on a pipelined pool");
     }
     Promise<SqlConnectionPool.PooledConnection> promise = current.promise();

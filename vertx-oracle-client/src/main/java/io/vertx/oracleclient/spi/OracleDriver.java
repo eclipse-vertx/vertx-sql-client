@@ -37,7 +37,12 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
   public static final OracleDriver INSTANCE = new OracleDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<OracleConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public OracleConnectOptions downcast(SqlConnectOptions connectOptions) {
+    return connectOptions instanceof OracleConnectOptions ? (OracleConnectOptions) connectOptions : new OracleConnectOptions(connectOptions);
+  }
+
+  @Override
+  public Pool newPool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -48,13 +53,12 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
     return new OraclePoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<OracleConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    OracleConnectOptions baseConnectOptions = OracleConnectOptions.wrap(databases.get());
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     Function<Connection, Future<Void>> afterAcquire = conn -> ((OracleJdbcConnection) conn).afterAcquire();
     Function<Connection, Future<Void>> beforeRecycle = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
-    PoolImpl pool = new PoolImpl(vertx, this,  1, options, afterAcquire, beforeRecycle, closeFuture);
-    ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, closeFuture);
+    ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx);
+    pool.connectionProvider(context -> databases.get().compose(connectOptions -> factory.connect(context, connectOptions)));
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -72,13 +76,8 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
   }
 
   @Override
-  public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx, OracleConnectOptions database) {
-    return new OracleConnectionFactory((VertxInternal) vertx, () -> OracleConnectOptions.wrap(database));
-  }
-
-  @Override
-  public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx, Supplier<OracleConnectOptions> database) {
-    return new OracleConnectionFactory((VertxInternal) vertx, () -> OracleConnectOptions.wrap(database.get()));
+  public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx) {
+    return new OracleConnectionFactory((VertxInternal) vertx);
   }
 
   @Override

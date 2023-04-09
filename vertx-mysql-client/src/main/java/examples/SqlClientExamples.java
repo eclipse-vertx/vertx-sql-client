@@ -388,11 +388,11 @@ public class SqlClientExamples {
   }
 
   public void dynamicPoolConfig(Vertx vertx, MySQLPool pool) {
+    // Do not forget to close later
+    ConnectionFactory factory = MySQLDriver.INSTANCE.createConnectionFactory(vertx);
     pool.connectionProvider(ctx -> {
       Future<MySQLConnectOptions> fut = retrieveOptions();
       return fut.compose(connectOptions -> {
-        // Do not forget to close later
-        ConnectionFactory factory = MySQLDriver.INSTANCE.createConnectionFactory(vertx, connectOptions);
         return factory.connect(ctx, connectOptions);
       });
     });

@@ -51,7 +51,7 @@ public class SqlConnectionPool {
   private final Supplier<Handler<PooledConnection>> hook;
   private final Function<Connection, Future<Void>> afterAcquire;
   private final Function<Connection, Future<Void>> beforeRecycle;
-  private final int pipeliningLimit;
+  private final boolean pipelined;
   private final long idleTimeout;
   private final int maxSize;
 
@@ -62,21 +62,18 @@ public class SqlConnectionPool {
                            VertxInternal vertx,
                            long idleTimeout,
                            int maxSize,
-                           int pipeliningLimit,
+                           boolean pipelined,
                            int maxWaitQueueSize,
                            int eventLoopSize) {
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
-    }
-    if (pipeliningLimit < 1) {
-      throw new IllegalArgumentException("Pipelining limit must be > 0");
     }
     if (afterAcquire != null && beforeRecycle == null) {
       throw new IllegalArgumentException("afterAcquire and beforeRecycle hooks must be both not null");
     }
     this.pool = ConnectionPool.pool(connector, new int[]{maxSize}, maxWaitQueueSize);
     this.vertx = vertx;
-    this.pipeliningLimit = pipeliningLimit;
+    this.pipelined = pipelined;
     this.idleTimeout = idleTimeout;
     this.maxSize = maxSize;
     this.hook = hook;
@@ -123,7 +120,7 @@ public class SqlConnectionPool {
             connectionHandler.handle(pooled);
             return p.future();
           } else {
-            return Future.succeededFuture(new ConnectResult<>(pooled, pipeliningLimit, 0));
+            return Future.succeededFuture(new ConnectResult<>(pooled, pipelined ? conn.pipeliningLimit() : 1, 0));
           }
         } else {
           return Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION);
@@ -315,6 +312,11 @@ public class SqlConnectionPool {
     }
 
     @Override
+    public int pipeliningLimit() {
+      return conn.pipeliningLimit();
+    }
+
+    @Override
     public DatabaseMetadata getDatabaseMetaData() {
       return conn.getDatabaseMetaData();
     }
@@ -373,7 +375,7 @@ public class SqlConnectionPool {
         if (resultHandler != null) {
           poolCallback = null;
           promise.complete();
-          resultHandler.complete(new ConnectResult<>(this, pipeliningLimit, 0));
+          resultHandler.complete(new ConnectResult<>(this, pipelined ? conn.pipeliningLimit() : 1, 0));
           return;
         }
         if (beforeRecycle == null) {

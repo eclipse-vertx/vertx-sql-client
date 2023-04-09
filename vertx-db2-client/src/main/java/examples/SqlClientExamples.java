@@ -408,11 +408,11 @@ public class SqlClientExamples {
   }
 
   public void dynamicPoolConfig(Vertx vertx, DB2Pool pool) {
+    // Do not forget to close later
+    ConnectionFactory factory = DB2Driver.INSTANCE.createConnectionFactory(vertx);
     pool.connectionProvider(ctx -> {
       Future<DB2ConnectOptions> fut = retrieveOptions();
       return fut.compose(connectOptions -> {
-        // Do not forget to close later
-        ConnectionFactory factory = DB2Driver.INSTANCE.createConnectionFactory(vertx, connectOptions);
         return factory.connect(ctx, connectOptions);
       });
     });

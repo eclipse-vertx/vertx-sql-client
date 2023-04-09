@@ -412,11 +412,11 @@ public class SqlClientExamples {
   }
 
   public void dynamicPoolConfig(Vertx vertx, PgPool pool) {
+    // Do not forget to close later
+    ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx);
     pool.connectionProvider(ctx -> {
       Future<PgConnectOptions> fut = retrieveOptions();
       return fut.compose(connectOptions -> {
-        // Do not forget to close later
-        ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, connectOptions);
         return factory.connect(ctx, connectOptions);
       });
     });

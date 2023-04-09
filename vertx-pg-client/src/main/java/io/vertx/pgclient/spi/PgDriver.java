@@ -1,5 +1,6 @@
 package io.vertx.pgclient.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -25,7 +26,7 @@ public class PgDriver implements Driver<PgConnectOptions> {
   public static final PgDriver INSTANCE = new PgDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<PgConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -36,13 +37,11 @@ public class PgDriver implements Driver<PgConnectOptions> {
     return new PgPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<PgConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    PgConnectOptions baseConnectOptions = PgConnectOptions.wrap(databases.get());
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     boolean pipelinedPool = options instanceof PgPoolOptions && ((PgPoolOptions) options).isPipelined();
-    int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    PoolImpl pool = new PoolImpl(vertx, this, pipeliningLimit, options, null, null, closeFuture);
-    ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx, databases);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, closeFuture);
+    ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx);
+    pool.connectionProvider(context -> databases.get().compose(connectOptions -> factory.connect(context, connectOptions)));
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -60,13 +59,13 @@ public class PgDriver implements Driver<PgConnectOptions> {
   }
 
   @Override
-  public ConnectionFactory<PgConnectOptions> createConnectionFactory(Vertx vertx, PgConnectOptions database) {
-    return new PgConnectionFactory((VertxInternal) vertx, () -> PgConnectOptions.wrap(database));
+  public PgConnectOptions downcast(SqlConnectOptions connectOptions) {
+    return connectOptions instanceof PgConnectOptions ? (PgConnectOptions) connectOptions : new PgConnectOptions(connectOptions);
   }
 
   @Override
-  public ConnectionFactory<PgConnectOptions> createConnectionFactory(Vertx vertx, Supplier<PgConnectOptions> database) {
-    return new PgConnectionFactory((VertxInternal) vertx, () -> PgConnectOptions.wrap(database.get()));
+  public ConnectionFactory<PgConnectOptions> createConnectionFactory(Vertx vertx) {
+    return new PgConnectionFactory((VertxInternal) vertx);
   }
 
   @Override

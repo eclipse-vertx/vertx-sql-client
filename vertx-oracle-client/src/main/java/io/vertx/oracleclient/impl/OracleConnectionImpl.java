@@ -29,7 +29,7 @@ public class OracleConnectionImpl extends SqlConnectionBase<OracleConnectionImpl
 
   public static Future<OracleConnection> connect(Vertx vertx, OracleConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
-    OracleConnectionFactory client = new OracleConnectionFactory(ctx.owner(), () -> options);
+    OracleConnectionFactory client = new OracleConnectionFactory(ctx.owner());
     ctx.addCloseHook(client);
     return (Future) client.connect(ctx, options);
   }

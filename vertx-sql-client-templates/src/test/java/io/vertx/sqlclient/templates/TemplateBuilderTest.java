@@ -36,6 +36,10 @@ public class TemplateBuilderTest {
     public Driver driver() {
       return new Driver<SqlConnectOptions>() {
         @Override
+        public SqlConnectOptions downcast(SqlConnectOptions connectOptions) {
+          throw new UnsupportedOperationException();
+        }
+        @Override
         public SqlConnectOptions parseConnectionUri(String uri) {
           throw new UnsupportedOperationException();
         }
@@ -44,15 +48,11 @@ public class TemplateBuilderTest {
           return FakeClient.this.appendQueryPlaceholder(queryBuilder, index, current);
         }
         @Override
-        public Pool newPool(Vertx vertx, Supplier<SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+        public Pool newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
           throw new UnsupportedOperationException();
         }
         @Override
-        public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-          throw new UnsupportedOperationException();
-        }
-        @Override
-        public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx, Supplier<SqlConnectOptions> database) {
+        public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx) {
           throw new UnsupportedOperationException();
         }
         @Override
