@@ -48,7 +48,7 @@ import java.util.function.Supplier;
  */
 public class PgConnectionFactory extends ConnectionFactoryBase {
 
-  public PgConnectionFactory(VertxInternal context, Supplier<PgConnectOptions> options) {
+  public PgConnectionFactory(VertxInternal context, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
     super(context, options);
   }
 

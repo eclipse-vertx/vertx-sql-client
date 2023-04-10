@@ -16,6 +16,7 @@
  */
 package io.vertx.sqlclient.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.CloseFuture;
@@ -25,6 +26,7 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 
@@ -48,16 +50,16 @@ public interface Driver {
    * @param options the options for creating the pool
    * @return the connection pool
    */
-  default Pool createPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options) {
+  default Pool createPool(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options) {
     VertxInternal vx;
     if (vertx == null) {
       if (Vertx.currentContext() != null) {
         throw new IllegalStateException("Running in a Vertx context => use Pool#pool(Vertx, SqlConnectOptions, PoolOptions) instead");
       }
       VertxOptions vertxOptions = new VertxOptions();
-      SqlConnectOptions database = databases.get();
-      if (database.isUsingDomainSocket()) {
-        vertxOptions.setPreferNativeTransport(true);
+      if (databases instanceof SingletonSupplier) {
+        SqlConnectOptions connectOptions = (SqlConnectOptions) ((SingletonSupplier) databases).unwrap();
+        vertxOptions.setPreferNativeTransport(connectOptions.isUsingDomainSocket());
       }
       vx = (VertxInternal) Vertx.vertx(vertxOptions);
     } else {
@@ -127,7 +129,7 @@ public interface Driver {
    * @param closeFuture the close future
    * @return the connection pool
    */
-  Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture);
+  Pool newPool(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture);
 
   /**
    * Create a connection factory to the given {@code database}.
@@ -145,7 +147,7 @@ public interface Driver {
    * @param database the database to connect to
    * @return the connection factory
    */
-  ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database);
+  ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database);
 
   /**
    * @return {@code true} if the driver accepts the {@code connectOptions}, {@code false} otherwise

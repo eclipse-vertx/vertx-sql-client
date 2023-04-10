@@ -18,6 +18,7 @@ import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OracleConnection;
 import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
@@ -29,7 +30,7 @@ public class OracleConnectionImpl extends SqlConnectionBase<OracleConnectionImpl
 
   public static Future<OracleConnection> connect(Vertx vertx, OracleConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
-    OracleConnectionFactory client = new OracleConnectionFactory(ctx.owner(), () -> options);
+    OracleConnectionFactory client = new OracleConnectionFactory(ctx.owner(), SingletonSupplier.wrap(options));
     ctx.addCloseHook(client);
     return (Future) client.connect(ctx);
   }

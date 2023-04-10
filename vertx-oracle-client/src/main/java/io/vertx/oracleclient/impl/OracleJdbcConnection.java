@@ -58,6 +58,11 @@ public class OracleJdbcConnection implements Connection {
   }
 
   @Override
+  public int pipeliningLimit() {
+    return 1;
+  }
+
+  @Override
   public ClientMetrics metrics() {
     return metrics;
   }
@@ -79,7 +84,7 @@ public class OracleJdbcConnection implements Connection {
 
   @Override
   public SocketAddress server() {
-    throw new UnsupportedOperationException();
+    return options.getSocketAddress();
   }
 
   @Override

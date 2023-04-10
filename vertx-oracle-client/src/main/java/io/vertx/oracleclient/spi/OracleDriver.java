@@ -23,6 +23,7 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolImpl;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
@@ -37,7 +38,7 @@ public class OracleDriver implements Driver {
   public static final OracleDriver INSTANCE = new OracleDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -48,11 +49,10 @@ public class OracleDriver implements Driver {
     return new OraclePoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    OracleConnectOptions baseConnectOptions = OracleConnectOptions.wrap(databases.get());
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     Function<Connection, Future<Void>> afterAcquire = conn -> ((OracleJdbcConnection) conn).afterAcquire();
     Function<Connection, Future<Void>> beforeRecycle = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
-    PoolImpl pool = new PoolImpl(vertx, this,  1, options, afterAcquire, beforeRecycle, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, closeFuture);
     ConnectionFactory factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
@@ -73,12 +73,12 @@ public class OracleDriver implements Driver {
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new OracleConnectionFactory((VertxInternal) vertx, () -> OracleConnectOptions.wrap(database));
+    return new OracleConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database));
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database) {
-    return new OracleConnectionFactory((VertxInternal) vertx, () -> OracleConnectOptions.wrap(database.get()));
+  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
+    return new OracleConnectionFactory((VertxInternal) vertx, database);
   }
 
   @Override

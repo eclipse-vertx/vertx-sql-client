@@ -38,7 +38,7 @@ import java.util.function.Supplier;
 
 public class DB2ConnectionFactory extends ConnectionFactoryBase {
 
-  public DB2ConnectionFactory(VertxInternal vertx, Supplier<DB2ConnectOptions> options) {
+  public DB2ConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
     super(vertx, options);
   }
 

@@ -42,7 +42,7 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   public static Future<PgConnection> connect(ContextInternal context, Supplier<PgConnectOptions> options) {
     PgConnectionFactory client;
     try {
-      client = new PgConnectionFactory(context.owner(), options);
+      client = new PgConnectionFactory(context.owner(), () -> Future.succeededFuture(options.get()));
     } catch (Exception e) {
       return context.failedFuture(e);
     }

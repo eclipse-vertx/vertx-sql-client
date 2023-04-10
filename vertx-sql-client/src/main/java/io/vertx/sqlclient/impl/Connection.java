@@ -33,6 +33,8 @@ public interface Connection extends CommandScheduler  {
     return false;
   }
 
+  int pipeliningLimit();
+
   TracingPolicy tracingPolicy();
 
   SocketAddress server();

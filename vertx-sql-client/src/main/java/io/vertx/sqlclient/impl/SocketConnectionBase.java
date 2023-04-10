@@ -97,6 +97,11 @@ public abstract class SocketConnectionBase implements Connection {
   protected abstract SqlConnectOptions connectOptions();
 
   @Override
+  public int pipeliningLimit() {
+    return pipeliningLimit;
+  }
+
+  @Override
   public ClientMetrics metrics() {
     return metrics;
   }

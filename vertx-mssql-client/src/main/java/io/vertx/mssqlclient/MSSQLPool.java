@@ -20,6 +20,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 
 import java.util.List;
 import java.util.function.Function;
@@ -76,7 +77,7 @@ public interface MSSQLPool extends Pool {
    * Like {@link #pool(MSSQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MSSQLPool pool(Vertx vertx, MSSQLConnectOptions database, PoolOptions options) {
-    return pool(vertx, () -> database, options);
+    return pool(vertx, SingletonSupplier.wrap(database), options);
   }
 
   /**
@@ -107,7 +108,7 @@ public interface MSSQLPool extends Pool {
    * @return the connection pool
    */
   @GenIgnore
-  static MSSQLPool pool(Supplier<MSSQLConnectOptions> databases, PoolOptions options) {
+  static MSSQLPool pool(Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options) {
     return pool(null, databases, options);
   }
 
@@ -115,7 +116,7 @@ public interface MSSQLPool extends Pool {
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
   @GenIgnore
-  static MSSQLPool pool(Vertx vertx, Supplier<MSSQLConnectOptions> databases, PoolOptions options) {
+  static MSSQLPool pool(Vertx vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options) {
     return (MSSQLPool) MSSQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
 

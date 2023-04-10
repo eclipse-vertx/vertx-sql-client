@@ -1,10 +1,7 @@
 package io.vertx.sqlclient.spi;
 
-import io.vertx.core.Closeable;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 
@@ -19,14 +16,14 @@ import java.util.function.Supplier;
  */
 public interface ConnectionFactory extends Closeable {
 
-  static <T> Supplier<T> roundRobinSupplier(List<T> factories) {
-    return new Supplier<T>() {
+  static <T> Supplier<Future<T>> roundRobinSupplier(List<T> factories) {
+    return new Supplier<Future<T>>() {
       AtomicLong idx = new AtomicLong();
       @Override
-      public T get() {
+      public Future<T> get() {
         long val = idx.getAndIncrement();
         T f = factories.get((int)val % factories.size());
-        return f;
+        return Future.succeededFuture(f);
       }
     };
   }
@@ -66,6 +63,22 @@ public interface ConnectionFactory extends Closeable {
         }
       };
     }
+  }
+
+  default Future<SqlConnection> connect(Context context, Future<? extends SqlConnectOptions> fut) {
+    // The future might be on any context or context-less
+    // So we need to use a specific context promise
+    Promise<SqlConnectOptions> promise = ((ContextInternal) context).promise();
+    fut.onComplete(ar -> {
+      if (ar.succeeded()) {
+        promise.complete(ar.result());
+      } else {
+        promise.fail(ar.cause());
+      }
+    });
+    return promise
+      .future()
+      .compose(connectOptions -> connect(context, connectOptions));
   }
 
   /**

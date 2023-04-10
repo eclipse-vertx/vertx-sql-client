@@ -20,6 +20,7 @@ import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -34,7 +35,7 @@ public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> 
 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
-    MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner(), () -> options);
+    MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner(), SingletonSupplier.wrap(options));
     ctx.addCloseHook(client);
     return (Future)client.connect(ctx);
   }

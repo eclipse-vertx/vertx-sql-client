@@ -34,10 +34,10 @@ import static io.vertx.oracleclient.impl.OracleDatabaseHelper.createDataSource;
 
 public class OracleConnectionFactory implements ConnectionFactory {
 
-  private final Supplier<OracleConnectOptions> options;
+  private final Supplier<? extends Future<? extends SqlConnectOptions>> options;
   private final Map<JsonObject, OracleDataSource> datasources;
 
-  public OracleConnectionFactory(VertxInternal vertx, Supplier<OracleConnectOptions> options) {
+  public OracleConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
     this.options = options;
     this.datasources = new HashMap<>();
   }
@@ -58,7 +58,7 @@ public class OracleConnectionFactory implements ConnectionFactory {
     synchronized (this) {
       datasource = datasources.get(key);
       if (datasource == null) {
-        datasource = createDataSource((OracleConnectOptions) options);
+        datasource = createDataSource(OracleConnectOptions.wrap(options));
         datasources.put(key, datasource);
       }
     }
@@ -74,7 +74,7 @@ public class OracleConnectionFactory implements ConnectionFactory {
     return executeBlocking(context, () -> {
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
-      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, (OracleConnectOptions) options, orac, metadata);
+      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, OracleConnectOptions.wrap(options), orac, metadata);
       OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn);
       conn.init(msConn);
       return msConn;

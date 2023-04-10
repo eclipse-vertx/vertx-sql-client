@@ -23,7 +23,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -44,7 +43,7 @@ public class TemplateBuilderTest {
           return FakeClient.this.appendQueryPlaceholder(queryBuilder, index, current);
         }
         @Override
-        public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+        public Pool newPool(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
           throw new UnsupportedOperationException();
         }
         @Override
@@ -52,7 +51,7 @@ public class TemplateBuilderTest {
           throw new UnsupportedOperationException();
         }
         @Override
-        public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database) {
+        public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
           throw new UnsupportedOperationException();
         }
         @Override

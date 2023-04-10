@@ -30,6 +30,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 
 import java.util.List;
 import java.util.function.Function;
@@ -107,7 +108,7 @@ public interface PgPool extends Pool {
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, PgConnectOptions database, PoolOptions options) {
-    return pool(vertx, () -> database, options);
+    return pool(vertx, SingletonSupplier.wrap(database), options);
   }
 
   /**
@@ -138,7 +139,7 @@ public interface PgPool extends Pool {
    * @return the connection pool
    */
   @GenIgnore
-  static PgPool pool(Supplier<PgConnectOptions> databases, PoolOptions poolOptions) {
+  static PgPool pool(Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions) {
     return pool(null, databases, poolOptions);
   }
 
@@ -146,7 +147,7 @@ public interface PgPool extends Pool {
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
   @GenIgnore
-  static PgPool pool(Vertx vertx, Supplier<PgConnectOptions> databases, PoolOptions poolOptions) {
+  static PgPool pool(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions) {
     return (PgPool) PgDriver.INSTANCE.createPool(vertx, databases, poolOptions);
   }
 
@@ -213,7 +214,7 @@ public interface PgPool extends Pool {
    * Like {@link #client(PgConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, PgConnectOptions database, PoolOptions options) {
-    return client(vertx, () -> database, options);
+    return client(vertx, SingletonSupplier.wrap(database), options);
   }
 
   /**
@@ -239,7 +240,7 @@ public interface PgPool extends Pool {
    * Like {@link #client(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
   @GenIgnore
-  static SqlClient client(Vertx vertx, Supplier<PgConnectOptions> databases, PoolOptions options) {
+  static SqlClient client(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions options) {
     return PgDriver.INSTANCE.createPool(vertx, databases, new PgPoolOptions(options).setPipelined(true));
   }
 
@@ -252,7 +253,7 @@ public interface PgPool extends Pool {
    * @return the pooled client
    */
   @GenIgnore
-  static SqlClient client(Supplier<PgConnectOptions> databases, PoolOptions options) {
+  static SqlClient client(Supplier<Future<PgConnectOptions>> databases, PoolOptions options) {
     return client(null, databases, options);
   }
 

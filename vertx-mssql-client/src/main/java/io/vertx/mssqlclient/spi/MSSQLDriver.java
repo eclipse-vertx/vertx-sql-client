@@ -15,6 +15,7 @@
  */
 package io.vertx.mssqlclient.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -30,6 +31,7 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolImpl;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
@@ -43,7 +45,7 @@ public class MSSQLDriver implements Driver {
   public static final MSSQLDriver INSTANCE = new MSSQLDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -54,9 +56,8 @@ public class MSSQLDriver implements Driver {
     return new MSSQLPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(databases.get());
-    PoolImpl pool = new PoolImpl(vertx, this, 1, options, null, null, closeFuture);
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
+    PoolImpl pool = new PoolImpl(vertx, this, false, options, null, null, closeFuture);
     ConnectionFactory factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
@@ -77,12 +78,12 @@ public class MSSQLDriver implements Driver {
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx, () -> MSSQLConnectOptions.wrap(database));
+    return new MSSQLConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database));
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends SqlConnectOptions> database) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx, () -> MSSQLConnectOptions.wrap(database.get()));
+  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
+    return new MSSQLConnectionFactory((VertxInternal) vertx, database);
   }
 
   @Override

@@ -23,6 +23,7 @@ import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.mysqlclient.spi.MySQLDriver;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
@@ -34,7 +35,7 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
     }
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(ctx.owner(), () -> options);
+      client = new MySQLConnectionFactory(ctx.owner(), SingletonSupplier.wrap(options));
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }

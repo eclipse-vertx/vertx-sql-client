@@ -39,7 +39,7 @@ import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory extends ConnectionFactoryBase {
 
-  public MySQLConnectionFactory(VertxInternal vertx, Supplier<MySQLConnectOptions> options) {
+  public MySQLConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
     super(vertx, options);
   }
 
