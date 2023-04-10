@@ -41,16 +41,6 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected void initializeConfiguration(SqlConnectOptions options) {
-    // currently no-op
-  }
-
-  @Override
-  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
-    netClientOptions.setSsl(false);
-  }
-
-  @Override
   protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
     return connectOrRedirect((MSSQLConnectOptions) options, context, 0);
   }

@@ -22,7 +22,6 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.db2client.DB2ConnectOptions;
@@ -40,16 +39,6 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase {
 
   public DB2ConnectionFactory(VertxInternal vertx, Supplier<DB2ConnectOptions> options) {
     super(vertx, options);
-  }
-
-  @Override
-  protected void initializeConfiguration(SqlConnectOptions connectOptions) {
-    DB2ConnectOptions options = (DB2ConnectOptions) connectOptions;
-  }
-
-  @Override
-  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
-    // currently no-op
   }
 
   @Override

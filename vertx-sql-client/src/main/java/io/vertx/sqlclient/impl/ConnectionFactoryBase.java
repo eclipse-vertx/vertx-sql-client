@@ -113,20 +113,6 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   }
 
   /**
-   * Initialize the configuration after the common configuration have been initialized.
-   *
-   * @param options the concrete options for initializing configuration by a specific connection factory.
-   */
-  protected abstract void initializeConfiguration(SqlConnectOptions options);
-
-  /**
-   * Apply the configuration to the {@link NetClientOptions NetClientOptions} for connecting to the database.
-   *
-   * @param netClientOptions NetClient options to apply
-   */
-  protected abstract void configureNetClientOptions(NetClientOptions netClientOptions);
-
-  /**
    * Establish a connection to the server.
    */
   protected abstract Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context);

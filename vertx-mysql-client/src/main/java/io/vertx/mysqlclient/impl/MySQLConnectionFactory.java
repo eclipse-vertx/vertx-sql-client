@@ -43,14 +43,6 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected void initializeConfiguration(SqlConnectOptions connectOptions) {
-  }
-
-  @Override
-  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
-  }
-
-  @Override
   protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
     MySQLConnectOptions mySQLOptions = (MySQLConnectOptions) options;
     SslMode sslMode = mySQLOptions.isUsingDomainSocket() ? SslMode.DISABLED : mySQLOptions.getSslMode();
