@@ -41,7 +41,7 @@ public class PgDriver implements Driver<PgConnectOptions> {
     boolean pipelinedPool = options instanceof PgPoolOptions && ((PgPoolOptions) options).isPipelined();
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, closeFuture);
     ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx);
-    pool.connectionProvider(context -> databases.get().compose(connectOptions -> factory.connect(context, connectOptions)));
+    pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);
     return pool;

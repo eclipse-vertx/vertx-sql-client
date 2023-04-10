@@ -61,7 +61,7 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
     boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, closeFuture);
     ConnectionFactory<DB2ConnectOptions> factory = createConnectionFactory(vertx);
-    pool.connectionProvider(context -> databases.get().compose(connectOptions -> factory.connect(context, connectOptions)));
+    pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);
     return pool;
