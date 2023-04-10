@@ -25,10 +25,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SingletonSupplier;
-import io.vertx.sqlclient.impl.SqlConnectionBase;
-import io.vertx.sqlclient.impl.SqlConnectionInternal;
+import io.vertx.sqlclient.impl.*;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -100,7 +97,7 @@ public interface Driver {
    * @return the connection pool
    */
   default Pool createPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options) {
-    return createPool(vertx, ConnectionFactory.roundRobinSupplier(databases), options);
+    return createPool(vertx, Utils.roundRobinSupplier(databases), options);
   }
 
   /**
@@ -115,7 +112,7 @@ public interface Driver {
    * @return the connection pool
    */
   default Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    return newPool(vertx, ConnectionFactory.roundRobinSupplier(databases), options, closeFuture);
+    return newPool(vertx, Utils.roundRobinSupplier(databases), options, closeFuture);
   }
 
   /**
