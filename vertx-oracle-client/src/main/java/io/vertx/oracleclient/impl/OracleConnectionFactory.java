@@ -16,10 +16,11 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.OracleDataSource;
@@ -67,14 +68,14 @@ public class OracleConnectionFactory implements ConnectionFactory {
   @Override
   public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
     OracleDataSource datasource = getDatasource(options);
-    OracleConnectOptions oracleOptions = (OracleConnectOptions) options;
+    VertxMetrics vertxMetrics = ((VertxInternal)context.owner()).metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
     ContextInternal ctx = (ContextInternal) context;
-    QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     return executeBlocking(context, () -> {
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
-      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, oracleOptions, orac, metadata);
-      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn, tracer, null);
+      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, (OracleConnectOptions) options, orac, metadata);
+      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn);
       conn.init(msConn);
       return msConn;
     });

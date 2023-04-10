@@ -26,6 +26,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
@@ -55,17 +56,25 @@ public class PgSocketConnection extends SocketConnectionBase {
   public int processId;
   public int secretKey;
   public PgDatabaseMetadata dbMetaData;
-  PgConnectOptions options;
+  private PgConnectOptions connectOptions;
 
   public PgSocketConnection(NetSocketInternal socket,
+                            ClientMetrics metrics,
+                            PgConnectOptions connectOptions,
                             boolean cachePreparedStatements,
                             int preparedStatementCacheSize,
                             Predicate<String> preparedStatementCacheSqlFilter,
                             int pipeliningLimit,
                             boolean useLayer7Proxy,
                             EventLoopContext context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    super(socket, metrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    this.connectOptions = connectOptions;
     this.useLayer7Proxy = useLayer7Proxy;
+  }
+
+  @Override
+  protected PgConnectOptions connectOptions() {
+    return connectOptions;
   }
 
   @Override

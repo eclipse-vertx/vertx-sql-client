@@ -20,6 +20,8 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
@@ -27,7 +29,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
-    MySQLConnectOptions mySQLOptions = (MySQLConnectOptions) options;
+    MySQLConnectOptions mySQLOptions = MySQLConnectOptions.wrap(options);
     SslMode sslMode = mySQLOptions.isUsingDomainSocket() ? SslMode.DISABLED : mySQLOptions.getSslMode();
     switch (sslMode) {
       case VERIFY_IDENTITY:
@@ -125,7 +126,9 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
     MySQLAuthenticationPlugin authenticationPlugin = options.getAuthenticationPlugin();
     Future<NetSocket> fut = netClient(options).connect(server);
     return fut.flatMap(so -> {
-      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+      VertxMetrics vertxMetrics = vertx.metricsSPI();
+      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, metrics, options, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();
       return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
     });
@@ -134,11 +137,10 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
   @Override
   public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
-    QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
     Promise<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn, tracer, null);
+        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn);
         conn.init(mySQLConnection);
         return (SqlConnection)mySQLConnection;
       })

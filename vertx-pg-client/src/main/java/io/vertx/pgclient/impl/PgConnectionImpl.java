@@ -34,7 +34,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Supplier;
 
@@ -54,8 +53,8 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   private volatile Handler<PgNotification> notificationHandler;
   private volatile Handler<PgNotice> noticeHandler;
 
-  public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, PgDriver.INSTANCE, tracer, metrics);
+  public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn) {
+    super(context, factory, conn, PgDriver.INSTANCE);
   }
 
   @Override
@@ -134,7 +133,7 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     Context current = Vertx.currentContext();
     if (current == context) {
       PgSocketConnection unwrap = (PgSocketConnection) conn.unwrap();
-      ((PgConnectionFactory)factory).cancelRequest(unwrap.options, this.processId(), this.secretKey(), handler);
+      ((PgConnectionFactory)factory).cancelRequest(unwrap.connectOptions(), this.processId(), this.secretKey(), handler);
     } else {
       context.runOnContext(v -> cancelRequest(handler));
     }

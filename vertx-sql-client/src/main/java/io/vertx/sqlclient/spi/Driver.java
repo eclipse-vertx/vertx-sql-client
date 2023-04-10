@@ -21,14 +21,12 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -181,7 +179,7 @@ public interface Driver {
     return current;
   }
 
-  default SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    return new SqlConnectionBase<>(context, factory, conn, this, tracer, metrics);
+  default SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn) {
+    return new SqlConnectionBase<>(context, factory, conn, this);
   }
 }

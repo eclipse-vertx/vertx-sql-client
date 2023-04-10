@@ -22,12 +22,13 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -42,7 +43,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
-    return connectOrRedirect((MSSQLConnectOptions) options, context, 0);
+    return connectOrRedirect(MSSQLConnectOptions.wrap(options), context, 0);
   }
 
   private Future<Connection> connectOrRedirect(MSSQLConnectOptions options, EventLoopContext context, int redirections) {
@@ -55,7 +56,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     // Always start unencrypted, the connection will be upgraded if client and server agree
     NetClient netClient = netClient(new NetClientOptions(options).setSsl(false));
     return netClient.connect(server)
-      .map(so -> createSocketConnection(so, desiredPacketSize, context))
+      .map(so -> createSocketConnection(so, options, desiredPacketSize, context))
       .compose(conn -> conn.sendPreLoginMessage(clientSslConfig)
         .compose(encryptionLevel -> login(conn, options, encryptionLevel, context))
       )
@@ -71,8 +72,10 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
       });
   }
 
-  private MSSQLSocketConnection createSocketConnection(NetSocket so, int desiredPacketSize, EventLoopContext context) {
-    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, desiredPacketSize, false, 0, sql -> true, 1, context);
+  private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, int desiredPacketSize, EventLoopContext context) {
+    VertxMetrics vertxMetrics = vertx.metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, metrics, options, desiredPacketSize, false, 0, sql -> true, 1, context);
     conn.init();
     return conn;
   }
@@ -102,11 +105,10 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
   @Override
   public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
     ContextInternal ctx = (ContextInternal) context;
-    QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     Promise<SqlConnection> promise = ctx.promise();
     connect(asEventLoopContext(ctx), options)
       .map(conn -> {
-        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn, tracer, null);
+        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn);
         conn.init(msConn);
         return (SqlConnection)msConn;
       })

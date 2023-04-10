@@ -19,7 +19,6 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.impl.command.CloseCursorCommand;
@@ -33,7 +32,6 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
 import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,17 +43,15 @@ import java.util.stream.Collector;
  */
 class PreparedStatementImpl implements PreparedStatement {
 
-  static PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
-    return new PreparedStatementImpl(conn, tracer, metrics, context, ps, autoCommit);
+  static PreparedStatement create(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, context, ps, autoCommit);
   }
 
-  static PreparedStatement create(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, PrepareOptions options, String sql, boolean autoCommit) {
-    return new PreparedStatementImpl(conn, tracer, metrics, context, sql, options, autoCommit);
+  static PreparedStatement create(Connection conn, ContextInternal context, PrepareOptions options, String sql, boolean autoCommit) {
+    return new PreparedStatementImpl(conn, context, sql, options, autoCommit);
   }
 
   private final Connection conn;
-  private final QueryTracer tracer;
-  private final ClientMetrics metrics;
   private final ContextInternal context;
   private final String sql;
   private final PrepareOptions options;
@@ -64,10 +60,8 @@ class PreparedStatementImpl implements PreparedStatement {
   private final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  private PreparedStatementImpl(Connection conn, QueryTracer tracer, ClientMetrics metrics, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  private PreparedStatementImpl(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
-    this.tracer = tracer;
-    this.metrics = metrics;
     this.context = context;
     this.sql = null;
     this.options = null;
@@ -77,15 +71,11 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   private PreparedStatementImpl(Connection conn,
-                                QueryTracer tracer,
-                                ClientMetrics metrics,
                                 ContextInternal context,
                                 String sql,
                                 PrepareOptions options,
                                 boolean autoCommit) {
     this.conn = conn;
-    this.tracer = tracer;
-    this.metrics = metrics;
     this.context = context;
     this.sql = sql;
     this.options = options;
@@ -99,11 +89,7 @@ class PreparedStatementImpl implements PreparedStatement {
 
   @Override
   public PreparedQuery<RowSet<Row>> query() {
-    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(
-      tracer,
-      metrics,
-      RowSetImpl.FACTORY,
-      RowSetImpl.COLLECTOR);
+    QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
     return new PreparedStatementQuery<>(builder);
   }
 
@@ -163,7 +149,7 @@ class PreparedStatementImpl implements PreparedStatement {
   }
 
   private Cursor cursor(TupleInternal args) {
-    return new CursorImpl(this, conn, tracer, metrics, context, autoCommit, args);
+    return new CursorImpl(this, conn, context, autoCommit, args);
   }
 
   @Override

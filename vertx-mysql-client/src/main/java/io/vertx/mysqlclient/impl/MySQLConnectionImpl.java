@@ -16,7 +16,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
@@ -25,7 +24,6 @@ import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.mysqlclient.spi.MySQLDriver;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> implements MySQLConnection {
@@ -44,8 +42,8 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
     return (Future)client.connect(ctx);
   }
 
-  public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, MySQLDriver.INSTANCE, tracer, metrics);
+  public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
+    super(context, factory, conn, MySQLDriver.INSTANCE);
   }
 
   @Override

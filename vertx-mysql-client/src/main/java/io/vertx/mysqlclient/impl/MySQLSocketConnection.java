@@ -24,11 +24,14 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
+import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLPacketDecoder;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -47,16 +50,20 @@ import java.util.function.Predicate;
  */
 public class MySQLSocketConnection extends SocketConnectionBase {
 
+  private final MySQLConnectOptions connectOptions;
   public MySQLDatabaseMetadata metaData;
   private MySQLCodec codec;
 
   public MySQLSocketConnection(NetSocketInternal socket,
+                               ClientMetrics clientMetrics,
+                               MySQLConnectOptions connectOptions,
                                boolean cachePreparedStatements,
                                int preparedStatementCacheSize,
                                Predicate<String> preparedStatementCacheSqlFilter,
                                int pipeliningLimit,
                                EventLoopContext context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    this.connectOptions = connectOptions;
   }
 
   void sendStartupMessage(String username,
@@ -72,6 +79,11 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                           Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin);
     schedule(context, cmd).onComplete(completionHandler);
+  }
+
+  @Override
+  protected SqlConnectOptions connectOptions() {
+    return connectOptions;
   }
 
   @Override

@@ -25,18 +25,18 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.TrustOptions;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.Collections;
 import java.util.Map;
@@ -70,8 +70,9 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
 
   @Override
   protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
+    PgConnectOptions pgOptions = PgConnectOptions.wrap(options);
     try {
-      checkSslMode((PgConnectOptions) options);
+      checkSslMode(pgOptions);
     } catch (Exception e) {
       return context.failedFuture(e);
     }
@@ -80,7 +81,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     String database = options.getDatabase();
     SocketAddress server = options.getSocketAddress();
     Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
-    return doConnect(server, context, (PgConnectOptions) options).flatMap(conn -> {
+    return doConnect(server, context, pgOptions).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
@@ -157,8 +158,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     PromiseInternal<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
-        PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn, tracer, null);
+        PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn);
         conn.init(pgConn);
         return (SqlConnection)pgConn;
       })
@@ -172,8 +172,9 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     Predicate<String> preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
     int pipeliningLimit = options.getPipeliningLimit();
     boolean useLayer7Proxy = options.getUseLayer7Proxy();
-    PgSocketConnection conn = new PgSocketConnection(socket, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
-    conn.options = options;
+    VertxMetrics vertxMetrics = vertx.metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+    PgSocketConnection conn = new PgSocketConnection(socket, metrics, options, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
     return conn;
   }
 }

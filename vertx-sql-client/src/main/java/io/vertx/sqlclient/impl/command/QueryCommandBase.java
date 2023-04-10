@@ -44,7 +44,7 @@ public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
   public QueryResultHandler<T> resultHandler() {
     return resultHandler;
   }
-  
+
   public boolean autoCommit() {
     return autoCommit;
   }
