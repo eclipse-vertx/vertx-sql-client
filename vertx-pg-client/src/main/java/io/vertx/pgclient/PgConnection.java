@@ -52,7 +52,7 @@ public interface PgConnection extends SqlConnection {
    * @return a future notified with the connection or the failure
    */
   static Future<PgConnection> connect(Vertx vertx, PgConnectOptions options) {
-    return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options);
+    return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), () -> options);
   }
 
   /**

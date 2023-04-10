@@ -85,7 +85,8 @@ public interface Pool extends SqlClient {
     } else if (candidates.size() > 1) {
       throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
     } else {
-      return candidates.get(0).createPool(vertx, Collections.singletonList(database), options);
+      Driver driver = candidates.get(0);
+      return candidates.get(0).createPool(vertx, Collections.singletonList(driver.downcast(database)), options);
     }
   }
 

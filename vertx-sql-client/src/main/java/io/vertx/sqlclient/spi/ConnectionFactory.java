@@ -1,49 +1,27 @@
 package io.vertx.sqlclient.spi;
 
 import io.vertx.core.Closeable;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
+import io.vertx.core.impl.ContextInternal;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A connection factory, can be obtained from {@link Driver#createConnectionFactory}
  */
-public interface ConnectionFactory extends Closeable {
+public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeable {
 
-  /**
-   * @return a connection factory that connects with a round-robin policy
-   */
-  static ConnectionFactory roundRobinSelector(List<ConnectionFactory> factories) {
-    if (factories.size() == 1) {
-      return factories.get(0);
-    } else {
-      return new ConnectionFactory() {
-        int idx = 0;
-        @Override
-        public Future<SqlConnection> connect(Context context) {
-          ConnectionFactory f = factories.get(idx);
-          idx = (idx + 1) % factories.size();
-          return f.connect(context);
-        }
-        @Override
-        public void close(Promise<Void> promise) {
-          List<Future> list = new ArrayList<>(factories.size());
-          for (ConnectionFactory factory : factories) {
-            Promise<Void> p = Promise.promise();
-            factory.close(p);
-            list.add(p.future());
-          }
-          CompositeFuture.all(list)
-            .<Void>mapEmpty()
-            .onComplete(promise);
-        }
-      };
-    }
+  default Future<SqlConnection> connect(Context context, Future<C> fut) {
+    // The future might be on any context or context-less
+    // So we need to use a specific context promise
+    Promise<C> promise = ((ContextInternal) context).promise();
+    fut.onComplete(promise);
+    return promise
+      .future()
+      .compose(connectOptions -> connect(context, connectOptions));
+
   }
 
   /**
@@ -52,6 +30,6 @@ public interface ConnectionFactory extends Closeable {
    * @param context the context
    * @return the future connection
    */
-  Future<SqlConnection> connect(Context context);
+  Future<SqlConnection> connect(Context context, C options);
 
 }

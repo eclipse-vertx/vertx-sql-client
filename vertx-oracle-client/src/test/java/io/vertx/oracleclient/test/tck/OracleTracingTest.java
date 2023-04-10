@@ -44,6 +44,11 @@ public class OracleTracingTest extends TracingTestBase {
   @Ignore("Oracle does not support batched SELECT")
   @Override
   public void testTraceBatchQuery(TestContext ctx) {
-    super.testTraceBatchQuery(ctx);
+  }
+
+  @Test
+  @Ignore("Oracle does not support batched SELECT")
+  @Override
+  public void testTracePooledBatchQuery(TestContext ctx) {
   }
 }

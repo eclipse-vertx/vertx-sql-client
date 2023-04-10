@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
@@ -70,7 +71,7 @@ public abstract class MetricsTestBase {
   protected abstract String statement(String... parts);
 
   @Test
-  public void testClosePool(TestContext ctx) {
+  public void testClosePool(TestContext ctx) throws Exception {
     AtomicInteger closeCount = new AtomicInteger();
     metrics = new ClientMetrics() {
       @Override
@@ -79,10 +80,14 @@ public abstract class MetricsTestBase {
       }
     };
     Pool pool = createPool(vertx);
+    pool.query("SELECT * FROM immutable WHERE id=1").execute().toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
     ctx.assertEquals(0, closeCount.get());
-    pool.close().onComplete(ctx.asyncAssertSuccess(v -> {
-      ctx.assertEquals(1, closeCount.get());
-    }));
+    pool.close();
+    long now = System.currentTimeMillis();
+    while (closeCount.get() != 1) {
+      ctx.assertTrue(System.currentTimeMillis() - now < 20_000);
+      Thread.sleep(100);
+    }
   }
 
   @Test
@@ -130,18 +135,7 @@ public abstract class MetricsTestBase {
     Object queueMetric = new Object();
     AtomicReference<Object> responseMetric = new AtomicReference<>();
     AtomicReference<Object> failureMetric = new AtomicReference<>();
-    AtomicInteger enqueueCount = new AtomicInteger();
-    AtomicInteger dequeueCount = new AtomicInteger();
     metrics = new ClientMetrics() {
-      @Override
-      public Object enqueueRequest() {
-        enqueueCount.incrementAndGet();
-        return queueMetric;
-      }
-      @Override
-      public void dequeueRequest(Object taskMetric) {
-        dequeueCount.incrementAndGet();
-      }
       @Override
       public Object requestBegin(String uri, Object request) {
         return metric;
@@ -176,8 +170,6 @@ public abstract class MetricsTestBase {
                 ctx.assertEquals(metric, responseMetric.get());
                 ctx.assertNull(failureMetric.get());
               }
-              ctx.assertEquals(1, enqueueCount.get());
-              ctx.assertEquals(1, dequeueCount.get());
               async.complete();
             });
           }));

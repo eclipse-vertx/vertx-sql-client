@@ -1,6 +1,8 @@
 package io.vertx.pgclient;
 
 import io.netty.buffer.ByteBufUtil;
+import io.vertx.core.Context;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -9,10 +11,13 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.ProxyServer;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.function.Function;
 
 public class CloseConnectionTest extends PgTestBase {
 
@@ -54,8 +59,13 @@ public class CloseConnectionTest extends PgTestBase {
   public void testCloseNetSocket(TestContext ctx) {
     testCloseConnection(ctx, () -> {
       PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(1));
-      ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, options);
-      pool.connectionProvider(factory::connect);
+      ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx);
+      pool.connectionProvider(new Function<Context, Future<SqlConnection>>() {
+        @Override
+        public Future<SqlConnection> apply(Context context) {
+          return factory.connect(context, options);
+        }
+      });
       pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
         conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
           factory.close(Promise.promise());

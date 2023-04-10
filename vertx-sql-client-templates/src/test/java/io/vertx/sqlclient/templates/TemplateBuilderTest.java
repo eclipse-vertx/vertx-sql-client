@@ -25,6 +25,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,7 +34,11 @@ public class TemplateBuilderTest {
   private abstract static class FakeClient implements SqlClientInternal {
     @Override
     public Driver driver() {
-      return new Driver() {
+      return new Driver<SqlConnectOptions>() {
+        @Override
+        public SqlConnectOptions downcast(SqlConnectOptions connectOptions) {
+          throw new UnsupportedOperationException();
+        }
         @Override
         public SqlConnectOptions parseConnectionUri(String uri) {
           throw new UnsupportedOperationException();
@@ -43,11 +48,11 @@ public class TemplateBuilderTest {
           return FakeClient.this.appendQueryPlaceholder(queryBuilder, index, current);
         }
         @Override
-        public Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+        public Pool newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
           throw new UnsupportedOperationException();
         }
         @Override
-        public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
+        public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx) {
           throw new UnsupportedOperationException();
         }
         @Override

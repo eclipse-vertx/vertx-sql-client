@@ -22,12 +22,14 @@ import io.netty.channel.ChannelPipeline;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -40,17 +42,21 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public class DB2SocketConnection extends SocketConnectionBase {
 
+  private final DB2ConnectOptions connectOptions;
   private DB2Codec codec;
   private Handler<Void> closeHandler;
   public final ConnectionMetaData connMetadata = new ConnectionMetaData();
 
   public DB2SocketConnection(NetSocketInternal socket,
+      ClientMetrics clientMetrics,
+      DB2ConnectOptions connectOptions,
       boolean cachePreparedStatements,
       int preparedStatementCacheSize,
       Predicate<String> preparedStatementCacheSqlFilter,
       int pipeliningLimit,
       EventLoopContext context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    this.connectOptions = connectOptions;
   }
 
   // TODO RETURN FUTURE ???
@@ -61,6 +67,11 @@ public class DB2SocketConnection extends SocketConnectionBase {
       Promise<Connection> completionHandler) {
     InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, properties);
     schedule(context, cmd).onComplete(completionHandler);
+  }
+
+  @Override
+  protected SqlConnectOptions connectOptions() {
+    return connectOptions;
   }
 
   @Override

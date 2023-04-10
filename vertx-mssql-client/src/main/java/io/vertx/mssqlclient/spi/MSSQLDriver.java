@@ -15,39 +15,41 @@
  */
 package io.vertx.mssqlclient.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
-public class MSSQLDriver implements Driver {
+public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
 
   private static final String SHARED_CLIENT_KEY = "__vertx.shared.mssqlclient";
 
   public static final MSSQLDriver INSTANCE = new MSSQLDriver();
 
   @Override
-  public MSSQLPool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public MSSQLConnectOptions downcast(SqlConnectOptions connectOptions) {
+    return connectOptions instanceof MSSQLConnectOptions ? (MSSQLConnectOptions) connectOptions : new MSSQLConnectOptions(connectOptions);
+  }
+
+  @Override
+  public Pool newPool(Vertx vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -58,18 +60,18 @@ public class MSSQLDriver implements Driver {
     return new MSSQLPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    MSSQLConnectOptions baseConnectOptions = MSSQLConnectOptions.wrap(databases.get(0));
-    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
-    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, 1, options, null, null, closeFuture);
-    List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
-    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
-    pool.connectionProvider(factory::connect);
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
+    PoolImpl pool = new PoolImpl(vertx, this, false, options, null, null, closeFuture);
+    ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx);
+    pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);
     return pool;
+  }
+
+  @Override
+  public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx) {
+    return new MSSQLConnectionFactory((VertxInternal) vertx);
   }
 
   @Override
@@ -84,18 +86,13 @@ public class MSSQLDriver implements Driver {
   }
 
   @Override
-  public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx, MSSQLConnectOptions.wrap(database));
-  }
-
-  @Override
   public int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
     queryBuilder.append('@').append('P').append(1 + index);
     return index;
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    return new MSSQLConnectionImpl(context, factory, conn, tracer, metrics);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection conn) {
+    return new MSSQLConnectionImpl(context, factory, conn);
   }
 }

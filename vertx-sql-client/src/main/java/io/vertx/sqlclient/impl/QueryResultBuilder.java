@@ -21,37 +21,25 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.util.function.Function;
 
 /**
  * A query result for building a {@link SqlResult}.
  */
-class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
+public class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
 
   private final Promise<L> handler;
   private final Function<T, R> factory;
-  private final ContextInternal context;
-  private final QueryTracer tracer;
-  private final Object tracingPayload;
-  private final ClientMetrics metrics;
-  private final Object metric;
-  private R first;
+  public R first;
   private R current;
   private Throwable failure;
   private boolean suspended;
 
-  QueryResultBuilder(Function<T, R> factory, QueryTracer tracer, Object tracingPayload, ClientMetrics metrics, Object metric, PromiseInternal<L> handler) {
+  QueryResultBuilder(Function<T, R> factory, PromiseInternal<L> handler) {
     this.factory = factory;
-    this.context = handler.context();
-    this.tracer = tracer;
-    this.tracingPayload = tracingPayload;
-    this.metrics = metrics;
-    this.metric = metric;
     this.handler = handler;
   }
 
@@ -97,32 +85,13 @@ class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> 
     if (failure != null) {
       return tryFail(failure);
     } else {
-      boolean completed = handler.tryComplete((L) first);
-      if (completed) {
-        if (metrics != null) {
-          metrics.responseBegin(metric, null);
-          metrics.responseEnd(metric);
-        }
-        if (tracer != null) {
-          tracer.receiveResponse(context, tracingPayload, first, null);
-        }
-      }
-      return completed;
+      return handler.tryComplete((L) first);
     }
   }
 
   @Override
   public boolean tryFail(Throwable cause) {
-    boolean completed = handler.tryFail(cause);
-    if (completed) {
-      if (tracer != null) {
-        tracer.receiveResponse(context, tracingPayload, null, cause);
-      }
-      if (metrics != null) {
-        metrics.requestReset(metric);
-      }
-    }
-    return completed;
+    return handler.tryFail(cause);
   }
 
   @Override

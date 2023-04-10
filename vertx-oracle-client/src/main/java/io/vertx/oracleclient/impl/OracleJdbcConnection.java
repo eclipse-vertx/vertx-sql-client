@@ -11,10 +11,12 @@
 package io.vertx.oracleclient.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.commands.*;
 import io.vertx.sqlclient.impl.Connection;
@@ -32,6 +34,7 @@ import static io.vertx.oracleclient.impl.Helper.isFatal;
 
 public class OracleJdbcConnection implements Connection {
 
+  private final ClientMetrics metrics;
   private final OracleConnection connection;
   private final OracleMetadata metadata;
   private final ContextInternal context;
@@ -46,16 +49,42 @@ public class OracleJdbcConnection implements Connection {
   private Promise<Void> closePromise;
   private boolean inflight, executing;
 
-  public OracleJdbcConnection(ContextInternal ctx, OracleConnectOptions options, OracleConnection oc, OracleMetadata metadata) {
+  public OracleJdbcConnection(ContextInternal ctx, ClientMetrics metrics, OracleConnectOptions options, OracleConnection oc, OracleMetadata metadata) {
     this.context = ctx;
+    this.metrics = metrics;
     this.options = options;
     this.connection = oc;
     this.metadata = metadata;
   }
 
   @Override
+  public ClientMetrics metrics() {
+    return metrics;
+  }
+
+  @Override
+  public int pipeliningLimit() {
+    return 1;
+  }
+
+  @Override
+  public TracingPolicy tracingPolicy() {
+    return options.getTracingPolicy();
+  }
+
+  @Override
+  public String database() {
+    return options.getDatabase();
+  }
+
+  @Override
+  public String user() {
+    return options.getUser();
+  }
+
+  @Override
   public SocketAddress server() {
-    throw new UnsupportedOperationException();
+    return options.getSocketAddress();
   }
 
   @Override
@@ -159,9 +188,13 @@ public class OracleJdbcConnection implements Connection {
       CommandBase cmd;
       while (!inflight && (cmd = pending.poll()) != null) {
         inflight = true;
+        if (metrics != null && cmd instanceof CloseConnectionCommand) {
+          metrics.close();
+        }
         OracleCommand action = wrap(cmd);
         Future<Void> future = action.processCommand(cmd);
-        future.onComplete(ar -> actionComplete(action, ar));
+        CommandBase capture = cmd;
+        future.onComplete(ar -> actionComplete(capture, action, ar));
       }
     } finally {
       executing = false;
@@ -212,7 +245,7 @@ public class OracleJdbcConnection implements Connection {
     return action;
   }
 
-  private void actionComplete(OracleCommand<?> action, AsyncResult<Void> ar) {
+  private void actionComplete(CommandBase cmd, OracleCommand<?> action, AsyncResult<Void> ar) {
     inflight = false;
     Future<Void> future = Future.succeededFuture();
     if (ar.failed()) {

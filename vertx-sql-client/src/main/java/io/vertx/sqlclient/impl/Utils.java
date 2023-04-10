@@ -1,11 +1,15 @@
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 import static io.vertx.sqlclient.Tuple.JSON_NULL;
 
@@ -38,5 +42,17 @@ public final class Utils {
     } else {
       return value.toString();
     }
+  }
+
+  public static <T> Supplier<Future<T>> roundRobinSupplier(List<T> factories) {
+    return new Supplier<Future<T>>() {
+      final AtomicLong idx = new AtomicLong();
+      @Override
+      public Future<T> get() {
+        long val = idx.getAndIncrement();
+        T f = factories.get((int)val % factories.size());
+        return Future.succeededFuture(f);
+      }
+    };
   }
 }
