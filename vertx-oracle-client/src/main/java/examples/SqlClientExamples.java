@@ -22,9 +22,7 @@ import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePool;
-import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -338,15 +336,11 @@ public class SqlClientExamples {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 
-  public void dynamicPoolConfig(Vertx vertx, OraclePool pool) {
-    pool.connectionProvider(ctx -> {
-      Future<OracleConnectOptions> fut = retrieveOptions();
-      return fut.compose(connectOptions -> {
-        // Do not forget to close later
-        ConnectionFactory factory = OracleDriver.INSTANCE.createConnectionFactory(vertx, connectOptions);
-        return factory.connect(ctx);
-      });
-    });
+  public void dynamicPoolConfig(Vertx vertx, PoolOptions poolOptions) {
+    OraclePool pool = OraclePool.pool(vertx, () -> {
+      Future<OracleConnectOptions> connectOptions = retrieveOptions();
+      return connectOptions;
+    }, poolOptions);
   }
 
   private Future<OracleConnectOptions> retrieveOptions() {

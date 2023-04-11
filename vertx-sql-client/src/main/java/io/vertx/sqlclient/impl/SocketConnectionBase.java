@@ -35,15 +35,13 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
-import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
-import io.vertx.sqlclient.impl.command.CloseStatementCommand;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.CompositeCommand;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -64,6 +62,7 @@ public abstract class SocketConnectionBase implements Connection {
 
   private static final String PENDING_CMD_CONNECTION_CORRUPT_MSG = "Pending requests failed to be sent due to connection has been closed.";
 
+  private final ClientMetrics metrics;
   protected final PreparedStatementCache psCache;
   protected final EventLoopContext context;
   private final Predicate<String> preparedStatementCacheSqlFilter;
@@ -80,6 +79,7 @@ public abstract class SocketConnectionBase implements Connection {
   protected Status status = Status.CONNECTED;
 
   public SocketConnectionBase(NetSocketInternal socket,
+                              ClientMetrics metrics,
                               boolean cachePreparedStatements,
                               int preparedStatementCacheSize,
                               Predicate<String> preparedStatementCacheSqlFilter,
@@ -88,9 +88,42 @@ public abstract class SocketConnectionBase implements Connection {
     this.socket = socket;
     this.context = context;
     this.pipeliningLimit = pipeliningLimit;
+    this.metrics = metrics;
     this.paused = false;
     this.psCache = cachePreparedStatements ? new PreparedStatementCache(preparedStatementCacheSize) : null;
     this.preparedStatementCacheSqlFilter = preparedStatementCacheSqlFilter;
+  }
+
+  protected abstract SqlConnectOptions connectOptions();
+
+  @Override
+  public int pipeliningLimit() {
+    return pipeliningLimit;
+  }
+
+  @Override
+  public ClientMetrics metrics() {
+    return metrics;
+  }
+
+  @Override
+  public TracingPolicy tracingPolicy() {
+    return connectOptions().getTracingPolicy();
+  }
+
+  @Override
+  public String database() {
+    return connectOptions().getDatabase();
+  }
+
+  @Override
+  public String user() {
+    return connectOptions().getUser();
+  }
+
+  @Override
+  public DatabaseMetadata getDatabaseMetaData() {
+    return null;
   }
 
   public Context context() {
@@ -354,6 +387,9 @@ public abstract class SocketConnectionBase implements Connection {
   protected void handleClose(Throwable t) {
     if (status != Status.CLOSED) {
       status = Status.CLOSED;
+      if (metrics != null) {
+        metrics.close();
+      }
       if (t != null) {
         reportException(t);
       }

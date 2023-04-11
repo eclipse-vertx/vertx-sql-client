@@ -15,27 +15,25 @@
  */
 package io.vertx.db2client.spi;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
-import io.vertx.db2client.DB2Pool;
 import io.vertx.db2client.impl.*;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.PoolImpl;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 public class DB2Driver implements Driver {
 
@@ -44,7 +42,7 @@ public class DB2Driver implements Driver {
   public static final DB2Driver INSTANCE = new DB2Driver();
 
   @Override
-  public DB2Pool newPool(Vertx vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -55,16 +53,10 @@ public class DB2Driver implements Driver {
     return new DB2PoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, List<? extends SqlConnectOptions> databases, PoolOptions options, CloseFuture closeFuture) {
-    DB2ConnectOptions baseConnectOptions = DB2ConnectOptions.wrap(databases.get(0));
-    QueryTracer tracer = vertx.tracer() == null ? null : new QueryTracer(vertx.tracer(), baseConnectOptions);
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(baseConnectOptions.getSocketAddress(), "sql", baseConnectOptions.getMetricsName()) : null;
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
-    int pipeliningLimit = pipelinedPool ? baseConnectOptions.getPipeliningLimit() : 1;
-    PoolImpl pool = new PoolImpl(vertx, this, tracer, metrics, pipeliningLimit, options, null, null, closeFuture);
-    List<ConnectionFactory> lst = databases.stream().map(o -> createConnectionFactory(vertx, o)).collect(Collectors.toList());
-    ConnectionFactory factory = ConnectionFactory.roundRobinSelector(lst);
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, closeFuture);
+    ConnectionFactory factory = createConnectionFactory(vertx, databases);
     pool.connectionProvider(factory::connect);
     pool.init();
     closeFuture.add(factory);
@@ -84,11 +76,16 @@ public class DB2Driver implements Driver {
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new DB2ConnectionFactory((VertxInternal) vertx, DB2ConnectOptions.wrap(database));
+    return new DB2ConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database));
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    return new DB2ConnectionImpl(context, factory, conn, tracer, metrics);
+  public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
+    return new DB2ConnectionFactory((VertxInternal) vertx, database);
+  }
+
+  @Override
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn) {
+    return new DB2ConnectionImpl(context, factory, conn);
   }
 }

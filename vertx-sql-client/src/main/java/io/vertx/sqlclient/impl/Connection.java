@@ -19,6 +19,8 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Promise;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.impl.command.CommandScheduler;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
@@ -31,7 +33,17 @@ public interface Connection extends CommandScheduler  {
     return false;
   }
 
+  int pipeliningLimit();
+
+  TracingPolicy tracingPolicy();
+
   SocketAddress server();
+
+  String database();
+
+  String user();
+
+  ClientMetrics metrics();
 
   void init(Holder holder);
 

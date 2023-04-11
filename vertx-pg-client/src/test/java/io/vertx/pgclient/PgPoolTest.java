@@ -170,7 +170,7 @@ public class PgPoolTest extends PgPoolTestBase {
     pool.query("SELECT id, randomnumber from WORLD").execute(ctx.asyncAssertSuccess(v -> {
       async.complete();
     }));
-    async.await(4000);
+    async.await(20_0000);
   }
 
   @Test

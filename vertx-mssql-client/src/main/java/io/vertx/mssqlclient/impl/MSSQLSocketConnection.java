@@ -23,6 +23,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
@@ -30,6 +31,7 @@ import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -43,20 +45,29 @@ import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 
 public class MSSQLSocketConnection extends SocketConnectionBase {
 
+  private final MSSQLConnectOptions connectOptions;
   private final int packetSize;
 
   private MSSQLDatabaseMetadata databaseMetadata;
   private SocketAddress alternateServer;
 
   MSSQLSocketConnection(NetSocketInternal socket,
+                        ClientMetrics clientMetrics,
+                        MSSQLConnectOptions connectOptions,
                         int packetSize,
                         boolean cachePreparedStatements,
                         int preparedStatementCacheSize,
                         Predicate<String> preparedStatementCacheSqlFilter,
                         int pipeliningLimit,
                         EventLoopContext context) {
-    super(socket, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+    this.connectOptions = connectOptions;
     this.packetSize = packetSize;
+  }
+
+  @Override
+  protected SqlConnectOptions connectOptions() {
+    return connectOptions;
   }
 
   Future<Byte> sendPreLoginMessage(boolean clientConfigSsl) {

@@ -23,6 +23,7 @@ import io.vertx.sqlclient.ClosedConnectionException;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;

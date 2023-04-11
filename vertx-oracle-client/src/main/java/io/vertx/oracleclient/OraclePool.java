@@ -10,6 +10,7 @@
  */
 package io.vertx.oracleclient;
 
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -22,6 +23,7 @@ import io.vertx.sqlclient.SqlConnection;
 
 import java.util.Collections;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Represents a pool of connection to interact with an Oracle database.
@@ -52,6 +54,28 @@ public interface OraclePool extends Pool {
    */
   static OraclePool pool(Vertx vertx, String connectionUri, PoolOptions poolOptions) {
     return pool(vertx, OracleConnectOptions.fromUri(connectionUri), poolOptions);
+  }
+
+  /**
+   * Create a connection pool to the Oracle {@code databases}. The supplier is called
+   * to provide the options when a new connection is created by the pool.
+   *
+   * @param databases the databases supplier
+   * @param poolOptions the options for creating the pool
+   * @return the connection pool
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static OraclePool pool(Supplier<Future<OracleConnectOptions>> databases, PoolOptions poolOptions) {
+    return pool(null, databases, poolOptions);
+  }
+
+
+  /**
+   * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static OraclePool pool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions poolOptions) {
+    return (OraclePool) OracleDriver.INSTANCE.createPool(vertx, databases, poolOptions);
   }
 
   @Override

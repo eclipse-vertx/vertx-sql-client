@@ -15,24 +15,31 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.OracleDataSource;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
 
 import static io.vertx.oracleclient.impl.Helper.executeBlocking;
 import static io.vertx.oracleclient.impl.OracleDatabaseHelper.createDataSource;
 
 public class OracleConnectionFactory implements ConnectionFactory {
 
-  private final OracleConnectOptions options;
-  private final OracleDataSource datasource;
+  private final Supplier<? extends Future<? extends SqlConnectOptions>> options;
+  private final Map<JsonObject, OracleDataSource> datasources;
 
-  public OracleConnectionFactory(VertxInternal vertx, OracleConnectOptions options) {
+  public OracleConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
     this.options = options;
-    this.datasource = createDataSource(options);
+    this.datasources = new HashMap<>();
   }
 
   @Override
@@ -42,13 +49,33 @@ public class OracleConnectionFactory implements ConnectionFactory {
 
   @Override
   public Future<SqlConnection> connect(Context context) {
+    return connect(context, options.get());
+  }
+
+  private OracleDataSource getDatasource(SqlConnectOptions options) {
+    JsonObject key = options.toJson();
+    OracleDataSource datasource;
+    synchronized (this) {
+      datasource = datasources.get(key);
+      if (datasource == null) {
+        datasource = createDataSource(OracleConnectOptions.wrap(options));
+        datasources.put(key, datasource);
+      }
+    }
+    return datasource;
+  }
+
+  @Override
+  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
+    OracleDataSource datasource = getDatasource(options);
+    VertxMetrics vertxMetrics = ((VertxInternal)context.owner()).metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
     ContextInternal ctx = (ContextInternal) context;
-    QueryTracer tracer = ctx.tracer() == null ? null : new QueryTracer(ctx.tracer(), options);
     return executeBlocking(context, () -> {
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
-      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, options, orac, metadata);
-      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn, tracer, null);
+      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, OracleConnectOptions.wrap(options), orac, metadata);
+      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn);
       conn.init(msConn);
       return msConn;
     });

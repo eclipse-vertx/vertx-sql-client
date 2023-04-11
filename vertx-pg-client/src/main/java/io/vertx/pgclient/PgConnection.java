@@ -63,7 +63,7 @@ public interface PgConnection extends SqlConnection {
    * Like {@link #connect(Vertx, PgConnectOptions, Handler)} but returns a {@code Future} of the asynchronous result
    */
   static Future<PgConnection> connect(Vertx vertx, PgConnectOptions options) {
-    return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options);
+    return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), () -> options);
   }
 
   /**

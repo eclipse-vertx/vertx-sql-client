@@ -16,6 +16,7 @@
 package io.vertx.db2client;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -31,6 +32,7 @@ import io.vertx.sqlclient.SqlConnection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static io.vertx.db2client.DB2ConnectOptions.fromUri;
 
@@ -107,6 +109,28 @@ public interface DB2Pool extends Pool {
    */
   static DB2Pool pool(Vertx vertx, List<DB2ConnectOptions> databases, PoolOptions options) {
     return (DB2Pool) DB2Driver.INSTANCE.createPool(vertx, databases, options);
+  }
+
+  /**
+   * Create a connection pool to the DB2 {@code databases}. The supplier is called
+   * to provide the options when a new connection is created by the pool.
+   *
+   * @param databases the databases supplier
+   * @param poolOptions the options for creating the pool
+   * @return the connection pool
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static DB2Pool pool(Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions) {
+    return pool(null, databases, poolOptions);
+  }
+
+
+  /**
+   * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static DB2Pool pool(Vertx vertx, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions) {
+    return (DB2Pool) DB2Driver.INSTANCE.createPool(vertx, databases, poolOptions);
   }
 
   /**

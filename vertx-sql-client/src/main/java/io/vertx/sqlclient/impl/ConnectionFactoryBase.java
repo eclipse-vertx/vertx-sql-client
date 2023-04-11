@@ -10,6 +10,7 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.CloseFuture;
@@ -17,16 +18,17 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetClientBuilder;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * An base connection factory for creating database connections
@@ -36,54 +38,37 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   public static final String NATIVE_TRANSPORT_REQUIRED = "The Vertx instance must use a native transport in order to connect to connect through domain sockets";
 
   protected final VertxInternal vertx;
-  protected final NetClient netClient;
-  protected final Map<String, String> properties;
-  protected final SqlConnectOptions options;
-  protected final SocketAddress server;
-  protected final String user;
-  protected final String password;
-  protected final String database;
-
-  // cache
-  protected final boolean cachePreparedStatements;
-  protected final int preparedStatementCacheSize;
-  protected final Predicate<String> preparedStatementCacheSqlFilter;
+  private final Map<JsonObject, NetClient> clients;
+  protected final Supplier<? extends Future<? extends SqlConnectOptions>> options;
 
   // close hook
   protected final CloseFuture clientCloseFuture = new CloseFuture();
 
-  // auto-retry
-  private final int reconnectAttempts;
-  private final long reconnectInterval;
-
-  protected ConnectionFactoryBase(VertxInternal vertx, SqlConnectOptions options) {
-
-    // check we can do domain sockets
-    if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
-      throw new IllegalArgumentException(NATIVE_TRANSPORT_REQUIRED);
-    }
-
+  protected ConnectionFactoryBase(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
     this.vertx = vertx;
-    this.properties = options.getProperties() == null ? null : Collections.unmodifiableMap(options.getProperties());
-    this.server = options.getSocketAddress();
     this.options = options;
-    this.user = options.getUser();
-    this.password = options.getPassword();
-    this.database = options.getDatabase();
+    this.clients = new HashMap<>();
+  }
 
-    this.cachePreparedStatements = options.getCachePreparedStatements();
-    this.preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
-    this.preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
+  private NetClient createNetClient(NetClientOptions options) {
+    options.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
+    return new NetClientBuilder(vertx, options).closeFuture(clientCloseFuture).build();
+  }
 
-    this.reconnectAttempts = options.getReconnectAttempts();
-    this.reconnectInterval = options.getReconnectInterval();
-
-    initializeConfiguration(options);
-
-    NetClientOptions netClientOptions = new NetClientOptions(options);
-    configureNetClientOptions(netClientOptions);
-    netClientOptions.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
-    this.netClient = new NetClientBuilder(vertx, netClientOptions).closeFuture(clientCloseFuture).build();
+  protected NetClient netClient(NetClientOptions options) {
+    if (options.getClass() != NetClientOptions.class) {
+      options = new NetClientOptions(options);
+    }
+    JsonObject key = options.toJson();
+    NetClient client;
+    synchronized (this) {
+      client = clients.get(key);
+      if (client == null) {
+        client = createNetClient(options);
+        clients.put(key, client);
+      }
+    }
+    return client;
   }
 
   public static EventLoopContext asEventLoopContext(ContextInternal ctx) {
@@ -94,10 +79,15 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     }
   }
 
-  public Future<Connection> connect(EventLoopContext context) {
+  public Future<Connection> connect(EventLoopContext context, SqlConnectOptions options) {
     PromiseInternal<Connection> promise = context.promise();
-    context.emit(promise, p -> doConnectWithRetry(server, user, password, database, p, reconnectAttempts));
+    context.emit(promise, p -> doConnectWithRetry(options, p, options.getReconnectAttempts()));
     return promise.future();
+  }
+
+  @Override
+  public Future<SqlConnection> connect(Context context) {
+    return connect(context, options.get());
   }
 
   @Override
@@ -105,15 +95,15 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     clientCloseFuture.close(promise);
   }
 
-  private void doConnectWithRetry(SocketAddress server, String username, String password, String database, PromiseInternal<Connection> promise, int remainingAttempts) {
+  private void doConnectWithRetry(SqlConnectOptions options, PromiseInternal<Connection> promise, int remainingAttempts) {
     EventLoopContext ctx = (EventLoopContext) promise.context();
-    doConnectInternal(server, username, password, database, ctx).onComplete(ar -> {
+    doConnectInternal(options, ctx).onComplete(ar -> {
       if (ar.succeeded()) {
         promise.complete(ar.result());
       } else {
         if (remainingAttempts > 0) {
-          ctx.owner().setTimer(reconnectInterval, id -> {
-            doConnectWithRetry(server, username, password, database, promise, remainingAttempts - 1);
+          ctx.owner().setTimer(options.getReconnectInterval(), id -> {
+            doConnectWithRetry(options, promise, remainingAttempts - 1);
           });
         } else {
           promise.fail(ar.cause());
@@ -123,22 +113,8 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   }
 
   /**
-   * Initialize the configuration after the common configuration have been initialized.
-   *
-   * @param options the concrete options for initializing configuration by a specific connection factory.
-   */
-  protected abstract void initializeConfiguration(SqlConnectOptions options);
-
-  /**
-   * Apply the configuration to the {@link NetClientOptions NetClientOptions} for connecting to the database.
-   *
-   * @param netClientOptions NetClient options to apply
-   */
-  protected abstract void configureNetClientOptions(NetClientOptions netClientOptions);
-
-  /**
    * Establish a connection to the server.
    */
-  protected abstract Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context);
+  protected abstract Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context);
 
 }

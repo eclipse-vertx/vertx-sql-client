@@ -20,6 +20,8 @@ import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
@@ -27,34 +29,73 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
 
 import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory extends ConnectionFactoryBase {
 
-  private MySQLCollation collation;
-  private Charset charsetEncoding;
-  private boolean useAffectedRows;
-  private SslMode sslMode;
-  private Buffer serverRsaPublicKey;
-  private int initialCapabilitiesFlags;
-  private int pipeliningLimit;
-  private MySQLAuthenticationPlugin authenticationPlugin;
-
-  public MySQLConnectionFactory(VertxInternal vertx, MySQLConnectOptions options) {
+  public MySQLConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
     super(vertx, options);
   }
 
   @Override
-  protected void initializeConfiguration(SqlConnectOptions connectOptions) {
-    if (!(connectOptions instanceof MySQLConnectOptions)) {
-      throw new IllegalArgumentException("mismatched connect options type");
+  protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
+    MySQLConnectOptions mySQLOptions = MySQLConnectOptions.wrap(options);
+    SslMode sslMode = mySQLOptions.isUsingDomainSocket() ? SslMode.DISABLED : mySQLOptions.getSslMode();
+    switch (sslMode) {
+      case VERIFY_IDENTITY:
+        String hostnameVerificationAlgorithm = options.getHostnameVerificationAlgorithm();
+        if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
+          return context.failedFuture(new IllegalArgumentException("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode."));
+        }
+        break;
+      case VERIFY_CA:
+        TrustOptions trustOptions = options.getTrustOptions();
+        if (trustOptions == null) {
+          return context.failedFuture(new IllegalArgumentException("Trust options must be specified under " + sslMode.name() + " ssl-mode."));
+        }
+        break;
     }
-    MySQLConnectOptions options = (MySQLConnectOptions) connectOptions;
+    int capabilitiesFlag = capabilitiesFlags(mySQLOptions);
+    options.setSsl(false);
+    if (sslMode == SslMode.PREFERRED) {
+      return doConnect(mySQLOptions, sslMode, capabilitiesFlag, context).recover(err -> doConnect(mySQLOptions, SslMode.DISABLED, capabilitiesFlag, context));
+    } else {
+      return doConnect(mySQLOptions, sslMode, capabilitiesFlag, context);
+    }
+  }
+
+  private int capabilitiesFlags(MySQLConnectOptions options) {
+    int capabilitiesFlags = CLIENT_SUPPORTED_CAPABILITIES_FLAGS;
+    if (options.getDatabase() != null && !options.getDatabase().isEmpty()) {
+      capabilitiesFlags |= CLIENT_CONNECT_WITH_DB;
+    }
+    if (options.getProperties() != null && !options.getProperties().isEmpty()) {
+      capabilitiesFlags |= CLIENT_CONNECT_ATTRS;
+    }
+    if (!options.isUseAffectedRows()) {
+      capabilitiesFlags |= CLIENT_FOUND_ROWS;
+    }
+    return capabilitiesFlags;
+  }
+
+  private Future<Connection> doConnect(MySQLConnectOptions options, SslMode sslMode, int initialCapabilitiesFlags, EventLoopContext context) {
+    String username = options.getUser();
+    String password = options.getPassword();
+    String database = options.getDatabase();
+    SocketAddress server = options.getSocketAddress();
+    boolean cachePreparedStatements = options.getCachePreparedStatements();
+    int preparedStatementCacheMaxSize = options.getPreparedStatementCacheMaxSize();
+    Predicate<String> preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
+    Map<String, String> properties = options.getProperties();
+
     MySQLCollation collation;
+    Charset charsetEncoding;
     if (options.getCollation() != null) {
       // override the collation if configured
       collation = MySQLCollation.valueOfName(options.getCollation());
@@ -73,86 +114,33 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
         charsetEncoding = Charset.forName(options.getCharacterEncoding());
       }
     }
-    this.collation = collation;
-    this.useAffectedRows = options.isUseAffectedRows();
-    this.sslMode = options.isUsingDomainSocket() ? SslMode.DISABLED : options.getSslMode();
-    this.authenticationPlugin = options.getAuthenticationPlugin();
-
-    // server RSA public key
-    Buffer serverRsaPublicKey = null;
+    Buffer serverRsaPublicKey;
     if (options.getServerRsaPublicKeyValue() != null) {
       serverRsaPublicKey = options.getServerRsaPublicKeyValue();
+    } else if (options.getServerRsaPublicKeyPath() != null) {
+      serverRsaPublicKey = vertx.fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
     } else {
-      if (options.getServerRsaPublicKeyPath() != null) {
-        serverRsaPublicKey = vertx.fileSystem().readFileBlocking(options.getServerRsaPublicKeyPath());
-      }
+      serverRsaPublicKey = null;
     }
-    this.serverRsaPublicKey = serverRsaPublicKey;
-    this.initialCapabilitiesFlags = initCapabilitiesFlags(database);
-    this.pipeliningLimit = options.getPipeliningLimit();
-
-    // check the SSLMode here
-    switch (sslMode) {
-      case VERIFY_IDENTITY:
-        String hostnameVerificationAlgorithm = options.getHostnameVerificationAlgorithm();
-        if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
-          throw new IllegalArgumentException("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.");
-        }
-      case VERIFY_CA:
-        TrustOptions trustOptions = options.getTrustOptions();
-        if (trustOptions == null) {
-          throw new IllegalArgumentException("Trust options must be specified under " + sslMode.name() + " ssl-mode.");
-        }
-        break;
-    }
-  }
-
-  @Override
-  protected void configureNetClientOptions(NetClientOptions netClientOptions) {
-    netClientOptions.setSsl(false);
-  }
-
-  @Override
-  protected Future<Connection> doConnectInternal(SocketAddress server, String username, String password, String database, EventLoopContext context) {
-    if (sslMode == SslMode.PREFERRED) {
-      return doConnect(server, username, password, database, sslMode, context).recover(err -> doConnect(server, username, password, database, SslMode.DISABLED, context));
-    } else {
-      return doConnect(server, username, password, database, sslMode, context);
-    }
-  }
-
-  private Future<Connection> doConnect(SocketAddress server, String username, String password, String database, SslMode sslMode, EventLoopContext context) {
-    Future<NetSocket> fut = netClient.connect(server);
+    int pipeliningLimit = options.getPipeliningLimit();
+    MySQLAuthenticationPlugin authenticationPlugin = options.getAuthenticationPlugin();
+    Future<NetSocket> fut = netClient(options).connect(server);
     return fut.flatMap(so -> {
-      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
+      VertxMetrics vertxMetrics = vertx.metricsSPI();
+      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+      MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, metrics, options, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();
       return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
     });
   }
 
-  private int initCapabilitiesFlags(String database) {
-    int capabilitiesFlags = CLIENT_SUPPORTED_CAPABILITIES_FLAGS;
-    if (database != null && !database.isEmpty()) {
-      capabilitiesFlags |= CLIENT_CONNECT_WITH_DB;
-    }
-    if (properties != null && !properties.isEmpty()) {
-      capabilitiesFlags |= CLIENT_CONNECT_ATTRS;
-    }
-    if (!useAffectedRows) {
-      capabilitiesFlags |= CLIENT_FOUND_ROWS;
-    }
-
-    return capabilitiesFlags;
-  }
-
   @Override
-  public Future<SqlConnection> connect(Context context) {
+  public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
-    QueryTracer tracer = contextInternal.tracer() == null ? null : new QueryTracer(contextInternal.tracer(), options);
     Promise<SqlConnection> promise = contextInternal.promise();
-    connect(asEventLoopContext(contextInternal))
+    connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn, tracer, null);
+        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn);
         conn.init(mySQLConnection);
         return (SqlConnection)mySQLConnection;
       })

@@ -34,30 +34,27 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
-import io.vertx.sqlclient.impl.tracing.QueryTracer;
+
+import java.util.function.Supplier;
 
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
-  public static Future<PgConnection> connect(ContextInternal context, PgConnectOptions options) {
-    if (options.isUsingDomainSocket() && !context.owner().isNativeTransportEnabled()) {
-      return context.failedFuture("Native transport is not available");
-    } else {
-      PgConnectionFactory client;
-      try {
-        client = new PgConnectionFactory(context.owner(), options);
-      } catch (Exception e) {
-        return context.failedFuture(e);
-      }
-      context.addCloseHook(client);
-      return (Future) client.connect(context);
+  public static Future<PgConnection> connect(ContextInternal context, Supplier<PgConnectOptions> options) {
+    PgConnectionFactory client;
+    try {
+      client = new PgConnectionFactory(context.owner(), () -> Future.succeededFuture(options.get()));
+    } catch (Exception e) {
+      return context.failedFuture(e);
     }
+    context.addCloseHook(client);
+    return (Future) client.connect(context);
   }
 
   private volatile Handler<PgNotification> notificationHandler;
   private volatile Handler<PgNotice> noticeHandler;
 
-  public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, QueryTracer tracer, ClientMetrics metrics) {
-    super(context, factory, conn, PgDriver.INSTANCE, tracer, metrics);
+  public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn) {
+    super(context, factory, conn, PgDriver.INSTANCE);
   }
 
   @Override
@@ -135,7 +132,8 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
     Context current = Vertx.currentContext();
     if (current == context) {
-      ((PgConnectionFactory)factory).cancelRequest(conn.server(), this.processId(), this.secretKey(), handler);
+      PgSocketConnection unwrap = (PgSocketConnection) conn.unwrap();
+      ((PgConnectionFactory)factory).cancelRequest(unwrap.connectOptions(), this.processId(), this.secretKey(), handler);
     } else {
       context.runOnContext(v -> cancelRequest(handler));
     }

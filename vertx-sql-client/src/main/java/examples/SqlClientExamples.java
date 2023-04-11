@@ -22,7 +22,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.ArrayList;
@@ -458,17 +457,5 @@ public class SqlClientExamples {
 
 
   public void dynamicPoolConfig(Vertx vertx, Pool pool, Driver driver) {
-    pool.connectionProvider(ctx -> {
-      Future<SqlConnectOptions> fut = retrieveOptions();
-      return fut.compose(connectOptions -> {
-        // Do not forget to close later
-        ConnectionFactory factory = driver.createConnectionFactory(vertx, connectOptions);
-        return factory.connect(ctx);
-      });
-    });
-  }
-
-  private Future<SqlConnectOptions> retrieveOptions() {
-    return null;
   }
 }

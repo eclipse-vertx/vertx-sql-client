@@ -12,6 +12,7 @@
 package io.vertx.mysqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -23,10 +24,11 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.SingletonSupplier;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 
@@ -79,7 +81,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #pool(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, MySQLConnectOptions database, PoolOptions options) {
-    return pool(vertx, Collections.singletonList(database), options);
+    return pool(vertx, SingletonSupplier.wrap(database), options);
   }
 
   /**
@@ -101,7 +103,26 @@ public interface MySQLPool extends Pool {
     return (MySQLPool) MySQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
 
+  /**
+   * Create a connection pool to the MySQL {@code databases}. The supplier is called
+   * to provide the options when a new connection is created by the pool.
+   *
+   * @param databases the server supplier
+   * @param options the options for creating the pool
+   * @return the connection pool
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static MySQLPool pool(Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
+    return pool(null, databases, options);
+  }
 
+  /**
+   * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static MySQLPool pool(Vertx vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
+    return (MySQLPool) MySQLDriver.INSTANCE.createPool(vertx, databases, options);
+  }
   /**
    * Like {@link #client(String, PoolOptions)} with a default {@code poolOptions}.
    */
@@ -137,14 +158,14 @@ public interface MySQLPool extends Pool {
    * @return the client
    */
   static SqlClient client(MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(null, Collections.singletonList(connectOptions), poolOptions);
+    return client(null, SingletonSupplier.wrap(connectOptions), poolOptions);
   }
 
   /**
    * Like {@link #client(MySQLConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    return client(vertx, Collections.singletonList(connectOptions), poolOptions);
+    return client(vertx, SingletonSupplier.wrap(connectOptions), poolOptions);
   }
 
   /**
@@ -166,6 +187,26 @@ public interface MySQLPool extends Pool {
     return client(null, databases, options);
   }
 
+  /**
+   * Like {@link #client(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static SqlClient client(Vertx vertx, Supplier<Future<MySQLConnectOptions>> mySQLConnectOptions, PoolOptions options) {
+    return MySQLDriver.INSTANCE.createPool(vertx, mySQLConnectOptions, new MySQLPoolOptions(options).setPipelined(true));
+  }
+
+  /**
+   * Create a client backed by a connection pool to the MySQL {@code databases}. The supplier is called
+   * to provide the options when a new connection is created by the pool.
+   *
+   * @param databases the databases supplier
+   * @param options the options for creating the pool
+   * @return the pooled client
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  static SqlClient client(Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
+    return client(null, databases, options);
+  }
 
   @Override
   MySQLPool connectHandler(Handler<SqlConnection> handler);
