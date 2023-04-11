@@ -119,13 +119,14 @@ CREATE TABLE ROWTEST(
 DROP TABLE db2_types;
 CREATE TABLE db2_types
 (
-    id           INT,
-    test_byte    SMALLINT,
-    test_float   FLOAT,
-    test_bytes   VARCHAR(255) for bit data,
-    test_tstamp  TIMESTAMP,
-    test_vchar   VARCHAR(255),
-    test_int     INT
+  id          INT,
+  test_byte   SMALLINT,
+  test_float  FLOAT,
+  test_bytes  CHAR(255) for bit data,
+  test_vbytes VARCHAR(255) for bit data,
+  test_tstamp TIMESTAMP,
+  test_vchar  VARCHAR(255),
+  test_int    INT
 );
 
 -- Sequence used by QueryVariationsTest
