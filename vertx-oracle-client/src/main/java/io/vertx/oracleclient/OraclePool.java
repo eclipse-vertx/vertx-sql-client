@@ -64,7 +64,7 @@ public interface OraclePool extends Pool {
    * @param poolOptions the options for creating the pool
    * @return the connection pool
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static OraclePool pool(Supplier<Future<OracleConnectOptions>> databases, PoolOptions poolOptions) {
     return pool(null, databases, poolOptions);
   }
@@ -73,7 +73,7 @@ public interface OraclePool extends Pool {
   /**
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static OraclePool pool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions poolOptions) {
     return (OraclePool) OracleDriver.INSTANCE.createPool(vertx, databases, poolOptions);
   }

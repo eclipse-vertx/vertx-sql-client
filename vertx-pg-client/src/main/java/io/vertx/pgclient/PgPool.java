@@ -138,7 +138,7 @@ public interface PgPool extends Pool {
    * @param poolOptions the options for creating the pool
    * @return the connection pool
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static PgPool pool(Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions) {
     return pool(null, databases, poolOptions);
   }
@@ -146,7 +146,7 @@ public interface PgPool extends Pool {
   /**
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static PgPool pool(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions) {
     return (PgPool) PgDriver.INSTANCE.createPool(vertx, databases, poolOptions);
   }
@@ -239,7 +239,7 @@ public interface PgPool extends Pool {
   /**
    * Like {@link #client(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static SqlClient client(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions options) {
     return PgDriver.INSTANCE.createPool(vertx, databases, new PgPoolOptions(options).setPipelined(true));
   }
@@ -252,7 +252,7 @@ public interface PgPool extends Pool {
    * @param options the options for creating the pool
    * @return the pooled client
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static SqlClient client(Supplier<Future<PgConnectOptions>> databases, PoolOptions options) {
     return client(null, databases, options);
   }

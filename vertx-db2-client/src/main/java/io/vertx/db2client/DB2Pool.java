@@ -119,7 +119,7 @@ public interface DB2Pool extends Pool {
    * @param poolOptions the options for creating the pool
    * @return the connection pool
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static DB2Pool pool(Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions) {
     return pool(null, databases, poolOptions);
   }
@@ -128,7 +128,7 @@ public interface DB2Pool extends Pool {
   /**
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static DB2Pool pool(Vertx vertx, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions) {
     return (DB2Pool) DB2Driver.INSTANCE.createPool(vertx, databases, poolOptions);
   }
