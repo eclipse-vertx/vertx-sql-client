@@ -59,9 +59,9 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
     public static boolean isQuery(String sql) {
       if (sql != null) {
         String trimmedLower = sql.trim().toLowerCase();
-        
+
         //Remove any comments at the start
-        while (trimmedLower.startsWith("/*")) {          
+        while (trimmedLower.startsWith("/*")) {
           int count = 1;
           int position = trimmedLower.indexOf("/*")+2;
           while (count != 0) {
@@ -76,7 +76,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
             }
             else { //Only possible if there are no more /* or */ in which case the whole string is a comment
               throw new IllegalArgumentException("SQLState.NO_TOKENS_IN_SQL_TEXT");
-            }        
+            }
           }
           trimmedLower = trimmedLower.substring(position).trim();
         }
@@ -787,7 +787,7 @@ public class DRDAQueryRequest extends DRDAConnectRequest {
                         }
                         break;
                     case DRDAConstants.DRDA_TYPE_NINTEGER8:
-                        buffer.writeLong(((Long) inputs[i]).longValue());
+                      buffer.writeLong(((Number) inputs[i]).longValue());
                         break;
                     case DRDAConstants.DRDA_TYPE_NROWID:
                         RowId rowId = (RowId) inputs[i];
