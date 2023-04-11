@@ -15,34 +15,35 @@
  */
 package io.vertx.db2client;
 
-import static org.junit.Assume.assumeTrue;
-
-import java.sql.RowId;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoField;
-import java.util.Arrays;
-import java.util.UUID;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.sql.RowId;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.Assume.assumeTrue;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2DataTypeTest extends DB2TestBase {
 
 
-  // Enum for enum testing 
+  // Enum for enum testing
   enum Days {
     MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
   }
 
-	
+
   /**
    * In DB2 the FLOAT and DOUBLE column types both map to an 8-byte
    * double-precision column (i.e. Java double). Ensure that a Java
@@ -86,40 +87,74 @@ public class DB2DataTypeTest extends DB2TestBase {
   }
 
   @Test
+  public void testByteArrayIntoChar(TestContext ctx) {
+    byte[] param = "hello world".getBytes();
+    byte[] expected = new byte[255];
+    Arrays.fill(expected, (byte) 32);
+    System.arraycopy(param, 0, expected, 0, param.length);
+    testByteArrayInto(ctx, "test_bytes", param, expected);
+  }
+
+  @Test
   public void testByteArrayIntoVarchar(TestContext ctx) {
-    byte[] expected = "hello world".getBytes();
+    byte[] param = "hello world".getBytes();
+    testByteArrayInto(ctx, "test_vbytes", param, param);
+  }
+
+  private void testByteArrayInto(TestContext ctx, String colName, byte[] param, byte[] expected) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO db2_types (id,test_bytes) VALUES (?, ?)")
-          .execute(Tuple.of(3, "hello world".getBytes()), ctx.asyncAssertSuccess(insertResult -> {
-            conn.preparedQuery("SELECT id,test_bytes FROM db2_types WHERE id = 3")
-                .execute(ctx.asyncAssertSuccess(rows -> {
-                  ctx.assertEquals(1, rows.size());
-                  Row row = rows.iterator().next();
-                  ctx.assertEquals(3, row.getInteger(0));
-                  ctx.assertTrue(Arrays.equals(expected, row.getBuffer(1).getBytes()),
-                      "Expecting " + Arrays.toString(expected) + " but got "
-                          + Arrays.toString(row.getBuffer(1).getBytes()));
-                }));
-          }));
+      conn
+        .preparedQuery("INSERT INTO db2_types (id," + colName + ") VALUES (?, ?)")
+        .execute(Tuple.of(3, param))
+        .onComplete(ctx.asyncAssertSuccess(insertResult -> {
+          conn
+            .preparedQuery("SELECT id," + colName + " FROM db2_types WHERE id = 3")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(rows -> {
+              ctx.assertEquals(1, rows.size());
+              Row row = rows.iterator().next();
+              ctx.assertEquals(3, row.getInteger(0));
+              ctx.assertTrue(Arrays.equals(expected, row.getBuffer(1).getBytes()),
+                "Expecting " + Arrays.toString(expected) + " but got "
+                  + Arrays.toString(row.getBuffer(1).getBytes()));
+            }));
+        }));
     }));
   }
 
   @Test
-  public void testByteBufIntoVarchar(TestContext ctx) {
-    byte[] expected = "hello world".getBytes();
+  public void testBufferIntoChar(TestContext ctx) {
+    byte[] param = "hello world".getBytes();
+    byte[] expected = new byte[255];
+    Arrays.fill(expected, (byte) 32);
+    System.arraycopy(param, 0, expected, 0, param.length);
+    testBufferInto(ctx, "test_bytes", param, expected);
+  }
+
+  @Test
+  public void testBufferIntoVarchar(TestContext ctx) {
+    byte[] param = "hello world".getBytes();
+    testBufferInto(ctx, "test_vbytes", param, param);
+  }
+
+  private void testBufferInto(TestContext ctx, String colName, byte[] param, byte[] expected) {
     connect(ctx.asyncAssertSuccess(conn -> {
-      conn.preparedQuery("INSERT INTO db2_types (id,test_bytes) VALUES (?, ?)")
-          .execute(Tuple.of(4, Buffer.buffer(expected)), ctx.asyncAssertSuccess(insertResult -> {
-            conn.preparedQuery("SELECT id,test_bytes FROM db2_types WHERE id = 4")
-                .execute(ctx.asyncAssertSuccess(rows -> {
-                  ctx.assertEquals(1, rows.size());
-                  Row row = rows.iterator().next();
-                  ctx.assertEquals(4, row.getInteger(0));
-                  ctx.assertTrue(Arrays.equals(expected, row.getBuffer(1).getBytes()),
-                      "Expecting " + Arrays.toString(expected) + " but got "
-                          + Arrays.toString(row.getBuffer(1).getBytes()));
-                }));
-          }));
+      conn
+        .preparedQuery("INSERT INTO db2_types (id," + colName + ") VALUES (?, ?)")
+        .execute(Tuple.of(4, Buffer.buffer(param)))
+        .onComplete(ctx.asyncAssertSuccess(insertResult -> {
+          conn
+            .preparedQuery("SELECT id," + colName + " FROM db2_types WHERE id = 4")
+            .execute()
+            .onComplete(ctx.asyncAssertSuccess(rows -> {
+              ctx.assertEquals(1, rows.size());
+              Row row = rows.iterator().next();
+              ctx.assertEquals(4, row.getInteger(0));
+              ctx.assertTrue(Arrays.equals(expected, row.getBuffer(1).getBytes()),
+                "Expecting " + Arrays.toString(expected) + " but got "
+                  + Arrays.toString(row.getBuffer(1).getBytes()));
+            }));
+        }));
     }));
   }
 
@@ -183,7 +218,7 @@ public class DB2DataTypeTest extends DB2TestBase {
         }));
     }));
   }
-  
+
   /**
    * Test to support using enum string values in the Row and Tuple methods.
    */
@@ -221,7 +256,7 @@ public class DB2DataTypeTest extends DB2TestBase {
        }));
      }));
   }
-  
+
   private RowId verifyRowId(TestContext ctx, RowSet<Row> rows, String msg) {
     ctx.assertEquals(1, rows.size());
     Row row = rows.iterator().next();
@@ -230,5 +265,10 @@ public class DB2DataTypeTest extends DB2TestBase {
     ctx.assertNotNull(rowid);
     ctx.assertEquals(22, rowid.getBytes().length);
     return rowid;
+  }
+
+  @Override
+  protected List<String> tablesToClean() {
+    return Collections.singletonList("db2_types");
   }
 }
