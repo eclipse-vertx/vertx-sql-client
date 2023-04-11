@@ -22,7 +22,6 @@ import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Arrays;
 import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
@@ -287,7 +286,14 @@ public class ClientTypes {
             clazz == Double.class ||
             clazz == float.class ||
             clazz == Float.class ||
-            clazz == BigDecimal.class;
+            clazz == int.class ||
+            clazz == Integer.class ||
+            clazz == long.class ||
+            clazz == Long.class ||
+            clazz == short.class ||
+            clazz == Short.class ||
+            clazz == BigDecimal.class ||
+            clazz == BigInteger.class;
         case ClientTypes.BIT:
         case ClientTypes.BOOLEAN:
         case ClientTypes.SMALLINT:
