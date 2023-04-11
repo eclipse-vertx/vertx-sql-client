@@ -107,7 +107,7 @@ public interface MSSQLPool extends Pool {
    * @param options the options for creating the pool
    * @return the connection pool
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static MSSQLPool pool(Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options) {
     return pool(null, databases, options);
   }
@@ -115,7 +115,7 @@ public interface MSSQLPool extends Pool {
   /**
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static MSSQLPool pool(Vertx vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options) {
     return (MSSQLPool) MSSQLDriver.INSTANCE.createPool(vertx, databases, options);
   }

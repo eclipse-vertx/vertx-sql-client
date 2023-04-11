@@ -111,7 +111,7 @@ public interface MySQLPool extends Pool {
    * @param options the options for creating the pool
    * @return the connection pool
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static MySQLPool pool(Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
     return pool(null, databases, options);
   }
@@ -119,7 +119,7 @@ public interface MySQLPool extends Pool {
   /**
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static MySQLPool pool(Vertx vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
     return (MySQLPool) MySQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
@@ -190,7 +190,7 @@ public interface MySQLPool extends Pool {
   /**
    * Like {@link #client(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static SqlClient client(Vertx vertx, Supplier<Future<MySQLConnectOptions>> mySQLConnectOptions, PoolOptions options) {
     return MySQLDriver.INSTANCE.createPool(vertx, mySQLConnectOptions, new MySQLPoolOptions(options).setPipelined(true));
   }
@@ -203,7 +203,7 @@ public interface MySQLPool extends Pool {
    * @param options the options for creating the pool
    * @return the pooled client
    */
-  @GenIgnore
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static SqlClient client(Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options) {
     return client(null, databases, options);
   }
