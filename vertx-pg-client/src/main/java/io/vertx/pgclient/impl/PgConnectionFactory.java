@@ -47,11 +47,8 @@ import java.util.function.Predicate;
  */
 public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions> {
 
-  private final boolean oneShot;
-
   public PgConnectionFactory(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
-    super(vertx, closeFuture);
-    this.oneShot = oneShot;
+    super(vertx, closeFuture, oneShot);
   }
 
   private void checkSslMode(PgConnectOptions options) {
@@ -159,12 +156,9 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     PromiseInternal<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        CloseFuture connectionCloseFuture = new CloseFuture();
+        CloseFuture connectionCloseFuture = connectionCloseFuture();
         PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn, connectionCloseFuture);
         conn.init(pgConn);
-        if (oneShot) {
-          connectionCloseFuture.add(closeFuture);
-        }
         return (SqlConnection) pgConn;
       })
       .onComplete(promise);

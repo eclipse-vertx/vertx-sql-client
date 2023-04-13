@@ -39,10 +39,12 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
 
   // close hook
   protected final CloseFuture closeFuture;
+  private final boolean oneShot;
 
-  protected ConnectionFactoryBase(VertxInternal vertx, CloseFuture closeFuture) {
+  protected ConnectionFactoryBase(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
     this.vertx = vertx;
     this.closeFuture = closeFuture;
+    this.oneShot = oneShot;
     this.clients = new HashMap<>();
   }
 
@@ -82,7 +84,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   }
 
   @Override
-  public void close(Promise<Void> promise) {
+  public final void close(Promise<Void> promise) {
     closeFuture.close(promise);
   }
 
@@ -108,4 +110,11 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
    */
   protected abstract Future<Connection> doConnectInternal(C options, EventLoopContext context);
 
+  protected final CloseFuture connectionCloseFuture() {
+    CloseFuture connectionCloseFuture = new CloseFuture();
+    if (oneShot) {
+      connectionCloseFuture.future().andThen(v -> closeFuture.close());
+    }
+    return connectionCloseFuture;
+  }
 }

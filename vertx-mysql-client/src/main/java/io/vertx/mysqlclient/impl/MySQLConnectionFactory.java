@@ -40,11 +40,8 @@ import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOptions> {
 
-  private final boolean oneShot;
-
   public MySQLConnectionFactory(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
-    super(vertx, closeFuture);
-    this.oneShot = oneShot;
+    super(vertx, closeFuture, oneShot);
   }
 
   @Override
@@ -143,12 +140,9 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
     Promise<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        CloseFuture connectionCloseFuture = new CloseFuture();
+        CloseFuture connectionCloseFuture = connectionCloseFuture();
         MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn, connectionCloseFuture);
         conn.init(mySQLConnection);
-        if (oneShot) {
-          connectionCloseFuture.add(closeFuture);
-        }
         return (SqlConnection) mySQLConnection;
       })
       .onComplete(promise);

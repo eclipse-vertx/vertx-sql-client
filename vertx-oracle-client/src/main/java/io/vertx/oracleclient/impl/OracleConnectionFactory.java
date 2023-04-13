@@ -72,7 +72,7 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
       OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, options, orac, metadata);
-      CloseFuture connectionCloseFuture = new CloseFuture();
+      CloseFuture connectionCloseFuture = connectionCloseFuture();
       OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn, connectionCloseFuture);
       conn.init(msConn);
       if (oneShot) {
@@ -80,5 +80,13 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
       }
       return msConn;
     });
+  }
+
+  private CloseFuture connectionCloseFuture() {
+    CloseFuture connectionCloseFuture = new CloseFuture();
+    if (oneShot) {
+      connectionCloseFuture.future().andThen(v -> closeFuture.close());
+    }
+    return connectionCloseFuture;
   }
 }

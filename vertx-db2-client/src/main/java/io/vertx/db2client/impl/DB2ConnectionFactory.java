@@ -37,11 +37,8 @@ import java.util.function.Predicate;
 
 public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOptions> {
 
-  private final boolean oneShot;
-
   public DB2ConnectionFactory(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
-    super(vertx, closeFuture);
-    this.oneShot = oneShot;
+    super(vertx, closeFuture, oneShot);
   }
 
   @Override
@@ -72,12 +69,9 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
     Promise<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        CloseFuture connectionCloseFuture = new CloseFuture();
+        CloseFuture connectionCloseFuture = connectionCloseFuture();
         DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn, connectionCloseFuture);
         conn.init(db2Connection);
-        if (oneShot) {
-          connectionCloseFuture.add(closeFuture);
-        }
         return (SqlConnection) db2Connection;
       }).onComplete(promise);
     return promise.future();

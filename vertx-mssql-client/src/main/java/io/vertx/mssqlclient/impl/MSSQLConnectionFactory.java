@@ -36,11 +36,8 @@ import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOptions> {
 
-  private final boolean oneShot;
-
   public MSSQLConnectionFactory(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
-    super(vertx, closeFuture);
-    this.oneShot = oneShot;
+    super(vertx, closeFuture, oneShot);
   }
 
   @Override
@@ -110,12 +107,9 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
     Promise<SqlConnection> promise = ctx.promise();
     connect(asEventLoopContext(ctx), options)
       .map(conn -> {
-        CloseFuture connectionCloseFuture = new CloseFuture();
+        CloseFuture connectionCloseFuture = connectionCloseFuture();
         MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn, connectionCloseFuture);
         conn.init(msConn);
-        if (oneShot) {
-          connectionCloseFuture.add(closeFuture);
-        }
         return (SqlConnection) msConn;
       })
       .onComplete(promise);
