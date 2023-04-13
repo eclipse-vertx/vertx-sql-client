@@ -17,6 +17,7 @@ package io.vertx.db2client.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
@@ -30,18 +31,19 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
 
   public static Future<DB2Connection> connect(Vertx vertx, DB2ConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
+    CloseFuture closeFuture = new CloseFuture();
     DB2ConnectionFactory client;
     try {
-      client = new DB2ConnectionFactory(ctx.owner());
+      client = new DB2ConnectionFactory(ctx.owner(), closeFuture, true);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    ctx.addCloseHook(client);
+    ctx.addCloseHook(closeFuture);
     return (Future) client.connect(ctx, options);
   }
 
-  public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    super(context, factory, conn, DB2Driver.INSTANCE);
+  public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, CloseFuture closeFuture) {
+    super(context, factory, conn, DB2Driver.INSTANCE, closeFuture);
   }
 
   @Override

@@ -26,7 +26,6 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 /**
  * An base connection factory for creating database connections
@@ -39,16 +38,17 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   private final Map<JsonObject, NetClient> clients;
 
   // close hook
-  protected final CloseFuture clientCloseFuture = new CloseFuture();
+  protected final CloseFuture closeFuture;
 
-  protected ConnectionFactoryBase(VertxInternal vertx) {
+  protected ConnectionFactoryBase(VertxInternal vertx, CloseFuture closeFuture) {
     this.vertx = vertx;
+    this.closeFuture = closeFuture;
     this.clients = new HashMap<>();
   }
 
   private NetClient createNetClient(NetClientOptions options) {
     options.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
-    return new NetClientBuilder(vertx, options).closeFuture(clientCloseFuture).build();
+    return new NetClientBuilder(vertx, options).closeFuture(closeFuture).build();
   }
 
   protected NetClient netClient(NetClientOptions options) {
@@ -83,7 +83,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
 
   @Override
   public void close(Promise<Void> promise) {
-    clientCloseFuture.close(promise);
+    closeFuture.close(promise);
   }
 
   private void doConnectWithRetry(C options, PromiseInternal<Connection> promise, int remainingAttempts) {

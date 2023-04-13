@@ -18,11 +18,18 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public abstract class ConnectionTestBase {
   protected Vertx vertx;
@@ -46,8 +53,26 @@ public abstract class ConnectionTestBase {
 
   @Test
   public void testConnect(TestContext ctx) {
-    connect(ctx.asyncAssertSuccess(conn -> {
-    }));
+    connect(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testConnectNoLeak(TestContext ctx) throws Exception {
+    Set<ConnectionFactory<?>> factories = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    Async async = ctx.async(100);
+    for (int i = 0; i < 100; i++) {
+      connect(ctx.asyncAssertSuccess(conn -> {
+        SqlConnectionBase<?> base = (SqlConnectionBase<?>) conn;
+        factories.add(base.factory());
+        conn.close().onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
+      }));
+    }
+    async.awaitSuccess();
+    for (int c = 0; c < 5; c++) {
+      System.gc();
+      SECONDS.sleep(1);
+    }
+    ctx.assertEquals(0, factories.size());
   }
 
   @Test

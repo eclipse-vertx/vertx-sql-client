@@ -21,6 +21,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
@@ -46,8 +47,11 @@ import java.util.function.Predicate;
  */
 public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions> {
 
-  public PgConnectionFactory(VertxInternal context) {
-    super(context);
+  private final boolean oneShot;
+
+  public PgConnectionFactory(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
+    super(vertx, closeFuture);
+    this.oneShot = oneShot;
   }
 
   private void checkSslMode(PgConnectOptions options) {
@@ -155,9 +159,13 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     PromiseInternal<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn);
+        CloseFuture connectionCloseFuture = new CloseFuture();
+        PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn, connectionCloseFuture);
         conn.init(pgConn);
-        return (SqlConnection)pgConn;
+        if (oneShot) {
+          connectionCloseFuture.add(closeFuture);
+        }
+        return (SqlConnection) pgConn;
       })
       .onComplete(promise);
     return promise.future();

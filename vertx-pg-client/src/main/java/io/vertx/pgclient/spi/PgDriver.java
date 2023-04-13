@@ -65,7 +65,7 @@ public class PgDriver implements Driver<PgConnectOptions> {
 
   @Override
   public ConnectionFactory<PgConnectOptions> createConnectionFactory(Vertx vertx) {
-    return new PgConnectionFactory((VertxInternal) vertx);
+    return new PgConnectionFactory((VertxInternal) vertx, new CloseFuture(), false);
   }
 
   @Override
@@ -76,6 +76,6 @@ public class PgDriver implements Driver<PgConnectOptions> {
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<PgConnectOptions> factory, Connection conn) {
-    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn);
+    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn, new CloseFuture());
   }
 }

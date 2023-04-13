@@ -71,7 +71,7 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
 
   @Override
   public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx);
+    return new MSSQLConnectionFactory((VertxInternal) vertx, new CloseFuture(), false);
   }
 
   @Override
@@ -93,6 +93,6 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection conn) {
-    return new MSSQLConnectionImpl(context, factory, conn);
+    return new MSSQLConnectionImpl(context, factory, conn, new CloseFuture());
   }
 }

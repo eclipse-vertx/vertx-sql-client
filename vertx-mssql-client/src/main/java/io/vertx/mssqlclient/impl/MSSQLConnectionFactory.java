@@ -14,6 +14,7 @@ package io.vertx.mssqlclient.impl;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
@@ -30,14 +31,16 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOptions> {
 
-  public MSSQLConnectionFactory(VertxInternal vertx) {
-    super(vertx);
+  private final boolean oneShot;
+
+  public MSSQLConnectionFactory(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
+    super(vertx, closeFuture);
+    this.oneShot = oneShot;
   }
 
   @Override
@@ -107,9 +110,13 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
     Promise<SqlConnection> promise = ctx.promise();
     connect(asEventLoopContext(ctx), options)
       .map(conn -> {
-        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn);
+        CloseFuture connectionCloseFuture = new CloseFuture();
+        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn, connectionCloseFuture);
         conn.init(msConn);
-        return (SqlConnection)msConn;
+        if (oneShot) {
+          connectionCloseFuture.add(closeFuture);
+        }
+        return (SqlConnection) msConn;
       })
       .onComplete(promise);
     return promise.future();

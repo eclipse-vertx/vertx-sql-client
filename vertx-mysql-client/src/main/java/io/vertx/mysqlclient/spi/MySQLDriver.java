@@ -80,11 +80,11 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
 
   @Override
   public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx) {
-    return new MySQLConnectionFactory((VertxInternal) vertx);
+    return new MySQLConnectionFactory((VertxInternal) vertx, new CloseFuture(), false);
   }
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MySQLConnectOptions> factory, Connection conn) {
-    return new MySQLConnectionImpl(context, factory, conn);
+    return new MySQLConnectionImpl(context, factory, conn, new CloseFuture());
   }
 }

@@ -13,6 +13,7 @@ package io.vertx.oracleclient.impl;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -33,15 +34,19 @@ import static io.vertx.oracleclient.impl.OracleDatabaseHelper.createDataSource;
 
 public class OracleConnectionFactory implements ConnectionFactory<OracleConnectOptions> {
 
+  private final CloseFuture closeFuture;
+  private final boolean oneShot;
   private final Map<JsonObject, OracleDataSource> datasources;
 
-  public OracleConnectionFactory(VertxInternal vertx) {
+  public OracleConnectionFactory(CloseFuture closeFuture, boolean oneShot) {
+    this.closeFuture = closeFuture;
+    this.oneShot = oneShot;
     this.datasources = new HashMap<>();
   }
 
   @Override
   public void close(Promise<Void> promise) {
-    promise.complete();
+    closeFuture.close(promise);
   }
 
   private OracleDataSource getDatasource(SqlConnectOptions options) {
@@ -67,8 +72,12 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
       OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, options, orac, metadata);
-      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn);
+      CloseFuture connectionCloseFuture = new CloseFuture();
+      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn, connectionCloseFuture);
       conn.init(msConn);
+      if (oneShot) {
+        connectionCloseFuture.add(closeFuture);
+      }
       return msConn;
     });
   }

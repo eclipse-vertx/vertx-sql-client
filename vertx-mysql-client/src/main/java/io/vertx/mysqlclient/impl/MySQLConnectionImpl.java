@@ -13,6 +13,7 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
@@ -30,18 +31,19 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
     if (options.isUsingDomainSocket() && !ctx.owner().isNativeTransportEnabled()) {
       return ctx.failedFuture("Native transport is not available");
     }
+    CloseFuture closeFuture = new CloseFuture();
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(ctx.owner());
+      client = new MySQLConnectionFactory(ctx.owner(), closeFuture, true);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    ctx.addCloseHook(client);
-    return (Future)client.connect(ctx, options);
+    ctx.addCloseHook(closeFuture);
+    return (Future) client.connect(ctx, options);
   }
 
-  public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    super(context, factory, conn, MySQLDriver.INSTANCE);
+  public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, CloseFuture closeFuture) {
+    super(context, factory, conn, MySQLDriver.INSTANCE, closeFuture);
   }
 
   @Override

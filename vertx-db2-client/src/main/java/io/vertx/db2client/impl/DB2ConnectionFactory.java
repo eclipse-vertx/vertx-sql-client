@@ -18,6 +18,7 @@ package io.vertx.db2client.impl;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
@@ -36,8 +37,11 @@ import java.util.function.Predicate;
 
 public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOptions> {
 
-  public DB2ConnectionFactory(VertxInternal vertx) {
-    super(vertx);
+  private final boolean oneShot;
+
+  public DB2ConnectionFactory(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
+    super(vertx, closeFuture);
+    this.oneShot = oneShot;
   }
 
   @Override
@@ -68,9 +72,13 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
     Promise<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn);
+        CloseFuture connectionCloseFuture = new CloseFuture();
+        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn, connectionCloseFuture);
         conn.init(db2Connection);
-        return (SqlConnection)db2Connection;
+        if (oneShot) {
+          connectionCloseFuture.add(closeFuture);
+        }
+        return (SqlConnection) db2Connection;
       }).onComplete(promise);
     return promise.future();
   }

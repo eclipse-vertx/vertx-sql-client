@@ -17,6 +17,11 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -24,8 +29,9 @@ import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.impl.command.*;
-import io.vertx.core.*;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -43,12 +49,15 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   protected final ContextInternal context;
   protected final ConnectionFactory factory;
   protected final Connection conn;
+  private final CloseFuture closeFuture;
 
-  public SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, Driver driver) {
+  public SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, Driver driver, CloseFuture closeFuture) {
     super(driver);
     this.context = context;
     this.factory = factory;
     this.conn = conn;
+    this.closeFuture = closeFuture;
+    this.closeFuture.add(this::doClose);
   }
 
   public ConnectionFactory factory() {
@@ -188,11 +197,11 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   @Override
   public Future<Void> close() {
     Promise<Void> promise = promise();
-    close(promise);
+    closeFuture.close(promise);
     return promise.future();
   }
 
-  private void close(Promise<Void> promise) {
+  private void doClose(Promise<Void> promise) {
     context.execute(promise, p -> {
       if (tx != null) {
         tx.rollback(ar -> conn.close(this, p));

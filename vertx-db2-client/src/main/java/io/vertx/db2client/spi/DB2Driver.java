@@ -80,11 +80,11 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
 
   @Override
   public ConnectionFactory<DB2ConnectOptions> createConnectionFactory(Vertx vertx) {
-    return new DB2ConnectionFactory((VertxInternal) vertx);
+    return new DB2ConnectionFactory((VertxInternal) vertx, new CloseFuture(), false);
   }
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<DB2ConnectOptions> factory, Connection conn) {
-    return new DB2ConnectionImpl(context, factory, conn);
+    return new DB2ConnectionImpl(context, factory, conn, new CloseFuture());
   }
 }

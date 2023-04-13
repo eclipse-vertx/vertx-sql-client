@@ -15,10 +15,13 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.net.*;
+import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.TrustOptions;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
@@ -37,8 +40,11 @@ import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 
 public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOptions> {
 
-  public MySQLConnectionFactory(VertxInternal vertx) {
-    super(vertx);
+  private final boolean oneShot;
+
+  public MySQLConnectionFactory(VertxInternal vertx, CloseFuture closeFuture, boolean oneShot) {
+    super(vertx, closeFuture);
+    this.oneShot = oneShot;
   }
 
   @Override
@@ -137,9 +143,13 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
     Promise<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn);
+        CloseFuture connectionCloseFuture = new CloseFuture();
+        MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn, connectionCloseFuture);
         conn.init(mySQLConnection);
-        return (SqlConnection)mySQLConnection;
+        if (oneShot) {
+          connectionCloseFuture.add(closeFuture);
+        }
+        return (SqlConnection) mySQLConnection;
       })
       .onComplete(promise);
     return promise.future();

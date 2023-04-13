@@ -14,6 +14,7 @@ package io.vertx.mssqlclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
@@ -28,15 +29,16 @@ public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> 
 
   private volatile Handler<MSSQLInfo> infoHandler;
 
-  public MSSQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    super(context, factory, conn, MSSQLDriver.INSTANCE);
+  public MSSQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, CloseFuture closeFuture) {
+    super(context, factory, conn, MSSQLDriver.INSTANCE, closeFuture);
   }
 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
-    MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner());
-    ctx.addCloseHook(client);
-    return (Future)client.connect(ctx, options);
+    CloseFuture closeFuture = new CloseFuture();
+    MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner(), closeFuture, true);
+    ctx.addCloseHook(closeFuture);
+    return (Future) client.connect(ctx, options);
   }
 
   @Override

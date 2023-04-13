@@ -16,24 +16,20 @@
  */
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.*;
+import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotice;
 import io.vertx.pgclient.PgNotification;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
+import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.pgclient.impl.codec.TxFailedEvent;
 
 import java.util.function.Supplier;
 
@@ -41,20 +37,21 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
 
   public static Future<PgConnection> connect(ContextInternal context, Supplier<PgConnectOptions> options) {
     PgConnectionFactory client;
+    CloseFuture closeFuture = new CloseFuture();
     try {
-      client = new PgConnectionFactory(context.owner());
+      client = new PgConnectionFactory(context.owner(), closeFuture, true);
     } catch (Exception e) {
       return context.failedFuture(e);
     }
-    context.addCloseHook(client);
+    context.addCloseHook(closeFuture);
     return (Future) client.connect(context, options.get());
   }
 
   private volatile Handler<PgNotification> notificationHandler;
   private volatile Handler<PgNotice> noticeHandler;
 
-  public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn) {
-    super(context, factory, conn, PgDriver.INSTANCE);
+  public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, CloseFuture closeFuture) {
+    super(context, factory, conn, PgDriver.INSTANCE, closeFuture);
   }
 
   @Override

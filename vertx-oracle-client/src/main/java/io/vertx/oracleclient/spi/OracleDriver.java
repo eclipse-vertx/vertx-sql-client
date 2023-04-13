@@ -77,11 +77,11 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
 
   @Override
   public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx) {
-    return new OracleConnectionFactory((VertxInternal) vertx);
+    return new OracleConnectionFactory(new CloseFuture(), false);
   }
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<OracleConnectOptions> factory, Connection conn) {
-    return new OracleConnectionImpl(context, factory, conn);
+    return new OracleConnectionImpl(context, factory, conn, new CloseFuture());
   }
 }
