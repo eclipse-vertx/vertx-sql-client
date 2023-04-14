@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.pgclient.spi;
 
 import io.vertx.core.Future;
@@ -18,9 +29,7 @@ import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class PgDriver implements Driver {
 
@@ -63,12 +72,12 @@ public class PgDriver implements Driver {
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new PgConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database));
+    return new PgConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database), false);
   }
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
-    return new PgConnectionFactory((VertxInternal) vertx, database);
+    return new PgConnectionFactory((VertxInternal) vertx, database, false);
   }
 
   @Override
@@ -79,6 +88,6 @@ public class PgDriver implements Driver {
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn);
+    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn, false);
   }
 }

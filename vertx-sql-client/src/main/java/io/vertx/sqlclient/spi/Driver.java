@@ -179,6 +179,6 @@ public interface Driver {
   }
 
   default SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    return new SqlConnectionBase<>(context, factory, conn, this);
+    return new SqlConnectionBase<>(context, factory, conn, this, false);
   }
 }

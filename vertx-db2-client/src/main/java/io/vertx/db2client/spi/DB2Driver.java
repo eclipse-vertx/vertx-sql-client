@@ -76,16 +76,16 @@ public class DB2Driver implements Driver {
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new DB2ConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database));
+    return new DB2ConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database), false);
   }
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
-    return new DB2ConnectionFactory((VertxInternal) vertx, database);
+    return new DB2ConnectionFactory((VertxInternal) vertx, database, false);
   }
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    return new DB2ConnectionImpl(context, factory, conn);
+    return new DB2ConnectionImpl(context, factory, conn, false);
   }
 }

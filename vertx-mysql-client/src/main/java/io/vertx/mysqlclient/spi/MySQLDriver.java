@@ -76,16 +76,16 @@ public class MySQLDriver implements Driver {
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new MySQLConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database));
+    return new MySQLConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database), false);
   }
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
-    return new MySQLConnectionFactory((VertxInternal) vertx, database);
+    return new MySQLConnectionFactory((VertxInternal) vertx, database, false);
   }
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    return new MySQLConnectionImpl(context, factory, conn);
+    return new MySQLConnectionImpl(context, factory, conn, false);
   }
 }

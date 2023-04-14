@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -24,14 +24,13 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 
 public class OracleConnectionImpl extends SqlConnectionBase<OracleConnectionImpl> implements OracleConnection {
 
-  public OracleConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    super(context, factory, conn, OracleDriver.INSTANCE);
+  public OracleConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, boolean oneShot) {
+    super(context, factory, conn, OracleDriver.INSTANCE, oneShot);
   }
 
   public static Future<OracleConnection> connect(Vertx vertx, OracleConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
-    OracleConnectionFactory client = new OracleConnectionFactory(ctx.owner(), SingletonSupplier.wrap(options));
-    ctx.addCloseHook(client);
+    OracleConnectionFactory client = new OracleConnectionFactory(SingletonSupplier.wrap(options), true);
     return (Future) client.connect(ctx);
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -35,16 +35,15 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
     }
     MySQLConnectionFactory client;
     try {
-      client = new MySQLConnectionFactory(ctx.owner(), SingletonSupplier.wrap(options));
+      client = new MySQLConnectionFactory(ctx.owner(), SingletonSupplier.wrap(options), true);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    ctx.addCloseHook(client);
-    return (Future)client.connect(ctx);
+    return (Future) client.connect(ctx);
   }
 
-  public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    super(context, factory, conn, MySQLDriver.INSTANCE);
+  public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, boolean oneShot) {
+    super(context, factory, conn, MySQLDriver.INSTANCE, oneShot);
   }
 
   @Override

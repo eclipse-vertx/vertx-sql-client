@@ -48,8 +48,8 @@ import java.util.function.Supplier;
  */
 public class PgConnectionFactory extends ConnectionFactoryBase {
 
-  public PgConnectionFactory(VertxInternal context, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
-    super(context, options);
+  public PgConnectionFactory(VertxInternal context, Supplier<? extends Future<? extends SqlConnectOptions>> options, boolean oneShot) {
+    super(context, options, oneShot);
   }
 
   private void checkSslMode(PgConnectOptions options) {
@@ -158,7 +158,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     PromiseInternal<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn);
+        PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn, oneShot);
         conn.init(pgConn);
         return (SqlConnection)pgConn;
       })

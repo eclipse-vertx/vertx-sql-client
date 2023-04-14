@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -37,8 +37,8 @@ import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase {
 
-  public MSSQLConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
-    super(vertx, options);
+  public MSSQLConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options, boolean oneShot) {
+    super(vertx, options, oneShot);
   }
 
   @Override
@@ -108,7 +108,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     Promise<SqlConnection> promise = ctx.promise();
     connect(asEventLoopContext(ctx), options)
       .map(conn -> {
-        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn);
+        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn, oneShot);
         conn.init(msConn);
         return (SqlConnection)msConn;
       })

@@ -73,16 +73,16 @@ public class OracleDriver implements Driver {
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new OracleConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database));
+    return new OracleConnectionFactory(SingletonSupplier.wrap(database), false);
   }
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
-    return new OracleConnectionFactory((VertxInternal) vertx, database);
+    return new OracleConnectionFactory(database, false);
   }
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    return new OracleConnectionImpl(context, factory, conn);
+    return new OracleConnectionImpl(context, factory, conn, false);
   }
 }

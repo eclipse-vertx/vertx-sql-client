@@ -36,9 +36,11 @@ public class OracleConnectionFactory implements ConnectionFactory {
 
   private final Supplier<? extends Future<? extends SqlConnectOptions>> options;
   private final Map<JsonObject, OracleDataSource> datasources;
+  private final boolean oneShot;
 
-  public OracleConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
+  public OracleConnectionFactory(Supplier<? extends Future<? extends SqlConnectOptions>> options, boolean oneShot) {
     this.options = options;
+    this.oneShot = oneShot;
     this.datasources = new HashMap<>();
   }
 
@@ -75,7 +77,7 @@ public class OracleConnectionFactory implements ConnectionFactory {
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
       OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, OracleConnectOptions.wrap(options), orac, metadata);
-      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn);
+      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn, oneShot);
       conn.init(msConn);
       return msConn;
     });

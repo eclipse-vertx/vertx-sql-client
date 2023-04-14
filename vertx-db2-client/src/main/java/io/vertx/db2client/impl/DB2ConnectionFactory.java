@@ -38,8 +38,8 @@ import java.util.function.Supplier;
 
 public class DB2ConnectionFactory extends ConnectionFactoryBase {
 
-  public DB2ConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
-    super(vertx, options);
+  public DB2ConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options, boolean oneShot) {
+    super(vertx, options, oneShot);
   }
 
   @Override
@@ -71,7 +71,7 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase {
     Promise<SqlConnection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
       .map(conn -> {
-        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn);
+        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn, oneShot);
         conn.init(db2Connection);
         return (SqlConnection)db2Connection;
       }).onComplete(promise);

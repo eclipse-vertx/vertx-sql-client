@@ -78,12 +78,12 @@ public class MSSQLDriver implements Driver {
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, SqlConnectOptions database) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database));
+    return new MSSQLConnectionFactory((VertxInternal) vertx, SingletonSupplier.wrap(database), false);
   }
 
   @Override
   public ConnectionFactory createConnectionFactory(Vertx vertx, Supplier<? extends Future<? extends SqlConnectOptions>> database) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx, database);
+    return new MSSQLConnectionFactory((VertxInternal) vertx, database, false);
   }
 
   @Override
@@ -94,6 +94,6 @@ public class MSSQLDriver implements Driver {
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    return new MSSQLConnectionImpl(context, factory, conn);
+    return new MSSQLConnectionImpl(context, factory, conn, false);
   }
 }

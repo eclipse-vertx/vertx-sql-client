@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -40,13 +40,15 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   protected final VertxInternal vertx;
   private final Map<JsonObject, NetClient> clients;
   protected final Supplier<? extends Future<? extends SqlConnectOptions>> options;
+  protected final boolean oneShot;
 
   // close hook
   protected final CloseFuture clientCloseFuture = new CloseFuture();
 
-  protected ConnectionFactoryBase(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
+  protected ConnectionFactoryBase(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options, boolean oneShot) {
     this.vertx = vertx;
     this.options = options;
+    this.oneShot = oneShot;
     this.clients = new HashMap<>();
   }
 

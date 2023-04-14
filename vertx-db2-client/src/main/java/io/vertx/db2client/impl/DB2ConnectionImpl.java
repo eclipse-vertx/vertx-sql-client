@@ -35,16 +35,15 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     DB2ConnectionFactory client;
     try {
-      client = new DB2ConnectionFactory(ctx.owner(), SingletonSupplier.wrap(options));
+      client = new DB2ConnectionFactory(ctx.owner(), SingletonSupplier.wrap(options), true);
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    ctx.addCloseHook(client);
     return (Future) client.connect(ctx);
   }
 
-  public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
-    super(context, factory, conn, DB2Driver.INSTANCE);
+  public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, boolean oneShot) {
+    super(context, factory, conn, DB2Driver.INSTANCE, oneShot);
   }
 
   @Override
