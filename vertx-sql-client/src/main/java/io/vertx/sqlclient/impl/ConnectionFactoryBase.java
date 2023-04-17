@@ -10,23 +10,24 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
-import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.impl.*;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.impl.NetClientBuilder;
+import io.vertx.core.net.impl.NetClientInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * An base connection factory for creating database connections
@@ -39,16 +40,29 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   private final Map<JsonObject, NetClient> clients;
 
   // close hook
-  protected final CloseFuture clientCloseFuture = new CloseFuture();
+  protected final CloseSequence clientCloseFuture = new CloseSequence(this::doClose);
 
   protected ConnectionFactoryBase(VertxInternal vertx) {
     this.vertx = vertx;
     this.clients = new HashMap<>();
   }
 
+  private void doClose(Promise<Void> p) {
+    List<Future> futures = clients.values().stream().map(client -> client.close()).collect(Collectors.toList());
+
+    CompositeFuture join = CompositeFuture.join(futures);
+
+    join.onComplete(ar -> p.complete());
+  }
+
   private NetClient createNetClient(NetClientOptions options) {
     options.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
-    return new NetClientBuilder(vertx, options).closeFuture(clientCloseFuture).build();
+
+    NetClientInternal netClient = new NetClientBuilder(vertx, options).build();
+
+
+    // return new NetClientBuilder(vertx, options).closeFuture(clientCloseFuture).build();
+    return netClient;
   }
 
   protected NetClient netClient(NetClientOptions options) {
