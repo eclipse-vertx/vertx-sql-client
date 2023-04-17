@@ -18,7 +18,6 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.impl.Arguments;
 import io.vertx.core.json.JsonObject;
 
@@ -49,9 +48,19 @@ public class PoolOptions {
   public static final int DEFAULT_IDLE_TIMEOUT = 0;
 
   /**
+   * Default maximum pooled connection lifetime = 0 (no maximum)
+   */
+  public static final int DEFAULT_MAXIMUM_LIFETIME = 0;
+
+  /**
    * Default connection idle time unit in the pool = seconds
    */
   public static final TimeUnit DEFAULT_IDLE_TIMEOUT_TIME_UNIT = TimeUnit.SECONDS;
+
+  /**
+   * Default maximum pooled connection lifetime unit = seconds
+   */
+  public static final TimeUnit DEFAULT_MAXIMUM_LIFETIME_TIME_UNIT = TimeUnit.SECONDS;
 
   /**
    * Default pool cleaner period = 1000 ms (1 second)
@@ -87,6 +96,8 @@ public class PoolOptions {
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
   private TimeUnit idleTimeoutUnit = DEFAULT_IDLE_TIMEOUT_TIME_UNIT;
+  private int maxLifetime = DEFAULT_MAXIMUM_LIFETIME;
+  private TimeUnit maxLifetimeUnit = DEFAULT_MAXIMUM_LIFETIME_TIME_UNIT;
   private int poolCleanerPeriod = DEFAULT_POOL_CLEANER_PERIOD;
   private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
   private TimeUnit connectionTimeoutUnit = DEFAULT_CONNECTION_TIMEOUT_TIME_UNIT;
@@ -177,13 +188,51 @@ public class PoolOptions {
   }
 
   /**
-   * Establish an idle timeout for pooled connections.
+   * Establish an idle timeout for pooled connections, a value of zero disables the idle timeout.
    *
-   * @param idleTimeout the pool connection idle time unitq
+   * @param idleTimeout the pool connection idle timeout
    * @return a reference to this, so the API can be used fluently
    */
   public PoolOptions setIdleTimeout(int idleTimeout) {
+    Arguments.require(idleTimeout >= 0, "idleTimeout must be >= 0");
     this.idleTimeout = idleTimeout;
+    return this;
+  }
+
+  /**
+   * @return the pooled connection max lifetime unit
+   */
+  public TimeUnit getMaxLifetimeUnit() {
+    return maxLifetimeUnit;
+  }
+
+  /**
+   * Establish a max lifetime unit for pooled connections.
+   *
+   * @param maxLifetimeUnit pooled connection max lifetime unit
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setMaxLifetimeUnit(TimeUnit maxLifetimeUnit) {
+    this.maxLifetimeUnit = maxLifetimeUnit;
+    return this;
+  }
+
+  /**
+   * @return pooled connection max lifetime
+   */
+  public int getMaxLifetime() {
+    return maxLifetime;
+  }
+
+  /**
+   * Establish a max lifetime for pooled connections, a value of zero disables the maximum lifetime.
+   *
+   * @param maxLifetime the pool connection max lifetime
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setMaxLifetime(int maxLifetime) {
+    Arguments.require(maxLifetime >= 0, "maxLifetime must be >= 0");
+    this.maxLifetime = maxLifetime;
     return this;
   }
 
