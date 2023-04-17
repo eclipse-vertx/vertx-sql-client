@@ -14,37 +14,37 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'PostgreSQL-9'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'PostgreSQL-10'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'PostgreSQL-11'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'MySQL-8.0'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'MySQL-5.6'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'MySQL-5.7'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'MariaDB-10.4'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'MSSQL-2017-latest'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'MSSQL-2019-latest'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'DB2-11.5'
           - os: ubuntu-latest
-            jdk: 8
+            jdk: 11
             profile: 'SQL-templates'
           - os: ubuntu-latest
             jdk: 17
@@ -76,5 +76,5 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       branch: ${{ github.event.pull_request.head.sha || github.ref_name }}
-      jdk: 8
+      jdk: 11
     secrets: inherit
