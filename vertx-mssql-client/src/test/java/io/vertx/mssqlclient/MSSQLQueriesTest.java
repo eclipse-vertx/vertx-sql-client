@@ -11,6 +11,8 @@
 
 package io.vertx.mssqlclient;
 
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -30,8 +32,10 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -176,6 +180,27 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
           ctx.assertEquals(2, row.size());
           rows.add(row);
         });
+    }));
+  }
+
+  @Test
+  public void testQuerySequences(TestContext ctx) {
+    Future[] futures = Stream.of("tinyint", "smallint", "int", "bigint")
+      .flatMap(type -> Stream.of(
+        String.format("DROP SEQUENCE IF EXISTS seq_%s", type),
+        String.format("CREATE SEQUENCE seq_%s AS %s", type, type)
+      ))
+      .map(sql -> connection.query(sql).execute())
+      .toArray(Future[]::new);
+    CompositeFuture.all(Arrays.asList(futures)).onComplete(ctx.asyncAssertSuccess(cf -> {
+      connection
+        .query("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_NAME LIKE 'seq_%'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rows -> {
+          for (Row row : rows) {
+            ctx.assertEquals(row.getString("SEQUENCE_NAME"), "seq_" + row.getString("DECLARED_DATA_TYPE"));
+          }
+        }));
     }));
   }
 }
