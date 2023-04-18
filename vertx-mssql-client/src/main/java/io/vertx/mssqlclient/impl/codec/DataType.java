@@ -968,7 +968,30 @@ public enum DataType {
       return result;
     }
   },
-  SSVARIANT(0x62);
+  SSVARIANT(0x62) {
+    @Override
+    public TypeInfo decodeTypeInfo(ByteBuf byteBuf) {
+      byteBuf.skipBytes(4);
+      return new TypeInfo().maxLength(8009);
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, TypeInfo typeInfo) {
+      int length = byteBuf.readIntLE();
+      if (length == 0) return null;
+      DataType actualType = DataType.forId(byteBuf.readUnsignedByte());
+      switch (actualType) {
+        case INT1:
+        case INT2:
+        case INT4:
+        case INT8:
+          byteBuf.skipBytes(1); // prop bytes
+          return actualType.decodeValue(byteBuf, null);
+        default:
+          throw new UnsupportedOperationException("Unsupported variant type: " + actualType);
+      }
+    }
+  };
 
   public final int id;
 
