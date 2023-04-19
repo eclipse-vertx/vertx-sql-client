@@ -5,6 +5,12 @@ import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
 public class PgConnectionCopyTest extends PgConnectionTestBase {
+  public PgConnectionCopyTest() {
+    connector = (handler) -> PgConnection.connect(vertx, options).onComplete(ar -> {
+      handler.handle(ar.map(p -> p));
+    });
+  }
+
   @Test
   public void testCopyToRows(TestContext ctx) {
     Async async = ctx.async();

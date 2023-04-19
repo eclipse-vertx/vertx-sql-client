@@ -110,7 +110,7 @@ public interface PgConnection extends SqlConnection {
    * @param from byte stream data will be fetched from
    * @return result set with single field {@code rowsWritten}
    */
-  Query<RowSet<Row>> copyFrom(String sql, Future<Buffer> from);
+  Query<RowSet<Row>> copyFrom(String sql, Buffer from);
 
   /**
    * Exports data from a database with decoding.
