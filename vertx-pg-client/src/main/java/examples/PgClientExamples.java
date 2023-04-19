@@ -733,6 +733,16 @@ public class PgClientExamples {
       });
   }
 
+  public void copyFromStdinReturning(Vertx vertx, PgConnection client) {
+    client.copyFrom(
+      "COPY my_table FROM STDIN (FORMAT csv, HEADER)",
+      vertx.fileSystem().readFile("path/to/file")
+    ).execute().onSuccess(res -> {
+      Long rowsWritten = res.iterator().next().getLong("rowsWritten");
+      System.out.println("rows affected: " + rowsWritten);
+    });
+  }
+
   public void pgBouncer(PgConnectOptions connectOptions) {
     connectOptions.setUseLayer7Proxy(true);
   }

@@ -19,6 +19,7 @@ package io.vertx.pgclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
@@ -27,6 +28,9 @@ import io.vertx.pgclient.PgNotification;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.pgclient.spi.PgDriver;
+import io.vertx.sqlclient.Query;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -105,6 +109,21 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   public PgConnection noticeHandler(Handler<PgNotice> handler) {
     noticeHandler = handler;
     return this;
+  }
+
+  @Override
+  public Query<RowSet<Row>> copyFrom(String sql, Future<Buffer> from) {
+    return null;
+  }
+
+  @Override
+  public Query<RowSet<Row>> copyTo(String sql) {
+    return null;
+  }
+
+  @Override
+  public Future<Void> copyTo(String sql, Buffer to) {
+    return Future.succeededFuture();
   }
 
   @Override
