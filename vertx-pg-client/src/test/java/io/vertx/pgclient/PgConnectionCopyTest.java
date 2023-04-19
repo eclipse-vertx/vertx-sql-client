@@ -18,7 +18,7 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
       deleteFromTestTable(ctx, conn, () -> {
         insertIntoTestTable(ctx, conn, 10, () -> {
           PgConnection pgConn = (PgConnection) conn;
-          pgConn.copyTo("COPY my_table TO STDOUT (FORMAT binary)")
+          pgConn.copyToRows("COPY my_table TO STDOUT (FORMAT binary)")
             .execute()
             .onComplete(ctx.asyncAssertSuccess(result -> {
                 for (int i = 0; i < 2; i++) {

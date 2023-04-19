@@ -19,8 +19,6 @@ package examples;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
@@ -738,7 +736,7 @@ public class PgClientExamples {
   public void importDataToDb(Vertx vertx, PgConnection client) {
     vertx.fileSystem().readFile("path/to/file")
       .flatMap(bufferAsyncResult -> {
-          return client.copyFrom(
+          return client.copyFromBytes(
             "COPY my_table FROM STDIN (FORMAT csv, HEADER)",
             bufferAsyncResult
           ).execute();
@@ -749,12 +747,10 @@ public class PgClientExamples {
   }
 
   public void exportDataFromDb(Vertx vertx, PgConnection client) {
-    Buffer buffer = new BufferImpl();
     String path = "path/to/file";
-    client.copyTo("COPY my_table TO STDOUT (FORMAT csv, HEADER)", buffer)
-      .andThen(res -> {
-        vertx.fileSystem().writeFile("path/to/file.csv", buffer);
-      }).onSuccess(res -> System.out.println("Data exported to " + path));
+    client.copyToBytes("COPY my_table TO STDOUT (FORMAT csv, HEADER)").execute()
+      .flatMap(buffer -> vertx.fileSystem().writeFile("path/to/file.csv", buffer))
+      .onSuccess(res -> System.out.println("Data exported to " + path));
   }
 
   public void pgBouncer(PgConnectOptions connectOptions) {

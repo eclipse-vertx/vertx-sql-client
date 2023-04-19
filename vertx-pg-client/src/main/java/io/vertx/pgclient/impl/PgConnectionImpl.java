@@ -112,18 +112,18 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   }
 
   @Override
-  public Query<RowSet<Row>> copyFrom(String sql, Buffer from) {
+  public Query<RowSet<Row>> copyFromBytes(String sql, Buffer from) {
     return null;
   }
 
   @Override
-  public Query<RowSet<Row>> copyTo(String sql) {
+  public Query<RowSet<Row>> copyToRows(String sql) {
     return null;
   }
 
   @Override
-  public Future<Void> copyTo(String sql, Buffer to) {
-    return Future.succeededFuture();
+  public Query<Buffer> copyToBytes(String sql) {
+    return null;
   }
 
   @Override

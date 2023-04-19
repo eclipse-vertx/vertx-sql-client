@@ -110,7 +110,7 @@ public interface PgConnection extends SqlConnection {
    * @param from byte stream data will be fetched from
    * @return result set with single field {@code rowsWritten}
    */
-  Query<RowSet<Row>> copyFrom(String sql, Buffer from);
+  Query<RowSet<Row>> copyFromBytes(String sql, Buffer from);
 
   /**
    * Exports data from a database with decoding.
@@ -120,7 +120,7 @@ public interface PgConnection extends SqlConnection {
    * @param sql COPY command (example {@code COPY my_table TO STDOUT (FORMAT binary)})
    * @return decoded records
    */
-  Query<RowSet<Row>> copyTo(String sql);
+  Query<RowSet<Row>> copyToRows(String sql);
 
   /**
    * Exports data from a database as-is, without decoding.
@@ -128,10 +128,9 @@ public interface PgConnection extends SqlConnection {
    * <p>Use this method when exporting opaque bytes, e.g. to a CSV file.
    *
    * @param sql COPY command (example {@code COPY my_table TO STDOUT (FORMAT csv)})
-   * @param to bytes container data will be written to
-   * @return async result
+   * @return async result of bytes container data will be written to
    */
-  Future<Void> copyTo(String sql, Buffer to);
+  Query<Buffer> copyToBytes(String sql);
 
   /**
    * Send a request cancellation message to tell the server to cancel processing request in this connection.
