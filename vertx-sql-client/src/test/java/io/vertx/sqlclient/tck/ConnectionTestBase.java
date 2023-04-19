@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,18 +11,23 @@
 
 package io.vertx.sqlclient.tck;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.SqlConnectionBase;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 public abstract class ConnectionTestBase {
   protected Vertx vertx;
@@ -46,7 +51,73 @@ public abstract class ConnectionTestBase {
 
   @Test
   public void testConnect(TestContext ctx) {
-    connect(ctx.asyncAssertSuccess(conn -> {
+    connect(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testConnectNoLeak(TestContext ctx) throws Exception {
+    Set<SqlConnectionBase<?>> connections = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    Set<ConnectionFactory> factories = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    Async async = ctx.async(100);
+    for (int i = 0; i < 100; i++) {
+      connect(ctx.asyncAssertSuccess(conn -> {
+        SqlConnectionBase<?> base = (SqlConnectionBase<?>) conn;
+        connections.add(base);
+        factories.add(base.factory());
+        conn.close().onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
+      }));
+    }
+    async.awaitSuccess();
+    for (int c = 0; c < 5; c++) {
+      System.gc();
+      SECONDS.sleep(1);
+    }
+    ctx.assertEquals(0, connections.size());
+    ctx.assertEquals(0, factories.size());
+  }
+
+  @Test
+  public void testConnectNoLeakInVerticle(TestContext ctx) throws Exception {
+    Set<SqlConnectionBase<?>> connections = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    Set<ConnectionFactory> factories = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    Async async = ctx.async(100);
+    vertx.deployVerticle(new AbstractVerticle() {
+      @Override
+      public void start() throws Exception {
+        for (int i = 0; i < 100; i++) {
+          connect(ctx.asyncAssertSuccess(conn -> {
+            SqlConnectionBase<?> base = (SqlConnectionBase<?>) conn;
+            connections.add(base);
+            factories.add(base.factory());
+            conn.close().onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
+          }));
+        }
+      }
+    });
+    async.awaitSuccess();
+    for (int c = 0; c < 5; c++) {
+      System.gc();
+      SECONDS.sleep(1);
+    }
+    ctx.assertEquals(0, connections.size());
+    ctx.assertEquals(0, factories.size());
+  }
+
+  @Test
+  public void testCloseOnUndeploy(TestContext ctx) {
+    Async done = ctx.async();
+    vertx.deployVerticle(new AbstractVerticle() {
+      @Override
+      public void start(Promise<Void> startPromise) throws Exception {
+        connect(ctx.asyncAssertSuccess(conn -> {
+          conn.closeHandler(v -> {
+            done.complete();
+          });
+          startPromise.complete();
+        }));
+      }
+    }).onComplete(ctx.asyncAssertSuccess(id -> {
+      vertx.undeploy(id);
     }));
   }
 
@@ -119,7 +190,7 @@ public abstract class ConnectionTestBase {
     }));
     async.await();
   }
-  
+
   @Test
   public void testDatabaseMetaData(TestContext ctx) {
     connect(ctx.asyncAssertSuccess(conn -> {
@@ -132,7 +203,7 @@ public abstract class ConnectionTestBase {
       validateDatabaseMetaData(ctx, md);
     }));
   }
-  
+
   protected abstract void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md);
-  
+
 }
