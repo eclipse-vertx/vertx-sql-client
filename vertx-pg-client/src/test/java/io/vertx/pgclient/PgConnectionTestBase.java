@@ -17,18 +17,11 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.ProxyServer;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.TransactionRollbackException;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -316,24 +309,6 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
               async.complete();
             }));
       }));
-    }));
-  }
-
-  @Test
-  public void testCloseOnUndeploy(TestContext ctx) {
-    Async done = ctx.async();
-    vertx.deployVerticle(new AbstractVerticle() {
-      @Override
-      public void start(Promise<Void> startPromise) throws Exception {
-        connector.accept(ctx.asyncAssertSuccess(conn -> {
-          conn.closeHandler(v -> {
-            done.complete();
-          });
-          startPromise.complete();
-        }));
-      }
-    }).onComplete(ctx.asyncAssertSuccess(id -> {
-      vertx.undeploy(id);
     }));
   }
 

@@ -43,11 +43,7 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
     if (pool != null) {
       PgPool p = pool;
       pool = null;
-      try {
-        p.close();
-      } catch (IllegalStateException e) {
-        // Might be already closed because of testCloseOnUndeploy
-      }
+      p.close();
     }
     super.tearDown(ctx);
   }

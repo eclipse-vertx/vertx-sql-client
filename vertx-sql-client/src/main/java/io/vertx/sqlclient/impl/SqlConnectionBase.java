@@ -17,15 +17,18 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.impl.command.*;
-import io.vertx.core.*;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -35,10 +38,11 @@ import io.vertx.sqlclient.spi.Driver;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal {
+public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, Closeable {
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
+  private volatile boolean closeFactoryAfterUsage;
   protected TransactionImpl tx;
   protected final ContextInternal context;
   protected final ConnectionFactory factory;
@@ -192,13 +196,32 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
     return promise.future();
   }
 
-  private void close(Promise<Void> promise) {
+  @Override
+  public void close(Promise<Void> completion) {
+    doClose(completion);
+    if (closeFactoryAfterUsage) {
+      completion.future().onComplete(v -> factory.close(Promise.promise()));
+      context.removeCloseHook(this);
+    }
+  }
+
+  private void doClose(Promise<Void> promise) {
     context.execute(promise, p -> {
       if (tx != null) {
         tx.rollback(ar -> conn.close(this, p));
         tx = null;
       } else {
         conn.close(this, p);
+      }
+    });
+  }
+
+  protected static Future<SqlConnection> prepareForClose(ContextInternal ctx, Future<SqlConnection> future) {
+    return future.andThen(ar -> {
+      if (ar.succeeded()) {
+        SqlConnectionBase<?> base = (SqlConnectionBase<?>) ar.result();
+        base.closeFactoryAfterUsage = true;
+        ctx.addCloseHook(base);
       }
     });
   }
