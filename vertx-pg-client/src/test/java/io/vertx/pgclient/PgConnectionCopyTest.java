@@ -31,4 +31,35 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
       });
     }));
   }
+
+  /**
+   * Just a thingy to eavesdrop protocol interactions.
+   *
+   * tips:
+   * - frontend / backend protocol -> message flow -> binary
+   *   - start with CommandBase, SimpleQueryCommandCodecBase, builder.executeSimpleQuery, QueryExecutor, QueryResultBuilder
+   *   - PgDecoder
+   *   - startup message
+   *   - auth
+   *   - Simple Query
+   * - use wireshark - `tcp port 5432`
+   *   - add VM option - port - such that it's fixed
+   *
+   * TODO: drop this.
+   *
+   * @param ctx
+   */
+  @Test
+  public void testSimpleQuery(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result1 -> {
+          ctx.assertEquals(1, result1.size());
+          async.complete();
+        }));
+    }));
+  }
 }
