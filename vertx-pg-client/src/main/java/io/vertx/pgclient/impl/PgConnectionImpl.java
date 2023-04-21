@@ -30,18 +30,16 @@ import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 
-import java.util.function.Supplier;
-
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
-  public static Future<PgConnection> connect(ContextInternal context, Supplier<PgConnectOptions> options) {
+  public static Future<PgConnection> connect(ContextInternal context, PgConnectOptions options) {
     PgConnectionFactory client;
     try {
       client = new PgConnectionFactory(context.owner());
     } catch (Exception e) {
       return context.failedFuture(e);
     }
-    return prepareForClose(context, client.connect(context, options.get())).map(PgConnection::cast);
+    return prepareForClose(context, client.connect(context, options)).map(PgConnection::cast);
   }
 
   private volatile Handler<PgNotification> notificationHandler;

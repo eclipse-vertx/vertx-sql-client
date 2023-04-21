@@ -17,12 +17,15 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.codegen.annotations.Fluent;
+import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.PgConnectionImpl;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.*;
 
 /**
  * A connection to Postgres.
@@ -52,7 +55,7 @@ public interface PgConnection extends SqlConnection {
    * @return a future notified with the connection or the failure
    */
   static Future<PgConnection> connect(Vertx vertx, PgConnectOptions options) {
-    return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), () -> options);
+    return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options);
   }
 
   /**
