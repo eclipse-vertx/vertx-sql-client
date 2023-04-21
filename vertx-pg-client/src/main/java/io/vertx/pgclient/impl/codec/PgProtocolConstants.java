@@ -71,4 +71,9 @@ public class PgProtocolConstants {
   public static final byte MESSAGE_TYPE_FUNCTION_RESULT = 'V';
   public static final byte MESSAGE_TYPE_SSL_YES = 'S';
   public static final byte MESSAGE_TYPE_SSL_NO = 'N';
+
+  // COPY-related
+  public static final byte MESSAGE_TYPE_COPY_OUT_RESPONSE = 'H';
+  public static final byte MESSAGE_TYPE_COPY_DATA = 'd';
+  public static final byte MESSAGE_TYPE_COPY_COMPLETION = 'c';
 }

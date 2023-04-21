@@ -176,6 +176,20 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
         decodeNotificationResponse(ctx, in);
         break;
       }
+      // TODO: check if these handlers need to be at this level of loop
+      // TODO: check if COPY needs a separate loop
+      case PgProtocolConstants.MESSAGE_TYPE_COPY_OUT_RESPONSE: {
+        decodeCopyOutResponse(ctx, in);
+        break;
+      }
+      case PgProtocolConstants.MESSAGE_TYPE_COPY_DATA: {
+        decodeCopyData(ctx, in);
+        break;
+      }
+      case PgProtocolConstants.MESSAGE_TYPE_COPY_COMPLETION: {
+        decodeCopyCompletion(ctx, in);
+        break;
+      }
       default: {
         throw new UnsupportedOperationException();
       }
@@ -455,4 +469,10 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   private void decodeNotificationResponse(ChannelHandlerContext ctx, ByteBuf in) {
     ctx.fireChannelRead(new Notification(in.readInt(), Util.readCStringUTF8(in), Util.readCStringUTF8(in)));
   }
+
+  private void decodeCopyOutResponse(ChannelHandlerContext ctx, ByteBuf in) {}
+
+  private void decodeCopyData(ChannelHandlerContext ctx, ByteBuf in) {}
+
+  private void decodeCopyCompletion(ChannelHandlerContext ctx, ByteBuf in) {}
 }

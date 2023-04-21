@@ -54,10 +54,10 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("SELECT 1")
+        .query("COPY world TO STDOUT (FORMAT csv)")
         .execute()
         .onComplete(ctx.asyncAssertSuccess(result1 -> {
-          ctx.assertEquals(1, result1.size());
+          ctx.assertEquals(0, result1.size());
           async.complete();
         }));
     }));
