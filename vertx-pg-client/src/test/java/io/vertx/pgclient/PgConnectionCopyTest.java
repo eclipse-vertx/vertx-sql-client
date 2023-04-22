@@ -2,6 +2,7 @@ package io.vertx.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class PgConnectionCopyTest extends PgConnectionTestBase {
@@ -32,6 +33,24 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
     }));
   }
 
+  @Test
+  @Ignore("For now it just hangs forever")
+  public void testCopyToCsvBytes(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      deleteFromTestTable(ctx, conn, () -> {
+        insertIntoTestTable(ctx, conn, 10, () -> {
+          PgConnection pgConn = (PgConnection) conn;
+          pgConn.copyToBytes("COPY my_table TO STDOUT (FORMAT csv HEADER)")
+            .onComplete(ctx.asyncAssertSuccess(buffer -> {
+              buffer.getBytes();
+              async.complete();
+            }));
+        });
+      });
+    }));
+  }
+
   /**
    * Just a thingy to eavesdrop protocol interactions.
    *
@@ -54,9 +73,24 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       conn
-        .query("COPY world TO STDOUT (FORMAT csv)")
+        .query("select 1")
         .execute()
         .onComplete(ctx.asyncAssertSuccess(result1 -> {
+          ctx.assertEquals(1, result1.size());
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testMakeSureCopyOutProtocolIsDefined(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("copy fortune to stdout (format csv)")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result1 -> {
+          // nothing comes out
           ctx.assertEquals(0, result1.size());
           async.complete();
         }));

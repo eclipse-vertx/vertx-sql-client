@@ -21,6 +21,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotice;
@@ -31,10 +32,16 @@ import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.impl.QueryResultBuilder;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
+import io.vertx.sqlclient.impl.SqlResultImpl;
+import io.vertx.sqlclient.impl.command.CommandBase;
+
+import java.util.function.Function;
 
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
@@ -122,8 +129,14 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   }
 
   @Override
-  public Query<Buffer> copyToBytes(String sql) {
-    return null;
+  public Future<Buffer> copyToBytes(String sql) {
+    Function<Buffer, SqlResultImpl<Buffer>> factory = null;
+    PromiseInternal<SqlResult<Buffer>> promise = null;
+
+    QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler =
+      new QueryResultBuilder<>(factory, promise);
+    CopyOutCommand cmd = new CopyOutCommand(sql, resultHandler);
+    return this.schedule(context, cmd);
   }
 
   @Override
@@ -144,5 +157,15 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
       ((PgConnectionFactory) factory).cancelRequest(unwrap.connectOptions(), this.processId(), this.secretKey(), p);
     });
     return promise.future();
+  }
+
+  private class CopyOutCommand extends CommandBase<Buffer> {
+    private final String sql;
+    private final QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler;
+
+    CopyOutCommand(String sql, QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler) {
+      this.sql = sql;
+      this.resultHandler = resultHandler;
+    }
   }
 }
