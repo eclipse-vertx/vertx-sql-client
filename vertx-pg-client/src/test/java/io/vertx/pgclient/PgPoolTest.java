@@ -338,7 +338,7 @@ public class PgPoolTest extends PgPoolTestBase {
   public void testPoolIdleTimeout(TestContext ctx) {
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
-    int pooleCleanerPeriod = 100;
+    int poolCleanerPeriod = 100;
     int idleTimeout = 3000;
     Async latch = ctx.async();
     proxy.proxyHandler(conn -> {
@@ -347,8 +347,8 @@ public class PgPoolTest extends PgPoolTestBase {
       conn.clientCloseHandler(v -> {
         long lifetime = System.currentTimeMillis() - now;
         int delta = 500;
-        int lowerBound = idleTimeout - pooleCleanerPeriod - delta;
-        int upperBound = idleTimeout + pooleCleanerPeriod + delta;
+        int lowerBound = idleTimeout - poolCleanerPeriod - delta;
+        int upperBound = idleTimeout + poolCleanerPeriod + delta;
         ctx.assertTrue(lifetime >= lowerBound, "Was expecting connection to be closed in more than " + lowerBound + ": " + lifetime);
         ctx.assertTrue(lifetime <= upperBound, "Was expecting connection to be closed in less than " + upperBound + ": "+ lifetime);
         latch.complete();
@@ -362,9 +362,53 @@ public class PgPoolTest extends PgPoolTestBase {
     listenLatch.awaitSuccess(20_000);
 
     poolOptions
-      .setPoolCleanerPeriod(pooleCleanerPeriod)
+      .setPoolCleanerPeriod(poolCleanerPeriod)
+      .setMaxLifetime(0)
       .setIdleTimeout(idleTimeout)
       .setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
+    options.setPort(8080);
+    options.setHost("localhost");
+    PgPool pool = createPool(options, poolOptions);
+
+    // Create a connection that remains in the pool
+    pool
+      .getConnection()
+      .flatMap(SqlClient::close)
+      .onComplete(ctx.asyncAssertSuccess());
+  }
+
+  @Test
+  public void testPoolMaxLifetime(TestContext ctx) {
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
+    int poolCleanerPeriod = 100;
+    int maxLifetime = 3000;
+    Async latch = ctx.async();
+    proxy.proxyHandler(conn -> {
+      proxyConn.set(conn);
+      long now = System.currentTimeMillis();
+      conn.clientCloseHandler(v -> {
+        long lifetime = System.currentTimeMillis() - now;
+        int delta = 500;
+        int lowerBound = maxLifetime - poolCleanerPeriod - delta;
+        int upperBound = maxLifetime + poolCleanerPeriod + delta;
+        ctx.assertTrue(lifetime >= lowerBound, "Was expecting connection to be closed in more than " + lowerBound + ": " + lifetime);
+        ctx.assertTrue(lifetime <= upperBound, "Was expecting connection to be closed in less than " + upperBound + ": "+ lifetime);
+        latch.complete();
+      });
+      conn.connect();
+    });
+
+    // Start proxy
+    Async listenLatch = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(res -> listenLatch.complete()));
+    listenLatch.awaitSuccess(20_000);
+
+    poolOptions
+      .setPoolCleanerPeriod(poolCleanerPeriod)
+      .setIdleTimeout(0)
+      .setMaxLifetime(maxLifetime)
+      .setMaxLifetimeUnit(TimeUnit.MILLISECONDS);
     options.setPort(8080);
     options.setHost("localhost");
     PgPool pool = createPool(options, poolOptions);
@@ -416,9 +460,9 @@ public class PgPoolTest extends PgPoolTestBase {
   public void testNoConnectionLeaks(TestContext ctx) {
     Async killConnections = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      Collector<Row, ?, List<Integer>> collector = mapping(row -> row.getInteger(0), toList());
+      Collector<Row, ?, List<Boolean>> collector = mapping(row -> row.getBoolean(0), toList());
       String sql = "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE pid <> pg_backend_pid() AND datname = $1";
-      PreparedQuery<SqlResult<List<Integer>>> preparedQuery = conn.preparedQuery(sql).collecting(collector);
+      PreparedQuery<SqlResult<List<Boolean>>> preparedQuery = conn.preparedQuery(sql).collecting(collector);
       Tuple params = Tuple.of(options.getDatabase());
       preparedQuery.execute(params).compose(cf -> conn.close()).onComplete(ctx.asyncAssertSuccess(v -> killConnections.complete()));
     }));

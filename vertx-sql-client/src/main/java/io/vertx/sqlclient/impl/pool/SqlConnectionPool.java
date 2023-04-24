@@ -53,6 +53,7 @@ public class SqlConnectionPool {
   private final Function<Connection, Future<Void>> beforeRecycle;
   private final boolean pipelined;
   private final long idleTimeout;
+  private final long maxLifetime;
   private final int maxSize;
 
   public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
@@ -61,6 +62,7 @@ public class SqlConnectionPool {
                            Function<Connection, Future<Void>> beforeRecycle,
                            VertxInternal vertx,
                            long idleTimeout,
+                           long maxLifetime,
                            int maxSize,
                            boolean pipelined,
                            int maxWaitQueueSize,
@@ -75,6 +77,7 @@ public class SqlConnectionPool {
     this.vertx = vertx;
     this.pipelined = pipelined;
     this.idleTimeout = idleTimeout;
+    this.maxLifetime = maxLifetime;
     this.maxSize = maxSize;
     this.hook = hook;
     this.connectionProvider = connectionProvider;
@@ -144,9 +147,9 @@ public class SqlConnectionPool {
     return pool.size();
   }
 
-  public void checkExpired() {
+  public void evict() {
     long now = System.currentTimeMillis();
-    pool.evict(conn -> conn.expirationTimestamp < now, ar -> {
+    pool.evict(conn -> conn.shouldEvict(now), ar -> {
       if (ar.succeeded()) {
         List<PooledConnection> res = ar.result();
         for (PooledConnection conn : res) {
@@ -171,7 +174,7 @@ public class SqlConnectionPool {
         future = pooled.schedule(context, cmd);
       }
       return future.andThen(ar -> {
-        pooled.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
+        pooled.refresh();
         lease.recycle();
       });
     });
@@ -266,12 +269,15 @@ public class SqlConnectionPool {
     private Holder holder;
     private Handler<AsyncResult<ConnectResult<PooledConnection>>> poolResultHandler;
     private Lease<PooledConnection> lease;
-    public long expirationTimestamp;
+    public long idleEvictionTimestamp;
+    public long lifetimeEvictionTimestamp;
 
     PooledConnection(ConnectionFactory factory, Connection conn, PoolConnector.Listener listener) {
       this.factory = factory;
       this.conn = conn;
       this.listener = listener;
+      this.lifetimeEvictionTimestamp = maxLifetime > 0 ? System.currentTimeMillis() + maxLifetime : Long.MAX_VALUE;
+      refresh();
     }
 
     @Override
@@ -348,6 +354,10 @@ public class SqlConnectionPool {
       conn.close(this, promise);
     }
 
+    private void refresh() {
+      this.idleEvictionTimestamp = idleTimeout > 0 ? System.currentTimeMillis() + idleTimeout : Long.MAX_VALUE;
+    }
+
     @Override
     public void init(Holder holder) {
       if (this.holder != null) {
@@ -391,7 +401,7 @@ public class SqlConnectionPool {
     private void cleanup(Promise<Void> promise) {
       Lease<PooledConnection> l = this.lease;
       this.lease = null;
-      this.expirationTimestamp = System.currentTimeMillis() + idleTimeout;
+      refresh();
       l.recycle();
       promise.complete();
     }
@@ -437,5 +447,18 @@ public class SqlConnectionPool {
     public Connection unwrap() {
       return conn;
     }
+
+    private boolean hasIdleExpired(long now) {
+      return idleEvictionTimestamp < now;
+    }
+
+    private boolean hasLifetimeExpired(long now) {
+      return lifetimeEvictionTimestamp < now;
+    }
+
+    private boolean shouldEvict(long now) {
+      return hasIdleExpired(now) || hasLifetimeExpired(now);
+    }
+
   }
 }
