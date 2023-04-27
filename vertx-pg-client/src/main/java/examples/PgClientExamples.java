@@ -749,7 +749,7 @@ public class PgClientExamples {
   public void exportDataFromDb(Vertx vertx, PgConnection client) {
     String path = "path/to/file";
     client.copyToBytes("COPY my_table TO STDOUT (FORMAT csv, HEADER)")
-      .flatMap(buffer -> vertx.fileSystem().writeFile("path/to/file.csv", buffer))
+      .flatMap(result -> vertx.fileSystem().writeFile("path/to/file.csv", result.value()))
       .onSuccess(res -> System.out.println("Data exported to " + path));
   }
 

@@ -20,12 +20,14 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotice;
 import io.vertx.pgclient.PgNotification;
+import io.vertx.pgclient.impl.codec.CopyOutCommand;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.pgclient.spi.PgDriver;
@@ -35,13 +37,17 @@ import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.impl.QueryExecutor;
 import io.vertx.sqlclient.impl.QueryResultBuilder;
+import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.SqlResultImpl;
-import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 import java.util.function.Function;
+import java.util.stream.Collector;
 
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
@@ -129,14 +135,29 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   }
 
   @Override
-  public Future<Buffer> copyToBytes(String sql) {
-    Function<Buffer, SqlResultImpl<Buffer>> factory = null;
-    PromiseInternal<SqlResult<Buffer>> promise = null;
+  public Future<SqlResult<Buffer>> copyToBytes(String sql) {
+    Function<Buffer, SqlResultImpl<Buffer>> factory = SqlResultImpl::new;
+    PromiseInternal<SqlResult<Buffer>> promise = context.promise();
 
     QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler =
       new QueryResultBuilder<>(factory, promise);
-    CopyOutCommand cmd = new CopyOutCommand(sql, resultHandler);
-    return this.schedule(context, cmd);
+
+    Collector<Row, Buffer, Buffer> collector = Collector.of(
+      BufferImpl::new,
+      (v, row) -> {
+        System.out.println(row);
+      },
+      (v1, v2) -> null,
+      Function.identity()
+    );
+
+    SimpleQueryCommand<Buffer> cmd = new SimpleQueryCommand<>(
+      sql, true, false, collector, resultHandler);
+    // this.schedule(promise.context(), cmd);
+
+    QueryExecutor executor = new QueryExecutor(factory, collector);
+    executor.executeSimpleQuery(this, sql, false, false, promise);
+    return promise.future();
   }
 
   @Override
@@ -159,13 +180,4 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     return promise.future();
   }
 
-  private class CopyOutCommand extends CommandBase<Buffer> {
-    private final String sql;
-    private final QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler;
-
-    CopyOutCommand(String sql, QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler) {
-      this.sql = sql;
-      this.resultHandler = resultHandler;
-    }
-  }
 }

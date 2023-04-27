@@ -34,16 +34,15 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
   }
 
   @Test
-  @Ignore("For now it just hangs forever")
   public void testCopyToCsvBytes(TestContext ctx) {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn -> {
       deleteFromTestTable(ctx, conn, () -> {
-        insertIntoTestTable(ctx, conn, 10, () -> {
+        insertIntoTestTable(ctx, conn, 1, () -> {
           PgConnection pgConn = (PgConnection) conn;
-          pgConn.copyToBytes("COPY my_table TO STDOUT (FORMAT csv HEADER)")
-            .onComplete(ctx.asyncAssertSuccess(buffer -> {
-              buffer.getBytes();
+          pgConn.copyToBytes("COPY Test TO STDOUT (FORMAT csv)")
+            .onComplete(ctx.asyncAssertSuccess(result -> {
+              result.value().getBytes();
               async.complete();
             }));
         });

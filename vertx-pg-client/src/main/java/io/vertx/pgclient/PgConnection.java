@@ -29,6 +29,7 @@ import io.vertx.sqlclient.Query;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.SqlResult;
 
 import java.util.List;
 
@@ -130,7 +131,7 @@ public interface PgConnection extends SqlConnection {
    * @param sql COPY command (example {@code COPY my_table TO STDOUT (FORMAT csv)})
    * @return async result of bytes container data will be written to
    */
-  Future<Buffer> copyToBytes(String sql);
+  Future<SqlResult<Buffer>> copyToBytes(String sql);
 
   /**
    * Send a request cancellation message to tell the server to cancel processing request in this connection.
