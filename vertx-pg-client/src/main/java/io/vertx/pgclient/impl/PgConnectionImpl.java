@@ -19,6 +19,7 @@ package io.vertx.pgclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.netty.buffer.ByteBuf;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.impl.ContextInternal;
@@ -142,22 +143,8 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler =
       new QueryResultBuilder<>(factory, promise);
 
-    Collector<Row, Buffer, Buffer> collector = Collector.of(
-      BufferImpl::new,
-      (v, row) -> {
-        System.out.println(row);
-      },
-      (v1, v2) -> null,
-      Function.identity()
-    );
-
-    SimpleQueryCommand<Buffer> cmd = new SimpleQueryCommand<>(
-      sql, true, false, collector, resultHandler);
-    // this.schedule(promise.context(), cmd);
-
-    QueryExecutor executor = new QueryExecutor(factory, collector);
-    executor.executeSimpleQuery(this, sql, false, false, promise);
-    return promise.future();
+    CopyOutCommand cmd = new CopyOutCommand(sql, resultHandler);
+    return this.schedule(promise.context(), cmd);
   }
 
   @Override

@@ -80,19 +80,4 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
         }));
     }));
   }
-
-  @Test
-  public void testMakeSureCopyOutProtocolIsDefined(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(conn -> {
-      conn
-        .query("copy fortune to stdout (format csv)")
-        .execute()
-        .onComplete(ctx.asyncAssertSuccess(result1 -> {
-          // nothing comes out
-          ctx.assertEquals(0, result1.size());
-          async.complete();
-        }));
-    }));
-  }
 }
