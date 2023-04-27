@@ -3,6 +3,7 @@ package io.vertx.pgclient.impl.codec;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.impl.SqlResultImpl;
 
 class CopyOutCommandCodec extends PgCommandCodec<SqlResult<Buffer>, CopyOutCommand> {
   CopyOutDataDecoder decoder;
@@ -14,7 +15,7 @@ class CopyOutCommandCodec extends PgCommandCodec<SqlResult<Buffer>, CopyOutComma
 
   @Override
   public void handleCommandComplete(int updated) {
-    this.result = null;
+    this.result = new SqlResultImpl<Buffer>(Buffer.buffer("abc"));
     Buffer result;
     Throwable failure;
     int size;

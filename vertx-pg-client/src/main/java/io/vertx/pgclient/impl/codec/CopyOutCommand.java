@@ -7,7 +7,6 @@ import io.vertx.sqlclient.impl.QueryResultBuilder;
 import io.vertx.sqlclient.impl.SqlResultImpl;
 import io.vertx.sqlclient.impl.command.CommandBase;
 
-import java.util.function.Function;
 import java.util.stream.Collector;
 
 public class CopyOutCommand extends CommandBase<SqlResult<Buffer>> {
@@ -25,7 +24,7 @@ public class CopyOutCommand extends CommandBase<SqlResult<Buffer>> {
       Buffer::buffer,
       (v, chunk) -> v.appendBuffer(Buffer.buffer(chunk)),
       (v1, v2) -> null,
-      Function.identity()
+      (finalResult) -> finalResult
     );
   }
 

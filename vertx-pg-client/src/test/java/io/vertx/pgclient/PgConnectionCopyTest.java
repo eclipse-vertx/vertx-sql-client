@@ -2,7 +2,6 @@ package io.vertx.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PgConnectionCopyTest extends PgConnectionTestBase {
@@ -74,6 +73,7 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
       conn
         .query("select 1")
         .execute()
+        // when does the result is transformed from bool to rows?
         .onComplete(ctx.asyncAssertSuccess(result1 -> {
           ctx.assertEquals(1, result1.size());
           async.complete();

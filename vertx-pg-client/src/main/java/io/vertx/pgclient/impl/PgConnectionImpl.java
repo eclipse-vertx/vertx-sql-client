@@ -137,9 +137,12 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
 
   @Override
   public Future<SqlResult<Buffer>> copyToBytes(String sql) {
-    Function<Buffer, SqlResultImpl<Buffer>> factory = SqlResultImpl::new;
+    Function<Buffer, SqlResultImpl<Buffer>> factory = (buffer) -> new SqlResultImpl<>(buffer);
     PromiseInternal<SqlResult<Buffer>> promise = context.promise();
 
+    // currently, this loads entire content into Buffer
+    // it should stream bytes out instead
+    // TODO: signal completion as soon as the database replied CopyOutResponse 'H' ?
     QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler =
       new QueryResultBuilder<>(factory, promise);
 
