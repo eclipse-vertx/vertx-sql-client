@@ -22,6 +22,7 @@ public class CopyOutCommand extends CommandBase<Boolean> {
     this.resultHandler = resultHandler;
     this.collector = Collector.of(
       Buffer::buffer,
+      // TODO: this might be unnecessary slow - think of alternatives
       (v, chunk) -> v.appendBuffer(Buffer.buffer(chunk)),
       (v1, v2) -> null,
       (finalResult) -> finalResult

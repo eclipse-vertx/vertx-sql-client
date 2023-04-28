@@ -475,8 +475,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   private void decodeCopyData(ChannelHandlerContext ctx, ByteBuf in) {
     PgCommandCodec<?, ?> codec = inflight.peek();
     CopyOutCommandCodec cmdCodec = (CopyOutCommandCodec) codec;
-    int len = in.readUnsignedShort();
-    cmdCodec.decoder.handleChunk(len, in);
+    cmdCodec.decoder.handleChunk(in);
   }
 
   private void decodeCopyCompletion(ChannelHandlerContext ctx, ByteBuf in) {}

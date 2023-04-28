@@ -24,7 +24,7 @@ public class CopyOutDataDecoder {
     return size;
   }
 
-  public void handleChunk(int len, ByteBuf in) {
+  public void handleChunk(ByteBuf in) {
     if (failure != null) {
       return;
     }

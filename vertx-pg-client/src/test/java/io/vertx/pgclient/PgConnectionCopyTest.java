@@ -50,16 +50,16 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
               ctx.assertEquals(10, result.size());
               ctx.assertEquals(
                 Buffer.buffer(
-                  "Whatever-0\n" +
-                  "Whatever-1\n" +
-                  "Whatever-2\n" +
-                  "Whatever-3\n" +
-                  "Whatever-4\n" +
-                  "Whatever-5\n" +
-                  "Whatever-6\n" +
-                  "Whatever-7\n" +
-                  "Whatever-8\n" +
-                  "Whatever-9\n"
+                  "0,Whatever-0\n" +
+                  "1,Whatever-1\n" +
+                  "2,Whatever-2\n" +
+                  "3,Whatever-3\n" +
+                  "4,Whatever-4\n" +
+                  "5,Whatever-5\n" +
+                  "6,Whatever-6\n" +
+                  "7,Whatever-7\n" +
+                  "8,Whatever-8\n" +
+                  "9,Whatever-9\n"
                 ),
                 result.value()
               );
