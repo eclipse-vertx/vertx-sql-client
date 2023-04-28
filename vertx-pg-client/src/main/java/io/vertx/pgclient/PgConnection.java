@@ -130,6 +130,15 @@ public interface PgConnection extends SqlConnection {
    *
    * @param sql COPY command (example {@code COPY my_table TO STDOUT (FORMAT csv)})
    * @return async result of bytes container data will be written to
+   *
+   * - vertx.core.stream - https://vertx.io/docs/apidocs/io/vertx/core/streams/ReadStream.html
+   * - future of read stream.
+   * - when we do query operation
+   * - we should not use query result builder
+   * - what about SELECT 1;SELECT 1 or COPY ....;COPY ... ?
+   * - we need a new interface Future<ReadStream<Buffer>>
+   *   - https://vertx.io/docs/apidocs/io/vertx/core/streams/ReadStream.html
+   * - PgSocketConnection - we will apply backpressure in SocketInternal
    */
   Future<SqlResult<Buffer>> copyToBytes(String sql);
 
