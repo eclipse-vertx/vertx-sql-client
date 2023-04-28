@@ -147,7 +147,8 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
       new QueryResultBuilder<>(factory, promise);
 
     CopyOutCommand cmd = new CopyOutCommand(sql, resultHandler);
-    return this.schedule(promise.context(), cmd);
+    this.schedule(promise.context(), cmd).onComplete(resultHandler);
+    return promise.future();
   }
 
   @Override

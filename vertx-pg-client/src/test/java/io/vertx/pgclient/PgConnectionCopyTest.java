@@ -1,8 +1,12 @@
 package io.vertx.pgclient;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.List;
 
 public class PgConnectionCopyTest extends PgConnectionTestBase {
   public PgConnectionCopyTest() {
@@ -41,7 +45,24 @@ public class PgConnectionCopyTest extends PgConnectionTestBase {
           PgConnection pgConn = (PgConnection) conn;
           pgConn.copyToBytes("COPY Test TO STDOUT (FORMAT csv)")
             .onComplete(ctx.asyncAssertSuccess(result -> {
-              result.value().getBytes();
+              ctx.assertNull(result.columnDescriptors());
+              ctx.assertEquals(10, result.rowCount());
+              ctx.assertEquals(10, result.size());
+              ctx.assertEquals(
+                Buffer.buffer(
+                  "Whatever-0\n" +
+                  "Whatever-1\n" +
+                  "Whatever-2\n" +
+                  "Whatever-3\n" +
+                  "Whatever-4\n" +
+                  "Whatever-5\n" +
+                  "Whatever-6\n" +
+                  "Whatever-7\n" +
+                  "Whatever-8\n" +
+                  "Whatever-9\n"
+                ),
+                result.value()
+              );
               async.complete();
             }));
         });

@@ -9,7 +9,7 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 
 import java.util.stream.Collector;
 
-public class CopyOutCommand extends CommandBase<SqlResult<Buffer>> {
+public class CopyOutCommand extends CommandBase<Boolean> {
   private final String sql;
   private final Collector<ByteBuf, Buffer, Buffer> collector;
   private final QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler;
