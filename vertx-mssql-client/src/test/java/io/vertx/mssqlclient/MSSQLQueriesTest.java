@@ -20,6 +20,7 @@ import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.NullValue;
 import org.junit.After;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -185,14 +187,14 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
 
   @Test
   public void testQuerySequences(TestContext ctx) {
-    Future[] futures = Stream.of("tinyint", "smallint", "int", "bigint")
+    List<Future<RowSet<Row>>> futures = Stream.of("tinyint", "smallint", "int", "bigint")
       .flatMap(type -> Stream.of(
         String.format("DROP SEQUENCE IF EXISTS seq_%s", type),
         String.format("CREATE SEQUENCE seq_%s AS %s", type, type)
       ))
       .map(sql -> connection.query(sql).execute())
-      .toArray(Future[]::new);
-    CompositeFuture.all(Arrays.asList(futures)).onComplete(ctx.asyncAssertSuccess(cf -> {
+      .collect(Collectors.toList());
+    CompositeFuture.all(futures).onComplete(ctx.asyncAssertSuccess(cf -> {
       connection
         .query("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_NAME LIKE 'seq_%'")
         .execute()

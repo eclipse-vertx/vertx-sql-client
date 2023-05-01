@@ -242,7 +242,7 @@ public class SqlConnectionPool {
     Promise<Void> promise = vertx.promise();
     pool.close(ar1 -> {
       if (ar1.succeeded()) {
-        List<Future> results = ar1
+        List<Future<Void>> results = ar1
           .result()
           .stream()
           .map(connection -> connection

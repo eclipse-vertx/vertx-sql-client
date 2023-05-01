@@ -48,7 +48,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   }
 
   private void doClose(Promise<Void> p) {
-    List<Future> futures = clients.values().stream().map(client -> client.close()).collect(Collectors.toList());
+    List<Future<Void>> futures = clients.values().stream().map(client -> client.close()).collect(Collectors.toList());
 
     CompositeFuture join = CompositeFuture.join(futures);
 

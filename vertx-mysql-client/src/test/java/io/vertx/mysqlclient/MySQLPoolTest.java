@@ -210,7 +210,7 @@ public class MySQLPoolTest extends MySQLTestBase {
         .execute(params)
         .onComplete(ctx.asyncAssertSuccess(ids -> {
         CompositeFuture killAll = ids.value().stream()
-          .<Future>map(connId -> conn.query("KILL " + connId).execute())
+          .map(connId -> conn.query("KILL " + connId).execute())
           .collect(Collectors.collectingAndThen(toList(), CompositeFuture::all));
         killAll.compose(cf -> conn.close()).onComplete(ctx.asyncAssertSuccess(v -> killConnections.complete()));
       }));

@@ -119,7 +119,7 @@ public class PgBouncerTest {
     for (int i = 0;i < numConn;i++) {
       connections.add(PgConnection.connect(vertx, new PgConnectOptions(options).setUseLayer7Proxy(true)).toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS));
     }
-    List<Future> list = new ArrayList<>();
+    List<Future<?>> list = new ArrayList<>();
     for (int i = 0;i < numConn;i++) {
       int val = i;
       PgConnection conn = connections.get(i);
