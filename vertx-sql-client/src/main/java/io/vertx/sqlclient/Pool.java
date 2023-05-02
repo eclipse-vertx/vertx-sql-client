@@ -172,6 +172,17 @@ public interface Pool extends SqlClient {
    * Like {@link #withTransaction(Function, Handler)} but allows for setting the mode, defining how the acquired
    * connection is managed during the execution of the function.
    */
+  default <T> void withTransaction(TransactionPropagation txPropagation, Function<SqlConnection, Future<@Nullable T>> function, Handler<AsyncResult<@Nullable T>> handler) {
+    Future<T> res = withTransaction(txPropagation, function);
+    if (handler != null) {
+      res.onComplete(handler);
+    }
+  }
+
+  /**
+   * Like {@link #withTransaction(Function)} but allows for setting the mode, defining how the acquired
+   * connection is managed during the execution of the function.
+   */
   default <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation, Function<SqlConnection, Future<@Nullable T>> function) {
     if (txPropagation == TransactionPropagation.CONTEXT) {
       ContextInternal context = (ContextInternal) Vertx.currentContext();
