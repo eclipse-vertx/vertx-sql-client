@@ -21,9 +21,11 @@ import io.vertx.oracleclient.impl.Helper;
 import io.vertx.oracleclient.impl.OracleRow;
 import io.vertx.oracleclient.impl.OracleRowDesc;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowDesc;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
+import oracle.sql.TIMESTAMPTZ;
 
 import java.sql.*;
 import java.time.Instant;
@@ -254,13 +256,22 @@ public abstract class OracleQueryCommand<C, R> extends OracleCommand<Boolean> {
           int cols = metaData.getColumnCount();
           if (cols > 0) {
             RowDesc keysDesc = OracleRowDesc.create(metaData);
-
             OracleRow keys = new OracleRow(keysDesc);
             for (int i = 1; i <= cols; i++) {
-              Object res = Helper.convertSqlValue(keysRS.getObject(i));
+              ColumnDescriptor columnDesc = keysDesc.columnDescriptor().get(i - 1);
+              Object res;
+              switch (columnDesc.jdbcType()) {
+                case TIMESTAMP:
+                  res = Helper.convertSqlValue(keysRS.getObject(i, Timestamp.class));
+                  break;
+                case TIMESTAMP_WITH_TIMEZONE:
+                  res = Helper.convertSqlValue(keysRS.getObject(i, TIMESTAMPTZ.class));
+                  break;
+                default:
+                  res = Helper.convertSqlValue(keysRS.getObject(i));
+              }
               keys.addValue(res);
             }
-
             response.returnedKeys(keys);
           }
         }

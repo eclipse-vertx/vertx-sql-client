@@ -140,5 +140,19 @@ VALUES (2, UTL_RAW.CAST_TO_RAW('See you space cowboy...'), UTL_RAW.CAST_TO_RAW('
 INSERT INTO binary_data_types(id, test_raw, test_blob)
 VALUES (3, NULL, NULL);
 
+CREATE TABLE temporal_data_types
+(
+  id                           INT,
+  test_date                    DATE,
+  test_timestamp               TIMESTAMP,
+  test_timestamp_with_timezone TIMESTAMP WITH TIME ZONE
+);
+INSERT INTO temporal_data_types(id, test_date, test_timestamp, test_timestamp_with_timezone)
+VALUES (1, date '2019-11-04', timestamp '2018-11-04 15:13:28', timestamp '2019-11-04 15:13:28 +01:02');
+INSERT INTO temporal_data_types(id, test_date, test_timestamp, test_timestamp_with_timezone)
+VALUES (2, date '2019-11-04', timestamp '2018-11-04 15:13:28', timestamp '2019-11-04 15:13:28 +01:02');
+INSERT INTO temporal_data_types(id, test_date, test_timestamp, test_timestamp_with_timezone)
+VALUES (3, NULL, NULL, NULL);
+
 -- Don't forget to commit...
 COMMIT;
