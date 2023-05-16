@@ -85,7 +85,7 @@ public class PgBouncerTest {
     for (int i = 0;i < numConn;i++) {
       connections.add(PgConnection.connect(vertx, new PgConnectOptions(options).setUseLayer7Proxy(true)).toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS));
     }
-    CompositeFuture cf = CompositeFuture.join(connections.stream()
+    CompositeFuture cf = Future.join(connections.stream()
       .map(conn -> conn.preparedQuery("select 1").execute().map(rows -> rows.iterator().next().getInteger(0)))
       .collect(Collectors.toList()));
     cf.toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
@@ -101,7 +101,7 @@ public class PgBouncerTest {
     for (int i = 0;i < numConn;i++) {
       connections.add(PgConnection.connect(vertx, new PgConnectOptions(options).setUseLayer7Proxy(true)).toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS));
     }
-    CompositeFuture cf = CompositeFuture.join(connections.stream()
+    CompositeFuture cf = Future.join(connections.stream()
       .map(conn -> conn.preparedQuery("select 1")
         .executeBatch(Arrays.asList(Tuple.tuple(), Tuple.tuple()))
         .map(rows -> rows.iterator().next().getInteger(0)))
@@ -136,7 +136,7 @@ public class PgBouncerTest {
               .eventually(v -> ps.close());
       }).eventually(v -> tx.commit())));
     }
-    CompositeFuture cf = CompositeFuture.join(list);
+    CompositeFuture cf = Future.join(list);
     cf.toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
     for (int i = 0;i < numConn;i++) {
       assertEquals(i, (cf.<Object>resultAt(i)));

@@ -11,7 +11,6 @@
 
 package io.vertx.mssqlclient;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
@@ -194,7 +193,7 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
       ))
       .map(sql -> connection.query(sql).execute())
       .collect(Collectors.toList());
-    CompositeFuture.all(futures).onComplete(ctx.asyncAssertSuccess(cf -> {
+    Future.all(futures).onComplete(ctx.asyncAssertSuccess(cf -> {
       connection
         .query("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_NAME LIKE 'seq_%'")
         .execute()

@@ -1,6 +1,5 @@
 package io.vertx.pgclient;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -74,7 +73,7 @@ public class PoolMultiTest {
       futures.add(pool.getConnection());
     }
     List<String> users = Collections.synchronizedList(new ArrayList<>());
-    CompositeFuture.all((List)futures).onComplete(ctx.asyncAssertSuccess(c -> {
+    Future.all(futures).onComplete(ctx.asyncAssertSuccess(c -> {
       for (int i = 0;i < count;i++) {
         SqlConnection conn = futures.get(i).result();
         conn

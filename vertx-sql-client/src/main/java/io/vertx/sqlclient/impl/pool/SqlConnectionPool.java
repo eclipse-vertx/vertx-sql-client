@@ -248,7 +248,7 @@ public class SqlConnectionPool {
           .map(connection -> connection
             .compose(pooled -> Future.<Void>future(p -> pooled.conn.close(pooled, p))))
           .collect(Collectors.toList());
-        CompositeFuture
+        Future
           .join(results)
           .<Void>mapEmpty()
           .onComplete(promise);

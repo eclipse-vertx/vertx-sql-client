@@ -26,7 +26,6 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -50,7 +49,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   private void doClose(Promise<Void> p) {
     List<Future<Void>> futures = clients.values().stream().map(client -> client.close()).collect(Collectors.toList());
 
-    CompositeFuture join = CompositeFuture.join(futures);
+    CompositeFuture join = Future.join(futures);
 
     join.onComplete(ar -> p.complete());
   }
