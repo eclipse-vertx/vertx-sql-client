@@ -32,7 +32,6 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -137,7 +136,7 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
           assertThat(t, is(instanceOf(MSSQLException.class)));
         });
         MSSQLException mssqlException = (MSSQLException) t;
-        ctx.assertEquals(208, mssqlException.number());
+        ctx.assertEquals(208, mssqlException.getErrorCode());
       }));
   }
 

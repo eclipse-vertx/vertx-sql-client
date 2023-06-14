@@ -16,7 +16,9 @@
  */
 package io.vertx.pgclient.impl;
 
-import io.vertx.core.*;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
@@ -117,18 +119,11 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
 
   @Override
   public Future<Void> cancelRequest() {
-    return Future.future(this::cancelRequest);
-  }
-
-  @Override
-  public PgConnection cancelRequest(Handler<AsyncResult<Void>> handler) {
-    Context current = Vertx.currentContext();
-    if (current == context) {
+    Promise<Void> promise = context.owner().getOrCreateContext().promise();
+    context.emit(promise, p -> {
       PgSocketConnection unwrap = (PgSocketConnection) conn.unwrap();
-      ((PgConnectionFactory)factory).cancelRequest(unwrap.connectOptions(), this.processId(), this.secretKey(), handler);
-    } else {
-      context.runOnContext(v -> cancelRequest(handler));
-    }
-    return this;
+      ((PgConnectionFactory) factory).cancelRequest(unwrap.connectOptions(), this.processId(), this.secretKey(), p);
+    });
+    return promise.future();
   }
 }

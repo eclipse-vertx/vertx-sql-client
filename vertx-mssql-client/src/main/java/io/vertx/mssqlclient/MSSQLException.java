@@ -46,14 +46,6 @@ public class MSSQLException extends DatabaseException {
     additional.add(e);
   }
 
-  /**
-   * @deprecated use {@link #getErrorCode()} instead
-   */
-  @Deprecated
-  public int number() {
-    return getErrorCode();
-  }
-
   public byte state() {
     return state;
   }
