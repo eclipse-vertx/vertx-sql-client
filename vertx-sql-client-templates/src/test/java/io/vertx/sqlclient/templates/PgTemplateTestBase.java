@@ -6,7 +6,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -15,7 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.util.Map;
 import java.util.function.Function;
 
 @RunWith(VertxUnitRunner.class)
@@ -43,7 +41,7 @@ public abstract class PgTemplateTestBase {
 
   public static PgConnectOptions connectOptions() {
     Integer port = server.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
-    String ip = server.getContainerIpAddress();
+    String ip = server.getHost();
     return new PgConnectOptions()
       .setPort(port)
       .setHost(ip)

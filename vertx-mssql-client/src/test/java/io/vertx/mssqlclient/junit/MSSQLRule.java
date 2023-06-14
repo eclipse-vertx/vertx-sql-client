@@ -106,7 +106,7 @@ public class MSSQLRule extends ExternalResource {
     initDb();
 
     return new MSSQLConnectOptions()
-      .setHost(server.getContainerIpAddress())
+      .setHost(server.getHost())
       .setPort(server.getMappedPort(DEFAULT_PORT))
       .setUser("SA")
       .setPassword(PASSWORD);

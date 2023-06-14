@@ -17,7 +17,6 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.core.json.Json;
 import io.vertx.sqlclient.DatabaseException;
 
 /**
@@ -122,14 +121,6 @@ public class PgException extends DatabaseException {
    */
   public String getSeverity() {
     return severity;
-  }
-
-  /**
-   * @deprecated use {@link #getSqlState()} instead
-   */
-  @Deprecated
-  public String getCode() {
-    return getSqlState();
   }
 
   /**

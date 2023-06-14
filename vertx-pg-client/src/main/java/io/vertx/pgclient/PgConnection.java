@@ -19,7 +19,6 @@ package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -97,14 +96,7 @@ public interface PgConnection extends SqlConnection {
    * Send a request cancellation message to tell the server to cancel processing request in this connection.
    * <br>Note: Use this with caution because the cancellation signal may or may not have any effect.
    *
-   * @param handler the handler notified if cancelling request is sent
-   * @return a reference to this, so the API can be used fluently
-   */
-  @Deprecated
-  PgConnection cancelRequest(Handler<AsyncResult<Void>> handler);
-
-  /**
-   * Like {@link #cancelRequest(Handler)} but returns a {@code Future} of the asynchronous result
+   * @return a future notified if cancelling request is sent
    */
   Future<Void> cancelRequest();
 
