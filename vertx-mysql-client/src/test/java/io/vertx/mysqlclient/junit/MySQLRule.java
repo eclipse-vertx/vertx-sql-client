@@ -53,7 +53,7 @@ public class MySQLRule extends ExternalResource {
 
     return new MySQLConnectOptions()
       .setPort(server.getMappedPort(3306))
-      .setHost(server.getContainerIpAddress())
+      .setHost(server.getHost())
       .setDatabase("testschema")
       .setUser("mysql")
       .setPassword("password");

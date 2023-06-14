@@ -75,7 +75,7 @@ public class OracleRule extends ExternalResource {
     server.start();
 
     return new OracleConnectOptions()
-      .setHost(server.getContainerIpAddress())
+      .setHost(server.getHost())
       .setPort(server.getMappedPort(PORT))
       .setUser("sys as sysdba")
       .setPassword(PASSWORD)

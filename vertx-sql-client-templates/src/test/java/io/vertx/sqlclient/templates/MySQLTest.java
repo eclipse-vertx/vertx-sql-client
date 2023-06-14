@@ -43,7 +43,7 @@ public class MySQLTest {
 
   public static MySQLConnectOptions connectOptions() {
     Integer port = server.getMappedPort(3306);
-    String ip = server.getContainerIpAddress();
+    String ip = server.getHost();
     return new MySQLConnectOptions()
       .setPort(port)
       .setHost(ip)

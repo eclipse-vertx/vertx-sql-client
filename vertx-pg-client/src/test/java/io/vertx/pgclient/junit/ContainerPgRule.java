@@ -96,8 +96,8 @@ public class ContainerPgRule extends ExternalResource {
     server.start();
 
     return new PgConnectOptions()
-        .setPort(server.getMappedPort(POSTGRESQL_PORT))
-        .setHost(server.getContainerIpAddress())
+      .setPort(server.getMappedPort(POSTGRESQL_PORT))
+      .setHost(server.getHost())
         .setDatabase("postgres")
         .setUser(user)
         .setPassword("postgres");

@@ -15,6 +15,12 @@
  */
 package io.vertx.db2client.junit;
 
+import io.vertx.core.net.JksOptions;
+import io.vertx.db2client.DB2ConnectOptions;
+import org.junit.rules.ExternalResource;
+import org.testcontainers.containers.Db2Container;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,51 +30,44 @@ import java.sql.SQLSyntaxErrorException;
 import java.time.Duration;
 import java.util.Objects;
 
-import org.junit.rules.ExternalResource;
-import org.testcontainers.containers.Db2Container;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-
-import io.vertx.core.net.JksOptions;
-import io.vertx.db2client.DB2ConnectOptions;
-
 public class DB2Resource extends ExternalResource {
 
   private static final boolean CUSTOM_DB2 = get("DB2_HOST") != null;
 
-    /**
-     * In order for this container to be reused across test runs you need to add the line:
-     * <code>testcontainers.reuse.enable=true</code> to your <code>~/.testcontainers.properties</code>
-     * file (create it if it does not exist)
-     */
-    public static final DB2Resource SHARED_INSTANCE = new DB2Resource();
+  /**
+   * In order for this container to be reused across test runs you need to add the line:
+   * <code>testcontainers.reuse.enable=true</code> to your <code>~/.testcontainers.properties</code>
+   * file (create it if it does not exist)
+   */
+  public static final DB2Resource SHARED_INSTANCE = new DB2Resource();
 
-    private boolean started = false;
-    private boolean isDb2OnZ = false;
-    private DB2ConnectOptions options;
-    private final Db2Container instance = new Db2Container()
-            .acceptLicense()
-            .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()))
-            .withUsername("vertx")
-            .withPassword("vertx")
-            .withDatabaseName("vertx")
-            .withExposedPorts(50000, 50001)
-            .withFileSystemBind("src/test/resources/tls/server/", "/certs/")
-            .withFileSystemBind("src/test/resources/tls/db2_tls_setup.sh", "/var/custom/db2_tls_setup.sh")
-            .waitingFor(new LogMessageWaitStrategy()
-                .withRegEx(".*VERTX SSH SETUP DONE.*")
-                .withStartupTimeout(Duration.ofMinutes(10)))
-            .withReuse(true);
+  private boolean started = false;
+  private boolean isDb2OnZ = false;
+  private DB2ConnectOptions options;
+  private final Db2Container instance = new Db2Container("ibmcom/db2:11.5.0.0a")
+    .acceptLicense()
+    .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()))
+    .withUsername("vertx")
+    .withPassword("vertx")
+    .withDatabaseName("vertx")
+    .withExposedPorts(50000, 50001)
+    .withFileSystemBind("src/test/resources/tls/server/", "/certs/")
+    .withFileSystemBind("src/test/resources/tls/db2_tls_setup.sh", "/var/custom/db2_tls_setup.sh")
+    .waitingFor(new LogMessageWaitStrategy()
+      .withRegEx(".*VERTX SSH SETUP DONE.*")
+      .withStartupTimeout(Duration.ofMinutes(10)))
+    .withReuse(true);
 
-    @Override
-    protected void before() throws Throwable {
-        if (started)
-          return;
+  @Override
+  protected void before() throws Throwable {
+    if (started)
+      return;
 
-      if (!CUSTOM_DB2) {
-        instance.start();
+    if (!CUSTOM_DB2) {
+      instance.start();
           options = new DB2ConnectOptions()
-                  .setHost(instance.getContainerIpAddress())
-                  .setPort(instance.getMappedPort(50000))
+            .setHost(instance.getHost())
+            .setPort(instance.getMappedPort(50000))
                   .setDatabase(instance.getDatabaseName())
                   .setUser(instance.getUsername())
                   .setPassword(instance.getPassword());
