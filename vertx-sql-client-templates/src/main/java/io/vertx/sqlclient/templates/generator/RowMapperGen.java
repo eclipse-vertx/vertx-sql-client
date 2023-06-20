@@ -67,7 +67,6 @@ public class RowMapperGen extends MapperGenBase {
 
   private void genFromRow(String visibility, DataObjectModel model, PrintWriter writer) {
     writer.print("\n");
-    writer.print("  @io.vertx.codegen.annotations.GenIgnore\n");
     writer.print("  " + genSimpleName(model) + " INSTANCE = new " + genSimpleName(model) + "() { };\n");
     writer.print("\n");
     writer.print("  @io.vertx.codegen.annotations.GenIgnore\n");
