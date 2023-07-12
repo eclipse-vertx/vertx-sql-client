@@ -173,7 +173,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     //Acquires the connection honoring the pool's connection timeout
     acquire(context, connectionTimeout, promise);
     return promise.future().compose(pooled -> {
-        //We need to 'init' the connection of close will fail.
+        //We need to 'init' the connection or close will fail.
         pooled.init(pooled);
         return pooled.schedule(context, cmd)
           .eventually(v -> {
