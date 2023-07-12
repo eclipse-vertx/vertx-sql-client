@@ -170,8 +170,20 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   @Override
   public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
     PromiseInternal<SqlConnectionPool.PooledConnection> promise = context.promise();
+    //Acquires the connection honoring the pool's connection timeout
     acquire(context, connectionTimeout, promise);
-    return promise.future().compose(pooled -> pooled.schedule(context, cmd));
+    return promise.future().compose(pooled -> {
+        //We need to 'init' the connection of close will fail.
+        pooled.init(pooled);
+        return pooled.schedule(context, cmd)
+          .eventually(v -> {
+              Promise<Void> p = Promise.promise();
+              pooled.close(pooled, p);
+              return p.future();
+            }
+          );
+      }
+    );
   }
 
   private void acquire(ContextInternal context, long timeout, Handler<AsyncResult<SqlConnectionPool.PooledConnection>> completionHandler) {
