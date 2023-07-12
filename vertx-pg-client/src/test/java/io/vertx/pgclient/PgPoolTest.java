@@ -22,6 +22,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
@@ -591,5 +592,46 @@ public class PgPoolTest extends PgPoolTestBase {
         });
       }));
     }));
+  }
+
+  @Test
+  public void testConnectionTimeoutWhenExecutingDirectly(TestContext ctx) {
+    PgPool pool = createPool(options, new PoolOptions().setConnectionTimeout(2).setMaxSize(2));
+    final Async latch = ctx.async(2);
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT id, message from immutable")
+        .execute(ctx.asyncAssertSuccess(rows -> {
+          ctx.assertEquals(12, rows.size());
+          latch.countDown();
+        }));
+    }));
+
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SELECT id, message from immutable")
+        .execute(ctx.asyncAssertSuccess(rows -> {
+          ctx.assertEquals(12, rows.size());
+          latch.countDown();
+        }));
+    }));
+
+    latch.awaitSuccess();
+    final long timerId = vertx.setTimer(10000L, id -> {
+      ctx.fail("Timeout exceeded without completing");
+    });
+    //Used both connections
+    Async async = ctx.async(10);
+    for (int i = 0; i < 10; i++) {
+      pool
+        .query("SELECT id, message from immutable")
+        .execute(ctx.asyncAssertFailure(t -> {
+          ctx.assertTrue(t instanceof NoStackTraceThrowable);
+          ctx.assertEquals("Timeout", t.getMessage());
+          async.countDown();
+        }));
+    }
+
+    async.handler(v -> vertx.cancelTimer(timerId));
   }
 }
