@@ -137,26 +137,18 @@ public class OracleJdbcConnection implements Connection {
 
   public Future<Void> afterAcquire() {
     PromiseInternal<Void> promise = context.owner().promise();
-    context.<Void>executeBlocking(prom -> {
-      try {
-        connection.beginRequest();
-        prom.complete();
-      } catch (SQLException e) {
-        prom.fail(e);
-      }
+    context.<Void>executeBlocking(() -> {
+      connection.beginRequest();
+      return null;
     }, false).onComplete(promise);
     return promise.future();
   }
 
   public Future<Void> beforeRecycle() {
     PromiseInternal<Void> promise = context.owner().promise();
-    context.<Void>executeBlocking(prom -> {
-      try {
-        connection.endRequest();
-        prom.complete();
-      } catch (SQLException e) {
-        prom.fail(e);
-      }
+    context.<Void>executeBlocking(() -> {
+      connection.endRequest();
+      return null;
     }, false).onComplete(promise);
     return promise.future();
   }

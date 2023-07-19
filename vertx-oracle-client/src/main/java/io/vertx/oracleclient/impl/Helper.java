@@ -296,32 +296,32 @@ public class Helper {
   }
 
   @FunctionalInterface
-  public interface SQLBlockingCodeHandler<T> extends Handler<Promise<T>> {
+  public interface SQLBlockingCodeHandler<T> extends java.util.concurrent.Callable<T> {
 
     T doHandle() throws SQLException;
 
     @Override
-    default void handle(Promise<T> promise) {
+    default T call() {
       try {
-        promise.complete(doHandle());
+        return doHandle();
       } catch (SQLException e) {
-        promise.fail(new OracleException(e));
+        throw new OracleException(e);
       }
     }
   }
 
   @FunctionalInterface
-  public interface SQLBlockingTaskHandler extends Handler<Promise<Void>> {
+  public interface SQLBlockingTaskHandler extends java.util.concurrent.Callable<Void> {
 
     void doHandle() throws SQLException;
 
     @Override
-    default void handle(Promise<Void> promise) {
+    default Void call() throws Exception {
       try {
         doHandle();
-        promise.complete(null);
+        return null;
       } catch (SQLException e) {
-        promise.fail(new OracleException(e));
+        throw new OracleException(e);
       }
     }
   }
