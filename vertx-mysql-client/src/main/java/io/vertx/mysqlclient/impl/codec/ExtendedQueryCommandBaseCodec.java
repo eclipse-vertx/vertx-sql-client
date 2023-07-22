@@ -98,7 +98,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
 
       if (sendTypesToServer) {
         for (DataType bindingType : statement.bindingTypes()) {
-          packet.writeByte(bindingType.id);
+          packet.writeByte(bindingType.getColumnType());
           packet.writeByte(0); // parameter flag: signed
         }
       }

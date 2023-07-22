@@ -19,7 +19,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.data.spatial.*;
 import io.vertx.mysqlclient.impl.MySQLCollation;
-import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
@@ -58,47 +57,35 @@ public class DataTypeCodec {
     .appendFraction(MICRO_OF_SECOND, 0, 6, true)
     .toFormatter();
 
-  public static Object decodeText(DataType dataType, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
+  public static Object decodeText(DataType dataType, int collationId, ByteBuf buffer) {
     int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
     int index = buffer.readerIndex();
     try {
       switch (dataType) {
-        case INT1:
-          if (isUnsignedNumeric(columnDefinitionFlags)) {
-            return textDecodeInt2(buffer, index, length);
-          } else {
-            return textDecodeInt1(buffer, index, length);
-          }
-        case YEAR:
-          return textDecodeInt2(buffer, index, length);
-        case INT2:
-          if (isUnsignedNumeric(columnDefinitionFlags)) {
-            return textDecodeInt4(buffer, index, length);
-          } else {
-            return textDecodeInt2(buffer, index, length);
-          }
-        case INT3:
-          return textDecodeInt4(buffer, index, length);
-        case INT4:
-          if (isUnsignedNumeric(columnDefinitionFlags)) {
-            return textDecodeInt8(buffer, index, length);
-          } else {
-            return textDecodeInt4(buffer, index, length);
-          }
         case INT8:
-          if (isUnsignedNumeric(columnDefinitionFlags)) {
-            return textDecodeNUMERIC(collationId, buffer, index, length);
-          } else {
-            return textDecodeInt8(buffer, index, length);
-          }
+          return textDecodeInt8(buffer, index, length);
+        case U_INT8:
+        case YEAR:
+        case INT16:
+          return textDecodeInt16(buffer, index, length);
+        case INT24:
+          return textDecodeInt24(buffer, index, length);
+        case U_INT16:
+        case U_INT24:
+        case INT32:
+          return textDecodeInt32(buffer, index, length);
+        case U_INT32:
+        case INT64:
+          return textDecodeInt64(buffer, index, length);
+        case U_INT64:
+        case NUMERIC:
+          return textDecodeNUMERIC(collationId, buffer, index, length);
         case FLOAT:
           return textDecodeFloat(collationId, buffer, index, length);
         case DOUBLE:
           return textDecodeDouble(collationId, buffer, index, length);
         case BIT:
           return textDecodeBit(buffer, index, length);
-        case NUMERIC:
-          return textDecodeNUMERIC(collationId, buffer, index, length);
         case DATE:
           return textDecodeDate(collationId, buffer, index, length);
         case TIME:
@@ -110,11 +97,22 @@ public class DataTypeCodec {
           return textDecodeJson(collationId, buffer, index, length);
         case GEOMETRY:
           return textDecodeGeometry(buffer, index, length);
+        case BINARY:
+        case VARBINARY:
+        case TINY_BLOB:
+        case BLOB:
+        case MEDIUM_BLOB:
+        case LONG_BLOB:
+          return textDecodeBlob(buffer, index, length);
         case STRING:
         case VARSTRING:
-        case BLOB:
+        case TINY_TEXT:
+        case TEXT:
+        case MEDIUM_TEXT:
+        case LONG_TEXT:
+          return textDecodeText(collationId, buffer, index, length);
         default:
-          return textDecodeBlobOrText(collationId, columnDefinitionFlags, buffer, index, length);
+          return textDecodeBlobOrText(collationId, buffer, index, length);
       }
     } finally {
       buffer.readerIndex(index + length);
@@ -123,7 +121,7 @@ public class DataTypeCodec {
 
   public static void encodeBinary(DataType dataType, Object value, Charset charset, ByteBuf buffer) {
     switch (dataType) {
-      case INT1:
+      case INT8:
         if (value instanceof Boolean) {
           if ((Boolean) value) {
             value = 1;
@@ -131,19 +129,19 @@ public class DataTypeCodec {
             value = 0;
           }
         }
-        binaryEncodeInt1((Number) value, buffer);
-        break;
-      case INT2:
-        binaryEncodeInt2((Number) value, buffer);
-        break;
-      case INT3:
-        binaryEncodeInt3((Number) value, buffer);
-        break;
-      case INT4:
-        binaryEncodeInt4((Number) value, buffer);
-        break;
-      case INT8:
         binaryEncodeInt8((Number) value, buffer);
+        break;
+      case INT16:
+        binaryEncodeInt16((Number) value, buffer);
+        break;
+      case INT24:
+        binaryEncodeInt24((Number) value, buffer);
+        break;
+      case INT32:
+        binaryEncodeInt32((Number) value, buffer);
+        break;
+      case INT64:
+        binaryEncodeInt64((Number) value, buffer);
         break;
       case FLOAT:
         binaryEncodeFloat((Number) value, buffer);
@@ -193,40 +191,29 @@ public class DataTypeCodec {
     }
   }
 
-  public static Object decodeBinary(DataType dataType, int collationId, int columnDefinitionFlags, ByteBuf buffer) {
+  public static Object decodeBinary(DataType dataType, int collationId, ByteBuf buffer) {
     switch (dataType) {
-      case INT1:
-        if (isUnsignedNumeric(columnDefinitionFlags)) {
-          return binaryDecodeUnsignedInt1(buffer);
-        } else {
-          return binaryDecodeInt1(buffer);
-        }
-      case YEAR:
-        return binaryDecodeInt2(buffer);
-      case INT2:
-        if (isUnsignedNumeric(columnDefinitionFlags)) {
-          return binaryDecodeUnsignedInt2(buffer);
-        } else {
-          return binaryDecodeInt2(buffer);
-        }
-      case INT3:
-        if (isUnsignedNumeric(columnDefinitionFlags)) {
-          return binaryDecodeUnsignedInt3(buffer);
-        } else {
-          return binaryDecodeInt3(buffer);
-        }
-      case INT4:
-        if (isUnsignedNumeric(columnDefinitionFlags)) {
-          return binaryDecodeUnsignedInt4(buffer);
-        } else {
-          return binaryDecodeInt4(buffer);
-        }
       case INT8:
-        if (isUnsignedNumeric(columnDefinitionFlags)) {
-          return binaryDecodeUnsignedInt8(buffer);
-        } else {
-          return binaryDecodeInt8(buffer);
-        }
+        return binaryDecodeInt8(buffer);
+      case U_INT8:
+        return binaryDecodeUnsignedInt8(buffer);
+      case YEAR:
+      case INT16:
+        return binaryDecodeInt16(buffer);
+      case U_INT16:
+        return binaryDecodeUnsignedInt16(buffer);
+      case INT24:
+        return binaryDecodeInt24(buffer);
+      case U_INT24:
+        return binaryDecodeUnsignedInt24(buffer);
+      case INT32:
+        return binaryDecodeInt32(buffer);
+      case U_INT32:
+        return binaryDecodeUnsignedInt32(buffer);
+      case INT64:
+        return binaryDecodeInt64(buffer);
+      case U_INT64:
+        return binaryDecodeUnsignedInt64(buffer);
       case FLOAT:
         return binaryDecodeFloat(buffer);
       case DOUBLE:
@@ -246,11 +233,22 @@ public class DataTypeCodec {
         return binaryDecodeJson(collationId, buffer);
       case GEOMETRY:
         return binaryDecodeGeometry(buffer);
+      case BINARY:
+      case VARBINARY:
+      case TINY_BLOB:
+      case BLOB:
+      case MEDIUM_BLOB:
+      case LONG_BLOB:
+        return binaryDecodeBlob(buffer);
       case STRING:
       case VARSTRING:
-      case BLOB:
+      case TINY_TEXT:
+      case TEXT:
+      case MEDIUM_TEXT:
+      case LONG_TEXT:
+        return binaryDecodeText(collationId, buffer);
       default:
-        return binaryDecodeBlobOrText(collationId, columnDefinitionFlags, buffer);
+        return binaryDecodeBlobOrText(collationId, buffer);
     }
   }
 
@@ -260,19 +258,19 @@ public class DataTypeCodec {
       return DataType.NULL;
     } else if (value instanceof Byte) {
       // ProtocolBinary::MYSQL_TYPE_TINY
-      return DataType.INT1;
+      return DataType.INT8;
     } else if (value instanceof Boolean) {
       // ProtocolBinary::MYSQL_TYPE_TINY
-      return DataType.INT1;
+      return DataType.INT8;
     } else if (value instanceof Short) {
       // ProtocolBinary::MYSQL_TYPE_SHORT, ProtocolBinary::MYSQL_TYPE_YEAR
-      return DataType.INT2;
+      return DataType.INT16;
     } else if (value instanceof Integer) {
       // ProtocolBinary::MYSQL_TYPE_LONG, ProtocolBinary::MYSQL_TYPE_INT24
-      return DataType.INT4;
+      return DataType.INT32;
     } else if (value instanceof Long) {
       // ProtocolBinary::MYSQL_TYPE_LONGLONG
-      return DataType.INT8;
+      return DataType.INT64;
     } else if (value instanceof Double) {
       // ProtocolBinary::MYSQL_TYPE_DOUBLE
       return DataType.DOUBLE;
@@ -310,23 +308,23 @@ public class DataTypeCodec {
     }
   }
 
-  private static void binaryEncodeInt1(Number value, ByteBuf buffer) {
+  private static void binaryEncodeInt8(Number value, ByteBuf buffer) {
     buffer.writeByte(value.byteValue());
   }
 
-  private static void binaryEncodeInt2(Number value, ByteBuf buffer) {
+  private static void binaryEncodeInt16(Number value, ByteBuf buffer) {
     buffer.writeShortLE(value.intValue());
   }
 
-  private static void binaryEncodeInt3(Number value, ByteBuf buffer) {
+  private static void binaryEncodeInt24(Number value, ByteBuf buffer) {
     buffer.writeMediumLE(value.intValue());
   }
 
-  private static void binaryEncodeInt4(Number value, ByteBuf buffer) {
+  private static void binaryEncodeInt32(Number value, ByteBuf buffer) {
     buffer.writeIntLE(value.intValue());
   }
 
-  private static void binaryEncodeInt8(Number value, ByteBuf buffer) {
+  private static void binaryEncodeInt64(Number value, ByteBuf buffer) {
     buffer.writeLongLE(value.longValue());
   }
 
@@ -471,43 +469,43 @@ public class DataTypeCodec {
     BufferUtils.writeLengthEncodedString(buffer, Json.encode(value), charset);
   }
 
-  private static Byte binaryDecodeInt1(ByteBuf buffer) {
+  private static Byte binaryDecodeInt8(ByteBuf buffer) {
     return buffer.readByte();
   }
 
-  private static Short binaryDecodeUnsignedInt1(ByteBuf buffer) {
+  private static Short binaryDecodeUnsignedInt8(ByteBuf buffer) {
     return buffer.readUnsignedByte();
   }
 
-  private static Short binaryDecodeInt2(ByteBuf buffer) {
+  private static Short binaryDecodeInt16(ByteBuf buffer) {
     return buffer.readShortLE();
   }
 
-  private static Integer binaryDecodeUnsignedInt2(ByteBuf buffer) {
+  private static Integer binaryDecodeUnsignedInt16(ByteBuf buffer) {
     return buffer.readUnsignedShortLE();
   }
 
-  private static Integer binaryDecodeInt3(ByteBuf buffer) {
+  private static Integer binaryDecodeInt24(ByteBuf buffer) {
     return buffer.readIntLE();
   }
 
-  private static Integer binaryDecodeUnsignedInt3(ByteBuf buffer) {
+  private static Integer binaryDecodeUnsignedInt24(ByteBuf buffer) {
     return buffer.readIntLE() & 0xFFFFFF;
   }
 
-  private static Integer binaryDecodeInt4(ByteBuf buffer) {
+  private static Integer binaryDecodeInt32(ByteBuf buffer) {
     return buffer.readIntLE();
   }
 
-  private static Long binaryDecodeUnsignedInt4(ByteBuf buffer) {
+  private static Long binaryDecodeUnsignedInt32(ByteBuf buffer) {
     return buffer.readUnsignedIntLE();
   }
 
-  private static Long binaryDecodeInt8(ByteBuf buffer) {
+  private static Long binaryDecodeInt64(ByteBuf buffer) {
     return buffer.readLongLE();
   }
 
-  private static Numeric binaryDecodeUnsignedInt8(ByteBuf buffer) {
+  private static Numeric binaryDecodeUnsignedInt64(ByteBuf buffer) {
     byte[] bigIntValue = new byte[8];
     buffer.readBytes(bigIntValue); // little endian
     for (int i = 0; i < 4; i++) {
@@ -541,12 +539,11 @@ public class DataTypeCodec {
     return Numeric.parse(BufferUtils.readLengthEncodedString(buffer, charset));
   }
 
-  private static Object binaryDecodeBlobOrText(int collationId, int columnDefinitionFlags, ByteBuf buffer) {
+  private static Object binaryDecodeBlobOrText(int collationId, ByteBuf buffer) {
     if (collationId == MySQLCollation.binary.collationId()) {
       return binaryDecodeBlob(buffer);
     } else {
-      Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
-      return binaryDecodeText(charset, buffer);
+      return binaryDecodeText(collationId, buffer);
     }
   }
 
@@ -559,7 +556,8 @@ public class DataTypeCodec {
     return Buffer.buffer(copy);
   }
 
-  private static String binaryDecodeText(Charset charset, ByteBuf buffer) {
+  private static String binaryDecodeText(int collationId, ByteBuf buffer) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     return BufferUtils.readLengthEncodedString(buffer, charset);
   }
 
@@ -637,23 +635,23 @@ public class DataTypeCodec {
     return result;
   }
 
-  private static Byte textDecodeInt1(ByteBuf buffer, int index, int length) {
+  private static Byte textDecodeInt8(ByteBuf buffer, int index, int length) {
     return (byte) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Short textDecodeInt2(ByteBuf buffer, int index, int length) {
+  private static Short textDecodeInt16(ByteBuf buffer, int index, int length) {
     return (short) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Integer textDecodeInt3(ByteBuf buffer, int index, int length) {
+  private static Integer textDecodeInt24(ByteBuf buffer, int index, int length) {
     return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Integer textDecodeInt4(ByteBuf buffer, int index, int length) {
+  private static Integer textDecodeInt32(ByteBuf buffer, int index, int length) {
     return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
-  private static Long textDecodeInt8(ByteBuf buffer, int index, int length) {
+  private static Long textDecodeInt64(ByteBuf buffer, int index, int length) {
     return CommonCodec.decodeDecStringToLong(index, length, buffer);
   }
 
@@ -676,13 +674,11 @@ public class DataTypeCodec {
     return Numeric.parse(buff.toString(index, length, charset));
   }
 
-  private static Object textDecodeBlobOrText(int collationId, int columnDefinitionFlags,
-    ByteBuf buffer, int index, int length) {
+  private static Object textDecodeBlobOrText(int collationId, ByteBuf buffer, int index, int length) {
     if (collationId == MySQLCollation.binary.collationId()) {
       return textDecodeBlob(buffer, index, length);
     } else {
-      Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
-      return textDecodeText(charset, buffer, index, length);
+      return textDecodeText(collationId, buffer, index, length);
     }
   }
 
@@ -692,7 +688,8 @@ public class DataTypeCodec {
     return Buffer.buffer(copy);
   }
 
-  private static String textDecodeText(Charset charset, ByteBuf buffer, int index, int length) {
+  private static String textDecodeText(int collationId, ByteBuf buffer, int index, int length) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
     return buffer.toString(index, length, charset);
   }
 
@@ -772,10 +769,6 @@ public class DataTypeCodec {
       return null;
     }
     return value;
-  }
-
-  private static boolean isUnsignedNumeric(int columnDefinitionFlags) {
-    return (columnDefinitionFlags & ColumnDefinition.ColumnDefinitionFlags.UNSIGNED_FLAG) != 0;
   }
 
   private static Long decodeBit(ByteBuf buffer, int index, int length) {
