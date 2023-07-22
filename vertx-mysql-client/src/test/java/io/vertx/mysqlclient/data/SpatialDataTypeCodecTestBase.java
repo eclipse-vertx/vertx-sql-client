@@ -17,6 +17,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import org.junit.Test;
 
+import java.sql.JDBCType;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -24,6 +25,8 @@ public abstract class SpatialDataTypeCodecTestBase extends MySQLDataTypeTestBase
   @Test
   public void testDecodePoint(TestContext ctx) {
     testDecodeGeometry(ctx, "SELECT ST_GeometryFromText('POINT(1.5 5.1)', 0) AS test_geometry;", result -> {
+      ctx.assertEquals(result.columnDescriptors().get(0).typeName(), "GEOMETRY");
+      ctx.assertEquals(result.columnDescriptors().get(0).jdbcType(), JDBCType.OTHER);
       Row row = result.iterator().next();
       Point point = row.get(Point.class, 0);
       ctx.assertEquals(0L, point.getSRID());
@@ -35,6 +38,8 @@ public abstract class SpatialDataTypeCodecTestBase extends MySQLDataTypeTestBase
   @Test
   public void testDecodeLineString(TestContext ctx) {
     testDecodeGeometry(ctx, "SELECT ST_GeometryFromText('LINESTRING(0 0,1 1,2 2)', 0) AS test_geometry;", result -> {
+      ctx.assertEquals(result.columnDescriptors().get(0).typeName(), "GEOMETRY");
+      ctx.assertEquals(result.columnDescriptors().get(0).jdbcType(), JDBCType.OTHER);
       Row row = result.iterator().next();
       LineString lineString = row.get(LineString.class, 0);
       ctx.assertEquals(0L, lineString.getSRID());
@@ -52,6 +57,8 @@ public abstract class SpatialDataTypeCodecTestBase extends MySQLDataTypeTestBase
   @Test
   public void testDecodePolygon(TestContext ctx) {
     testDecodeGeometry(ctx, "SELECT ST_GeometryFromText('POLYGON((0 0,10 0,10 10,0 10,0 0),(5 5,7 5,7 7,5 7,5 5))', 0) AS test_geometry;", result -> {
+      ctx.assertEquals(result.columnDescriptors().get(0).typeName(), "GEOMETRY");
+      ctx.assertEquals(result.columnDescriptors().get(0).jdbcType(), JDBCType.OTHER);
       Row row = result.iterator().next();
       Polygon polygon = row.get(Polygon.class, 0);
       ctx.assertEquals(0L, polygon.getSRID());
@@ -88,6 +95,8 @@ public abstract class SpatialDataTypeCodecTestBase extends MySQLDataTypeTestBase
   @Test
   public void testDecodeMultiPoint(TestContext ctx) {
     testDecodeGeometry(ctx, "SELECT ST_GeometryFromText('MULTIPOINT(0 0,1 1,2 2)', 0) AS test_geometry;", result -> {
+      ctx.assertEquals(result.columnDescriptors().get(0).typeName(), "GEOMETRY");
+      ctx.assertEquals(result.columnDescriptors().get(0).jdbcType(), JDBCType.OTHER);
       Row row = result.iterator().next();
       MultiPoint multiPoint = row.get(MultiPoint.class, 0);
       ctx.assertEquals(0L, multiPoint.getSRID());
@@ -105,6 +114,8 @@ public abstract class SpatialDataTypeCodecTestBase extends MySQLDataTypeTestBase
   @Test
   public void testDecodeMultiLineString(TestContext ctx) {
     testDecodeGeometry(ctx, "SELECT ST_GeometryFromText('MULTILINESTRING((1 1,2 2,3 3),(4 4,5 5))', 0) AS test_geometry;", result -> {
+      ctx.assertEquals(result.columnDescriptors().get(0).typeName(), "GEOMETRY");
+      ctx.assertEquals(result.columnDescriptors().get(0).jdbcType(), JDBCType.OTHER);
       Row row = result.iterator().next();
       MultiLineString multiLineString = row.get(MultiLineString.class, 0);
       ctx.assertEquals(0L, multiLineString.getSRID());
@@ -131,6 +142,8 @@ public abstract class SpatialDataTypeCodecTestBase extends MySQLDataTypeTestBase
   @Test
   public void testDecodeMultiPolygon(TestContext ctx) {
     testDecodeGeometry(ctx, "SELECT ST_GeometryFromText('MULTIPOLYGON(((0 0,0 3,3 3,3 0,0 0),(1 1,1 2,2 2,2 1,1 1)))', 0) AS test_geometry;", result -> {
+      ctx.assertEquals(result.columnDescriptors().get(0).typeName(), "GEOMETRY");
+      ctx.assertEquals(result.columnDescriptors().get(0).jdbcType(), JDBCType.OTHER);
       Row row = result.iterator().next();
       MultiPolygon multiPolygon = row.get(MultiPolygon.class, 0);
       ctx.assertEquals(0L, multiPolygon.getSRID());
@@ -170,6 +183,8 @@ public abstract class SpatialDataTypeCodecTestBase extends MySQLDataTypeTestBase
   @Test
   public void testDecodeGeometryCollection(TestContext ctx) {
     testDecodeGeometry(ctx, "SELECT ST_GeometryFromText('GEOMETRYCOLLECTION(Point(1 1),LineString(2 2, 3 3))', 0) AS test_geometry;", result -> {
+      ctx.assertEquals(result.columnDescriptors().get(0).typeName(), "GEOMETRY");
+      ctx.assertEquals(result.columnDescriptors().get(0).jdbcType(), JDBCType.OTHER);
       Row row = result.iterator().next();
       GeometryCollection geometryCollection = row.get(GeometryCollection.class, 0);
       ctx.assertEquals(0L, geometryCollection.getSRID());
