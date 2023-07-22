@@ -176,7 +176,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     int characterSet = payload.getUnsignedShortLE(start + bytesToSkip);
     bytesToSkip += 6; // characterSet + columnLength
 
-    DataType type = DataType.valueOf(payload.getUnsignedByte(start + bytesToSkip));
+    short type = payload.getUnsignedByte(start + bytesToSkip);
     bytesToSkip++;
 
     int flags = payload.getUnsignedShortLE(start + bytesToSkip);
@@ -184,7 +184,9 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
 
     payload.skipBytes(bytesToSkip);
 
-    return new ColumnDefinition(name, characterSet, type, flags);
+    // convert type+characterset+flags to dataType
+    DataType dataType = DataType.parseDataType(type, characterSet, flags);
+    return new ColumnDefinition(name, characterSet, dataType, flags);
   }
 
   void skipEofPacketIfNeeded(ByteBuf payload) {
