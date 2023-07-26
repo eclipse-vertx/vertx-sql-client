@@ -3,6 +3,7 @@ package io.vertx.pgclient.data;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
@@ -31,7 +32,7 @@ public class BinaryDataTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
             ColumnChecker.checkColumn(0, "Bytea")
               .returns(Tuple::getValue, Row::getValue, Buffer.buffer(bytes))
               .<Buffer>returns(Tuple::getBuffer, Row::getBuffer, buffer -> {
-                assertFalse(buffer.getByteBuf().isDirect());
+                assertFalse(((BufferInternal)buffer).getByteBuf().isDirect());
                 assertEquals(Buffer.buffer(bytes), buffer);
               })
               .forRow(result.iterator().next());

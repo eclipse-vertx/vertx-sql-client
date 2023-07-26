@@ -16,6 +16,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.core.buffer.impl.VertxByteBufAllocator;
 
 import java.math.BigDecimal;
@@ -712,7 +713,7 @@ public enum DataType {
         if (isPLPNull(payloadLength)) {
           result = null;
         } else {
-          result = Buffer.buffer(readPLP(byteBuf));
+          result = BufferInternal.buffer(readPLP(byteBuf));
         }
       } else {
         int length = byteBuf.readUnsignedShortLE();
@@ -740,7 +741,7 @@ public enum DataType {
 
     @Override
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
-      Buffer buffer = (Buffer) value;
+      BufferInternal buffer = (BufferInternal) value;
       writeParamDescription(byteBuf, name, out, id);
       if (buffer.length() > 8000) {
         byteBuf.writeShortLE(0xFFFF);
@@ -1045,7 +1046,7 @@ public enum DataType {
     ByteBuf unpooled = Unpooled.buffer(length);
     byteBuf.readBytes(unpooled, 0, length);
     unpooled.writerIndex(length);
-    return Buffer.buffer(unpooled);
+    return BufferInternal.buffer(unpooled);
   }
 
   private static LocalDateTime decodeIntLEDateValue(ByteBuf byteBuf) {

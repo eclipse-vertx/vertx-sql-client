@@ -14,6 +14,7 @@ package io.vertx.mysqlclient.impl.datatype;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -346,7 +347,7 @@ public class DataTypeCodec {
 
   private static void binaryEncodeBlob(Buffer value, ByteBuf buffer) {
     BufferUtils.writeLengthEncodedInteger(buffer, value.length());
-    buffer.writeBytes(value.getByteBuf());
+    buffer.writeBytes(((BufferInternal)value).getByteBuf());
   }
 
   private static void binaryEncodeDate(LocalDate value, ByteBuf buffer) {
@@ -553,7 +554,7 @@ public class DataTypeCodec {
     ByteBuf copy = Unpooled.buffer(len);
     copy.writeBytes(buffer, len);
 
-    return Buffer.buffer(copy);
+    return BufferInternal.buffer(copy);
   }
 
   private static String binaryDecodeText(int collationId, ByteBuf buffer) {
@@ -685,7 +686,7 @@ public class DataTypeCodec {
   private static Buffer textDecodeBlob(ByteBuf buffer, int index, int length) {
     ByteBuf copy = Unpooled.buffer(length);
     copy.writeBytes(buffer, index, length);
-    return Buffer.buffer(copy);
+    return BufferInternal.buffer(copy);
   }
 
   private static String textDecodeText(int collationId, ByteBuf buffer, int index, int length) {

@@ -21,6 +21,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.core.buffer.impl.VertxByteBufAllocator;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
@@ -1165,14 +1166,14 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeBYTEA(Buffer value, ByteBuf buff) {
-    ByteBuf byteBuf = value.getByteBuf();
+    ByteBuf byteBuf = ((BufferInternal)value).getByteBuf();
     buff.writeBytes(byteBuf);
   }
 
   private static Buffer binaryDecodeBYTEA(int index, int len, ByteBuf buff) {
     ByteBuf byteBuf = VertxByteBufAllocator.DEFAULT.heapBuffer(len);
     byteBuf.writeBytes(buff, index, len);
-    return Buffer.buffer(byteBuf);
+    return BufferInternal.buffer(byteBuf);
   }
 
   private static void binaryEncodeUUID(UUID uuid, ByteBuf buff) {

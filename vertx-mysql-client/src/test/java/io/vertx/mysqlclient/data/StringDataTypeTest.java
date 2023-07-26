@@ -11,6 +11,7 @@
 
 package io.vertx.mysqlclient.data;
 
+import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.sqlclient.Row;
 import io.vertx.core.buffer.Buffer;
@@ -110,7 +111,7 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
   @Test
   public void testTextDecodeBlobDoesNotLeakDirectBuffer(TestContext ctx) {
     testTextDecodeGenericWithTable(ctx, "Blob", (row, columnName) -> {
-      boolean isDirectBuffer = ((Buffer) row.getValue(0)).getByteBuf().isDirect();
+      boolean isDirectBuffer = ((BufferInternal) row.getValue(0)).getByteBuf().isDirect();
       ctx.assertFalse(isDirectBuffer);
     });
   }
@@ -123,7 +124,7 @@ public class StringDataTypeTest extends MySQLDataTypeTestBase {
   @Test
   public void testBinaryDecodeBlobDoesNotLeakDirectBuffer(TestContext ctx) {
     testBinaryDecodeGenericWithTable(ctx, "Blob", (row, columnName) -> {
-      boolean isDirectBuffer = ((Buffer) row.getValue(0)).getByteBuf().isDirect();
+      boolean isDirectBuffer = ((BufferInternal) row.getValue(0)).getByteBuf().isDirect();
       ctx.assertFalse(isDirectBuffer);
     });
   }

@@ -16,6 +16,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.data.NullValue;
@@ -585,7 +586,7 @@ public interface Tuple {
     } else if (val instanceof Buffer) {
       return (Buffer) val;
     } else if (val instanceof ByteBuf) {
-      return Buffer.buffer((ByteBuf) val);
+      return BufferInternal.buffer((ByteBuf) val);
     } else if (val instanceof byte[]) {
       return Buffer.buffer((byte[]) val);
     } else {
