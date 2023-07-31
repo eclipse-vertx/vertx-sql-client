@@ -13,6 +13,7 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.netty.channel.EventLoop;
 import io.vertx.core.*;
+import io.vertx.core.http.ConnectionPoolTooBusyException;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
@@ -217,12 +218,10 @@ public class SqlConnectionPool {
         if (timeout > 0L && timerID == -1L) {
           timerID = context.setTimer(timeout, id -> {
             pool.cancel(waiter, ar -> {
-              if (ar.succeeded()) {
-                if (ar.result()) {
-                  handler.handle(Future.failedFuture("Timeout"));
-                }
+              if (ar.succeeded() && ar.result()) {
+                handler.handle(Future.failedFuture(new ConnectionPoolTooBusyException("Timeout while waiting for connection")));
               } else {
-                // ????
+                handler.handle(Future.failedFuture(new ConnectionPoolTooBusyException("Failed to cancel pool request after timeout while waiting for connection")));
               }
             });
           });
