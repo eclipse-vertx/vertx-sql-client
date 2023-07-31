@@ -13,7 +13,6 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.netty.channel.EventLoop;
 import io.vertx.core.*;
-import io.vertx.core.http.ConnectionPoolTooBusyException;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
