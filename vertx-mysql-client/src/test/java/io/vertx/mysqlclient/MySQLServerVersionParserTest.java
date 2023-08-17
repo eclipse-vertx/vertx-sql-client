@@ -59,6 +59,16 @@ public class MySQLServerVersionParserTest {
   }
 
   @Test
+  public void testMariaDB_V11_0_2() {
+    actual = MySQLDatabaseMetadata.parse("11.0.2-MariaDB-1:11.0.2+maria~ubu2204");
+    Assert.assertEquals("11.0.2-MariaDB-1:11.0.2+maria~ubu2204", actual.fullVersion());
+    Assert.assertEquals("MariaDB", actual.productName());
+    Assert.assertEquals(11, actual.majorVersion());
+    Assert.assertEquals(0, actual.minorVersion());
+    Assert.assertEquals(2, actual.microVersion());
+  }
+
+  @Test
   public void testPercona_V8_0() {
     actual = MySQLDatabaseMetadata.parse("8.0.19-10");
     Assert.assertEquals("8.0.19-10", actual.fullVersion());
