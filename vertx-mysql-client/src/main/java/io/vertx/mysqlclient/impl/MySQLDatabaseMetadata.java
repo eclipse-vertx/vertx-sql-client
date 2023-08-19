@@ -35,8 +35,13 @@ public class MySQLDatabaseMetadata implements DatabaseMetadata {
     boolean isMariaDb = serverVersion.contains("MariaDB");
     String productName = isMariaDb ? "MariaDB" : "MySQL";
 
+    String fullServerVersion = serverVersion;
+    if (isMariaDb) {
+      // MariaDB server version < 11.x.x is by default prefixed by "5.5.5-"
+      serverVersion = serverVersion.replace("5.5.5-", "");
+    }
     String versionToken = null;
-    int versionTokenStartIdx = isMariaDb ? 6 : 0; // MariaDB server version is by default prefixed by "5.5.5-"
+    int versionTokenStartIdx = 0;
     int versionTokenEndIdx = versionTokenStartIdx;
     while (versionTokenEndIdx < len) {
       char c = serverVersion.charAt(versionTokenEndIdx);
@@ -62,7 +67,7 @@ public class MySQLDatabaseMetadata implements DatabaseMetadata {
       LOGGER.warn("Incorrect parsing server version tokens", ex);
     }
 
-    return new MySQLDatabaseMetadata(serverVersion, productName, majorVersion, minorVersion, microVersion);
+    return new MySQLDatabaseMetadata(fullServerVersion, productName, majorVersion, minorVersion, microVersion);
   }
 
   @Override
