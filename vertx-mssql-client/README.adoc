@@ -25,7 +25,7 @@ You can start external database instances:
 [source,bash]
 ----
 cd docker
-docker-compose up
+docker compose up
 ----
 
 Then run tests against it:

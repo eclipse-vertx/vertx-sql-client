@@ -4,12 +4,12 @@ There will be 2 Postgres containers for testing, one with SSL enabled is for `TL
 
 ### Configure the containers
 
-modify the content in the `docker-compose.yml`
+Modify the content in the `docker compose.yml`
 
 ### Run the containers
 
 ```
-> docker-compose up --build -V
+> docker compose up --build -V
 ```
 
 ### Run tests
