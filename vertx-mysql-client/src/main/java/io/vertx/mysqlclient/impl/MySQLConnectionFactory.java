@@ -18,7 +18,10 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.net.*;
+import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.NetSocket;
+import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.TrustOptions;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
@@ -59,7 +62,6 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
         break;
     }
     int capabilitiesFlag = capabilitiesFlags(options);
-    options.setSsl(false);
     if (sslMode == SslMode.PREFERRED) {
       return doConnect(options, sslMode, capabilitiesFlag, context).recover(err -> doConnect(options, SslMode.DISABLED, capabilitiesFlag, context));
     } else {
@@ -121,7 +123,7 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
     }
     int pipeliningLimit = options.getPipeliningLimit();
     MySQLAuthenticationPlugin authenticationPlugin = options.getAuthenticationPlugin();
-    Future<NetSocket> fut = netClient(options).connect(server);
+    Future<NetSocket> fut = netClient(new NetClientOptions(options).setSsl(false)).connect(server);
     return fut.flatMap(so -> {
       VertxMetrics vertxMetrics = vertx.metricsSPI();
       ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
