@@ -11,6 +11,7 @@
 
 package io.vertx.mysqlclient;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
@@ -148,6 +149,28 @@ public class MySQLTLSTest {
         conn.close();
       }));
     }));
+  }
+
+  @Test
+  public void testPoolSuccessWithRequiredSslMode(TestContext ctx) {
+    options.setSslMode(SslMode.REQUIRED);
+    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
+    options.setPemKeyCertOptions(new PemKeyCertOptions()
+      .setCertPath("tls/files/client-cert.pem")
+      .setKeyPath("tls/files/client-key.pem"));
+
+    MySQLPool pool = MySQLPool.pool(vertx, options, new PoolOptions().setMaxSize(5));
+
+    pool.withConnection(conn1 -> {
+      return pool.withConnection(conn2 -> {
+        if (!conn1.isSSL()) {
+          return Future.failedFuture("conn1 is not secured");
+        } else if (!conn2.isSSL()) {
+          return Future.failedFuture("conn2 is not secured");
+        }
+        return Future.succeededFuture();
+      });
+    }).onComplete(ctx.asyncAssertSuccess());
   }
 
   @Test
