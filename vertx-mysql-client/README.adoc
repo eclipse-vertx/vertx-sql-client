@@ -48,11 +48,11 @@ You need to add some properties for testing:
 
 === Testing with Docker
 
-Run the MySQL container with `docker-compose`:
+Run the MySQL container with `docker compose`:
 
 ```
 > cd docker/mysql
-> docker-compose up --build -V
+> docker compose up --build -V
 ```
 
 Run tests:

@@ -2,12 +2,12 @@
 
 ### Configure the containers
 
-modify the content in the `docker-compose.yml`
+Modify the content in the `docker compose.yml`
 
 ### Run the containers
 
 ```
-> docker-compose up --build -V
+> docker compose up --build -V
 ```
 
 ### TLS testing

@@ -325,11 +325,11 @@ you will then need this property to help you connect the Postgres with Unix doma
 
 === Testing with Docker
 
-Run the Postgres containers with `docker-compose`:
+Run the Postgres containers with `docker compose`:
 
 ```
 > cd docker/postgres
-> docker-compose up --build -V
+> docker compose up --build -V
 ```
 
 Run tests:
