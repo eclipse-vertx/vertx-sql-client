@@ -167,7 +167,7 @@ public class SqlConnectionPool {
       if (afterAcquire != null) {
         future = afterAcquire.apply(conn)
           .compose(v -> pooled.schedule(context, cmd))
-          .eventually(v -> beforeRecycle.apply(conn));
+          .eventually(() -> beforeRecycle.apply(conn));
       } else {
         future = pooled.schedule(context, cmd);
       }

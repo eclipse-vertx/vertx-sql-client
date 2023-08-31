@@ -192,7 +192,7 @@ public class SqlClientExamples {
             .execute()
             .map(rows -> rows.iterator().next().getInteger(0)))
           // Return the connection to the pool
-          .eventually(v -> connection.close())
+          .eventually(() -> connection.close())
       ).onSuccess(count -> {
       System.out.println("Insert users, now the number of users is " + count);
     });
@@ -204,7 +204,7 @@ public class SqlClientExamples {
       .compose(pq ->
         pq.query()
           .execute(Tuple.of("Julien"))
-          .eventually(v -> pq.close())
+          .eventually(() -> pq.close())
       ).onSuccess(rows -> {
       // All rows
     });
@@ -273,7 +273,7 @@ public class SqlClientExamples {
             // Commit the transaction
             .compose(res3 -> tx.commit()))
           // Return the connection to the pool
-          .eventually(v -> conn.close())
+          .eventually(() -> conn.close())
           .onSuccess(v -> System.out.println("Transaction succeeded"))
           .onFailure(err -> System.out.println("Transaction failed: " + err.getMessage()));
       });

@@ -541,7 +541,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           ctx.assertEquals("HELLO " + suffix2, row2.getString(0));
           return "";
         })
-        .eventually(v -> conn.close());
+        .eventually(() -> conn.close());
     }));
   }
 
@@ -556,7 +556,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           ctx.assertEquals("HELLO__", row.getString(0));
           return "";
         })
-        .eventually(v -> conn.close());
+        .eventually(() -> conn.close());
     }));
   }
 
@@ -565,7 +565,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
     PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT CONCAT('HELLO', $1)")
         .execute(Tuple.of(null))
-        .eventually(v -> conn.close())
+        .eventually(() -> conn.close())
         .onComplete(ctx.asyncAssertFailure());
     }));
   }
@@ -576,7 +576,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       conn
         .prepare("SELECT CONCAT('HELLO', $1)")
         .compose(ps -> ps.query().execute(Tuple.of(null)))
-        .eventually(v -> conn.close())
+        .eventually(() -> conn.close())
         .onComplete(ctx.asyncAssertFailure());
     }));
   }
@@ -591,7 +591,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           ctx.assertEquals("foo", result.iterator().next().getString(0));
           return "";
         })
-        .eventually(v -> conn.close())
+        .eventually(() -> conn.close())
         .onComplete(ctx.asyncAssertSuccess());
     }));
   }
@@ -602,7 +602,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
       conn
         .prepare("UPDATE Fortune SET message=$2 WHERE id=$1 AND (Fortune.*) IS DISTINCT FROM ($1, $2)")
         .compose(ps -> ps.query().execute(Tuple.of(9, "Feature: A bug with seniority.")))
-        .eventually(v -> conn.close())
+        .eventually(() -> conn.close())
         .onComplete(ctx.asyncAssertSuccess());
     }));
   }

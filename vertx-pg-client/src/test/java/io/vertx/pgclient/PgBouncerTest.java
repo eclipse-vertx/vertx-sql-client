@@ -132,9 +132,9 @@ public class PgBouncerTest {
             return cursor
               .read(10)
               .map(res -> res.iterator().next().getInteger(0))
-              .eventually(v -> cursor.close())
-              .eventually(v -> ps.close());
-      }).eventually(v -> tx.commit())));
+              .eventually(() -> cursor.close())
+              .eventually(() -> ps.close());
+      }).eventually(() -> tx.commit())));
     }
     CompositeFuture cf = Future.join(list);
     cf.toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
