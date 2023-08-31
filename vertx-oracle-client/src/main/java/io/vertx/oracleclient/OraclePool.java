@@ -10,7 +10,6 @@
  */
 package io.vertx.oracleclient;
 
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -20,7 +19,6 @@ import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.SingletonSupplier;
 
 import java.util.Collections;
 import java.util.function.Function;
@@ -65,7 +63,6 @@ public interface OraclePool extends Pool {
    * @param poolOptions the options for creating the pool
    * @return the connection pool
    */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static OraclePool pool(Supplier<Future<OracleConnectOptions>> databases, PoolOptions poolOptions) {
     return pool(null, databases, poolOptions);
   }
@@ -74,7 +71,6 @@ public interface OraclePool extends Pool {
   /**
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static OraclePool pool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions poolOptions) {
     return (OraclePool) OracleDriver.INSTANCE.createPool(vertx, databases, poolOptions);
   }

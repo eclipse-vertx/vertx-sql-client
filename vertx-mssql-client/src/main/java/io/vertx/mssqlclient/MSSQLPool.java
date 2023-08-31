@@ -12,7 +12,6 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
@@ -107,7 +106,6 @@ public interface MSSQLPool extends Pool {
    * @param options the options for creating the pool
    * @return the connection pool
    */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static MSSQLPool pool(Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options) {
     return pool(null, databases, options);
   }
@@ -115,7 +113,6 @@ public interface MSSQLPool extends Pool {
   /**
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
-  @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static MSSQLPool pool(Vertx vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options) {
     return (MSSQLPool) MSSQLDriver.INSTANCE.createPool(vertx, databases, options);
   }
