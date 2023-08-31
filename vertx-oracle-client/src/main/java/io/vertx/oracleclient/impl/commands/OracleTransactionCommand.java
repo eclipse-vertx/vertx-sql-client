@@ -58,7 +58,7 @@ public class OracleTransactionCommand<R> extends OracleCommand<R> {
       .compose((SQLFutureMapper<Boolean, Void>) autoCommit -> {
         return autoCommit ? Future.succeededFuture() : first(oracleConnection.commitAsyncOracle());
       })
-      .eventually(v -> executeBlocking(() -> oracleConnection.setAutoCommit(true)));
+      .eventually(() -> executeBlocking(() -> oracleConnection.setAutoCommit(true)));
   }
 
   private Future<Void> rollback() {
@@ -66,6 +66,6 @@ public class OracleTransactionCommand<R> extends OracleCommand<R> {
       .compose((SQLFutureMapper<Boolean, Void>) autoCommit -> {
         return autoCommit ? Future.succeededFuture() : first(oracleConnection.rollbackAsyncOracle());
       })
-      .eventually(v -> executeBlocking(() -> oracleConnection.setAutoCommit(true)));
+      .eventually(() -> executeBlocking(() -> oracleConnection.setAutoCommit(true)));
   }
 }
