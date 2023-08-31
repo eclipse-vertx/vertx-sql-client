@@ -54,6 +54,7 @@ public class SqlConnectionPool {
   private final boolean pipelined;
   private final long idleTimeout;
   private final long maxLifetime;
+  private final int minSize;
   private final int maxSize;
 
   public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
@@ -63,10 +64,17 @@ public class SqlConnectionPool {
                            VertxInternal vertx,
                            long idleTimeout,
                            long maxLifetime,
+                           int minSize,
                            int maxSize,
                            boolean pipelined,
                            int maxWaitQueueSize,
                            int eventLoopSize) {
+    if (minSize < 0) {
+      throw new IllegalArgumentException("Pool min size must be > 0");
+    }
+    if (minSize > maxSize) {
+      throw new IllegalArgumentException("Pool min size must be <= max size");
+    }
     if (maxSize < 1) {
       throw new IllegalArgumentException("Pool max size must be > 0");
     }
@@ -78,6 +86,7 @@ public class SqlConnectionPool {
     this.pipelined = pipelined;
     this.idleTimeout = idleTimeout;
     this.maxLifetime = maxLifetime;
+    this.minSize = minSize;
     this.maxSize = maxSize;
     this.hook = hook;
     this.connectionProvider = connectionProvider;
@@ -145,7 +154,7 @@ public class SqlConnectionPool {
     return pool.size();
   }
 
-  public void evict() {
+  public void checkInvariants(long connectionTimeout) {
     long now = System.currentTimeMillis();
     pool.evict(conn -> conn.shouldEvict(now), ar -> {
       if (ar.succeeded()) {
@@ -153,8 +162,22 @@ public class SqlConnectionPool {
         for (PooledConnection conn : res) {
           conn.close(Promise.promise());
         }
+        checkMin(connectionTimeout);
       }
     });
+  }
+
+  public void checkMin(long connectionTimeout) {
+    if (pool.size() < minSize) {
+      ContextInternal context = vertx.getOrCreateContext();
+      for (int i = 0; i < minSize; ++i) {
+        acquire(context, connectionTimeout, (ar) -> {
+          if (ar.succeeded()) {
+            ar.result().cleanup(Promise.promise());
+          }
+        });
+      }
+    }
   }
 
   public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {

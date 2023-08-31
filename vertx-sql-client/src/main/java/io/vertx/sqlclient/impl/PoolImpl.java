@@ -68,7 +68,9 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.timerID = -1L;
     this.pipelined = pipelined;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer,
+      afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMinSize(), poolOptions.getMaxSize(),
+      pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
   }
 
@@ -77,10 +79,11 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     if ((idleTimeout > 0 || maxLifetime > 0) && cleanerPeriod > 0) {
       synchronized (this) {
         timerID = vertx.setTimer(cleanerPeriod, id -> {
-          runEviction();
+          runInvariantsCheck();
         });
       }
     }
+    pool.checkMin(connectionTimeout);
     return this;
   }
 
@@ -92,17 +95,17 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     return this;
   }
 
-  private void runEviction() {
+  private void runInvariantsCheck() {
     synchronized (this) {
       if (timerID == -1) {
         // Cancelled
         return;
       }
       timerID = vertx.setTimer(cleanerPeriod, id -> {
-        runEviction();
+        runInvariantsCheck();
       });
     }
-    pool.evict();
+    pool.checkInvariants(connectionTimeout);
   }
 
   @Override

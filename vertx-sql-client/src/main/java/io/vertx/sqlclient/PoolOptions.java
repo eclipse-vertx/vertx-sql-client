@@ -33,6 +33,11 @@ import java.util.concurrent.TimeUnit;
 public class PoolOptions {
 
   /**
+   * The default minimum number of connections a client will keep open in the pool = 0
+   */
+  public static final int DEFAULT_MIN_SIZE = 0;
+
+  /**
    * The default maximum number of connections a client will pool = 4
    */
   public static final int DEFAULT_MAX_SIZE = 4;
@@ -92,6 +97,7 @@ public class PoolOptions {
    */
   public static final int DEFAULT_EVENT_LOOP_SIZE = 0;
 
+  private int minSize = DEFAULT_MIN_SIZE;
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
@@ -113,6 +119,7 @@ public class PoolOptions {
   }
 
   public PoolOptions(PoolOptions other) {
+    minSize = other.minSize;
     maxSize = other.maxSize;
     maxWaitQueueSize = other.maxWaitQueueSize;
     idleTimeout = other.idleTimeout;
@@ -120,6 +127,30 @@ public class PoolOptions {
     shared= other.shared;
     name = other.name;
     eventLoopSize = other.eventLoopSize;
+  }
+
+  /**
+   * @return  the minimum pool size
+   */
+  public int getMinSize() {
+    return minSize;
+  }
+
+  /**
+   * Set the minimum pool size
+   *
+   * @param minSize  the minimum pool size
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setMinSize(int minSize) {
+    if (minSize < 0) {
+      throw new IllegalArgumentException("Min size cannot be negative");
+    }
+    if (minSize > maxSize) {
+      throw new IllegalArgumentException("Min size cannot be greater than max size");
+    }
+    this.minSize = minSize;
+    return this;
   }
 
   /**
