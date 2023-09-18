@@ -101,17 +101,17 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
       }
     });
 
+    // Do not perform hostname validation if the client did not require encryption
     if (!clientConfigSsl) {
-      // Do not perform hostname validation if the client did not require encryption
       options.setTrustAll(true);
     }
 
     // 2. Create and set up an SSLHelper and SSLHandler
     // options.getApplicationLayerProtocols()
     SSLHelper helper = new SSLHelper(SSLHelper.resolveEngineOptions(options.getSslEngineOptions(), options.isUseAlpn()));
-    Future<SslChannelProvider> f = helper.resolveSslChannelProvider(options.getSslOptions(), "", false, ClientAuth.NONE, options.getApplicationLayerProtocols(), context);
+    Future<SslChannelProvider> f = helper.resolveSslChannelProvider(options.getSslOptions(), "", false, null, null, context);
     return f.compose(provider -> {
-      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, false, false, options.getSslHandshakeTimeout(), options.getSslHandshakeTimeoutUnit());
+      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, options.isUseAlpn(), options.isTrustAll(), options.getSslHandshakeTimeout(), options.getSslHandshakeTimeoutUnit());
 
       // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
       TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
