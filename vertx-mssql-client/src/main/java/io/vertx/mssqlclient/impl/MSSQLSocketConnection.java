@@ -18,7 +18,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.ClientAuth;
-import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
@@ -61,7 +61,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
                         int preparedStatementCacheSize,
                         Predicate<String> preparedStatementCacheSqlFilter,
                         int pipeliningLimit,
-                        EventLoopContext context) {
+                        ContextInternal context) {
     super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
     this.connectOptions = connectOptions;
     this.packetSize = packetSize;

@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
@@ -36,7 +37,7 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    return prepareForClose(ctx, client.connect(ctx, options)).map(DB2Connection::cast);
+    return prepareForClose(ctx, client.connect((Context)ctx, options)).map(DB2Connection::cast);
   }
 
   public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {

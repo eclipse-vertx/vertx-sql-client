@@ -22,7 +22,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.NetSocket;
@@ -67,7 +66,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(PgConnectOptions options, EventLoopContext context) {
+  protected Future<Connection> doConnectInternal(PgConnectOptions options, ContextInternal context) {
     try {
       checkSslMode(options);
     } catch (Exception e) {
@@ -97,7 +96,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     });
   }
 
-  private Future<Connection> doConnect(SocketAddress server, EventLoopContext context, PgConnectOptions options) {
+  private Future<Connection> doConnect(SocketAddress server, ContextInternal context, PgConnectOptions options) {
     SslMode sslMode = options.isUsingDomainSocket() ? SslMode.DISABLE : options.getSslMode();
     Future<Connection> connFuture;
     switch (sslMode) {
@@ -121,7 +120,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     return connFuture;
   }
 
-  private Future<Connection> doConnect(SocketAddress server, EventLoopContext context, boolean ssl, PgConnectOptions options) {
+  private Future<Connection> doConnect(SocketAddress server, ContextInternal context, boolean ssl, PgConnectOptions options) {
     Future<NetSocket> soFut;
     try {
       soFut = netClient(options).connect(server, (String) null);
@@ -163,7 +162,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     return promise.future();
   }
 
-  private PgSocketConnection newSocketConnection(EventLoopContext context, NetSocketInternal socket, PgConnectOptions options) {
+  private PgSocketConnection newSocketConnection(ContextInternal context, NetSocketInternal socket, PgConnectOptions options) {
     boolean cachePreparedStatements = options.getCachePreparedStatements();
     int preparedStatementCacheMaxSize = options.getPreparedStatementCacheMaxSize();
     Predicate<String> preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();

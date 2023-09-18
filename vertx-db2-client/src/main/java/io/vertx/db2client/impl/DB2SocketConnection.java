@@ -22,7 +22,7 @@ import io.netty.channel.ChannelPipeline;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.EventLoopContext;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
@@ -54,7 +54,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
       int preparedStatementCacheSize,
       Predicate<String> preparedStatementCacheSqlFilter,
       int pipeliningLimit,
-      EventLoopContext context) {
+                             ContextInternal context) {
     super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
     this.connectOptions = connectOptions;
   }

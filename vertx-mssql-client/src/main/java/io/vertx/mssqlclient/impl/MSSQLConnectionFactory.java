@@ -15,7 +15,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
@@ -41,11 +40,11 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(MSSQLConnectOptions options, EventLoopContext context) {
+  protected Future<Connection> doConnectInternal(MSSQLConnectOptions options, ContextInternal context) {
     return connectOrRedirect(options, context, 0);
   }
 
-  private Future<Connection> connectOrRedirect(MSSQLConnectOptions options, EventLoopContext context, int redirections) {
+  private Future<Connection> connectOrRedirect(MSSQLConnectOptions options, ContextInternal context, int redirections) {
     if (redirections > 1) {
       return context.failedFuture("The client can be redirected only once");
     }
@@ -71,7 +70,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
       });
   }
 
-  private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, int desiredPacketSize, EventLoopContext context) {
+  private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, int desiredPacketSize, ContextInternal context) {
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
     MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, metrics, options, desiredPacketSize, false, 0, sql -> true, 1, context);
@@ -79,7 +78,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
     return conn;
   }
 
-  private Future<Connection> login(MSSQLSocketConnection conn, MSSQLConnectOptions options, Byte encryptionLevel, EventLoopContext context) {
+  private Future<Connection> login(MSSQLSocketConnection conn, MSSQLConnectOptions options, Byte encryptionLevel, ContextInternal context) {
     boolean clientSslConfig = options.isSsl();
     if (clientSslConfig && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
       Promise<Void> closePromise = context.promise();

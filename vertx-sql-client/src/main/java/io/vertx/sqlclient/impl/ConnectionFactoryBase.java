@@ -80,15 +80,15 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
     return client;
   }
 
-  public static EventLoopContext asEventLoopContext(ContextInternal ctx) {
-    if (ctx instanceof EventLoopContext) {
-      return (EventLoopContext) ctx;
+  public static ContextInternal asEventLoopContext(ContextInternal ctx) {
+    if (ctx.isEventLoopContext()) {
+      return ctx;
     } else {
       return ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.workerPool(), ctx.classLoader());
     }
   }
 
-  public Future<Connection> connect(EventLoopContext context, C options) {
+  public Future<Connection> connect(ContextInternal context, C options) {
     PromiseInternal<Connection> promise = context.promise();
     context.emit(promise, p -> doConnectWithRetry(options, p, options.getReconnectAttempts()));
     return promise.future();
@@ -100,7 +100,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   }
 
   private void doConnectWithRetry(C options, PromiseInternal<Connection> promise, int remainingAttempts) {
-    EventLoopContext ctx = (EventLoopContext) promise.context();
+    ContextInternal ctx = promise.context();
     doConnectInternal(options, ctx).onComplete(ar -> {
       if (ar.succeeded()) {
         promise.complete(ar.result());
@@ -119,6 +119,6 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   /**
    * Establish a connection to the server.
    */
-  protected abstract Future<Connection> doConnectInternal(C options, EventLoopContext context);
+  protected abstract Future<Connection> doConnectInternal(C options, ContextInternal context);
 
 }

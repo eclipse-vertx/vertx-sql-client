@@ -16,6 +16,7 @@
  */
 package io.vertx.pgclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -41,7 +42,7 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     } catch (Exception e) {
       return context.failedFuture(e);
     }
-    return prepareForClose(context, client.connect(context, options)).map(PgConnection::cast);
+    return prepareForClose(context, client.connect((Context)context, options)).map(PgConnection::cast);
   }
 
   private volatile Handler<PgNotification> notificationHandler;

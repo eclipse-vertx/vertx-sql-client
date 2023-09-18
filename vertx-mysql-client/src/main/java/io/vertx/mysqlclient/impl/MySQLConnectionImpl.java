@@ -11,6 +11,7 @@
 
 package io.vertx.mysqlclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
@@ -36,7 +37,7 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    return prepareForClose(ctx, client.connect(ctx, options)).map(MySQLConnection::cast);
+    return prepareForClose(ctx, client.connect((Context)ctx, options)).map(MySQLConnection::cast);
   }
 
   public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {

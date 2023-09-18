@@ -11,6 +11,7 @@
 
 package io.vertx.mssqlclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -35,7 +36,7 @@ public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner());
-    return prepareForClose(ctx, client.connect(ctx, options)).map(MSSQLConnection::cast);
+    return prepareForClose(ctx, client.connect((Context)ctx, options)).map(MSSQLConnection::cast);
   }
 
   @Override

@@ -14,7 +14,6 @@ package io.vertx.sqlclient.impl.pool;
 import io.netty.channel.EventLoop;
 import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.ConnectionBase;
@@ -89,11 +88,11 @@ public class SqlConnectionPool {
       for (int i = 0; i < eventLoopSize; i++) {
         loops[i] = vertx.nettyEventLoopGroup().next();
       }
-      pool.contextProvider(new Function<ContextInternal, EventLoopContext>() {
+      pool.contextProvider(new Function<ContextInternal, ContextInternal>() {
         int idx = 0;
 
         @Override
-        public EventLoopContext apply(ContextInternal contextInternal) {
+        public ContextInternal apply(ContextInternal contextInternal) {
           EventLoop loop = loops[idx++];
           if (idx == loops.length) {
             idx = 0;
@@ -108,7 +107,7 @@ public class SqlConnectionPool {
 
   private final PoolConnector<PooledConnection> connector = new PoolConnector<PooledConnection>() {
     @Override
-    public Future<ConnectResult<PooledConnection>> connect(EventLoopContext context, Listener listener) {
+    public Future<ConnectResult<PooledConnection>> connect(ContextInternal context, Listener listener) {
       Future<SqlConnection> future = connectionProvider.apply(context);
       return future.compose(res -> {
         SqlConnectionBase connBase = (SqlConnectionBase) res;

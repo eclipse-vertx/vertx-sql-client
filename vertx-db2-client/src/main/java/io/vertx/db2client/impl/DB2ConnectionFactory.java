@@ -19,7 +19,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.SocketAddress;
@@ -41,7 +40,7 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(DB2ConnectOptions options, EventLoopContext context) {
+  protected Future<Connection> doConnectInternal(DB2ConnectOptions options, ContextInternal context) {
     SocketAddress server = options.getSocketAddress();
     boolean cachePreparedStatements = options.getCachePreparedStatements();
     int preparedStatementCacheSize = options.getPreparedStatementCacheMaxSize();
