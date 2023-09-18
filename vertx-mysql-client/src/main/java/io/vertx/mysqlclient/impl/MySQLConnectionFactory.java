@@ -16,7 +16,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
@@ -47,7 +46,7 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   @Override
-  protected Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context) {
+  protected Future<Connection> doConnectInternal(SqlConnectOptions options, ContextInternal context) {
     MySQLConnectOptions mySQLOptions = MySQLConnectOptions.wrap(options);
     SslMode sslMode = mySQLOptions.isUsingDomainSocket() ? SslMode.DISABLED : mySQLOptions.getSslMode();
     switch (sslMode) {
@@ -86,7 +85,7 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
     return capabilitiesFlags;
   }
 
-  private Future<Connection> doConnect(MySQLConnectOptions options, SslMode sslMode, int initialCapabilitiesFlags, EventLoopContext context) {
+  private Future<Connection> doConnect(MySQLConnectOptions options, SslMode sslMode, int initialCapabilitiesFlags, ContextInternal context) {
     String username = options.getUser();
     String password = options.getPassword();
     String database = options.getDatabase();

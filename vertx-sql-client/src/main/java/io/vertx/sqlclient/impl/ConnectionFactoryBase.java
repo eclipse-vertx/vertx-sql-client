@@ -15,7 +15,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.json.JsonObject;
@@ -71,15 +70,15 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     return client;
   }
 
-  public static EventLoopContext asEventLoopContext(ContextInternal ctx) {
-    if (ctx instanceof EventLoopContext) {
-      return (EventLoopContext) ctx;
+  public static ContextInternal asEventLoopContext(ContextInternal ctx) {
+    if (ctx.isEventLoopContext()) {
+      return ctx;
     } else {
       return ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.workerPool(), ctx.classLoader());
     }
   }
 
-  public Future<Connection> connect(EventLoopContext context, SqlConnectOptions options) {
+  public Future<Connection> connect(ContextInternal context, SqlConnectOptions options) {
     PromiseInternal<Connection> promise = context.promise();
     context.emit(promise, p -> doConnectWithRetry(options, p, options.getReconnectAttempts()));
     return promise.future();
@@ -96,7 +95,7 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   }
 
   private void doConnectWithRetry(SqlConnectOptions options, PromiseInternal<Connection> promise, int remainingAttempts) {
-    EventLoopContext ctx = (EventLoopContext) promise.context();
+    ContextInternal ctx = promise.context();
     doConnectInternal(options, ctx).onComplete(ar -> {
       if (ar.succeeded()) {
         promise.complete(ar.result());
@@ -115,6 +114,6 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
   /**
    * Establish a connection to the server.
    */
-  protected abstract Future<Connection> doConnectInternal(SqlConnectOptions options, EventLoopContext context);
+  protected abstract Future<Connection> doConnectInternal(SqlConnectOptions options, ContextInternal context);
 
 }
