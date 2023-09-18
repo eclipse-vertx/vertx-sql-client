@@ -44,7 +44,7 @@ public class PgBouncerTest {
     Testcontainers.exposeHostPorts(pgPort);
 
 
-    pgBouncerContainer = new GenericContainer(DockerImageName.parse("bitnami/pgbouncer:latest"));
+    pgBouncerContainer = new GenericContainer(DockerImageName.parse("bitnami/pgbouncer:1.20.1-debian-11-r30"));
     pgBouncerContainer.withEnv("POSTGRESQL_USERNAME", "postgres");
     pgBouncerContainer.withEnv("POSTGRESQL_PASSWORD", "postgres");
     pgBouncerContainer.withEnv("POSTGRESQL_DATABASE", "postgres");
