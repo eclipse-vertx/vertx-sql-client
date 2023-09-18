@@ -20,6 +20,11 @@ public class PgNotificationConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, PgNotification obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "processId":
+          if (member.getValue() instanceof Number) {
+            obj.setProcessId(((Number)member.getValue()).intValue());
+          }
+          break;
         case "channel":
           if (member.getValue() instanceof String) {
             obj.setChannel((String)member.getValue());
@@ -28,11 +33,6 @@ public class PgNotificationConverter {
         case "payload":
           if (member.getValue() instanceof String) {
             obj.setPayload((String)member.getValue());
-          }
-          break;
-        case "processId":
-          if (member.getValue() instanceof Number) {
-            obj.setProcessId(((Number)member.getValue()).intValue());
           }
           break;
       }
@@ -44,12 +44,12 @@ public class PgNotificationConverter {
   }
 
   public static void toJson(PgNotification obj, java.util.Map<String, Object> json) {
+    json.put("processId", obj.getProcessId());
     if (obj.getChannel() != null) {
       json.put("channel", obj.getChannel());
     }
     if (obj.getPayload() != null) {
       json.put("payload", obj.getPayload());
     }
-    json.put("processId", obj.getProcessId());
   }
 }

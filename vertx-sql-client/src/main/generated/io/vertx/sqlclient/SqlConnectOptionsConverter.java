@@ -20,19 +20,19 @@ public class SqlConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, SqlConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "cachePreparedStatements":
-          if (member.getValue() instanceof Boolean) {
-            obj.setCachePreparedStatements((Boolean)member.getValue());
-          }
-          break;
-        case "database":
-          if (member.getValue() instanceof String) {
-            obj.setDatabase((String)member.getValue());
-          }
-          break;
         case "host":
           if (member.getValue() instanceof String) {
             obj.setHost((String)member.getValue());
+          }
+          break;
+        case "port":
+          if (member.getValue() instanceof Number) {
+            obj.setPort(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "user":
+          if (member.getValue() instanceof String) {
+            obj.setUser((String)member.getValue());
           }
           break;
         case "password":
@@ -40,9 +40,14 @@ public class SqlConnectOptionsConverter {
             obj.setPassword((String)member.getValue());
           }
           break;
-        case "port":
-          if (member.getValue() instanceof Number) {
-            obj.setPort(((Number)member.getValue()).intValue());
+        case "database":
+          if (member.getValue() instanceof String) {
+            obj.setDatabase((String)member.getValue());
+          }
+          break;
+        case "cachePreparedStatements":
+          if (member.getValue() instanceof Boolean) {
+            obj.setCachePreparedStatements((Boolean)member.getValue());
           }
           break;
         case "preparedStatementCacheMaxSize":
@@ -70,11 +75,6 @@ public class SqlConnectOptionsConverter {
             obj.setTracingPolicy(io.vertx.core.tracing.TracingPolicy.valueOf((String)member.getValue()));
           }
           break;
-        case "user":
-          if (member.getValue() instanceof String) {
-            obj.setUser((String)member.getValue());
-          }
-          break;
         case "usingDomainSocket":
           break;
       }
@@ -86,17 +86,20 @@ public class SqlConnectOptionsConverter {
   }
 
   public static void toJson(SqlConnectOptions obj, java.util.Map<String, Object> json) {
-    json.put("cachePreparedStatements", obj.getCachePreparedStatements());
-    if (obj.getDatabase() != null) {
-      json.put("database", obj.getDatabase());
-    }
     if (obj.getHost() != null) {
       json.put("host", obj.getHost());
+    }
+    json.put("port", obj.getPort());
+    if (obj.getUser() != null) {
+      json.put("user", obj.getUser());
     }
     if (obj.getPassword() != null) {
       json.put("password", obj.getPassword());
     }
-    json.put("port", obj.getPort());
+    if (obj.getDatabase() != null) {
+      json.put("database", obj.getDatabase());
+    }
+    json.put("cachePreparedStatements", obj.getCachePreparedStatements());
     json.put("preparedStatementCacheMaxSize", obj.getPreparedStatementCacheMaxSize());
     if (obj.getProperties() != null) {
       JsonObject map = new JsonObject();
@@ -105,9 +108,6 @@ public class SqlConnectOptionsConverter {
     }
     if (obj.getTracingPolicy() != null) {
       json.put("tracingPolicy", obj.getTracingPolicy().name());
-    }
-    if (obj.getUser() != null) {
-      json.put("user", obj.getUser());
     }
     json.put("usingDomainSocket", obj.isUsingDomainSocket());
   }

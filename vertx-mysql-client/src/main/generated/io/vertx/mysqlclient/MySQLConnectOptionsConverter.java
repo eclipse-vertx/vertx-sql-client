@@ -20,14 +20,9 @@ public class MySQLConnectOptionsConverter {
   public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MySQLConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
-        case "authenticationPlugin":
+        case "collation":
           if (member.getValue() instanceof String) {
-            obj.setAuthenticationPlugin(io.vertx.mysqlclient.MySQLAuthenticationPlugin.valueOf((String)member.getValue()));
-          }
-          break;
-        case "characterEncoding":
-          if (member.getValue() instanceof String) {
-            obj.setCharacterEncoding((String)member.getValue());
+            obj.setCollation((String)member.getValue());
           }
           break;
         case "charset":
@@ -35,14 +30,24 @@ public class MySQLConnectOptionsConverter {
             obj.setCharset((String)member.getValue());
           }
           break;
-        case "collation":
+        case "characterEncoding":
           if (member.getValue() instanceof String) {
-            obj.setCollation((String)member.getValue());
+            obj.setCharacterEncoding((String)member.getValue());
           }
           break;
-        case "pipeliningLimit":
-          if (member.getValue() instanceof Number) {
-            obj.setPipeliningLimit(((Number)member.getValue()).intValue());
+        case "useAffectedRows":
+          if (member.getValue() instanceof Boolean) {
+            obj.setUseAffectedRows((Boolean)member.getValue());
+          }
+          break;
+        case "sslMode":
+          if (member.getValue() instanceof String) {
+            obj.setSslMode(io.vertx.mysqlclient.SslMode.valueOf((String)member.getValue()));
+          }
+          break;
+        case "authenticationPlugin":
+          if (member.getValue() instanceof String) {
+            obj.setAuthenticationPlugin(io.vertx.mysqlclient.MySQLAuthenticationPlugin.valueOf((String)member.getValue()));
           }
           break;
         case "serverRsaPublicKeyPath":
@@ -55,14 +60,9 @@ public class MySQLConnectOptionsConverter {
             obj.setServerRsaPublicKeyValue(io.vertx.core.buffer.Buffer.buffer(BASE64_DECODER.decode((String)member.getValue())));
           }
           break;
-        case "sslMode":
-          if (member.getValue() instanceof String) {
-            obj.setSslMode(io.vertx.mysqlclient.SslMode.valueOf((String)member.getValue()));
-          }
-          break;
-        case "useAffectedRows":
-          if (member.getValue() instanceof Boolean) {
-            obj.setUseAffectedRows((Boolean)member.getValue());
+        case "pipeliningLimit":
+          if (member.getValue() instanceof Number) {
+            obj.setPipeliningLimit(((Number)member.getValue()).intValue());
           }
           break;
       }
@@ -74,28 +74,28 @@ public class MySQLConnectOptionsConverter {
   }
 
   public static void toJson(MySQLConnectOptions obj, java.util.Map<String, Object> json) {
-    if (obj.getAuthenticationPlugin() != null) {
-      json.put("authenticationPlugin", obj.getAuthenticationPlugin().name());
-    }
-    if (obj.getCharacterEncoding() != null) {
-      json.put("characterEncoding", obj.getCharacterEncoding());
+    if (obj.getCollation() != null) {
+      json.put("collation", obj.getCollation());
     }
     if (obj.getCharset() != null) {
       json.put("charset", obj.getCharset());
     }
-    if (obj.getCollation() != null) {
-      json.put("collation", obj.getCollation());
+    if (obj.getCharacterEncoding() != null) {
+      json.put("characterEncoding", obj.getCharacterEncoding());
     }
-    json.put("pipeliningLimit", obj.getPipeliningLimit());
+    json.put("useAffectedRows", obj.isUseAffectedRows());
+    if (obj.getSslMode() != null) {
+      json.put("sslMode", obj.getSslMode().name());
+    }
+    if (obj.getAuthenticationPlugin() != null) {
+      json.put("authenticationPlugin", obj.getAuthenticationPlugin().name());
+    }
     if (obj.getServerRsaPublicKeyPath() != null) {
       json.put("serverRsaPublicKeyPath", obj.getServerRsaPublicKeyPath());
     }
     if (obj.getServerRsaPublicKeyValue() != null) {
       json.put("serverRsaPublicKeyValue", BASE64_ENCODER.encodeToString(obj.getServerRsaPublicKeyValue().getBytes()));
     }
-    if (obj.getSslMode() != null) {
-      json.put("sslMode", obj.getSslMode().name());
-    }
-    json.put("useAffectedRows", obj.isUseAffectedRows());
+    json.put("pipeliningLimit", obj.getPipeliningLimit());
   }
 }

@@ -17,11 +17,13 @@ import io.netty.handler.ssl.SslHandler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.http.ClientAuth;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.impl.SSLHelper;
+import io.vertx.core.net.impl.SslChannelProvider;
 import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
@@ -105,9 +107,11 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     }
 
     // 2. Create and set up an SSLHelper and SSLHandler
-    SSLHelper helper = new SSLHelper(options, options.getApplicationLayerProtocols());
-    return helper.buildChannelProvider(options.getSslOptions(), context).compose(provider -> {
-      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, false);
+    // options.getApplicationLayerProtocols()
+    SSLHelper helper = new SSLHelper(SSLHelper.resolveEngineOptions(options.getSslEngineOptions(), options.isUseAlpn()));
+    Future<SslChannelProvider> f = helper.resolveSslChannelProvider(options.getSslOptions(), "", false, ClientAuth.NONE, options.getApplicationLayerProtocols(), context);
+    return f.compose(provider -> {
+      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, false, false, options.getSslHandshakeTimeout(), options.getSslHandshakeTimeoutUnit());
 
       // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
       TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
