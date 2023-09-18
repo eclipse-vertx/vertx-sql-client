@@ -20,6 +20,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.ClientAuth;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.impl.SSLHelper;
@@ -109,7 +110,11 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     // 2. Create and set up an SSLHelper and SSLHandler
     // options.getApplicationLayerProtocols()
     SSLHelper helper = new SSLHelper(SSLHelper.resolveEngineOptions(options.getSslEngineOptions(), options.isUseAlpn()));
-    Future<SslChannelProvider> f = helper.resolveSslChannelProvider(options.getSslOptions(), "", false, null, null, context);
+    ClientSSLOptions sslOptions = options.getSslOptions();
+    if (sslOptions == null) {
+      sslOptions = new ClientSSLOptions();
+    }
+    Future<SslChannelProvider> f = helper.resolveSslChannelProvider(sslOptions, "", false, null, null, context);
     return f.compose(provider -> {
       SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, options.isUseAlpn(), options.isTrustAll(), options.getSslHandshakeTimeout(), options.getSslHandshakeTimeoutUnit());
 
