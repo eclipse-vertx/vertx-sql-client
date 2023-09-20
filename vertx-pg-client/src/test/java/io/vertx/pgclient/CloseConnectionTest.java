@@ -7,6 +7,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.spi.PgDriver;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.ProxyServer;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -41,7 +42,10 @@ public class CloseConnectionTest extends PgTestBase {
   @Test
   public void testClosePooledConnection(TestContext ctx) {
     testCloseConnection(ctx, () -> {
-      PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(1));
+      Pool pool = PgBuilder.pool(builder -> builder
+        .config(new PoolOptions().setMaxSize(1))
+        .connectingTo(options)
+        .using(vertx));
       pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
         conn.close(ctx.asyncAssertSuccess(v -> {
           pool.close(ctx.asyncAssertSuccess());
@@ -53,7 +57,10 @@ public class CloseConnectionTest extends PgTestBase {
   @Test
   public void testCloseNetSocket(TestContext ctx) {
     testCloseConnection(ctx, () -> {
-      PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(1));
+      Pool pool = PgBuilder.pool(builder -> builder
+        .config(new PoolOptions().setMaxSize(1))
+        .connectingTo(options)
+        .using(vertx));
       ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, options);
       pool.connectionProvider(factory::connect);
       pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {

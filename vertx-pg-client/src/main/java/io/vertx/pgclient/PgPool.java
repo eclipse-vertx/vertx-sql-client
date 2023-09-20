@@ -41,6 +41,7 @@ import java.util.function.Supplier;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+@Deprecated
 @VertxGen
 public interface PgPool extends Pool {
 

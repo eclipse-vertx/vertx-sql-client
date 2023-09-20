@@ -18,9 +18,8 @@ package io.vertx.pgclient.tck;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgException;
-import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -37,12 +36,12 @@ public class PgTransactionTest extends TransactionTestBase {
 
   @Override
   protected Pool createPool() {
-    return PgPool.pool(vertx, new PgConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    return PgBuilder.pool().connectingTo(rule.options()).config(new PoolOptions().setMaxSize(1)).using(vertx).build();
   }
 
   @Override
   protected Pool nonTxPool() {
-    return PgPool.pool(vertx, new PgConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    return PgBuilder.pool().connectingTo(rule.options()).config(new PoolOptions().setMaxSize(1)).using(vertx).build();
   }
 
   @Override

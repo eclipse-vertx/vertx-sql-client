@@ -16,12 +16,13 @@
  */
 package io.vertx.pgclient;
 
+import io.vertx.ext.unit.Async;
 import io.vertx.pgclient.junit.PgRule;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import org.junit.*;
@@ -47,7 +48,7 @@ public class UnixDomainSocketTest {
 
   @ClassRule
   public static PgRule rule = new PgRule().domainSockets(nativeTransportEnabled);
-  private PgPool client;
+  private Pool client;
   private PgConnectOptions options;
 
   @Before
@@ -72,14 +73,15 @@ public class UnixDomainSocketTest {
   public void uriTest(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
     String uri = "postgresql://postgres:postgres@/postgres?host=" + options.getHost() + "&port=" + options.getPort();
-    client = PgPool.pool(uri);
+    PgConnectOptions connectOptions = PgConnectOptions.fromUri("postgresql://postgres:postgres@/postgres?host=" + options.getHost() + "&port=" + options.getPort());
+    client = PgBuilder.pool(builder -> builder.connectingTo(connectOptions));
     client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close()));
   }
 
   @Test
   public void simpleConnect(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
-    client = PgPool.pool(new PgConnectOptions(options), new PoolOptions());
+    client = PgBuilder.pool(builder -> builder.connectingTo(new PgConnectOptions(options)));
     client.getConnection(context.asyncAssertSuccess(pgConnection -> pgConnection.close(context.asyncAssertSuccess())));
   }
 
@@ -88,7 +90,7 @@ public class UnixDomainSocketTest {
     assumeTrue(options.isUsingDomainSocket());
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
     try {
-      client = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions());
+      client = PgBuilder.pool(builder -> builder.connectingTo(new PgConnectOptions(options)).using(vertx));
       Async async = context.async();
       client.getConnection(context.asyncAssertSuccess(pgConnection -> {
         async.complete();
@@ -103,7 +105,7 @@ public class UnixDomainSocketTest {
   @Test
   public void testIgnoreSslMode(TestContext context) {
     assumeTrue(options.isUsingDomainSocket());
-    client = PgPool.pool(new PgConnectOptions(options).setSslMode(SslMode.REQUIRE), new PoolOptions());
+    client = PgBuilder.pool(builder -> builder.connectingTo(new PgConnectOptions(options).setSslMode(SslMode.REQUIRE)));
     client.getConnection(context.asyncAssertSuccess(pgConnection -> {
       assertFalse(pgConnection.isSSL());
       pgConnection.close();
@@ -114,7 +116,9 @@ public class UnixDomainSocketTest {
   public void testNativeTransportMustBeEnabled(TestContext ctx) {
     Vertx vertx = Vertx.vertx();
     try {
-      PgPool pool = PgPool.pool(vertx, PgConnectOptions.fromUri("postgresql:///dbname?host=/var/lib/postgresql"), new PoolOptions());
+      Pool pool = PgBuilder.pool(builder -> builder
+        .connectingTo(PgConnectOptions.fromUri("postgresql:///dbname?host=/var/lib/postgresql"))
+        .using(vertx));
       Async async = ctx.async();
       pool.getConnection().onComplete(ctx.asyncAssertFailure(err -> {
         assertEquals(ConnectionFactoryBase.NATIVE_TRANSPORT_REQUIRED, err.getMessage());

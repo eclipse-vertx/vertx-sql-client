@@ -1,8 +1,8 @@
 package io.vertx.pgclient.tck;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.PipeliningQueryTestBase;
@@ -21,7 +21,7 @@ public class PgPipeliningQueryTest extends PipeliningQueryTestBase {
     pgConnectOptions.setPipeliningLimit(64);
     connectionConnector = ClientConfig.CONNECT.connect(vertx, options);
     pooledConnectionConnector = ClientConfig.POOLED.connect(vertx, options);
-    pooledClientSupplier = () -> PgPool.client(vertx, (PgConnectOptions) options, new PoolOptions().setMaxSize(8));
+    pooledClientSupplier = () -> PgBuilder.client(b -> b.connectingTo(options).config(new PoolOptions().setMaxSize(8)).using(vertx));
   }
 
   @Override

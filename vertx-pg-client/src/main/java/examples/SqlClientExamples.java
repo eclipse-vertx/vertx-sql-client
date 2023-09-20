@@ -22,11 +22,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
+import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgPool;
-import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -365,10 +363,10 @@ public class SqlClientExamples {
   }
 
   public void poolConfig01(PgConnectOptions server1, PgConnectOptions server2, PgConnectOptions server3, PoolOptions options) {
-    PgPool pool = PgPool.pool(Arrays.asList(server1, server2, server3), options);
+    Pool pool = PgBuilder.pool().connectingTo(Arrays.asList(server1, server2, server3)).config(options).build();
   }
 
-  public void poolConfig02(PgPool pool, String sql) {
+  public void poolConfig02(Pool pool, String sql) {
     pool.connectHandler(conn -> {
       conn.query(sql).execute().onSuccess(res -> {
         // Release the connection to the pool, ready to be used by the application
@@ -378,7 +376,7 @@ public class SqlClientExamples {
   }
 
   public void poolSharing1(Vertx vertx, PgConnectOptions database, int maxSize) {
-    PgPool pool = PgPool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    Pool pool = PgBuilder.pool().config(new PoolOptions().setMaxSize(maxSize)).connectingTo(database).build();
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() throws Exception {
@@ -389,36 +387,44 @@ public class SqlClientExamples {
 
   public void poolSharing2(Vertx vertx, PgConnectOptions database, int maxSize) {
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      PgPool pool;
+      Pool pool;
       @Override
       public void start() {
         // Get or create a shared pool
         // this actually creates a lease to the pool
         // when the verticle is undeployed, the lease will be released automaticaly
-        pool = PgPool.pool(database, new PoolOptions()
-          .setMaxSize(maxSize)
-          .setShared(true)
-          .setName("my-pool"));
+        pool = PgBuilder.pool().
+          config(new PoolOptions()
+            .setMaxSize(maxSize)
+            .setShared(true)
+            .setName("my-pool")).connectingTo(database)
+          .build();
       }
     }, new DeploymentOptions().setInstances(4));
   }
 
   public static void poolSharing3(Vertx vertx, PgConnectOptions database, int maxSize) {
-    PgPool pool = PgPool.pool(database, new PoolOptions()
-      .setMaxSize(maxSize)
-      .setShared(true)
-      .setName("my-pool")
-      .setEventLoopSize(4));
+    Pool pool = PgBuilder.pool()
+      .config(new PoolOptions()
+        .setMaxSize(maxSize)
+        .setShared(true)
+        .setName("my-pool")
+        .setEventLoopSize(4)).connectingTo(database)
+      .build();
   }
 
   public void dynamicPoolConfig(Vertx vertx, PoolOptions poolOptions) {
-    PgPool pool = PgPool.pool(vertx, () -> {
-      Future<PgConnectOptions> connectOptions = retrieveOptions();
-      return connectOptions;
-    }, poolOptions);
+    Pool pool = PgBuilder.pool()
+      .config(poolOptions)
+      .connectingTo(() -> {
+        Future<SqlConnectOptions> connectOptions = retrieveOptions();
+        return connectOptions;
+      })
+      .using(vertx)
+      .build();
   }
 
-  private Future<PgConnectOptions> retrieveOptions() {
+  private Future<SqlConnectOptions> retrieveOptions() {
     return null;
   }
 }

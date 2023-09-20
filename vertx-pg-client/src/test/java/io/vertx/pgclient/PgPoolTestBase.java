@@ -47,17 +47,17 @@ public abstract class PgPoolTestBase extends PgTestBase {
     vertx.close(ctx.asyncAssertSuccess());
   }
 
-  protected PgPool createPool(PgConnectOptions connectOptions, int size) {
+  protected Pool createPool(PgConnectOptions connectOptions, int size) {
     return createPool(connectOptions, new PoolOptions().setMaxSize(size));
   }
 
-  protected abstract PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions);
+  protected abstract Pool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions);
 
   @Test
   public void testPool(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool.getConnection(ctx.asyncAssertSuccess(conn -> {
         conn.query("SELECT id, randomnumber from WORLD").execute(ar -> {
@@ -78,7 +78,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testQuery(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool.query("SELECT id, randomnumber from WORLD").execute(ar -> {
         if (ar.succeeded()) {
@@ -105,7 +105,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   private void testQueryWithParams(TestContext ctx, PgConnectOptions options) {
     int num = 2;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 1);
+    Pool pool = createPool(options, 1);
     for (int i = 0;i < num;i++) {
       pool.preparedQuery("SELECT id, randomnumber from WORLD where id=$1").execute(Tuple.of(i + 1), ar -> {
         if (ar.succeeded()) {
@@ -124,7 +124,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testUpdate(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool.query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9").execute(ar -> {
         if (ar.succeeded()) {
@@ -142,7 +142,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testUpdateWithParams(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool.preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1").execute(Tuple.of(9), ar -> {
         if (ar.succeeded()) {
@@ -166,7 +166,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
+      Pool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
       pool.getConnection(ctx.asyncAssertSuccess(conn1 -> {
         proxyConn.get().close();
         conn1.closeHandler(v2 -> {
@@ -185,7 +185,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   @Test
   public void testCancelRequest(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn.query("SELECT pg_sleep(10)").execute(ctx.asyncAssertFailure(error -> {
         ctx.assertTrue(hasSqlstateCode(error, ERRCODE_QUERY_CANCELED), error.getMessage());
@@ -199,7 +199,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   @Test
   public void testWithConnection(TestContext ctx) {
     Async async = ctx.async(10);
-    PgPool pool = createPool(options, 1);
+    Pool pool = createPool(options, 1);
     Function<SqlConnection, Future<RowSet<Row>>> success = conn -> conn.query("SELECT 1").execute();
     Function<SqlConnection, Future<RowSet<Row>>> failure = conn -> conn.query("SELECT does_not_exist").execute();
     for (int i = 0;i < 10;i++) {
