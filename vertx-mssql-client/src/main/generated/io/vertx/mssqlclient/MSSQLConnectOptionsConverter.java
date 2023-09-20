@@ -25,6 +25,11 @@ public class MSSQLConnectOptionsConverter {
             obj.setPacketSize(((Number)member.getValue()).intValue());
           }
           break;
+        case "ssl":
+          if (member.getValue() instanceof Boolean) {
+            obj.setSsl((Boolean)member.getValue());
+          }
+          break;
       }
     }
   }
@@ -35,5 +40,6 @@ public class MSSQLConnectOptionsConverter {
 
   public static void toJson(MSSQLConnectOptions obj, java.util.Map<String, Object> json) {
     json.put("packetSize", obj.getPacketSize());
+    json.put("ssl", obj.isSsl());
   }
 }

@@ -61,7 +61,7 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
   public Future<SqlConnection> connect(Context context, OracleConnectOptions options) {
     OracleDataSource datasource = getDatasource(options);
     VertxMetrics vertxMetrics = ((VertxInternal)context.owner()).metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", null) : null;
     ContextInternal ctx = (ContextInternal) context;
     return executeBlocking(context, () -> {
       OracleConnection orac = datasource.createConnectionBuilder().build();

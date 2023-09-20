@@ -17,7 +17,6 @@ import io.netty.handler.ssl.SslHandler;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.http.ClientAuth;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.ClientSSLOptions;
@@ -50,11 +49,13 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
 
   private final MSSQLConnectOptions connectOptions;
   private final int packetSize;
+  private final SSLHelper sslHelper;
 
   private MSSQLDatabaseMetadata databaseMetadata;
   private SocketAddress alternateServer;
 
   MSSQLSocketConnection(NetSocketInternal socket,
+                        SSLHelper sslHelper,
                         ClientMetrics clientMetrics,
                         MSSQLConnectOptions connectOptions,
                         int packetSize,
@@ -66,6 +67,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
     this.connectOptions = connectOptions;
     this.packetSize = packetSize;
+    this.sslHelper = sslHelper;
   }
 
   @Override
@@ -102,21 +104,18 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
       }
     });
 
+    ClientSSLOptions sslOptions = options.getSslOptions() == null ? new ClientSSLOptions() : options.getSslOptions().copy();
+
     // Do not perform hostname validation if the client did not require encryption
     if (!clientConfigSsl) {
-      options.setTrustAll(true);
+      sslOptions.setTrustAll(true);
     }
 
     // 2. Create and set up an SSLHelper and SSLHandler
     // options.getApplicationLayerProtocols()
-    SSLHelper helper = new SSLHelper(SSLHelper.resolveEngineOptions(options.getSslEngineOptions(), options.isUseAlpn()));
-    ClientSSLOptions sslOptions = options.getSslOptions();
-    if (sslOptions == null) {
-      sslOptions = new ClientSSLOptions();
-    }
-    Future<SslChannelProvider> f = helper.resolveSslChannelProvider(sslOptions, "", false, null, null, context);
+    Future<SslChannelProvider> f = sslHelper.resolveSslChannelProvider(sslOptions, "", false, null, null, context);
     return f.compose(provider -> {
-      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, options.isUseAlpn(), options.isTrustAll(), options.getSslHandshakeTimeout(), options.getSslHandshakeTimeoutUnit());
+      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, sslOptions.isUseAlpn(), sslOptions.isTrustAll(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
 
       // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
       TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();

@@ -20,6 +20,7 @@ package examples;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.pgclient.PgConnectOptions;
@@ -465,7 +466,7 @@ public class PgClientExamples {
       .setUser("user")
       .setPassword("secret")
       .setSslMode(SslMode.VERIFY_CA)
-      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
+      .setSslOptions(new ClientSSLOptions().setTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem")));
 
     PgConnection
       .connect(vertx, options)

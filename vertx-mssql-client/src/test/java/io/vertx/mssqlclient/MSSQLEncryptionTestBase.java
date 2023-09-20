@@ -15,6 +15,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.mssqlclient.junit.MSSQLRule;
@@ -93,7 +94,7 @@ public abstract class MSSQLEncryptionTestBase {
   public void testTrustAll(TestContext ctx) {
     setOptions(rule().options()
       .setSsl(true)
-      .setTrustAll(true));
+      .setSslOptions(new ClientSSLOptions().setTrustAll(true)));
     asyncAssertConnectionEncrypted(ctx);
   }
 
@@ -102,7 +103,7 @@ public abstract class MSSQLEncryptionTestBase {
     Buffer certValue = vertx.fileSystem().readFileBlocking("mssql.pem");
     setOptions(rule().options()
       .setSsl(true)
-      .setPemTrustOptions(new PemTrustOptions().addCertValue(certValue)));
+      .setSslOptions(new ClientSSLOptions().setTrustOptions(new PemTrustOptions().addCertValue(certValue))));
     asyncAssertConnectionEncrypted(ctx);
   }
 }

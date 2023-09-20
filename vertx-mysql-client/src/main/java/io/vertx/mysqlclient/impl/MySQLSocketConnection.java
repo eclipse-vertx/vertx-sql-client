@@ -24,6 +24,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
@@ -74,11 +75,12 @@ public class MySQLSocketConnection extends SocketConnectionBase {
                           Buffer serverRsaPublicKey,
                           Map<String, String> properties,
                           SslMode sslMode,
+                          ClientSSLOptions sslOptions,
                           int initialCapabilitiesFlags,
                           Charset charsetEncoding,
                           MySQLAuthenticationPlugin authenticationPlugin,
                           Promise<Connection> completionHandler) {
-    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin);
+    InitialHandshakeCommand cmd = new InitialHandshakeCommand(this, username, password, database, collation, serverRsaPublicKey, properties, sslMode, sslOptions, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin);
     schedule(context, cmd).onComplete(completionHandler);
   }
 
@@ -112,8 +114,8 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     }
   }
 
-  public Future<Void> upgradeToSsl() {
-    return socket.upgradeToSsl();
+  public Future<Void> upgradeToSsl(ClientSSLOptions sslOptions) {
+    return socket.upgradeToSsl(sslOptions);
   }
 
   @Override

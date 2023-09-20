@@ -13,6 +13,7 @@ package io.vertx.mysqlclient;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
@@ -42,7 +43,7 @@ public class MySQLTLSTest {
   @Before
   public void setup() {
     vertx = Vertx.vertx();
-    options = new MySQLConnectOptions(rule.options());
+    options = new MySQLConnectOptions(rule.options()).setSslOptions(new ClientSSLOptions());
     nonTlsOptions = new MySQLConnectOptions(nonTlsRule.options());
     /*
      * For testing we have to drop using the TLSv1.2.
@@ -53,7 +54,7 @@ public class MySQLTLSTest {
      * and https://dev.mysql.com/doc/refman/5.7/en/encrypted-connection-protocols-ciphers.html for more details.
      */
     if (rule.isUsingMySQL5_6()) {
-      options.removeEnabledSecureTransportProtocol("TLSv1.2");
+      options.getSslOptions().removeEnabledSecureTransportProtocol("TLSv1.2");
     }
   }
 
@@ -89,10 +90,11 @@ public class MySQLTLSTest {
   @Test
   public void testTlsSuccessWithPreferredSslMode(TestContext ctx) {
     options.setSslMode(SslMode.PREFERRED);
-    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
-    options.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
@@ -109,10 +111,11 @@ public class MySQLTLSTest {
   @Test
   public void testTlsHandshakeFailWithPreferredSslMode(TestContext ctx) {
     options.setSslMode(SslMode.PREFERRED);
-    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/client-cert.pem")); // wrong file
-    options.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+        .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/client-cert.pem"))
+        .setKeyCertOptions(new PemKeyCertOptions()
+          .setCertPath("tls/files/client-cert.pem")
+          .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
@@ -129,10 +132,11 @@ public class MySQLTLSTest {
   @Test
   public void testNonTlsConnWithPreferredSslMode(TestContext ctx) {
     nonTlsOptions.setSslMode(SslMode.PREFERRED);
-    nonTlsOptions.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
-    nonTlsOptions.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, nonTlsOptions).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
@@ -149,10 +153,11 @@ public class MySQLTLSTest {
   @Test
   public void testSuccessWithRequiredSslMode(TestContext ctx) {
     options.setSslMode(SslMode.REQUIRED);
-    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
-    options.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
@@ -169,10 +174,11 @@ public class MySQLTLSTest {
   @Test
   public void testPoolSuccessWithRequiredSslMode(TestContext ctx) {
     options.setSslMode(SslMode.REQUIRED);
-    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
-    options.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
 
     MySQLPool pool = MySQLPool.pool(vertx, options, new PoolOptions().setMaxSize(5));
 
@@ -191,7 +197,8 @@ public class MySQLTLSTest {
   @Test
   public void testSuccessWithOnlyCertificate(TestContext ctx) {
     options.setSslMode(SslMode.REQUIRED);
-    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
+    options.getSslOptions()
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
 
     MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
@@ -208,7 +215,7 @@ public class MySQLTLSTest {
   @Test
   public void testSuccessWithoutCertificate(TestContext ctx) {
     options.setSslMode(SslMode.REQUIRED);
-    options.setTrustAll(true);
+    options.getSslOptions().setTrustAll(true);
 
     MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
@@ -225,10 +232,11 @@ public class MySQLTLSTest {
   @Test
   public void testSuccessWithVerifyCaSslMode(TestContext ctx) {
     options.setSslMode(SslMode.VERIFY_CA);
-    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
-    options.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
@@ -245,10 +253,11 @@ public class MySQLTLSTest {
   @Test
   public void testConnFailWithVerifyCaSslMode(TestContext ctx) {
     options.setSslMode(SslMode.VERIFY_CA);
-    options.setTrustAll(true);
-    options.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+      .setTrustAll(true)
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Trust options must be specified under VERIFY_CA ssl-mode.", error.getMessage());
@@ -258,10 +267,11 @@ public class MySQLTLSTest {
   @Test
   public void testPoolFailWithVerifyCaSslMode(TestContext ctx) {
     options.setSslMode(SslMode.VERIFY_CA);
-    options.setTrustAll(true);
-    options.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+      .setTrustAll(true)
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
 
     try {
       MySQLPool.pool(vertx, options, new PoolOptions());
@@ -273,10 +283,11 @@ public class MySQLTLSTest {
   @Test
   public void testConnFailWithVerifyIdentitySslMode(TestContext ctx) {
     options.setSslMode(SslMode.VERIFY_IDENTITY);
-    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
-    options.setPemKeyCertOptions(new PemKeyCertOptions()
-      .setCertPath("tls/files/client-cert.pem")
-      .setKeyPath("tls/files/client-key.pem"));
+    options.getSslOptions()
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
 
     MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.", error.getMessage());
@@ -294,7 +305,8 @@ public class MySQLTLSTest {
   @Test
   public void testChangeUser(TestContext ctx) {
     options.setSslMode(SslMode.REQUIRED);
-    options.setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
+    options.getSslOptions()
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"));
 
     MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn

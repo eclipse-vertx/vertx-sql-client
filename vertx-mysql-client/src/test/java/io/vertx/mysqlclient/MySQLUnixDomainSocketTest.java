@@ -35,6 +35,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   private MySQLPool client;
   private MySQLConnectOptions options;
+  private Vertx vertx;
 
   @Before
   public void setUp() {
@@ -47,12 +48,16 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
       options.setHost(rule.domainSocketPath());
     }
     assumeTrue(options.isUsingDomainSocket());
+    vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
   }
 
   @After
-  public void after() {
+  public void after(TestContext ctx) {
+    if (vertx != null) {
+      vertx.close().onComplete(ctx.asyncAssertSuccess());
+    }
     if (client != null) {
-      client.close();
+      client.close().onComplete(ctx.asyncAssertSuccess());
     }
   }
 
@@ -69,7 +74,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
   }
 
   private void uriTest(TestContext context, String uri) throws UnsupportedEncodingException {
-    client = MySQLPool.pool(uri);
+    client = MySQLPool.pool(vertx, uri);
     client
       .getConnection()
       .onComplete(context.asyncAssertSuccess(SqlClient::close));
@@ -77,7 +82,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   @Test
   public void simpleConnect(TestContext context) {
-    client = MySQLPool.pool(new MySQLConnectOptions(options), new PoolOptions());
+    client = MySQLPool.pool(vertx, new MySQLConnectOptions(options), new PoolOptions());
     client
       .getConnection()
       .onComplete(context.asyncAssertSuccess(SqlClient::close));
@@ -103,7 +108,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   @Test
   public void testIgnoreSslMode(TestContext context) {
-    client = MySQLPool.pool(new MySQLConnectOptions(options).setSslMode(SslMode.REQUIRED), new PoolOptions());
+    client = MySQLPool.pool(vertx, new MySQLConnectOptions(options).setSslMode(SslMode.REQUIRED), new PoolOptions());
     client
       .getConnection()
       .onComplete(context.asyncAssertSuccess(conn -> {

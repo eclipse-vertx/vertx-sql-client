@@ -22,9 +22,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.pgclient.impl.codec.PgProtocolConstants;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.core.VertxException;
@@ -33,10 +32,12 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
 
   private static final int code = 80877103;
   private final SocketConnectionBase conn;
+  private final ClientSSLOptions sslOptions;
   private final Promise<Void> upgradePromise;
 
-  public InitiateSslHandler(SocketConnectionBase conn, Promise<Void> upgradePromise) {
+  public InitiateSslHandler(SocketConnectionBase conn, ClientSSLOptions sslOptions, Promise<Void> upgradePromise) {
     this.conn = conn;
+    this.sslOptions = sslOptions;
     this.upgradePromise = upgradePromise;
   }
 
@@ -61,7 +62,7 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
       case PgProtocolConstants.MESSAGE_TYPE_SSL_YES: {
         conn
           .socket()
-          .upgradeToSsl()
+          .upgradeToSsl(sslOptions)
           .onComplete(ar -> {
             if (ar.succeeded()) {
               ctx.pipeline().remove(this);

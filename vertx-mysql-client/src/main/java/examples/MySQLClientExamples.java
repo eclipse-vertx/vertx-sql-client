@@ -15,7 +15,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.net.SSLOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.*;
 import io.vertx.mysqlclient.data.spatial.Point;
@@ -580,7 +582,7 @@ public class MySQLClientExamples {
       .setUser("user")
       .setPassword("secret")
       .setSslMode(SslMode.VERIFY_CA)
-      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem"));
+      .setSslOptions(new ClientSSLOptions().setTrustOptions(new PemTrustOptions().addCertPath("/path/to/cert.pem")));
 
     MySQLConnection.connect(vertx, options)
       .onComplete(res -> {

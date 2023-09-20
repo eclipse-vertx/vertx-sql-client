@@ -40,6 +40,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_USER = "";
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_DATABASE = "";
+  public static final boolean DEFAULT_SSL = false;
 
   private String serviceId;
   private String serviceName;
@@ -47,6 +48,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
   private String instanceName;
   private String tnsAlias;
   private String tnsAdmin;
+  private boolean ssl;
 
   public OracleConnectOptions() {
     super();
@@ -64,6 +66,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
     this.instanceName = other.instanceName;
     this.tnsAlias = other.tnsAlias;
     this.tnsAdmin = other.tnsAdmin;
+    this.ssl = other.ssl;
   }
 
   public OracleConnectOptions(SqlConnectOptions options) {
@@ -329,9 +332,23 @@ public class OracleConnectOptions extends SqlConnectOptions {
     return (OracleConnectOptions) super.setTracingPolicy(tracingPolicy);
   }
 
-  @Override
+  /**
+   *
+   * @return is SSL/TLS enabled?
+   */
+  public boolean isSsl() {
+    return ssl;
+  }
+
+  /**
+   * Set whether SSL/TLS is enabled
+   *
+   * @param ssl  true if enabled
+   * @return a reference to this, so the API can be used fluently
+   */
   public OracleConnectOptions setSsl(boolean ssl) {
-    return (OracleConnectOptions) super.setSsl(ssl);
+    this.ssl = ssl;
+    return this;
   }
 
   @Override

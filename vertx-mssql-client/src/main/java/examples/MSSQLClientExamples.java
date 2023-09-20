@@ -12,6 +12,7 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
@@ -307,13 +308,13 @@ public class MSSQLClientExamples {
   public void disableHostnameValidation() {
     MSSQLConnectOptions connectOptions = new MSSQLConnectOptions()
       .setSsl(true)
-      .setTrustAll(true);
+      .setSslOptions(new ClientSSLOptions().setTrustAll(true));
   }
 
   public void usingTrustOptions() {
     MSSQLConnectOptions connectOptions = new MSSQLConnectOptions()
       .setSsl(true)
-      .setPemTrustOptions(new PemTrustOptions().addCertPath("/path/to/server-cert.pem"));
+      .setSslOptions(new ClientSSLOptions().setTrustOptions(new PemTrustOptions().addCertPath("/path/to/server-cert.pem")));
   }
 
   public void infoHandler(MSSQLConnection connection) {

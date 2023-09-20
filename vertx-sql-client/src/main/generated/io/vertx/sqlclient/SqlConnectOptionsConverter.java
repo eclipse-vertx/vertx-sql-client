@@ -77,6 +77,21 @@ public class SqlConnectOptionsConverter {
           break;
         case "usingDomainSocket":
           break;
+        case "reconnectAttempts":
+          if (member.getValue() instanceof Number) {
+            obj.setReconnectAttempts(((Number)member.getValue()).intValue());
+          }
+          break;
+        case "reconnectInterval":
+          if (member.getValue() instanceof Number) {
+            obj.setReconnectInterval(((Number)member.getValue()).longValue());
+          }
+          break;
+        case "sslOptions":
+          if (member.getValue() instanceof JsonObject) {
+            obj.setSslOptions(new io.vertx.core.net.ClientSSLOptions((io.vertx.core.json.JsonObject)member.getValue()));
+          }
+          break;
       }
     }
   }
@@ -110,5 +125,10 @@ public class SqlConnectOptionsConverter {
       json.put("tracingPolicy", obj.getTracingPolicy().name());
     }
     json.put("usingDomainSocket", obj.isUsingDomainSocket());
+    json.put("reconnectAttempts", obj.getReconnectAttempts());
+    json.put("reconnectInterval", obj.getReconnectInterval());
+    if (obj.getSslOptions() != null) {
+      json.put("sslOptions", obj.getSslOptions().toJson());
+    }
   }
 }
