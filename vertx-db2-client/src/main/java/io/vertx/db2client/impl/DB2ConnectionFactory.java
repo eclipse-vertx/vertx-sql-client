@@ -50,10 +50,9 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
     String database = options.getDatabase();
     Map<String, String> properties = options.getProperties();
     int pipeliningLimit = options.getPipeliningLimit();
-    NetClient netClient = netClient(options);
-    return netClient.connect(server).flatMap(so -> {
+    return client.connect(server).flatMap(so -> {
       VertxMetrics vertxMetrics = vertx.metricsSPI();
-      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", tcpOptions.getMetricsName()) : null;
       DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, metrics, options, cachePreparedStatements,
         preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();

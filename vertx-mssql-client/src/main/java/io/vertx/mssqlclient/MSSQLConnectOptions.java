@@ -12,18 +12,14 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
-import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 /**
  * Connect options for configuring {@link MSSQLConnection}.
@@ -65,6 +61,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   public static final int MIN_PACKET_SIZE = 512;
   public static final int MAX_PACKET_SIZE = 32767;
   public static final int DEFAULT_PACKET_SIZE = 4096;
+  public static final boolean DEFAULT_SSL = false;
 
   static {
     Map<String, String> defaultProperties = new HashMap<>();
@@ -73,6 +70,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     DEFAULT_PROPERTIES = defaultProperties;
   }
 
+  private boolean ssl;
   private int packetSize;
 
   public MSSQLConnectOptions() {
@@ -99,6 +97,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
 
   private void copyFields(MSSQLConnectOptions other) {
     packetSize = other.packetSize;
+    ssl = other.ssl;
   }
 
   @Override
@@ -163,169 +162,23 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     return this;
   }
 
-  @Override
-  public MSSQLConnectOptions setSendBufferSize(int sendBufferSize) {
-    return (MSSQLConnectOptions) super.setSendBufferSize(sendBufferSize);
+  /**
+   *
+   * @return is SSL/TLS enabled?
+   */
+  public boolean isSsl() {
+    return ssl;
   }
 
-  @Override
-  public MSSQLConnectOptions setReceiveBufferSize(int receiveBufferSize) {
-    return (MSSQLConnectOptions) super.setReceiveBufferSize(receiveBufferSize);
-  }
-
-  @Override
-  public MSSQLConnectOptions setReuseAddress(boolean reuseAddress) {
-    return (MSSQLConnectOptions) super.setReuseAddress(reuseAddress);
-  }
-
-  @Override
-  public MSSQLConnectOptions setReusePort(boolean reusePort) {
-    return (MSSQLConnectOptions) super.setReusePort(reusePort);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTrafficClass(int trafficClass) {
-    return (MSSQLConnectOptions) super.setTrafficClass(trafficClass);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTcpNoDelay(boolean tcpNoDelay) {
-    return (MSSQLConnectOptions) super.setTcpNoDelay(tcpNoDelay);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTcpKeepAlive(boolean tcpKeepAlive) {
-    return (MSSQLConnectOptions) super.setTcpKeepAlive(tcpKeepAlive);
-  }
-
-  @Override
-  public MSSQLConnectOptions setSoLinger(int soLinger) {
-    return (MSSQLConnectOptions) super.setSoLinger(soLinger);
-  }
-
-  @Override
-  public MSSQLConnectOptions setIdleTimeout(int idleTimeout) {
-    return (MSSQLConnectOptions) super.setIdleTimeout(idleTimeout);
-  }
-
-  @Override
-  public MSSQLConnectOptions setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
-    return (MSSQLConnectOptions) super.setIdleTimeoutUnit(idleTimeoutUnit);
-  }
-
-  @Override
-  public MSSQLConnectOptions setKeyCertOptions(KeyCertOptions options) {
-    return (MSSQLConnectOptions) super.setKeyCertOptions(options);
-  }
-
-  @Override
-  public MSSQLConnectOptions setKeyStoreOptions(JksOptions options) {
-    return (MSSQLConnectOptions) super.setKeyStoreOptions(options);
-  }
-
-  @Override
-  public MSSQLConnectOptions setPfxKeyCertOptions(PfxOptions options) {
-    return (MSSQLConnectOptions) super.setPfxKeyCertOptions(options);
-  }
-
-  @Override
-  public MSSQLConnectOptions setPemKeyCertOptions(PemKeyCertOptions options) {
-    return (MSSQLConnectOptions) super.setPemKeyCertOptions(options);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTrustOptions(TrustOptions options) {
-    return (MSSQLConnectOptions) super.setTrustOptions(options);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTrustStoreOptions(JksOptions options) {
-    return (MSSQLConnectOptions) super.setTrustStoreOptions(options);
-  }
-
-  @Override
-  public MSSQLConnectOptions setPemTrustOptions(PemTrustOptions options) {
-    return (MSSQLConnectOptions) super.setPemTrustOptions(options);
-  }
-
-  @Override
-  public MSSQLConnectOptions setPfxTrustOptions(PfxOptions options) {
-    return (MSSQLConnectOptions) super.setPfxTrustOptions(options);
-  }
-
-  @Override
-  public MSSQLConnectOptions addEnabledCipherSuite(String suite) {
-    return (MSSQLConnectOptions) super.addEnabledCipherSuite(suite);
-  }
-
-  @Override
-  public MSSQLConnectOptions addEnabledSecureTransportProtocol(String protocol) {
-    return (MSSQLConnectOptions) super.addEnabledSecureTransportProtocol(protocol);
-  }
-
-  @Override
-  public MSSQLConnectOptions removeEnabledSecureTransportProtocol(String protocol) {
-    return (MSSQLConnectOptions) super.removeEnabledSecureTransportProtocol(protocol);
-  }
-
-  @Override
-  public MSSQLConnectOptions setUseAlpn(boolean useAlpn) {
-    return (MSSQLConnectOptions) super.setUseAlpn(useAlpn);
-  }
-
-  @Override
-  public MSSQLConnectOptions setSslEngineOptions(SSLEngineOptions sslEngineOptions) {
-    return (MSSQLConnectOptions) super.setSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public MSSQLConnectOptions setJdkSslEngineOptions(JdkSSLEngineOptions sslEngineOptions) {
-    return (MSSQLConnectOptions) super.setJdkSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTcpFastOpen(boolean tcpFastOpen) {
-    return (MSSQLConnectOptions) super.setTcpFastOpen(tcpFastOpen);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTcpCork(boolean tcpCork) {
-    return (MSSQLConnectOptions) super.setTcpCork(tcpCork);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTcpQuickAck(boolean tcpQuickAck) {
-    return (MSSQLConnectOptions) super.setTcpQuickAck(tcpQuickAck);
-  }
-
-  @Override
-  public MSSQLConnectOptions setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
-    return (MSSQLConnectOptions) super.setOpenSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public MSSQLConnectOptions addCrlPath(String crlPath) throws NullPointerException {
-    return (MSSQLConnectOptions) super.addCrlPath(crlPath);
-  }
-
-  @Override
-  public MSSQLConnectOptions addCrlValue(Buffer crlValue) throws NullPointerException {
-    return (MSSQLConnectOptions) super.addCrlValue(crlValue);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTrustAll(boolean trustAll) {
-    return (MSSQLConnectOptions) super.setTrustAll(trustAll);
-  }
-
-  @Override
-  public MSSQLConnectOptions setConnectTimeout(int connectTimeout) {
-    return (MSSQLConnectOptions) super.setConnectTimeout(connectTimeout);
-  }
-
-  @Override
-  public MSSQLConnectOptions setMetricsName(String metricsName) {
-    return (MSSQLConnectOptions) super.setMetricsName(metricsName);
+  /**
+   * Set whether SSL/TLS is enabled
+   *
+   * @param ssl  true if enabled
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MSSQLConnectOptions setSsl(boolean ssl) {
+    this.ssl = ssl;
+    return this;
   }
 
   @Override
@@ -339,53 +192,28 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   }
 
   @Override
-  public MSSQLConnectOptions setHostnameVerificationAlgorithm(String hostnameVerificationAlgorithm) {
-    return (MSSQLConnectOptions) super.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
+  public MSSQLConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
+    return (MSSQLConnectOptions) super.setCachePreparedStatements(cachePreparedStatements);
   }
 
   @Override
-  public MSSQLConnectOptions setLogActivity(boolean logEnabled) {
-    return (MSSQLConnectOptions) super.setLogActivity(logEnabled);
+  public MSSQLConnectOptions setPreparedStatementCacheMaxSize(int preparedStatementCacheMaxSize) {
+    return (MSSQLConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
   }
 
   @Override
-  public MSSQLConnectOptions setProxyOptions(ProxyOptions proxyOptions) {
-    return (MSSQLConnectOptions) super.setProxyOptions(proxyOptions);
+  public MSSQLConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
+    return (MSSQLConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);
   }
 
   @Override
-  public MSSQLConnectOptions setLocalAddress(String localAddress) {
-    return (MSSQLConnectOptions) super.setLocalAddress(localAddress);
+  public MSSQLConnectOptions setPreparedStatementCacheSqlLimit(int preparedStatementCacheSqlLimit) {
+    return (MSSQLConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
   }
 
   @Override
-  public MSSQLConnectOptions setEnabledSecureTransportProtocols(Set<String> enabledSecureTransportProtocols) {
-    return (MSSQLConnectOptions) super.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols);
-  }
-
-  @Override
-  public MSSQLConnectOptions setSslHandshakeTimeout(long sslHandshakeTimeout) {
-    return (MSSQLConnectOptions) super.setSslHandshakeTimeout(sslHandshakeTimeout);
-  }
-
-  @Override
-  public MSSQLConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
-    return (MSSQLConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
-  }
-
-  @Override
-  public MSSQLConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
-    return (MSSQLConnectOptions) super.setTracingPolicy(tracingPolicy);
-  }
-
-  @Override
-  public MSSQLConnectOptions setSsl(boolean ssl) {
-    return (MSSQLConnectOptions) super.setSsl(ssl);
-  }
-
-  @Override
-  public MSSQLConnectOptions setNonProxyHosts(List<String> nonProxyHosts) {
-    return (MSSQLConnectOptions) super.setNonProxyHosts(nonProxyHosts);
+  public MSSQLConnectOptions setSslOptions(ClientSSLOptions sslOptions) {
+    return (MSSQLConnectOptions) super.setSslOptions(sslOptions);
   }
 
   /**
@@ -399,6 +227,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     this.setDatabase(DEFAULT_DATABASE);
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
     packetSize = DEFAULT_PACKET_SIZE;
+    ssl = DEFAULT_SSL;
   }
 
   @Override

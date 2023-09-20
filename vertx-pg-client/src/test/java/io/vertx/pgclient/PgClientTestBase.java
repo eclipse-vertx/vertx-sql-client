@@ -20,6 +20,7 @@ package io.vertx.pgclient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -64,7 +65,7 @@ public abstract class PgClientTestBase<C extends SqlClient> extends PgTestBase {
   @Test
   public void testConnectNonSSLServer(TestContext ctx) {
     Async async = ctx.async();
-    options.setSslMode(SslMode.REQUIRE).setTrustAll(true);
+    options.setSslMode(SslMode.REQUIRE).setSslOptions(new ClientSSLOptions().setTrustAll(true));
     connector.accept(ctx.asyncAssertFailure(err -> {
       ctx.assertEquals("Postgres Server does not handle SSL connection", err.getMessage());
       async.complete();

@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.junit;
 
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
 import org.junit.rules.ExternalResource;
@@ -101,9 +102,9 @@ public class DB2Resource extends ExternalResource {
       return new DB2ConnectOptions(options())
           .setPort(securePort)
           .setSsl(true)
-          .setTrustStoreOptions(new JksOptions()
-              .setPath("src/test/resources/tls/db2-keystore.p12")
-              .setPassword("db2test"));
+          .setSslOptions(new ClientSSLOptions().setTrustOptions(new JksOptions()
+            .setPath("src/test/resources/tls/db2-keystore.p12")
+            .setPassword("db2test")));
   }
 
   public boolean isZOS() {

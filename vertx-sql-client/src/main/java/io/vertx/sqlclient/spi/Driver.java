@@ -42,7 +42,7 @@ public interface Driver<C extends SqlConnectOptions> {
    * <p> The returned pool will automatically closed when {@code vertx} is not {@code null} and is closed or when the creating
    * context is closed (e.g verticle undeployment).
    *
-   * @param vertx the Vertx instance to be used with the connection pool or {@code null} to create an auto closed Vertx instance
+   * @param vertx     the Vertx instance to be used with the connection pool or {@code null} to create an auto closed Vertx instance
    * @param databases the list of databases
    * @param options the options for creating the pool
    * @return the connection pool
@@ -53,12 +53,7 @@ public interface Driver<C extends SqlConnectOptions> {
       if (Vertx.currentContext() != null) {
         throw new IllegalStateException("Running in a Vertx context => use Pool#pool(Vertx, SqlConnectOptions, PoolOptions) instead");
       }
-      VertxOptions vertxOptions = new VertxOptions();
-      if (databases instanceof SingletonSupplier) {
-        SqlConnectOptions connectOptions = ((SingletonSupplier<C>) databases).unwrap();
-        vertxOptions.setPreferNativeTransport(connectOptions.isUsingDomainSocket());
-      }
-      vx = (VertxInternal) Vertx.vertx(vertxOptions);
+      vx = (VertxInternal) Vertx.vertx(new VertxOptions());
     } else {
       vx = (VertxInternal) vertx;
     }
@@ -131,7 +126,7 @@ public interface Driver<C extends SqlConnectOptions> {
   /**
    * Create a connection factory to the given {@code database}.
    *
-   * @param vertx the Vertx instance t
+   * @param vertx the Vertx instance
    * @return the connection factory
    */
   ConnectionFactory<C> createConnectionFactory(Vertx vertx);

@@ -13,16 +13,13 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetClientOptionsConverter;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +32,7 @@ import java.util.function.Predicate;
  * Connect options for configuring {@link SqlConnection} or {@link Pool}.
  */
 @DataObject(generateConverter = true)
-public class SqlConnectOptions extends NetClientOptions {
+public class SqlConnectOptions {
 
   /**
    * Provide a {@link SqlConnectOptions} subclass configured from {@code connectionUri}.
@@ -50,7 +47,7 @@ public class SqlConnectOptions extends NetClientOptions {
    */
   public static SqlConnectOptions fromUri(String connectionUri) throws IllegalArgumentException, ServiceConfigurationError {
     List<SqlConnectOptions> candidates = new ArrayList<>(1);
-    for (Driver d : ServiceLoader.load(Driver.class)) {
+    for (Driver<?> d : ServiceLoader.load(Driver.class)) {
       SqlConnectOptions options = d.parseConnectionUri(connectionUri);
       if (options != null) {
         candidates.add(options);
@@ -65,6 +62,8 @@ public class SqlConnectOptions extends NetClientOptions {
     }
   }
 
+  public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
+  public static final long DEFAULT_RECONNECT_INTERVAL = 1000;
   public static final boolean DEFAULT_CACHE_PREPARED_STATEMENTS = false;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE = 256;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT = 2048;
@@ -80,20 +79,20 @@ public class SqlConnectOptions extends NetClientOptions {
   private Predicate<String> preparedStatementCacheSqlFilter = DEFAULT_PREPARED_STATEMENT_CACHE_FILTER;
   private Map<String, String> properties = new HashMap<>(4);
   private TracingPolicy tracingPolicy;
+  private int reconnectAttempts;
+  private long reconnectInterval;
+  private ClientSSLOptions sslOptions;
 
   public SqlConnectOptions() {
-    super();
     init();
   }
 
   public SqlConnectOptions(JsonObject json) {
-    super(json);
     init();
     SqlConnectOptionsConverter.fromJson(json, this);
   }
 
   public SqlConnectOptions(SqlConnectOptions other) {
-    super(other);
     this.host = other.host;
     this.port = other.port;
     this.user = other.user;
@@ -105,6 +104,10 @@ public class SqlConnectOptions extends NetClientOptions {
     if (other.properties != null) {
       this.properties = new HashMap<>(other.properties);
     }
+    this.reconnectAttempts = other.reconnectAttempts;
+    this.reconnectInterval = other.reconnectInterval;
+    ClientSSLOptions sslOptions = other.sslOptions;
+    this.sslOptions = sslOptions != null ? sslOptions.copy() : null;
   }
 
   /**
@@ -323,7 +326,6 @@ public class SqlConnectOptions extends NetClientOptions {
     return this;
   }
 
-
   @GenIgnore
   public SocketAddress getSocketAddress() {
     return SocketAddress.inetSocketAddress(getPort(), getHost());
@@ -351,9 +353,59 @@ public class SqlConnectOptions extends NetClientOptions {
     return false;
   }
 
-  @Override
+  /**
+   * @return  the value of reconnect attempts
+   */
+  public int getReconnectAttempts() {
+    return reconnectAttempts;
+  }
+
+  /**
+   * Set the value of reconnect attempts
+   *
+   * @param attempts  the maximum number of reconnect attempts
+   * @return a reference to this, so the API can be used fluently
+   */
+  public SqlConnectOptions setReconnectAttempts(int attempts) {
+    if (attempts < -1) {
+      throw new IllegalArgumentException("reconnect attempts must be >= -1");
+    }
+    this.reconnectAttempts = attempts;
+    return this;
+  }
+
+  /**
+   * @return  the value of reconnect interval
+   */
+  public long getReconnectInterval() {
+    return reconnectInterval;
+  }
+
+  /**
+   * Set the reconnect interval
+   *
+   * @param interval  the reconnect interval in ms
+   * @return a reference to this, so the API can be used fluently
+   */
+  public SqlConnectOptions setReconnectInterval(long interval) {
+    if (interval < 1) {
+      throw new IllegalArgumentException("reconnect interval must be >= 1");
+    }
+    this.reconnectInterval = interval;
+    return this;
+  }
+
+  public ClientSSLOptions getSslOptions() {
+    return sslOptions;
+  }
+
+  public SqlConnectOptions setSslOptions(ClientSSLOptions sslOptions) {
+    this.sslOptions = sslOptions;
+    return this;
+  }
+
   public JsonObject toJson() {
-    JsonObject json = super.toJson();
+    JsonObject json = new JsonObject();
     SqlConnectOptionsConverter.toJson(this, json);
     return json;
   }

@@ -10,23 +10,14 @@
  */
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.*;
 import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.impl.NetClientBuilder;
 import io.vertx.core.net.impl.NetClientInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.ConnectionFactory;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * An base connection factory for creating database connections
@@ -36,48 +27,24 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   public static final String NATIVE_TRANSPORT_REQUIRED = "The Vertx instance must use a native transport in order to connect to connect through domain sockets";
 
   protected final VertxInternal vertx;
-  private final Map<JsonObject, NetClient> clients;
+  protected final NetClientInternal client;
+  protected final NetClientOptions tcpOptions;
 
   // close hook
   protected final CloseSequence clientCloseFuture = new CloseSequence(this::doClose);
 
   protected ConnectionFactoryBase(VertxInternal vertx) {
+    this(vertx, new NetClientOptions());
+  }
+
+  protected ConnectionFactoryBase(VertxInternal vertx, NetClientOptions tcpOptions) {
     this.vertx = vertx;
-    this.clients = new HashMap<>();
+    this.client = (NetClientInternal) vertx.createNetClient(new NetClientOptions(tcpOptions).setReconnectAttempts(0)); // auto-retry is handled on the protocol level instead of network level
+    this.tcpOptions = tcpOptions;
   }
 
   private void doClose(Promise<Void> p) {
-    List<Future<Void>> futures = clients.values().stream().map(client -> client.close()).collect(Collectors.toList());
-
-    CompositeFuture join = Future.join(futures);
-
-    join.onComplete(ar -> p.complete());
-  }
-
-  private NetClient createNetClient(NetClientOptions options) {
-    options.setReconnectAttempts(0); // auto-retry is handled on the protocol level instead of network level
-
-    NetClientInternal netClient = new NetClientBuilder(vertx, options).build();
-
-
-    // return new NetClientBuilder(vertx, options).closeFuture(clientCloseFuture).build();
-    return netClient;
-  }
-
-  protected NetClient netClient(NetClientOptions options) {
-    if (options.getClass() != NetClientOptions.class) {
-      options = new NetClientOptions(options);
-    }
-    JsonObject key = options.toJson();
-    NetClient client;
-    synchronized (this) {
-      client = clients.get(key);
-      if (client == null) {
-        client = createNetClient(options);
-        clients.put(key, client);
-      }
-    }
-    return client;
+    client.close().onComplete(ar -> p.complete());
   }
 
   public static ContextInternal asEventLoopContext(ContextInternal ctx) {

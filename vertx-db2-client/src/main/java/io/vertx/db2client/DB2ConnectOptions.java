@@ -25,16 +25,7 @@ import java.util.function.Predicate;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.ClientOptionsBase;
-import io.vertx.core.net.JdkSSLEngineOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.KeyCertOptions;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.OpenSSLEngineOptions;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.SSLEngineOptions;
-import io.vertx.core.net.TrustOptions;
+import io.vertx.core.net.*;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.db2client.impl.DB2ConnectionUriParser;
 import io.vertx.db2client.impl.drda.SQLState;
@@ -77,6 +68,7 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   public static final boolean DEFAULT_USE_AFFECTED_ROWS = false;
   public static final int DEFAULT_PIPELINING_LIMIT = 1; // 256; // TODO default to 256 once implemented properly
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
+  public static final boolean DEFAULT_SSL = false;
 
   static {
     Map<String, String> defaultAttributes = new HashMap<>();
@@ -84,6 +76,7 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     DEFAULT_CONNECTION_ATTRIBUTES = Collections.unmodifiableMap(defaultAttributes);
   }
 
+  private boolean ssl = DEFAULT_SSL;
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
   public DB2ConnectOptions() {
@@ -100,12 +93,14 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     if (other instanceof DB2ConnectOptions) {
       DB2ConnectOptions opts = (DB2ConnectOptions) other;
       this.pipeliningLimit = opts.pipeliningLimit;
+      this.ssl = opts.ssl;
     }
   }
 
   public DB2ConnectOptions(DB2ConnectOptions other) {
     super(other);
     this.pipeliningLimit = other.pipeliningLimit;
+    this.ssl = other.ssl;
   }
 
   @Override
@@ -169,69 +164,23 @@ public class DB2ConnectOptions extends SqlConnectOptions {
     return (DB2ConnectOptions) super.setPreparedStatementCacheSqlLimit(preparedStatementCacheSqlLimit);
   }
 
-  @Override
+  /**
+   *
+   * @return is SSL/TLS enabled?
+   */
+  public boolean isSsl() {
+    return ssl;
+  }
+
+  /**
+   * Set whether SSL/TLS is enabled
+   *
+   * @param ssl  true if enabled
+   * @return a reference to this, so the API can be used fluently
+   */
   public DB2ConnectOptions setSsl(boolean ssl) {
-    return (DB2ConnectOptions) super.setSsl(ssl);
-  }
-
-  @Override
-  public DB2ConnectOptions setSslHandshakeTimeout(long sslHandshakeTimeout) {
-    return (DB2ConnectOptions) super.setSslHandshakeTimeout(sslHandshakeTimeout);
-  }
-
-  @Override
-  public DB2ConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
-    return (DB2ConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
-  }
-
-  @Override
-  public DB2ConnectOptions setSslEngineOptions(SSLEngineOptions sslEngineOptions) {
-    return (DB2ConnectOptions) super.setSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public DB2ConnectOptions setJdkSslEngineOptions(JdkSSLEngineOptions sslEngineOptions) {
-    return (DB2ConnectOptions) super.setJdkSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public DB2ConnectOptions setKeyCertOptions(KeyCertOptions options) {
-    return (DB2ConnectOptions) super.setKeyCertOptions(options);
-  }
-
-  @Override
-  public DB2ConnectOptions setKeyStoreOptions(JksOptions options) {
-    return (DB2ConnectOptions) super.setKeyStoreOptions(options);
-  }
-
-  @Override
-  public DB2ConnectOptions setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
-    return (DB2ConnectOptions) super.setOpenSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public DB2ConnectOptions setPemKeyCertOptions(PemKeyCertOptions options) {
-    return (DB2ConnectOptions) super.setPemKeyCertOptions(options);
-  }
-
-  @Override
-  public DB2ConnectOptions setPemTrustOptions(PemTrustOptions options) {
-    return (DB2ConnectOptions) super.setPemTrustOptions(options);
-  }
-
-  @Override
-  public DB2ConnectOptions setTrustAll(boolean trustAll) {
-    return (DB2ConnectOptions) super.setTrustAll(trustAll);
-  }
-
-  @Override
-  public DB2ConnectOptions setTrustOptions(TrustOptions options) {
-    return (DB2ConnectOptions) super.setTrustOptions(options);
-  }
-
-  @Override
-  public DB2ConnectOptions setTrustStoreOptions(JksOptions options) {
-    return (DB2ConnectOptions) super.setTrustStoreOptions(options);
+    this.ssl = ssl;
+    return this;
   }
 
   public int getPipeliningLimit() {
@@ -269,6 +218,11 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   @Override
   public DB2ConnectOptions addProperty(String key, String value) {
     return (DB2ConnectOptions) super.addProperty(key, value);
+  }
+
+  @Override
+  public DB2ConnectOptions setSslOptions(ClientSSLOptions sslOptions) {
+    return (DB2ConnectOptions) super.setSslOptions(sslOptions);
   }
 
   /**

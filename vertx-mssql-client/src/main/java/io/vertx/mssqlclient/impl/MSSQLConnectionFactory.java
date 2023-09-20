@@ -16,11 +16,10 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
+import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
@@ -29,14 +28,16 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOptions> {
 
+  private final SSLHelper sslHelper;
+
   public MSSQLConnectionFactory(VertxInternal vertx) {
     super(vertx);
+    sslHelper = new SSLHelper(SSLHelper.resolveEngineOptions(tcpOptions.getSslEngineOptions(), tcpOptions.isUseAlpn()));
   }
 
   @Override
@@ -52,8 +53,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
     boolean clientSslConfig = options.isSsl();
     int desiredPacketSize = options.getPacketSize();
     // Always start unencrypted, the connection will be upgraded if client and server agree
-    NetClient netClient = netClient(new NetClientOptions(options).setSsl(false));
-    return netClient.connect(server)
+    return client.connect(server)
       .map(so -> createSocketConnection(so, options, desiredPacketSize, context))
       .compose(conn -> conn.sendPreLoginMessage(clientSslConfig)
         .compose(encryptionLevel -> login(conn, options, encryptionLevel, context))
@@ -72,8 +72,8 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
 
   private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, int desiredPacketSize, ContextInternal context) {
     VertxMetrics vertxMetrics = vertx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
-    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, metrics, options, desiredPacketSize, false, 0, sql -> true, 1, context);
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", tcpOptions.getMetricsName()) : null;
+    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, sslHelper, metrics, options, desiredPacketSize, false, 0, sql -> true, 1, context);
     conn.init();
     return conn;
   }

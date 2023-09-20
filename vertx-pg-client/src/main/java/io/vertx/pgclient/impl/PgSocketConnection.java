@@ -25,6 +25,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.pgclient.PgConnectOptions;
@@ -145,7 +146,7 @@ public class PgSocketConnection extends SocketConnectionBase {
     return dbMetaData;
   }
 
-  void upgradeToSSLConnection(Handler<AsyncResult<Void>> completionHandler) {
+  void upgradeToSSLConnection(ClientSSLOptions sslOptions, Handler<AsyncResult<Void>> completionHandler) {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     Promise<Void> upgradePromise = Promise.promise();
     upgradePromise.future().onComplete(ar->{
@@ -160,7 +161,7 @@ public class PgSocketConnection extends SocketConnectionBase {
         completionHandler.handle(Future.failedFuture(cause));
       }
     });
-    pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, upgradePromise));
+    pipeline.addBefore("handler", "initiate-ssl-handler", new InitiateSslHandler(this, sslOptions, upgradePromise));
   }
 
   @Override

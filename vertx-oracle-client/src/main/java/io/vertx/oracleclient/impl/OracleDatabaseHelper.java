@@ -106,10 +106,10 @@ public class OracleDatabaseHelper {
       runOrHandleSQLException(() -> oracleDataSource.setPassword(password.toString()));
     }
 
-    int connectTimeout = options.getConnectTimeout();
-    if (connectTimeout > 0) {
-      runOrHandleSQLException(() -> oracleDataSource.setLoginTimeout(connectTimeout));
-    }
+//    int connectTimeout = options.getConnectTimeout();
+//    if (connectTimeout > 0) {
+//      runOrHandleSQLException(() -> oracleDataSource.setLoginTimeout(connectTimeout));
+//    }
   }
 
   private static void configureExtendedOptions(OracleDataSource oracleDataSource, OracleConnectOptions options) {

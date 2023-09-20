@@ -22,7 +22,6 @@ import io.vertx.codegen.annotations.Unstable;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.pgclient.impl.PgConnectionUriParser;
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -30,8 +29,6 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import static java.lang.Integer.parseInt;
@@ -260,148 +257,8 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   @Override
-  public PgConnectOptions setSendBufferSize(int sendBufferSize) {
-    return (PgConnectOptions)super.setSendBufferSize(sendBufferSize);
-  }
-
-  @Override
-  public PgConnectOptions setReceiveBufferSize(int receiveBufferSize) {
-    return (PgConnectOptions)super.setReceiveBufferSize(receiveBufferSize);
-  }
-
-  @Override
-  public PgConnectOptions setReuseAddress(boolean reuseAddress) {
-    return (PgConnectOptions)super.setReuseAddress(reuseAddress);
-  }
-
-  @Override
-  public PgConnectOptions setTrafficClass(int trafficClass) {
-    return (PgConnectOptions)super.setTrafficClass(trafficClass);
-  }
-
-  @Override
-  public PgConnectOptions setTcpNoDelay(boolean tcpNoDelay) {
-    return (PgConnectOptions)super.setTcpNoDelay(tcpNoDelay);
-  }
-
-  @Override
-  public PgConnectOptions setTcpKeepAlive(boolean tcpKeepAlive) {
-    return (PgConnectOptions)super.setTcpKeepAlive(tcpKeepAlive);
-  }
-
-  @Override
-  public PgConnectOptions setSoLinger(int soLinger) {
-    return (PgConnectOptions)super.setSoLinger(soLinger);
-  }
-
-  @Override
-  public PgConnectOptions setIdleTimeout(int idleTimeout) {
-    return (PgConnectOptions)super.setIdleTimeout(idleTimeout);
-  }
-
-  @Override
-  public PgConnectOptions setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
-    return (PgConnectOptions) super.setIdleTimeoutUnit(idleTimeoutUnit);
-  }
-
-  @Override
-  public PgConnectOptions setSsl(boolean ssl) {
-    if (ssl) {
-      setSslMode(SslMode.VERIFY_CA);
-    } else {
-      setSslMode(SslMode.DISABLE);
-    }
-    return this;
-  }
-
-  @Override
-  public PgConnectOptions setKeyCertOptions(KeyCertOptions options) {
-    return (PgConnectOptions)super.setKeyCertOptions(options);
-  }
-
-  @Override
-  public PgConnectOptions setKeyStoreOptions(JksOptions options) {
-    return (PgConnectOptions)super.setKeyStoreOptions(options);
-  }
-
-  @Override
-  public PgConnectOptions setPfxKeyCertOptions(PfxOptions options) {
-    return (PgConnectOptions)super.setPfxKeyCertOptions(options);
-  }
-
-  @Override
-  public PgConnectOptions setPemKeyCertOptions(PemKeyCertOptions options) {
-    return (PgConnectOptions)super.setPemKeyCertOptions(options);
-  }
-
-  @Override
-  public PgConnectOptions setTrustOptions(TrustOptions options) {
-    return (PgConnectOptions)super.setTrustOptions(options);
-  }
-
-  @Override
-  public PgConnectOptions setTrustStoreOptions(JksOptions options) {
-    return (PgConnectOptions)super.setTrustStoreOptions(options);
-  }
-
-  @Override
-  public PgConnectOptions setPemTrustOptions(PemTrustOptions options) {
-    return (PgConnectOptions)super.setPemTrustOptions(options);
-  }
-
-  @Override
-  public PgConnectOptions setPfxTrustOptions(PfxOptions options) {
-    return (PgConnectOptions)super.setPfxTrustOptions(options);
-  }
-
-  @Override
-  public PgConnectOptions addEnabledCipherSuite(String suite) {
-    return (PgConnectOptions)super.addEnabledCipherSuite(suite);
-  }
-
-  @Override
-  public PgConnectOptions addEnabledSecureTransportProtocol(String protocol) {
-    return (PgConnectOptions)super.addEnabledSecureTransportProtocol(protocol);
-  }
-
-  @Override
-  public PgConnectOptions addCrlPath(String crlPath) throws NullPointerException {
-    return (PgConnectOptions)super.addCrlPath(crlPath);
-  }
-
-  @Override
-  public PgConnectOptions addCrlValue(Buffer crlValue) throws NullPointerException {
-    return (PgConnectOptions)super.addCrlValue(crlValue);
-  }
-
-  @Override
-  public PgConnectOptions setTrustAll(boolean trustAll) {
-    return (PgConnectOptions)super.setTrustAll(trustAll);
-  }
-
-  @Override
-  public PgConnectOptions setConnectTimeout(int connectTimeout) {
-    return (PgConnectOptions)super.setConnectTimeout(connectTimeout);
-  }
-
-  @Override
-  public PgConnectOptions setMetricsName(String metricsName) {
-    return (PgConnectOptions)super.setMetricsName(metricsName);
-  }
-
-  @Override
   public PgConnectOptions setReconnectAttempts(int attempts) {
     return (PgConnectOptions)super.setReconnectAttempts(attempts);
-  }
-
-  @Override
-  public PgConnectOptions setHostnameVerificationAlgorithm(String hostnameVerificationAlgorithm) {
-    return (PgConnectOptions)super.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
-  }
-
-  @Override
-  public PgConnectOptions setLogActivity(boolean logEnabled) {
-    return (PgConnectOptions)super.setLogActivity(logEnabled);
   }
 
   @Override
@@ -410,73 +267,13 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   @Override
-  public PgConnectOptions setProxyOptions(ProxyOptions proxyOptions) {
-    return (PgConnectOptions)super.setProxyOptions(proxyOptions);
-  }
-
-  @Override
-  public PgConnectOptions setLocalAddress(String localAddress) {
-    return (PgConnectOptions)super.setLocalAddress(localAddress);
-  }
-
-  @Override
-  public PgConnectOptions setUseAlpn(boolean useAlpn) {
-    return (PgConnectOptions)super.setUseAlpn(useAlpn);
-  }
-
-  @Override
-  public PgConnectOptions setSslEngineOptions(SSLEngineOptions sslEngineOptions) {
-    return (PgConnectOptions)super.setSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public PgConnectOptions setJdkSslEngineOptions(JdkSSLEngineOptions sslEngineOptions) {
-    return (PgConnectOptions)super.setJdkSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public PgConnectOptions setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
-    return (PgConnectOptions)super.setOpenSslEngineOptions(sslEngineOptions);
-  }
-
-  @Override
-  public PgConnectOptions setReusePort(boolean reusePort) {
-    return (PgConnectOptions) super.setReusePort(reusePort);
-  }
-
-  @Override
-  public PgConnectOptions setTcpFastOpen(boolean tcpFastOpen) {
-    return (PgConnectOptions) super.setTcpFastOpen(tcpFastOpen);
-  }
-
-  @Override
-  public PgConnectOptions setTcpCork(boolean tcpCork) {
-    return (PgConnectOptions) super.setTcpCork(tcpCork);
-  }
-
-  @Override
-  public PgConnectOptions setTcpQuickAck(boolean tcpQuickAck) {
-    return (PgConnectOptions) super.setTcpQuickAck(tcpQuickAck);
-  }
-
-  @Override
-  public PgConnectOptions setEnabledSecureTransportProtocols(Set<String> enabledSecureTransportProtocols) {
-    return (PgConnectOptions) super.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols);
-  }
-
-  @Override
-  public PgConnectOptions setSslHandshakeTimeout(long sslHandshakeTimeout) {
-    return (PgConnectOptions) super.setSslHandshakeTimeout(sslHandshakeTimeout);
-  }
-
-  @Override
-  public PgConnectOptions setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
-    return (PgConnectOptions) super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
-  }
-
-  @Override
   public PgConnectOptions setTracingPolicy(TracingPolicy tracingPolicy) {
     return (PgConnectOptions) super.setTracingPolicy(tracingPolicy);
+  }
+
+  @Override
+  public PgConnectOptions setSslOptions(ClientSSLOptions sslOptions) {
+    return (PgConnectOptions) super.setSslOptions(sslOptions);
   }
 
   /**

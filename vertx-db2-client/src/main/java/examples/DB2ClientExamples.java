@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
@@ -258,9 +259,9 @@ public class DB2ClientExamples {
       .setUser("user")
       .setPassword("secret")
       .setSsl(true)
-      .setTrustStoreOptions(new JksOptions()
-          .setPath("/path/to/keystore.p12")
-          .setPassword("keystoreSecret"));
+      .setSslOptions(new ClientSSLOptions().setTrustOptions(new JksOptions()
+        .setPath("/path/to/keystore.p12")
+        .setPassword("keystoreSecret")));
 
     DB2Connection.connect(vertx, options)
       .onComplete(res -> {
@@ -396,5 +397,4 @@ public class DB2ClientExamples {
         }
       });
   }
-
 }

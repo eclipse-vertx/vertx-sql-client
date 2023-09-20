@@ -17,7 +17,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.ConnectOptions;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.TrustOptions;
@@ -46,25 +47,29 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
   @Override
   protected Future<Connection> doConnectInternal(MySQLConnectOptions options, ContextInternal context) {
     SslMode sslMode = options.isUsingDomainSocket() ? SslMode.DISABLED : options.getSslMode();
+    ClientSSLOptions sslOptions = options.getSslOptions();
     switch (sslMode) {
       case VERIFY_IDENTITY:
-        String hostnameVerificationAlgorithm = options.getHostnameVerificationAlgorithm();
+        String hostnameVerificationAlgorithm = sslOptions.getHostnameVerificationAlgorithm();
         if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
           return context.failedFuture(new IllegalArgumentException("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode."));
         }
         break;
       case VERIFY_CA:
-        TrustOptions trustOptions = options.getTrustOptions();
+        TrustOptions trustOptions = sslOptions.getTrustOptions();
         if (trustOptions == null) {
           return context.failedFuture(new IllegalArgumentException("Trust options must be specified under " + sslMode.name() + " ssl-mode."));
         }
         break;
+      case DISABLED:
+        sslOptions = null;
+        break;
     }
     int capabilitiesFlag = capabilitiesFlags(options);
     if (sslMode == SslMode.PREFERRED) {
-      return doConnect(options, sslMode, capabilitiesFlag, context).recover(err -> doConnect(options, SslMode.DISABLED, capabilitiesFlag, context));
+      return doConnect(options, sslMode, sslOptions, capabilitiesFlag, context).recover(err -> doConnect(options, SslMode.DISABLED, null, capabilitiesFlag, context));
     } else {
-      return doConnect(options, sslMode, capabilitiesFlag, context);
+      return doConnect(options, sslMode, sslOptions, capabilitiesFlag, context);
     }
   }
 
@@ -82,7 +87,7 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
     return capabilitiesFlags;
   }
 
-  private Future<Connection> doConnect(MySQLConnectOptions options, SslMode sslMode, int initialCapabilitiesFlags, ContextInternal context) {
+  private Future<Connection> doConnect(MySQLConnectOptions options, SslMode sslMode, ClientSSLOptions sslOptions, int initialCapabilitiesFlags, ContextInternal context) {
     String username = options.getUser();
     String password = options.getPassword();
     String database = options.getDatabase();
@@ -122,13 +127,14 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
     }
     int pipeliningLimit = options.getPipeliningLimit();
     MySQLAuthenticationPlugin authenticationPlugin = options.getAuthenticationPlugin();
-    Future<NetSocket> fut = netClient(new NetClientOptions(options).setSsl(false)).connect(server);
+    ConnectOptions connectOptions = new ConnectOptions().setRemoteAddress(server);
+    Future<NetSocket> fut = client.connect(connectOptions);
     return fut.flatMap(so -> {
       VertxMetrics vertxMetrics = vertx.metricsSPI();
-      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", tcpOptions.getMetricsName()) : null;
       MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, metrics, options, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();
-      return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
+      return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, sslOptions, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));
     });
   }
 

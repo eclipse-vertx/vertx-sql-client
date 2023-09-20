@@ -24,6 +24,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.net.ConnectOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.TrustOptions;
@@ -52,12 +53,12 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
   private void checkSslMode(PgConnectOptions options) {
     switch (options.getSslMode()) {
       case VERIFY_FULL:
-        String hostnameVerificationAlgorithm = options.getHostnameVerificationAlgorithm();
+        String hostnameVerificationAlgorithm = options.getSslOptions().getHostnameVerificationAlgorithm();
         if (hostnameVerificationAlgorithm == null || hostnameVerificationAlgorithm.isEmpty()) {
           throw new IllegalArgumentException("Host verification algorithm must be specified under verify-full sslmode");
         }
       case VERIFY_CA:
-        TrustOptions trustOptions = options.getTrustOptions();
+        TrustOptions trustOptions = options.getSslOptions().getTrustOptions();
         if (trustOptions == null) {
           throw new IllegalArgumentException("Trust options must be specified under verify-full or verify-ca sslmode");
         }
@@ -77,7 +78,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     String database = options.getDatabase();
     SocketAddress server = options.getSocketAddress();
     Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
-    return doConnect(server, context, (PgConnectOptions) options).flatMap(conn -> {
+    return doConnect(server, context, options).flatMap(conn -> {
       PgSocketConnection socket = (PgSocketConnection) conn;
       socket.init();
       return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
@@ -98,21 +99,23 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
 
   private Future<Connection> doConnect(SocketAddress server, ContextInternal context, PgConnectOptions options) {
     SslMode sslMode = options.isUsingDomainSocket() ? SslMode.DISABLE : options.getSslMode();
+    ConnectOptions connectOptions = new ConnectOptions()
+      .setRemoteAddress(server);
     Future<Connection> connFuture;
     switch (sslMode) {
       case DISABLE:
-        connFuture = doConnect(server, context, false, options);
+        connFuture = doConnect(connectOptions, context, false, options);
         break;
       case ALLOW:
-        connFuture = doConnect(server, context,false, options).recover(err -> doConnect(server, context,true, options));
+        connFuture = doConnect(connectOptions, context, false, options).recover(err -> doConnect(connectOptions, context, true, options));
         break;
       case PREFER:
-        connFuture = doConnect(server, context,true, options).recover(err -> doConnect(server, context,false, options));
+        connFuture = doConnect(connectOptions, context, true, options).recover(err -> doConnect(connectOptions, context, false, options));
         break;
       case REQUIRE:
       case VERIFY_CA:
       case VERIFY_FULL:
-        connFuture = doConnect(server, context, true, options);
+        connFuture = doConnect(connectOptions, context, true, options);
         break;
       default:
         return context.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
@@ -120,20 +123,20 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     return connFuture;
   }
 
-  private Future<Connection> doConnect(SocketAddress server, ContextInternal context, boolean ssl, PgConnectOptions options) {
+  private Future<Connection> doConnect(ConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
     Future<NetSocket> soFut;
     try {
-      soFut = netClient(options).connect(server, (String) null);
+      soFut = client.connect(connectOptions);
     } catch (Exception e) {
       // Client is closed
       return context.failedFuture(e);
     }
     Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so, options));
-    if (ssl && !server.isDomainSocket()) {
+    if (ssl && !connectOptions.getRemoteAddress().isDomainSocket()) {
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
         PgSocketConnection socket = (PgSocketConnection) conn;
-        socket.upgradeToSSLConnection(ar2 -> {
+        socket.upgradeToSSLConnection(options.getSslOptions(), ar2 -> {
           if (ar2.succeeded()) {
             p.complete(conn);
           } else {
@@ -169,7 +172,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     int pipeliningLimit = options.getPipeliningLimit();
     boolean useLayer7Proxy = options.getUseLayer7Proxy();
     VertxMetrics vertxMetrics = vertx.metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", tcpOptions.getMetricsName()) : null;
     PgSocketConnection conn = new PgSocketConnection(socket, metrics, options, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
     return conn;
   }

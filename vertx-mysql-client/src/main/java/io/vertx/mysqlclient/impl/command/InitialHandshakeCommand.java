@@ -12,6 +12,7 @@
 package io.vertx.mysqlclient.impl.command;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.MySQLCollation;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class InitialHandshakeCommand extends AuthenticationCommandBase<Connection> {
   private final SocketConnectionBase conn;
   private final SslMode sslMode;
+  private final ClientSSLOptions sslOptions;
   private final int initialCapabilitiesFlags;
   private final Charset charsetEncoding;
   private final MySQLAuthenticationPlugin authenticationPlugin;
@@ -36,12 +38,14 @@ public class InitialHandshakeCommand extends AuthenticationCommandBase<Connectio
                                  Buffer serverRsaPublicKey,
                                  Map<String, String> connectionAttributes,
                                  SslMode sslMode,
+                                 ClientSSLOptions sslOptions,
                                  int initialCapabilitiesFlags,
                                  Charset charsetEncoding,
                                  MySQLAuthenticationPlugin authenticationPlugin) {
     super(username, password, database, collation, serverRsaPublicKey, connectionAttributes);
     this.conn = conn;
     this.sslMode = sslMode;
+    this.sslOptions = sslOptions;
     this.initialCapabilitiesFlags = initialCapabilitiesFlags;
     this.charsetEncoding = charsetEncoding;
     this.authenticationPlugin = authenticationPlugin;
@@ -53,6 +57,10 @@ public class InitialHandshakeCommand extends AuthenticationCommandBase<Connectio
 
   public SslMode sslMode() {
     return sslMode;
+  }
+
+  public ClientSSLOptions sslOptions() {
+    return sslOptions;
   }
 
   public int initialCapabilitiesFlags() {
