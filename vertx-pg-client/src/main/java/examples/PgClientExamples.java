@@ -56,7 +56,11 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    SqlClient client = PgBuilder.client().config(poolOptions).connectingTo(connectOptions).build();
+    SqlClient client = PgBuilder
+      .client()
+      .config(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
 
     // A simple query
     client
@@ -150,7 +154,11 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    SqlClient client = PgBuilder.client().config(poolOptions).connectingTo(connectOptions).build();
+    SqlClient client = PgBuilder
+      .client()
+      .config(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
   }
 
   public void connecting02(Vertx vertx) {
@@ -168,7 +176,12 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    SqlClient client = PgBuilder.client().config(poolOptions).connectingTo(connectOptions).using(vertx).build();
+    SqlClient client = PgBuilder
+      .client()
+      .config(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
   public void connecting03(Pool client) {
@@ -216,7 +229,6 @@ public class PgClientExamples {
         });
     }).onComplete(ar -> {
       if (ar.succeeded()) {
-
         System.out.println("Done");
       } else {
         System.out.println("Something went wrong " + ar.cause().getMessage());
@@ -272,7 +284,12 @@ public class PgClientExamples {
   public void poolVersusPooledClient(Vertx vertx, String sql, PgConnectOptions connectOptions, PoolOptions poolOptions) {
 
     // Pooled client
-    SqlClient client = PgBuilder.client().config(poolOptions).connectingTo(connectOptions).using(vertx).build();
+    SqlClient client = PgBuilder
+      .client()
+      .config(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Pipelined
     Future<RowSet<Row>> res1 = client.query(sql).execute();
