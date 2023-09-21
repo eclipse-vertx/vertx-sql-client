@@ -68,7 +68,7 @@ public class SharedPoolTest extends PgTestBase {
   public void testCloseAutomatically(TestContext ctx) {
     int maxSize = 8;
     int instances = maxSize * 4;
-    Async latch = ctx.async(instances);
+    Async latch = ctx.async(1 + instances);
     AtomicReference<String> deployment = new AtomicReference<>();
     Async async = ctx.async();
     vertx.deployVerticle(() -> new AbstractVerticle() {
@@ -80,7 +80,10 @@ public class SharedPoolTest extends PgTestBase {
           .query("SELECT 1")
           .execute(ctx.asyncAssertSuccess(res -> latch.countDown()));
       }
-    }, new DeploymentOptions().setInstances(instances), ctx.asyncAssertSuccess(deployment::set));
+    }, new DeploymentOptions().setInstances(instances), ctx.asyncAssertSuccess(id -> {
+      deployment.set(id);
+      latch.countDown();
+    }));
     latch.awaitSuccess(20_000);
     vertx.undeploy(deployment.get())
       .compose(v -> PgConnection.connect(vertx, options))
