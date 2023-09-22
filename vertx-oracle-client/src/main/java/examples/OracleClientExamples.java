@@ -16,10 +16,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
-import io.vertx.oracleclient.OracleClient;
-import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.OraclePool;
-import io.vertx.oracleclient.OraclePrepareOptions;
+import io.vertx.oracleclient.*;
 import io.vertx.oracleclient.data.Blob;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
@@ -49,7 +46,10 @@ public class OracleClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    OraclePool client = OraclePool.pool(connectOptions, poolOptions);
+    Pool client = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
 
     // A simple query
     client
@@ -82,7 +82,11 @@ public class OracleClientExamples {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the data object
-    OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     pool
       .getConnection()
@@ -105,7 +109,11 @@ public class OracleClientExamples {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the connection URI
-    OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
   public void configureFromTnsAliasUri(Vertx vertx) {
@@ -122,10 +130,14 @@ public class OracleClientExamples {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the connection URI
-    OraclePool pool = OraclePool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
-  public void connecting01() {
+  public void connecting01(Vertx vertx) {
 
     // Connect options
     OracleConnectOptions connectOptions = new OracleConnectOptions()
@@ -140,7 +152,11 @@ public class OracleClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    OraclePool client = OraclePool.pool(connectOptions, poolOptions);
+    Pool client = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
 
@@ -158,7 +174,11 @@ public class OracleClientExamples {
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
     // Create the pooled client
-    OraclePool client = OraclePool.pool(vertx, connectOptions, poolOptions);
+    Pool client = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
   public void connecting03(Pool pool) {
@@ -182,7 +202,11 @@ public class OracleClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    OraclePool client = OraclePool.pool(vertx, connectOptions, poolOptions);
+    Pool client = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Get a connection from the pool
     client.getConnection().compose(conn -> {

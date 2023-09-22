@@ -12,6 +12,8 @@ import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import io.vertx.core.Future;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.unit.Async;
 import org.junit.Test;
 
@@ -52,7 +54,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver(TestContext ctx) {
-    testCreatePoolWithVertx(ctx, vertx -> getDriver().createPool(vertx, Collections.singletonList(defaultOptions()), new PoolOptions().setMaxSize(1)));
+    testCreatePoolWithVertx(ctx, vertx -> getDriver().createPool(vertx, () -> Future.succeededFuture(defaultOptions()), new PoolOptions().setMaxSize(1), new NetClientOptions()));
   }
 
   @Test
@@ -138,7 +140,7 @@ public abstract class DriverTestBase {
   public static class BogusOptions extends SqlConnectOptions {
   }
 
-  private Driver getDriver() {
+  private Driver<SqlConnectOptions> getDriver() {
     return ServiceLoader.load(Driver.class).iterator().next();
   }
 }

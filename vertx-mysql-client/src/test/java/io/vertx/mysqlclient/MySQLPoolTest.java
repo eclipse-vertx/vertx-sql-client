@@ -19,6 +19,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
@@ -42,7 +43,7 @@ public class MySQLPoolTest extends MySQLTestBase {
 
   Vertx vertx;
   MySQLConnectOptions options;
-  MySQLPool pool;
+  Pool pool;
 
   @Rule
   public RepeatRule rule = new RepeatRule();
@@ -51,7 +52,7 @@ public class MySQLPoolTest extends MySQLTestBase {
   public void setup() {
     vertx = Vertx.vertx();
     options = new MySQLConnectOptions(MySQLTestBase.options);
-    pool = MySQLPool.pool(vertx, options, new PoolOptions());
+    pool = MySQLBuilder.pool(builder -> builder.connectingTo(options).using(vertx));
   }
 
   @After
@@ -109,7 +110,7 @@ public class MySQLPoolTest extends MySQLTestBase {
   @Test
   public void testConcurrentMultipleConnection(TestContext ctx) {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(2);
-    MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
+    Pool pool = MySQLBuilder.pool(builder -> builder.with(poolOptions).connectingTo(new MySQLConnectOptions(this.options).setCachePreparedStatements(false)).using(vertx));
     try {
       int numRequests = 1500;
       Async async = ctx.async(numRequests);
@@ -135,7 +136,7 @@ public class MySQLPoolTest extends MySQLTestBase {
   public void testBorrowedPooledConnectionClosedByServer(TestContext ctx) {
     Async async = ctx.async();
     PoolOptions poolOptions = new PoolOptions().setMaxSize(1);
-    MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
+    Pool pool = MySQLBuilder.pool(builder -> builder.with(poolOptions).connectingTo(new MySQLConnectOptions(this.options).setCachePreparedStatements(false)).using(vertx));
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(conn -> {
@@ -170,7 +171,7 @@ public class MySQLPoolTest extends MySQLTestBase {
   public void testPooledConnectionClosedByServer(TestContext ctx) {
     Async async = ctx.async();
     PoolOptions poolOptions = new PoolOptions().setMaxSize(1);
-    MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
+    Pool pool = MySQLBuilder.pool(builder -> builder.with(poolOptions).connectingTo(new MySQLConnectOptions(this.options).setCachePreparedStatements(false)).using(vertx));
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(conn -> {
@@ -225,7 +226,7 @@ public class MySQLPoolTest extends MySQLTestBase {
       .setIdleTimeout(idleTimeout)
       .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
       .setPoolCleanerPeriod(5);
-    pool = MySQLPool.pool(options, poolOptions);
+    pool = MySQLBuilder.pool(builder -> builder.with(poolOptions).connectingTo(options).using(vertx));
 
     Async async = ctx.async();
     AtomicInteger cid = new AtomicInteger();

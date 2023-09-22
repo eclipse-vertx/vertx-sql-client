@@ -19,6 +19,7 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import org.junit.After;
@@ -51,10 +52,10 @@ public class SharedPoolTest extends PgTestBase {
     int maxSize = 8;
     int instances = maxSize * 4;
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      PgPool pool;
+      Pool pool;
       @Override
       public void start() {
-        pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
+        pool = PgBuilder.pool().connectingTo(options).with(new PoolOptions().setMaxSize(maxSize).setShared(true)).using(vertx).build();
         pool
           .query("SELECT pg_sleep(0.5);SELECT count(*) FROM pg_stat_activity WHERE application_name LIKE '%vertx%'")
           .execute()
@@ -73,10 +74,13 @@ public class SharedPoolTest extends PgTestBase {
     AtomicReference<String> deployment = new AtomicReference<>();
     Async async = ctx.async();
     vertx.deployVerticle(() -> new AbstractVerticle() {
-        PgPool pool;
+        Pool pool;
         @Override
         public void start() {
-          pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
+          pool = PgBuilder.pool(builder -> builder
+            .with(new PoolOptions().setMaxSize(maxSize).setShared(true))
+            .connectingTo(options)
+            .using(vertx));
           pool
             .query("SELECT 1")
             .execute()
@@ -115,14 +119,14 @@ public class SharedPoolTest extends PgTestBase {
     int instances = maxSize * 4;
     Async async = ctx.async();
     vertx.deployVerticle(new AbstractVerticle() {
-      PgPool pool;
+      Pool pool;
       @Override
       public void start() {
-        pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
+        pool = PgBuilder.pool().connectingTo(options).with(new PoolOptions().setMaxSize(maxSize).setShared(true)).using(vertx).build();
         vertx.deployVerticle(() -> new AbstractVerticle() {
           @Override
           public void start(Promise<Void> startPromise) {
-            PgPool pool = PgPool.pool(vertx, options, new PoolOptions().setMaxSize(maxSize).setShared(true));
+            Pool pool = PgBuilder.pool().connectingTo(options).with(new PoolOptions().setMaxSize(maxSize).setShared(true)).using(vertx).build();
             pool.query("SELECT 1").execute()
               .<Void>mapEmpty()
               .onComplete(startPromise);

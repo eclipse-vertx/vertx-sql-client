@@ -14,10 +14,10 @@ package io.vertx.oracleclient.test;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.oracleclient.OraclePool;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.data.Blob;
 import io.vertx.oracleclient.test.junit.OracleRule;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
@@ -36,11 +36,11 @@ public class OracleBinaryDataTypesTest extends OracleTestBase {
   @ClassRule
   public static OracleRule oracle = OracleRule.SHARED_INSTANCE;
 
-  OraclePool pool;
+  Pool pool;
 
   @Before
   public void setUp() throws Exception {
-    pool = OraclePool.pool(vertx, oracle.options(), new PoolOptions());
+    pool = OracleBuilder.pool(builder -> builder.connectingTo(oracle.options()).using(vertx));
   }
 
   @After

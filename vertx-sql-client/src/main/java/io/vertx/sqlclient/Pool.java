@@ -31,10 +31,13 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.sqlclient.impl.PoolImpl;
+import io.vertx.sqlclient.impl.Utils;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static io.vertx.sqlclient.impl.PoolImpl.startPropagatableConnection;
 
@@ -74,8 +77,8 @@ public interface Pool extends SqlClient {
    * @throws ServiceConfigurationError if no compatible drivers are found, or if multiple compatible drivers are found
    */
   static Pool pool(Vertx vertx, SqlConnectOptions database, PoolOptions options) {
-    List<Driver> candidates = new ArrayList<>(1);
-    for (Driver d : ServiceLoader.load(Driver.class)) {
+    List<Driver<SqlConnectOptions>> candidates = new ArrayList<>(1);
+    for (Driver<SqlConnectOptions> d : ServiceLoader.load(Driver.class)) {
       if (d.acceptsOptions(database)) {
         candidates.add(d);
       }
@@ -85,8 +88,8 @@ public interface Pool extends SqlClient {
     } else if (candidates.size() > 1) {
       throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
     } else {
-      Driver driver = candidates.get(0);
-      return candidates.get(0).createPool(vertx, Collections.singletonList(driver.downcast(database)), options);
+      Driver<SqlConnectOptions> driver = candidates.get(0);
+      return driver.createPool(vertx, Utils.singletonSupplier(driver.downcast(database)), options, new NetClientOptions());
     }
   }
 
@@ -200,7 +203,9 @@ public interface Pool extends SqlClient {
    *
    * @param handler the handler
    * @return a reference to this, so the API can be used fluently
+   * @deprecated instead use {@link ClientBuilder#withConnectHandler(Handler)}
    */
+  @Deprecated
   @Fluent
   Pool connectHandler(Handler<SqlConnection> handler);
 
@@ -212,7 +217,9 @@ public interface Pool extends SqlClient {
    *
    * @param provider the new connection provider
    * @return a reference to this, so the API can be used fluently
+   * @deprecated instead use {@link ClientBuilder#connectingTo(Supplier)}
    */
+  @Deprecated
   @Fluent
   Pool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 

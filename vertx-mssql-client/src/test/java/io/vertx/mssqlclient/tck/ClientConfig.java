@@ -11,17 +11,14 @@
 
 package io.vertx.mssqlclient.tck;
 
+import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
-import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.tck.Connector;
 
 public enum ClientConfig {
@@ -52,7 +49,10 @@ public enum ClientConfig {
   POOLED() {
     @Override
     Connector<SqlClient> connect(Vertx vertx, SqlConnectOptions options) {
-      MSSQLPool pool = MSSQLPool.pool(vertx, new MSSQLConnectOptions(options), new PoolOptions().setMaxSize(1));
+      Pool pool = MSSQLBuilder.pool(builder -> builder
+        .with(new PoolOptions().setMaxSize(1))
+        .connectingTo(new MSSQLConnectOptions(options))
+        .using(vertx));
       return new Connector<SqlClient>() {
         @Override
         public void connect(Handler<AsyncResult<SqlClient>> handler) {

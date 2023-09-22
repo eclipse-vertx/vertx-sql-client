@@ -12,11 +12,10 @@
 package io.vertx.db2client.tck;
 
 import io.vertx.core.Vertx;
-import io.vertx.db2client.DB2Pool;
+import io.vertx.db2client.DB2Builder;
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -29,7 +28,7 @@ public class DB2TracingTest extends TracingTestBase {
 
   @Override
   protected Pool createPool(Vertx vertx) {
-    return DB2Pool.pool(vertx, rule.options(), new PoolOptions());
+    return DB2Builder.pool(builder -> builder.connectingTo(rule.options()).using(vertx));
   }
 
   @Override

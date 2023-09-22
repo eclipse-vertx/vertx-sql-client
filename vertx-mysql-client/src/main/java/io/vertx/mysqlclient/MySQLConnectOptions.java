@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 /**
- * Connect options for configuring {@link MySQLConnection} or {@link MySQLPool}.
+ * Connect options for configuring {@link MySQLConnection} or {@link MySQLBuilder}.
  */
 @DataObject(generateConverter = true)
 public class MySQLConnectOptions extends SqlConnectOptions {

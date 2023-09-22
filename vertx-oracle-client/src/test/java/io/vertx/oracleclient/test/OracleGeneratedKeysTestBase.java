@@ -17,8 +17,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.OracleClient;
-import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.*;
@@ -85,11 +85,13 @@ public abstract class OracleGeneratedKeysTestBase extends OracleTestBase {
   @ClassRule
   public static OracleRule oracle = OracleRule.SHARED_INSTANCE;
 
-  protected OraclePool pool;
+  protected Pool pool;
 
   @Before
   public void setUp(TestContext ctx) throws Exception {
-    pool = OraclePool.pool(vertx, oracle.options(), new PoolOptions());
+    pool = OracleBuilder.pool(builder -> builder
+      .connectingTo(oracle.options())
+      .using(vertx));
     pool
       .withConnection(conn -> {
       return conn

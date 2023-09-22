@@ -21,6 +21,7 @@ import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.impl.*;
 import io.vertx.sqlclient.Pool;
@@ -46,21 +47,21 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
   }
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, cf));
+      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, transportOptions, cf));
     } else {
-      pool = newPoolImpl(vx, databases, options, closeFuture);
+      pool = newPoolImpl(vx, databases, options, transportOptions, closeFuture);
     }
     return new MySQLPoolImpl(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
-    boolean pipelinedPool = options instanceof MySQLPoolOptions && ((MySQLPoolOptions) options).isPipelined();
-    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, closeFuture);
-    ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx);
+  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+    boolean pipelinedPool = poolOptions instanceof MySQLPoolOptions && ((MySQLPoolOptions) poolOptions).isPipelined();
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, closeFuture);
+    ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);
@@ -79,7 +80,7 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
   }
 
   @Override
-  public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx) {
+  public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
     return new MySQLConnectionFactory((VertxInternal) vertx);
   }
 

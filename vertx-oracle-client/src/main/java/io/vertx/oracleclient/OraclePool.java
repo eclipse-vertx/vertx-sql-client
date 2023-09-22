@@ -15,10 +15,12 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.oracleclient.spi.OracleDriver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.Utils;
 
 import java.util.Collections;
 import java.util.function.Function;
@@ -38,7 +40,7 @@ public interface OraclePool extends Pool {
    * Like {@link #pool(OracleConnectOptions, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static OraclePool pool(Vertx vertx, OracleConnectOptions connectOptions, PoolOptions poolOptions) {
-    return (OraclePool) OracleDriver.INSTANCE.createPool(vertx, Collections.singletonList(connectOptions), poolOptions);
+    return (OraclePool) OracleDriver.INSTANCE.createPool(vertx, Utils.singletonSupplier(connectOptions), poolOptions, new NetClientOptions());
   }
 
   /**
@@ -72,7 +74,7 @@ public interface OraclePool extends Pool {
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static OraclePool pool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions poolOptions) {
-    return (OraclePool) OracleDriver.INSTANCE.createPool(vertx, databases, poolOptions);
+    return (OraclePool) OracleDriver.INSTANCE.createPool(vertx, databases, poolOptions, new NetClientOptions());
   }
 
   @Override

@@ -22,6 +22,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
@@ -56,14 +57,14 @@ public class PgPoolTest extends PgPoolTestBase {
   @Rule
   public RepeatRule rule = new RepeatRule();
 
-  private Set<PgPool> pools = new HashSet<>();
+  private Set<Pool> pools = new HashSet<>();
 
   @Override
   public void tearDown(TestContext ctx) {
     int size = pools.size();
     if (size > 0) {
       Async async = ctx.async(size);
-      Set<PgPool> pools = this.pools;
+      Set<Pool> pools = this.pools;
       this.pools = new HashSet<>();
       pools.forEach(pool -> {
         pool
@@ -78,8 +79,13 @@ public class PgPoolTest extends PgPoolTestBase {
   }
 
   @Override
-  protected PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+  protected Pool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
+    Pool pool = PgBuilder.pool(b -> b
+      .connectingTo(connectOptions)
+      .with(poolOptions)
+      .using(vertx)
+      .withConnectHandler(connectHandler)
+    );
     pools.add(pool);
     return pool;
   }
@@ -87,7 +93,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testClosePool(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
+    Pool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(conn -> {
@@ -112,7 +118,7 @@ public class PgPoolTest extends PgPoolTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
+      Pool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
       pool
         .getConnection()
         .onComplete(ctx.asyncAssertSuccess(conn -> {
@@ -134,7 +140,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testAuthFailure(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = createPool(new PgConnectOptions(options).setPassword("wrong"), 1);
+    Pool pool = createPool(new PgConnectOptions(options).setPassword("wrong"), 1);
     pool
       .query("SELECT id, randomnumber from WORLD")
       .execute()
@@ -152,7 +158,7 @@ public class PgPoolTest extends PgPoolTestBase {
       proxyConn.set(conn);
       conn.connect();
     });
-    PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"),
+    Pool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"),
       new PoolOptions()
         .setMaxSize(1)
         .setMaxWaitQueueSize(0)
@@ -175,7 +181,7 @@ public class PgPoolTest extends PgPoolTestBase {
     Async async = ctx.async();
     vertx.runOnContext(v -> {
       try {
-        PgPool.pool(new PoolOptions());
+        PgBuilder.pool(b -> b.with(new PoolOptions()));
         ctx.fail();
       } catch (IllegalStateException ignore) {
         async.complete();
@@ -186,7 +192,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testRunStandalone(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = createPool(new PgConnectOptions(options), new PoolOptions());
+    Pool pool = createPool(new PgConnectOptions(options), new PoolOptions());
     pool
       .query("SELECT id, randomnumber from WORLD")
       .execute()
@@ -199,7 +205,7 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   public void testMaxWaitQueueSize(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
+    Pool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(v -> {
@@ -218,7 +224,7 @@ public class PgPoolTest extends PgPoolTestBase {
   // will actually use the same connection for the prepare and the query commands
   @Test
   public void testConcurrentMultipleConnection(TestContext ctx) {
-    PgPool pool = createPool(new PgConnectOptions(this.options).setCachePreparedStatements(true), 2);
+    Pool pool = createPool(new PgConnectOptions(this.options).setCachePreparedStatements(true), 2);
     int numRequests = 2;
     Async async = ctx.async(numRequests);
     for (int i = 0; i < numRequests; i++) {
@@ -239,7 +245,7 @@ public class PgPoolTest extends PgPoolTestBase {
   public void testUseAvailableResources(TestContext ctx) {
     int poolSize = 10;
     Async async = ctx.async(poolSize + 1);
-    PgPool pool = PgPool.pool(options, new PoolOptions().setMaxSize(poolSize));
+    Pool pool = PgBuilder.pool(b -> b.connectingTo(options).with(new PoolOptions().setMaxSize(poolSize)));
     AtomicReference<PgConnection> ctrlConnRef = new AtomicReference<>();
     PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(ctrlConn -> {
       ctrlConnRef.set(ctrlConn);
@@ -277,7 +283,7 @@ public class PgPoolTest extends PgPoolTestBase {
   public void testEventLoopSize(TestContext ctx) {
     int num = VertxOptions.DEFAULT_EVENT_LOOP_POOL_SIZE;
     int size = num * 2;
-    PgPool pool = PgPool.pool(options, new PoolOptions().setMaxSize(size).setEventLoopSize(2));
+    Pool pool = PgBuilder.pool(b -> b.with(new PoolOptions().setMaxSize(size).setEventLoopSize(2)).connectingTo(options));
     Set<EventLoop> eventLoops = Collections.synchronizedSet(new HashSet<>());
     Async async = ctx.async(size);
     for (int i = 0;i < size;i++) {
@@ -323,7 +329,7 @@ public class PgPoolTest extends PgPoolTestBase {
 
     int num = 3;
     Async async = ctx.async(num);
-    SqlClient pool = PgPool.client(options, new PoolOptions().setMaxSize(1));
+    SqlClient pool = PgBuilder.client(b -> b.connectingTo(options).with(new PoolOptions().setMaxSize(1)));
     AtomicLong start = new AtomicLong();
     // Connect to the database
     pool
@@ -348,7 +354,7 @@ public class PgPoolTest extends PgPoolTestBase {
 
   @Test
   public void testCannotAcquireConnectionOnPipelinedPool(TestContext ctx) {
-    PgPool pool = (PgPool) PgPool.client(options, new PoolOptions().setMaxSize(1));
+    Pool pool = (Pool) PgBuilder.client(b -> b.connectingTo(options).with(new PoolOptions().setMaxSize(1)));
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertFailure());
@@ -414,7 +420,7 @@ public class PgPoolTest extends PgPoolTestBase {
       .setIdleTimeoutUnit(TimeUnit.MILLISECONDS);
     options.setPort(8080);
     options.setHost("localhost");
-    PgPool pool = createPool(options, poolOptions);
+    Pool pool = createPool(options, poolOptions);
 
     // Create a connection that remains in the pool
     pool
@@ -457,7 +463,7 @@ public class PgPoolTest extends PgPoolTestBase {
       .setMaxLifetimeUnit(TimeUnit.MILLISECONDS);
     options.setPort(8080);
     options.setHost("localhost");
-    PgPool pool = createPool(options, poolOptions);
+    Pool pool = createPool(options, poolOptions);
 
     // Create a connection that remains in the pool
     pool
@@ -487,7 +493,7 @@ public class PgPoolTest extends PgPoolTestBase {
       .setConnectionTimeoutUnit(TimeUnit.SECONDS);
     options.setPort(8080);
     options.setHost("localhost");
-    PgPool pool = createPool(options, poolOptions);
+    Pool pool = createPool(options, poolOptions);
 
     // Create a connection that remains in the pool
     long now = System.currentTimeMillis();
@@ -523,7 +529,7 @@ public class PgPoolTest extends PgPoolTestBase {
       .setIdleTimeout(idleTimeout)
       .setIdleTimeoutUnit(TimeUnit.MILLISECONDS)
       .setPoolCleanerPeriod(5);
-    PgPool pool = createPool(options, poolOptions);
+    Pool pool = createPool(options, poolOptions);
 
     Async async = ctx.async();
     AtomicInteger pid = new AtomicInteger();
@@ -559,7 +565,7 @@ public class PgPoolTest extends PgPoolTestBase {
         f.close().onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
       });
     };
-    PgPool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
+    Pool pool = createPool(options, new PoolOptions().setMaxSize(1), hook);
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(conn -> {
@@ -580,7 +586,7 @@ public class PgPoolTest extends PgPoolTestBase {
         f.close().onComplete(ctx.asyncAssertSuccess(v -> async.countDown()));
       });
     };
-    PgPool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
+    Pool pool = createPool(options, new PoolOptions().setMaxSize(1), hook);
     pool
       .query("SELECT id, randomnumber from WORLD")
       .execute()
@@ -605,7 +611,7 @@ public class PgPoolTest extends PgPoolTestBase {
         });
         proxyConn.get().close();
       };
-      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), new PoolOptions().setMaxSize(1)).connectHandler(hook);
+      Pool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), new PoolOptions().setMaxSize(1), hook);
       pool
         .getConnection()
         .onComplete(ctx.asyncAssertFailure(conn -> {
@@ -634,8 +640,8 @@ public class PgPoolTest extends PgPoolTestBase {
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
       PgConnectOptions options = new PgConnectOptions(this.options).setPort(8080).setHost("localhost");
-      ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx);
-      PgPool pool = createPool(options, new PoolOptions().setMaxSize(1));
+      ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, new NetClientOptions());
+      Pool pool = createPool(options, new PoolOptions().setMaxSize(1));
       pool.connectionProvider(context -> {
         Future<SqlConnection> fut = factory.connect(context, options);
         if (immediately) {

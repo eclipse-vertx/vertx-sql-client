@@ -3,11 +3,13 @@ package io.vertx.pgclient;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.pgclient.spi.PgDriver;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -48,13 +50,13 @@ public class PoolMultiTest {
 
   @Test
   public void testListLoadBalancing(TestContext ctx) {
-    testLoadBalancing(ctx, PgPool.pool(vertx, Arrays.asList(db1.options(), db2.options()),new PoolOptions().setMaxSize(5)));
+    testLoadBalancing(ctx, PgBuilder.pool().connectingTo(Arrays.asList(db1.options(), db2.options())).with(new PoolOptions().setMaxSize(5)).using(vertx).build());
   }
 
   @Test
   public void testAsyncLoadBalancing(TestContext ctx) {
-    PgPool pool = PgPool.pool(vertx, new PoolOptions().setMaxSize(5));
-    ConnectionFactory provider = PgDriver.INSTANCE.createConnectionFactory(vertx);
+    Pool pool = PgBuilder.pool().with(new PoolOptions().setMaxSize(5)).using(vertx).build();
+    ConnectionFactory provider = PgDriver.INSTANCE.createConnectionFactory(vertx, new NetClientOptions());
     pool.connectionProvider(new Function<Context, Future<SqlConnection>>() {
       int idx = 0;
       @Override
@@ -65,7 +67,7 @@ public class PoolMultiTest {
     testLoadBalancing(ctx, pool);
   }
 
-  private void testLoadBalancing(TestContext ctx, PgPool pool) {
+  private void testLoadBalancing(TestContext ctx, Pool pool) {
     int count = 5;
     Async async = ctx.async(count);
     List<Future<SqlConnection>> futures = new ArrayList<>();

@@ -19,6 +19,7 @@ package io.vertx.pgclient;
 
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import org.junit.Test;
 
@@ -27,12 +28,12 @@ import org.junit.Test;
  */
 public class PgPooledConnectionTest extends PgConnectionTestBase {
 
-  private PgPool pool;
+  private Pool pool;
 
   public PgPooledConnectionTest() {
     connector = handler -> {
       if (pool == null) {
-        pool = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions().setMaxSize(1));
+        pool = PgBuilder.pool().connectingTo(new PgConnectOptions(options)).with(new PoolOptions().setMaxSize(1)).using(vertx).build();
       }
       pool.getConnection().onComplete(handler);
     };
@@ -41,7 +42,7 @@ public class PgPooledConnectionTest extends PgConnectionTestBase {
   @Override
   public void tearDown(TestContext ctx) {
     if (pool != null) {
-      PgPool p = pool;
+      Pool p = pool;
       pool = null;
       p.close();
     }

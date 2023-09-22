@@ -20,13 +20,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.db2client.DB2Builder;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
-import io.vertx.db2client.DB2Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.tck.Connector;
 
 @SuppressWarnings("unchecked")
@@ -57,7 +54,11 @@ public enum ClientConfig {
   POOLED() {
     @Override
     public Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
-      DB2Pool pool = DB2Pool.pool(vertx, new DB2ConnectOptions(options), new PoolOptions().setMaxSize(1));
+      Pool pool = DB2Builder.pool()
+        .with(new PoolOptions().setMaxSize(1))
+        .connectingTo(new DB2ConnectOptions(options))
+        .using(vertx)
+        .build();
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {

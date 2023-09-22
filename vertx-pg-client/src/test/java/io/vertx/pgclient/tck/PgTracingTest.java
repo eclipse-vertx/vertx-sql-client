@@ -13,10 +13,9 @@ package io.vertx.pgclient.tck;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.PgPool;
+import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -28,7 +27,7 @@ public class PgTracingTest extends TracingTestBase {
 
   @Override
   protected Pool createPool(Vertx vertx) {
-    return PgPool.pool(vertx, rule.options(), new PoolOptions());
+    return PgBuilder.pool().connectingTo(rule.options()).using(vertx).build();
   }
 
   @Override
