@@ -13,6 +13,7 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.VertxInternal;
+
 import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.impl.PoolBase;

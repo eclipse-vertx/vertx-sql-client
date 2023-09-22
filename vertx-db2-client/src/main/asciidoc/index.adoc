@@ -99,7 +99,7 @@ Once you are done with the connection you must close it to release it to the poo
 
 == Pool versus pooled client
 
-The {@link io.vertx.db2client.DB2Pool} allows you to create a pool or a pooled client
+The {@link io.vertx.db2client.DB2Builder} allows you to create a pool or a pooled client
 
 [source,$lang]
 ----

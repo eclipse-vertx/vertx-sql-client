@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.JksOptions;
+import io.vertx.db2client.DB2Builder;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
-import io.vertx.db2client.DB2Pool;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -52,7 +52,10 @@ public class DB2ClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    DB2Pool client = DB2Pool.pool(connectOptions, poolOptions);
+    Pool client = DB2Builder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
 
     // A simple query
     client
@@ -85,7 +88,11 @@ public class DB2ClientExamples {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the data object
-    DB2Pool pool = DB2Pool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = DB2Builder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     pool.getConnection()
       .onComplete(ar -> {
@@ -99,7 +106,10 @@ public class DB2ClientExamples {
     String connectionUri = "db2://dbuser:secretpassword@database.server.com:50000/mydb";
 
     // Create the pool from the connection URI
-    DB2Pool pool = DB2Pool.pool(connectionUri);
+    Pool pool = DB2Builder.pool()
+      .connectingTo(connectionUri)
+      .using(vertx)
+      .build();
 
     // Create the connection from the connection URI
     DB2Connection.connect(vertx, connectionUri)
@@ -108,7 +118,7 @@ public class DB2ClientExamples {
       });
   }
 
-  public void connecting01() {
+  public void connecting01(Vertx vertx) {
 
     // Connect options
     DB2ConnectOptions connectOptions = new DB2ConnectOptions()
@@ -123,7 +133,11 @@ public class DB2ClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    SqlClient client = DB2Pool.client(connectOptions, poolOptions);
+    SqlClient client = DB2Builder.client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
   public void connecting02(Vertx vertx) {
@@ -140,7 +154,11 @@ public class DB2ClientExamples {
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
     // Create the pooled client
-    SqlClient client = DB2Pool.client(vertx, connectOptions, poolOptions);
+    SqlClient client = DB2Builder.client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
   public void connecting03(SqlClient client) {
@@ -164,7 +182,11 @@ public class DB2ClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    DB2Pool client = DB2Pool.pool(vertx, connectOptions, poolOptions);
+    Pool client = DB2Builder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Get a connection from the pool
     client.getConnection().compose(conn -> {
@@ -194,13 +216,21 @@ public class DB2ClientExamples {
   public void poolVersusPooledClient(Vertx vertx, String sql, DB2ConnectOptions connectOptions, PoolOptions poolOptions) {
 
     // Pooled client
-    SqlClient client = DB2Pool.client(vertx, connectOptions, poolOptions);
+    SqlClient client = DB2Builder.client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Pipelined
     Future<RowSet<Row>> res1 = client.query(sql).execute();
 
     // Connection pool
-    DB2Pool pool = DB2Pool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = DB2Builder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Not pipelined
     Future<RowSet<Row>> res2 = pool.query(sql).execute();

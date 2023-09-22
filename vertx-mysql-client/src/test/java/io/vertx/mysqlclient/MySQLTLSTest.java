@@ -18,6 +18,7 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.MySQLRule;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import org.junit.After;
@@ -159,7 +160,7 @@ public class MySQLTLSTest {
       .setCertPath("tls/files/client-cert.pem")
       .setKeyPath("tls/files/client-key.pem"));
 
-    MySQLPool pool = MySQLPool.pool(vertx, options, new PoolOptions().setMaxSize(5));
+    Pool pool = MySQLBuilder.pool(builder -> builder.with(new PoolOptions().setMaxSize(5)).connectingTo(options).using(vertx));
 
     pool.withConnection(conn1 -> {
       return pool.withConnection(conn2 -> {
@@ -240,7 +241,7 @@ public class MySQLTLSTest {
       .setKeyPath("tls/files/client-key.pem"));
 
     try {
-      MySQLPool.pool(vertx, options, new PoolOptions());
+      MySQLBuilder.pool(builder -> builder.connectingTo(options).using(vertx));
     } catch (IllegalArgumentException e) {
       ctx.assertEquals("Trust options must be specified under VERIFY_CA ssl-mode.", e.getMessage());
     }

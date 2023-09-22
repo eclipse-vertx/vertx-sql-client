@@ -109,7 +109,7 @@ You can set this value to `1` to disable pipelining.
 
 == Pool versus pooled client
 
-The {@link io.vertx.pgclient.PgPool} allows you to create a pool or a pooled client
+The {@link io.vertx.pgclient.PgBuilder} allows you to create a pool or a pooled client
 
 [source,$lang]
 ----

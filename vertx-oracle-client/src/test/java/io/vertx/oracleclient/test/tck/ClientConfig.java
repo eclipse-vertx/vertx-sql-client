@@ -14,13 +14,10 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OracleConnection;
-import io.vertx.oracleclient.OraclePool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.tck.Connector;
 
 public enum ClientConfig {
@@ -51,8 +48,11 @@ public enum ClientConfig {
   POOLED() {
     @Override
     Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
-      OraclePool pool = OraclePool
-        .pool(vertx, new OracleConnectOptions(options), new PoolOptions().setMaxSize(5));
+      Pool pool = OracleBuilder
+        .pool(builder -> builder
+          .with(new PoolOptions().setMaxSize(5))
+          .connectingTo(new OracleConnectOptions(options))
+          .using(vertx));
       return new Connector<>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {

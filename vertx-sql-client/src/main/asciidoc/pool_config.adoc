@@ -13,8 +13,8 @@ NOTE: this provides load balancing when the connection is created and not when t
 
 === Pool connection initialization
 
-You can use the {@link io.vertx.sqlclient.Pool#connectHandler} to interact with a connection after it
-has been created and before it is inserted in the pool.
+You can use the {@link io.vertx.sqlclient.ClientBuilder#withConnectHandler} to interact with a connection after it
+has been created and before it is inserted in a pool.
 
 [source,$lang]
 ----

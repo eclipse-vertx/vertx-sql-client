@@ -20,8 +20,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.OraclePool;
 import io.vertx.sqlclient.*;
 
 import java.util.ArrayList;
@@ -337,13 +337,17 @@ public class SqlClientExamples {
   }
 
   public void dynamicPoolConfig(Vertx vertx, PoolOptions poolOptions) {
-    OraclePool pool = OraclePool.pool(vertx, () -> {
-      Future<OracleConnectOptions> connectOptions = retrieveOptions();
-      return connectOptions;
-    }, poolOptions);
+    Pool pool = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(() -> {
+        Future<SqlConnectOptions> connectOptions = retrieveOptions();
+        return connectOptions;
+      })
+      .using(vertx)
+      .build();
   }
 
-  private Future<OracleConnectOptions> retrieveOptions() {
+  private Future<SqlConnectOptions> retrieveOptions() {
     return null;
   }
 }

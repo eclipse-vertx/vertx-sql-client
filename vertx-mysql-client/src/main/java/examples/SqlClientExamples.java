@@ -22,11 +22,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
+import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
-import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.mysqlclient.spi.MySQLDriver;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -340,12 +338,16 @@ public class SqlClientExamples {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 
-  public void poolConfig01(MySQLConnectOptions server1, MySQLConnectOptions server2, MySQLConnectOptions server3, PoolOptions options) {
-    MySQLPool pool = MySQLPool.pool(Arrays.asList(server1, server2, server3), options);
+  public void poolConfig01(Vertx vertx, MySQLConnectOptions server1, MySQLConnectOptions server2, MySQLConnectOptions server3, PoolOptions options) {
+    Pool pool = MySQLBuilder.pool()
+      .with(options)
+      .connectingTo(Arrays.asList(server1, server2, server3))
+      .using(vertx)
+      .build();
   }
 
-  public void poolConfig02(MySQLPool pool, String sql) {
-    pool.connectHandler(conn -> {
+  public void poolConfig02(ClientBuilder<?> builder, String sql) {
+    builder.withConnectHandler(conn -> {
       conn.query(sql).execute().onSuccess(res -> {
         // Release the connection to the pool, ready to be used by the application
         conn.close();
@@ -354,7 +356,11 @@ public class SqlClientExamples {
   }
 
   public void poolSharing1(Vertx vertx, MySQLConnectOptions database, int maxSize) {
-    MySQLPool pool = MySQLPool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    Pool pool = MySQLBuilder.pool()
+      .with(new PoolOptions().setMaxSize(maxSize))
+      .connectingTo(database)
+      .using(vertx)
+      .build();
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() throws Exception {
@@ -365,36 +371,45 @@ public class SqlClientExamples {
 
   public void poolSharing2(Vertx vertx, MySQLConnectOptions database, int maxSize) {
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      MySQLPool pool;
+      Pool pool;
       @Override
       public void start() {
         // Get or create a shared pool
         // this actually creates a lease to the pool
         // when the verticle is undeployed, the lease will be released automaticaly
-        pool = MySQLPool.pool(database, new PoolOptions()
-          .setMaxSize(maxSize)
-          .setShared(true)
-          .setName("my-pool"));
+        pool = MySQLBuilder.pool()
+          .with(new PoolOptions()
+            .setMaxSize(maxSize)
+            .setShared(true)
+            .setName("my-pool"))
+          .using(vertx)
+          .build();
       }
     }, new DeploymentOptions().setInstances(4));
   }
 
   public static void poolSharing3(Vertx vertx, MySQLConnectOptions database, int maxSize) {
-    MySQLPool pool = MySQLPool.pool(database, new PoolOptions()
-      .setMaxSize(maxSize)
-      .setShared(true)
-      .setName("my-pool")
-      .setEventLoopSize(4));
+    Pool pool = MySQLBuilder.pool()
+      .with(new PoolOptions()
+        .setMaxSize(maxSize)
+        .setShared(true)
+        .setName("my-pool")
+        .setEventLoopSize(4))
+      .using(vertx)
+      .build();
   }
 
   public void dynamicPoolConfig(Vertx vertx, PoolOptions poolOptions) {
-    MySQLPool pool = MySQLPool.pool(vertx, () -> {
-      Future<MySQLConnectOptions> connectOptions = retrieveOptions();
-      return connectOptions;
-    }, poolOptions);
+    Pool pool = MySQLBuilder.pool()
+      .connectingTo(() -> {
+        Future<SqlConnectOptions> connectOptions = retrieveOptions();
+        return connectOptions;
+      })
+      .using(vertx)
+      .build();
   }
 
-  private Future<MySQLConnectOptions> retrieveOptions() {
+  private Future<SqlConnectOptions> retrieveOptions() {
     return null;
   }
 }

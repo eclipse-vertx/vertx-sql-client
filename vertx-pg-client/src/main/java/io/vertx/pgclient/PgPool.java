@@ -24,23 +24,22 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.pgclient.impl.PgPoolOptions;
 import io.vertx.pgclient.spi.PgDriver;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.*;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Vertx;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.SingletonSupplier;
 
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  * A {@link Pool pool} of {@link PgConnection PostgreSQL connections}.
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+@Deprecated
 @VertxGen
 public interface PgPool extends Pool {
 
@@ -55,7 +54,7 @@ public interface PgPool extends Pool {
    * Like {@link #pool(PgConnectOptions, PoolOptions)} with {@code connectOptions} build from the environment variables.
    */
   static PgPool pool(PoolOptions options) {
-    return pool(PgConnectOptions.fromEnv(), options);
+    return (PgPool) PgBuilder.pool().connectingTo(PgConnectOptions.fromEnv()).with(options).build();
   }
 
   /**
@@ -127,7 +126,12 @@ public interface PgPool extends Pool {
    * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static PgPool pool(Vertx vertx, List<PgConnectOptions> databases, PoolOptions poolOptions) {
-    return (PgPool) PgDriver.INSTANCE.createPool(vertx, databases, poolOptions);
+    return (PgPool) PgBuilder
+      .pool()
+      .connectingTo(databases.stream().map(SqlConnectOptions.class::cast).collect(Collectors.toList()))
+      .with(poolOptions)
+      .using(vertx)
+      .build();
   }
 
   /**
@@ -221,7 +225,10 @@ public interface PgPool extends Pool {
    * Like {@link #client(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, List<PgConnectOptions> databases, PoolOptions options) {
-    return PgDriver.INSTANCE.createPool(vertx, databases, new PgPoolOptions(options).setPipelined(true));
+    return PgBuilder.pool(b -> b
+      .connectingTo(databases.stream().map(SqlConnectOptions.class::cast).collect(Collectors.toList()))
+      .with(new PgPoolOptions(options).setPipelined(true))
+      .using(vertx));
   }
 
   /**
@@ -241,7 +248,7 @@ public interface PgPool extends Pool {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   static SqlClient client(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions options) {
-    return PgDriver.INSTANCE.createPool(vertx, databases, new PgPoolOptions(options).setPipelined(true));
+    return PgBuilder.pool().connectingTo(() -> databases.get().map(c -> c)).with(new PgPoolOptions(options).setPipelined(true)).using(vertx).build();
   }
 
   /**

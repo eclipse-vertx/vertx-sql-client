@@ -18,9 +18,11 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SingletonSupplier;
+import io.vertx.sqlclient.impl.Utils;
 
 import java.util.List;
 import java.util.function.Function;
@@ -32,6 +34,7 @@ import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;
  * A {@link Pool pool} of {@link MSSQLConnection SQL Server connections}.
  */
 @VertxGen
+@Deprecated
 public interface MSSQLPool extends Pool {
 
   /**
@@ -96,7 +99,7 @@ public interface MSSQLPool extends Pool {
    * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MSSQLPool pool(Vertx vertx, List<MSSQLConnectOptions> databases, PoolOptions options) {
-    return (MSSQLPool) MSSQLDriver.INSTANCE.createPool(vertx, databases, options);
+    return (MSSQLPool) MSSQLDriver.INSTANCE.createPool(vertx, Utils.roundRobinSupplier(databases), options);
   }
 
   /**

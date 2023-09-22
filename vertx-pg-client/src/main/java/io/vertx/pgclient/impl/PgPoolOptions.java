@@ -24,6 +24,9 @@ public class PgPoolOptions extends PoolOptions {
     super(other);
   }
 
+  public PgPoolOptions() {
+  }
+
   private boolean pipelined;
 
   public boolean isPipelined() {

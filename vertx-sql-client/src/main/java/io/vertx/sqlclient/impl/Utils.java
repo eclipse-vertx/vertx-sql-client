@@ -55,4 +55,8 @@ public final class Utils {
       }
     };
   }
+
+  public static <T> Supplier<Future<T>> singletonSupplier(T factory) {
+    return () -> Future.succeededFuture(factory);
+  }
 }

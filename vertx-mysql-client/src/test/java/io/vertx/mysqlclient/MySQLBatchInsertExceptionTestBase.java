@@ -57,7 +57,7 @@ public abstract class MySQLBatchInsertExceptionTestBase extends MySQLTestBase {
 
   @Test
   public void testBatchInsertExceptionPool(TestContext ctx) {
-    SqlClient client = MySQLPool.client(vertx, options, new PoolOptions().setMaxSize(8));
+    SqlClient client = MySQLBuilder.client(builder -> builder.with(new PoolOptions().setMaxSize(8)).connectingTo(options).using(vertx));;
     testBatchInsertException(ctx, client);
   }
 

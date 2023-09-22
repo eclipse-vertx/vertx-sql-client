@@ -14,10 +14,9 @@ package io.vertx.oracleclient.test.tck;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.oracleclient.OraclePool;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -32,7 +31,9 @@ public class OracleTracingTest extends TracingTestBase {
 
   @Override
   protected Pool createPool(Vertx vertx) {
-    return OraclePool.pool(vertx, rule.options(), new PoolOptions());
+    return OracleBuilder.pool(builder -> builder
+      .connectingTo(rule.options())
+      .using(vertx));
   }
 
   @Override

@@ -13,9 +13,9 @@ package io.vertx.oracleclient.test;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.oracleclient.OraclePool;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.test.junit.OracleRule;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 import org.junit.After;
@@ -39,11 +39,13 @@ public class OracleQueriesTest extends OracleTestBase {
   @ClassRule
   public static OracleRule oracle = OracleRule.SHARED_INSTANCE;
 
-  OraclePool pool;
+  Pool pool;
 
   @Before
   public void setUp() throws Exception {
-    pool = OraclePool.pool(vertx, oracle.options(), new PoolOptions());
+    pool = OracleBuilder.pool(builder -> builder
+      .connectingTo(oracle.options())
+      .using(vertx));
   }
 
   @Test

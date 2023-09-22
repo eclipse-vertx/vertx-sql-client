@@ -12,15 +12,10 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Vertx;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.MetricsTestBase;
-import io.vertx.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 public class PgMetricsTest extends MetricsTestBase {
 
@@ -29,7 +24,7 @@ public class PgMetricsTest extends MetricsTestBase {
 
   @Override
   protected Pool createPool(Vertx vertx) {
-    return PgPool.pool(vertx, rule.options(), new PoolOptions());
+    return PgBuilder.pool().connectingTo(rule.options()).using(vertx).build();
   }
 
   @Override
