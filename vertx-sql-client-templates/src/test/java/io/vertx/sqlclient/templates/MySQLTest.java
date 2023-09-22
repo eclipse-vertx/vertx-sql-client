@@ -3,9 +3,9 @@ package io.vertx.sqlclient.templates;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
-import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Pool;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,12 +53,12 @@ public class MySQLTest {
   }
 
   protected Vertx vertx;
-  protected MySQLPool pool;
+  protected Pool pool;
 
   @Before
   public void setup() throws Exception {
     vertx = Vertx.vertx();
-    pool = MySQLPool.pool(vertx, connectOptions(), new PoolOptions());
+    pool = MySQLBuilder.pool(builder -> builder.connectingTo(connectOptions()).using(vertx));
   }
 
   @Test

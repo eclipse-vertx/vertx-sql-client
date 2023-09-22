@@ -116,7 +116,7 @@ Otherwise, the proxy might close client connections abruptly.
 
 == Pool versus pooled client
 
-The {@link io.vertx.mysqlclient.MySQLPool} allows you to create a pool or a pooled client
+The {@link io.vertx.mysqlclient.MySQLBuilder} allows you to create a pool or a pooled client
 
 [source,$lang]
 ----

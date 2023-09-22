@@ -15,9 +15,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
+import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
-import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.NullValue;
 
@@ -42,7 +42,10 @@ public class MSSQLClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    MSSQLPool client = MSSQLPool.pool(connectOptions, poolOptions);
+    Pool client = MSSQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
 
     // A simple query
     client
@@ -75,7 +78,11 @@ public class MSSQLClientExamples {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the data object
-    MSSQLPool pool = MSSQLPool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = MSSQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     pool.getConnection()
       .onComplete(ar -> {
@@ -89,7 +96,10 @@ public class MSSQLClientExamples {
     String connectionUri = "sqlserver://dbuser:secretpassword@database.server.com:1433/mydb";
 
     // Create the pool from the connection URI
-    MSSQLPool pool = MSSQLPool.pool(connectionUri);
+    Pool pool = MSSQLBuilder.pool()
+      .connectingTo(connectionUri)
+      .using(vertx)
+      .build();
 
     // Create the connection from the connection URI
     MSSQLConnection.connect(vertx, connectionUri)
@@ -98,7 +108,7 @@ public class MSSQLClientExamples {
       });
   }
 
-  public void connecting01() {
+  public void connecting01(Vertx vertx) {
 
     // Connect options
     MSSQLConnectOptions connectOptions = new MSSQLConnectOptions()
@@ -113,7 +123,11 @@ public class MSSQLClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    MSSQLPool client = MSSQLPool.pool(connectOptions, poolOptions);
+    Pool client = MSSQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
 
@@ -131,7 +145,11 @@ public class MSSQLClientExamples {
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
     // Create the pooled client
-    MSSQLPool client = MSSQLPool.pool(vertx, connectOptions, poolOptions);
+    Pool client = MSSQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
   public void connecting03(Pool pool) {
@@ -155,7 +173,11 @@ public class MSSQLClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    MSSQLPool client = MSSQLPool.pool(vertx, connectOptions, poolOptions);
+    Pool client = MSSQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Get a connection from the pool
     client.getConnection().compose(conn -> {

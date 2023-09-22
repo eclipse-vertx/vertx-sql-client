@@ -23,10 +23,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgConnection;
-import io.vertx.pgclient.PgPool;
-import io.vertx.pgclient.SslMode;
+import io.vertx.pgclient.*;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
@@ -60,7 +57,11 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    SqlClient client = PgPool.client(connectOptions, poolOptions);
+    SqlClient client = PgBuilder
+      .client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
 
     // A simple query
     client
@@ -82,7 +83,9 @@ public class PgClientExamples {
   public void configureFromEnv(Vertx vertx) {
 
     // Create the pool from the environment variables
-    PgPool pool = PgPool.pool();
+    Pool pool = PgBuilder.pool()
+      .using(vertx)
+      .build();
 
     // Create the connection from the environment variables
     PgConnection.connect(vertx)
@@ -105,7 +108,11 @@ public class PgClientExamples {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the data object
-    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = PgBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     pool.getConnection()
       .onComplete(ar -> {
@@ -129,7 +136,10 @@ public class PgClientExamples {
     String connectionUri = "postgresql://dbuser:secretpassword@database.server.com:5432/mydb";
 
     // Create the pool from the connection URI
-    PgPool pool = PgPool.pool(connectionUri);
+    Pool pool = PgBuilder.pool()
+      .connectingTo(connectionUri)
+      .using(vertx)
+      .build();
 
     // Create the connection from the connection URI
     PgConnection
@@ -154,7 +164,11 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    SqlClient client = PgPool.client(connectOptions, poolOptions);
+    SqlClient client = PgBuilder
+      .client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
   }
 
   public void connecting02(Vertx vertx) {
@@ -172,10 +186,15 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    SqlClient client = PgPool.client(vertx, connectOptions, poolOptions);
+    SqlClient client = PgBuilder
+      .client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
-  public void connecting03(PgPool client) {
+  public void connecting03(Pool client) {
 
     // Close the pooled client and all the associated resources
     client.close();
@@ -196,7 +215,12 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = PgBuilder
+      .pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Get a connection from the pool
     pool.getConnection().compose(conn -> {
@@ -215,7 +239,6 @@ public class PgClientExamples {
         });
     }).onComplete(ar -> {
       if (ar.succeeded()) {
-
         System.out.println("Done");
       } else {
         System.out.println("Something went wrong " + ar.cause().getMessage());
@@ -260,19 +283,34 @@ public class PgClientExamples {
   }
 
   public void clientPipelining(Vertx vertx, PgConnectOptions connectOptions, PoolOptions poolOptions) {
-    PgPool pool = PgPool.pool(vertx, connectOptions.setPipeliningLimit(16), poolOptions);
+    Pool pool = PgBuilder
+      .pool()
+      .connectingTo(connectOptions.setPipeliningLimit(16))
+      .with(poolOptions)
+      .using(vertx)
+      .build();
   }
 
   public void poolVersusPooledClient(Vertx vertx, String sql, PgConnectOptions connectOptions, PoolOptions poolOptions) {
 
     // Pooled client
-    SqlClient client = PgPool.client(vertx, connectOptions, poolOptions);
+    SqlClient client = PgBuilder
+      .client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Pipelined
     Future<RowSet<Row>> res1 = client.query(sql).execute();
 
     // Connection pool
-    PgPool pool = PgPool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = PgBuilder
+      .pool()
+      .connectingTo(connectOptions)
+      .with(poolOptions)
+      .using(vertx)
+      .build();
 
     // Not pipelined
     Future<RowSet<Row>> res2 = pool.query(sql).execute();
@@ -292,11 +330,20 @@ public class PgClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    PgPool client = PgPool.pool(connectOptions, poolOptions);
+    Pool client = PgBuilder
+      .pool()
+      .connectingTo(connectOptions)
+      .with(poolOptions)
+      .build();
 
     // Create the pooled client with a vertx instance
     // Make sure the vertx instance has enabled native transports
-    PgPool client2 = PgPool.pool(vertx, connectOptions, poolOptions);
+    Pool client2 = PgBuilder
+      .pool()
+      .connectingTo(connectOptions)
+      .with(poolOptions)
+      .using(vertx)
+      .build();
   }
 
   public void reconnectAttempts(PgConnectOptions options) {

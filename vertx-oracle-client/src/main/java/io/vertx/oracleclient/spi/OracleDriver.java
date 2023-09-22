@@ -16,6 +16,7 @@ import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.*;
 import io.vertx.sqlclient.Pool;
@@ -42,7 +43,7 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
   }
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
@@ -57,7 +58,7 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
     Function<Connection, Future<Void>> afterAcquire = conn -> ((OracleJdbcConnection) conn).afterAcquire();
     Function<Connection, Future<Void>> beforeRecycle = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
     PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, closeFuture);
-    ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx);
+    ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx, null);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);
@@ -76,7 +77,7 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
   }
 
   @Override
-  public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx) {
+  public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
     return new OracleConnectionFactory((VertxInternal) vertx);
   }
 

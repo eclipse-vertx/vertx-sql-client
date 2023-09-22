@@ -4,6 +4,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.PrepareOptions;
@@ -46,11 +47,11 @@ public class TemplateBuilderTest {
           return FakeClient.this.appendQueryPlaceholder(queryBuilder, index, current);
         }
         @Override
-        public Pool newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
+        public Pool newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
           throw new UnsupportedOperationException();
         }
         @Override
-        public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx) {
+        public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
           throw new UnsupportedOperationException();
         }
         @Override

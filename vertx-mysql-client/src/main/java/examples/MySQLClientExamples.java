@@ -17,7 +17,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.SSLOptions;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.*;
 import io.vertx.mysqlclient.data.spatial.Point;
@@ -48,7 +47,11 @@ public class MySQLClientExamples {
       .setMaxSize(5);
 
     // Create the client pool
-    SqlClient client = MySQLPool.client(connectOptions, poolOptions);
+    SqlClient client = MySQLBuilder
+      .client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
 
     // A simple query
     client
@@ -81,7 +84,12 @@ public class MySQLClientExamples {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
 
     // Create the pool from the data object
-    MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = MySQLBuilder
+      .pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     pool.getConnection()
       .onComplete(ar -> {
@@ -125,7 +133,11 @@ public class MySQLClientExamples {
     String connectionUri = "mysql://dbuser:secretpassword@database.server.com:3306/mydb";
 
     // Create the pool from the connection URI
-    MySQLPool pool = MySQLPool.pool(connectionUri);
+    Pool pool = MySQLBuilder
+      .pool()
+      .connectingTo(connectionUri)
+      .using(vertx)
+      .build();
 
     // Create the connection from the connection URI
     MySQLConnection.connect(vertx, connectionUri)
@@ -149,7 +161,10 @@ public class MySQLClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    MySQLPool client = MySQLPool.pool(connectOptions, poolOptions);
+    Pool client = MySQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .build();
   }
 
 
@@ -167,7 +182,11 @@ public class MySQLClientExamples {
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
     // Create the pooled client
-    MySQLPool client = MySQLPool.pool(vertx, connectOptions, poolOptions);
+    Pool client = MySQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
   public void connecting03(Pool pool) {
@@ -191,7 +210,11 @@ public class MySQLClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = MySQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Get a connection from the pool
     pool.getConnection().compose(conn -> {
@@ -219,20 +242,32 @@ public class MySQLClientExamples {
   }
 
   public void clientPipelining(Vertx vertx, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
-    MySQLPool pool = MySQLPool.pool(vertx, connectOptions.setPipeliningLimit(16), poolOptions);
+    Pool pool = MySQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions.setPipeliningLimit(16))
+      .using(vertx)
+      .build();
   }
 
   public void poolVersusPooledClient(Vertx vertx, String sql, MySQLConnectOptions connectOptions, PoolOptions poolOptions) {
 
     // Pooled client
     connectOptions.setPipeliningLimit(64);
-    SqlClient client = MySQLPool.client(vertx, connectOptions, poolOptions);
+    SqlClient client = MySQLBuilder.client()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Pipelined
     Future<RowSet<Row>> res1 = client.query(sql).execute();
 
     // Connection pool
-    MySQLPool pool = MySQLPool.pool(vertx, connectOptions, poolOptions);
+    Pool pool = MySQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Not pipelined
     Future<RowSet<Row>> res2 = pool.query(sql).execute();
@@ -250,12 +285,20 @@ public class MySQLClientExamples {
       .setMaxSize(5);
 
     // Create the pooled client
-    MySQLPool client = MySQLPool.pool(connectOptions, poolOptions);
+    Pool client = MySQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
 
     // Create the pooled client with a vertx instance
     // Make sure the vertx instance has enabled native transports
     // vertxOptions.setPreferNativeTransport(true);
-    MySQLPool client2 = MySQLPool.pool(vertx, connectOptions, poolOptions);
+    Pool client2 = MySQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
   }
 
   public void reconnectAttempts(MySQLConnectOptions options) {

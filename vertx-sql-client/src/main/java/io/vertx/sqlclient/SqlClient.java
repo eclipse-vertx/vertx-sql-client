@@ -18,10 +18,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 /**
  * Defines common SQL client operations with a database server.

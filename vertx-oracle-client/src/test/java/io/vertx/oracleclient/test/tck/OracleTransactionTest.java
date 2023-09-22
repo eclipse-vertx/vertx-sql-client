@@ -13,7 +13,7 @@ package io.vertx.oracleclient.test.tck;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.oracleclient.OraclePool;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -31,12 +31,18 @@ public class OracleTransactionTest extends TransactionTestBase {
 
   @Override
   protected Pool createPool() {
-    return OraclePool.pool(vertx, rule.options(), new PoolOptions().setMaxSize(1));
+    return OracleBuilder.pool(builder -> builder
+      .with(new PoolOptions().setMaxSize(1))
+      .connectingTo(rule.options())
+      .using(vertx));
   }
 
   @Override
   protected Pool nonTxPool() {
-    return OraclePool.pool(vertx, rule.options(), new PoolOptions().setMaxSize(1));
+    return OracleBuilder.pool(builder -> builder
+      .with(new PoolOptions().setMaxSize(1))
+      .connectingTo(rule.options())
+      .using(vertx));
   }
 
   @Override

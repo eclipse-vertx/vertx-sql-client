@@ -16,9 +16,10 @@
  */
 package io.vertx.pgclient.tck;
 
+import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
-import io.vertx.pgclient.PgPool;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.Connector;
 import io.vertx.sqlclient.SqlClient;
@@ -54,7 +55,11 @@ public enum ClientConfig {
   POOLED() {
     @Override
     Connector<SqlClient> connect(Vertx vertx, SqlConnectOptions options) {
-      PgPool pool = PgPool.pool(vertx, new PgConnectOptions(options), new PoolOptions().setMaxSize(1));
+      Pool pool = PgBuilder
+        .pool()
+        .connectingTo(new PgConnectOptions(options))
+        .with(new PoolOptions().setMaxSize(1))
+        .using(vertx).build();
       return new Connector<SqlClient>() {
         @Override
         public void connect(Handler<AsyncResult<SqlClient>> handler) {

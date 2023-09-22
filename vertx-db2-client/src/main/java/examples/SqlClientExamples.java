@@ -20,12 +20,10 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.db2client.DB2Builder;
 import io.vertx.db2client.DB2ConnectOptions;
-import io.vertx.db2client.DB2Pool;
-import io.vertx.db2client.spi.DB2Driver;
 import io.vertx.docgen.Source;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -360,12 +358,16 @@ public class SqlClientExamples {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 
-  public void poolConfig01(DB2ConnectOptions server1, DB2ConnectOptions server2, DB2ConnectOptions server3, PoolOptions options) {
-    DB2Pool pool = DB2Pool.pool(Arrays.asList(server1, server2, server3), options);
+  public void poolConfig01(Vertx vertx, DB2ConnectOptions server1, DB2ConnectOptions server2, DB2ConnectOptions server3, PoolOptions options) {
+    Pool pool = DB2Builder.pool()
+      .with(options)
+      .connectingTo(Arrays.asList(server1, server2, server3))
+      .using(vertx)
+      .build();
   }
 
-  public void poolConfig02(DB2Pool pool, String sql) {
-    pool.connectHandler(conn -> {
+  public void poolConfig02(ClientBuilder<?> builder, String sql) {
+    builder.withConnectHandler(conn -> {
       conn.query(sql).execute().onSuccess(res -> {
         // Release the connection to the pool, ready to be used by the application
         conn.close();
@@ -374,7 +376,11 @@ public class SqlClientExamples {
   }
 
   public void poolSharing1(Vertx vertx, DB2ConnectOptions database, int maxSize) {
-    DB2Pool pool = DB2Pool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    Pool pool = DB2Builder.pool()
+      .with(new PoolOptions().setMaxSize(maxSize))
+      .connectingTo(database)
+      .using(vertx)
+      .build();
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() throws Exception {
@@ -385,36 +391,48 @@ public class SqlClientExamples {
 
   public void poolSharing2(Vertx vertx, DB2ConnectOptions database, int maxSize) {
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      DB2Pool pool;
+      Pool pool;
       @Override
       public void start() {
         // Get or create a shared pool
         // this actually creates a lease to the pool
         // when the verticle is undeployed, the lease will be released automaticaly
-        pool = DB2Pool.pool(database, new PoolOptions()
-          .setMaxSize(maxSize)
-          .setShared(true)
-          .setName("my-pool"));
+        pool = DB2Builder.pool()
+          .with(new PoolOptions()
+            .setMaxSize(maxSize)
+            .setShared(true)
+            .setName("my-pool"))
+          .connectingTo(database)
+          .using(vertx)
+          .build();
       }
     }, new DeploymentOptions().setInstances(4));
   }
 
   public static void poolSharing3(Vertx vertx, DB2ConnectOptions database, int maxSize) {
-    DB2Pool pool = DB2Pool.pool(database, new PoolOptions()
-      .setMaxSize(maxSize)
-      .setShared(true)
-      .setName("my-pool")
-      .setEventLoopSize(4));
+    Pool pool = DB2Builder.pool()
+      .with(new PoolOptions()
+        .setMaxSize(maxSize)
+        .setShared(true)
+        .setName("my-pool")
+        .setEventLoopSize(4))
+      .connectingTo(database)
+      .using(vertx)
+      .build();
   }
 
   public void dynamicPoolConfig(Vertx vertx, PoolOptions poolOptions) {
-    DB2Pool pool = DB2Pool.pool(vertx, () -> {
-      Future<DB2ConnectOptions> connectOptions = retrieveOptions();
-      return connectOptions;
-    }, poolOptions);
+    Pool pool = DB2Builder.pool()
+      .with(poolOptions)
+      .connectingTo(() -> {
+        Future<SqlConnectOptions> connectOptions = retrieveOptions();
+        return connectOptions;
+      })
+      .using(vertx)
+      .build();
   }
 
-  private Future<DB2ConnectOptions> retrieveOptions() {
+  private Future<SqlConnectOptions> retrieveOptions() {
     return null;
   }
 }

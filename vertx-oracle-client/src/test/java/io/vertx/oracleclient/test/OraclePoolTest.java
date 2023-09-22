@@ -17,8 +17,8 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.*;
 import org.junit.After;
@@ -40,7 +40,7 @@ public class OraclePoolTest extends OracleTestBase {
   public static OracleRule oracle = OracleRule.SHARED_INSTANCE;
 
   private OracleConnectOptions options;
-  private Set<OraclePool> pools;
+  private Set<Pool> pools;
 
   @Before
   public void setUp() throws Exception {
@@ -52,7 +52,7 @@ public class OraclePoolTest extends OracleTestBase {
   public void tearDown(TestContext ctx) throws Exception {
     if (!pools.isEmpty()) {
       Async async = ctx.async(pools.size());
-      for (OraclePool pool : pools) {
+      for (Pool pool : pools) {
         pool
           .close()
           .onComplete(ar -> {
@@ -63,14 +63,22 @@ public class OraclePoolTest extends OracleTestBase {
     }
   }
 
-  private OraclePool createPool(OracleConnectOptions connectOptions, int size) {
+  private Pool createPool(OracleConnectOptions connectOptions, int size) {
     return createPool(connectOptions, new PoolOptions().setMaxSize(size));
   }
 
-  private OraclePool createPool(OracleConnectOptions connectOptions, PoolOptions poolOptions) {
+  private Pool createPool(OracleConnectOptions connectOptions, PoolOptions poolOptions) {
+    return createPool(connectOptions, poolOptions, null);
+  }
+
+  private Pool createPool(OracleConnectOptions connectOptions, PoolOptions poolOptions, Handler<SqlConnection> connectHandler) {
     OracleConnectOptions co = new OracleConnectOptions(connectOptions);
     PoolOptions po = new PoolOptions(poolOptions);
-    OraclePool pool = OraclePool.pool(vertx, co, po);
+    Pool pool = OracleBuilder.pool(builder -> builder
+      .with(po)
+      .withConnectHandler(connectHandler)
+      .connectingTo(co)
+      .using(vertx));
     pools.add(pool);
     return pool;
   }
@@ -79,7 +87,7 @@ public class OraclePoolTest extends OracleTestBase {
   public void testPool(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    OraclePool pool = createPool(options, 40);
+    Pool pool = createPool(options, 40);
     for (int i = 0; i < num; i++) {
       pool
         .getConnection()
@@ -100,7 +108,7 @@ public class OraclePoolTest extends OracleTestBase {
   public void testQuery(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    OraclePool pool = createPool(options, 40);
+    Pool pool = createPool(options, 40);
     for (int i = 0; i < num; i++) {
       pool
         .query("SELECT id, randomnumber FROM WORLD")
@@ -116,7 +124,7 @@ public class OraclePoolTest extends OracleTestBase {
   public void testQueryWithParams(TestContext ctx) {
     int num = 2;
     Async async = ctx.async(num);
-    OraclePool pool = createPool(options, 1);
+    Pool pool = createPool(options, 1);
     for (int i = 0; i < num; i++) {
       PreparedQuery<RowSet<Row>> preparedQuery = pool.preparedQuery("SELECT id, randomnumber FROM WORLD WHERE id=?");
       preparedQuery
@@ -132,7 +140,7 @@ public class OraclePoolTest extends OracleTestBase {
   public void testUpdate(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    OraclePool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0; i < num; i++) {
       pool
         .query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9")
@@ -148,7 +156,7 @@ public class OraclePoolTest extends OracleTestBase {
   public void testUpdateWithParams(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    OraclePool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0; i < num; i++) {
       pool
         .preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = ?")
@@ -168,7 +176,7 @@ public class OraclePoolTest extends OracleTestBase {
   @Test
   public void testWithConnection(TestContext ctx) {
     Async async = ctx.async(10);
-    OraclePool pool = createPool(options, 1);
+    Pool pool = createPool(options, 1);
     Function<SqlConnection, Future<RowSet<Row>>> success = conn -> conn.query("SELECT 1 FROM DUAL").execute();
     Function<SqlConnection, Future<RowSet<Row>>> failure = conn -> conn.query("SELECT 1 FROM does_not_exist").execute();
     for (int i = 0; i < 10; i++) {
@@ -187,7 +195,7 @@ public class OraclePoolTest extends OracleTestBase {
   @Test
   public void testAuthFailure(TestContext ctx) {
     Async async = ctx.async();
-    OraclePool pool = createPool(new OracleConnectOptions(options).setPassword("wrong"), 1);
+    Pool pool = createPool(new OracleConnectOptions(options).setPassword("wrong"), 1);
     pool
       .query("SELECT id, randomnumber FROM WORLD")
       .execute()
@@ -201,7 +209,7 @@ public class OraclePoolTest extends OracleTestBase {
     Async async = ctx.async();
     vertx.runOnContext(v -> {
       try {
-        OraclePool.pool(options, new PoolOptions());
+        Pool.pool(options, new PoolOptions());
         ctx.fail();
       } catch (IllegalStateException ignore) {
         async.complete();
@@ -212,7 +220,7 @@ public class OraclePoolTest extends OracleTestBase {
   @Test
   public void testRunStandalone(TestContext ctx) {
     Async async = ctx.async();
-    OraclePool pool = createPool(new OracleConnectOptions(options), new PoolOptions());
+    Pool pool = createPool(new OracleConnectOptions(options), new PoolOptions());
     pool
       .query("SELECT id, randomnumber FROM WORLD")
       .execute()
@@ -225,7 +233,7 @@ public class OraclePoolTest extends OracleTestBase {
   @Test
   public void testMaxWaitQueueSize(TestContext ctx) {
     Async async = ctx.async();
-    OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
+    Pool pool = createPool(options, new PoolOptions().setMaxSize(1).setMaxWaitQueueSize(0));
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(v -> {
@@ -242,7 +250,7 @@ public class OraclePoolTest extends OracleTestBase {
   // will actually use the same connection for the prepare and the query commands
   @Test
   public void testConcurrentMultipleConnection(TestContext ctx) {
-    OraclePool pool = createPool(new OracleConnectOptions(this.options).setCachePreparedStatements(true), 2);
+    Pool pool = createPool(new OracleConnectOptions(this.options).setCachePreparedStatements(true), 2);
     int numRequests = 2;
     Async async = ctx.async(numRequests);
     for (int i = 0; i < numRequests; i++) {
@@ -268,7 +276,7 @@ public class OraclePoolTest extends OracleTestBase {
         f.close();
       });
     };
-    OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1)).connectHandler(hook);
+    Pool pool = createPool(options, new PoolOptions().setMaxSize(1), hook);
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(conn -> {
@@ -284,7 +292,7 @@ public class OraclePoolTest extends OracleTestBase {
 
   @Test
   public void testDirectQueryFromDuplicatedContext(TestContext ctx) {
-    OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1));
+    Pool pool = createPool(options, new PoolOptions().setMaxSize(1));
     Async async = ctx.async();
     vertx.runOnContext(v1 -> {
       ContextInternal current = (ContextInternal) Vertx.currentContext();
@@ -309,7 +317,7 @@ public class OraclePoolTest extends OracleTestBase {
 
   @Test
   public void testQueryFromDuplicatedContext(TestContext ctx) {
-    OraclePool pool = createPool(options, new PoolOptions().setMaxSize(1));
+    Pool pool = createPool(options, new PoolOptions().setMaxSize(1));
     Async async = ctx.async();
     vertx.runOnContext(v1 -> {
       ContextInternal current = (ContextInternal) Vertx.currentContext();

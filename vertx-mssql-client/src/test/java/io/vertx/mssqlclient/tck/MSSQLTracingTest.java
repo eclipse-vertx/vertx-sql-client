@@ -12,16 +12,12 @@
 package io.vertx.mssqlclient.tck;
 
 import io.vertx.core.Vertx;
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.mssqlclient.MSSQLPool;
+import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -32,7 +28,7 @@ public class MSSQLTracingTest extends TracingTestBase {
 
   @Override
   protected Pool createPool(Vertx vertx) {
-    return MSSQLPool.pool(vertx, rule.options(), new PoolOptions());
+    return MSSQLBuilder.pool(builder -> builder.connectingTo(rule.options()).using(vertx));
   }
 
   @Override

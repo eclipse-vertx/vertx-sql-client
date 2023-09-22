@@ -1,8 +1,8 @@
 package io.vertx.mysqlclient.tck;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
-import io.vertx.mysqlclient.MySQLPool;
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.PipeliningQueryTestBase;
@@ -22,7 +22,7 @@ public class MySQLPipeliningQueryTest extends PipeliningQueryTestBase {
     mySQLConnectOptions.setPipeliningLimit(64);
     connectionConnector = ClientConfig.CONNECT.connect(vertx, options);
     pooledConnectionConnector = ClientConfig.POOLED.connect(vertx, options);
-    pooledClientSupplier = () -> MySQLPool.client(vertx, (MySQLConnectOptions) options, new PoolOptions().setMaxSize(8));
+    pooledClientSupplier = () -> MySQLBuilder.client(builder -> builder.with(new PoolOptions().setMaxSize(8)).connectingTo(options).using(vertx));;
   }
 
   @Override

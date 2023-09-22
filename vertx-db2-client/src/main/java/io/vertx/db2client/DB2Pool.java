@@ -21,12 +21,14 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.db2client.impl.Db2PoolOptions;
 import io.vertx.db2client.spi.DB2Driver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.Utils;
 
 import java.util.Collections;
 import java.util.List;
@@ -107,7 +109,7 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static DB2Pool pool(Vertx vertx, List<DB2ConnectOptions> databases, PoolOptions options) {
-    return (DB2Pool) DB2Driver.INSTANCE.createPool(vertx, databases, options);
+    return (DB2Pool) DB2Driver.INSTANCE.createPool(vertx, Utils.roundRobinSupplier(databases), options, new NetClientOptions());
   }
 
   /**
@@ -127,7 +129,7 @@ public interface DB2Pool extends Pool {
    * Like {@link #pool(Supplier, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static DB2Pool pool(Vertx vertx, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions) {
-    return (DB2Pool) DB2Driver.INSTANCE.createPool(vertx, databases, poolOptions);
+    return (DB2Pool) DB2Driver.INSTANCE.createPool(vertx, databases, poolOptions, new NetClientOptions());
   }
 
   /**
@@ -196,7 +198,7 @@ public interface DB2Pool extends Pool {
    * {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, List<DB2ConnectOptions> databases, PoolOptions options) {
-    return DB2Driver.INSTANCE.createPool(vertx, databases, new Db2PoolOptions(options).setPipelined(true));
+    return DB2Driver.INSTANCE.createPool(vertx, Utils.roundRobinSupplier(databases), new Db2PoolOptions(options).setPipelined(true), new NetClientOptions());
   }
 
   @Override

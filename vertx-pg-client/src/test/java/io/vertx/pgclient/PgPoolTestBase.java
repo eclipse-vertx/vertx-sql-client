@@ -18,6 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -47,17 +48,21 @@ public abstract class PgPoolTestBase extends PgTestBase {
     vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
-  protected PgPool createPool(PgConnectOptions connectOptions, int size) {
+  protected Pool createPool(PgConnectOptions connectOptions, int size) {
     return createPool(connectOptions, new PoolOptions().setMaxSize(size));
   }
 
-  protected abstract PgPool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions);
+  protected Pool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions) {
+    return createPool(connectOptions, poolOptions, null);
+  }
+
+  protected abstract Pool createPool(PgConnectOptions connectOptions, PoolOptions poolOptions, Handler<SqlConnection> connectHandler);
 
   @Test
   public void testPool(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool
         .getConnection()
@@ -83,7 +88,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testQuery(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool
         .query("SELECT id, randomnumber from WORLD")
@@ -113,7 +118,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   private void testQueryWithParams(TestContext ctx, PgConnectOptions options) {
     int num = 2;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 1);
+    Pool pool = createPool(options, 1);
     for (int i = 0;i < num;i++) {
       pool
         .preparedQuery("SELECT id, randomnumber from WORLD where id=$1")
@@ -135,7 +140,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testUpdate(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool
         .query("UPDATE Fortune SET message = 'Whatever' WHERE id = 9")
@@ -156,7 +161,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   public void testUpdateWithParams(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     for (int i = 0;i < num;i++) {
       pool
         .preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = $1")
@@ -183,7 +188,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
       conn.connect();
     });
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgPool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
+      Pool pool = createPool(new PgConnectOptions(options).setPort(8080).setHost("localhost"), 1);
       pool
         .getConnection()
         .onComplete(ctx.asyncAssertSuccess(conn1 -> {
@@ -212,7 +217,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   @Test
   public void testCancelRequest(TestContext ctx) {
     Async async = ctx.async();
-    PgPool pool = createPool(options, 4);
+    Pool pool = createPool(options, 4);
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(conn -> {
@@ -233,7 +238,7 @@ public abstract class PgPoolTestBase extends PgTestBase {
   @Test
   public void testWithConnection(TestContext ctx) {
     Async async = ctx.async(10);
-    PgPool pool = createPool(options, 1);
+    Pool pool = createPool(options, 1);
     Function<SqlConnection, Future<RowSet<Row>>> success = conn -> conn.query("SELECT 1").execute();
     Function<SqlConnection, Future<RowSet<Row>>> failure = conn -> conn.query("SELECT does_not_exist").execute();
     for (int i = 0;i < 10;i++) {

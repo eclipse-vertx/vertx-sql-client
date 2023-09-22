@@ -15,7 +15,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlClient;
 import org.junit.After;
 import org.junit.Before;
@@ -33,7 +33,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   private static final String unixSocketFile = System.getProperty("unix.socket.file");
 
-  private MySQLPool client;
+  private Pool client;
   private MySQLConnectOptions options;
   private Vertx vertx;
 
@@ -74,7 +74,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
   }
 
   private void uriTest(TestContext context, String uri) throws UnsupportedEncodingException {
-    client = MySQLPool.pool(vertx, uri);
+    client = MySQLBuilder.pool(builder -> builder.connectingTo(uri).using(vertx));
     client
       .getConnection()
       .onComplete(context.asyncAssertSuccess(SqlClient::close));
@@ -82,7 +82,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   @Test
   public void simpleConnect(TestContext context) {
-    client = MySQLPool.pool(vertx, new MySQLConnectOptions(options), new PoolOptions());
+    client = MySQLBuilder.pool(builder -> builder.connectingTo(new MySQLConnectOptions(options)).using(vertx));
     client
       .getConnection()
       .onComplete(context.asyncAssertSuccess(SqlClient::close));
@@ -92,7 +92,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
   public void connectWithVertxInstance(TestContext context) {
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
     try {
-      client = MySQLPool.pool(vertx, new MySQLConnectOptions(options), new PoolOptions());
+      client = MySQLBuilder.pool(builder -> builder.connectingTo(new MySQLConnectOptions(options)).using(vertx));
       Async async = context.async();
       client
         .getConnection()
@@ -108,7 +108,7 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   @Test
   public void testIgnoreSslMode(TestContext context) {
-    client = MySQLPool.pool(vertx, new MySQLConnectOptions(options).setSslMode(SslMode.REQUIRED), new PoolOptions());
+    client = MySQLBuilder.pool(builder -> builder.connectingTo(new MySQLConnectOptions(options).setSslMode(SslMode.REQUIRED)).using(vertx));
     client
       .getConnection()
       .onComplete(context.asyncAssertSuccess(conn -> {

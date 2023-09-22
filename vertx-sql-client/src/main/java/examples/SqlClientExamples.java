@@ -412,8 +412,8 @@ public class SqlClientExamples {
     // Not generic
   }
 
-  public void poolConfig02(Pool pool, String sql) {
-    pool.connectHandler(conn -> {
+  public void poolConfig02(ClientBuilder<?> builder, String sql) {
+    builder.withConnectHandler(conn -> {
       conn.query(sql).execute().onSuccess(res -> {
         // Release the connection to the pool, ready to be used by the application
         conn.close();

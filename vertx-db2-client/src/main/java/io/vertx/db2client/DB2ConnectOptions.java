@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import io.vertx.codegen.annotations.DataObject;
@@ -33,7 +32,7 @@ import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 /**
- * Connect options for configuring {@link DB2Connection} or {@link DB2Pool}.
+ * Connect options for configuring {@link DB2Connection} or {@link DB2Builder}.
  */
 @DataObject(generateConverter = true)
 public class DB2ConnectOptions extends SqlConnectOptions {

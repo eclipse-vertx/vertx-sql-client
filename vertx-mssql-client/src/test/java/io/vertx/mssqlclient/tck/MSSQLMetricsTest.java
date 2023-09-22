@@ -12,10 +12,9 @@
 package io.vertx.mssqlclient.tck;
 
 import io.vertx.core.Vertx;
-import io.vertx.mssqlclient.MSSQLPool;
+import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 
@@ -26,7 +25,7 @@ public class MSSQLMetricsTest extends MetricsTestBase {
 
   @Override
   protected Pool createPool(Vertx vertx) {
-    return MSSQLPool.pool(vertx, rule.options(), new PoolOptions());
+    return MSSQLBuilder.pool(builder -> builder.connectingTo(rule.options()).using(vertx));
   }
 
   @Override
