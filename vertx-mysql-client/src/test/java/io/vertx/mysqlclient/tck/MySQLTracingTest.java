@@ -13,10 +13,9 @@ package io.vertx.mysqlclient.tck;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.mysqlclient.MySQLPool;
+import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -29,7 +28,7 @@ public class MySQLTracingTest extends TracingTestBase {
 
   @Override
   protected Pool createPool(Vertx vertx) {
-    return MySQLPool.pool(vertx, rule.options(), new PoolOptions());
+    return MySQLBuilder.pool(builder -> builder.connectingTo(rule.options()).using(vertx));
   }
 
   @Override

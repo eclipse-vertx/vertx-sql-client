@@ -14,9 +14,10 @@ package io.vertx.oracleclient.test;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.OraclePool;
 import io.vertx.oracleclient.test.junit.OracleRule;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.ProxyServer;
 import org.junit.After;
@@ -33,7 +34,7 @@ public class OracleBrokenPooledConnectionTest extends OracleTestBase {
   public static OracleRule oracle = OracleRule.SHARED_INSTANCE;
 
   OracleConnectOptions options = oracle.options();
-  OraclePool pool;
+  Pool pool;
 
   @After
   public void tearDown(TestContext ctx) throws Exception {
@@ -50,7 +51,10 @@ public class OracleBrokenPooledConnectionTest extends OracleTestBase {
       proxyConn.set(conn);
       conn.connect();
     });
-    pool = OraclePool.pool(vertx, new OracleConnectOptions(options).setPort(8080), new PoolOptions().setMaxSize(1));
+    pool = OracleBuilder.pool(builder -> builder
+      .with(new PoolOptions().setMaxSize(1))
+      .connectingTo(new OracleConnectOptions(options).setPort(8080))
+      .using(vertx));
     proxy.listen(8080, options.getHost(), ctx.asyncAssertSuccess(listen -> {
       pool.query("SELECT 1 FROM DUAL").execute(ctx.asyncAssertSuccess(executed -> {
         ProxyServer.Connection proxyConn1 = proxyConn.get();

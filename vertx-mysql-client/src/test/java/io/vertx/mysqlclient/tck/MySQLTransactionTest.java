@@ -16,8 +16,7 @@
 package io.vertx.mysqlclient.tck;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.mysqlclient.MySQLConnectOptions;
-import io.vertx.mysqlclient.MySQLPool;
+import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -33,12 +32,12 @@ public class MySQLTransactionTest extends TransactionTestBase {
 
   @Override
   protected Pool createPool() {
-    return MySQLPool.pool(vertx, new MySQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    return MySQLBuilder.pool(builder -> builder.with(new PoolOptions().setMaxSize(1)).connectingTo(rule.options()).using(vertx));
   }
 
   @Override
   protected Pool nonTxPool() {
-    return MySQLPool.pool(vertx, new MySQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    return MySQLBuilder.pool(builder -> builder.with(new PoolOptions().setMaxSize(1)).connectingTo(rule.options()).using(vertx));
   }
 
   @Override

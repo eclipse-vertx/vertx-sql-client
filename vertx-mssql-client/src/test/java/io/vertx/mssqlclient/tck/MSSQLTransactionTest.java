@@ -12,8 +12,8 @@ package io.vertx.mssqlclient.tck;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.mssqlclient.MSSQLPool;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -31,12 +31,12 @@ public class MSSQLTransactionTest extends TransactionTestBase {
 
   @Override
   protected Pool createPool() {
-    return MSSQLPool.pool(vertx, new MSSQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    return MSSQLBuilder.pool(builder -> builder.with(new PoolOptions().setMaxSize(1)).connectingTo(new MSSQLConnectOptions(rule.options())).using(vertx));
   }
 
   @Override
   protected Pool nonTxPool() {
-    return MSSQLPool.pool(vertx, new MSSQLConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    return MSSQLBuilder.pool(builder -> builder.with(new PoolOptions().setMaxSize(1)).connectingTo(new MSSQLConnectOptions(rule.options())).using(vertx));
   }
 
   @Override

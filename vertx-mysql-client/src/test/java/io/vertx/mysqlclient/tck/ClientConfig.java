@@ -20,14 +20,11 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
-import io.vertx.mysqlclient.MySQLPool;
-import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.tck.Connector;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
 
 public enum ClientConfig {
 
@@ -56,7 +53,7 @@ public enum ClientConfig {
   POOLED() {
     @Override
     Connector<SqlConnection> connect(Vertx vertx, SqlConnectOptions options) {
-      MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(options), new PoolOptions().setMaxSize(1));
+      Pool pool = MySQLBuilder.pool(builder -> builder.with(new PoolOptions().setMaxSize(1)).connectingTo(options).using(vertx));
       return new Connector<SqlConnection>() {
         @Override
         public void connect(Handler<AsyncResult<SqlConnection>> handler) {

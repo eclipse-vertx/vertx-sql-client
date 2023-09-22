@@ -18,6 +18,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.mysqlclient.impl.MySQLPoolOptions;
 import io.vertx.mysqlclient.spi.MySQLDriver;
 import io.vertx.sqlclient.Pool;
@@ -25,6 +26,7 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.SingletonSupplier;
+import io.vertx.sqlclient.impl.Utils;
 
 import java.util.List;
 import java.util.function.Function;
@@ -35,6 +37,7 @@ import static io.vertx.mysqlclient.MySQLConnectOptions.fromUri;
 /**
  * A {@link Pool pool} of {@link MySQLConnection MySQL Connections}.
  */
+@Deprecated
 @VertxGen
 public interface MySQLPool extends Pool {
 
@@ -100,7 +103,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #pool(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static MySQLPool pool(Vertx vertx, List<MySQLConnectOptions> databases, PoolOptions options) {
-    return (MySQLPool) MySQLDriver.INSTANCE.createPool(vertx, databases, options);
+    return (MySQLPool) MySQLDriver.INSTANCE.createPool(vertx, Utils.roundRobinSupplier(databases), options);
   }
 
   /**
@@ -172,7 +175,7 @@ public interface MySQLPool extends Pool {
    * Like {@link #client(List, PoolOptions)} with a specific {@link Vertx} instance.
    */
   static SqlClient client(Vertx vertx, List<MySQLConnectOptions> mySQLConnectOptions, PoolOptions options) {
-    return MySQLDriver.INSTANCE.createPool(vertx, mySQLConnectOptions, new MySQLPoolOptions(options).setPipelined(true));
+    return MySQLDriver.INSTANCE.createPool(vertx, Utils.roundRobinSupplier(mySQLConnectOptions), new MySQLPoolOptions(options).setPipelined(true));
   }
 
   /**

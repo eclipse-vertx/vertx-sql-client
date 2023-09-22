@@ -17,6 +17,7 @@ package io.vertx.db2client.tck;
 
 import static org.junit.Assume.assumeFalse;
 
+import io.vertx.db2client.DB2Builder;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -25,7 +26,6 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 
 import io.vertx.db2client.DB2ConnectOptions;
-import io.vertx.db2client.DB2Pool;
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -49,12 +49,20 @@ public class DB2TransactionTest extends TransactionTestBase {
 
   @Override
   protected Pool createPool() {
-    return DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    return DB2Builder.pool()
+      .with(new PoolOptions().setMaxSize(1))
+      .connectingTo(new DB2ConnectOptions(rule.options()))
+      .using(vertx)
+      .build();
   }
 
   @Override
   protected Pool nonTxPool() {
-    return DB2Pool.pool(vertx, new DB2ConnectOptions(rule.options()), new PoolOptions().setMaxSize(1));
+    return DB2Builder.pool()
+      .with(new PoolOptions().setMaxSize(1))
+      .connectingTo(new DB2ConnectOptions(rule.options()))
+      .using(vertx)
+      .build();
   }
 
   @Override

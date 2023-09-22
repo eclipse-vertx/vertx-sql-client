@@ -22,11 +22,9 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
+import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.mssqlclient.MSSQLPool;
-import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -369,12 +367,16 @@ public class SqlClientExamples {
     options.setTracingPolicy(TracingPolicy.ALWAYS);
   }
 
-  public void poolConfig01(MSSQLConnectOptions server1, MSSQLConnectOptions server2, MSSQLConnectOptions server3, PoolOptions options) {
-    MSSQLPool pool = MSSQLPool.pool(Arrays.asList(server1, server2, server3), options);
+  public void poolConfig01(Vertx vertx, MSSQLConnectOptions server1, MSSQLConnectOptions server2, MSSQLConnectOptions server3, PoolOptions options) {
+    Pool pool = MSSQLBuilder.pool()
+      .with(options)
+      .connectingTo(Arrays.asList(server1, server2, server3))
+      .using(vertx)
+      .build();
   }
 
-  public void poolConfig02(MSSQLPool pool, String sql) {
-    pool.connectHandler(conn -> {
+  public void poolConfig02(ClientBuilder<?> builder, String sql) {
+    builder.withConnectHandler(conn -> {
       conn.query(sql).execute().onSuccess(res -> {
         // Release the connection to the pool, ready to be used by the application
         conn.close();
@@ -383,7 +385,11 @@ public class SqlClientExamples {
   }
 
   public void poolSharing1(Vertx vertx, MSSQLConnectOptions database, int maxSize) {
-    MSSQLPool pool = MSSQLPool.pool(database, new PoolOptions().setMaxSize(maxSize));
+    Pool pool = MSSQLBuilder.pool()
+      .with(new PoolOptions().setMaxSize(maxSize))
+      .connectingTo(database)
+      .using(vertx)
+      .build();
     vertx.deployVerticle(() -> new AbstractVerticle() {
       @Override
       public void start() throws Exception {
@@ -394,36 +400,47 @@ public class SqlClientExamples {
 
   public void poolSharing2(Vertx vertx, MSSQLConnectOptions database, int maxSize) {
     vertx.deployVerticle(() -> new AbstractVerticle() {
-      MSSQLPool pool;
+      Pool pool;
       @Override
       public void start() {
         // Get or create a shared pool
         // this actually creates a lease to the pool
         // when the verticle is undeployed, the lease will be released automaticaly
-        pool = MSSQLPool.pool(database, new PoolOptions()
-          .setMaxSize(maxSize)
-          .setShared(true)
-          .setName("my-pool"));
+        pool = MSSQLBuilder.pool()
+          .with(new PoolOptions()
+            .setMaxSize(maxSize)
+            .setShared(true)
+            .setName("my-pool"))
+          .using(vertx)
+          .build();
       }
     }, new DeploymentOptions().setInstances(4));
   }
 
   public static void poolSharing3(Vertx vertx, MSSQLConnectOptions database, int maxSize) {
-    MSSQLPool pool = MSSQLPool.pool(database, new PoolOptions()
-      .setMaxSize(maxSize)
-      .setShared(true)
-      .setName("my-pool")
-      .setEventLoopSize(4));
+    Pool pool = MSSQLBuilder.pool()
+      .with(new PoolOptions()
+        .setMaxSize(maxSize)
+        .setShared(true)
+        .setName("my-pool")
+        .setEventLoopSize(4))
+      .connectingTo(database)
+      .using(vertx)
+      .build();
   }
 
   public void dynamicPoolConfig(Vertx vertx, PoolOptions poolOptions) {
-    MSSQLPool pool = MSSQLPool.pool(vertx, () -> {
-      Future<MSSQLConnectOptions> connectOptions = retrieveOptions();
-      return connectOptions;
-    }, poolOptions);
+    Pool pool = MSSQLBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(() -> {
+        Future<SqlConnectOptions> connectOptions = retrieveOptions();
+        return connectOptions;
+      })
+      .using(vertx)
+      .build();
   }
 
-  private Future<MSSQLConnectOptions> retrieveOptions() {
+  private Future<SqlConnectOptions> retrieveOptions() {
     return null;
   }
 }

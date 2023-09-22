@@ -17,10 +17,7 @@ import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,17 +30,17 @@ public class MySQLPooledConnectionTest extends MySQLTestBase {
 
   Vertx vertx;
   MySQLConnectOptions options;
-  MySQLPool pool;
+  Pool pool;
   Consumer<Handler<AsyncResult<SqlConnection>>> connector;
 
   @Before
   public void setup() {
     vertx = Vertx.vertx();
     options = new MySQLConnectOptions(MySQLTestBase.options);
-    pool = MySQLPool.pool(vertx, options, new PoolOptions());
+    pool = MySQLBuilder.pool(builder -> builder.connectingTo(options).using(vertx));
     connector = handler -> {
       if (pool == null) {
-        pool = MySQLPool.pool(vertx, options, new PoolOptions().setMaxSize(1));
+        pool = MySQLBuilder.pool(builder -> builder.with(new PoolOptions().setMaxSize(1)).connectingTo(options).using(vertx));
       }
       pool.getConnection(handler);
     };

@@ -36,6 +36,7 @@ import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static io.vertx.sqlclient.impl.PoolImpl.startPropagatableConnection;
 
@@ -243,7 +244,9 @@ public interface Pool extends SqlClient {
    *
    * @param handler the handler
    * @return a reference to this, so the API can be used fluently
+   * @deprecated instead use {@link ClientBuilder#withConnectHandler(Handler)}
    */
+  @Deprecated
   @Fluent
   Pool connectHandler(Handler<SqlConnection> handler);
 
@@ -255,7 +258,9 @@ public interface Pool extends SqlClient {
    *
    * @param provider the new connection provider
    * @return a reference to this, so the API can be used fluently
+   * @deprecated instead use {@link ClientBuilder#connectingTo(Supplier)}
    */
+  @Deprecated
   @Fluent
   Pool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 
