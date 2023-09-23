@@ -54,16 +54,16 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, transportOptions, cf));
+      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, options, transportOptions, cf));
     } else {
-      pool = newPoolImpl(vx, databases, options, transportOptions, closeFuture);
+      pool = newPoolImpl(vx, connectHandler, databases, options, transportOptions, closeFuture);
     }
     return new CloseablePool<>(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     boolean pipelinedPool = poolOptions instanceof MySQLPoolOptions && ((MySQLPoolOptions) poolOptions).isPipelined();
-    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, connectHandler, closeFuture);
     ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();

@@ -56,15 +56,15 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, transportOptions, cf));
+      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, options, transportOptions, cf));
     } else {
-      pool = newPoolImpl(vx, databases, options, transportOptions, closeFuture);
+      pool = newPoolImpl(vx, connectHandler, databases, options, transportOptions, closeFuture);
     }
     return new CloseablePool<>(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
-    PoolImpl pool = new PoolImpl(vertx, this, false, poolOptions, null, null, closeFuture);
+  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+    PoolImpl pool = new PoolImpl(vertx, this, false, poolOptions, null, null, connectHandler, closeFuture);
     ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();

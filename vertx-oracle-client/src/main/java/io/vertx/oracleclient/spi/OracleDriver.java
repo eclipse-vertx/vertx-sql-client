@@ -50,17 +50,17 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, cf));
+      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, options, cf));
     } else {
-      pool = newPoolImpl(vx, databases, options, closeFuture);
+      pool = newPoolImpl(vx, connectHandler, databases, options, closeFuture);
     }
     return new CloseablePool<>(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     Function<Connection, Future<Void>> afterAcquire = conn -> ((OracleJdbcConnection) conn).afterAcquire();
     Function<Connection, Future<Void>> beforeRecycle = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
-    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, connectHandler, closeFuture);
     ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx, null);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();

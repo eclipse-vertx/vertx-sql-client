@@ -54,16 +54,16 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (poolOptions.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, poolOptions.getName(), closeFuture, cf -> newPoolImpl(vx, databases, poolOptions, transportOptions, cf));
+      pool = vx.createSharedResource(SHARED_CLIENT_KEY, poolOptions.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, poolOptions, transportOptions, cf));
     } else {
-      pool = newPoolImpl(vx, databases, poolOptions, transportOptions, closeFuture);
+      pool = newPoolImpl(vx, connectHandler, databases, poolOptions, transportOptions, closeFuture);
     }
     return new CloseablePool<>(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
     boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
-    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, connectHandler, closeFuture);
     ConnectionFactory<DB2ConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
