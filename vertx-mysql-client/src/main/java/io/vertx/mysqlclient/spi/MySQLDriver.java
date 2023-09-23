@@ -63,9 +63,8 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
 
   private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     boolean pipelinedPool = poolOptions instanceof MySQLPoolOptions && ((MySQLPoolOptions) poolOptions).isPipelined();
-    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, connectHandler, closeFuture);
     ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;

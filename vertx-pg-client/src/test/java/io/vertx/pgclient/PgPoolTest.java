@@ -18,20 +18,16 @@
 package io.vertx.pgclient;
 
 import io.netty.channel.EventLoop;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
 import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.pgclient.impl.PgSocketConnection;
-import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -616,50 +612,6 @@ public class PgPoolTest extends PgPoolTestBase {
         .getConnection()
         .onComplete(ctx.asyncAssertFailure(conn -> {
         async.countDown();
-      }));
-    }));
-  }
-
-  @Test
-  public void testConnectionClosedInProvider1(TestContext ctx) {
-    testConnectionClosedInProvider(ctx, true);
-  }
-
-  @Test
-  public void testConnectionClosedInProvider2(TestContext ctx) {
-    testConnectionClosedInProvider(ctx, false);
-  }
-
-  private void testConnectionClosedInProvider(TestContext ctx, boolean immediately) {
-    Async async = ctx.async(2);
-    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
-    AtomicReference<ProxyServer.Connection> proxyConn = new AtomicReference<>();
-    proxy.proxyHandler(conn -> {
-      proxyConn.set(conn);
-      conn.connect();
-    });
-    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
-      PgConnectOptions options = new PgConnectOptions(this.options).setPort(8080).setHost("localhost");
-      ConnectionFactory factory = PgDriver.INSTANCE.createConnectionFactory(vertx, new NetClientOptions());
-      Pool pool = createPool(options, new PoolOptions().setMaxSize(1));
-      pool.connectionProvider(context -> {
-        Future<SqlConnection> fut = factory.connect(context, options);
-        if (immediately) {
-          return fut.map(conn -> {
-            conn.close();
-            return conn;
-          });
-        } else {
-          return fut.flatMap(conn -> conn.close().map(conn));
-        }
-      });
-      pool
-        .getConnection()
-        .onComplete(ctx.asyncAssertFailure(conn -> {
-        vertx.runOnContext(v -> {
-          ctx.assertEquals(0, pool.size());
-          async.complete();
-        });
       }));
     }));
   }

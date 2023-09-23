@@ -22,10 +22,8 @@ import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
@@ -35,7 +33,6 @@ import io.vertx.sqlclient.impl.Utils;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static io.vertx.sqlclient.impl.PoolImpl.startPropagatableConnection;
 
@@ -190,20 +187,6 @@ public interface Pool extends SqlClient {
   default <T> Future<@Nullable T> withConnection(Function<SqlConnection, Future<@Nullable T>> function) {
     return getConnection().flatMap(conn -> function.apply(conn).onComplete(ar -> conn.close()));
   }
-
-  /**
-   * Replace the default pool connection provider, the new {@code provider} returns a future connection for a
-   * given {@link Context}.
-   *
-   * <p> A {@link io.vertx.sqlclient.spi.ConnectionFactory} can be used as connection provider.
-   *
-   * @param provider the new connection provider
-   * @return a reference to this, so the API can be used fluently
-   * @deprecated instead use {@link ClientBuilder#connectingTo(Supplier)}
-   */
-  @Deprecated
-  @Fluent
-  Pool connectionProvider(Function<Context, Future<SqlConnection>> provider);
 
   /**
    * @return the current pool size approximation

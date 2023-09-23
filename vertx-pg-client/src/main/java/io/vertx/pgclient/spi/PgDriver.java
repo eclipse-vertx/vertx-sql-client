@@ -1,5 +1,6 @@
 package io.vertx.pgclient.spi;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -21,6 +22,7 @@ import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class PgDriver implements Driver<PgConnectOptions> {
@@ -41,11 +43,10 @@ public class PgDriver implements Driver<PgConnectOptions> {
     return new CloseablePool(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler,  Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     boolean pipelinedPool = poolOptions instanceof PgPoolOptions && ((PgPoolOptions) poolOptions).isPipelined();
-    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, connectHandler, closeFuture);
     ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;

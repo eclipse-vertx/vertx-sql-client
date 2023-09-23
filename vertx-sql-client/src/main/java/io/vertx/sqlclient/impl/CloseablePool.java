@@ -16,7 +16,6 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.CloseFuture;
@@ -69,12 +68,6 @@ public class CloseablePool<P extends Pool> implements Pool, SqlClientInternal {
   public <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation,
                                                  Function<SqlConnection, Future<@Nullable T>> function) {
     return delegate.withTransaction(txPropagation, function);
-  }
-
-  @Override
-  public P connectionProvider(Function<Context, Future<SqlConnection>> provider) {
-    delegate.connectionProvider(provider);
-    return (P) this;
   }
 
   @Override

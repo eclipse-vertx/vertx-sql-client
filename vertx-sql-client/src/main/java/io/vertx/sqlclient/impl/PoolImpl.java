@@ -29,7 +29,6 @@ import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -49,7 +48,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final boolean pipelined;
   private final Handler<SqlConnection> connectionInitializer;
   private long timerID;
-  private volatile Function<Context, Future<SqlConnection>> connectionProvider;
 
   public static final String PROPAGATABLE_CONNECTION = "propagatable_connection";
 
@@ -59,6 +57,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   PoolOptions poolOptions,
                   Function<Connection, Future<Void>> afterAcquire,
                   Function<Connection, Future<Void>> beforeRecycle,
+                  Function<Context, Future<SqlConnection>> connectionProvider,
                   Handler<SqlConnection> connectionInitializer,
                   CloseFuture closeFuture) {
     super(driver);
@@ -72,7 +71,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.timerID = -1L;
     this.pipelined = pipelined;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), hook, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(connectionProvider, hook, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
     this.connectionInitializer = connectionInitializer;
   }
@@ -95,14 +94,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
         });
       }
     }
-    return this;
-  }
-
-  public Pool connectionProvider(Function<Context, Future<SqlConnection>> connectionProvider) {
-    if (connectionProvider == null) {
-      throw new NullPointerException();
-    }
-    this.connectionProvider = connectionProvider;
     return this;
   }
 
