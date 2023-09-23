@@ -28,13 +28,13 @@ import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
 
-public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
+public class CloseablePool<P extends Pool> implements Pool, SqlClientInternal {
 
   private final VertxInternal vertx;
   private final CloseFuture closeFuture;
   private final Pool delegate;
 
-  public PoolBase(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
+  public CloseablePool(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
     this.vertx = vertx;
     this.closeFuture = closeFuture;
     this.delegate = delegate;
@@ -69,12 +69,6 @@ public class PoolBase<P extends Pool> implements Pool, SqlClientInternal {
   public <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation,
                                                  Function<SqlConnection, Future<@Nullable T>> function) {
     return delegate.withTransaction(txPropagation, function);
-  }
-
-  @Override
-  public P connectHandler(Handler<SqlConnection> handler) {
-    delegate.connectHandler(handler);
-    return (P) this;
   }
 
   @Override

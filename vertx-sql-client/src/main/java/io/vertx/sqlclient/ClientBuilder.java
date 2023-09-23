@@ -38,8 +38,8 @@ public interface ClientBuilder<C> {
   static ClientBuilder<Pool> pool(Driver<?> driver) {
     return new ClientBuilderBase<Pool>(driver) {
       @Override
-      protected Pool create(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions) {
-        return driver.createPool(vertx, databases, poolOptions, transportOptions);
+      protected Pool create(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler) {
+        return driver.createPool(vertx, databases, poolOptions, transportOptions, connectHandler);
       }
     };
   }

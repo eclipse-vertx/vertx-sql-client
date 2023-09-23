@@ -29,6 +29,7 @@ import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -46,7 +47,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final long maxLifetime;
   private final long cleanerPeriod;
   private final boolean pipelined;
-  private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
+  private final Handler<SqlConnection> connectionInitializer;
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
 
@@ -58,8 +59,11 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   PoolOptions poolOptions,
                   Function<Connection, Future<Void>> afterAcquire,
                   Function<Connection, Future<Void>> beforeRecycle,
+                  Handler<SqlConnection> connectionInitializer,
                   CloseFuture closeFuture) {
     super(driver);
+
+    Handler<SqlConnectionPool.PooledConnection> hook = connectionInitializer != null ? this::initializeConnection : null;
 
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
@@ -68,8 +72,18 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.timerID = -1L;
     this.pipelined = pipelined;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), hook, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
+    this.connectionInitializer = connectionInitializer;
+  }
+
+  private void initializeConnection(SqlConnectionPool.PooledConnection conn) {
+    if (connectionInitializer != null) {
+      ContextInternal current = vertx.getContext();
+      SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn);
+      conn.init(wrapper);
+      current.dispatch(wrapper, connectionInitializer);
+    }
   }
 
   public Pool init() {
@@ -171,21 +185,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     Promise<Void> promise = vertx.promise();
     closeFuture.close(promise);
     return promise.future();
-  }
-
-  @Override
-  public Pool connectHandler(Handler<SqlConnection> handler) {
-    if (handler != null) {
-      connectionInitializer = conn -> {
-        ContextInternal current = vertx.getContext();
-        SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn);
-        conn.init(wrapper);
-        current.dispatch(wrapper, handler);
-      };
-    } else {
-      connectionInitializer = null;
-    }
-    return this;
   }
 
   private Future<Void> doClose() {

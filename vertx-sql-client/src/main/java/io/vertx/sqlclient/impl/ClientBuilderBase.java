@@ -32,7 +32,7 @@ public abstract class ClientBuilderBase<C> implements ClientBuilder<C> {
   private PoolOptions poolOptions;
   private NetClientOptions transportOptions;
   private Supplier<Future<SqlConnectOptions>> database;
-  private Handler<SqlConnection> connectionHandler;
+  private Handler<SqlConnection> connectHandler;
   private Vertx vertx;
 
   public ClientBuilderBase(Driver<?> driver) {
@@ -74,7 +74,7 @@ public abstract class ClientBuilderBase<C> implements ClientBuilder<C> {
 
   @Override
   public ClientBuilder<C> withConnectHandler(Handler<SqlConnection> handler) {
-    this.connectionHandler = handler;
+    this.connectHandler = handler;
     return this;
   }
 
@@ -94,13 +94,10 @@ public abstract class ClientBuilderBase<C> implements ClientBuilder<C> {
     if (transportOptions == null) {
       transportOptions = new NetClientOptions();
     }
-    C c = create(vertx, database, poolOptions, transportOptions);
-    if (c instanceof Pool) {
-      ((Pool)c).connectHandler(connectionHandler);
-    }
+    C c = create(vertx, database, poolOptions, transportOptions, connectHandler);
     return c;
   }
 
-  protected abstract C create(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions);
+  protected abstract C create(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler);
 
 }

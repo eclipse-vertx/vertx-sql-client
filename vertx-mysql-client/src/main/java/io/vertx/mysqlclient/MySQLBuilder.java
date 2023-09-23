@@ -85,8 +85,8 @@ public interface MySQLBuilder {
         return super.with(options);
       }
       @Override
-      protected SqlClient create(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions) {
-        return driver.createPool(vertx, databases, poolOptions, transportOptions);
+      protected SqlClient create(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler) {
+        return driver.createPool(vertx, databases, poolOptions, transportOptions, );
       }
     };
   }

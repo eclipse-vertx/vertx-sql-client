@@ -18,7 +18,6 @@
 package io.vertx.sqlclient;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -28,7 +27,6 @@ import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.NetClientOptions;
@@ -89,7 +87,7 @@ public interface Pool extends SqlClient {
       throw new ServiceConfigurationError("Multiple implementations of " + Driver.class + " found: " + candidates);
     } else {
       Driver<SqlConnectOptions> driver = candidates.get(0);
-      return driver.createPool(vertx, Utils.singletonSupplier(driver.downcast(database)), options, new NetClientOptions());
+      return driver.createPool(vertx, Utils.singletonSupplier(driver.downcast(database)), options, new NetClientOptions(), null);
     }
   }
 
@@ -192,22 +190,6 @@ public interface Pool extends SqlClient {
   default <T> Future<@Nullable T> withConnection(Function<SqlConnection, Future<@Nullable T>> function) {
     return getConnection().flatMap(conn -> function.apply(conn).onComplete(ar -> conn.close()));
   }
-
-  /**
-   * Set an handler called when the pool has established a connection to the database.
-   *
-   * <p> This handler allows interactions with the database before the connection is added to the pool.
-   *
-   * <p> When the handler has finished, it must call {@link SqlConnection#close()} to release the connection
-   * to the pool.
-   *
-   * @param handler the handler
-   * @return a reference to this, so the API can be used fluently
-   * @deprecated instead use {@link ClientBuilder#withConnectHandler(Handler)}
-   */
-  @Deprecated
-  @Fluent
-  Pool connectHandler(Handler<SqlConnection> handler);
 
   /**
    * Replace the default pool connection provider, the new {@code provider} returns a future connection for a

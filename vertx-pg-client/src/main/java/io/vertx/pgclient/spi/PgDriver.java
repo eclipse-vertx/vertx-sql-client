@@ -1,6 +1,7 @@
 package io.vertx.pgclient.spi;
 
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -12,7 +13,9 @@ import io.vertx.pgclient.impl.*;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.CloseablePool;
 import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -27,20 +30,20 @@ public class PgDriver implements Driver<PgConnectOptions> {
   public static final PgDriver INSTANCE = new PgDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (poolOptions.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, poolOptions.getName(), closeFuture, cf -> newPoolImpl(vx, databases, poolOptions, transportOptions, cf));
+      pool = vx.createSharedResource(SHARED_CLIENT_KEY, poolOptions.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, poolOptions, transportOptions, cf));
     } else {
-      pool = newPoolImpl(vx, databases, poolOptions, transportOptions, closeFuture);
+      pool = newPoolImpl(vx, connectHandler, databases, poolOptions, transportOptions, closeFuture);
     }
-    return new PgPoolImpl(vx, closeFuture, pool);
+    return new CloseablePool(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler,  Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     boolean pipelinedPool = poolOptions instanceof PgPoolOptions && ((PgPoolOptions) poolOptions).isPipelined();
-    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, connectHandler, closeFuture);
     ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();

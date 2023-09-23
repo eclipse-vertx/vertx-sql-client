@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
@@ -54,7 +53,7 @@ public abstract class DriverTestBase {
 
   @Test
   public void testCreatePoolFromDriver(TestContext ctx) {
-    testCreatePoolWithVertx(ctx, vertx -> getDriver().createPool(vertx, () -> Future.succeededFuture(defaultOptions()), new PoolOptions().setMaxSize(1), new NetClientOptions()));
+    testCreatePoolWithVertx(ctx, vertx -> getDriver().createPool(vertx, () -> Future.succeededFuture(defaultOptions()), new PoolOptions().setMaxSize(1), new NetClientOptions(), null));
   }
 
   @Test

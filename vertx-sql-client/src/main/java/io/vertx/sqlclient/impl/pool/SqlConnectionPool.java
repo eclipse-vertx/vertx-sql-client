@@ -47,7 +47,7 @@ public class SqlConnectionPool {
   private final Function<Context, Future<SqlConnection>> connectionProvider;
   private final VertxInternal vertx;
   private final ConnectionPool<PooledConnection> pool;
-  private final Supplier<Handler<PooledConnection>> hook;
+  private final Handler<PooledConnection> hook;
   private final Function<Connection, Future<Void>> afterAcquire;
   private final Function<Connection, Future<Void>> beforeRecycle;
   private final boolean pipelined;
@@ -56,7 +56,7 @@ public class SqlConnectionPool {
   private final int maxSize;
 
   public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
-                           Supplier<Handler<PooledConnection>> hook,
+                           Handler<PooledConnection> hook,
                            Function<Connection, Future<Void>> afterAcquire,
                            Function<Connection, Future<Void>> beforeRecycle,
                            VertxInternal vertx,
@@ -115,11 +115,10 @@ public class SqlConnectionPool {
         if (conn.isValid()) {
           PooledConnection pooled = new PooledConnection(connBase.factory(), conn, listener);
           conn.init(pooled);
-          Handler<PooledConnection> connectionHandler = hook.get();
-          if (connectionHandler != null) {
+          if (hook != null) {
             Promise<ConnectResult<PooledConnection>> p = Promise.promise();
             pooled.poolCallback = p;
-            connectionHandler.handle(pooled);
+            hook.handle(pooled);
             return p.future();
           } else {
             return Future.succeededFuture(new ConnectResult<>(pooled, pipelined ? conn.pipeliningLimit() : 1, 0));

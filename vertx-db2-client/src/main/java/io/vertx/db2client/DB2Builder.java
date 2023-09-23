@@ -86,8 +86,8 @@ public interface DB2Builder {
       }
 
       @Override
-      protected SqlClient create(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions) {
-        return driver.createPool(vertx, databases, poolOptions, transportOptions);
+      protected SqlClient create(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler) {
+        return driver.createPool(vertx, databases, poolOptions, transportOptions, );
       }
     };
   }
