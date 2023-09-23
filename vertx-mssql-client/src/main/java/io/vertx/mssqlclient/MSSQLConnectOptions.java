@@ -12,6 +12,7 @@
 package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
@@ -201,6 +202,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     return (MSSQLConnectOptions) super.setPreparedStatementCacheMaxSize(preparedStatementCacheMaxSize);
   }
 
+  @GenIgnore
   @Override
   public MSSQLConnectOptions setPreparedStatementCacheSqlFilter(Predicate<String> predicate) {
     return (MSSQLConnectOptions) super.setPreparedStatementCacheSqlFilter(predicate);
