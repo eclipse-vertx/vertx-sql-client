@@ -16,6 +16,7 @@
 package io.vertx.mssqlclient.spi;
 
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -26,11 +27,12 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
-import io.vertx.mssqlclient.impl.MSSQLPoolImpl;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.CloseablePool;
 import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -50,21 +52,20 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
   }
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, transportOptions, cf));
+      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, options, transportOptions, cf));
     } else {
-      pool = newPoolImpl(vx, databases, options, transportOptions, closeFuture);
+      pool = newPoolImpl(vx, connectHandler, databases, options, transportOptions, closeFuture);
     }
-    return new MSSQLPoolImpl(vx, closeFuture, pool);
+    return new CloseablePool<>(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
-    PoolImpl pool = new PoolImpl(vertx, this, false, poolOptions, null, null, closeFuture);
+  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+    PoolImpl pool = new PoolImpl(vertx, this, false, poolOptions, null, null, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;

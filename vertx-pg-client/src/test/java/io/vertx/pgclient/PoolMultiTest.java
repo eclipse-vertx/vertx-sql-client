@@ -11,6 +11,7 @@ import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.After;
@@ -24,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 
@@ -55,15 +57,18 @@ public class PoolMultiTest {
 
   @Test
   public void testAsyncLoadBalancing(TestContext ctx) {
-    Pool pool = PgBuilder.pool().with(new PoolOptions().setMaxSize(5)).using(vertx).build();
-    ConnectionFactory provider = PgDriver.INSTANCE.createConnectionFactory(vertx, new NetClientOptions());
-    pool.connectionProvider(new Function<Context, Future<SqlConnection>>() {
-      int idx = 0;
-      @Override
-      public Future<SqlConnection> apply(Context context) {
-        return provider.connect(context, idx++ % 2 == 0 ? db1.options() : db2.options());
-      }
-    });
+    Pool pool = PgBuilder.pool()
+      .with(new PoolOptions().setMaxSize(5))
+      .connectingTo(new Supplier<Future<SqlConnectOptions>>() {
+        int idx = 0;
+        @Override
+        public Future<SqlConnectOptions> get() {
+          SqlConnectOptions connectOptions = idx++ % 2 == 0 ? db1.options() : db2.options();
+          return Future.succeededFuture(connectOptions);
+        }
+      })
+      .using(vertx)
+      .build();
     testLoadBalancing(ctx, pool);
   }
 

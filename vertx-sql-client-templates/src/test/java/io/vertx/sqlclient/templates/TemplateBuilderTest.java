@@ -5,16 +5,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.PrepareOptions;
-import io.vertx.sqlclient.PreparedQuery;
-import io.vertx.sqlclient.Query;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
@@ -47,7 +38,7 @@ public class TemplateBuilderTest {
           return FakeClient.this.appendQueryPlaceholder(queryBuilder, index, current);
         }
         @Override
-        public Pool newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
+        public Pool newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
           throw new UnsupportedOperationException();
         }
         @Override

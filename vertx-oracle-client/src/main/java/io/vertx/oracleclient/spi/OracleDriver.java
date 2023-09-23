@@ -11,6 +11,7 @@
 package io.vertx.oracleclient.spi;
 
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
@@ -22,7 +23,9 @@ import io.vertx.oracleclient.impl.*;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.impl.CloseablePool;
 import io.vertx.sqlclient.impl.PoolImpl;
 import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -43,23 +46,22 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
   }
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  public Pool newPool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
     VertxInternal vx = (VertxInternal) vertx;
     PoolImpl pool;
     if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, databases, options, cf));
+      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, options, cf));
     } else {
-      pool = newPoolImpl(vx, databases, options, closeFuture);
+      pool = newPoolImpl(vx, connectHandler, databases, options, closeFuture);
     }
-    return new OraclePoolImpl(vx, closeFuture, pool);
+    return new CloseablePool<>(vx, closeFuture, pool);
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
+  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
     Function<Connection, Future<Void>> afterAcquire = conn -> ((OracleJdbcConnection) conn).afterAcquire();
     Function<Connection, Future<Void>> beforeRecycle = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
-    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, closeFuture);
     ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx, null);
-    pool.connectionProvider(context -> factory.connect(context, databases.get()));
+    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;
