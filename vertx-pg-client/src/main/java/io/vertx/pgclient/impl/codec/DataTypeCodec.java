@@ -1513,10 +1513,10 @@ public class DataTypeCodec {
 
   private static Money textDecodeMoney(int index, int len, ByteBuf buff) {
     String s = textDecodeVARCHAR(index, len, buff);
-    s = s.substring(1);
+    boolean negative = s.charAt(0) == '-';
     long integerPart = 0;
     int decimalPart = 0;
-    int idx = 0;
+    int idx = negative ? 2 : 1;
     char c;
     while (idx < s.length() && (c = s.charAt(idx++)) != '.') {
       if (c >= '0' && c <= '9') {
@@ -1529,7 +1529,7 @@ public class DataTypeCodec {
         decimalPart = decimalPart * 10 + (c - '0');
       }
     }
-    return new Money(integerPart, decimalPart);
+    return new Money(negative ? -integerPart : integerPart, decimalPart);
   }
 
   /**
