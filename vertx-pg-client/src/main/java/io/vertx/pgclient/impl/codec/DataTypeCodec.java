@@ -33,6 +33,7 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.codec.CommonCodec;
 
+import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
@@ -1455,19 +1456,12 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeMoney(Money money, ByteBuf buff) {
-    long integerPart = money.getIntegerPart();
-    long value;
-    if (integerPart >= 0) {
-      value = money.getIntegerPart() * 100 + money.getDecimalPart();
-    } else {
-      value = money.getIntegerPart() * 100 - money.getDecimalPart();
-    }
-    binaryEncodeINT8(value, buff);
+    binaryEncodeINT8(money.bigDecimalValue().movePointRight(2).longValue(), buff);
   }
 
   private static Money binaryDecodeMoney(int index, int len, ByteBuf buff) {
     long value = binaryDecodeINT8(index, len, buff);
-    return new Money(value / 100, Math.abs(((int)value % 100)));
+    return new Money(BigDecimal.valueOf(value, 2));
   }
 
   private static String binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
