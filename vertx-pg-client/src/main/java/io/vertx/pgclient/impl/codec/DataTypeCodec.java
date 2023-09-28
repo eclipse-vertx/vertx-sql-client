@@ -34,11 +34,13 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.codec.CommonCodec;
 
+import java.math.BigDecimal;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -1456,19 +1458,12 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeMoney(Money money, ByteBuf buff) {
-    long integerPart = money.getIntegerPart();
-    long value;
-    if (integerPart >= 0) {
-      value = money.getIntegerPart() * 100 + money.getDecimalPart();
-    } else {
-      value = money.getIntegerPart() * 100 - money.getDecimalPart();
-    }
-    binaryEncodeINT8(value, buff);
+    binaryEncodeINT8(money.bigDecimalValue().movePointRight(2).longValue(), buff);
   }
 
   private static Money binaryDecodeMoney(int index, int len, ByteBuf buff) {
     long value = binaryDecodeINT8(index, len, buff);
-    return new Money(value / 100, Math.abs(((int)value % 100)));
+    return new Money(BigDecimal.valueOf(value, 2));
   }
 
   private static String binaryDecodeTsQuery(int index, int len, ByteBuf buff) {
@@ -1514,10 +1509,10 @@ public class DataTypeCodec {
 
   private static Money textDecodeMoney(int index, int len, ByteBuf buff) {
     String s = textDecodeVARCHAR(index, len, buff);
-    s = s.substring(1);
+    boolean negative = s.charAt(0) == '-';
     long integerPart = 0;
     int decimalPart = 0;
-    int idx = 0;
+    int idx = negative ? 2 : 1;
     char c;
     while (idx < s.length() && (c = s.charAt(idx++)) != '.') {
       if (c >= '0' && c <= '9') {
@@ -1530,7 +1525,8 @@ public class DataTypeCodec {
         decimalPart = decimalPart * 10 + (c - '0');
       }
     }
-    return new Money(integerPart, decimalPart);
+    BigDecimal value = new BigDecimal(integerPart + "." + new DecimalFormat("00").format(decimalPart));
+    return new Money(negative ? value.negate() : value);
   }
 
   /**

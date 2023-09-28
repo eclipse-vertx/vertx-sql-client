@@ -14,25 +14,27 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+
 public class MonetaryTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
 
   @Test
   public void testDecodeMoney(TestContext ctx) {
-    testDecode(ctx, "SELECT 1234.45::MONEY, (-1234.45)::MONEY", Tuple::getValue, new Money(1234, 45), new Money(-1234, 45));
+    testDecode(ctx, "SELECT 1234.45::MONEY, (-1234.45)::MONEY", Tuple::getValue, new Money(new BigDecimal("1234.45")), new Money(new BigDecimal("-1234.45")));
   }
 
   @Test
   public void testEncodeMoney(TestContext ctx) {
-    testEncode(ctx, "SELECT ($1::MONEY)::VARCHAR, ($2::MONEY)::VARCHAR", Tuple.of(new Money(1234, 45), new Money(-1234, 45)), "$1,234.45", "-$1,234.45");
+    testEncode(ctx, "SELECT ($1::MONEY)::VARCHAR, ($2::MONEY)::VARCHAR", Tuple.of(new Money(new BigDecimal("1234.45")), new Money(new BigDecimal("-1234.45"))), "$1,234.45", "-$1,234.45");
   }
 
   @Test
   public void testDecodeMoneyArray(TestContext ctx) {
-    testDecode(ctx, "SELECT '{ 1234.45, -1234.45 }'::MONEY[]", Tuple::getValue, (Object)(new Money[] { new Money(1234, 45), new Money(-1234, 45) }));
+    testDecode(ctx, "SELECT '{ 1234.45, -1234.45 }'::MONEY[]", Tuple::getValue, (Object) (new Money[]{new Money(new BigDecimal("1234.45")), new Money(new BigDecimal("-1234.45"))}));
   }
 
   @Test
   public void testEncodeMoneyArray(TestContext ctx) {
-    testEncode(ctx, "SELECT (($1::MONEY[])[1])::VARCHAR", Tuple.of(new Money[] { new Money(1234, 45) }), "$1,234.45");
+    testEncode(ctx, "SELECT (($1::MONEY[])[1])::VARCHAR", Tuple.of(new Money[]{new Money(new BigDecimal("1234.45"))}), "$1,234.45");
   }
 }

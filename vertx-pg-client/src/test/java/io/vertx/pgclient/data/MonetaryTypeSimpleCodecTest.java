@@ -15,24 +15,25 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 
+import java.math.BigDecimal;
+
 public class MonetaryTypeSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
 
   @Test
   public void testMoney(TestContext ctx) {
-    Money expected = new Money(1234, 56);
+    Money expected = new Money(new BigDecimal("1234.56"));
     testDecodeGeneric(ctx, "1234.56", "MONEY", "money", Tuple::getValue, Row::getValue, expected);
   }
 
   @Test
   public void testNegativeMoney(TestContext ctx) {
-    // Does not look possible with text format
-    Money expected = new Money(1234, 56);
+    Money expected = new Money(new BigDecimal("-1234.56"));
     testDecodeGeneric(ctx, "-1234.56", "MONEY", "money", Tuple::getValue, Row::getValue, expected);
   }
 
   @Test
   public void testMoneyArray(TestContext ctx) {
-    Money expected = new Money(1234, 56);
-    testDecodeGenericArray(ctx, "ARRAY ['1234.56' :: MONEY]", "money", Tuple::getValue, Row::getValue, expected);
+    Money[] expected = {new Money(new BigDecimal("1234.56")), new Money(new BigDecimal("-1234.56"))};
+    testDecodeGenericArray(ctx, "ARRAY ['1234.56' :: MONEY , '-1234.56' :: MONEY]", "money", Tuple::getValue, Row::getValue, expected);
   }
 }

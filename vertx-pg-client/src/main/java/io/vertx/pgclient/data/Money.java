@@ -11,92 +11,37 @@
 package io.vertx.pgclient.data;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.util.Objects;
 
 /**
  * The PostgreSQL <a href="https://www.postgresql.org/docs/9.1/datatype-money.html">MONEY</> type.
- *
- * This has the {@link #getIntegerPart() integer part} and {@link #getDecimalPart() decimal part} of the value without loss of information.
- *
- * {@link #bigDecimalValue()} returns the value without loss of information
- * {@link #doubleValue()} ()} returns the value possible loss of information
+ * <p>
+ * {@link #bigDecimalValue()} returns the value without loss of information.
+ * {@link #doubleValue()} returns the value possible loss of information.
  */
 public class Money {
 
-  private long integerPart;
-  private int decimalPart;
-
-  public Money(long integerPart, int decimalPart) {
-    setIntegerPart(integerPart);
-    setDecimalPart(decimalPart);
-  }
+  private final BigDecimal value;
 
   public Money(Number value) {
-    if (value instanceof Double || value instanceof Float) {
-      value = BigDecimal.valueOf((double) value);
+    this.value = (value instanceof BigDecimal ? (BigDecimal) value : new BigDecimal(String.valueOf(value))).stripTrailingZeros();
+    if (this.value.toBigInteger().abs().longValue() > Long.MAX_VALUE / 100) {
+      throw new IllegalArgumentException("Value is too big: " + value);
     }
-    if (value instanceof BigDecimal) {
-      BigInteger bd = ((BigDecimal) value).multiply(new BigDecimal(100)).toBigInteger();
-      setIntegerPart(bd.divide(BigInteger.valueOf(100)).longValueExact());
-      setDecimalPart(bd.remainder(BigInteger.valueOf(100)).abs().intValueExact());
-    } else {
-      setIntegerPart(value.longValue());
+    if (this.value.scale() > 2) {
+      throw new IllegalArgumentException("Value has more than two decimal digits: " + value);
     }
   }
 
   public Money() {
-  }
-
-  public long getIntegerPart() {
-    return integerPart;
-  }
-
-  public int getDecimalPart() {
-    return decimalPart;
-  }
-
-  /**
-   * Set the integer part of the monetary value.
-   *
-   * <p> This value must belong to the range {@code ]Long.MAX_VALUE / 100, Long.MIN_VALUE / 100[}
-   *
-   * @param part the integer part of the value
-   * @return this object
-   */
-  public Money setIntegerPart(long part) {
-    if (part > Long.MAX_VALUE / 100 || part < Long.MIN_VALUE / 100) {
-      throw new IllegalArgumentException();
-    }
-    integerPart = part;
-    return this;
-  }
-
-  /**
-   * Set the decimal part of the monetary value.
-   *
-   * <p> This value must belong to the range {@code [0, 100]}
-   *
-   * @param part decimal part
-   * @return this object
-   */
-  public Money setDecimalPart(int part) {
-    if (part > 99 || part < 0) {
-      throw new IllegalArgumentException();
-    }
-    decimalPart = part;
-    return this;
+    value = BigDecimal.ZERO;
   }
 
   /**
    * @return the monetary amount as a big decimal without loss of information
    */
   public BigDecimal bigDecimalValue() {
-    BigDecimal value = new BigDecimal(integerPart).multiply(BigDecimal.valueOf(100));
-    if (integerPart >= 0) {
-      value = value.add(BigDecimal.valueOf(decimalPart));
-    } else {
-      value = value.subtract(BigDecimal.valueOf(decimalPart));
-    }
     return value;
   }
 
@@ -111,17 +56,17 @@ public class Money {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    Money that = (Money) o;
-    return decimalPart == that.decimalPart && integerPart == that.integerPart;
+    Money money = (Money) o;
+    return Objects.equals(value, money.value);
   }
 
   @Override
   public int hashCode() {
-    return ((Long)integerPart).hashCode() ^ ((Integer)decimalPart).hashCode();
+    return Objects.hash(value);
   }
 
   @Override
   public String toString() {
-    return "Money(" + integerPart + "." + decimalPart + ")";
+    return "Money(" + new DecimalFormat("#0.##").format(value) + ")";
   }
 }
