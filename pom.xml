@@ -232,9 +232,9 @@
       </modules>
     </profile>
     <profile>
-      <id>Oracle-21</id>
+      <id>Oracle-23</id>
       <properties>
-        <oracle-container.version>21-slim</oracle-container.version>
+        <oracle-container.version>23.3-slim-faststart</oracle-container.version>
       </properties>
       <modules>
         <module>vertx-sql-client</module>
