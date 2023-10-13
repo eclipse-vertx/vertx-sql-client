@@ -24,9 +24,9 @@ public class OracleRule extends ExternalResource {
 
   public static final OracleRule SHARED_INSTANCE = new OracleRule();
 
-  static final String IMAGE = "gvenzl/oracle-xe";
-  static final String PASSWORD = "vertx";
-  static final int PORT = 1521;
+  private static final String IMAGE = "gvenzl/oracle-free";
+  private static final String PASSWORD = "vertx";
+  private static final int PORT = 1521;
 
   private ServerContainer<?> server;
   private OracleConnectOptions options;
@@ -55,7 +55,7 @@ public class OracleRule extends ExternalResource {
 
   private OracleConnectOptions startOracle() throws IOException {
     String containerVersion = System.getProperty("oracle-container.version");
-    containerVersion = isNullOrEmpty(containerVersion) ? "21-slim" : containerVersion;
+    containerVersion = isNullOrEmpty(containerVersion) ? "23-slim-faststart" : containerVersion;
 
     String image = IMAGE + ":" + containerVersion;
 
@@ -79,7 +79,7 @@ public class OracleRule extends ExternalResource {
       .setPort(server.getMappedPort(PORT))
       .setUser("sys as sysdba")
       .setPassword(PASSWORD)
-      .setDatabase("xe");
+      .setDatabase("FREEPDB1");
   }
 
   private void stopOracle() {
