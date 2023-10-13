@@ -60,7 +60,7 @@ jobs:
             profile: 'MSSQL-2019-latest'
           - os: ubuntu-latest
             jdk: 17
-            profile: 'Oracle-21'
+            profile: 'Oracle-23'
     uses: ./.github/workflows/ci.yml
     with:
       branch: ${{ github.event.pull_request.head.sha || github.ref_name }}

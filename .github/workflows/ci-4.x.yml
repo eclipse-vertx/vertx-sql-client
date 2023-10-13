@@ -54,7 +54,7 @@ jobs:
             profile: 'MSSQL-2019-latest'
           - os: ubuntu-latest
             jdk: 17
-            profile: 'Oracle-21'
+            profile: 'Oracle-23'
     uses: ./.github/workflows/ci.yml
     with:
       branch: 4.x
