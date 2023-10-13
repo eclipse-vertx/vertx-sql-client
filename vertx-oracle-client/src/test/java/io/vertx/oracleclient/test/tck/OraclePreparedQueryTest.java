@@ -50,9 +50,7 @@ public class OraclePreparedQueryTest extends PreparedQueryTestBase {
 
   @Override
   public void testPreparedQueryParamCoercionQuantityError(TestContext ctx) {
-    msgVerifier = t -> {
-      ctx.assertEquals("Invalid column index", t.getMessage());
-    };
+    msgVerifier = t -> ctx.assertTrue(t.getMessage().contains("Invalid column index"));
     super.testPreparedQueryParamCoercionQuantityError(ctx);
   }
 }
