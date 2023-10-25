@@ -17,10 +17,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.VertxInternal;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
@@ -62,13 +59,18 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
       )
       .compose(connBase -> {
         MSSQLSocketConnection conn = (MSSQLSocketConnection) connBase;
-        SocketAddress alternateServer = conn.getAlternateServer();
+        HostAndPort alternateServer = conn.getAlternateServer();
         if (alternateServer == null) {
           return context.succeededFuture(conn);
         }
         Promise<Void> closePromise = context.promise();
         conn.close(null, closePromise);
-        return closePromise.future().transform(v -> connectOrRedirect(options, context, redirections + 1));
+        return closePromise.future().transform(v -> {
+          MSSQLConnectOptions connectOptions = new MSSQLConnectOptions(options)
+            .setHost(alternateServer.host())
+            .setPort(alternateServer.port());
+          return connectOrRedirect(connectOptions, context, redirections + 1);
+        });
       });
   }
 

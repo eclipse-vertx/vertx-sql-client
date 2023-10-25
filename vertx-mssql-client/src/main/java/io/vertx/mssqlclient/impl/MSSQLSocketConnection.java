@@ -19,7 +19,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.net.impl.SSLHelper;
 import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
@@ -49,7 +49,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   private final int packetSize;
 
   private MSSQLDatabaseMetadata databaseMetadata;
-  private SocketAddress alternateServer;
+  private HostAndPort alternateServer;
 
   MSSQLSocketConnection(NetSocketInternal socket,
                         ClientMetrics clientMetrics,
@@ -173,11 +173,11 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     this.databaseMetadata = metadata;
   }
 
-  public SocketAddress getAlternateServer() {
+  public HostAndPort getAlternateServer() {
     return alternateServer;
   }
 
-  public void setAlternateServer(SocketAddress alternateServer) {
+  public void setAlternateServer(HostAndPort alternateServer) {
     this.alternateServer = alternateServer;
   }
 }
