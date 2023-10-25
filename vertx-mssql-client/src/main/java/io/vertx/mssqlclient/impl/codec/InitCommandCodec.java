@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.HostAndPort;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.impl.MSSQLSocketConnection;
 import io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket;
@@ -220,6 +220,6 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
       throw new IllegalStateException("ProtocolProperty value of zero is not allowed when Protocol is TCP-IP");
     }
     String host = readUnsignedShortLengthString(payload);
-    conn.setAlternateServer(SocketAddress.inetSocketAddress(port, host.toLowerCase(ENGLISH)));
+    conn.setAlternateServer(HostAndPort.create(host.toLowerCase(ENGLISH), port));
   }
 }
