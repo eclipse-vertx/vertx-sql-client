@@ -75,7 +75,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
       } else if (flag == FAST_AUTH_STATUS_FLAG) {
         // fast auth success
       } else {
-        encoder.handleCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag)));
+        encoder.fireCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported flag for AuthMoreData : " + flag)));
       }
     }
   }
@@ -86,7 +86,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
       byte[] passwordInput = Arrays.copyOf(password, password.length + 1); // need to append 0x00(NULL) to the password
       encryptedPassword = RsaPublicKeyEncryptor.encrypt(passwordInput, authPluginData, serverRsaPublicKeyContent);
     } catch (Exception e) {
-      encoder.handleCommandResponse(CommandResponse.failure(e));
+      encoder.fireCommandResponse(CommandResponse.failure(e));
       return;
     }
     sendBytesAsPacket(encryptedPassword);

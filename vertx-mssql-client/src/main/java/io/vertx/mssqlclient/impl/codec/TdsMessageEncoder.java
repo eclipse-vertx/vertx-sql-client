@@ -52,13 +52,9 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
 
   void write(CommandBase<?> cmd) {
     MSSQLCommandCodec<?, ?> codec = wrap(cmd);
-    codec.completionHandler = resp -> {
-      MSSQLCommandCodec<?, ?> c = this.tdsMessageCodec.poll();
-      resp.cmd = (CommandBase) c.cmd;
-      chctx.fireChannelRead(resp);
-    };
-    this.tdsMessageCodec.add(codec);
-    codec.encode();
+    if (tdsMessageCodec.add(codec)) {
+      codec.encode();
+    }
   }
 
   private MSSQLCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
