@@ -22,7 +22,6 @@ import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.Handler;
 
 import java.util.Arrays;
 
@@ -30,8 +29,7 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
 
   private static final Logger logger = LoggerFactory.getLogger(PgCommandCodec.class);
 
-  Handler<? super CommandResponse<R>> completionHandler;
-  Handler<NoticeResponse> noticeHandler;
+  PgDecoder decoder;
   PgException failure;
   R result;
   final C cmd;
@@ -71,7 +69,7 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
   }
 
   void handleNoticeResponse(NoticeResponse noticeResponse) {
-    noticeHandler.handle(noticeResponse);
+    decoder.fireNoticeResponse(noticeResponse);
   }
 
   void handleErrorResponse(ErrorResponse errorResponse) {
@@ -136,6 +134,6 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
     } else {
       resp = CommandResponse.success(result);
     }
-    completionHandler.handle(resp);
+    decoder.fireCommandResponse(resp);
   }
 }

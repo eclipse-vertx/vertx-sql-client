@@ -24,42 +24,72 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Iterator;
 
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 
-  ArrayDeque<CommandCodec<?, ?>> inflight;
+  private final ArrayDeque<CommandCodec<?, ?>> inflight;
+  private ChannelHandlerContext chctx;
+  private Throwable failure;
 
   public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
     inflight = new ArrayDeque<>();
-    MySQLEncoder encoder = new MySQLEncoder(inflight, mySQLSocketConnection);
-    MySQLDecoder decoder = new MySQLDecoder(inflight);
+    MySQLEncoder encoder = new MySQLEncoder(this, mySQLSocketConnection);
+    MySQLDecoder decoder = new MySQLDecoder(this);
     init(decoder, encoder);
   }
 
   @Override
+  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    chctx = ctx;
+    super.handlerAdded(ctx);
+  }
+
+  @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands(ctx, ClosedConnectionException.INSTANCE);
+    clearInflightCommands(ClosedConnectionException.INSTANCE);
     super.channelInactive(ctx);
   }
 
-  private void clearInflightCommands(ChannelHandlerContext ctx, Throwable cause) {
+  public boolean add(CommandCodec<?, ?> codec) {
+    if (failure == null) {
+      inflight.add(codec);
+      return true;
+    } else {
+      fail(codec, failure);
+      return false;
+    }
+  }
+
+  public CommandCodec<?, ?> poll() {
+    return inflight.poll();
+  }
+
+  public CommandCodec<?, ?> peek() {
+    return inflight.peek();
+  }
+
+  private void clearInflightCommands(Throwable cause) {
     for (Iterator<CommandCodec<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
       CommandCodec<?, ?> codec = it.next();
       it.remove();
+      fail(codec, cause);
+    }
+  }
+
+  private void fail(CommandCodec<?, ?> codec, Throwable cause) {
+    if (failure == null) {
+      failure = cause;
       CommandResponse<Object> failure = CommandResponse.failure(cause);
       failure.cmd = (CommandBase) codec.cmd;
-      ctx.fireChannelRead(failure);
+      chctx.fireChannelRead(failure);
     }
   }
 
   /**
    * check the pending command queue and complete handling the command directly if the command request will not receive a server response
-   *
-   * @param inflight pending command queue
    */
-  static void checkFireAndForgetCommands(Deque<CommandCodec<?, ?>> inflight) {
+  void checkFireAndForgetCommands() {
     // check if there is any completed command
     CommandCodec<?, ?> commandCodec;
     while ((commandCodec = inflight.peek()) != null && commandCodec.expectNoResponsePacket()) {

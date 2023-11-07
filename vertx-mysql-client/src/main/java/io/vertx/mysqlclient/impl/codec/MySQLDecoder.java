@@ -22,13 +22,12 @@ import static io.vertx.mysqlclient.impl.protocol.Packets.PACKET_PAYLOAD_LENGTH_L
 
 class MySQLDecoder extends ChannelInboundHandlerAdapter {
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight;
-
+  private final MySQLCodec codec;
   private ByteBuf payload;
   private short sequenceId;
 
-  MySQLDecoder(ArrayDeque<CommandCodec<?, ?>> inflight) {
-    this.inflight = inflight;
+  MySQLDecoder(MySQLCodec codec) {
+    this.codec = codec;
   }
 
   @Override
@@ -63,14 +62,14 @@ class MySQLDecoder extends ChannelInboundHandlerAdapter {
 
   private void decodePackets() {
     try {
-      MySQLCodec.checkFireAndForgetCommands(inflight);
-      CommandCodec<?, ?> ctx = inflight.peek();
+      codec.checkFireAndForgetCommands();
+      CommandCodec<?, ?> ctx = codec.peek();
       if (ctx == null) {
         throw new IllegalStateException("No command codec for packet");
       }
       ctx.sequenceId = sequenceId + 1;
       ctx.decodePayload(payload, payload.readableBytes());
-      MySQLCodec.checkFireAndForgetCommands(inflight);
+      codec.checkFireAndForgetCommands();
     } finally {
       releaseMessage();
     }

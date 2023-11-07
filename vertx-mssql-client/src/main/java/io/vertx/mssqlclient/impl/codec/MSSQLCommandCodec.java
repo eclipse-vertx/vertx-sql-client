@@ -12,7 +12,6 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.Handler;
 import io.vertx.mssqlclient.MSSQLException;
 import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -30,7 +29,6 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
   final C cmd;
   public MSSQLException failure;
   public R result;
-  Handler<? super CommandResponse<R>> completionHandler;
 
   MSSQLCommandCodec(TdsMessageCodec tdsMessageCodec, C cmd) {
     this.tdsMessageCodec = tdsMessageCodec;
@@ -221,6 +219,6 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
     } else {
       resp = CommandResponse.success(result);
     }
-    completionHandler.handle(resp);
+    tdsMessageCodec.decoder().fireCommandResponse(resp);
   }
 }
