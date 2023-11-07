@@ -14,11 +14,14 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 
 public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
 
   private final TdsMessageCodec tdsMessageCodec;
 
+  private ChannelHandlerContext chctx;
   private ByteBufAllocator alloc;
   private TdsMessage message;
 
@@ -28,6 +31,7 @@ public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
 
   @Override
   public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    chctx = ctx;
     alloc = ctx.alloc();
   }
 
@@ -47,6 +51,12 @@ public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
   @Override
   public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
     releaseMessage();
+  }
+
+  void fireCommandResponse(CommandResponse<?> commandResponse) {
+    MSSQLCommandCodec<?, ?> c = tdsMessageCodec.poll();
+    commandResponse.cmd = (CommandBase) c.cmd;
+    chctx.fireChannelRead(commandResponse);
   }
 
   private void releaseMessage() {

@@ -33,7 +33,7 @@ class ExtendedBatchQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T>
   @Override
   void encode() {
     if (paramsList.isEmpty()) {
-      completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
+      tdsMessageCodec.decoder().fireCommandResponse(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
       return;
     }
     super.encode();

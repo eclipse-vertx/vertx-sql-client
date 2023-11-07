@@ -24,7 +24,7 @@ import java.util.stream.Collector;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends PgCommandCodec<Boolean, C> {
 
-  RowResultDecoder<?, T> decoder;
+  RowResultDecoder<?, T> rowDecoder;
 
   QueryCommandBaseCodec(C cmd) {
     super(cmd);
@@ -37,12 +37,12 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends P
     Throwable failure;
     int size;
     RowDesc desc;
-    if (decoder != null) {
-      failure = decoder.complete();
-      result = decoder.result();
-      desc = decoder.desc;
-      size = decoder.size();
-      decoder.reset();
+    if (rowDecoder != null) {
+      failure = rowDecoder.complete();
+      result = rowDecoder.result();
+      desc = rowDecoder.desc;
+      size = rowDecoder.size();
+      rowDecoder.reset();
     } else {
       failure = null;
       result = emptyResult(cmd.collector());

@@ -21,13 +21,12 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.pgclient.impl.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ByteProcessor;
-
-import java.util.ArrayDeque;
+import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 
 /**
  *
@@ -38,16 +37,28 @@ import java.util.ArrayDeque;
 
 class PgDecoder extends ChannelInboundHandlerAdapter {
 
-  private final ArrayDeque<PgCommandCodec<?, ?>> inflight;
+  private final PgCodec codec;
+  private ChannelHandlerContext chctx;
   private ByteBufAllocator alloc;
   private ByteBuf in;
 
-  PgDecoder(ArrayDeque<PgCommandCodec<?, ?>> inflight) {
-    this.inflight = inflight;
+  PgDecoder(PgCodec codec) {
+    this.codec = codec;
+  }
+
+  void fireCommandResponse(CommandResponse<?> commandResponse) {
+    PgCommandCodec<?, ?> c = codec.poll();
+    commandResponse.cmd = (CommandBase) c.cmd;
+    chctx.fireChannelRead(commandResponse);
+  }
+
+  void fireNoticeResponse(NoticeResponse noticeResponse) {
+    chctx.fireChannelRead(noticeResponse);
   }
 
   @Override
   public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    chctx = ctx;
     alloc = ctx.alloc();
   }
 
@@ -183,19 +194,19 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   private void decodePortalSuspended() {
-    inflight.peek().handlePortalSuspended();
+    codec.peek().handlePortalSuspended();
   }
 
   private void decodeCommandComplete(ByteBuf in) {
     int updated = processor.parse(in);
-    inflight.peek().handleCommandComplete(updated);
+    codec.peek().handleCommandComplete(updated);
   }
 
   private void decodeDataRow(ByteBuf in) {
-    PgCommandCodec<?, ?> codec = inflight.peek();
-    QueryCommandBaseCodec<?, ?> cmd = (QueryCommandBaseCodec<?, ?>) codec;
+    PgCommandCodec<?, ?> cmdCodec = codec.peek();
+    QueryCommandBaseCodec<?, ?> cmd = (QueryCommandBaseCodec<?, ?>) cmdCodec;
     int len = in.readUnsignedShort();
-    cmd.decoder.handleRow(len, in);
+    cmd.rowDecoder.handleRow(len, in);
   }
 
   private void  decodeRowDescription(ByteBuf in) {
@@ -219,7 +230,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
       );
       columns[c] = column;
     }
-    inflight.peek().handleRowDescription(columns);
+    codec.peek().handleRowDescription(columns);
   }
 
   private static final byte I = (byte) 'I', T = (byte) 'T';
@@ -234,7 +245,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
       // FAILED
       ctx.fireChannelRead(TxFailedEvent.INSTANCE);
     }
-    inflight.peek().handleReadyForQuery();
+    codec.peek().handleReadyForQuery();
   }
 
   private void decodeError(ChannelHandlerContext ctx, ByteBuf in) {
@@ -242,7 +253,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     decodeErrorOrNotice(response, in);
     switch (response.getCode()) {
       default:
-        PgCommandCodec<?, ?> cmd = inflight.peek();
+        PgCommandCodec<?, ?> cmd = codec.peek();
         cmd.handleErrorResponse(response);
         break;
         // Unsolicited errors
@@ -258,7 +269,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   private void decodeNotice(ByteBuf in) {
     NoticeResponse response = new NoticeResponse();
     decodeErrorOrNotice(response, in);
-    inflight.peek().handleNoticeResponse(response);
+    codec.peek().handleNoticeResponse(response);
   }
 
   private void decodeErrorOrNotice(Response response, ByteBuf in) {
@@ -345,35 +356,35 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   private void decodeAuthentication(ByteBuf in) {
-
     int type = in.readInt();
+    PgCommandCodec<?, ?> pending = codec.peek();
     switch (type) {
       case PgProtocolConstants.AUTHENTICATION_TYPE_OK: {
-        inflight.peek().handleAuthenticationOk();
+        pending.handleAuthenticationOk();
+        break;
       }
-      break;
       case PgProtocolConstants.AUTHENTICATION_TYPE_MD5_PASSWORD: {
         byte[] salt = new byte[4];
         in.readBytes(salt);
-        inflight.peek().handleAuthenticationMD5Password(salt);
+        pending.handleAuthenticationMD5Password(salt);
+        break;
       }
-      break;
       case PgProtocolConstants.AUTHENTICATION_TYPE_CLEARTEXT_PASSWORD: {
-        inflight.peek().handleAuthenticationClearTextPassword();
+        pending.handleAuthenticationClearTextPassword();
+        break;
       }
-      break;
       case PgProtocolConstants.AUTHENTICATION_TYPE_SASL: {
-        inflight.peek().handleAuthenticationSasl(in);
+        pending.handleAuthenticationSasl(in);
+        break;
       }
-      break;
       case PgProtocolConstants.AUTHENTICATION_TYPE_SASL_CONTINUE: {
-        inflight.peek().handleAuthenticationSaslContinue(in);
+        pending.handleAuthenticationSaslContinue(in);
+        break;
       }
-      break;
       case PgProtocolConstants.AUTHENTICATION_TYPE_SASL_FINAL: {
-        inflight.peek().handleAuthenticationSaslFinal(in);
+        pending.handleAuthenticationSaslFinal(in);
+        break;
       }
-      break;
       case PgProtocolConstants.AUTHENTICATION_TYPE_KERBEROS_V5:
       case PgProtocolConstants.AUTHENTICATION_TYPE_SCM_CREDENTIAL:
       case PgProtocolConstants.AUTHENTICATION_TYPE_GSS:
@@ -413,19 +424,19 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   private void decodeParseComplete() {
-    inflight.peek().handleParseComplete();
+    codec.peek().handleParseComplete();
   }
 
   private void decodeBindComplete() {
-    inflight.peek().handleBindComplete();
+    codec.peek().handleBindComplete();
   }
 
   private void decodeCloseComplete() {
-    inflight.peek().handleCloseComplete();
+    codec.peek().handleCloseComplete();
   }
 
   private void decodeNoData() {
-    inflight.peek().handleNoData();
+    codec.peek().handleNoData();
   }
 
   private void decodeParameterDescription(ByteBuf in) {
@@ -433,23 +444,23 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     for (int c = 0; c < paramDataTypes.length; ++c) {
       paramDataTypes[c] = DataType.valueOf(in.readInt());
     }
-    inflight.peek().handleParameterDescription(new PgParamDesc(paramDataTypes));
+    codec.peek().handleParameterDescription(new PgParamDesc(paramDataTypes));
   }
 
   private void decodeParameterStatus(ByteBuf in) {
     String key = Util.readCStringUTF8(in);
     String value = Util.readCStringUTF8(in);
-    inflight.peek().handleParameterStatus(key, value);
+    codec.peek().handleParameterStatus(key, value);
   }
 
   private void decodeEmptyQueryResponse() {
-    inflight.peek().handleEmptyQueryResponse();
+    codec.peek().handleEmptyQueryResponse();
   }
 
   private void decodeBackendKeyData(ByteBuf in) {
     int processId = in.readInt();
     int secretKey = in.readInt();
-    inflight.peek().handleBackendKeyData(processId, secretKey);
+    codec.peek().handleBackendKeyData(processId, secretKey);
   }
 
   private void decodeNotificationResponse(ChannelHandlerContext ctx, ByteBuf in) {

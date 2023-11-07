@@ -97,8 +97,7 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
 
   @Override
   public void handleErrorResponse(ErrorResponse errorResponse) {
-    CommandResponse<Connection> resp = CommandResponse.failure(errorResponse.toException());
-    completionHandler.handle(resp);
+    decoder.fireCommandResponse(CommandResponse.failure(errorResponse.toException()));
   }
 
   @Override
@@ -112,11 +111,11 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
     } catch (Exception ignore) {
     }
     CommandResponse<Connection> fut;
-    if(cs == null || !cs.equals(StandardCharsets.UTF_8)) {
+    if (cs == null || !cs.equals(StandardCharsets.UTF_8)) {
       fut = CommandResponse.failure(encoding + " is not supported in the client only UTF8");
     } else {
       fut = CommandResponse.success(cmd.connection());
     }
-    completionHandler.handle(fut);
+    decoder.fireCommandResponse(fut);
   }
 }

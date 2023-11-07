@@ -28,14 +28,7 @@ import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.HexSequence;
 import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
-import io.vertx.sqlclient.impl.command.CloseCursorCommand;
-import io.vertx.sqlclient.impl.command.CloseStatementCommand;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.impl.command.InitCommand;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.impl.command.*;
 
 import java.util.ArrayDeque;
 import java.util.Map;
@@ -61,16 +54,16 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   private static final byte CLOSE = 'C';
   private static final byte SYNC = 'S';
 
-  private final ArrayDeque<PgCommandCodec<?, ?>> inflight;
+  private final PgCodec codec;
   final boolean useLayer7Proxy;
   private ChannelHandlerContext ctx;
   private ByteBuf out;
   private final HexSequence psSeq = new HexSequence(); // used for generating named prepared statement name
   boolean closeSent;
 
-  PgEncoder(boolean useLayer7Proxy, ArrayDeque<PgCommandCodec<?, ?>> inflight) {
+  PgEncoder(boolean useLayer7Proxy, PgCodec codec) {
     this.useLayer7Proxy = useLayer7Proxy;
-    this.inflight = inflight;
+    this.codec = codec;
   }
 
 
@@ -93,15 +86,10 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   void write(CommandBase<?> cmd) {
-    PgCommandCodec<?, ?> codec = wrap(cmd);
-    codec.completionHandler = resp -> {
-      PgCommandCodec<?, ?> c = inflight.poll();
-      resp.cmd = (CommandBase) c.cmd;
-      ctx.fireChannelRead(resp);
-    };
-    codec.noticeHandler = ctx::fireChannelRead;
-    inflight.add(codec);
-    codec.encode(this);
+    PgCommandCodec<?, ?> cmdCodec = wrap(cmd);
+    if (codec.add(cmdCodec)) {
+      cmdCodec.encode(this);
+    }
   }
 
   private PgCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
