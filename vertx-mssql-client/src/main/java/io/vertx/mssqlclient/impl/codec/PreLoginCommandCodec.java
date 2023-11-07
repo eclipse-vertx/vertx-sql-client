@@ -89,6 +89,6 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
       }
       payload.resetReaderIndex();
     }
-    completionHandler.handle(CommandResponse.success(new PreLoginResponse(metadata, encryptionLevel)));
+    tdsMessageCodec.decoder().fireCommandResponse(CommandResponse.success(new PreLoginResponse(metadata, encryptionLevel)));
   }
 }

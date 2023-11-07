@@ -19,19 +19,18 @@ import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.sqlclient.impl.command.*;
 
 import java.nio.charset.Charset;
-import java.util.ArrayDeque;
 
 class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight;
+  private final MySQLCodec codec;
   ChannelHandlerContext chctx;
 
   int clientCapabilitiesFlag;
   Charset encodingCharset;
   MySQLSocketConnection socketConnection;
 
-  MySQLEncoder(ArrayDeque<CommandCodec<?, ?>> inflight, MySQLSocketConnection mySQLSocketConnection) {
-    this.inflight = inflight;
+  MySQLEncoder(MySQLCodec codec, MySQLSocketConnection mySQLSocketConnection) {
+    this.codec = codec;
     this.socketConnection = mySQLSocketConnection;
   }
 
@@ -45,20 +44,21 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     if (msg instanceof CommandBase<?>) {
       CommandBase<?> cmd = (CommandBase<?>) msg;
       write(cmd);
-      MySQLCodec.checkFireAndForgetCommands(inflight);
+      codec.checkFireAndForgetCommands();
     } else {
       super.write(ctx, msg, promise);
     }
   }
 
   void write(CommandBase<?> cmd) {
-    CommandCodec<?, ?> codec = wrap(cmd);
-    inflight.add(codec);
-    codec.encode(this);
+    CommandCodec<?, ?> cmdCodec = wrap(cmd);
+    if (codec.add(cmdCodec)) {
+      cmdCodec.encode(this);
+    }
   }
 
-  final void handleCommandResponse(CommandResponse<?> commandResponse) {
-    CommandCodec<?, ?> c = inflight.poll();
+  final void fireCommandResponse(CommandResponse<?> commandResponse) {
+    CommandCodec<?, ?> c = codec.poll();
     commandResponse.cmd = (CommandBase) c.cmd;
     chctx.fireChannelRead(commandResponse);
   }

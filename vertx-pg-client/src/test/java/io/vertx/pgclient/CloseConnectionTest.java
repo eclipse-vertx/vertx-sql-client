@@ -71,4 +71,22 @@ public class CloseConnectionTest extends PgTestBase {
       test.run();
     }));
   }
+
+  @Test
+  public void testTransactionInProgressShouldFail(TestContext ctx) {
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    proxy.proxyHandler(conn -> {
+      conn.connect();
+      vertx.setTimer(1_000, l -> conn.close());
+    });
+
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+      options.setPort(8080).setHost("localhost");
+
+      Pool pool = Pool.pool(vertx, options, new PoolOptions().setMaxSize(1));
+      pool.withTransaction(conn -> conn.query("select pg_sleep(60)").execute())
+        .onComplete(ctx.asyncAssertFailure())
+      ;
+    }));
+  }
 }

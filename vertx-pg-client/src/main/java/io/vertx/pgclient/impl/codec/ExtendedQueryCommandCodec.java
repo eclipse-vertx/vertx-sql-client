@@ -30,7 +30,7 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
 
   ExtendedQueryCommandCodec(C cmd) {
     super(cmd);
-    decoder = new RowResultDecoder<>(cmd.collector(), ((PgPreparedStatement)cmd.preparedStatement()).rowDesc());
+    rowDecoder = new RowResultDecoder<>(cmd.collector(), ((PgPreparedStatement)cmd.preparedStatement()).rowDesc());
   }
 
   @Override
@@ -45,7 +45,7 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
         if (cmd.paramsList().isEmpty()) {
           // We set suspended to false as we won't get a command complete command back from Postgres
           this.result = false;
-          completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
+          this.decoder.fireCommandResponse(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
           return;
         } else {
           if (encoder.useLayer7Proxy) {
@@ -74,11 +74,11 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
 
   @Override
   void handlePortalSuspended() {
-    Throwable failure = decoder.complete();
-    R result = decoder.result();
-    RowDesc desc = decoder.desc;
-    int size = decoder.size();
-    decoder.reset();
+    Throwable failure = rowDecoder.complete();
+    R result = rowDecoder.result();
+    RowDesc desc = rowDecoder.desc;
+    int size = rowDecoder.size();
+    rowDecoder.reset();
     this.result = true;
     cmd.resultHandler().handleResult(0, size, desc, result, failure);
   }

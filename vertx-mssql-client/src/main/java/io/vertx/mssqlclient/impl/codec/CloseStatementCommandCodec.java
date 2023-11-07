@@ -30,7 +30,7 @@ class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementC
     if (ps.handle > 0) {
       sendUnprepareRequest();
     } else {
-      completionHandler.handle(CommandResponse.success(null));
+      tdsMessageCodec.decoder().fireCommandResponse(CommandResponse.success(null));
     }
   }
 

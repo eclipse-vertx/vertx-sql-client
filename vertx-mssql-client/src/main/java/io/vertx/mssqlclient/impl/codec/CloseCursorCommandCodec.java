@@ -33,7 +33,7 @@ public class CloseCursorCommandCodec extends MSSQLCommandCodec<Void, CloseCursor
     if (cursorData != null && cursorData.serverCursorId > 0) {
       sendCursorClose();
     } else {
-      completionHandler.handle(CommandResponse.success(null));
+      tdsMessageCodec.decoder().fireCommandResponse(CommandResponse.success(null));
     }
   }
 

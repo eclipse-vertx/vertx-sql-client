@@ -27,14 +27,16 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
 
   private final ArrayDeque<MSSQLCommandCodec<?, ?>> inflight = new ArrayDeque<>();
   private final TdsMessageEncoder encoder;
+  private final TdsMessageDecoder decoder;
 
   private ChannelHandlerContext chctx;
   private ByteBufAllocator alloc;
   private long transactionDescriptor;
   private Map<String, CursorData> cursorDataMap;
+  private Throwable failure;
 
   public TdsMessageCodec(int packetSize) {
-    TdsMessageDecoder decoder = new TdsMessageDecoder(this);
+    decoder = new TdsMessageDecoder(this);
     encoder = new TdsMessageEncoder(this, packetSize);
     init(decoder, encoder);
   }
@@ -48,28 +50,39 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    fail(ctx, cause);
+    fail(cause);
     super.exceptionCaught(ctx, cause);
   }
 
-  private void fail(ChannelHandlerContext ctx, Throwable cause) {
-    for (Iterator<MSSQLCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
-      MSSQLCommandCodec<?, ?> codec = it.next();
-      it.remove();
-      CommandResponse<Object> failure = CommandResponse.failure(cause);
-      failure.cmd = (CommandBase) codec.cmd;
-      ctx.fireChannelRead(failure);
+  private void fail(Throwable cause) {
+    if (failure == null) {
+      failure = cause;
+      for (Iterator<MSSQLCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
+        MSSQLCommandCodec<?, ?> codec = it.next();
+        it.remove();
+        fail(codec, cause);
+      }
     }
+  }
+
+  private void fail(MSSQLCommandCodec<?, ?> codec, Throwable cause) {
+    CommandResponse<Object> failure = CommandResponse.failure(cause);
+    failure.cmd = (CommandBase) codec.cmd;
+    chctx.fireChannelRead(failure);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    fail(ctx, ClosedConnectionException.INSTANCE);
+    fail(ClosedConnectionException.INSTANCE);
     super.channelInactive(ctx);
   }
 
   TdsMessageEncoder encoder() {
     return encoder;
+  }
+
+  TdsMessageDecoder decoder() {
+    return decoder;
   }
 
   ChannelHandlerContext chctx() {
@@ -96,8 +109,14 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
     return inflight.poll();
   }
 
-  void add(MSSQLCommandCodec<?, ?> codec) {
-    inflight.add(codec);
+  boolean add(MSSQLCommandCodec<?, ?> codec) {
+    if (failure == null) {
+      inflight.add(codec);
+      return true;
+    } else {
+      fail(codec, failure);
+      return false;
+    }
   }
 
   CursorData getOrCreateCursorData(String cursorId) {

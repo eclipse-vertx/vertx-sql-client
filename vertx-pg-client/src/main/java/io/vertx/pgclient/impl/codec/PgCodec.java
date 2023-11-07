@@ -28,32 +28,68 @@ import java.util.Iterator;
 public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> {
 
   private final ArrayDeque<PgCommandCodec<?, ?>> inflight = new ArrayDeque<>();
+  private final PgDecoder decoder;
+  private final PgEncoder encoder;
+  private ChannelHandlerContext chctx;
+  private Throwable failure;
 
   public PgCodec(boolean useLayer7Proxy) {
-    PgDecoder decoder = new PgDecoder(inflight);
-    PgEncoder encoder = new PgEncoder(useLayer7Proxy, inflight);
+    decoder = new PgDecoder(this);
+    encoder = new PgEncoder(useLayer7Proxy, this);
     init(decoder, encoder);
+  }
+
+  boolean add(PgCommandCodec<?, ?> codec) {
+    if (failure == null) {
+      codec.decoder = decoder;
+      inflight.add(codec);
+      return true;
+    } else {
+      fail(codec, failure);
+      return false;
+    }
+  }
+
+  PgCommandCodec<?, ?> peek() {
+    return inflight.peek();
+  }
+
+  PgCommandCodec<?, ?> poll() {
+    return inflight.poll();
+  }
+
+  @Override
+  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    chctx = ctx;
+    super.handlerAdded(ctx);
   }
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    fail(ctx, cause);
+    fail(cause);
     super.exceptionCaught(ctx, cause);
   }
 
-  private void fail(ChannelHandlerContext ctx, Throwable cause) {
-    for  (Iterator<PgCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext();) {
-      PgCommandCodec<?, ?> codec = it.next();
-      it.remove();
-      CommandResponse<Object> failure = CommandResponse.failure(cause);
-      failure.cmd = (CommandBase) codec.cmd;
-      ctx.fireChannelRead(failure);
+  private void fail(Throwable cause) {
+    if (failure == null) {
+      failure = cause;
+      for  (Iterator<PgCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext();) {
+        PgCommandCodec<?, ?> cmdCodec = it.next();
+        it.remove();
+        fail(cmdCodec, cause);
+      }
     }
+  }
+
+  private void fail(PgCommandCodec<?, ?> codec, Throwable cause) {
+    CommandResponse<Object> failure = CommandResponse.failure(cause);
+    failure.cmd = (CommandBase) codec.cmd;
+    chctx.fireChannelRead(failure);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    fail(ctx, ClosedConnectionException.INSTANCE);
+    fail(ClosedConnectionException.INSTANCE);
     super.channelInactive(ctx);
   }
 }
