@@ -4,6 +4,7 @@ The client reports the following _client_ spans:
 
 - `Query` operation name
 - tags
+  - `db.system`: the database management system product
   - `db.user`: the database username
   - `db.instance`: the database instance
   - `db.statement`: the SQL query

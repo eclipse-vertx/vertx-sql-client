@@ -173,6 +173,11 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   }
 
   @Override
+  public String system() {
+    return "mssql";
+  }
+
+  @Override
   public DatabaseMetadata getDatabaseMetaData() {
     return databaseMetadata;
   }

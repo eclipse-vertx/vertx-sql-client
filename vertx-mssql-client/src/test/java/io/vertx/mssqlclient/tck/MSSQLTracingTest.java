@@ -42,4 +42,9 @@ public class MSSQLTracingTest extends TracingTestBase {
     }
     return sb.toString();
   }
+
+  @Override
+  protected boolean isValidDbSystem(String dbSystem) {
+    return "mssql".equals(dbSystem);
+  }
 }

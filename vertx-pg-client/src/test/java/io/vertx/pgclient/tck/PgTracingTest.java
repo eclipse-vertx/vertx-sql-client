@@ -41,4 +41,9 @@ public class PgTracingTest extends TracingTestBase {
     }
     return sb.toString();
   }
+
+  @Override
+  protected boolean isValidDbSystem(String dbSystem) {
+    return "postgresql".equals(dbSystem);
+  }
 }
