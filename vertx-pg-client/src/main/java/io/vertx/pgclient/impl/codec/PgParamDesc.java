@@ -16,14 +16,11 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
@@ -43,6 +40,9 @@ class PgParamDesc extends ParamDesc {
 
   public String prepare(TupleInternal values) {
     int numberOfParams = values.size();
+    if (numberOfParams > 65535) {
+      return "The number of parameters (" + numberOfParams + ") exceeds the maximum of 65535. Use arrays or split the query.";
+    }
     int paramDescLength = paramDataTypes.length;
     if (numberOfParams != paramDescLength) {
       return ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDescLength, numberOfParams);
