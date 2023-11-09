@@ -116,6 +116,11 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   }
 
   @Override
+  public String system() {
+    return metaData.system();
+  }
+
+  @Override
   public DatabaseMetadata getDatabaseMetaData() {
     return metaData;
   }

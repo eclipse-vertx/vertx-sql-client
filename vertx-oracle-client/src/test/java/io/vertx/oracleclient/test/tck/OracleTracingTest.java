@@ -52,4 +52,9 @@ public class OracleTracingTest extends TracingTestBase {
   @Override
   public void testTracePooledBatchQuery(TestContext ctx) {
   }
+
+  @Override
+  protected boolean isValidDbSystem(String dbSystem) {
+    return "oracle".equals(dbSystem);
+  }
 }

@@ -8,19 +8,33 @@ public class MySQLDatabaseMetadata implements DatabaseMetadata {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySQLDatabaseMetadata.class);
 
+  private enum System {
+    MYSQL("mysql", "MySQL"),
+    MARIA_DB("mariadb", "MariaDB"),
+    ;
+
+    final String value;
+    final String productName;
+
+    System(String value, String productName) {
+      this.value = value;
+      this.productName = productName;
+    }
+  }
+
+  private final System system;
   private final String fullVersion;
-  private final String productName;
   private final int majorVersion;
   private final int minorVersion;
   private final int microVersion;
 
-  private MySQLDatabaseMetadata(String fullVersion,
-                                String productName,
+  private MySQLDatabaseMetadata(System system,
+                                String fullVersion,
                                 int majorVersion,
                                 int minorVersion,
                                 int microVersion) {
+    this.system = system;
     this.fullVersion = fullVersion;
-    this.productName = productName;
     this.majorVersion = majorVersion;
     this.minorVersion = minorVersion;
     this.microVersion = microVersion;
@@ -32,11 +46,10 @@ public class MySQLDatabaseMetadata implements DatabaseMetadata {
     int microVersion = 0;
 
     int len = serverVersion.length();
-    boolean isMariaDb = serverVersion.contains("MariaDB");
-    String productName = isMariaDb ? "MariaDB" : "MySQL";
+    System system = serverVersion.contains("MariaDB") ? System.MARIA_DB : System.MYSQL;
 
     String fullServerVersion = serverVersion;
-    if (isMariaDb) {
+    if (system == System.MARIA_DB) {
       // MariaDB server version < 11.x.x is by default prefixed by "5.5.5-"
       serverVersion = serverVersion.replace("5.5.5-", "");
     }
@@ -67,12 +80,16 @@ public class MySQLDatabaseMetadata implements DatabaseMetadata {
       LOGGER.warn("Incorrect parsing server version tokens", ex);
     }
 
-    return new MySQLDatabaseMetadata(fullServerVersion, productName, majorVersion, minorVersion, microVersion);
+    return new MySQLDatabaseMetadata(system, fullServerVersion, majorVersion, minorVersion, microVersion);
+  }
+
+  public String system() {
+    return system.value;
   }
 
   @Override
   public String productName() {
-    return productName;
+    return system.productName;
   }
 
   @Override

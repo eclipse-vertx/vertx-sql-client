@@ -35,4 +35,9 @@ public class DB2TracingTest extends TracingTestBase {
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
+
+  @Override
+  protected boolean isValidDbSystem(String dbSystem) {
+    return "db2".equals(dbSystem);
+  }
 }

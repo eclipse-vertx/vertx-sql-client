@@ -36,11 +36,7 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.InitCommand;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.impl.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
@@ -186,5 +182,10 @@ public class PgSocketConnection extends SocketConnectionBase {
       return "42P18".equals(sqlState) || "42804".equals(sqlState) || "42P08".equals(sqlState);
     }
     return false;
+  }
+
+  @Override
+  public String system() {
+    return "postgresql";
   }
 }

@@ -295,6 +295,11 @@ public class SqlConnectionPool {
     }
 
     @Override
+    public String system() {
+      return conn.system();
+    }
+
+    @Override
     public String database() {
       return conn.database();
     }

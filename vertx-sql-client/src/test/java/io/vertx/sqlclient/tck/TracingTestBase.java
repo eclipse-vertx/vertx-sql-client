@@ -15,7 +15,6 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
-import io.vertx.core.spi.VertxTracerFactory;
 import io.vertx.core.spi.tracing.SpanKind;
 import io.vertx.core.spi.tracing.TagExtractor;
 import io.vertx.core.spi.tracing.VertxTracer;
@@ -23,7 +22,9 @@ import io.vertx.core.tracing.TracingOptions;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.tracing.QueryRequest;
 import org.junit.After;
 import org.junit.Before;
@@ -127,6 +128,9 @@ public abstract class TracingTestBase {
         ctx.assertEquals("client", tags.get("span.kind"));
         ctx.assertEquals("sql", tags.get("db.type"));
         ctx.assertEquals(expectedSql, tags.get("db.statement"));
+        String dbSystem = tags.get("db.system");
+        ctx.assertNotNull(dbSystem);
+        ctx.assertTrue(isValidDbSystem(dbSystem));
         requestContext.set(context);
         completed.countDown();
         return expectedPayload;
@@ -156,6 +160,8 @@ public abstract class TracingTestBase {
       }));
     });
   }
+
+  protected abstract boolean isValidDbSystem(String dbSystem);
 
   @Test
   public void testTracingFailure(TestContext ctx) {
