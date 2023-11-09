@@ -15,9 +15,6 @@
  */
 package io.vertx.db2client.impl;
 
-import java.util.Map;
-import java.util.function.Predicate;
-
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -33,12 +30,11 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
-import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.impl.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+
+import java.util.Map;
+import java.util.function.Predicate;
 
 public class DB2SocketConnection extends SocketConnectionBase {
 
@@ -106,6 +102,11 @@ public class DB2SocketConnection extends SocketConnectionBase {
   public void handleClose(Throwable t) {
     super.handleClose(t);
     context().runOnContext(closeHandler);
+  }
+
+  @Override
+  public String system() {
+    return "db2";
   }
 
   @Override

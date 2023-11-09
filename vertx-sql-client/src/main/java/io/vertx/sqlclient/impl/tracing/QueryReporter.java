@@ -30,12 +30,14 @@ public class QueryReporter {
     SPAN_KIND("span.kind", q -> "client"),
 
     // DB
-    // See https://github.com/opentracing/specification/blob/master/semantic_conventions.md
+    // See https://github.com/open-telemetry/opentelemetry-specification/blob/v1.18.0/specification/trace/semantic_conventions/database.md#connection-level-attributes
 
     DB_USER("db.user", q -> q.tracer.user),
     DB_INSTANCE("db.instance", q -> q.tracer.database),
     DB_STATEMENT("db.statement", QueryRequest::sql),
-    DB_TYPE("db.type", q -> "sql");
+    DB_TYPE("db.type", q -> "sql"),
+    DB_NAME("db.system", q -> q.tracer.system),
+    ;
 
     final String name;
     final Function<QueryRequest, String> fn;
@@ -71,6 +73,7 @@ public class QueryReporter {
   private final TracingPolicy tracingPolicy;
   private final String address;
   private final String user;
+  private final String system;
   private final String database;
   private Object payload;
   private Object metric;
@@ -82,6 +85,7 @@ public class QueryReporter {
     this.tracingPolicy = conn.tracingPolicy();
     this.address = conn.server().hostAddress() + ":" + conn.server().port();
     this.user = conn.user();
+    this.system = conn.system();
     this.database = conn.database();
     this.cmd = queryCmd;
   }

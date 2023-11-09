@@ -32,7 +32,6 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -284,6 +283,11 @@ public class SqlConnectionPool {
     @Override
     public TracingPolicy tracingPolicy() {
       return conn.tracingPolicy();
+    }
+
+    @Override
+    public String system() {
+      return conn.system();
     }
 
     @Override

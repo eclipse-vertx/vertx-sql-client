@@ -11,11 +11,11 @@
 package io.vertx.oracleclient.impl;
 
 import io.vertx.core.*;
-import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.SocketAddress;
+import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.commands.*;
@@ -70,6 +70,11 @@ public class OracleJdbcConnection implements Connection {
   @Override
   public TracingPolicy tracingPolicy() {
     return options.getTracingPolicy();
+  }
+
+  @Override
+  public String system() {
+    return "oracle";
   }
 
   @Override

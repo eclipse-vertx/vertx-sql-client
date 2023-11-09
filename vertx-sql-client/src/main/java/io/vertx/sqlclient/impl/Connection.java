@@ -37,6 +37,10 @@ public interface Connection extends CommandScheduler  {
 
   SocketAddress server();
 
+  default String system() {
+    return "other_sql";
+  }
+
   String database();
 
   String user();

@@ -35,4 +35,9 @@ public class MySQLTracingTest extends TracingTestBase {
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
+
+  @Override
+  protected boolean isValidDbSystem(String dbSystem) {
+    return "mysql".equals(dbSystem) || "mariadb".equals(dbSystem);
+  }
 }
