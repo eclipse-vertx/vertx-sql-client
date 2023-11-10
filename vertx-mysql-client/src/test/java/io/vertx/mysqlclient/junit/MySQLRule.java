@@ -113,7 +113,7 @@ public class MySQLRule extends ExternalResource {
   }
 
   String networkAlias() {
-    return network != null ? Integer.toHexString(System.identityHashCode(this)) : "test-mysql";
+    return network != null ? "test-mysql-" + Integer.toHexString(System.identityHashCode(this)) : "test-mysql";
   }
 
   private static DatabaseType parseDatabaseTypeString(String databaseInfo) throws IllegalArgumentException {
