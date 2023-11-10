@@ -260,6 +260,6 @@ CREATE TABLE duplicate_test
 INSERT INTO duplicate_test
 VALUES (1);
 
-# testing ProxySQL connectivity
+#Testing ProxySQL connectivity
 CREATE USER 'proxysql'@'%' IDENTIFIED BY 'proxysql1234#';
-GRANT ALL ON *.* TO 'proxysql'@'%';
+GRANT USAGE, REPLICATION CLIENT ON *.* TO 'proxysql'@'%';

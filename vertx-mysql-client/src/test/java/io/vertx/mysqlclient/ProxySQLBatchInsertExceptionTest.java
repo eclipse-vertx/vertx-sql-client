@@ -13,14 +13,14 @@ package io.vertx.mysqlclient;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.ProxySQLRule;
-import org.junit.Rule;
+import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class ProxySQLBatchInsertExceptionTest extends MySQLBatchInsertExceptionTestBase {
 
-  @Rule
-  public ProxySQLRule proxySql = new ProxySQLRule(rule);
+  @ClassRule
+  public static ProxySQLRule proxySql = new ProxySQLRule(rule);
 
   @Override
   protected MySQLConnectOptions createOptions() {

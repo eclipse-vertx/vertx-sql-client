@@ -2,13 +2,12 @@ package io.vertx.mysqlclient.junit;
 
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
-import org.testcontainers.containers.Container;
+import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 
-import java.util.concurrent.TimeUnit;
-
-import static java.lang.String.*;
+import static java.lang.String.format;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class ProxySQLRule extends ExternalResource {
 
@@ -25,6 +24,7 @@ public class ProxySQLRule extends ExternalResource {
   @Override
   protected void before() throws Throwable {
     proxySql = new GenericContainer<>("proxysql/proxysql")
+      .withLogConsumer(of -> System.out.print("[ProxySQL] " + of.getUtf8String()))
       .withCreateContainerCmdModifier(createContainerCmd -> {
         createContainerCmd.getHostConfig().withNetworkMode(mySQLRule.network());
       })
@@ -38,6 +38,7 @@ public class ProxySQLRule extends ExternalResource {
 
     execStatement(format("UPDATE global_variables SET variable_value='%s' WHERE variable_name='mysql-monitor_username'", MONITORING_USER));
     execStatement(format("UPDATE global_variables SET variable_value='%s' WHERE variable_name='mysql-monitor_password'", MONITORING_USER_PASSWORD));
+    execStatement("UPDATE global_variables SET variable_value='2000' WHERE variable_name IN ('mysql-monitor_connect_interval','mysql-monitor_ping_interval','mysql-monitor_read_only_interval')");
 
     execStatement("LOAD MYSQL VARIABLES TO RUNTIME");
 
@@ -46,24 +47,35 @@ public class ProxySQLRule extends ExternalResource {
 
     execStatement(format("INSERT INTO mysql_users (username,password) VALUES ('%s','%s')", mySQLRule.options().getUser(), mySQLRule.options().getPassword()));
     execStatement("LOAD MYSQL USERS TO RUNTIME");
+
+    for (long start = System.currentTimeMillis(); ; ) {
+      ExecResult res = execStatement("SELECT connect_error FROM monitor.mysql_server_connect_log ORDER BY time_start_us LIMIT 1");
+      if (res.getStdout().startsWith("NULL")) {
+        break;
+      }
+      if (System.currentTimeMillis() - start > 30000) {
+        throw new IllegalStateException(String.format("ProxySQL could not connect to backend: %s%n%s", res.getStdout(), res.getStderr()));
+      }
+      MILLISECONDS.sleep(500);
+    }
   }
 
-  private void execStatement(String statement) throws Exception {
-    execStatement(statement, 0);
+  private ExecResult execStatement(String statement) throws Exception {
+    return execStatement(statement, 0);
   }
 
-  private void execStatement(String statement, int retry) throws Exception {
+  private ExecResult execStatement(String statement, int retry) throws Exception {
     RuntimeException failure;
     for (int i = 0; ; i++) {
-      Container.ExecResult result = proxySql.execInContainer("mysql", "-u", "admin", "-p" + "admin", "-h", "127.0.0.1", "-P", "6032", "-e", statement);
+      ExecResult result = proxySql.execInContainer("mysql", "-u", "admin", "-padmin", "-h", "127.0.0.1", "-P", "6032", "-sN", "-e", statement);
       if (result.getExitCode() == 0) {
-        return;
+        return result;
       }
       if (i >= retry && !result.getStderr().contains("ERROR 2002")) {
         failure = new RuntimeException("Failed to execute statement: " + statement + "\n" + result.getStderr());
         break;
       }
-      TimeUnit.MILLISECONDS.sleep(200);
+      MILLISECONDS.sleep(200);
     }
     throw failure;
   }

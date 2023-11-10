@@ -77,6 +77,7 @@ public class MySQLRule extends ExternalResource {
       .withEnv("MYSQL_PASSWORD", "password")
       .withEnv("MYSQL_ROOT_PASSWORD", "password")
       .withEnv("MYSQL_DATABASE", "testschema")
+      .withLogConsumer(of -> System.out.print("[" + databaseServerInfo.databaseType + "] " + of.getUtf8String()))
       .withCreateContainerCmdModifier(createContainerCmd -> {
         createContainerCmd.getHostConfig().withUlimits(new Ulimit[]{new Ulimit("nofile", 262144L, 262144L)});
       })
@@ -107,12 +108,12 @@ public class MySQLRule extends ExternalResource {
     }
   }
 
-  public String network() {
+  String network() {
     return network != null ? network.getId() : "mysql_default";
   }
 
-  public String networkAlias() {
-    return network != null ? Integer.toHexString(System.identityHashCode(this)) : "test-mysql";
+  String networkAlias() {
+    return network != null ? "test-mysql-" + Integer.toHexString(System.identityHashCode(this)) : "test-mysql";
   }
 
   private static DatabaseType parseDatabaseTypeString(String databaseInfo) throws IllegalArgumentException {
