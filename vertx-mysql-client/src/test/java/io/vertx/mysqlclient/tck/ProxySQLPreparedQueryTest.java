@@ -14,16 +14,16 @@ package io.vertx.mysqlclient.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.ProxySQLRule;
+import org.junit.ClassRule;
 import org.junit.Ignore;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
 public class ProxySQLPreparedQueryTest extends MySQLPreparedQueryTest {
 
-  @Rule
-  public ProxySQLRule proxySql = new ProxySQLRule(rule);
+  @ClassRule
+  public static ProxySQLRule proxySql = new ProxySQLRule(rule);
 
   @Override
   protected void initConnector() {
