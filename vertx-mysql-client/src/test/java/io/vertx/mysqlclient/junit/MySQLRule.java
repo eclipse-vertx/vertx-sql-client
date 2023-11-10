@@ -107,11 +107,11 @@ public class MySQLRule extends ExternalResource {
     }
   }
 
-  public String network() {
+  String network() {
     return network != null ? network.getId() : "mysql_default";
   }
 
-  public String networkAlias() {
+  String networkAlias() {
     return network != null ? Integer.toHexString(System.identityHashCode(this)) : "test-mysql";
   }
 
