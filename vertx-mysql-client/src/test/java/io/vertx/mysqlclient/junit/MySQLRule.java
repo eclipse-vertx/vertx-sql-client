@@ -77,6 +77,7 @@ public class MySQLRule extends ExternalResource {
       .withEnv("MYSQL_PASSWORD", "password")
       .withEnv("MYSQL_ROOT_PASSWORD", "password")
       .withEnv("MYSQL_DATABASE", "testschema")
+      .withLogConsumer(of -> System.out.print("[" + databaseServerInfo.databaseType + "] " + of.getUtf8String()))
       .withCreateContainerCmdModifier(createContainerCmd -> {
         createContainerCmd.getHostConfig().withUlimits(new Ulimit[]{new Ulimit("nofile", 262144L, 262144L)});
       })
