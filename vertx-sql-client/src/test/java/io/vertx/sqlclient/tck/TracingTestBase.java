@@ -48,18 +48,17 @@ public abstract class TracingTestBase {
 
   @Before
   public void setup() throws Exception {
-    vertx = Vertx.vertx(new VertxOptions().setTracingOptions(
-      new TracingOptions().setFactory(tracingOptions -> new VertxTracer() {
-        @Override
-        public Object sendRequest(Context context, SpanKind kind, TracingPolicy tracingPolicy, Object request, String operation, BiConsumer headers, TagExtractor tagExtractor) {
-          return tracer.sendRequest(context, kind, tracingPolicy, request, operation, headers, tagExtractor);
-        }
-        @Override
-        public void receiveResponse(Context context, Object response, Object payload, Throwable failure, TagExtractor tagExtractor) {
-          tracer.receiveResponse(context, response, payload, failure, tagExtractor);
-        }
-      }))
-    );
+    vertx = Vertx.builder()
+      .withTracer(tracingOptions -> new VertxTracer() {
+      @Override
+      public Object sendRequest(Context context, SpanKind kind, TracingPolicy tracingPolicy, Object request, String operation, BiConsumer headers, TagExtractor tagExtractor) {
+        return tracer.sendRequest(context, kind, tracingPolicy, request, operation, headers, tagExtractor);
+      }
+      @Override
+      public void receiveResponse(Context context, Object response, Object payload, Throwable failure, TagExtractor tagExtractor) {
+        tracer.receiveResponse(context, response, payload, failure, tagExtractor);
+      }
+    }).build();
     pool = createPool(vertx);
   }
 

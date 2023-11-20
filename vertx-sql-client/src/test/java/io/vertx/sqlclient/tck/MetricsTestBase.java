@@ -44,14 +44,17 @@ public abstract class MetricsTestBase {
 
   @Before
   public void setup() {
-    vertx = Vertx.vertx(new VertxOptions().setMetricsOptions(
-      new MetricsOptions().setEnabled(true).setFactory(tracingOptions -> new VertxMetrics() {
+    vertx = Vertx
+      .builder()
+      .with(new VertxOptions().setMetricsOptions(
+        new MetricsOptions().setEnabled(true)))
+      .withMetrics(tracingOptions -> new VertxMetrics() {
         @Override
         public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
           return metrics;
         }
-      }))
-    );
+      })
+      .build();
   }
 
   @After
