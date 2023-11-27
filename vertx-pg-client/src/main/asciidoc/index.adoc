@@ -13,7 +13,7 @@ The client is reactive and non-blocking, allowing to handle many database connec
 * Publish / subscribe using PostgreSQL `NOTIFY/LISTEN`
 * Batch and cursor
 * Row streaming
-* Command pipeling
+* Command pipelining
 * RxJava API
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
