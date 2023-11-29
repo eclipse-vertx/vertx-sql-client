@@ -21,6 +21,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 
+import java.math.BigInteger;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -51,6 +52,8 @@ public class MySQLRowImpl extends ArrayTuple implements Row {
       return type.cast(getFloat(position));
     } else if (type == Double.class) {
       return type.cast(getDouble(position));
+    } else if (type == BigInteger.class) {
+      return type.cast(getBigInteger(position));
     } else if (type == Numeric.class) {
       return type.cast(getNumeric(position));
     } else if (type == String.class) {
