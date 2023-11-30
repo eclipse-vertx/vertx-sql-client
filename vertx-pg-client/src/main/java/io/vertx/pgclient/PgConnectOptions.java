@@ -19,6 +19,7 @@ package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Unstable;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.pgclient.impl.PgConnectionUriParser;
 import io.vertx.codegen.annotations.DataObject;
@@ -38,7 +39,8 @@ import static java.lang.System.getenv;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author Billy Yuan <billy112487983@gmail.com>
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class PgConnectOptions extends SqlConnectOptions {
 
   /**

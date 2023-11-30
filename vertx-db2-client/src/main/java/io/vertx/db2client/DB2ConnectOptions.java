@@ -23,6 +23,7 @@ import java.util.function.Predicate;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 import io.vertx.core.tracing.TracingPolicy;
@@ -34,7 +35,8 @@ import io.vertx.sqlclient.SqlConnectOptions;
 /**
  * Connect options for configuring {@link DB2Connection} or {@link DB2Builder}.
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class DB2ConnectOptions extends SqlConnectOptions {
 
   /**

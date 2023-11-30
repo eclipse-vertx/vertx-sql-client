@@ -13,6 +13,7 @@ package io.vertx.mssqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.*;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
@@ -25,7 +26,8 @@ import java.util.function.Predicate;
 /**
  * Connect options for configuring {@link MSSQLConnection}.
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class MSSQLConnectOptions extends SqlConnectOptions {
 
   /**

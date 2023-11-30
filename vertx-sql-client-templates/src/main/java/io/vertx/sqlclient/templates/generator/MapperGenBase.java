@@ -73,7 +73,7 @@ public abstract class MapperGenBase extends Generator<DataObjectModel> {
   public String render(DataObjectModel model, int index, int size, Map<String, Object> session) {
     StringWriter buffer = new StringWriter();
     PrintWriter writer = new PrintWriter(buffer);
-    String visibility= model.isPublicConverter() ? "public" : "";
+    String visibility= "public";
 
     formatter = getCase(model, "formatter");
 

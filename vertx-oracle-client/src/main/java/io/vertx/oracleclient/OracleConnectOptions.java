@@ -12,6 +12,7 @@ package io.vertx.oracleclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
@@ -21,7 +22,8 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import java.util.Map;
 import java.util.function.Predicate;
 
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class OracleConnectOptions extends SqlConnectOptions {
 
   /**

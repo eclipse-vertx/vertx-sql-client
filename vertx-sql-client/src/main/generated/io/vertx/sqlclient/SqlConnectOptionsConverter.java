@@ -17,7 +17,7 @@ public class SqlConnectOptionsConverter {
   private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
   private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, SqlConnectOptions obj) {
+   static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, SqlConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "host":
@@ -96,11 +96,11 @@ public class SqlConnectOptionsConverter {
     }
   }
 
-  public static void toJson(SqlConnectOptions obj, JsonObject json) {
+   static void toJson(SqlConnectOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(SqlConnectOptions obj, java.util.Map<String, Object> json) {
+   static void toJson(SqlConnectOptions obj, java.util.Map<String, Object> json) {
     if (obj.getHost() != null) {
       json.put("host", obj.getHost());
     }

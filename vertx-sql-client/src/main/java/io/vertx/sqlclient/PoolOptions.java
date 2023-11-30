@@ -18,6 +18,7 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.impl.Arguments;
 import io.vertx.core.json.JsonObject;
 
@@ -29,7 +30,8 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class PoolOptions {
 
   /**

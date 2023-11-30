@@ -17,12 +17,14 @@
 package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 /**
  * A notification emited by Postgres.
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class PgNotification {
 
   private int processId;

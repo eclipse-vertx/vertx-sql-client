@@ -12,11 +12,13 @@
 package io.vertx.oracleclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.PrepareOptions;
 
-@DataObject(generateConverter = true, inheritConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class OraclePrepareOptions extends PrepareOptions {
 
   public static final boolean DEFAULT_AUTO_GENERATED_KEY = true;
