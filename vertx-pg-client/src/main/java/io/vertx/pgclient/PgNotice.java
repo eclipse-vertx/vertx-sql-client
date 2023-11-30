@@ -17,13 +17,15 @@
 package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.JsonGen;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.json.JsonObject;
 
 /**
  * A notification emited by Postgres.
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class PgNotice {
 
   private String severity;

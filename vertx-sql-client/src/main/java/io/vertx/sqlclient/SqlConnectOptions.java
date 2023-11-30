@@ -13,6 +13,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.annotations.JsonGen;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
@@ -34,7 +35,8 @@ import java.util.function.Predicate;
 /**
  * Connect options for configuring {@link SqlConnection} or {@link Pool}.
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class SqlConnectOptions extends NetClientOptions {
 
   /**

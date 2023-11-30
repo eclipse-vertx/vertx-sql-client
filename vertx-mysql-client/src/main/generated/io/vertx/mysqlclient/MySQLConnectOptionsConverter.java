@@ -17,7 +17,7 @@ public class MySQLConnectOptionsConverter {
   private static final Base64.Decoder BASE64_DECODER = JsonUtil.BASE64_DECODER;
   private static final Base64.Encoder BASE64_ENCODER = JsonUtil.BASE64_ENCODER;
 
-  public static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MySQLConnectOptions obj) {
+   static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, MySQLConnectOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
         case "authenticationPlugin":
@@ -69,11 +69,11 @@ public class MySQLConnectOptionsConverter {
     }
   }
 
-  public static void toJson(MySQLConnectOptions obj, JsonObject json) {
+   static void toJson(MySQLConnectOptions obj, JsonObject json) {
     toJson(obj, json.getMap());
   }
 
-  public static void toJson(MySQLConnectOptions obj, java.util.Map<String, Object> json) {
+   static void toJson(MySQLConnectOptions obj, java.util.Map<String, Object> json) {
     if (obj.getAuthenticationPlugin() != null) {
       json.put("authenticationPlugin", obj.getAuthenticationPlugin().name());
     }
