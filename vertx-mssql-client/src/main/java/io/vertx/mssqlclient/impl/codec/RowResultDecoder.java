@@ -24,8 +24,7 @@ public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   private static final int FETCH_MISSING = 0x0002;
 
   private final MSSQLRowDesc desc;
-
-  private Row decoded;
+  public boolean nbc;
 
   public RowResultDecoder(Collector<Row, C, R> collector, MSSQLRowDesc desc) {
     super(collector);
@@ -38,23 +37,13 @@ public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   @Override
   public Row decodeRow(int len, ByteBuf in) {
-    Row row = Objects.requireNonNull(decoded);
-    decoded = null;
-    return row;
-  }
-
-  public void handleRow(ByteBuf in) {
-    decoded = decodeMssqlRow(in);
-    if (decoded != null) {
-      super.handleRow(-1, in);
+    Row decoded;
+    if (nbc) {
+      decoded = decodeMssqlNbcRow(in);
+    } else {
+      decoded = decodeMssqlRow(in);
     }
-  }
-
-  public void handleNbcRow(ByteBuf in) {
-    decoded = decodeMssqlNbcRow(in);
-    if (decoded != null) {
-      super.handleRow(-1, in);
-    }
+    return decoded;
   }
 
   private Row decodeMssqlRow(ByteBuf in) {
