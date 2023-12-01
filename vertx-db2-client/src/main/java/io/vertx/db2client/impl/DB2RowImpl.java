@@ -32,9 +32,10 @@ import io.vertx.db2client.impl.drda.DB2RowId;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
+import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.impl.RowDesc;
 
-public class DB2RowImpl extends ArrayTuple implements Row {
+public class DB2RowImpl extends RowBase {
 
   private final RowDesc rowDesc;
 

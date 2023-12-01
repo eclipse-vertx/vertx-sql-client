@@ -28,6 +28,7 @@ public abstract class RowDecoder<C, R> {
   private final Collector<Row, C, R> collector;
   private BiConsumer<C, Row> accumulator;
 
+  private RowInternal row;
   private int size;
   private C container;
   private Throwable failure;
@@ -39,15 +40,23 @@ public abstract class RowDecoder<C, R> {
     reset();
   }
 
+  protected abstract RowInternal row();
+
   public int size() {
     return size;
   }
 
-  protected abstract Row decodeRow(int len, ByteBuf in);
+  protected abstract boolean decodeRow(int len, ByteBuf in, Row row);
 
   public void handleRow(int len, ByteBuf in) {
-    Row row = decodeRow(len, in);
-    if (row != null && failure == null) {
+    RowInternal r = row;
+    if (r == null) {
+      r = row();
+    } else {
+      row = null;
+    }
+    boolean decoded = decodeRow(len, in, r);
+    if (decoded && failure == null) {
       if (accumulator == null) {
         try {
           accumulator = collector.accumulator();
@@ -57,10 +66,13 @@ public abstract class RowDecoder<C, R> {
         }
       }
       try {
-        accumulator.accept(container, row);
+        accumulator.accept(container, r);
       } catch (Exception e) {
         failure = e;
         return;
+      }
+      if (r.tryRecycle()) {
+        row = r;
       }
       size++;
     }

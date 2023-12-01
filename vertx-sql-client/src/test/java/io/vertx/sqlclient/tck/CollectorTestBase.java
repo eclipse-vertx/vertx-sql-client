@@ -14,6 +14,7 @@ package io.vertx.sqlclient.tck;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnection;
@@ -21,9 +22,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -256,5 +256,38 @@ public abstract class CollectorTestBase {
     public Set<Characteristics> characteristics() {
       return Collections.emptySet();
     }
+  }
+
+  @Test
+  public void testCollectorRecycle(TestContext ctx) {
+    testCollectorRecycle(ctx, true);
+  }
+
+  @Test
+  public void testCollectorNoRecycle(TestContext ctx) {
+    testCollectorRecycle(ctx, false);
+  }
+
+  private void testCollectorRecycle(TestContext ctx, boolean release) {
+
+    Set<Integer> hashCodes = ConcurrentHashMap.newKeySet();
+    Collector<Row, JsonArray, JsonArray> recyclingCollector = Collector.of(JsonArray::new, (array, row) -> {
+      hashCodes.add(System.identityHashCode(row));
+      array.add(row.getString("test_varchar"));
+      if (release) {
+        row.release();
+      }
+    }, (a, b) -> null, Function.identity());
+
+    connector.connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT * FROM collector_test")
+        .collecting(recyclingCollector)
+        .execute(ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(release ? 1 : result.size(), hashCodes.size());
+          ctx.assertEquals(new JsonArray().add("HELLO,WORLD").add("hello,world"), result.value());
+          conn.close();
+        }));
+    }));
+
   }
 }

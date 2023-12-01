@@ -750,4 +750,10 @@ public interface Row extends Tuple {
     return json;
   }
 
+  /**
+   * Signal the row can be recycled, this is only effective when dealing with a row in a collector
+   * query and the row has already been processed and transformed.
+   */
+  default void release() {
+  }
 }
