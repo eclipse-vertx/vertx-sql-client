@@ -20,6 +20,7 @@ import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
+import io.vertx.sqlclient.impl.RowInternal;
 
 import java.util.stream.Collector;
 
@@ -34,8 +35,12 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   }
 
   @Override
-  protected Row decodeRow(int len, ByteBuf in) {
-    Row row = new MySQLRowImpl(rowDesc);
+  protected RowInternal row() {
+    return new MySQLRowImpl(rowDesc);
+  }
+
+  @Override
+  protected boolean decodeRow(int len, ByteBuf in, Row row) {
     if (rowDesc.dataFormat() == DataFormat.BINARY) {
       // BINARY row decoding
       // 0x00 packet header
@@ -76,7 +81,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
         row.addValue(decoded);
       }
     }
-    return row;
+    return true;
   }
 }
 

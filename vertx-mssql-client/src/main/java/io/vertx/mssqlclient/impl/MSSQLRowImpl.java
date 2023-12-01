@@ -14,6 +14,7 @@ package io.vertx.mssqlclient.impl;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.ArrayTuple;
+import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.impl.RowDesc;
 
 import java.math.BigDecimal;
@@ -25,7 +26,7 @@ import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.UUID;
 
-public class MSSQLRowImpl extends ArrayTuple implements Row {
+public class MSSQLRowImpl extends RowBase {
   private final RowDesc rowDesc;
 
   public MSSQLRowImpl(RowDesc rowDesc) {

@@ -15,8 +15,8 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.mssqlclient.impl.MSSQLRowImpl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
+import io.vertx.sqlclient.impl.RowInternal;
 
-import java.util.Objects;
 import java.util.stream.Collector;
 
 public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
@@ -36,18 +36,20 @@ public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   }
 
   @Override
-  public Row decodeRow(int len, ByteBuf in) {
-    Row decoded;
-    if (nbc) {
-      decoded = decodeMssqlNbcRow(in);
-    } else {
-      decoded = decodeMssqlRow(in);
-    }
-    return decoded;
+  protected RowInternal row() {
+    return new MSSQLRowImpl(desc);
   }
 
-  private Row decodeMssqlRow(ByteBuf in) {
-    Row row = new MSSQLRowImpl(desc);
+  @Override
+  protected boolean decodeRow(int len, ByteBuf in, Row row) {
+    if (nbc) {
+      return decodeMssqlNbcRow(in, row);
+    } else {
+      return decodeMssqlRow(in, row);
+    }
+  }
+
+  private boolean decodeMssqlRow(ByteBuf in, Row row) {
     int len = desc.size();
     for (int c = 0; c < len; c++) {
       ColumnData columnData = desc.get(c);
@@ -56,18 +58,15 @@ public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
     return ifNotMissing(in, row);
   }
 
-  private Row ifNotMissing(ByteBuf in, Row row) {
-    Row result;
+  private boolean ifNotMissing(ByteBuf in, Row row) {
     if (desc.hasRowStat() && in.readIntLE() == FETCH_MISSING) {
-      result = null;
+      return false;
     } else {
-      result = row;
+      return true;
     }
-    return result;
   }
 
-  private Row decodeMssqlNbcRow(ByteBuf in) {
-    Row row = new MSSQLRowImpl(desc);
+  private boolean decodeMssqlNbcRow(ByteBuf in, Row row) {
     int len = desc.size();
     int nullBitmapByteCount = ((len - 1) >> 3) + 1;
     int nullBitMapStartIdx = in.readerIndex();

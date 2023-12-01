@@ -27,6 +27,7 @@ import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowDecoder;
+import io.vertx.sqlclient.impl.RowInternal;
 
 class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
@@ -53,8 +54,12 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   }
 
   @Override
-  protected Row decodeRow(int len, ByteBuf in) {
-    Row row = new DB2RowImpl(rowDesc);
+  protected RowInternal row() {
+    return new DB2RowImpl(rowDesc);
+  }
+
+  @Override
+  protected boolean decodeRow(int len, ByteBuf in, Row row) {
     for (int i = 1; i < rowDesc.columnDefinitions().columns_ + 1; i++) {
       int startingIdx = cursor.dataBuffer_.readerIndex();
       Object o = cursor.getObject(i);
@@ -73,6 +78,6 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
     if (LOG.isDebugEnabled()) {
       LOG.debug("decoded row values: " + row.deepToString());
     }
-    return row;
+    return true;
   }
 }

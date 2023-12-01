@@ -21,6 +21,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.pgclient.impl.RowImpl;
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.impl.RowDecoder;
+import io.vertx.sqlclient.impl.RowInternal;
 
 import java.util.stream.Collector;
 
@@ -34,8 +35,12 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   }
 
   @Override
-  protected Row decodeRow(int len, ByteBuf in) {
-    Row row = new RowImpl(desc);
+  protected RowInternal row() {
+    return new RowImpl(desc);
+  }
+
+  @Override
+  protected boolean decodeRow(int len, ByteBuf in, Row row) {
     for (int c = 0; c < len; ++c) {
       int length = in.readInt();
       Object decoded = null;
@@ -50,6 +55,6 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
       }
       row.addValue(decoded);
     }
-    return row;
+    return true;
   }
 }
