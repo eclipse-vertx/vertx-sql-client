@@ -158,16 +158,17 @@ public class RowMapperGen extends MapperGenBase {
             .getSelectors()) + "(" + expr + ")";
         }
       }
-      throw new UnsupportedOperationException();
-    } else {
-      return expr;
     }
+    return expr;
   }
 
   private static String rowType(TypeInfo type) {
     DataObjectInfo dataObject = type.getDataObject();
     if (dataObject != null) {
-      return rowType(dataObject.getJsonType());
+      TypeInfo dataObjectType = dataObject.getJsonType();
+      if (dataObjectType != null) {
+        return dataObjectType.getName();
+      }
     }
     return type.getName();
   }
@@ -214,8 +215,8 @@ public class RowMapperGen extends MapperGenBase {
     }
     if (type instanceof ClassTypeInfo) {
       DataObjectInfo dataObject = type.getDataObject();
-      if (dataObject != null) {
-        return getter(dataObject.getJsonType());
+      if (dataObject != null && dataObject.isSerializable()) {
+        return getter(dataObject.getSerializer().getJsonType());
       }
       ClassTypeInfo ct = (ClassTypeInfo) type;
       switch (ct.getName()) {
