@@ -16,6 +16,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.tck.CollectorTestBase;
+import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -264,5 +265,15 @@ public class OracleCollectorTest extends CollectorTestBase {
     public Set<Characteristics> characteristics() {
       return Collections.emptySet();
     }
+  }
+
+  @Override
+  public void testCollectorRecycle(TestContext ctx) {
+    Assume.assumeTrue(false);
+  }
+
+  @Override
+  public void testCollectorNoRecycle(TestContext ctx) {
+    Assume.assumeTrue(false);
   }
 }

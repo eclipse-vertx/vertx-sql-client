@@ -20,13 +20,14 @@ import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
+import io.vertx.sqlclient.impl.RowBase;
 
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.UUID;
 
-public class MySQLRowImpl extends ArrayTuple implements Row {
+public class MySQLRowImpl extends RowBase {
 
   private final MySQLRowDesc rowDesc;
 
