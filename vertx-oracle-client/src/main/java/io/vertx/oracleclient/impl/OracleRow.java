@@ -16,13 +16,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
+import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.impl.RowDesc;
 
 import java.time.*;
 import java.util.List;
 import java.util.UUID;
 
-public class OracleRow extends ArrayTuple implements Row {
+public class OracleRow extends RowBase {
 
   private final RowDesc desc;
 

@@ -24,14 +24,16 @@ import io.vertx.pgclient.data.*;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
+import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.impl.RowInternal;
 
 import java.lang.reflect.Array;
 import java.time.*;
 import java.util.List;
 import java.util.UUID;
 
-public class RowImpl extends ArrayTuple implements Row {
+public class RowImpl extends RowBase {
 
   private final RowDesc desc;
 
