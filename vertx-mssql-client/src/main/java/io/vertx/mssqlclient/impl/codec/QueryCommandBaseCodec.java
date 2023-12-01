@@ -38,12 +38,14 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
 
   @Override
   protected void handleRow(ByteBuf payload) {
-    rowResultDecoder.handleRow(payload);
+    rowResultDecoder.nbc = false;
+    rowResultDecoder.handleRow(-1, payload);
   }
 
   @Override
   protected void handleNbcRow(ByteBuf payload) {
-    rowResultDecoder.handleNbcRow(payload);
+    rowResultDecoder.nbc = true;
+    rowResultDecoder.handleRow(-1, payload);
   }
 
   @Override

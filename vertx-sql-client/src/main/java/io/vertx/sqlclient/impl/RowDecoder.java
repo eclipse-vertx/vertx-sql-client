@@ -46,25 +46,24 @@ public abstract class RowDecoder<C, R> {
   protected abstract Row decodeRow(int len, ByteBuf in);
 
   public void handleRow(int len, ByteBuf in) {
-    if (failure != null) {
-      return;
-    }
     Row row = decodeRow(len, in);
-    if (accumulator == null) {
+    if (row != null && failure == null) {
+      if (accumulator == null) {
+        try {
+          accumulator = collector.accumulator();
+        } catch (Exception e) {
+          failure = e;
+          return;
+        }
+      }
       try {
-        accumulator = collector.accumulator();
+        accumulator.accept(container, row);
       } catch (Exception e) {
         failure = e;
         return;
       }
+      size++;
     }
-    try {
-      accumulator.accept(container, row);
-    } catch (Exception e) {
-      failure = e;
-      return;
-    }
-    size++;
   }
 
   public R result() {
