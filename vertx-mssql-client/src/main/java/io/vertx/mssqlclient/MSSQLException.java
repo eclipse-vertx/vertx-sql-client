@@ -30,13 +30,48 @@ public class MSSQLException extends DatabaseException {
   private List<MSSQLException> additional;
 
   public MSSQLException(int number, byte state, byte severity, String errorMessage, String serverName, String procedureName, int lineNumber) {
-    super(formatMessage(number, state, severity, errorMessage, serverName, procedureName, lineNumber), number, null);
+    super(formatMessage(number, state, severity, errorMessage, serverName, procedureName, lineNumber), number, generateStateCode(number, state));
     this.state = state;
     this.severity = severity;
     this.errorMessage = errorMessage;
     this.serverName = serverName;
     this.procedureName = procedureName;
     this.lineNumber = lineNumber;
+  }
+
+
+  /**
+   * Generates the JDBC state code based on the error number returned from the database.
+   *
+   * This method is derived from the method with the same name in the JDBC driver
+   * in com.microsoft.sqlserver.jdbc.SQLServerException
+   *
+   * @param errNum
+   *        the vendor error number
+   * @param databaseState
+   *        the database state
+   * @return the SQL state code (XOPEN or SQL:2003 conventions)
+   */
+  static String generateStateCode(int errNum, int databaseState) {
+      switch (errNum) {
+        // case 18456: return EXCEPTION_XOPEN_CONNECTION_CANT_ESTABLISH; //username password wrong at login
+        case 8152:
+          return "22001"; // String data right truncation
+        case 515: // 2.2705
+        case 547:
+        case 2601:
+        case 2627:
+          return "23000"; // Integrity constraint violation
+        case 2714:
+          return "S0001"; // table already exists
+        case 208:
+          return "S0002"; // table not found
+        case 1205:
+          return "40001"; // deadlock detected
+        default: {
+          return "S" + String.format( "%4s", databaseState ).replaceAll( " ", "0" );
+        }
+      }
   }
 
   public void add(MSSQLException e) {
