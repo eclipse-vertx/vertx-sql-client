@@ -18,7 +18,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.codegen.annotations.JsonGen;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.codegen.annotations.Unstable;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.pgclient.impl.PgConnectionUriParser;
