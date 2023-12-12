@@ -10,6 +10,7 @@ import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 
 public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
@@ -478,10 +479,26 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   }
 
   @Test
+  public void testPrimitiveShortArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: INT2[])) AS t (c)",
+      Collections.singletonList(Tuple.tuple().addValue(new short[]{0, -10, Short.MAX_VALUE})),
+      new Short[][]{new Short[]{0, -10, Short.MAX_VALUE}}, Tuple::getArrayOfShorts);
+  }
+
+  @Test
   public void testIntegerArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: INT4[])) AS t (c)",
       new Integer[][]{new Integer[]{0, -10, null, Integer.MAX_VALUE}}, Tuple::getArrayOfIntegers);
+  }
+
+  @Test
+  public void testPrimitiveIntegerArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: INT4[])) AS t (c)",
+      Collections.singletonList(Tuple.tuple().addValue(new int[]{0, -10, Integer.MAX_VALUE})),
+      new Integer[][]{new Integer[]{0, -10, Integer.MAX_VALUE}}, Tuple::getArrayOfIntegers);
   }
 
   @Test
@@ -492,10 +509,41 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   }
 
   @Test
+  public void testPrimitiveLongArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: INT8[])) AS t (c)",
+      Collections.singletonList(Tuple.tuple().addValue(new long[]{0L, -10L, Long.MAX_VALUE})),
+      new Long[][]{new Long[]{0L, -10L, Long.MAX_VALUE}}, Tuple::getArrayOfLongs);
+  }
+
+  @Test
   public void testFloatArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: FLOAT4[])) AS t (c)",
       new Float[][]{new Float[]{0f, -10f, Float.MAX_VALUE}}, Tuple::getArrayOfFloats);
+  }
+
+  @Test
+  public void testPrimitiveFloatArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: FLOAT4[])) AS t (c)",
+      Collections.singletonList(Tuple.tuple().addValue(new float[]{0f, -10f, Float.MAX_VALUE})),
+      new Float[][]{new Float[]{0f, -10f, Float.MAX_VALUE}}, Tuple::getArrayOfFloats);
+  }
+
+  @Test
+  public void testDoubleArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: FLOAT8[])) AS t (c)",
+      new Double[][]{new Double[]{0d, -10d, Double.MAX_VALUE}}, Tuple::getArrayOfDoubles);
+  }
+
+  @Test
+  public void testPrimitiveDoubleArray(TestContext ctx) {
+    testGeneric(ctx,
+      "SELECT c FROM (VALUES ($1 :: FLOAT8[])) AS t (c)",
+      Collections.singletonList(Tuple.tuple().addValue(new double[]{0d, -10d, Double.MAX_VALUE})),
+      new Double[][]{new Double[]{0d, -10d, Double.MAX_VALUE}}, Tuple::getArrayOfDoubles);
   }
 
   @Test

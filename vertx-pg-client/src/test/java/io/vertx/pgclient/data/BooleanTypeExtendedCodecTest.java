@@ -63,13 +63,24 @@ public class BooleanTypeExtendedCodecTest extends ExtendedQueryDataTypeCodecTest
 
   @Test
   public void testEncodeBooleanArray(TestContext ctx) {
+    testEncodeBooleanArray(ctx, Tuple.tuple()
+      .addArrayOfBoolean(new Boolean[]{Boolean.FALSE, Boolean.TRUE})
+      .addInteger(2));
+  }
+
+  @Test
+  public void testEncodePrimitiveBooleanArray(TestContext ctx) {
+    testEncodeBooleanArray(ctx, Tuple.tuple()
+      .addValue(new boolean[]{false, true})
+      .addInteger(2));
+  }
+
+  private void testEncodeBooleanArray(TestContext ctx, Tuple tuple) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Boolean\" = $1  WHERE \"id\" = $2 RETURNING \"Boolean\"",
         ctx.asyncAssertSuccess(p -> {
-          p.query().execute(Tuple.tuple()
-              .addArrayOfBoolean(new Boolean[]{Boolean.FALSE, Boolean.TRUE})
-              .addInteger(2)
+          p.query().execute(tuple
             , ctx.asyncAssertSuccess(result -> {
               ColumnChecker.checkColumn(0, "Boolean")
                 .returns(Tuple::getValue, Row::getValue, ColumnChecker.toObjectArray(new boolean[]{Boolean.FALSE, Boolean.TRUE}))
