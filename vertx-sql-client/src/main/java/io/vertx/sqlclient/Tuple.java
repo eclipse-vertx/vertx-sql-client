@@ -650,6 +650,13 @@ public interface Tuple {
       return null;
     } else if (val instanceof Boolean[]) {
       return (Boolean[]) val;
+    } else if (val instanceof boolean[]) {
+      boolean[] array = (boolean[]) val;
+      Boolean[] booleanArray = new Boolean[array.length];
+      for (int i = 0;i < array.length;i++) {
+        booleanArray[i] = array[i];
+      }
+      return booleanArray;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Boolean[] booleanArray = new Boolean[array.length];
@@ -678,6 +685,13 @@ public interface Tuple {
       return null;
     } else if (val instanceof Short[]) {
       return (Short[]) val;
+    } else if (val instanceof short[]) {
+      short[] array = (short[]) val;
+      Short[] a = new Short[array.length];
+      for (int i = 0;i < array.length;i++) {
+        a[i] = array[i];
+      }
+      return a;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
       int len = a.length;
@@ -728,6 +742,13 @@ public interface Tuple {
       return null;
     } else if (val instanceof Integer[]) {
       return (Integer[]) val;
+    } else if (val instanceof int[]) {
+      int[] array = (int[]) val;
+      Integer[] a = new Integer[array.length];
+      for (int i = 0;i < array.length;i++) {
+        a[i] = array[i];
+      }
+      return a;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
       int len = a.length;
@@ -778,6 +799,13 @@ public interface Tuple {
       return null;
     } else if (val instanceof Long[]) {
       return (Long[]) val;
+    } else if (val instanceof long[]) {
+      long[] array = (long[]) val;
+      Long[] a = new Long[array.length];
+      for (int i = 0;i < array.length;i++) {
+        a[i] = array[i];
+      }
+      return a;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
       int len = a.length;
@@ -828,6 +856,13 @@ public interface Tuple {
       return null;
     } else if (val instanceof Float[]) {
       return (Float[]) val;
+    } else if (val instanceof float[]) {
+      float[] array = (float[]) val;
+      Float[] a = new Float[array.length];
+      for (int i = 0;i < array.length;i++) {
+        a[i] = array[i];
+      }
+      return a;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
       int len = a.length;
@@ -878,6 +913,13 @@ public interface Tuple {
       return null;
     } else if (val instanceof Double[]) {
       return (Double[]) val;
+    } else if (val instanceof double[]) {
+      double[] array = (double[]) val;
+      Double[] a = new Double[array.length];
+      for (int i = 0;i < array.length;i++) {
+        a[i] = array[i];
+      }
+      return a;
     } else if (val instanceof Number[]) {
       Number[] a = (Number[]) val;
       int len = a.length;
