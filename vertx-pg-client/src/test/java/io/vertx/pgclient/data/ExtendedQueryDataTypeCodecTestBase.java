@@ -45,9 +45,12 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
   }
 
   protected <T> void testGeneric(TestContext ctx, String sql, T[] expected, BiFunction<Row, Integer, T> getter) {
+    testGeneric(ctx, sql, Stream.of(expected).map(Tuple::of).collect(Collectors.toList()), expected, getter);
+  }
+
+  protected <T> void testGeneric(TestContext ctx, String sql, List<Tuple> batch, T[] expected, BiFunction<Row, Integer, T> getter) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
-      List<Tuple> batch = Stream.of(expected).map(Tuple::of).collect(Collectors.toList());
       conn.preparedQuery(sql).executeBatch(batch,
         ctx.asyncAssertSuccess(result -> {
           for (T n : expected) {
