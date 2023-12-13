@@ -1075,7 +1075,7 @@ public class DataTypeCodec {
   public static final LocalDateTime LDT_PLUS_INFINITY = LOCAL_DATE_TIME_EPOCH.plus(Long.MAX_VALUE, ChronoUnit.MICROS);
   // 4714-11-24 00:00:00 BC
   public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC",
-      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.ROOT));
+      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.US));
 
   private static void binaryEncodeTIMESTAMP(LocalDateTime value, ByteBuf buff) {
     if (value.compareTo(LDT_PLUS_INFINITY) >= 0) {
