@@ -22,7 +22,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-sql-client-parent</artifactId>
-    <version>4.5.1-SNAPSHOT</version>
+    <version>4.5.1</version>
   </parent>
 
   <artifactId>vertx-sql-client-templates</artifactId>
@@ -85,7 +85,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-pg-client</artifactId>
-      <version>4.5.1-SNAPSHOT</version>
+      <version>4.5.1</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
