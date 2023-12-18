@@ -6,6 +6,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.lang.reflect.Array;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -24,24 +27,31 @@ public final class Utils {
   public static Object toJson(Object value) {
     if (value == null || value == JSON_NULL) {
       return null;
-    } else if (value instanceof String
+    }
+    if (value instanceof String
       || value instanceof Boolean
       || value instanceof Number
       || value instanceof Buffer
       || value instanceof JsonObject
       || value instanceof JsonArray) {
       return value;
-    } else if (value.getClass().isArray()) {
+    }
+    if (value.getClass().isArray()) {
       int len = Array.getLength(value);
       JsonArray array = new JsonArray(new ArrayList<>(len));
-      for (int idx = 0;idx < len;idx++) {
+      for (int idx = 0; idx < len; idx++) {
         Object component = toJson(Array.get(value, idx));
         array.add(component);
       }
       return array;
-    } else {
-      return value.toString();
     }
+    if (value instanceof Temporal) {
+      Temporal temporal = (Temporal) value;
+      if (temporal.isSupported(ChronoField.INSTANT_SECONDS)) {
+        return DateTimeFormatter.ISO_INSTANT.format(temporal);
+      }
+    }
+    return value.toString();
   }
 
   public static <T> Supplier<Future<T>> roundRobinSupplier(List<T> factories) {
