@@ -1,8 +1,7 @@
 = Reactive Oracle Client
 :PREPARED_PARAMS: `?`
 
-The Reactive Oracle Client is a client for Oracle with a straightforward API focusing on
-scalability and low overhead.
+The Reactive Oracle Client is a client for Oracle with a straightforward API focusing on scalability and low overhead.
 
 *Features*
 
@@ -18,8 +17,6 @@ scalability and low overhead.
 
 * Prepared queries caching
 * Stored Procedures
-
-WARNING: this module is in tech preview
 
 == Usage
 
