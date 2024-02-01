@@ -209,7 +209,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     cmd.rowDecoder.handleRow(len, in);
   }
 
-  private void  decodeRowDescription(ByteBuf in) {
+  private void decodeRowDescription(ByteBuf in) {
     PgColumnDesc[] columns = new PgColumnDesc[in.readUnsignedShort()];
     for (int c = 0; c < columns.length; ++c) {
       String fieldName = Util.readCStringUTF8(in);
@@ -254,11 +254,15 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     switch (response.getCode()) {
       default:
         PgCommandCodec<?, ?> cmd = codec.peek();
-        cmd.handleErrorResponse(response);
+        if (cmd != null) {
+          cmd.handleErrorResponse(response);
+        }
         break;
-        // Unsolicited errors
+      // Unsolicited errors
       case "57P01":
         // admin_shutdown
+      case "57P05":
+        // terminating connection due to idle-session timeout
       case "25P03":
         // terminating connection due to idle-in-transaction timeout
         ctx.fireExceptionCaught(response.toException());
