@@ -19,10 +19,11 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.impl.accumulator.ArrayListRowAccumulator;
-import io.vertx.sqlclient.impl.accumulator.RowAccumulator;
 
-import java.util.NoSuchElementException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
@@ -38,9 +39,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
   static <U> Collector<Row, RowSetImpl<U>, RowSet<U>> collector(Function<Row, U> mapper) {
     return Collector.of(
       RowSetImpl::new,
-      (set, row) -> {
-        set.add(mapper.apply(row));
-      },
+      (set, row) -> set.add(mapper.apply(row)),
       (set1, set2) -> null, // Shall not be invoked as this is sequential
       (set) -> set
     );
@@ -52,8 +51,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
     return rs -> (RowSetImpl<U>) rs;
   }
 
-  private R firstRow;
-  private RowAccumulator<R> rowAccumulator;
+  private List<R> rowAccumulator = Collections.emptyList();
 
   @Override
   public RowSet<R> value() {
@@ -61,56 +59,30 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
   }
 
   private void add(R row) {
-    if (rowAccumulator != null) {
-      rowAccumulator.accept(row);
-    } else if (firstRow != null) {
-      rowAccumulator = new ArrayListRowAccumulator<>();
-      rowAccumulator.accept(firstRow);
-      rowAccumulator.accept(row);
-      firstRow = null;
-    } else {
-      firstRow = row;
+    if (rowAccumulator.isEmpty()) {
+      rowAccumulator = new ArrayList<>();
     }
+    rowAccumulator.add(row);
   }
 
   @Override
   public RowIterator<R> iterator() {
-    return rowAccumulator != null ? rowAccumulator.iterator() : SingletonRowIterator.createFor(firstRow);
+    Iterator<R> iter = rowAccumulator.iterator();
+    return new RowIterator<R>() {
+      @Override
+      public boolean hasNext() {
+        return iter.hasNext();
+      }
+
+      @Override
+      public R next() {
+        return iter.next();
+      }
+    };
   }
 
   @Override
   public RowSetImpl<R> next() {
     return (RowSetImpl<R>) super.next();
-  }
-
-  private static final class SingletonRowIterator<ROW> implements RowIterator<ROW> {
-
-    static final SingletonRowIterator<Object> EMPTY_INSTANCE = new SingletonRowIterator<>(null);
-
-    ROW row;
-
-    SingletonRowIterator(ROW row) {
-      this.row = row;
-    }
-
-    @SuppressWarnings("unchecked")
-    static <X> SingletonRowIterator<X> createFor(X row) {
-      return row != null ? new SingletonRowIterator<>(row) : (SingletonRowIterator<X>) EMPTY_INSTANCE;
-    }
-
-    @Override
-    public boolean hasNext() {
-      return row != null;
-    }
-
-    @Override
-    public ROW next() {
-      if (row != null) {
-        ROW res = row;
-        row = null;
-        return res;
-      }
-      throw new NoSuchElementException();
-    }
   }
 }
