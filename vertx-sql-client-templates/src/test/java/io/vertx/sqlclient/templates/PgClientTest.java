@@ -12,15 +12,18 @@
 package io.vertx.sqlclient.templates;
 
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.data.Path;
 import io.vertx.pgclient.data.Point;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.*;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.testcontainers.containers.JdbcDatabaseContainer;
+import org.testcontainers.containers.PostgreSQLContainer;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -34,6 +37,22 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PgClientTest extends PgTemplateTestBase {
+
+  private static final String POSTGRES_13_11 = "postgres:13.11";
+  private static JdbcDatabaseContainer postgres;
+  private static String dbConnectionChain;
+  private static String userName;
+  private static String password;
+
+  @BeforeClass
+  public static void beforeAll() {
+    postgres = new PostgreSQLContainer(POSTGRES_13_11).withInitScript("postgresql_create.sql");
+    postgres.start();
+
+    dbConnectionChain = postgres.getJdbcUrl();
+    userName = postgres.getUsername();
+    password = postgres.getPassword();
+  }
 
   @Test
   public void testQuery(TestContext ctx) {
@@ -110,6 +129,30 @@ public class PgClientTest extends PgTemplateTestBase {
       ctx.assertEquals(1, result.size());
       ctx.assertEquals(ldt, result.iterator().next().localDateTime);
     }));
+  }
+
+
+  @Test
+  public void testLocalDateTimeWithJackson_bis(TestContext ctx) {
+    DatabindCodec.mapper().registerModule(new JavaTimeModule());
+    RevokedKey revoked = new RevokedKey("hashy", LocalDateTime.parse("2017-05-14T19:35:58.237666"));
+    PgConnectOptions connectOptions = new PgConnectOptions()
+      .setPort(postgres.getMappedPort(5432))
+      .setHost(postgres.getHost())
+      .setDatabase(postgres.getDatabaseName())
+      .setUser(postgres.getUsername())
+      .setPassword(postgres.getPassword());
+
+    Pool pgPool = Pool.pool(vertx, connectOptions, new PoolOptions());
+
+    SqlTemplate
+      .forUpdate(pgPool, "INSERT INTO revokedkeys (keyhash, valid_until) VALUES (#{keyhash}, #{valid_until})")
+      .mapFrom(RevokedKey.class)
+      .execute(revoked)
+      .map(r -> revoked.getKeyhash())
+      .onComplete(ctx.asyncAssertSuccess(result -> {
+        ctx.assertNotNull(result);
+      }));
   }
 
   @Test
@@ -289,6 +332,34 @@ public class PgClientTest extends PgTemplateTestBase {
         "createdOn=" + createdOn +
         ", stringAttributes=" + stringAttributes +
         '}';
+    }
+  }
+
+  public class RevokedKey {
+    private String keyhash;
+    private LocalDateTime valid_until;
+
+    public RevokedKey(String keyhash, LocalDateTime valid_until) {
+      this.keyhash = keyhash;
+      this.valid_until = valid_until;
+    }
+
+    public RevokedKey(){}
+
+    public String getKeyhash() {
+      return keyhash;
+    }
+
+    public void setKeyhash(String keyhash) {
+      this.keyhash = keyhash;
+    }
+
+    public LocalDateTime getValid_until() {
+      return valid_until;
+    }
+
+    public void setValid_until(LocalDateTime valid_until) {
+      this.valid_until = valid_until;
     }
   }
 }
