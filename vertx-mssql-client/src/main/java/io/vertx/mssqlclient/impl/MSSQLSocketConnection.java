@@ -110,6 +110,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     if (!clientConfigSsl) {
       sslOptions.setTrustAll(true);
     }
+    sslOptions.setHostnameVerificationAlgorithm("");
 
     // 2. Create and set up an SSLHelper and SSLHandler
     // options.getApplicationLayerProtocols()
