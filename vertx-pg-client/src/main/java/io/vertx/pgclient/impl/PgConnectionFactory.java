@@ -24,10 +24,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
-import io.vertx.core.net.ConnectOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.SocketAddress;
-import io.vertx.core.net.TrustOptions;
+import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
@@ -136,7 +133,11 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
       // upgrade connection to SSL if needed
       connFut = connFut.flatMap(conn -> Future.future(p -> {
         PgSocketConnection socket = (PgSocketConnection) conn;
-        socket.upgradeToSSLConnection(options.getSslOptions(), ar2 -> {
+        ClientSSLOptions o = options.getSslOptions().copy();
+        if (o.getHostnameVerificationAlgorithm() == null) {
+          o.setHostnameVerificationAlgorithm("");
+        }
+        socket.upgradeToSSLConnection(o, ar2 -> {
           if (ar2.succeeded()) {
             p.complete(conn);
           } else {

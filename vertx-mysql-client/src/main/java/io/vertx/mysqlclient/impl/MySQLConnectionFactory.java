@@ -65,6 +65,9 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
         sslOptions = null;
         break;
     }
+    if (sslOptions != null && sslOptions.getHostnameVerificationAlgorithm() == null) {
+      sslOptions.setHostnameVerificationAlgorithm("");
+    }
     int capabilitiesFlag = capabilitiesFlags(options);
     if (sslMode == SslMode.PREFERRED) {
       return doConnect(options, sslMode, sslOptions, capabilitiesFlag, context).recover(err -> doConnect(options, SslMode.DISABLED, null, capabilitiesFlag, context));
