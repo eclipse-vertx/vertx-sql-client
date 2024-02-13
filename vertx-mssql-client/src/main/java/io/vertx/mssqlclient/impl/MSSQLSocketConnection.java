@@ -103,6 +103,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
       // Do not perform hostname validation if the client did not require encryption
       options.setTrustAll(true);
     }
+    options.setHostnameVerificationAlgorithm("");
 
     // 2. Create and set up an SSLHelper and SSLHandler
     SSLHelper helper = new SSLHelper(options, options.getApplicationLayerProtocols());
