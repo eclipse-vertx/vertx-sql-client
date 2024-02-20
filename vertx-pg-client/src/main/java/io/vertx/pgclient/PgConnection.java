@@ -17,6 +17,7 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
@@ -24,7 +25,13 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.pgclient.impl.PgConnectionImpl;
+import io.vertx.sqlclient.Query;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.SqlResult;
+
+import java.util.List;
 
 /**
  * A connection to Postgres.
@@ -34,6 +41,7 @@ import io.vertx.sqlclient.SqlConnection;
  *   <ul>
  *     <li>Notification</li>
  *     <li>Request Cancellation</li>
+ *     <li>Copy from STDIN / to STDOUT</li>
  *   </ul>
  * </P>
  *
@@ -91,6 +99,48 @@ public interface PgConnection extends SqlConnection {
    */
   @Fluent
   PgConnection noticeHandler(Handler<PgNotice> handler);
+
+  /**
+   * Imports data into a database.
+   *
+   * <p>Use this method when importing opaque bytes, e.g. from a CSV file.
+   *
+   * <p>If you need bulk inserts of POJOs, use {@link io.vertx.sqlclient.PreparedQuery#executeBatch(List)} instead.
+   *
+   * @param sql COPY command (example {@code COPY my_table FROM STDIN (FORMAT csv, HEADER)})
+   * @param from byte stream data will be fetched from
+   * @return result set with single field {@code rowsWritten}
+   */
+  Query<RowSet<Row>> copyFromBytes(String sql, Buffer from);
+
+  /**
+   * Exports data from a database with decoding.
+   *
+   * {@code FORMAT} can only be {@code binary}.
+   *
+   * @param sql COPY command (example {@code COPY my_table TO STDOUT (FORMAT binary)})
+   * @return decoded records
+   */
+  Query<RowSet<Row>> copyToRows(String sql);
+
+  /**
+   * Exports data from a database as-is, without decoding.
+   *
+   * <p>Use this method when exporting opaque bytes, e.g. to a CSV file.
+   *
+   * @param sql COPY command (example {@code COPY my_table TO STDOUT (FORMAT csv)})
+   * @return async result of bytes container data will be written to
+   *
+   * - vertx.core.stream - https://vertx.io/docs/apidocs/io/vertx/core/streams/ReadStream.html
+   * - future of read stream.
+   * - when we do query operation
+   * - we should not use query result builder
+   * - what about SELECT 1;SELECT 1 or COPY ....;COPY ... ?
+   * - we need a new interface Future<ReadStream<Buffer>>
+   *   - https://vertx.io/docs/apidocs/io/vertx/core/streams/ReadStream.html
+   * - PgSocketConnection - we will apply backpressure in SocketInternal
+   */
+  Future<SqlResult<Buffer>> copyToBytes(String sql);
 
   /**
    * Send a request cancellation message to tell the server to cancel processing request in this connection.

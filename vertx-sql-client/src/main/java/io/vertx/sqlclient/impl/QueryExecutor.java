@@ -34,7 +34,7 @@ import java.util.stream.Collector;
 /**
  * Executes query.
  */
-class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
+public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
 
   private final Function<T, R> factory;
   private final Collector<Row, ?, T> collector;
@@ -49,7 +49,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return new QueryResultBuilder<>(factory, promise);
   }
 
-  void executeSimpleQuery(CommandScheduler scheduler,
+  public void executeSimpleQuery(CommandScheduler scheduler,
                           String sql,
                           boolean autoCommit,
                           boolean singleton,

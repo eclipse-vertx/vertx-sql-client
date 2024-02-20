@@ -38,7 +38,8 @@ public class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResu
   private Throwable failure;
   private boolean suspended;
 
-  QueryResultBuilder(Function<T, R> factory, PromiseInternal<L> handler) {
+  // TODO: public-ing this shouldn't be needed
+  public QueryResultBuilder(Function<T, R> factory, PromiseInternal<L> handler) {
     this.factory = factory;
     this.handler = handler;
   }

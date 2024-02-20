@@ -71,4 +71,15 @@ public class PgProtocolConstants {
   public static final byte MESSAGE_TYPE_FUNCTION_RESULT = 'V';
   public static final byte MESSAGE_TYPE_SSL_YES = 'S';
   public static final byte MESSAGE_TYPE_SSL_NO = 'N';
+
+  /**
+   * COPY-out messages.
+   *
+   * <p>Other messages which might appear in between CopyData:
+   * <li>NoticeResponse
+   * <li>ParameterStatus
+   */
+  public static final byte MESSAGE_TYPE_COPY_OUT_RESPONSE = 'H';
+  public static final byte MESSAGE_TYPE_COPY_DATA = 'd';
+  public static final byte MESSAGE_TYPE_COPY_COMPLETION = 'c';
 }

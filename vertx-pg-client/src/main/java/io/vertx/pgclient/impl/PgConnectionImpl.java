@@ -20,18 +20,36 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.netty.buffer.ByteBuf;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotice;
 import io.vertx.pgclient.PgNotification;
+import io.vertx.pgclient.impl.codec.CopyOutCommand;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.pgclient.spi.PgDriver;
+import io.vertx.sqlclient.Query;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.impl.QueryExecutor;
+import io.vertx.sqlclient.impl.QueryResultBuilder;
+import io.vertx.sqlclient.impl.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
+import io.vertx.sqlclient.impl.SqlResultImpl;
+import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+
+import java.util.function.Function;
+import java.util.stream.Collector;
 
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
@@ -109,6 +127,32 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
   }
 
   @Override
+  public Query<RowSet<Row>> copyFromBytes(String sql, Buffer from) {
+    return null;
+  }
+
+  @Override
+  public Query<RowSet<Row>> copyToRows(String sql) {
+    return null;
+  }
+
+  @Override
+  public Future<SqlResult<Buffer>> copyToBytes(String sql) {
+    Function<Buffer, SqlResultImpl<Buffer>> factory = (buffer) -> new SqlResultImpl<>(buffer);
+    PromiseInternal<SqlResult<Buffer>> promise = context.promise();
+
+    // currently, this loads entire content into Buffer
+    // it should stream bytes out instead
+    // TODO: signal completion as soon as the database replied CopyOutResponse 'H' ?
+    QueryResultBuilder<Buffer, SqlResultImpl<Buffer>, SqlResult<Buffer>> resultHandler =
+      new QueryResultBuilder<>(factory, promise);
+
+    CopyOutCommand cmd = new CopyOutCommand(sql, resultHandler);
+    this.schedule(promise.context(), cmd).onComplete(resultHandler);
+    return promise.future();
+  }
+
+  @Override
   public int processId() {
     return conn.getProcessId();
   }
@@ -127,4 +171,5 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     });
     return promise.future();
   }
+
 }
