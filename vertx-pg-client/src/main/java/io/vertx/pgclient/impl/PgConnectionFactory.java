@@ -70,17 +70,8 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     } catch (Exception e) {
       return context.failedFuture(e);
     }
-    String username = options.getUser();
-    String password = options.getPassword();
-    String database = options.getDatabase();
     SocketAddress server = options.getSocketAddress();
-    Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
-    return doConnect(server, context, options).flatMap(conn -> {
-      PgSocketConnection socket = (PgSocketConnection) conn;
-      socket.init();
-      return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
-        .map(conn);
-    });
+    return doConnect(server, context, options);
   }
 
   public void cancelRequest(PgConnectOptions options, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
@@ -121,6 +112,19 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
   }
 
   private Future<Connection> doConnect(ConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
+    return doConnect_(connectOptions, context, ssl, options).flatMap(conn -> {
+      String username = options.getUser();
+      String password = options.getPassword();
+      String database = options.getDatabase();
+      Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
+      PgSocketConnection socket = (PgSocketConnection) conn;
+      socket.init();
+      return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
+        .map(conn);
+    });
+  }
+
+  private Future<Connection> doConnect_(ConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
     Future<NetSocket> soFut;
     try {
       soFut = client.connect(connectOptions);

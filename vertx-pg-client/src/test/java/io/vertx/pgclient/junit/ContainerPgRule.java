@@ -81,12 +81,11 @@ public class ContainerPgRule extends ExternalResource {
         .withClasspathResourceMapping("tls/server.crt", "/server.crt", BindMode.READ_ONLY)
         .withClasspathResourceMapping("tls/server.key", "/server.key", BindMode.READ_ONLY)
         .withClasspathResourceMapping("tls/ssl.sh", "/docker-entrypoint-initdb.d/ssl.sh", BindMode.READ_ONLY);
-      if (forceSsl) {
-        server
-          .withClasspathResourceMapping("tls/pg_hba.conf", "/tmp/pg_hba.conf", BindMode.READ_ONLY)
-          .withClasspathResourceMapping("tls/force_ssl.sh", "/docker-entrypoint-initdb.d/force_ssl.sh", BindMode.READ_ONLY);
-
-      }
+        if (forceSsl) {
+          server
+            .withClasspathResourceMapping("tls/pg_hba.conf", "/tmp/pg_hba.conf", BindMode.READ_ONLY)
+            .withClasspathResourceMapping("tls/force_ssl.sh", "/docker-entrypoint-initdb.d/force_ssl.sh", BindMode.READ_ONLY);
+        }
     }
     if (System.getProperties().containsKey("containerFixedPort")) {
       server.withFixedExposedPort(POSTGRESQL_PORT, POSTGRESQL_PORT);
