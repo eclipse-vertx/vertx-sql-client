@@ -75,17 +75,8 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     } catch (Exception e) {
       return context.failedFuture(e);
     }
-    String username = options.getUser();
-    String password = options.getPassword();
-    String database = options.getDatabase();
     SocketAddress server = options.getSocketAddress();
-    Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
-    return doConnect(server, context, pgOptions).flatMap(conn -> {
-      PgSocketConnection socket = (PgSocketConnection) conn;
-      socket.init();
-      return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
-        .map(conn);
-    });
+    return doConnect(server, context, options);
   }
 
   public void cancelRequest(PgConnectOptions options, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
@@ -104,18 +95,18 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     Future<Connection> connFuture;
     switch (sslMode) {
       case DISABLE:
-        connFuture = doConnect(server, context, false, options);
+        connFuture = doConnect(server, options, context, false, options);
         break;
       case ALLOW:
-        connFuture = doConnect(server, context,false, options).recover(err -> doConnect(server, context,true, options));
+        connFuture = doConnect(server, options, context,false, options).recover(err -> doConnect(server, options, context,true, options));
         break;
       case PREFER:
-        connFuture = doConnect(server, context,true, options).recover(err -> doConnect(server, context,false, options));
+        connFuture = doConnect(server, options, context,true, options).recover(err -> doConnect(server, options, context,false, options));
         break;
       case REQUIRE:
       case VERIFY_CA:
       case VERIFY_FULL:
-        connFuture = doConnect(server, context, true, options);
+        connFuture = doConnect(server, options, context, true, options);
         break;
       default:
         return context.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
@@ -123,7 +114,20 @@ public class PgConnectionFactory extends ConnectionFactoryBase {
     return connFuture;
   }
 
-  private Future<Connection> doConnect(SocketAddress server, ContextInternal context, boolean ssl, PgConnectOptions options) {
+  private Future<Connection> doConnect(SocketAddress server, PgConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
+    return doConnect_(server, connectOptions, context, ssl, options).flatMap(conn -> {
+      String username = options.getUser();
+      String password = options.getPassword();
+      String database = options.getDatabase();
+      Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
+      PgSocketConnection socket = (PgSocketConnection) conn;
+      socket.init();
+      return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
+        .map(conn);
+    });
+  }
+
+  private Future<Connection> doConnect_(SocketAddress server, PgConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
     Future<NetSocket> soFut;
     try {
       soFut = netClient(options).connect(server, (String) null);
