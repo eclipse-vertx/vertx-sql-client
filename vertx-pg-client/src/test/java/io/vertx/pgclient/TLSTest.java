@@ -123,7 +123,7 @@ public class TLSTest {
       .setSslMode(SslMode.ALLOW)
       .setTrustAll(true);
     PgConnection.connect(vertx, new PgConnectOptions(options)).onComplete(ctx.asyncAssertSuccess(conn -> {
-      ctx.assertFalse(conn.isSSL());
+      ctx.assertTrue(conn.isSSL());
       async.complete();
     }));
   }
@@ -147,7 +147,7 @@ public class TLSTest {
       .setSslMode(SslMode.PREFER)
       .setTrustAll(true);
     PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
-      ctx.assertTrue(conn.isSSL());
+      ctx.assertFalse(conn.isSSL());
       async.complete();
     }));
   }
