@@ -83,12 +83,12 @@ public class PgSocketConnection extends SocketConnectionBase {
   }
 
   // TODO RETURN FUTURE ???
-  void sendStartupMessage(String username, String password, String database, Map<String, String> properties, Promise<Connection> completionHandler) {
+  Future<Connection> sendStartupMessage(String username, String password, String database, Map<String, String> properties) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    schedule(context, cmd).onComplete(completionHandler);
+    return schedule(context, cmd);
   }
 
-  void sendCancelRequestMessage(int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
+  Future<Void> sendCancelRequestMessage(int processId, int secretKey) {
     Buffer buffer = Buffer.buffer(16);
     buffer.appendInt(16);
     // cancel request code
@@ -96,16 +96,13 @@ public class PgSocketConnection extends SocketConnectionBase {
     buffer.appendInt(processId);
     buffer.appendInt(secretKey);
 
-    socket.write(buffer).onComplete(ar -> {
+    return socket.write(buffer).andThen(ar -> {
       if (ar.succeeded()) {
         // directly close this connection
         if (status == Status.CONNECTED) {
           status = Status.CLOSING;
           socket.close();
         }
-        handler.handle(Future.succeededFuture());
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
       }
     });
   }

@@ -123,7 +123,7 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     Promise<Void> promise = context.owner().getOrCreateContext().promise();
     context.emit(promise, p -> {
       PgSocketConnection unwrap = (PgSocketConnection) conn.unwrap();
-      ((PgConnectionFactory) factory).cancelRequest(unwrap.connectOptions(), this.processId(), this.secretKey(), p);
+      ((PgConnectionFactory) factory).cancelRequest(unwrap.connectOptions(), this.processId(), this.secretKey()).onComplete(p);
     });
     return promise.future();
   }
