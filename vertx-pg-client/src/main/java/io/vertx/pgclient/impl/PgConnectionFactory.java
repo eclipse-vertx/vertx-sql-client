@@ -71,39 +71,36 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
       return context.failedFuture(e);
     }
     SocketAddress server = options.getSocketAddress();
-    return doConnect(server, context, options);
+    return connect(server, context, true, options);
   }
 
-  public void cancelRequest(PgConnectOptions options, int processId, int secretKey, Handler<AsyncResult<Void>> handler) {
-    doConnect(options.getSocketAddress(), vertx.createEventLoopContext(), options).onComplete(ar -> {
-      if (ar.succeeded()) {
-        PgSocketConnection conn = (PgSocketConnection) ar.result();
-        conn.sendCancelRequestMessage(processId, secretKey, handler);
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
+  public Future<Void> cancelRequest(PgConnectOptions options, int processId, int secretKey) {
+    return connect(options.getSocketAddress(), vertx.createEventLoopContext(), false, options)
+      .compose(conn -> {
+        PgSocketConnection socket = (PgSocketConnection) conn;
+        return socket.sendCancelRequestMessage(processId, secretKey);
+      });
   }
 
-  private Future<Connection> doConnect(SocketAddress server, ContextInternal context, PgConnectOptions options) {
+  private Future<Connection> connect(SocketAddress server, ContextInternal context, boolean sendStartupMessage, PgConnectOptions options) {
     SslMode sslMode = options.isUsingDomainSocket() ? SslMode.DISABLE : options.getSslMode();
     ConnectOptions connectOptions = new ConnectOptions()
       .setRemoteAddress(server);
     Future<Connection> connFuture;
     switch (sslMode) {
       case DISABLE:
-        connFuture = doConnect(connectOptions, context, false, options);
+        connFuture = connect(connectOptions, context, false, sendStartupMessage, options);
         break;
       case ALLOW:
-        connFuture = doConnect(connectOptions, context, false, options).recover(err -> doConnect(connectOptions, context, true, options));
+        connFuture = connect(connectOptions, context, false, sendStartupMessage, options).recover(err -> connect(connectOptions, context, true, sendStartupMessage, options));
         break;
       case PREFER:
-        connFuture = doConnect(connectOptions, context, true, options).recover(err -> doConnect(connectOptions, context, false, options));
+        connFuture = connect(connectOptions, context, true, sendStartupMessage, options).recover(err -> connect(connectOptions, context, false, sendStartupMessage, options));
         break;
       case REQUIRE:
       case VERIFY_CA:
       case VERIFY_FULL:
-        connFuture = doConnect(connectOptions, context, true, options);
+        connFuture = connect(connectOptions, context, true, sendStartupMessage, options);
         break;
       default:
         return context.failedFuture(new IllegalArgumentException("Unsupported SSL mode"));
@@ -111,20 +108,24 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     return connFuture;
   }
 
-  private Future<Connection> doConnect(ConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
-    return doConnect_(connectOptions, context, ssl, options).flatMap(conn -> {
-      String username = options.getUser();
-      String password = options.getPassword();
-      String database = options.getDatabase();
-      Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
-      PgSocketConnection socket = (PgSocketConnection) conn;
-      socket.init();
-      return Future.<Connection>future(p -> socket.sendStartupMessage(username, password, database, properties, p))
-        .map(conn);
-    });
+  private Future<Connection> connect(ConnectOptions connectOptions, ContextInternal context, boolean ssl, boolean sendStartupMessage, PgConnectOptions options) {
+    Future<Connection> res = doConnect(connectOptions, context, ssl, options);
+    if (sendStartupMessage) {
+      return res.flatMap(conn -> {
+        PgSocketConnection socket = (PgSocketConnection) conn;
+        socket.init();
+        String username = options.getUser();
+        String password = options.getPassword();
+        String database = options.getDatabase();
+        Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
+        return socket.sendStartupMessage(username, password, database, properties);
+      });
+    } else {
+      return res;
+    }
   }
 
-  private Future<Connection> doConnect_(ConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
+  private Future<Connection> doConnect(ConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
     Future<NetSocket> soFut;
     try {
       soFut = client.connect(connectOptions);
