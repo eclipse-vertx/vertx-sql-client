@@ -269,8 +269,7 @@ public class MySQLTLSTest {
       vertx,
       options
         .setSslMode(SslMode.VERIFY_IDENTITY)
-        // The hostname in the test certificate is MySQL_Server_8.0.17_Auto_Generated_Server_Certificate,
-        // so 'localhost' should make for a failed connection
+        // The hostname in the test certificate is mysql.vertx.test, so 'localhost' should make for a failed connection
         .setHost("localhost")
         .setHostnameVerificationAlgorithm("HTTPS")
         .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
@@ -288,7 +287,7 @@ public class MySQLTLSTest {
       new VertxOptions()
         .setAddressResolverOptions(
           new AddressResolverOptions()
-            .setHostsValue(Buffer.buffer("127.0.0.1 MySQL_Server_8.0.17_Auto_Generated_Server_Certificate\n"))
+            .setHostsValue(Buffer.buffer("127.0.0.1 mysql.vertx.test\n"))
         )
     );
 
@@ -296,9 +295,8 @@ public class MySQLTLSTest {
       vertxWithHosts,
       options
         .setSslMode(SslMode.VERIFY_IDENTITY)
-        // The hostname in the test certificate is MySQL_Server_8.0.17_Auto_Generated_Server_Certificate,
-        // so 'localhost' should make for a failed connection
-        .setHost("MySQL_Server_8.0.17_Auto_Generated_Server_Certificate")
+        // The hostname in the test certificate is mysql.vertx.test
+        .setHost("mysql.vertx.test")
         .setHostnameVerificationAlgorithm("HTTPS")
         .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
         .setPemKeyCertOptions(new PemKeyCertOptions()

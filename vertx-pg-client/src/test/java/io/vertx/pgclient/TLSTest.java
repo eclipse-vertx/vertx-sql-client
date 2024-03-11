@@ -102,7 +102,7 @@ public class TLSTest {
     Async async = ctx.async();
     PgConnection.connect(
       vertx,
-      rule.options()
+      ruleOptionalSll.options()
         .setSslMode(SslMode.VERIFY_FULL)
         // The hostname in the test certificate is thebrain.ca, so 'localhost' should make for a failed connection
         .setHost("localhost")
@@ -127,8 +127,9 @@ public class TLSTest {
     Async async = ctx.async();
     PgConnection.connect(
       vertxWithHosts,
-      rule.options()
+      ruleOptionalSll.options()
         .setSslMode(SslMode.VERIFY_FULL)
+        // The hostname in the test certificate is thebrain.ca
         .setHost("thebrain.ca")
         .setHostnameVerificationAlgorithm("HTTPS")
         .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt")),
