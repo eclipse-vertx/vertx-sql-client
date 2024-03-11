@@ -107,10 +107,7 @@ public class TLSTest {
         // The hostname in the test certificate is thebrain.ca, so 'localhost' should make for a failed connection
         .setHost("localhost")
         .setHostnameVerificationAlgorithm("HTTPS")
-        .setPemTrustOptions(
-          new PemTrustOptions()
-            .addCertValue(vertx.fileSystem().readFileBlocking("tls/server.crt"))
-        ),
+        .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt")),
       ctx.asyncAssertFailure(err -> {
         ctx.assertEquals(err.getMessage(), "SSL handshake failed");
         async.complete();
@@ -134,10 +131,7 @@ public class TLSTest {
         .setSslMode(SslMode.VERIFY_FULL)
         .setHost("thebrain.ca")
         .setHostnameVerificationAlgorithm("HTTPS")
-        .setPemTrustOptions(
-          new PemTrustOptions()
-            .addCertValue(vertxWithHosts.fileSystem().readFileBlocking("tls/server.crt"))
-        ),
+        .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt")),
       ctx.asyncAssertSuccess(conn -> {
         ctx.assertTrue(conn.isSSL());
         vertxWithHosts.close();

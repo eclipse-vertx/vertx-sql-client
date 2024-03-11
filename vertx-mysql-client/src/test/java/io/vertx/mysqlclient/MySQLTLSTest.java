@@ -13,6 +13,9 @@ package io.vertx.mysqlclient;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.dns.AddressResolverOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
@@ -258,6 +261,53 @@ public class MySQLTLSTest {
     MySQLConnection.connect(vertx, options, ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.", error.getMessage());
     }));
+  }
+
+  @Test
+  public void testTLSInvalidHostname(TestContext ctx) {
+    MySQLConnection.connect(
+      vertx,
+      options
+        .setSslMode(SslMode.VERIFY_IDENTITY)
+        // The hostname in the test certificate is MySQL_Server_8.0.17_Auto_Generated_Server_Certificate,
+        // so 'localhost' should make for a failed connection
+        .setHost("localhost")
+        .setHostnameVerificationAlgorithm("HTTPS")
+        .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+        .setPemKeyCertOptions(new PemKeyCertOptions()
+          .setCertPath("tls/files/client-cert.pem")
+          .setKeyPath("tls/files/client-key.pem")),
+      ctx.asyncAssertFailure(err -> {
+        ctx.assertEquals(err.getMessage(), "No name matching localhost found");
+      }));
+  }
+
+  @Test
+  public void testTLSCorrectHostname(TestContext ctx) {
+    Vertx vertxWithHosts = Vertx.vertx(
+      new VertxOptions()
+        .setAddressResolverOptions(
+          new AddressResolverOptions()
+            .setHostsValue(Buffer.buffer("127.0.0.1 MySQL_Server_8.0.17_Auto_Generated_Server_Certificate\n"))
+        )
+    );
+
+    MySQLConnection.connect(
+      vertxWithHosts,
+      options
+        .setSslMode(SslMode.VERIFY_IDENTITY)
+        // The hostname in the test certificate is MySQL_Server_8.0.17_Auto_Generated_Server_Certificate,
+        // so 'localhost' should make for a failed connection
+        .setHost("MySQL_Server_8.0.17_Auto_Generated_Server_Certificate")
+        .setHostnameVerificationAlgorithm("HTTPS")
+        .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+        .setPemKeyCertOptions(new PemKeyCertOptions()
+          .setCertPath("tls/files/client-cert.pem")
+          .setKeyPath("tls/files/client-key.pem")),
+      ctx.asyncAssertSuccess(conn -> {
+        ctx.assertTrue(conn.isSSL());
+        vertxWithHosts.close();
+      }));
   }
 
   @Test
