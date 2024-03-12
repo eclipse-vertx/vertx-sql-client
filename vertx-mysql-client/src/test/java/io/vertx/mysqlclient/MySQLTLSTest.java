@@ -13,6 +13,9 @@ package io.vertx.mysqlclient;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.dns.AddressResolverOptions;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemKeyCertOptions;
 import io.vertx.core.net.PemTrustOptions;
@@ -292,6 +295,49 @@ public class MySQLTLSTest {
 
     MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Host verification algorithm must be specified under VERIFY_IDENTITY ssl-mode.", error.getMessage());
+    }));
+  }
+
+  @Test
+  public void testVerifyIdentityInvalidHostname(TestContext ctx) {
+    options.setSslMode(SslMode.VERIFY_IDENTITY);
+    options.getSslOptions()
+      .setHostnameVerificationAlgorithm("HTTPS")
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
+    // The hostname in the test certificate is mysql.vertx.test, so 'localhost' should make for a failed connection
+    options.setHost("localhost");
+
+    MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(err -> {
+      ctx.assertEquals(err.getMessage(), "No name matching localhost found");
+    }));
+  }
+
+  @Test
+  public void testVerifyIdentityCorrectHostname(TestContext ctx) {
+    Vertx vertxWithHosts = Vertx.vertx(
+      new VertxOptions()
+        .setAddressResolverOptions(
+          new AddressResolverOptions()
+            .setHostsValue(Buffer.buffer("127.0.0.1 mysql.vertx.test\n"))
+        )
+    );
+
+    options.setSslMode(SslMode.VERIFY_IDENTITY);
+    options.getSslOptions()
+      .setHostnameVerificationAlgorithm("HTTPS")
+      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
+      .setKeyCertOptions(new PemKeyCertOptions()
+        .setCertPath("tls/files/client-cert.pem")
+        .setKeyPath("tls/files/client-key.pem"));
+    // The hostname in the test certificate is mysql.vertx.test
+    options.setHost("mysql.vertx.test");
+
+    MySQLConnection.connect(vertxWithHosts, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
+      vertxWithHosts.close();
     }));
   }
 
