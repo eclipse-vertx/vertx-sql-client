@@ -21,10 +21,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.HostAndPort;
-import io.vertx.core.net.impl.NetSocketInternal;
-import io.vertx.core.net.impl.SSLHelper;
-import io.vertx.core.net.impl.SslChannelProvider;
-import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
+import io.vertx.core.net.impl.*;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
@@ -108,7 +105,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
 
     // Do not perform hostname validation if the client did not require encryption
     if (!clientConfigSsl) {
-      sslOptions.setTrustAll(true);
+      sslOptions.setTrustOptions(TrustAllOptions.INSTANCE);
     }
     sslOptions.setHostnameVerificationAlgorithm("");
 
@@ -116,7 +113,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     // options.getApplicationLayerProtocols()
     Future<SslChannelProvider> f = sslHelper.resolveSslChannelProvider(sslOptions, "", false, null, null, context);
     return f.compose(provider -> {
-      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, sslOptions.isUseAlpn(), sslOptions.isTrustAll(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
+      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, sslOptions.isUseAlpn(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
 
       // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
       TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
