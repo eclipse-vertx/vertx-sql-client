@@ -18,6 +18,9 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.dns.AddressResolverOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -92,6 +95,49 @@ public class TLSTest {
       ctx.assertEquals(err.getMessage(), "SSL handshake failed");
       async.complete();
     }));
+  }
+
+  @Test
+  public void testTLSInvalidHostname(TestContext ctx) {
+    Async async = ctx.async();
+    PgConnection.connect(
+      vertx,
+      ruleOptionalSll.options()
+        .setSslMode(SslMode.VERIFY_FULL)
+        // The hostname in the test certificate is thebrain.ca, so 'localhost' should make for a failed connection
+        .setHost("localhost")
+        .setHostnameVerificationAlgorithm("HTTPS")
+        .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt")),
+      ctx.asyncAssertFailure(err -> {
+        ctx.assertEquals(err.getMessage(), "SSL handshake failed");
+        async.complete();
+      }));
+  }
+
+  @Test
+  public void testTLSCorrectHostname(TestContext ctx) {
+    Vertx vertxWithHosts = Vertx.vertx(
+      new VertxOptions()
+        .setAddressResolverOptions(
+          new AddressResolverOptions()
+            .setHostsValue(Buffer.buffer("127.0.0.1 thebrain.ca\n"))
+        )
+    );
+
+    Async async = ctx.async();
+    PgConnection.connect(
+      vertxWithHosts,
+      ruleOptionalSll.options()
+        .setSslMode(SslMode.VERIFY_FULL)
+        // The hostname in the test certificate is thebrain.ca
+        .setHost("thebrain.ca")
+        .setHostnameVerificationAlgorithm("HTTPS")
+        .setPemTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt")),
+      ctx.asyncAssertSuccess(conn -> {
+        ctx.assertTrue(conn.isSSL());
+        vertxWithHosts.close();
+        async.complete();
+      }));
   }
 
   @Test

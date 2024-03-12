@@ -58,7 +58,11 @@ public abstract class ConnectionFactoryBase implements ConnectionFactory {
     if (options.getClass() != NetClientOptions.class) {
       options = new NetClientOptions(options);
     }
-    options.setHostnameVerificationAlgorithm("");
+
+    if (options.getHostnameVerificationAlgorithm() == null) {
+      options.setHostnameVerificationAlgorithm("");
+    }
+
     JsonObject key = options.toJson();
     NetClient client;
     synchronized (this) {
