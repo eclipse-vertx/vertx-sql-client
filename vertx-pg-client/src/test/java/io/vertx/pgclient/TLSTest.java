@@ -18,6 +18,9 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.dns.AddressResolverOptions;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
@@ -171,6 +174,49 @@ public class TLSTest {
       .setSslMode(SslMode.VERIFY_FULL);
     PgConnection.connect(vertx, new PgConnectOptions(options)).onComplete(ctx.asyncAssertFailure(error -> {
       ctx.assertEquals("Host verification algorithm must be specified under verify-full sslmode", error.getMessage());
+    }));
+  }
+
+  @Test
+  public void testSslModeVerifyFullInvalidHostname(TestContext ctx) {
+    PgConnectOptions options = ruleOptionalSll.options()
+      .setSslMode(SslMode.VERIFY_FULL)
+      // The hostname in the test certificate is thebrain.ca, so 'localhost' should make for a failed connection
+      .setHost("localhost")
+      .setSslOptions(
+        new ClientSSLOptions()
+          .setHostnameVerificationAlgorithm("HTTPS")
+          .setTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"))
+      );
+
+    PgConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(err -> {
+      ctx.assertEquals(err.getMessage(), "SSL handshake failed");
+    }));
+  }
+
+  @Test
+  public void testSslModeVerifyFullCorrectHostname(TestContext ctx) {
+    Vertx vertxWithHosts = Vertx.vertx(
+      new VertxOptions()
+        .setAddressResolverOptions(
+          new AddressResolverOptions()
+            .setHostsValue(Buffer.buffer("127.0.0.1 thebrain.ca\n"))
+        )
+    );
+
+    PgConnectOptions options = ruleOptionalSll.options()
+      .setSslMode(SslMode.VERIFY_FULL)
+      // The hostname in the test certificate is thebrain.ca
+      .setHost("thebrain.ca")
+      .setSslOptions(
+        new ClientSSLOptions()
+          .setHostnameVerificationAlgorithm("HTTPS")
+          .setTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"))
+      );
+
+    PgConnection.connect(vertxWithHosts, options).onComplete( ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
+      vertxWithHosts.close();
     }));
   }
 }
