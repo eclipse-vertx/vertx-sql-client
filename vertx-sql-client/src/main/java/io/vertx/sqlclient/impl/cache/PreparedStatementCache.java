@@ -65,4 +65,13 @@ public class PreparedStatementCache {
   public int size() {
     return cache.size();
   }
+
+  /**
+   * Clears the cache.
+   * <p>
+   * This method must be called only when the cached prepared statements have been released (e.g. with a connection reset).
+   */
+  public void clear() {
+    cache.clear();
+  }
 }

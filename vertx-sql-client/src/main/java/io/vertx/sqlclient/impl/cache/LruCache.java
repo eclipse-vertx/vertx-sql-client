@@ -11,19 +11,10 @@
 
 package io.vertx.sqlclient.impl.cache;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.sqlclient.impl.PreparedStatement;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
- * A LRU replacement strategy cache based on {@link java.util.LinkedHashMap} for prepared statements.
+ * An LRU replacement strategy cache based on {@link java.util.LinkedHashMap} for prepared statements.
  */
 public class LruCache<K, V> extends LinkedHashMap<K, V> {
 
@@ -74,5 +65,11 @@ public class LruCache<K, V> extends LinkedHashMap<K, V> {
     } else {
       return false;
     }
+  }
+
+  @Override
+  public void clear() {
+    super.clear();
+    removed = null;
   }
 }
