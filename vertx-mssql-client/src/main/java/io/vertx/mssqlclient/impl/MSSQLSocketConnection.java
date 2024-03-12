@@ -105,7 +105,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
 
     // Do not perform hostname validation if the client did not require encryption
     if (!clientConfigSsl) {
-      sslOptions.setTrustOptions(TrustAllOptions.INSTANCE);
+      sslOptions.setTrustAll(true);
     }
     sslOptions.setHostnameVerificationAlgorithm("");
 
