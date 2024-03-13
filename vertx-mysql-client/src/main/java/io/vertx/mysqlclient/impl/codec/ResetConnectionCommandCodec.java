@@ -30,6 +30,7 @@ class ResetConnectionCommandCodec extends CommandCodec<Void, ResetConnectionComm
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
+    encoder.chctx.fireChannelRead(ClearCachedStatementsEvent.INSTANCE);
     handleOkPacketOrErrorPacketPayload(payload);
   }
 

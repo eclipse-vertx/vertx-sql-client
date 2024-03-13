@@ -28,6 +28,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
+import io.vertx.mysqlclient.impl.codec.ClearCachedStatementsEvent;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLPacketDecoder;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
@@ -113,6 +114,21 @@ public class MySQLSocketConnection extends SocketConnectionBase {
 
   public void upgradeToSsl(Handler<AsyncResult<Void>> completionHandler) {
     socket.upgradeToSsl(completionHandler);
+  }
+
+  @Override
+  protected void handleMessage(Object msg) {
+    if (msg == ClearCachedStatementsEvent.INSTANCE) {
+      clearCachedStatements();
+    } else {
+      super.handleMessage(msg);
+    }
+  }
+
+  private void clearCachedStatements() {
+    if (this.psCache != null) {
+      this.psCache.clear();
+    }
   }
 
   @Override
