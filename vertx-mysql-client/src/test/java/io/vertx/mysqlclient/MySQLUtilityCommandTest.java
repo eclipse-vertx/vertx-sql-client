@@ -17,6 +17,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -155,6 +156,19 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
               conn.close();
             }));
           }));
+        }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testResetConnectionClearsPreparedStatementCache(TestContext ctx) {
+    Assume.assumeFalse(rule.isUsingMySQL5_6());
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions(options).setCachePreparedStatements(true);
+    MySQLConnection.connect(vertx, connectOptions).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("SELECT 1").execute(Tuple.tuple()).onComplete(ctx.asyncAssertSuccess(res1 -> {
+        conn.resetConnection().onComplete(ctx.asyncAssertSuccess(rst -> {
+          conn.preparedQuery("SELECT 1").execute(Tuple.tuple()).onComplete(ctx.asyncAssertSuccess());
         }));
       }));
     }));
