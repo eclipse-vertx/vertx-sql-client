@@ -5,7 +5,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class LruCacheTest {
 
@@ -36,5 +36,15 @@ public class LruCacheTest {
     String evicted = cache.evict();
     assertEquals("value-0", evicted);
     assertEquals(1023, cache.size());
+  }
+
+  @Test
+  public void testCacheCleared() {
+    LruCache<String, String> cache = new LruCache<>(42);
+    List<String> evicted = cache.cache("foo", "bar");
+    assertTrue(evicted.isEmpty());
+    assertNotNull(cache.get("foo"));
+    cache.clear();
+    assertNull(cache.get("foo"));
   }
 }
