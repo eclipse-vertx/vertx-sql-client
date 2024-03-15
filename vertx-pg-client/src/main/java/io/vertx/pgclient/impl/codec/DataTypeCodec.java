@@ -364,6 +364,9 @@ public class DataTypeCodec {
       case MONEY_ARRAY:
         binaryEncodeArray((Money[]) value, DataType.MONEY, buff);
         break;
+      case CIDR:
+        binaryEncodeCidr((Cidr) value, buff);
+        break;
       default:
         logger.debug("Data type " + id + " does not support binary encoding");
         defaultEncodeBinary(value, buff);
@@ -501,6 +504,8 @@ public class DataTypeCodec {
         return binaryDecodeMoney(index, len, buff);
       case MONEY_ARRAY:
         return binaryDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
+      case CIDR:
+        return binaryDecodeCidr(index, len, buff);
       default:
         logger.debug("Data type " + id + " does not support binary decoding");
         return defaultDecodeBinary(index, len, buff);
@@ -641,6 +646,8 @@ public class DataTypeCodec {
         return textDecodeMoney(index, len, buff);
       case MONEY_ARRAY:
         return textDecodeArray(MONEY_ARRAY_FACTORY, DataType.MONEY, index, len, buff);
+      case CIDR:
+        return textDecodeCidr(index, len, buff);
       default:
         return defaultDecodeText(index, len, buff);
     }
@@ -1712,5 +1719,86 @@ public class DataTypeCodec {
       }
     }
     buff.writeByte('}');
+  }
+
+  private static Cidr binaryDecodeCidr(int index, int len, ByteBuf buff){
+    byte family = buff.getByte(index);
+    byte netmask = buff.getByte(index+1);
+    Integer val;
+    int size = buff.getByte(index+3);
+    byte[] data = new byte[size];
+    buff.getBytes(index+4,data);
+    InetAddress address;
+
+    switch (family){
+      case 2:
+      case 3:
+        // IPV4 and IPV6
+        try {
+          address = InetAddress.getByAddress(data);
+        }catch (UnknownHostException e){
+          throw new DecoderException(e);
+        }
+        break;
+      default:
+        throw new DecoderException("Invalid IP family: " + family);
+    }
+    val = Byte.toUnsignedInt(netmask);
+    return new Cidr().setAddress(address).setNetmask(val);
+  }
+
+  private static void binaryEncodeCidr(Cidr value, ByteBuf buff) {
+    InetAddress address = value.getAddress();
+    byte family;
+    byte[] data;
+    int netmask;
+
+    if (address instanceof Inet6Address) {
+      family = 3;
+      Inet6Address inet6Address = (Inet6Address) address;
+      data = inet6Address.getAddress();
+      netmask = (value.getNetmask() == null) ? 128 : value.getNetmask();
+    } else if (address instanceof Inet4Address) {
+      family = 2;
+      Inet4Address inet4Address = (Inet4Address) address;
+      data = inet4Address.getAddress();
+      netmask = (value.getNetmask() == null) ? 32 : value.getNetmask();
+    } else {
+      throw new DecoderException("Invalid inet address");
+    }
+
+    buff.writeByte(family);
+    buff.writeByte(netmask);
+    buff.writeByte(0); // INET
+    buff.writeByte(data.length);
+    buff.writeBytes(data);
+  }
+
+  private static Cidr textDecodeCidr(int index, int len, ByteBuf buff) {
+    Cidr cidr = new Cidr();
+    int sepIdx = buff.indexOf(index, index + len, (byte) '/');
+    String s;
+
+    if (sepIdx == -1) {
+      s = textdecodeTEXT(index, len, buff);
+    } else {
+      s = textdecodeTEXT(index, sepIdx - index, buff);
+      String t = textdecodeTEXT(sepIdx + 1, len - (sepIdx + 1 - index), buff);
+      try {
+        int netmask = Integer.parseInt(t);
+        cidr.setNetmask(netmask);
+      } catch (NumberFormatException e) {
+        throw new DecoderException(e);
+      }
+    }
+
+    try {
+      InetAddress v = InetAddress.getByName(s);
+      cidr.setAddress(v);
+    } catch (UnknownHostException e) {
+      throw new DecoderException(e);
+    }
+
+    return cidr;
   }
 }

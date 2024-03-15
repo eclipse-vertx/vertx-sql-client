@@ -28,6 +28,7 @@ import io.vertx.pgclient.data.Inet;
 import io.vertx.pgclient.data.Line;
 import io.vertx.pgclient.data.LineSegment;
 import io.vertx.pgclient.data.Money;
+import io.vertx.pgclient.data.Cidr;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.pgclient.data.Interval;
@@ -97,7 +98,7 @@ public enum DataType {
   MACADDR(829, true, Object.class, JDBCType.OTHER),
   INET(869, true, Inet.class, JDBCType.OTHER),
   INET_ARRAY(1041, true, Inet[].class, JDBCType.OTHER),
-  CIDR(650, true, Object.class, JDBCType.OTHER),
+  CIDR(650, true, Cidr.class, JDBCType.OTHER),
   MACADDR8(774, true, Object[].class, JDBCType.OTHER),
   UUID(2950, true, UUID.class, JDBCType.OTHER, Tuple::getUUID),
   UUID_ARRAY(2951, true, UUID[].class, JDBCType.OTHER, Tuple::getArrayOfUUIDs),
