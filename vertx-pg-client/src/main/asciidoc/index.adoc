@@ -233,7 +233,7 @@ $ PGUSER=user \
 
 === SASL SCRAM-SHA-256 authentication mechanism.
 
-To use the sasl SCRAM-SHA-256 authentication add the following dependency to the _dependencies_ section of your build descriptor:
+To use the SASL `SCRAM-SHA-256` authentication add the following dependency to the _dependencies_ section of your build descriptor:
 
 * Maven (in your `pom.xml`):
 
@@ -241,8 +241,8 @@ To use the sasl SCRAM-SHA-256 authentication add the following dependency to the
 ----
 <dependency>
   <groupId>com.ongres.scram</groupId>
-  <artifactId>client</artifactId>
-  <version>2.1</version>
+  <artifactId>scram-client</artifactId>
+  <version>3.0</version>
 </dependency>
 ----
 * Gradle (in your `build.gradle` file):
@@ -250,12 +250,9 @@ To use the sasl SCRAM-SHA-256 authentication add the following dependency to the
 [source,groovy]
 ----
 dependencies {
-  compile 'com.ongres.scram:client:2.1'
+  compile 'com.ongres.scram:scram-client:3.0'
 }
 ----
-
-NOTE: SCRAM-SHA-256-PLUS (added in Postgresql 11) is not supported.
-
 
 include::queries.adoc[leveloffset=1]
 
