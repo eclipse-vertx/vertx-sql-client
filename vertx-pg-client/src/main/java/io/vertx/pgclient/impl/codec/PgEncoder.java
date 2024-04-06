@@ -30,7 +30,6 @@ import io.vertx.sqlclient.impl.ParamDesc;
 import io.vertx.sqlclient.impl.RowDesc;
 import io.vertx.sqlclient.impl.command.*;
 
-import java.util.ArrayDeque;
 import java.util.Map;
 
 import static io.vertx.pgclient.impl.util.Util.writeCString;

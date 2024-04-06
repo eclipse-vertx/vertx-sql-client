@@ -16,22 +16,24 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.VertxException;
 import io.vertx.pgclient.impl.PgDatabaseMetadata;
 import io.vertx.pgclient.impl.PgSocketConnection;
-import io.vertx.pgclient.impl.util.ScramAuthentication;
+import io.vertx.pgclient.impl.auth.scram.ScramAuthentication;
+import io.vertx.pgclient.impl.auth.scram.ScramSession;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.InitCommand;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
 
   private PgEncoder encoder;
   private String encoding;
-  private ScramAuthentication scramAuthentication;
+  private ScramSession scramSession;
 
   InitCommandCodec(InitCommand cmd) {
     super(cmd);
@@ -57,20 +59,26 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
 
   @Override
   void handleAuthenticationSasl(ByteBuf in) {
-    scramAuthentication = new ScramAuthentication(cmd.username(), cmd.password());
-    encoder.writeScramClientInitialMessage(scramAuthentication.createInitialSaslMessage(in));
+    ScramAuthentication scramAuth = ScramAuthentication.INSTANCE;
+    if (scramAuth == null) {
+      // This will close the connection
+      throw new VertxException("Scram authentication not supported, missing com.ongres.scram:scram-client on the class/module path");
+    }
+    scramSession = scramAuth.session(cmd.username(), cmd.password().toCharArray());
+    encoder.writeScramClientInitialMessage(
+      scramSession.createInitialSaslMessage(in, encoder.channelHandlerContext()));
     encoder.flush();
   }
 
   @Override
   void handleAuthenticationSaslContinue(ByteBuf in) {
-    encoder.writeScramClientFinalMessage(new ScramClientFinalMessage(scramAuthentication.receiveServerFirstMessage(in)));
+    encoder.writeScramClientFinalMessage(new ScramClientFinalMessage(scramSession.receiveServerFirstMessage(in)));
     encoder.flush();
   }
 
   @Override
   void handleAuthenticationSaslFinal(ByteBuf in) {
-    scramAuthentication.checkServerFinalMessage(in);
+    scramSession.checkServerFinalMessage(in);
   }
 
   @Override
