@@ -57,8 +57,9 @@ class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
 
   @Override
   void handleAuthenticationSasl(ByteBuf in) {
-    scramAuthentication = new ScramAuthentication(cmd.username(), cmd.password());
-    encoder.writeScramClientInitialMessage(scramAuthentication.createInitialSaslMessage(in));
+    scramAuthentication = new ScramAuthentication(cmd.username(), cmd.password().toCharArray());
+    encoder.writeScramClientInitialMessage(
+        scramAuthentication.createInitialSaslMessage(in, encoder.channelHandlerContext()));
     encoder.flush();
   }
 
