@@ -66,7 +66,7 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
     return executeBlocking(context, () -> {
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
-      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, options, orac, metadata);
+      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, options, orac, metadata, options.getPipeliningLimit());
       OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn);
       conn.init(msConn);
       return msConn;

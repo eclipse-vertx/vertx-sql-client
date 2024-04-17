@@ -41,20 +41,23 @@ public class OracleJdbcConnection implements Connection {
   private final OracleConnectOptions options;
   @SuppressWarnings("rawtypes")
   private final ConcurrentMap<String, RowReader> cursors = new ConcurrentHashMap<>();
+  private final int pipeliningLimit;
   private Holder holder;
 
   // Command pipeline state
   @SuppressWarnings("rawtypes")
   private final Deque<CommandBase> pending = new ArrayDeque<>();
   private Promise<Void> closePromise;
-  private boolean inflight, executing;
+  private boolean executing;
+  private int inflight;
 
-  public OracleJdbcConnection(ContextInternal ctx, ClientMetrics metrics, OracleConnectOptions options, OracleConnection oc, OracleMetadata metadata) {
+  public OracleJdbcConnection(ContextInternal ctx, ClientMetrics metrics, OracleConnectOptions options, OracleConnection oc, OracleMetadata metadata, int pipeliningLimit) {
     this.context = ctx;
     this.metrics = metrics;
     this.options = options;
     this.connection = oc;
     this.metadata = metadata;
+    this.pipeliningLimit = pipeliningLimit;
   }
 
   @Override
@@ -183,8 +186,8 @@ public class OracleJdbcConnection implements Connection {
     try {
       executing = true;
       CommandBase cmd;
-      while (!inflight && (cmd = pending.poll()) != null) {
-        inflight = true;
+      while (inflight < pipeliningLimit  && (cmd = pending.poll()) != null) {
+        inflight++;
         if (metrics != null && cmd instanceof CloseConnectionCommand) {
           metrics.close();
         }
@@ -243,7 +246,7 @@ public class OracleJdbcConnection implements Connection {
   }
 
   private void actionComplete(CommandBase cmd, OracleCommand<?> action, AsyncResult<Void> ar) {
-    inflight = false;
+    inflight--;
     Future<Void> future = Future.succeededFuture();
     if (ar.failed()) {
       Throwable cause = ar.cause();
