@@ -39,7 +39,7 @@ public class OraclePipeliningQueryTest extends PipeliningQueryTestBase {
   protected void init() {
     options = rule.options();
     OracleConnectOptions oracleConnectOptions = (OracleConnectOptions) options;
-    oracleConnectOptions.setPipeliningLimit(2);
+    oracleConnectOptions.setPipeliningLimit(64);
     connectionConnector = ClientConfig.CONNECT.connect(vertx, oracleConnectOptions);
     pooledConnectionConnector = ClientConfig.POOLED.connect(vertx, oracleConnectOptions);
     pooledClientSupplier = () -> OracleBuilder.pool(b -> b.connectingTo(oracleConnectOptions).with(new PoolOptions().setMaxSize(8)).using(vertx));
