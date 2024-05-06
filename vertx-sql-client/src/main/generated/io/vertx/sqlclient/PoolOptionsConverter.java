@@ -20,6 +20,11 @@ public class PoolOptionsConverter {
    static void fromJson(Iterable<java.util.Map.Entry<String, Object>> json, PoolOptions obj) {
     for (java.util.Map.Entry<String, Object> member : json) {
       switch (member.getKey()) {
+        case "alwaysUseTimeout":
+          if (member.getValue() instanceof Boolean) {
+            obj.setAlwaysUseTimeout((Boolean)member.getValue());
+          }
+          break;
         case "connectionTimeout":
           if (member.getValue() instanceof Number) {
             obj.setConnectionTimeout(((Number)member.getValue()).intValue());
@@ -89,6 +94,7 @@ public class PoolOptionsConverter {
   }
 
    static void toJson(PoolOptions obj, java.util.Map<String, Object> json) {
+    json.put("alwaysUseTimeout", obj.isAlwaysUseTimeout());
     json.put("connectionTimeout", obj.getConnectionTimeout());
     if (obj.getConnectionTimeoutUnit() != null) {
       json.put("connectionTimeoutUnit", obj.getConnectionTimeoutUnit().name());
