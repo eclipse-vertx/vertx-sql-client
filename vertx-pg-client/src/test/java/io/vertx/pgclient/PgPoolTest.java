@@ -596,7 +596,7 @@ public class PgPoolTest extends PgPoolTestBase {
 
   @Test
   public void testConnectionTimeoutWhenExecutingDirectly(TestContext ctx) {
-    PgPool pool = createPool(options, new PoolOptions().setConnectionTimeout(2).setMaxSize(2));
+    PgPool pool = createPool(options, new PoolOptions().setConnectionTimeout(2).setMaxSize(2).setAlwaysUseTimeout(true));
     final Async latch = ctx.async(2);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
       conn

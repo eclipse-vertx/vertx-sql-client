@@ -49,6 +49,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private volatile Handler<SqlConnectionPool.PooledConnection> connectionInitializer;
   private long timerID;
   private volatile Function<Context, Future<SqlConnection>> connectionProvider;
+  private final boolean alwaysUseTimeout;
 
   public static final String PROPAGATABLE_CONNECTION = "propagatable_connection";
 
@@ -65,6 +66,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
     this.maxLifetime = MILLISECONDS.convert(poolOptions.getMaxLifetime(), poolOptions.getMaxLifetimeUnit());
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
+    this.alwaysUseTimeout = poolOptions.isAlwaysUseTimeout();
     this.timerID = -1L;
     this.pipelined = pipelined;
     this.vertx = vertx;
@@ -169,6 +171,9 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
 
   @Override
   public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
+    if (alwaysUseTimeout) {
+      return pool.execute(context, cmd);
+    }
     PromiseInternal<SqlConnectionPool.PooledConnection> promise = context.promise();
     //Acquires the connection honoring the pool's connection timeout
     acquire(context, connectionTimeout, promise);
@@ -176,7 +181,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
         //We need to 'init' the connection or close will fail.
         pooled.init(pooled);
         return pooled.schedule(context, cmd)
-          .eventually(v -> {
+          .eventually(() -> {
               Promise<Void> p = Promise.promise();
               pooled.close(pooled, p);
               return p.future();

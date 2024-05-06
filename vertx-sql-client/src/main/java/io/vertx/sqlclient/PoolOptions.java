@@ -94,6 +94,11 @@ public class PoolOptions {
    */
   public static final int DEFAULT_EVENT_LOOP_SIZE = 0;
 
+  /**
+   * Default honor timeout when scheduling commands is false
+   */
+  public static final boolean DEFAULT_ALWAYS_USE_TIMEOUT = false;
+
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
@@ -106,6 +111,7 @@ public class PoolOptions {
   private boolean shared = DEFAULT_SHARED_POOL;
   private String name = DEFAULT_NAME;
   private int eventLoopSize = DEFAULT_EVENT_LOOP_SIZE;
+  private boolean alwaysUseTimeout = DEFAULT_ALWAYS_USE_TIMEOUT;
 
   public PoolOptions() {
   }
@@ -122,6 +128,7 @@ public class PoolOptions {
     shared= other.shared;
     name = other.name;
     eventLoopSize = other.eventLoopSize;
+    alwaysUseTimeout = other.alwaysUseTimeout;
   }
 
   /**
@@ -357,6 +364,27 @@ public class PoolOptions {
   public PoolOptions setEventLoopSize(int eventLoopSize) {
     Arguments.require(eventLoopSize >= 0, "poolEventLoopSize must be >= 0");
     this.eventLoopSize = eventLoopSize;
+    return this;
+  }
+
+  /**
+   * @return Whether the pool will always use timeout, even when sending commands directly to execute.
+   */
+  public boolean isAlwaysUseTimeout() { return alwaysUseTimeout; }
+
+  /**
+   * Sets whether always honor the pool's timeout.
+   * <p>
+   *   This basically affects the pool's schedule method, which will submit the command regardless of whether there's
+   *   an available connection or not. This settings allows the caller to have a consistent max wait time across every
+   *   method.
+   * </p>
+   * The default is {@code false}.
+   * @param alwaysUseTimeout Whether to use the configured connection timeout when scheduling commands
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setAlwaysUseTimeout(boolean alwaysUseTimeout) {
+    this.alwaysUseTimeout = alwaysUseTimeout;
     return this;
   }
 
