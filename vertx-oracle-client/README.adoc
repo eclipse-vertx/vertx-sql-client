@@ -18,6 +18,20 @@ Nevertheless, you can force the usage of the standard Oracle port (1521) with a 
 mvn test -DcontainerFixedPort
 ----
 
+==== Testing on OSX Mx chips
+
+- stop Docker engine
+- install https://github.com/abiosoft/colima[Colima]
+
+[source,shell]
+----
+> colima start --arch x86_64 --memory 4
+> docker context use colima
+> export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=${HOME}/.colima/docker.sock
+> export DOCKER_HOST="unix:///${HOME}/.colima/docker.sock"
+> export TESTCONTAINERS_RYUK_DISABLED=true
+----
+
 ==== Testing with an external database
 
 You can start an external database:
