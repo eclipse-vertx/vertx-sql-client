@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -46,7 +46,6 @@ import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 public class MSSQLSocketConnection extends SocketConnectionBase {
 
   private final MSSQLConnectOptions connectOptions;
-  private final int packetSize;
 
   private MSSQLDatabaseMetadata databaseMetadata;
   private HostAndPort alternateServer;
@@ -54,7 +53,6 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   MSSQLSocketConnection(NetSocketInternal socket,
                         ClientMetrics clientMetrics,
                         MSSQLConnectOptions connectOptions,
-                        int packetSize,
                         boolean cachePreparedStatements,
                         int preparedStatementCacheSize,
                         Predicate<String> preparedStatementCacheSqlFilter,
@@ -62,7 +60,6 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
                         ContextInternal context) {
     super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
     this.connectOptions = connectOptions;
-    this.packetSize = packetSize;
   }
 
   @Override
@@ -134,7 +131,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   @Override
   public void init() {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec(packetSize));
+    pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec(connectOptions.getPacketSize()));
     pipeline.addBefore("messageCodec", "packetDecoder", new TdsPacketDecoder());
     super.init();
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,6 +12,8 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler;
+import io.netty.handler.ssl.SslHandler;
 import io.vertx.mssqlclient.MSSQLException;
 import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.sqlclient.impl.command.CommandBase;
@@ -182,7 +184,7 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
     short type = payload.readUnsignedByte();
     switch (type) {
       case PACKETSIZE:
-        tdsMessageCodec.encoder().setPacketSize(Integer.parseInt(readUnsignedByteLengthString(payload)));
+        handlePacketSizeChange(payload);
         break;
       case XACT_BEGIN:
       case DTC_ENLIST:
@@ -203,6 +205,16 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
         break;
     }
     payload.readerIndex(startPos + totalLength);
+  }
+
+  private void handlePacketSizeChange(ByteBuf payload) {
+    int packetSize = Integer.parseInt(readUnsignedByteLengthString(payload));
+    ChannelHandler first = tdsMessageCodec.chctx().pipeline().first();
+    if (first instanceof SslHandler) {
+      SslHandler sslHandler = (SslHandler) first;
+      sslHandler.setWrapDataSize(packetSize);
+    }
+    tdsMessageCodec.encoder().setPacketSize(packetSize);
   }
 
   protected void handleRouting(ByteBuf payload) {

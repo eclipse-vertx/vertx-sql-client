@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -48,11 +48,10 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     }
     SocketAddress server = options.getSocketAddress();
     boolean clientSslConfig = options.isSsl();
-    int desiredPacketSize = options.getPacketSize();
     // Always start unencrypted, the connection will be upgraded if client and server agree
     NetClient netClient = netClient(new NetClientOptions(options).setSsl(false));
     return netClient.connect(server)
-      .map(so -> createSocketConnection(so, options, desiredPacketSize, context))
+      .map(so -> createSocketConnection(so, options, context))
       .compose(conn -> conn.sendPreLoginMessage(clientSslConfig)
         .compose(encryptionLevel -> login(conn, options, encryptionLevel, context))
       )
@@ -73,10 +72,10 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
       });
   }
 
-  private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, int desiredPacketSize, ContextInternal context) {
+  private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, ContextInternal context) {
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
-    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, metrics, options, desiredPacketSize, false, 0, sql -> true, 1, context);
+    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, metrics, options, false, 0, sql -> true, 1, context);
     conn.init();
     return conn;
   }
