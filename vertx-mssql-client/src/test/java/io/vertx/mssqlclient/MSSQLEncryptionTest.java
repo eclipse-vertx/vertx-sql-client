@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,12 +11,16 @@
 
 package io.vertx.mssqlclient;
 
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.junit.MSSQLRule;
+import io.vertx.sqlclient.Tuple;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Arrays;
 
 import static io.vertx.mssqlclient.junit.MSSQLRule.Config.TLS;
 
@@ -42,5 +46,23 @@ public class MSSQLEncryptionTest extends MSSQLEncryptionTestBase {
     // Also, the client shall trust all certificates
     setOptions(rule.options());
     asyncAssertConnectionUnencrypted(ctx);
+  }
+
+  @Test
+  public void testSmallerPacketSize(TestContext ctx) {
+    setOptions(rule.options()
+      .setSsl(true)
+      .setSslOptions(new ClientSSLOptions().setTrustAll(true))
+      .setPacketSize(512));
+
+    char[] chars = new char[200];
+    Arrays.fill(chars, 'a');
+    String str = new String(chars);
+
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.query("CREATE TABLE #TestSmallerPacketSize (text NVARCHAR(MAX))").execute().onComplete(ctx.asyncAssertSuccess(v -> {
+        conn.preparedQuery("INSERT INTO #TestSmallerPacketSize (text) VALUES (@p1)").execute(Tuple.of(str)).onComplete(ctx.asyncAssertSuccess());
+      }));
+    }));
   }
 }
