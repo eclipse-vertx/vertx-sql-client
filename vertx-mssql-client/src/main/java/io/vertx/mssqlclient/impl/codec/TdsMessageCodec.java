@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -35,9 +35,9 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   private Map<String, CursorData> cursorDataMap;
   private Throwable failure;
 
-  public TdsMessageCodec(int packetSize) {
+  public TdsMessageCodec(int desiredPacketSize) {
     decoder = new TdsMessageDecoder(this);
-    encoder = new TdsMessageEncoder(this, packetSize);
+    encoder = new TdsMessageEncoder(this, desiredPacketSize);
     init(decoder, encoder);
   }
 
