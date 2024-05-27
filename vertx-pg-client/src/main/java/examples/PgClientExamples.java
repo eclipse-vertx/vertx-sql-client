@@ -23,7 +23,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
-import io.vertx.pgclient.*;
+import io.vertx.pgclient.PgBuilder;
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.PgConnection;
+import io.vertx.pgclient.SslMode;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
@@ -774,7 +777,7 @@ public class PgClientExamples {
       .preparedQuery("INSERT INTO color (color_name) VALUES ($1) RETURNING color_id")
       .executeBatch(Arrays.asList(Tuple.of("white"), Tuple.of("red"), Tuple.of("blue")))
       .onSuccess(res -> {
-        for (RowSet<Row> rows = res;rows.next() != null;rows = rows.next()) {
+        for (RowSet<Row> rows = res; rows != null; rows = rows.next()) {
           Integer colorId = rows.iterator().next().getInteger("color_id");
           System.out.println("generated key: " + colorId);
         }
