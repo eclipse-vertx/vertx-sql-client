@@ -3,7 +3,7 @@ package io.vertx.pgclient.data;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-import io.vertx.core.buffer.impl.BufferInternal;
+import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;

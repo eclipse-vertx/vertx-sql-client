@@ -18,10 +18,10 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.*;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
+import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;

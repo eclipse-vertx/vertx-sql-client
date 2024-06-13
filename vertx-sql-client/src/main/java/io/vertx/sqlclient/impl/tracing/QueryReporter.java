@@ -1,12 +1,12 @@
 package io.vertx.sqlclient.impl.tracing;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.tracing.SpanKind;
 import io.vertx.core.spi.tracing.TagExtractor;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultBuilder;

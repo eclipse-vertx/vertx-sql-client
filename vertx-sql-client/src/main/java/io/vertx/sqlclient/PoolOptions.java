@@ -19,7 +19,6 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.json.annotations.JsonGen;
-import io.vertx.core.impl.Arguments;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
@@ -196,7 +195,9 @@ public class PoolOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public PoolOptions setIdleTimeout(int idleTimeout) {
-    Arguments.require(idleTimeout >= 0, "idleTimeout must be >= 0");
+    if (idleTimeout < 0) {
+      throw new IllegalArgumentException("idleTimeout must be >= 0");
+    }
     this.idleTimeout = idleTimeout;
     return this;
   }
@@ -233,7 +234,9 @@ public class PoolOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public PoolOptions setMaxLifetime(int maxLifetime) {
-    Arguments.require(maxLifetime >= 0, "maxLifetime must be >= 0");
+    if (maxLifetime < 0) {
+      throw new IllegalArgumentException("maxLifetime must be >= 0");
+    }
     this.maxLifetime = maxLifetime;
     return this;
   }
@@ -355,7 +358,9 @@ public class PoolOptions {
    * @return a reference to this, so the API can be used fluently
    */
   public PoolOptions setEventLoopSize(int eventLoopSize) {
-    Arguments.require(eventLoopSize >= 0, "poolEventLoopSize must be >= 0");
+    if (eventLoopSize < 0) {
+      throw new IllegalArgumentException("poolEventLoopSize must be >= 0");
+    }
     this.eventLoopSize = eventLoopSize;
     return this;
   }

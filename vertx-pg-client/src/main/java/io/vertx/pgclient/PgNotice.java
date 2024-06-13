@@ -18,7 +18,7 @@ package io.vertx.pgclient;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.json.annotations.JsonGen;
-import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.json.JsonObject;
 
 /**

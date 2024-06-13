@@ -18,7 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Future;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;

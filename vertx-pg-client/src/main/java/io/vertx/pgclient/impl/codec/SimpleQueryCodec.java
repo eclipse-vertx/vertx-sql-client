@@ -16,8 +16,8 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
 
 class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {

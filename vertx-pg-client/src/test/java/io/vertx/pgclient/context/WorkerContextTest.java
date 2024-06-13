@@ -2,8 +2,7 @@ package io.vertx.pgclient.context;
 
 
 import io.vertx.core.Context;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.internal.VertxInternal;
 
 public class WorkerContextTest extends ContextTest {
 

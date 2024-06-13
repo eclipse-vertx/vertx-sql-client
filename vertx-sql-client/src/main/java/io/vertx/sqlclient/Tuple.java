@@ -16,13 +16,13 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.buffer.impl.BufferInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.data.NullValue;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.ListTuple;
+import io.vertx.core.internal.buffer.BufferInternal;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
