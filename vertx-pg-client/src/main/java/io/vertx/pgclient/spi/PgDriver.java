@@ -1,16 +1,18 @@
 package io.vertx.pgclient.spi;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.CloseFuture;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.internal.CloseFuture;
+import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.impl.*;
+import io.vertx.pgclient.impl.PgConnectionFactory;
+import io.vertx.pgclient.impl.PgConnectionImpl;
+import io.vertx.pgclient.impl.PgConnectionUriParser;
+import io.vertx.pgclient.impl.PgPoolOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -22,7 +24,6 @@ import io.vertx.sqlclient.impl.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class PgDriver implements Driver<PgConnectOptions> {

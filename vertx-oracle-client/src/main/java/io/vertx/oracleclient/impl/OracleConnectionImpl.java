@@ -13,7 +13,7 @@ package io.vertx.oracleclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OracleConnection;
 import io.vertx.oracleclient.spi.OracleDriver;

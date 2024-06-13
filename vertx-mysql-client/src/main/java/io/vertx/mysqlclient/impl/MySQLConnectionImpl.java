@@ -14,7 +14,7 @@ package io.vertx.mysqlclient.impl;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.mysqlclient.MySQLAuthOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;

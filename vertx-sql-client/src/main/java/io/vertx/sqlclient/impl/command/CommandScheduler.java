@@ -17,7 +17,7 @@
 package io.vertx.sqlclient.impl.command;
 
 import io.vertx.core.Future;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 
 @FunctionalInterface
 public interface CommandScheduler {

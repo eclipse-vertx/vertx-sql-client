@@ -19,8 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.SqlResult;
 
@@ -92,6 +91,11 @@ public class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResu
   @Override
   public boolean tryFail(Throwable cause) {
     return handler.tryFail(cause);
+  }
+
+  @Override
+  public boolean tryFail(String message) {
+    return handler.tryFail(message);
   }
 
   @Override

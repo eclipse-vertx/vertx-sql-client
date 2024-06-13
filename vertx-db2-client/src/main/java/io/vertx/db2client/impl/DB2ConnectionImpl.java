@@ -18,7 +18,7 @@ package io.vertx.db2client.impl;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;

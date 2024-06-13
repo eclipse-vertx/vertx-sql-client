@@ -12,10 +12,12 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.*;
-import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.impl.NetClientInternal;
+import io.vertx.core.internal.CloseSequence;
+import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.internal.PromiseInternal;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
@@ -27,7 +29,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   public static final String NATIVE_TRANSPORT_REQUIRED = "The Vertx instance must use a native transport in order to connect to connect through domain sockets";
 
   protected final VertxInternal vertx;
-  protected final NetClientInternal client;
+  protected final NetClient client;
   protected final NetClientOptions tcpOptions;
 
   // close hook
@@ -39,7 +41,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
 
   protected ConnectionFactoryBase(VertxInternal vertx, NetClientOptions tcpOptions) {
     this.vertx = vertx;
-    this.client = (NetClientInternal) vertx.createNetClient(new NetClientOptions(tcpOptions).setReconnectAttempts(0)); // auto-retry is handled on the protocol level instead of network level
+    this.client = vertx.createNetClient(new NetClientOptions(tcpOptions).setReconnectAttempts(0)); // auto-retry is handled on the protocol level instead of network level
     this.tcpOptions = tcpOptions;
   }
 
@@ -48,11 +50,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   }
 
   public static ContextInternal asEventLoopContext(ContextInternal ctx) {
-    if (ctx.isEventLoopContext()) {
-      return ctx;
-    } else {
-      return ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.workerPool(), ctx.classLoader());
-    }
+    return ctx.asEventLoopContext();
   }
 
   public Future<Connection> connect(ContextInternal context, C options) {

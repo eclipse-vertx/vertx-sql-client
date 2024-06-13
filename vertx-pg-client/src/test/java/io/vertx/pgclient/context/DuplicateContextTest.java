@@ -2,7 +2,7 @@ package io.vertx.pgclient.context;
 
 
 import io.vertx.core.Context;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 
 public class DuplicateContextTest extends ContextTest {
 

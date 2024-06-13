@@ -13,14 +13,14 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.netty.channel.EventLoop;
 import io.vertx.core.*;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.net.impl.ConnectionBase;
-import io.vertx.core.net.impl.pool.*;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.core.net.impl.ConnectionBase;
+import io.vertx.core.internal.pool.*;
+import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionBase;

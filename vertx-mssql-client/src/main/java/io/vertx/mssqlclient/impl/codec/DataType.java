@@ -16,8 +16,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.buffer.impl.BufferInternal;
-import io.vertx.core.buffer.impl.VertxByteBufAllocator;
+import io.vertx.core.internal.buffer.BufferInternal;
+import io.vertx.core.internal.buffer.VertxByteBufAllocator;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;

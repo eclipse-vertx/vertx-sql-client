@@ -13,7 +13,7 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import oracle.jdbc.OracleConnection;
 
 import java.util.Objects;

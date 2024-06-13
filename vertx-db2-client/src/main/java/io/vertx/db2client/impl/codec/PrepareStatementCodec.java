@@ -16,8 +16,8 @@
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;

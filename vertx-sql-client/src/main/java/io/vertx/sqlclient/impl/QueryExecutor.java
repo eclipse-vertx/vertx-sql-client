@@ -17,8 +17,8 @@
 
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;

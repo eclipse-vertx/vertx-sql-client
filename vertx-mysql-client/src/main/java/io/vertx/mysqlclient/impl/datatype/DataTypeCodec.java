@@ -14,7 +14,7 @@ package io.vertx.mysqlclient.impl.datatype;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.buffer.impl.BufferInternal;
+import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

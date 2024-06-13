@@ -11,9 +11,8 @@
 package io.vertx.oracleclient.impl;
 
 import io.vertx.core.*;
-import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.NoStackTraceThrowable;
-import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
@@ -171,7 +170,7 @@ public class OracleJdbcConnection implements Connection {
       pending.add(cmd);
       checkPending();
     } else {
-      cmd.fail(new NoStackTraceThrowable("Connection is no longer active"));
+      cmd.fail(VertxException.noStackTrace("Connection is no longer active"));
     }
   }
 
