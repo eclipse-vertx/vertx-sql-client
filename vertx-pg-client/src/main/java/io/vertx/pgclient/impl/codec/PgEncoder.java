@@ -106,6 +106,8 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
       return new ClosePortalCommandCodec((CloseCursorCommand) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
       return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    } else if (cmd instanceof CopyOutCommand) {
+      return new CopyOutCommandCodec((CopyOutCommand) cmd);
     }
     throw new AssertionError();
   }

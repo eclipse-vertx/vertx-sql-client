@@ -784,6 +784,26 @@ public class PgClientExamples {
       });
   }
 
+  public void importDataToDb(Vertx vertx, PgConnection client) {
+    vertx.fileSystem().readFile("path/to/file")
+      .flatMap(bufferAsyncResult -> {
+          return client.copyFromBytes(
+            "COPY my_table FROM STDIN (FORMAT csv, HEADER)",
+            bufferAsyncResult
+          ).execute();
+        }).onSuccess(result -> {
+          Long rowsWritten = result.iterator().next().getLong("rowsWritten");
+        System.out.println("rows written: " + rowsWritten);
+      });
+  }
+
+  public void exportDataFromDb(Vertx vertx, PgConnection client) {
+    String path = "path/to/file";
+    client.copyToBytes("COPY my_table TO STDOUT (FORMAT csv, HEADER)")
+      .flatMap(result -> vertx.fileSystem().writeFile("path/to/file.csv", result.value()))
+      .onSuccess(res -> System.out.println("Data exported to " + path));
+  }
+
   public void pgBouncer(PgConnectOptions connectOptions) {
     connectOptions.setUseLayer7Proxy(true);
   }
