@@ -28,12 +28,12 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxException;
+import io.vertx.core.internal.NoStackTraceException;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -225,7 +225,7 @@ public abstract class SocketConnectionBase implements Connection {
       }
       checkPending();
     } else {
-      cmd.fail(new NoStackTraceThrowable("Connection is not active now, current status: " + status));
+      cmd.fail(new NoStackTraceException("Connection is not active now, current status: " + status));
     }
   }
 
@@ -266,7 +266,7 @@ public abstract class SocketConnectionBase implements Connection {
             String msg = queryCmd.prepare();
             if (msg != null) {
               inflight--;
-              queryCmd.fail(new NoStackTraceThrowable(msg));
+              queryCmd.fail(new NoStackTraceException(msg));
               continue;
             }
           }
@@ -295,7 +295,7 @@ public abstract class SocketConnectionBase implements Connection {
         String msg = queryCmd.prepare();
         if (msg != null) {
           inflight--;
-          queryCmd.fail(new NoStackTraceThrowable(msg));
+          queryCmd.fail(new NoStackTraceException(msg));
         } else {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           ctx.write(queryCmd, ctx.voidPromise());
@@ -392,7 +392,7 @@ public abstract class SocketConnectionBase implements Connection {
       if (t != null) {
         reportException(t);
       }
-      Throwable cause = t == null ? new NoStackTraceThrowable(PENDING_CMD_CONNECTION_CORRUPT_MSG) : new VertxException(PENDING_CMD_CONNECTION_CORRUPT_MSG, t);
+      Throwable cause = t == null ? new NoStackTraceException(PENDING_CMD_CONNECTION_CORRUPT_MSG) : new VertxException(PENDING_CMD_CONNECTION_CORRUPT_MSG, t);
       CommandBase<?> cmd;
       while ((cmd = pending.poll()) != null) {
         CommandBase<?> c = cmd;

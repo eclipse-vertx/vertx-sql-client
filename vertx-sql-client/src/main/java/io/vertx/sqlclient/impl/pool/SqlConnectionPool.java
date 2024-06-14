@@ -13,11 +13,11 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.netty.channel.EventLoop;
 import io.vertx.core.*;
+import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.internal.pool.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
@@ -123,7 +123,7 @@ public class SqlConnectionPool {
             return Future.succeededFuture(new ConnectResult<>(pooled, pipelined ? conn.pipeliningLimit() : 1, 0));
           }
         } else {
-          return Future.failedFuture(ConnectionBase.CLOSED_EXCEPTION);
+          return Future.failedFuture(NetSocketInternal.CLOSED_EXCEPTION);
         }
       });
     }
@@ -414,7 +414,7 @@ public class SqlConnectionPool {
       Promise<ConnectResult<PooledConnection>> resultHandler = poolCallback;
       if (resultHandler != null) {
         poolCallback = null;
-        resultHandler.fail(ConnectionBase.CLOSED_EXCEPTION);
+        resultHandler.fail(NetSocketInternal.CLOSED_EXCEPTION);
       }
       listener.onRemove();
     }
