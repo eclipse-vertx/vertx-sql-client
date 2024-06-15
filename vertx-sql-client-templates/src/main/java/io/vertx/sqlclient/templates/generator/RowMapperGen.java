@@ -1,16 +1,16 @@
 package io.vertx.sqlclient.templates.generator;
 
-import io.vertx.codegen.DataObjectModel;
-import io.vertx.codegen.MapperKind;
-import io.vertx.codegen.PropertyInfo;
+import io.vertx.codegen.processor.DataObjectModel;
+import io.vertx.codegen.processor.MapperKind;
+import io.vertx.codegen.processor.PropertyInfo;
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.type.AnnotationValueInfo;
-import io.vertx.codegen.type.ClassKind;
-import io.vertx.codegen.type.ClassTypeInfo;
-import io.vertx.codegen.type.DataObjectInfo;
-import io.vertx.codegen.type.MapperInfo;
-import io.vertx.codegen.type.PrimitiveTypeInfo;
-import io.vertx.codegen.type.TypeInfo;
+import io.vertx.codegen.processor.type.AnnotationValueInfo;
+import io.vertx.codegen.processor.type.ClassKind;
+import io.vertx.codegen.processor.type.ClassTypeInfo;
+import io.vertx.codegen.processor.type.DataObjectInfo;
+import io.vertx.codegen.processor.type.MapperInfo;
+import io.vertx.codegen.processor.type.PrimitiveTypeInfo;
+import io.vertx.codegen.processor.type.TypeInfo;
 import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.annotations.Column;
 import io.vertx.sqlclient.templates.annotations.RowMapped;

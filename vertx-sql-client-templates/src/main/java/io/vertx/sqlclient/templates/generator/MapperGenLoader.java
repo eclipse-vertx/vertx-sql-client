@@ -1,7 +1,7 @@
 package io.vertx.sqlclient.templates.generator;
 
-import io.vertx.codegen.Generator;
-import io.vertx.codegen.GeneratorLoader;
+import io.vertx.codegen.processor.Generator;
+import io.vertx.codegen.processor.GeneratorLoader;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import java.util.stream.Stream;

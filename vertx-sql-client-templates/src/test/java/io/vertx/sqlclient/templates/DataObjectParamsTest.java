@@ -21,7 +21,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.Row;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -32,7 +31,6 @@ import java.time.OffsetTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>

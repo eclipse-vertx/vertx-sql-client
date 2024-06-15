@@ -1,8 +1,8 @@
 package io.vertx.sqlclient.templates.generator;
 
-import io.vertx.codegen.DataObjectModel;
+import io.vertx.codegen.processor.DataObjectModel;
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.type.AnnotationValueInfo;
+import io.vertx.codegen.processor.type.AnnotationValueInfo;
 import io.vertx.sqlclient.templates.TupleMapper;
 import io.vertx.sqlclient.templates.annotations.ParametersMapped;
 import io.vertx.sqlclient.templates.annotations.TemplateParameter;
