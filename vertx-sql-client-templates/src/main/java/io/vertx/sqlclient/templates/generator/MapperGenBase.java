@@ -2,15 +2,15 @@ package io.vertx.sqlclient.templates.generator;
 
 import io.vertx.codegen.format.CamelCase;
 import io.vertx.codegen.format.Case;
-import io.vertx.codegen.DataObjectModel;
-import io.vertx.codegen.Generator;
-import io.vertx.codegen.PropertyInfo;
-import io.vertx.codegen.PropertyKind;
+import io.vertx.codegen.processor.DataObjectModel;
+import io.vertx.codegen.processor.Generator;
+import io.vertx.codegen.processor.PropertyInfo;
+import io.vertx.codegen.processor.PropertyKind;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.format.LowerCamelCase;
 import io.vertx.codegen.format.SnakeCase;
-import io.vertx.codegen.type.AnnotationValueInfo;
-import io.vertx.codegen.type.ClassTypeInfo;
+import io.vertx.codegen.processor.type.AnnotationValueInfo;
+import io.vertx.codegen.processor.type.ClassTypeInfo;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
