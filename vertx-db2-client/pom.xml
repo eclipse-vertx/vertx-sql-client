@@ -31,12 +31,6 @@
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive DB2 client</description>
 
-  <properties>
-    <doc.skip>false</doc.skip>
-    <docs.dir>${project.basedir}/src/main/docs</docs.dir>
-  </properties>
-
-
   <dependencies>
 
     <!-- Vert.x dependencies -->
@@ -110,6 +104,7 @@
       </plugins>
     </pluginManagement>
     <plugins>
+<!--
       <plugin>
         <groupId>org.bsc.maven</groupId>
         <artifactId>maven-processor-plugin</artifactId>
@@ -124,24 +119,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <!-- Override sources to use custom descriptor to have all adoc files -->
-          <execution>
-            <id>package-sources</id>
-            <configuration>
-              <descriptors>
-                <descriptor>${project.basedir}/../assembly/sources.xml</descriptor>
-              </descriptors>
-              <descriptorRefs>
-                <descriptorRef>none</descriptorRef>
-              </descriptorRefs>
-              <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+-->
     </plugins>
   </build>
 

@@ -20,8 +20,8 @@
 
   <parent>
     <groupId>io.vertx</groupId>
-    <artifactId>vertx-ext-parent</artifactId>
-    <version>38</version>
+    <artifactId>vertx5-parent</artifactId>
+    <version>3</version>
   </parent>
 
   <artifactId>vertx-sql-client-parent</artifactId>
@@ -48,18 +48,14 @@
 
   <properties>
     <stack.version>5.0.0-SNAPSHOT</stack.version>
-    <doc.skip>true</doc.skip>
     <jmh.version>1.19</jmh.version>
-    <docs.dir>${project.basedir}/src/main/docs</docs.dir>
-    <generated.dir>${project.basedir}/src/main/generated</generated.dir>
     <connection.uri/>
     <tls.connection.uri/>
     <unix.socket.directory/>
     <unix.socket.port/>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
-    <!-- We skip sources jar generation as we do it with the assembly plugin to have greater control over the content -->
-    <source.skip>true</source.skip>
     <testcontainers.version>1.17.6</testcontainers.version>
+    <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc,${asciidoc.dir}/*.adoc</docgen.source>
   </properties>
 
   <dependencyManagement>
@@ -113,6 +109,48 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <executions>
+            <execution>
+              <id>default-compile</id>
+              <configuration>
+                <annotationProcessors>
+                  <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                  <annotationProcessor>io.vertx.docgen.JavaDocGenProcessor</annotationProcessor>
+                </annotationProcessors>
+                <compilerArgs>
+                  <!-- Configure the docgen processor -->
+                  <compilerArg>-Adocgen.source=${docgen.source}</compilerArg>
+                  <compilerArg>-Adocgen.output=${project.build.directory}/asciidoc/java</compilerArg>
+                  <compilerArg>-Amaven.groupId=${project.groupId}</compilerArg>
+                  <compilerArg>-Amaven.artifactId=${project.artifactId}</compilerArg>
+                  <compilerArg>-Amaven.version=${project.version}</compilerArg>
+                </compilerArgs>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>package-docs</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
   <profiles>
     <profile>

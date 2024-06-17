@@ -33,14 +33,8 @@
   <description>The Reactive Oracle Client</description>
 
   <properties>
-    <doc.skip>false</doc.skip>
-    <docs.dir>${project.basedir}/src/main/docs</docs.dir>
-    <generated.dir>${project.basedir}/src/main/generated</generated.dir>
-
-    <maven.compiler.source>11</maven.compiler.source>
-    <maven.compiler.target>11</maven.compiler.target>
-
     <ojdbc.version>23.3.0.23.09</ojdbc.version>
+    <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/connections.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/cursor.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/queries.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/tracing.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/transactions.adoc,${asciidoc.dir}/*.adoc</docgen.source>
   </properties>
 
   <dependencies>
@@ -104,111 +98,8 @@
             </excludes>
           </configuration>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <configuration>
-            <release>11</release>
-            <source>11</source>
-            <target>11</target>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-javadoc-plugin</artifactId>
-          <configuration>
-            <source>8</source>
-          </configuration>
-        </plugin>
       </plugins>
     </pluginManagement>
-    <plugins>
-      <plugin>
-        <groupId>org.bsc.maven</groupId>
-        <artifactId>maven-processor-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-sources</id>
-            <configuration>
-              <optionMap>
-                <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/connections.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/cursor.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/queries.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/tracing.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/transactions.adoc,${asciidoc.dir}/*.adoc</docgen.source>
-              </optionMap>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <!-- Override sources to use custom descriptor to have all adoc files -->
-          <execution>
-            <id>package-sources</id>
-            <configuration>
-              <descriptors>
-                <descriptor>${project.basedir}/../assembly/sources.xml</descriptor>
-              </descriptors>
-              <descriptorRefs>
-                <descriptorRef>none</descriptorRef>
-              </descriptorRefs>
-              <ignoreMissingDescriptor>true</ignoreMissingDescriptor>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
   </build>
-
-  <!-- Java 8 => use Maven Toolchain to compile this module with JDK 11
-       The config file .m2/toolchains.xml is needed with this content
-
-       <toolchains>
-         <toolchain>
-           <type>jdk</type>
-           <provides>
-             <id>Java11</id>
-             <version>11</version>
-           </provides>
-           <configuration>
-             <jdkHome>/PATH/TO/JDK/11</jdkHome>
-           </configuration>
-         </toolchain>
-       </toolchains>
-  -->
-  <profiles>
-    <profile>
-      <id>Java8</id>
-      <activation>
-        <jdk>1.8</jdk>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.bsc.maven</groupId>
-            <artifactId>maven-processor-plugin</artifactId>
-            <version>5.0-jdk8-rc3</version>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-toolchains-plugin</artifactId>
-            <version>1.0</version>
-            <executions>
-              <execution>
-                <phase>validate</phase>
-                <goals>
-                  <goal>toolchain</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <toolchains>
-                <jdk>
-                  <version>11</version>
-                </jdk>
-              </toolchains>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 
 </project>
