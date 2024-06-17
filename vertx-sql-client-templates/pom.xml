@@ -32,9 +32,7 @@
   <description>Vert.x SQL Client Templates</description>
 
   <properties>
-    <doc.skip>false</doc.skip>
-    <docs.dir>${project.basedir}/src/main/docs</docs.dir>
-    <generated.dir>${project.basedir}/src/main/generated</generated.dir>
+    <docgen.source>${asciidoc.dir}</docgen.source>
   </properties>
 
   <dependencies>
@@ -92,65 +90,17 @@
   </dependencies>
 
   <build>
-    <plugins>
-      <plugin>
-        <groupId>org.bsc.maven</groupId>
-        <artifactId>maven-processor-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-sources</id>
-            <!-- Run after compilation otherwise it won't find the generator class declared by the SPI -->
-            <phase>process-classes</phase>
-          </execution>
-          <execution>
-            <id>generate-test-sources</id>
-            <goals>
-              <goal>process-test</goal>
-            </goals>
-            <phase>generate-test-sources</phase>
-            <configuration>
-              <systemProperties>
-                <java.util.logging.SimpleFormatter.format>%4$s: %3$s - %5$s %6$s%n</java.util.logging.SimpleFormatter.format>
-              </systemProperties>
-              <processors>
-                <processor>io.vertx.codegen.CodeGenProcessor</processor>
-              </processors>
-              <outputDirectory>${project.basedir}/src/test/generated</outputDirectory>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>add-test-source</id>
-            <goals>
-              <goal>add-test-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>${basedir}/src/test/generated</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
     <pluginManagement>
       <plugins>
         <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
+          <artifactId>maven-compiler-plugin</artifactId>
           <executions>
             <execution>
-              <id>default-clean</id>
+              <id>default-testCompile</id>
               <configuration>
-                <filesets>
-                  <fileset>
-                    <directory>${project.basedir}/src/test/generated</directory>
-                  </fileset>
-                </filesets>
+                <annotationProcessors>
+                  <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
+                </annotationProcessors>
               </configuration>
             </execution>
           </executions>

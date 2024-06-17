@@ -32,11 +32,6 @@
   <description>The Reactive SQL Client</description>
 
 
-  <properties>
-    <docs.dir>${project.basedir}/src/main/docs</docs.dir>
-    <generated.dir>${project.basedir}/src/main/generated</generated.dir>
-  </properties>
-
   <dependencies>
 
     <!-- Vert.x dependencies -->
