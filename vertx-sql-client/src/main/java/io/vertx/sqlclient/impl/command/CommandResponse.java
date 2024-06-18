@@ -13,12 +13,12 @@ package io.vertx.sqlclient.impl.command;
 
 import io.vertx.core.Future;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.internal.NoStackTraceException;
+import io.vertx.core.impl.NoStackTraceThrowable;
 
 public class CommandResponse<R> {
 
   public static <R> CommandResponse<R> failure(String msg) {
-    return failure(new NoStackTraceException(msg));
+    return failure(new NoStackTraceThrowable(msg));
   }
 
   public static <R> CommandResponse<R> failure(Throwable cause) {
