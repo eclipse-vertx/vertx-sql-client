@@ -11,7 +11,7 @@
 
 package io.vertx.mysqlclient.data;
 
-import io.vertx.core.buffer.impl.BufferInternal;
+import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.sqlclient.Row;
 import io.vertx.core.buffer.Buffer;

@@ -12,7 +12,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.VertxException;
 import io.vertx.mysqlclient.MySQLBatchException;
 import io.vertx.mysqlclient.MySQLException;
 import io.vertx.sqlclient.Tuple;
@@ -104,7 +104,7 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
       String bindMsg = statement.bindParameters(param);
       if (bindMsg != null) {
         bindingFailures.set(sent);
-        reportError(sent, new NoStackTraceThrowable(bindMsg));
+        reportError(sent, VertxException.noStackTrace(bindMsg));
         sent++;
       } else {
         sendStatementExecuteCommand(statement, statement.sendTypesToServer(), param, CURSOR_TYPE_NO_CURSOR);

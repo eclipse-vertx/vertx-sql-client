@@ -11,7 +11,7 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.QueryResultHandler;

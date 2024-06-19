@@ -14,7 +14,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.data.Blob;

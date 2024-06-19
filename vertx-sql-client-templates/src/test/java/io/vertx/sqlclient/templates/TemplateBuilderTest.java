@@ -3,7 +3,7 @@ package io.vertx.sqlclient.templates;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.CloseFuture;
+import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlClientInternal;

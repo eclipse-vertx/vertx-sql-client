@@ -1,7 +1,7 @@
 package io.vertx.mysqlclient.impl;
 
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 public class MySQLDatabaseMetadata implements DatabaseMetadata {

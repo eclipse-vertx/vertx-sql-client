@@ -20,7 +20,7 @@ import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.buffer.impl.BufferInternal;
+import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
