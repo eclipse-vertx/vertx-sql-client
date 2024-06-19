@@ -19,12 +19,12 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
+import io.vertx.core.internal.tls.SslContextManager;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.HostAndPort;
 import io.vertx.core.internal.net.NetSocketInternal;
-import io.vertx.core.net.impl.SSLHelper;
-import io.vertx.core.net.impl.SslChannelProvider;
-import io.vertx.core.net.impl.SslHandshakeCompletionHandler;
+import io.vertx.core.internal.net.SslChannelProvider;
+import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
@@ -48,13 +48,13 @@ import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
 public class MSSQLSocketConnection extends SocketConnectionBase {
 
   private final MSSQLConnectOptions connectOptions;
-  private final SSLHelper sslHelper;
+  private final SslContextManager SslContextManager;
 
   private MSSQLDatabaseMetadata databaseMetadata;
   private HostAndPort alternateServer;
 
   MSSQLSocketConnection(NetSocketInternal socket,
-                        SSLHelper sslHelper,
+                        SslContextManager SslContextManager,
                         ClientMetrics clientMetrics,
                         MSSQLConnectOptions connectOptions,
                         boolean cachePreparedStatements,
@@ -64,7 +64,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
                         ContextInternal context) {
     super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
     this.connectOptions = connectOptions;
-    this.sslHelper = sslHelper;
+    this.SslContextManager = SslContextManager;
   }
 
   @Override
@@ -111,7 +111,9 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
 
     // 2. Create and set up an SSLHelper and SSLHandler
     // options.getApplicationLayerProtocols()
-    Future<SslChannelProvider> f = sslHelper.resolveSslChannelProvider(sslOptions, "", false, null, null, context);
+    Future<SslChannelProvider> f = SslContextManager
+      .resolveSslContextProvider(sslOptions, "", null, null, context)
+      .map(provider -> new SslChannelProvider(context.owner(), provider, false));
     return f.compose(provider -> {
       SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, sslOptions.isUseAlpn(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
 

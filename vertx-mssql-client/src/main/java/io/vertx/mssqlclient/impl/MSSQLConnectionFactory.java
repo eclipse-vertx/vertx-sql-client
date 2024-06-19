@@ -16,11 +16,12 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.internal.tls.SslContextManager;
 import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.internal.net.NetSocketInternal;
-import io.vertx.core.net.impl.SSLHelper;
+import io.vertx.core.net.impl.NetServerImpl;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
@@ -34,11 +35,11 @@ import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOptions> {
 
-  private final SSLHelper sslHelper;
+  private final SslContextManager sslContextManager;
 
   public MSSQLConnectionFactory(VertxInternal vertx) {
     super(vertx);
-    sslHelper = new SSLHelper(SSLHelper.resolveEngineOptions(tcpOptions.getSslEngineOptions(), tcpOptions.isUseAlpn()));
+    sslContextManager = new SslContextManager(NetServerImpl.resolveEngineOptions(tcpOptions.getSslEngineOptions(), tcpOptions.isUseAlpn()));
   }
 
   @Override
@@ -78,7 +79,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
   private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, ContextInternal context) {
     VertxMetrics vertxMetrics = vertx.metricsSPI();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", tcpOptions.getMetricsName()) : null;
-    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, sslHelper, metrics, options, false, 0, sql -> true, 1, context);
+    MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, sslContextManager, metrics, options, false, 0, sql -> true, 1, context);
     conn.init();
     return conn;
   }
