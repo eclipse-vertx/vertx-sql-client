@@ -21,7 +21,6 @@ import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.internal.net.NetSocketInternal;
-import io.vertx.core.net.impl.NetServerImpl;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
@@ -39,7 +38,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
 
   public MSSQLConnectionFactory(VertxInternal vertx) {
     super(vertx);
-    sslContextManager = new SslContextManager(NetServerImpl.resolveEngineOptions(tcpOptions.getSslEngineOptions(), tcpOptions.isUseAlpn()));
+    sslContextManager = new SslContextManager(SslContextManager.resolveEngineOptions(tcpOptions.getSslEngineOptions(), tcpOptions.isUseAlpn()));
   }
 
   @Override

@@ -134,22 +134,6 @@
             </excludes>
           </configuration>
         </plugin>
-<!--
-        <plugin>
-          <groupId>org.bsc.maven</groupId>
-          <artifactId>maven-processor-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>generate-sources</id>
-              <configuration>
-                <optionMap>
-                  <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc,${asciidoc.dir}/*.adoc</docgen.source>
-                </optionMap>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
--->
       </plugins>
     </pluginManagement>
     <plugins>
