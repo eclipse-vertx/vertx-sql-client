@@ -50,13 +50,5 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- Others -->
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-core</artifactId>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
-
 </project>
