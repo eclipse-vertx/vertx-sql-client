@@ -15,15 +15,19 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal;
 
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.Query;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandScheduler;
+import io.vertx.sqlclient.impl.QueryBase;
+import io.vertx.sqlclient.impl.QueryExecutor;
+import io.vertx.sqlclient.impl.RowSetImpl;
+import io.vertx.sqlclient.impl.SqlClientInternal;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandScheduler;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
@@ -31,7 +35,7 @@ import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.sqlclient.impl.command.CompositeCommand;
+import io.vertx.sqlclient.internal.command.CompositeCommand;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
@@ -72,7 +76,7 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
     return new PreparedQueryImpl<>(autoCommit(), false, sql, options, builder);
   }
 
-  boolean autoCommit() {
+  protected boolean autoCommit() {
     return true;
   }
 

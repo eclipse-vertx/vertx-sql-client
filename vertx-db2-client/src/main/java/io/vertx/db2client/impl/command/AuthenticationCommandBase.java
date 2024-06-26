@@ -17,7 +17,7 @@ package io.vertx.db2client.impl.command;
 
 import java.util.Map;
 
-import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandBase;
 
 public class AuthenticationCommandBase<R> extends CommandBase<R> {
 

@@ -16,7 +16,7 @@ import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 import io.vertx.mysqlclient.impl.command.*;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.internal.command.*;
 
 import java.nio.charset.Charset;
 

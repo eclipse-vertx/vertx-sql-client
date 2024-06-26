@@ -23,9 +23,11 @@ import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.command.CommandScheduler;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.internal.command.CommandScheduler;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.List;
 import java.util.function.Function;
@@ -34,7 +36,7 @@ import java.util.stream.Collector;
 /**
  * Executes query.
  */
-class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
+public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
 
   private final Function<T, R> factory;
   private final Collector<Row, ?, T> collector;
@@ -49,7 +51,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return new QueryResultBuilder<>(factory, promise);
   }
 
-  void executeSimpleQuery(CommandScheduler scheduler,
+  public void executeSimpleQuery(CommandScheduler scheduler,
                           String sql,
                           boolean autoCommit,
                           boolean singleton,
@@ -90,7 +92,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     return handler;
   }
 
-  void executeExtendedQuery(CommandScheduler scheduler, String sql, PrepareOptions options, boolean autoCommit, Tuple arguments, PromiseInternal<L> promise) {
+  public void executeExtendedQuery(CommandScheduler scheduler, String sql, PrepareOptions options, boolean autoCommit, Tuple arguments, PromiseInternal<L> promise) {
     ContextInternal context = (ContextInternal) promise.context();
     QueryResultBuilder handler = this.createHandler(promise);
     ExtendedQueryCommand cmd = createExtendedQueryCommand(sql, options, autoCommit, arguments, handler);
@@ -131,7 +133,7 @@ class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>> {
     scheduler.schedule(context, cmd).onComplete(handler);
   }
 
-  void executeBatchQuery(CommandScheduler scheduler, String sql, PrepareOptions options, boolean autoCommit, List<Tuple> batch, PromiseInternal<L> promise) {
+  public void executeBatchQuery(CommandScheduler scheduler, String sql, PrepareOptions options, boolean autoCommit, List<Tuple> batch, PromiseInternal<L> promise) {
     ContextInternal context = promise.context();
     QueryResultBuilder handler = createHandler(promise);
     ExtendedQueryCommand<T> cmd = createBatchQueryCommand(sql, options, autoCommit, batch, handler);

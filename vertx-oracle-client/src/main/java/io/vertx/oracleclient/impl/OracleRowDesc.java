@@ -11,7 +11,7 @@
 
 package io.vertx.oracleclient.impl;
 
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;

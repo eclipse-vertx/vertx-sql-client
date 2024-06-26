@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal;
 
 public interface PreparedStatement {
 

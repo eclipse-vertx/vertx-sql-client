@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal.pool;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
@@ -24,8 +24,11 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.SqlClientBase;
+import io.vertx.sqlclient.internal.SqlConnectionInternal;
+import io.vertx.sqlclient.internal.command.CommandBase;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
@@ -80,7 +83,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     if (connectionInitializer != null) {
       ContextInternal current = vertx.getContext();
       SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn);
-      conn.init(wrapper);
+      conn.init((Connection.Holder) wrapper);
       current.dispatch(wrapper, connectionInitializer);
     }
   }
@@ -129,7 +132,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     acquire(current, connectionTimeout, promise);
     return promise.future().map(conn -> {
       SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn);
-      conn.init(wrapper);
+      conn.init((Connection.Holder) wrapper);
       return wrapper;
     });
   }

@@ -33,11 +33,11 @@ import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
-import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.Notification;
-import io.vertx.sqlclient.impl.QueryResultHandler;
+import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.internal.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;

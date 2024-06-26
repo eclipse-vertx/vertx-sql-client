@@ -14,32 +14,14 @@
  * limitations under the License.
  *
  */
+package io.vertx.sqlclient.internal.command;
 
-package io.vertx.sqlclient.impl.command;
-
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.internal.ContextInternal;
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
+@FunctionalInterface
+public interface CommandScheduler {
 
-public abstract class CommandBase<R> {
+  <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd);
 
-  public Handler<AsyncResult<R>> handler;
-
-  public final void fail(Throwable err) {
-    complete(Future.failedFuture(err));
-  }
-
-  public final void fail(String failureMsg) {
-    complete(Future.failedFuture(failureMsg));
-  }
-
-  public final void complete(AsyncResult<R> resp) {
-    if (handler != null) {
-      handler.handle(resp);
-    }
-  }
 }

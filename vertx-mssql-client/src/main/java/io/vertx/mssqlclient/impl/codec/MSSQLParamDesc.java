@@ -12,8 +12,8 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.vertx.sqlclient.impl.ErrorMessageFactory;
-import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.sqlclient.internal.ParamDesc;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 class MSSQLParamDesc extends ParamDesc {
   private final ColumnData[] paramDescriptions;

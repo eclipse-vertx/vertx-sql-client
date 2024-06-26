@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal;
 
 import io.vertx.core.*;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -26,9 +26,11 @@ import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.impl.PreparedStatementImpl;
+import io.vertx.sqlclient.impl.TransactionImpl;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.command.QueryCommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
 import io.vertx.sqlclient.spi.ConnectionFactory;
@@ -38,7 +40,7 @@ import io.vertx.sqlclient.spi.Driver;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, Closeable {
+public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, Closeable, Connection.Holder {
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
@@ -182,7 +184,7 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   @Override
-  boolean autoCommit() {
+  protected boolean autoCommit() {
     return tx == null;
   }
 

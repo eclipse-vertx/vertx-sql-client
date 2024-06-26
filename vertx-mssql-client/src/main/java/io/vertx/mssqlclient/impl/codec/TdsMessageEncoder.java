@@ -16,7 +16,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.internal.command.*;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.MIN_PACKET_SIZE;
 import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;

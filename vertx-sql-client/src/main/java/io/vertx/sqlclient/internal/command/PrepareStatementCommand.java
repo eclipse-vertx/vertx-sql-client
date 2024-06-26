@@ -15,10 +15,10 @@
  *
  */
 
-package io.vertx.sqlclient.impl.command;
+package io.vertx.sqlclient.internal.command;
 
 import io.vertx.sqlclient.PrepareOptions;
-import io.vertx.sqlclient.impl.PreparedStatement;
+import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.util.List;
 

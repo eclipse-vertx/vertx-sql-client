@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
+public class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
 
-  static Collector<Row, RowSetImpl<Row>, RowSet<Row>> COLLECTOR = Collector.of(
+  public static Collector<Row, RowSetImpl<Row>, RowSet<Row>> COLLECTOR = Collector.of(
     RowSetImpl::new,
     RowSetImpl::add,
     (set1, set2) -> null, // Shall not be invoked as this is sequential
@@ -45,7 +45,7 @@ class RowSetImpl<R> extends SqlResultBase<RowSet<R>> implements RowSet<R> {
     );
   }
 
-  static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl<Row>) rs;
+  public static Function<RowSet<Row>, RowSetImpl<Row>> FACTORY = rs -> (RowSetImpl<Row>) rs;
 
   static <U> Function<RowSet<U>, RowSetImpl<U>> factory() {
     return rs -> (RowSetImpl<U>) rs;

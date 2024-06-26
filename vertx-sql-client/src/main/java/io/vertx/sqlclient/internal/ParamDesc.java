@@ -14,14 +14,12 @@
  * limitations under the License.
  *
  */
-package io.vertx.sqlclient.impl.command;
 
-import io.vertx.core.Future;
-import io.vertx.core.internal.ContextInternal;
+package io.vertx.sqlclient.internal;
 
-@FunctionalInterface
-public interface CommandScheduler {
+/**
+ * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
+ */
 
-  <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd);
-
+public class ParamDesc {
 }

@@ -29,7 +29,7 @@ import java.util.stream.Collector;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-abstract class QueryBase<T, R extends SqlResult<T>> implements Query<R> {
+public abstract class QueryBase<T, R extends SqlResult<T>> implements Query<R> {
 
   protected final QueryExecutor<T, ?, R> builder;
 

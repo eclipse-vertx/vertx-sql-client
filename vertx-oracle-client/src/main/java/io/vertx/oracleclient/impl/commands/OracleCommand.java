@@ -14,8 +14,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.impl.Helper.SQLBlockingCodeHandler;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandResponse;
 import oracle.jdbc.OracleConnection;
 
 import java.util.concurrent.Flow;

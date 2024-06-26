@@ -15,10 +15,10 @@
  *
  */
 
-package io.vertx.sqlclient.impl.command;
+package io.vertx.sqlclient.internal.command;
 
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.impl.QueryResultHandler;
+import io.vertx.sqlclient.internal.QueryResultHandler;
 
 import java.util.stream.Collector;
 

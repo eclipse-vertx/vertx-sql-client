@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.internal.ArrayTuple;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

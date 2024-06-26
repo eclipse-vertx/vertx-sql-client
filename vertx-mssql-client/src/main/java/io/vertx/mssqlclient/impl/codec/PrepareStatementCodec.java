@@ -11,9 +11,9 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
 
 class PrepareStatementCodec extends MSSQLCommandCodec<PreparedStatement, PrepareStatementCommand> {
   PrepareStatementCodec(TdsMessageCodec tdsMessageCodec, PrepareStatementCommand cmd) {

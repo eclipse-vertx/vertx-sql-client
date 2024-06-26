@@ -11,14 +11,15 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.oracleclient.impl.OracleRowDesc;
-import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.sqlclient.internal.ParamDesc;
+import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-public class OraclePreparedStatement implements io.vertx.sqlclient.impl.PreparedStatement {
+public class OraclePreparedStatement implements PreparedStatement {
 
   private final String sql;
   private final RowDesc rowDesc;

@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal;
 
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 
@@ -26,7 +26,6 @@ import java.util.RandomAccess;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-
 public abstract class RowDesc {
 
   private final ColumnNames columnNames;

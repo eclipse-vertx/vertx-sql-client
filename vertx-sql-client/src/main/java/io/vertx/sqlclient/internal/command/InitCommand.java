@@ -15,9 +15,9 @@
  *
  */
 
-package io.vertx.sqlclient.impl.command;
+package io.vertx.sqlclient.internal.command;
 
-import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 
 import java.util.Map;
@@ -29,14 +29,14 @@ import java.util.Map;
  */
 public class InitCommand extends CommandBase<Connection> {
 
-  private final SocketConnectionBase conn;
+  private final Connection conn;
   private final String username;
   private final String password;
   private final String database;
   private final Map<String, String> properties;
 
   public InitCommand(
-    SocketConnectionBase conn,
+    Connection conn,
     String username,
     String password,
     String database,
@@ -48,7 +48,7 @@ public class InitCommand extends CommandBase<Connection> {
     this.properties = properties;
   }
 
-  public SocketConnectionBase connection() {
+  public Connection connection() {
     return conn;
   }
 

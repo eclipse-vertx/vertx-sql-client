@@ -12,6 +12,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.desc.ColumnDescriptor;
+import io.vertx.sqlclient.internal.RowDesc;
 
 import java.sql.JDBCType;
 

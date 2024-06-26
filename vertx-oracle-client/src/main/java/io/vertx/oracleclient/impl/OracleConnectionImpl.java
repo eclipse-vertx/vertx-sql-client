@@ -17,8 +17,8 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OracleConnection;
 import io.vertx.oracleclient.spi.OracleDriver;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionBase;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.SqlConnectionBase;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 public class OracleConnectionImpl extends SqlConnectionBase<OracleConnectionImpl> implements OracleConnection {

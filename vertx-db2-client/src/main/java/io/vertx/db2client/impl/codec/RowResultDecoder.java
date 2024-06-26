@@ -27,7 +27,7 @@ import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowDecoder;
-import io.vertx.sqlclient.impl.RowInternal;
+import io.vertx.sqlclient.internal.RowInternal;
 
 class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 

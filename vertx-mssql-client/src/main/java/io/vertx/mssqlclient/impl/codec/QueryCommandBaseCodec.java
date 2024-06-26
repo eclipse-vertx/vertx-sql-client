@@ -13,8 +13,8 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.command.QueryCommandBase;
 
 import java.util.stream.Collector;
 

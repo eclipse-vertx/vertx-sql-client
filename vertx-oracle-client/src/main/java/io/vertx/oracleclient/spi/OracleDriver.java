@@ -24,10 +24,10 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.CloseablePool;
-import io.vertx.sqlclient.impl.PoolImpl;
-import io.vertx.sqlclient.impl.SqlConnectionInternal;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.pool.CloseablePool;
+import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -54,7 +54,7 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
     } else {
       pool = newPoolImpl(vx, connectHandler, databases, options, closeFuture);
     }
-    return new CloseablePool<>(vx, closeFuture, pool);
+    return new CloseablePool(vx, closeFuture, pool);
   }
 
   private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {

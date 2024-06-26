@@ -18,7 +18,7 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 
 public class MySQLRowDesc extends RowDesc {
 

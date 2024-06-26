@@ -16,7 +16,7 @@
 package io.vertx.db2client.impl.codec;
 
 import io.vertx.db2client.impl.drda.ColumnMetaData;
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 
 import java.sql.JDBCType;
 import java.util.List;

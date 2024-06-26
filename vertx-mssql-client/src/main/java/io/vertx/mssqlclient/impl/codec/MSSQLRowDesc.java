@@ -11,7 +11,7 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 
 import java.util.Arrays;
 

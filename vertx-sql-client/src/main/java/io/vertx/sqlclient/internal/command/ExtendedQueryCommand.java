@@ -15,14 +15,14 @@
  *
  */
 
-package io.vertx.sqlclient.impl.command;
+package io.vertx.sqlclient.internal.command;
 
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.QueryResultHandler;
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.QueryResultHandler;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.List;
 import java.util.stream.Collector;

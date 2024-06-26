@@ -27,10 +27,10 @@ import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.QueryResultHandler;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.internal.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;

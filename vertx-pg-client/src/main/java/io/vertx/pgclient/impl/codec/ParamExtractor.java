@@ -10,7 +10,7 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;

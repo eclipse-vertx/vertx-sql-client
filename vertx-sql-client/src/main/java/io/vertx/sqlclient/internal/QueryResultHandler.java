@@ -15,22 +15,26 @@
  *
  */
 
-package io.vertx.sqlclient.impl.command;
+package io.vertx.sqlclient.internal;
 
-import io.vertx.sqlclient.impl.PreparedStatement;
+import io.vertx.sqlclient.PropertyKind;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class CloseStatementCommand extends CommandBase<Void> {
+public interface QueryResultHandler<T> {
 
-  private final PreparedStatement statement;
+  QueryResultHandler<Void> NOOP_HANDLER = new QueryResultHandler<>() {
+    @Override
+    public <V> void addProperty(PropertyKind<V> property, V value) {
+    }
+    @Override
+    public void handleResult(int updatedCount, int size, RowDesc desc, Void result, Throwable failure) {
+    }
+  };
 
-  public CloseStatementCommand(PreparedStatement statement) {
-    this.statement = statement;
-  }
+  <V> void addProperty(PropertyKind<V> property, V value);
 
-  public PreparedStatement statement() {
-    return statement;
-  }
+  void handleResult(int updatedCount, int size, RowDesc desc, T result, Throwable failure);
+
 }

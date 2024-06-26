@@ -15,28 +15,31 @@
  *
  */
 
-package io.vertx.sqlclient.impl.command;
+package io.vertx.sqlclient.internal.command;
 
-import io.vertx.sqlclient.impl.PreparedStatement;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class CloseCursorCommand extends CommandBase<Void> {
 
-  private final String id;
-  private final PreparedStatement statement;
+public abstract class CommandBase<R> {
 
-  public CloseCursorCommand(String id, PreparedStatement statement) {
-    this.id = id;
-    this.statement = statement;
+  public Handler<AsyncResult<R>> handler;
+
+  public final void fail(Throwable err) {
+    complete(Future.failedFuture(err));
   }
 
-  public String id() {
-    return id;
+  public final void fail(String failureMsg) {
+    complete(Future.failedFuture(failureMsg));
   }
 
-  public PreparedStatement statement() {
-    return statement;
+  public final void complete(AsyncResult<R> resp) {
+    if (handler != null) {
+      handler.handle(resp);
+    }
   }
 }

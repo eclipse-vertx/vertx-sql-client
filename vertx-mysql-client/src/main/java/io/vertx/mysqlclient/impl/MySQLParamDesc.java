@@ -12,7 +12,7 @@
 package io.vertx.mysqlclient.impl;
 
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
-import io.vertx.sqlclient.impl.ParamDesc;
+import io.vertx.sqlclient.internal.ParamDesc;
 
 public class MySQLParamDesc extends ParamDesc {
   private final ColumnDefinition[] paramDefinitions;

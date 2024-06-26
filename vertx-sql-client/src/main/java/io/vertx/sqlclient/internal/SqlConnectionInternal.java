@@ -8,12 +8,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal;
 
 import io.vertx.sqlclient.SqlConnection;
 
-public interface SqlConnectionInternal extends SqlConnection, Connection.Holder {
+public interface SqlConnectionInternal extends SqlConnection {
 
+  /**
+   * @return the {@link Connection} out of this user-facing connection
+   */
   Connection unwrap();
 
 }

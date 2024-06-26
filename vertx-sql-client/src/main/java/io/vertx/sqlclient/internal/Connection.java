@@ -15,15 +15,18 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal;
 
 import io.vertx.core.Promise;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.sqlclient.impl.command.CommandScheduler;
+import io.vertx.sqlclient.internal.command.CommandScheduler;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
+/**
+ * A connection capable of scheduling command execution.
+ */
 public interface Connection extends CommandScheduler  {
 
   /**
@@ -63,6 +66,9 @@ public interface Connection extends CommandScheduler  {
 
   int getSecretKey();
 
+  /**
+   * The connection holder that handles connection interactions with the outer world, e.g. handling an event.
+   */
   interface Holder {
 
     void handleEvent(Object event);
@@ -73,6 +79,9 @@ public interface Connection extends CommandScheduler  {
 
   }
 
+  /**
+   * @return the most unwrapped connection (e.g. for pooled connections)
+   */
   default Connection unwrap() {
     return this;
   }

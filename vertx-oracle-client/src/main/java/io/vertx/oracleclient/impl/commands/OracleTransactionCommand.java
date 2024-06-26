@@ -13,11 +13,11 @@ package io.vertx.oracleclient.impl.commands;
 import io.vertx.core.Future;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.impl.Helper.SQLFutureMapper;
-import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.internal.command.TxCommand;
 import oracle.jdbc.OracleConnection;
 
-import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
-import static io.vertx.sqlclient.impl.command.TxCommand.Kind.COMMIT;
+import static io.vertx.sqlclient.internal.command.TxCommand.Kind.BEGIN;
+import static io.vertx.sqlclient.internal.command.TxCommand.Kind.COMMIT;
 
 public class OracleTransactionCommand<R> extends OracleCommand<R> {
 

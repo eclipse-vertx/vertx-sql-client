@@ -13,7 +13,7 @@ package io.vertx.mysqlclient.impl.command;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.impl.MySQLCollation;
-import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandBase;
 
 import java.util.Map;
 

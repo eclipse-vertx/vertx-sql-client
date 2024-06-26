@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal.pool;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Future;
@@ -23,11 +23,12 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
 
-public class CloseablePool<P extends Pool> implements Pool, SqlClientInternal {
+public class CloseablePool implements Pool, SqlClientInternal {
 
   private final VertxInternal vertx;
   private final CloseFuture closeFuture;

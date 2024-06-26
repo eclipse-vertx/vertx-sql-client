@@ -12,8 +12,8 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.sqlclient.impl.TupleInternal;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 import static io.vertx.mssqlclient.impl.codec.DataType.NVARCHAR;

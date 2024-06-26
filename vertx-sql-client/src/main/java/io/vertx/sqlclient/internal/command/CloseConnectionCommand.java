@@ -15,11 +15,12 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.internal.command;
 
-/**
- * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
- */
+public class CloseConnectionCommand extends CommandBase<Void> {
 
-public class ParamDesc {
+  public static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
+
+  private CloseConnectionCommand() {
+  }
 }

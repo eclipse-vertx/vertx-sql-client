@@ -28,10 +28,10 @@ import io.vertx.pgclient.PgNotification;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.pgclient.spi.PgDriver;
-import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.SqlConnectionBase;
+import io.vertx.sqlclient.internal.SqlConnectionBase;
 
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 

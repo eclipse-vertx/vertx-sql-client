@@ -17,10 +17,10 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.CloseablePool;
-import io.vertx.sqlclient.impl.PoolImpl;
-import io.vertx.sqlclient.impl.SqlConnectionInternal;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.pool.CloseablePool;
+import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 

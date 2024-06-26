@@ -21,8 +21,10 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
-import io.vertx.sqlclient.impl.command.CloseCursorCommand;
-import io.vertx.sqlclient.impl.command.CloseStatementCommand;
+import io.vertx.sqlclient.internal.ArrayTuple;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.command.CloseCursorCommand;
+import io.vertx.sqlclient.internal.command.CloseStatementCommand;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlResult;
@@ -31,7 +33,8 @@ import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,13 +44,13 @@ import java.util.stream.Collector;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-class PreparedStatementImpl implements PreparedStatement {
+public class PreparedStatementImpl implements PreparedStatement {
 
-  static PreparedStatement create(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  public static PreparedStatement create(Connection conn, ContextInternal context, io.vertx.sqlclient.internal.PreparedStatement ps, boolean autoCommit) {
     return new PreparedStatementImpl(conn, context, ps, autoCommit);
   }
 
-  static PreparedStatement create(Connection conn, ContextInternal context, PrepareOptions options, String sql, boolean autoCommit) {
+  public static PreparedStatement create(Connection conn, ContextInternal context, PrepareOptions options, String sql, boolean autoCommit) {
     return new PreparedStatementImpl(conn, context, sql, options, autoCommit);
   }
 
@@ -55,12 +58,12 @@ class PreparedStatementImpl implements PreparedStatement {
   private final ContextInternal context;
   private final String sql;
   private final PrepareOptions options;
-  private Promise<io.vertx.sqlclient.impl.PreparedStatement> promise;
-  private Future<io.vertx.sqlclient.impl.PreparedStatement> future;
+  private Promise<io.vertx.sqlclient.internal.PreparedStatement> promise;
+  private Future<io.vertx.sqlclient.internal.PreparedStatement> future;
   private final boolean autoCommit;
   private final AtomicBoolean closed = new AtomicBoolean();
 
-  private PreparedStatementImpl(Connection conn, ContextInternal context, io.vertx.sqlclient.impl.PreparedStatement ps, boolean autoCommit) {
+  private PreparedStatementImpl(Connection conn, ContextInternal context, io.vertx.sqlclient.internal.PreparedStatement ps, boolean autoCommit) {
     this.conn = conn;
     this.context = context;
     this.sql = null;
@@ -93,7 +96,7 @@ class PreparedStatementImpl implements PreparedStatement {
     return new PreparedStatementQuery<>(builder);
   }
 
-  void withPreparedStatement(PrepareOptions options, Tuple args, Handler<AsyncResult<io.vertx.sqlclient.impl.PreparedStatement>> handler) {
+  void withPreparedStatement(PrepareOptions options, Tuple args, Handler<AsyncResult<io.vertx.sqlclient.internal.PreparedStatement>> handler) {
     if (context == Vertx.currentContext()) {
       if (future == null) {
         // Lazy statement;

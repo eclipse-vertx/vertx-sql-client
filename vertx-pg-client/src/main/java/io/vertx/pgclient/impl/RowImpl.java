@@ -21,12 +21,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.*;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.RowInternal;
+import io.vertx.sqlclient.internal.RowDesc;
 
 import java.lang.reflect.Array;
 import java.time.*;
