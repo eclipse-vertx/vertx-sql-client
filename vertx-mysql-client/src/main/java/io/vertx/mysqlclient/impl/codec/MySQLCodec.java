@@ -20,8 +20,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 import io.vertx.sqlclient.ClosedConnectionException;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandResponse;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;

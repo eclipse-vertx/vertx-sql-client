@@ -11,7 +11,7 @@
 
 package io.vertx.mysqlclient.impl.command;
 
-import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandBase;
 
 public class DebugCommand extends CommandBase<Void> {
 }

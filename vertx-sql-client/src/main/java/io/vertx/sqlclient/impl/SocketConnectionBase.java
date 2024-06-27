@@ -38,7 +38,9 @@ import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.command.*;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.ArrayDeque;

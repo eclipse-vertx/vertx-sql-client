@@ -20,7 +20,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.data.NullValue;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.impl.ArrayTuple;
+import io.vertx.sqlclient.internal.ArrayTuple;
 import io.vertx.sqlclient.impl.ListTuple;
 import io.vertx.core.internal.buffer.BufferInternal;
 

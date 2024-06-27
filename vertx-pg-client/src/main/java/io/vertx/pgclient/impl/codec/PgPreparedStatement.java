@@ -17,9 +17,9 @@
 
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.ParamDesc;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 class PgPreparedStatement implements PreparedStatement {
 

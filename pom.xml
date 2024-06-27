@@ -123,6 +123,16 @@
                   <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
                   <annotationProcessor>io.vertx.docgen.JavaDocGenProcessor</annotationProcessor>
                 </annotationProcessors>
+                <annotationProcessorPaths>
+                  <annotationProcessorPath>
+                    <groupId>io.vertx</groupId>
+                    <artifactId>vertx-codegen</artifactId>
+                  </annotationProcessorPath>
+                  <annotationProcessorPath>
+                    <groupId>io.vertx</groupId>
+                    <artifactId>vertx-docgen</artifactId>
+                  </annotationProcessorPath>
+                </annotationProcessorPaths>
                 <compilerArgs>
                   <!-- Configure the docgen processor -->
                   <compilerArg>-Adocgen.source=${docgen.source}</compilerArg>
@@ -133,7 +143,19 @@
                 </compilerArgs>
               </configuration>
             </execution>
+            <execution>
+              <id>default-testCompile</id>
+              <configuration>
+                <useModulePath>false</useModulePath>
+              </configuration>
+            </execution>
           </executions>
+        </plugin>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <useModulePath>false</useModulePath>
+          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>

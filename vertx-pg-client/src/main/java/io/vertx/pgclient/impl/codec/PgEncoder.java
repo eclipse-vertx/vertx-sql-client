@@ -26,9 +26,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.HexSequence;
-import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.internal.ParamDesc;
+import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.command.*;
 
 import java.util.Map;
 

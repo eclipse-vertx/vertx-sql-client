@@ -23,6 +23,10 @@ import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.*;
+import io.vertx.sqlclient.internal.ParamDesc;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.Arrays;
 

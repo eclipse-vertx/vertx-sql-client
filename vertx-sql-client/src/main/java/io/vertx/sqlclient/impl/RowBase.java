@@ -1,6 +1,8 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.internal.ArrayTuple;
+import io.vertx.sqlclient.internal.RowInternal;
 
 import java.util.Collection;
 

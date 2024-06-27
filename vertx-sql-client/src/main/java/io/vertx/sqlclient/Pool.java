@@ -28,13 +28,13 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.internal.ContextInternal;
-import io.vertx.sqlclient.impl.PoolImpl;
+import io.vertx.sqlclient.internal.pool.PoolImpl;
 import io.vertx.sqlclient.impl.Utils;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
 
-import static io.vertx.sqlclient.impl.PoolImpl.startPropagatableConnection;
+import static io.vertx.sqlclient.internal.pool.PoolImpl.startPropagatableConnection;
 
 /**
  * A connection pool which reuses a number of SQL connections.

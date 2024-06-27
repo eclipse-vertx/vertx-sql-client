@@ -16,7 +16,7 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 
 class PgRowDesc extends RowDesc {
 

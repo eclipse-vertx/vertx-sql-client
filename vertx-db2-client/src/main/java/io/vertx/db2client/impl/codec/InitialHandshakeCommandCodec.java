@@ -25,8 +25,8 @@ import io.vertx.db2client.impl.drda.DRDAConnectResponse.RDBAccessData;
 import io.vertx.db2client.impl.drda.DRDAConstants;
 import io.vertx.db2client.impl.drda.SQLState;
 import io.vertx.db2client.impl.drda.SqlCode;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.command.CommandResponse;
 
 /**
  * InitialHandshakeCommandCodec encodes the packets to get a connection from the database.
@@ -118,7 +118,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         sendPacket(packet, lenOfPayload);
         status = ConnectionState.AUTHENTICATING;
         break;
-        
+
       case AUTHENTICATING:
         response.readSecurityCheck();
         RDBAccessData accData = response.readAccessDatabase();
@@ -128,12 +128,12 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
         status = ConnectionState.CONNECTED;
         completionHandler.handle(CommandResponse.success(cmd.connection()));
         break;
-        
+
       default:
         cmd.fail(new DB2Exception("The connection was unable to be established. Invalid connection state.", SqlCode.CONNECTION_REFUSED,
           SQLState.AUTH_DATABASE_CONNECTION_REFUSED));
         break;
-           
+
     }
   }
 

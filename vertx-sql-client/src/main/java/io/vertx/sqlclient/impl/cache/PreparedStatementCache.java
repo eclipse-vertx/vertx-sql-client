@@ -11,7 +11,7 @@
 
 package io.vertx.sqlclient.impl.cache;
 
-import io.vertx.sqlclient.impl.PreparedStatement;
+import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.util.List;
 

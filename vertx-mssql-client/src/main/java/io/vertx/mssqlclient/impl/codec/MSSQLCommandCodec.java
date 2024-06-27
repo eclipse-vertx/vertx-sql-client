@@ -16,8 +16,8 @@ import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.vertx.mssqlclient.MSSQLException;
 import io.vertx.mssqlclient.MSSQLInfo;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.EnvChange.*;
 import static io.vertx.mssqlclient.impl.codec.TokenType.*;

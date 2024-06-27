@@ -19,7 +19,7 @@ import io.vertx.oracleclient.OracleException;
 import io.vertx.oracleclient.impl.commands.OraclePreparedQueryCommand;
 import io.vertx.oracleclient.impl.commands.OracleResponse;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 import oracle.jdbc.OracleResultSet;
 
 import java.sql.ResultSetMetaData;

@@ -19,8 +19,8 @@ package io.vertx.pgclient.impl.codec;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.pgclient.PgException;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.CommandBase;
 import io.netty.buffer.ByteBuf;
 
 import java.util.Arrays;

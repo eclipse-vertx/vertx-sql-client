@@ -21,7 +21,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.pgclient.impl.RowImpl;
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.impl.RowDecoder;
-import io.vertx.sqlclient.impl.RowInternal;
+import io.vertx.sqlclient.internal.RowInternal;
 
 import java.util.stream.Collector;
 

@@ -14,8 +14,8 @@ package io.vertx.oracleclient.impl.commands;
 import io.vertx.core.Future;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.impl.RowReader;
-import io.vertx.sqlclient.impl.QueryResultHandler;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.QueryResultHandler;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 import oracle.jdbc.OracleConnection;
 
 public class OracleCursorFetchCommand<C, R> extends OracleCommand<Boolean> {

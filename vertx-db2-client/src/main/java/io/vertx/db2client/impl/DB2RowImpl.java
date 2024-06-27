@@ -15,7 +15,6 @@
  */
 package io.vertx.db2client.impl;
 
-import java.math.BigDecimal;
 import java.sql.RowId;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -29,11 +28,9 @@ import java.util.UUID;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.db2client.impl.drda.DB2RowId;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 
 public class DB2RowImpl extends RowBase {
 

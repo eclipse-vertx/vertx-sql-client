@@ -22,9 +22,9 @@ import io.vertx.mysqlclient.impl.MySQLRowDesc;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
-import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;
 

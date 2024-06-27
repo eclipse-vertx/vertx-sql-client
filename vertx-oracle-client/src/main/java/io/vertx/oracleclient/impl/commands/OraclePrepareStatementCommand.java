@@ -14,8 +14,8 @@ import io.vertx.core.Future;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.oracleclient.OraclePrepareOptions;
-import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
 import oracle.jdbc.OracleConnection;
 
 import java.sql.SQLException;

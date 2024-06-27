@@ -19,7 +19,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
-import io.vertx.sqlclient.impl.ArrayTuple;
+import io.vertx.sqlclient.internal.ArrayTuple;
 
 /**
  * A prepared statement, the statement is pre-compiled and it's more efficient to execute the statement for multiple times.

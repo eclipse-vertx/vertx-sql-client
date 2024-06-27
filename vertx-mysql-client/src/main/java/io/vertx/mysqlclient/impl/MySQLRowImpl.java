@@ -17,9 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.mysqlclient.data.spatial.*;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowBase;
 
 import java.time.*;

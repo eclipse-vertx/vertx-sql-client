@@ -18,8 +18,8 @@ package io.vertx.db2client.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
+import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.command.QueryCommandBase;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 

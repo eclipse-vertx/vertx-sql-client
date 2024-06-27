@@ -16,11 +16,11 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.sqlclient.internal.TupleInternal;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {
 

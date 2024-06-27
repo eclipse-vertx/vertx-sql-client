@@ -13,11 +13,9 @@ package io.vertx.oracleclient.impl;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.impl.ArrayTuple;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 
 import java.time.*;
 import java.util.List;

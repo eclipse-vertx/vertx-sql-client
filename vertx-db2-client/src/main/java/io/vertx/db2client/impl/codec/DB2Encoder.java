@@ -25,14 +25,14 @@ import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2SocketConnection;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.command.PingCommand;
-import io.vertx.sqlclient.impl.command.CloseConnectionCommand;
-import io.vertx.sqlclient.impl.command.CloseCursorCommand;
-import io.vertx.sqlclient.impl.command.CloseStatementCommand;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.impl.command.PrepareStatementCommand;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.internal.command.CloseConnectionCommand;
+import io.vertx.sqlclient.internal.command.CloseCursorCommand;
+import io.vertx.sqlclient.internal.command.CloseStatementCommand;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
 
 class DB2Encoder extends ChannelOutboundHandlerAdapter {
 

@@ -20,9 +20,9 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
-import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.SqlConnectionBase;
+import io.vertx.sqlclient.internal.SqlConnectionBase;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> implements MSSQLConnection {

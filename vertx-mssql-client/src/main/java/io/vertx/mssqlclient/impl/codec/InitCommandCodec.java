@@ -17,8 +17,8 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.impl.MSSQLSocketConnection;
 import io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket;
 import io.vertx.mssqlclient.impl.utils.Utils;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.command.InitCommand;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.command.InitCommand;
 
 import java.util.Map;
 
@@ -93,7 +93,7 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     content.writeShortLE(appName.length());
 
     // ServerName
-    String serverName = cmd.connection().socket().remoteAddress().host();
+    String serverName = ((MSSQLSocketConnection)cmd.connection()).socket().remoteAddress().host();
     int serverNameOffsetLengthIdx = content.writerIndex();
     content.writeZero(2); // offset
     content.writeShortLE(serverName.length());

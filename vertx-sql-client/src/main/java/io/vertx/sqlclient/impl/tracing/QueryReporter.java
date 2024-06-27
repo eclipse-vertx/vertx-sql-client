@@ -8,11 +8,11 @@ import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.Connection;
+import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.QueryResultBuilder;
-import io.vertx.sqlclient.impl.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.command.SimpleQueryCommand;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.command.QueryCommandBase;
+import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
 
 import java.util.Collections;
 import java.util.List;

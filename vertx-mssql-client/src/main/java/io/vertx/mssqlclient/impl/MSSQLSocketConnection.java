@@ -34,16 +34,16 @@ import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.QueryResultHandler;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.impl.command.*;
+import io.vertx.sqlclient.internal.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.Map;
 import java.util.function.Predicate;
 
-import static io.vertx.sqlclient.impl.command.TxCommand.Kind.BEGIN;
+import static io.vertx.sqlclient.internal.command.TxCommand.Kind.BEGIN;
 
 public class MSSQLSocketConnection extends SocketConnectionBase {
 

@@ -27,7 +27,7 @@ import io.vertx.ext.unit.junit.RepeatRule;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.pgclient.impl.PgSocketConnection;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.impl.SqlConnectionInternal;
+import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import org.junit.Rule;
 import org.junit.Test;
 

@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.List;
 

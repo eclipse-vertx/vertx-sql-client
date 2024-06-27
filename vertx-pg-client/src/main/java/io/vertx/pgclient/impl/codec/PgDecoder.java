@@ -25,8 +25,8 @@ import io.vertx.sqlclient.impl.Notification;
 import io.vertx.pgclient.impl.util.Util;
 import io.netty.buffer.ByteBuf;
 import io.netty.util.ByteProcessor;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandResponse;
 
 /**
  *

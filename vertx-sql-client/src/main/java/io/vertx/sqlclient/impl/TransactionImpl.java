@@ -24,8 +24,9 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.TransactionRollbackException;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.TxCommand;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.TxCommand;
 
 public class TransactionImpl implements Transaction {
 
@@ -38,14 +39,14 @@ public class TransactionImpl implements Transaction {
   private boolean failed;
   private TxCommand<?> endCommand;
 
-  TransactionImpl(ContextInternal context, Handler<Void> endHandler, Connection connection) {
+  public TransactionImpl(ContextInternal context, Handler<Void> endHandler, Connection connection) {
     this.context = context;
     this.connection = connection;
     this.completion = context.promise();
     this.endHandler = endHandler;
   }
 
-  Future<Transaction> begin() {
+  public Future<Transaction> begin() {
     PromiseInternal<Transaction> promise = context.promise();
     TxCommand<Transaction> begin = new TxCommand<>(TxCommand.Kind.BEGIN, this);
     begin.handler = wrap(begin, promise);

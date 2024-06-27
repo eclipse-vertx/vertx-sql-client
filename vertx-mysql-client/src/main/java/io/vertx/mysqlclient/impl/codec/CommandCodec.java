@@ -22,8 +22,8 @@ import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
-import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.CommandResponse;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;

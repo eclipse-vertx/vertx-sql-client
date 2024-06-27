@@ -23,7 +23,7 @@ import io.vertx.oracleclient.impl.OracleRow;
 import io.vertx.oracleclient.impl.OracleRowDesc;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
-import io.vertx.sqlclient.impl.RowDesc;
+import io.vertx.sqlclient.internal.RowDesc;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.sql.TIMESTAMPTZ;

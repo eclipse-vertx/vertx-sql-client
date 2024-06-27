@@ -11,10 +11,10 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.impl.ParamDesc;
-import io.vertx.sqlclient.impl.PreparedStatement;
-import io.vertx.sqlclient.impl.RowDesc;
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.sqlclient.internal.ParamDesc;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 public class MSSQLPreparedStatement implements PreparedStatement {
 

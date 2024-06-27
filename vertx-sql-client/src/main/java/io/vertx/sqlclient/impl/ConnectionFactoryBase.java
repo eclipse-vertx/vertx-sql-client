@@ -19,6 +19,7 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 /**

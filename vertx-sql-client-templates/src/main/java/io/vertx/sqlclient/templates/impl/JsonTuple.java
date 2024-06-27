@@ -12,7 +12,7 @@ package io.vertx.sqlclient.templates.impl;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.TupleInternal;
+import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.function.Function;
 

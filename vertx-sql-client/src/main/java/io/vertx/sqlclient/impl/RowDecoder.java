@@ -19,6 +19,7 @@ package io.vertx.sqlclient.impl;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.internal.RowInternal;
 
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;

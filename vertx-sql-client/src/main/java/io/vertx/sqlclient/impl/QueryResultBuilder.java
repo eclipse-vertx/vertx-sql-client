@@ -22,6 +22,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.internal.QueryResultHandler;
+import io.vertx.sqlclient.internal.RowDesc;
 
 import java.util.function.Function;
 

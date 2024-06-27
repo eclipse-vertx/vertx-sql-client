@@ -23,8 +23,8 @@ import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.db2client.spi.DB2Driver;
-import io.vertx.sqlclient.impl.Connection;
-import io.vertx.sqlclient.impl.SqlConnectionBase;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.SqlConnectionBase;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 
 public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> implements DB2Connection {
