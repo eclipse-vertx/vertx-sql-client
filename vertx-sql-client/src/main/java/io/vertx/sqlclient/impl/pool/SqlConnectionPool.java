@@ -31,6 +31,7 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -214,12 +215,10 @@ public class SqlConnectionPool {
         if (timeout > 0L && timerID == -1L) {
           timerID = context.setTimer(timeout, id -> {
             pool.cancel(waiter, ar -> {
-              if (ar.succeeded()) {
-                if (ar.result()) {
-                  handler.handle(Future.failedFuture("Timeout"));
-                }
+              if (ar.succeeded() && ar.result()) {
+                handler.handle(Future.failedFuture(new TimeoutException("Timeout while waiting for connection")));
               } else {
-                // ????
+                handler.handle(Future.failedFuture(new TimeoutException("Failed to cancel pool request after timeout while waiting for connection")));
               }
             });
           });
