@@ -33,7 +33,7 @@
   <description>The Reactive Oracle Client</description>
 
   <properties>
-    <ojdbc.version>23.3.0.23.09</ojdbc.version>
+    <ojdbc.version>23.4.0.24.05</ojdbc.version>
     <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/connections.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/cursor.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/queries.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/tracing.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/transactions.adoc,${asciidoc.dir}/*.adoc</docgen.source>
   </properties>
 
