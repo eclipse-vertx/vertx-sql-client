@@ -107,6 +107,7 @@ public class SqlConnectOptions extends NetClientOptions {
     if (other.properties != null) {
       this.properties = new HashMap<>(other.properties);
     }
+    this.tracingPolicy = other.tracingPolicy;
   }
 
   /**
