@@ -106,6 +106,7 @@ public class SqlConnectOptions {
     if (other.properties != null) {
       this.properties = new HashMap<>(other.properties);
     }
+    this.tracingPolicy = other.tracingPolicy;
     this.reconnectAttempts = other.reconnectAttempts;
     this.reconnectInterval = other.reconnectInterval;
     ClientSSLOptions sslOptions = other.sslOptions;
