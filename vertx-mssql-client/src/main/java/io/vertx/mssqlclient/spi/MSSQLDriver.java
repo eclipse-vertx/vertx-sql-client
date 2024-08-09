@@ -57,8 +57,8 @@ public class MSSQLDriver implements Driver {
   }
 
   private PoolImpl newPoolImpl(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
-    PoolImpl pool = new PoolImpl(vertx, this, false, options, null, null, closeFuture);
     ConnectionFactory factory = createConnectionFactory(vertx, databases);
+    PoolImpl pool = new PoolImpl(vertx, this, false, options, factory.metricsProvider(), null, null, closeFuture);
     pool.connectionProvider(context -> factory.connect(context, databases.get()));
     pool.init();
     closeFuture.add(factory);

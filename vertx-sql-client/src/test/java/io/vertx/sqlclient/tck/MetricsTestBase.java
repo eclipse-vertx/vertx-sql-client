@@ -21,15 +21,15 @@ import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -66,7 +66,15 @@ public abstract class MetricsTestBase {
     return pool;
   }
 
-  protected abstract Pool createPool(Vertx vertx);
+  protected abstract ClientBuilder<Pool> poolBuilder();
+
+  protected Pool createPool(Vertx vertx) {
+    return createPool(vertx, new PoolOptions());
+  }
+
+  protected Pool createPool(Vertx vertx, PoolOptions options) {
+    return poolBuilder().with(options).using(vertx).build();
+  }
 
   protected abstract String statement(String... parts);
 
@@ -88,6 +96,43 @@ public abstract class MetricsTestBase {
       ctx.assertTrue(System.currentTimeMillis() - now < 20_000);
       Thread.sleep(100);
     }
+  }
+
+  @Test
+  public void testQueuing(TestContext ctx) throws Exception {
+    AtomicInteger queueSize = new AtomicInteger();
+    List<Object> enqueueMetrics = Collections.synchronizedList(new ArrayList<>());
+    List<Object> dequeueMetrics = Collections.synchronizedList(new ArrayList<>());
+    metrics = new ClientMetrics() {
+      @Override
+      public Object enqueueRequest() {
+        Object metric = new Object();
+        enqueueMetrics.add(metric);
+        queueSize.incrementAndGet();
+        return metric;
+      }
+      @Override
+      public void dequeueRequest(Object taskMetric) {
+        dequeueMetrics.add(taskMetric);
+        queueSize.decrementAndGet();
+      }
+    };
+    Pool pool = createPool(vertx, new PoolOptions().setMaxSize(1));
+    SqlConnection conn = pool.getConnection().toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
+    int num = 16;
+    List<Future<?>> futures = new ArrayList<>();
+    for (int i = 0;i < num;i++) {
+      futures.add(pool.query("SELECT * FROM immutable WHERE id=1").execute());
+    }
+    long now = System.currentTimeMillis();
+    while (queueSize.get() != num) {
+      ctx.assertTrue(System.currentTimeMillis() - now < 20_000);
+      Thread.sleep(100);
+    }
+    conn.close();
+    Future.join(futures).toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
+    ctx.assertEquals(0, queueSize.get());
+    ctx.assertEquals(enqueueMetrics, dequeueMetrics);
   }
 
   @Test

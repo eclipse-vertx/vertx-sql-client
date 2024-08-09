@@ -25,6 +25,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.command.CommandBase;
+import io.vertx.sqlclient.impl.metrics.ClientMetricsProvider;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -56,6 +57,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   Driver driver,
                   boolean pipelined,
                   PoolOptions poolOptions,
+                  ClientMetricsProvider clientMetricsProvider,
                   Function<Connection, Future<Void>> afterAcquire,
                   Function<Connection, Future<Void>> beforeRecycle,
                   CloseFuture closeFuture) {
@@ -69,8 +71,8 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.pipelined = pipelined;
     this.vertx = vertx;
     this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer,
-      afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined,
-      poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+      clientMetricsProvider, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(),
+      pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
   }
 

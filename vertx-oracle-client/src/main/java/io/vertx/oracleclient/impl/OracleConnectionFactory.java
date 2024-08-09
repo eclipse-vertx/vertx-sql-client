@@ -21,6 +21,10 @@ import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.SingletonSupplier;
+import io.vertx.sqlclient.impl.metrics.ClientMetricsProvider;
+import io.vertx.sqlclient.impl.metrics.DynamicClientMetricsProvider;
+import io.vertx.sqlclient.impl.metrics.SingleServerClientMetricsProvider;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.OracleDataSource;
@@ -36,15 +40,39 @@ public class OracleConnectionFactory implements ConnectionFactory {
 
   private final Supplier<? extends Future<? extends SqlConnectOptions>> options;
   private final Map<JsonObject, OracleDataSource> datasources;
+  private final ClientMetricsProvider clientMetricsProvider;
 
   public OracleConnectionFactory(VertxInternal vertx, Supplier<? extends Future<? extends SqlConnectOptions>> options) {
+    VertxMetrics metrics = vertx.metricsSPI();
+    ClientMetricsProvider clientMetricsProvider;
+    if (metrics != null) {
+      if (options instanceof SingletonSupplier) {
+        SqlConnectOptions option = (SqlConnectOptions) ((SingletonSupplier) options).unwrap();
+        ClientMetrics<?, ?, ?, ?> clientMetrics = metrics.createClientMetrics(option.getSocketAddress(), "sql", option.getMetricsName());
+        clientMetricsProvider = new SingleServerClientMetricsProvider(clientMetrics);
+      } else {
+        clientMetricsProvider = new DynamicClientMetricsProvider(metrics);
+      }
+    } else {
+      clientMetricsProvider = null;
+    }
+    this.clientMetricsProvider = clientMetricsProvider;
     this.options = options;
     this.datasources = new HashMap<>();
   }
 
   @Override
+  public ClientMetricsProvider metricsProvider() {
+    return clientMetricsProvider;
+  }
+
+  @Override
   public void close(Promise<Void> promise) {
-    promise.complete();
+    if (clientMetricsProvider != null) {
+      clientMetricsProvider.close(promise);
+    } else {
+      promise.complete();
+    }
   }
 
   @Override
@@ -68,8 +96,7 @@ public class OracleConnectionFactory implements ConnectionFactory {
   @Override
   public Future<SqlConnection> connect(Context context, SqlConnectOptions options) {
     OracleDataSource datasource = getDatasource(options);
-    VertxMetrics vertxMetrics = ((VertxInternal)context.owner()).metricsSPI();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+    ClientMetrics metrics = clientMetricsProvider != null ? clientMetricsProvider.metricsFor(options) : null;
     ContextInternal ctx = (ContextInternal) context;
     return executeBlocking(context, () -> {
       OracleConnection orac = datasource.createConnectionBuilder().build();
