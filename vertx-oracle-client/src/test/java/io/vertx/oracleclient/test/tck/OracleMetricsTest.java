@@ -11,10 +11,10 @@
 
 package io.vertx.oracleclient.test.tck;
 
-import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.test.junit.OracleRule;
+import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
@@ -27,10 +27,8 @@ public class OracleMetricsTest extends MetricsTestBase {
   public static OracleRule rule = OracleRule.SHARED_INSTANCE;
 
   @Override
-  protected Pool createPool(Vertx vertx) {
-    return OracleBuilder.pool(builder -> builder
-      .connectingTo(rule.options())
-      .using(vertx));
+  protected ClientBuilder<Pool> poolBuilder() {
+    return OracleBuilder.pool().connectingTo(rule.options());
   }
 
   @Override
