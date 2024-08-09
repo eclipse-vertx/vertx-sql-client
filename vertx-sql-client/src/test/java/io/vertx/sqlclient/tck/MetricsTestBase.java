@@ -50,7 +50,7 @@ public abstract class MetricsTestBase {
         new MetricsOptions().setEnabled(true)))
       .withMetrics(tracingOptions -> new VertxMetrics() {
         @Override
-        public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
+        public ClientMetrics<?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
           return metrics;
         }
       })
