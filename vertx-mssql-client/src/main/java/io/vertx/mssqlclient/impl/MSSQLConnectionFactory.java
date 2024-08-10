@@ -19,6 +19,7 @@ import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.net.*;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -72,7 +73,8 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
   }
 
   private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, ContextInternal context) {
-    ClientMetrics metrics = clientMetricsProvider != null ? clientMetricsProvider.metricsFor(options) : null;
+    VertxMetrics vertxMetrics = vertx.metricsSPI();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
     MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, metrics, options, false, 0, sql -> true, 1, context);
     conn.init();
     return conn;

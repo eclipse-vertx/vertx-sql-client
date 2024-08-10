@@ -23,6 +23,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.TrustOptions;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
@@ -126,7 +127,8 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase {
     MySQLAuthenticationPlugin authenticationPlugin = options.getAuthenticationPlugin();
     Future<NetSocket> fut = netClient(new NetClientOptions(options).setSsl(false)).connect(server);
     return fut.flatMap(so -> {
-      ClientMetrics metrics = clientMetricsProvider != null ? clientMetricsProvider.metricsFor(options) : null;
+      VertxMetrics vertxMetrics = vertx.metricsSPI();
+      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
       MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, metrics, options, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();
       return Future.future(promise -> conn.sendStartupMessage(username, password, database, collation, serverRsaPublicKey, properties, sslMode, initialCapabilitiesFlags, charsetEncoding, authenticationPlugin, promise));

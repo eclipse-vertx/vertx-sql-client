@@ -17,6 +17,7 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -39,7 +40,10 @@ import java.util.function.Function;
 public abstract class MetricsTestBase {
 
   Vertx vertx;
-  ClientMetrics metrics;
+  ClientMetrics clientMetrics;
+  PoolMetrics poolMetrics;
+  String poolType;
+  String poolName;
   Pool pool;
 
   @Before
@@ -48,7 +52,13 @@ public abstract class MetricsTestBase {
       new MetricsOptions().setEnabled(true).setFactory(tracingOptions -> new VertxMetrics() {
         @Override
         public ClientMetrics<?, ?, ?, ?> createClientMetrics(SocketAddress remoteAddress, String type, String namespace) {
-          return metrics;
+          return clientMetrics;
+        }
+        @Override
+        public PoolMetrics<?> createPoolMetrics(String poolType, String poolName, int maxPoolSize) {
+          MetricsTestBase.this.poolType = poolType;
+          MetricsTestBase.this.poolName = poolName;
+          return poolMetrics;
         }
       }))
     );
@@ -57,6 +67,11 @@ public abstract class MetricsTestBase {
   @After
   public void teardown(TestContext ctx) {
     vertx.close(ctx.asyncAssertSuccess());
+    pool = null;
+    poolType = null;
+    poolName = null;
+    clientMetrics = null;
+    poolMetrics  = null;
   }
 
   protected Pool getPool() {
@@ -80,19 +95,26 @@ public abstract class MetricsTestBase {
 
   @Test
   public void testClosePool(TestContext ctx) throws Exception {
-    AtomicInteger closeCount = new AtomicInteger();
-    metrics = new ClientMetrics() {
+    AtomicInteger clientCloseCount = new AtomicInteger();
+    AtomicInteger poolCloseCount = new AtomicInteger();
+    clientMetrics = new ClientMetrics() {
       @Override
       public void close() {
-        closeCount.incrementAndGet();
+        clientCloseCount.incrementAndGet();
+      }
+    };
+    poolMetrics = new PoolMetrics() {
+      @Override
+      public void close() {
+        poolCloseCount.incrementAndGet();
       }
     };
     Pool pool = createPool(vertx);
     pool.query("SELECT * FROM immutable WHERE id=1").execute().toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
-    ctx.assertEquals(0, closeCount.get());
+    ctx.assertEquals(0, clientCloseCount.get());
     pool.close();
     long now = System.currentTimeMillis();
-    while (closeCount.get() != 1) {
+    while (clientCloseCount.get() != 1 || poolCloseCount.get() != 1) {
       ctx.assertTrue(System.currentTimeMillis() - now < 20_000);
       Thread.sleep(100);
     }
@@ -101,23 +123,40 @@ public abstract class MetricsTestBase {
   @Test
   public void testQueuing(TestContext ctx) throws Exception {
     AtomicInteger queueSize = new AtomicInteger();
+    AtomicInteger inUse = new AtomicInteger();
     List<Object> enqueueMetrics = Collections.synchronizedList(new ArrayList<>());
     List<Object> dequeueMetrics = Collections.synchronizedList(new ArrayList<>());
-    metrics = new ClientMetrics() {
+    List<Object> beginMetrics = Collections.synchronizedList(new ArrayList<>());
+    List<Object> endMetrics = Collections.synchronizedList(new ArrayList<>());
+    poolMetrics = new PoolMetrics() {
       @Override
-      public Object enqueueRequest() {
+      public Object submitted() {
         Object metric = new Object();
         enqueueMetrics.add(metric);
         queueSize.incrementAndGet();
         return metric;
       }
       @Override
-      public void dequeueRequest(Object taskMetric) {
-        dequeueMetrics.add(taskMetric);
+      public Object begin(Object queueMetric) {
+        dequeueMetrics.add(queueMetric);
+        queueSize.decrementAndGet();
+        inUse.incrementAndGet();
+        Object inUseMetric = new Object();
+        beginMetrics.add(inUseMetric);
+        return inUseMetric;
+      }
+      @Override
+      public void rejected(Object queueMetric) {
+        dequeueMetrics.add(queueMetric);
         queueSize.decrementAndGet();
       }
+      @Override
+      public void end(Object inUseMetric, boolean succeeded) {
+        inUse.decrementAndGet();
+        endMetrics.add(inUseMetric);
+      }
     };
-    Pool pool = createPool(vertx, new PoolOptions().setMaxSize(1));
+    Pool pool = createPool(vertx, new PoolOptions().setMaxSize(1).setName("the-pool"));
     SqlConnection conn = pool.getConnection().toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
     int num = 16;
     List<Future<?>> futures = new ArrayList<>();
@@ -132,7 +171,11 @@ public abstract class MetricsTestBase {
     conn.close();
     Future.join(futures).toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
     ctx.assertEquals(0, queueSize.get());
+    ctx.assertEquals(0, inUse.get());
     ctx.assertEquals(enqueueMetrics, dequeueMetrics);
+    ctx.assertEquals(beginMetrics, endMetrics);
+    ctx.assertEquals("sql", poolType);
+    ctx.assertEquals("the-pool", poolName);
   }
 
   @Test
@@ -180,7 +223,7 @@ public abstract class MetricsTestBase {
     Object queueMetric = new Object();
     AtomicReference<Object> responseMetric = new AtomicReference<>();
     AtomicReference<Object> failureMetric = new AtomicReference<>();
-    metrics = new ClientMetrics() {
+    clientMetrics = new ClientMetrics() {
       @Override
       public Object requestBegin(String uri, Object request) {
         return metric;

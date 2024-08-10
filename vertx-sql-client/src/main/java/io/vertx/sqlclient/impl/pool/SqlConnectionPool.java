@@ -19,6 +19,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.ConnectionBase;
 import io.vertx.core.net.impl.pool.*;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.SqlConnection;
@@ -26,8 +27,6 @@ import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.SqlConnectionBase;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.QueryCommandBase;
-import io.vertx.sqlclient.impl.metrics.ClientMetricsProvider;
-import io.vertx.sqlclient.impl.metrics.SingleServerClientMetricsProvider;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
@@ -46,11 +45,13 @@ import java.util.stream.Collectors;
  */
 public class SqlConnectionPool {
 
+  private static final Object NO_METRICS = "bilto";
+
   private final Function<Context, Future<SqlConnection>> connectionProvider;
+  private final PoolMetrics metrics;
   private final VertxInternal vertx;
   private final ConnectionPool<PooledConnection> pool;
   private final Supplier<Handler<PooledConnection>> hook;
-  private final ClientMetrics clientMetrics;
   private final Function<Connection, Future<Void>> afterAcquire;
   private final Function<Connection, Future<Void>> beforeRecycle;
   private final boolean pipelined;
@@ -60,7 +61,7 @@ public class SqlConnectionPool {
 
   public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
                            Supplier<Handler<PooledConnection>> hook,
-                           ClientMetricsProvider clientMetricsProvider,
+                           PoolMetrics<?> metrics,
                            Function<Connection, Future<Void>> afterAcquire,
                            Function<Connection, Future<Void>> beforeRecycle,
                            VertxInternal vertx,
@@ -83,7 +84,7 @@ public class SqlConnectionPool {
     this.maxLifetime = maxLifetime;
     this.maxSize = maxSize;
     this.hook = hook;
-    this.clientMetrics = clientMetricsProvider instanceof SingleServerClientMetricsProvider ? ((SingleServerClientMetricsProvider)clientMetricsProvider).metrics() : null;
+    this.metrics = metrics;
     this.connectionProvider = connectionProvider;
     this.afterAcquire = afterAcquire;
     this.beforeRecycle = beforeRecycle;
@@ -163,13 +164,46 @@ public class SqlConnectionPool {
     });
   }
 
+  private Object enqueueMetric() {
+    if (metrics != null) {
+      try {
+        return metrics.submitted();
+      } catch (Exception e) {
+        // Log
+      }
+    }
+    return NO_METRICS;
+  }
+
+  private Object dequeueAndBeginUse(Object metric) {
+    if (metrics != null && metric != NO_METRICS) {
+      try {
+        return metrics.begin(metric);
+      } catch (Exception e) {
+        // Log
+      }
+    }
+    return NO_METRICS;
+  }
+
+  private Object endUse(Object metric) {
+    if (metrics != null && metric != NO_METRICS) {
+      try {
+        metrics.end(metric, false);
+      } catch (Exception e) {
+        // Log
+      }
+    }
+    return NO_METRICS;
+  }
+
   public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
     Promise<Lease<PooledConnection>> p = context.promise();
     Object queueMetric = enqueueMetric();
     pool.acquire(context, 0, p);
     return p.future().compose(lease -> {
+      Object useMetric = dequeueAndBeginUse(queueMetric);
       PooledConnection pooled = lease.get();
-      dequeueMetric(queueMetric);
       Connection conn = pooled.conn;
       Future<R> future;
       if (afterAcquire != null) {
@@ -180,6 +214,7 @@ public class SqlConnectionPool {
         future = pooled.schedule(context, cmd);
       }
       return future.andThen(ar -> {
+        endUse(useMetric);
         pooled.refresh();
         lease.recycle();
       });
@@ -190,10 +225,11 @@ public class SqlConnectionPool {
     class PoolRequest implements PoolWaiter.Listener<PooledConnection>, Handler<AsyncResult<Lease<PooledConnection>>> {
 
       private final Object queueMetric;
-      private long timerID = -1L;
+      private long timerID;
 
       public PoolRequest(Object queueMetric) {
         this.queueMetric = queueMetric;
+        this.timerID = -1L;
       }
 
       @Override
@@ -221,10 +257,11 @@ public class SqlConnectionPool {
       }
 
       private void handle(Lease<PooledConnection> lease) {
+        Object useMetric = dequeueAndBeginUse(queueMetric);
         PooledConnection pooled = lease.get();
         pooled.lease = lease;
+        pooled.useMetric = useMetric;
         handler.handle(Future.succeededFuture(pooled));
-        dequeueMetric(queueMetric);
       }
 
       @Override
@@ -254,27 +291,6 @@ public class SqlConnectionPool {
     pool.acquire(context, request, 0, request);
   }
 
-  private Object enqueueMetric() {
-    if (clientMetrics != null) {
-      try {
-        return clientMetrics.enqueueRequest();
-      } catch (Exception e) {
-        // Log
-      }
-    }
-    return null;
-  }
-
-  private void dequeueMetric(Object metric) {
-    if (clientMetrics != null) {
-      try {
-        clientMetrics.dequeueRequest(metric);
-      } catch (Exception e) {
-        // Log
-      }
-    }
-  }
-
   public Future<Void> close() {
     Promise<Void> promise = vertx.promise();
     pool.close(ar1 -> {
@@ -293,7 +309,11 @@ public class SqlConnectionPool {
         promise.fail(ar1.cause());
       }
     });
-    return promise.future();
+    Future<Void> f = promise.future();
+    if (metrics != null) {
+      f = f.andThen(ar -> metrics.close());
+    }
+    return f;
   }
 
   public class PooledConnection implements Connection, Connection.Holder {
@@ -304,6 +324,7 @@ public class SqlConnectionPool {
     private Holder holder;
     private Handler<AsyncResult<ConnectResult<PooledConnection>>> poolResultHandler;
     private Lease<PooledConnection> lease;
+    private Object useMetric;
     public long idleEvictionTimestamp;
     public long lifetimeEvictionTimestamp;
 
@@ -440,8 +461,11 @@ public class SqlConnectionPool {
 
     private void cleanup(Promise<Void> promise) {
       Lease<PooledConnection> l = this.lease;
+      Object useMetric = this.useMetric;
       this.lease = null;
+      this.useMetric = null;
       refresh();
+      endUse(useMetric);
       l.recycle();
       promise.complete();
     }

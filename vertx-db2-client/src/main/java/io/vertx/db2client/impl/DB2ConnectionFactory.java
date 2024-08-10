@@ -24,6 +24,7 @@ import io.vertx.core.net.NetClient;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
@@ -54,7 +55,8 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase {
     int pipeliningLimit = db2Options.getPipeliningLimit();
     NetClient netClient = netClient(options);
     return netClient.connect(server).flatMap(so -> {
-      ClientMetrics metrics = clientMetricsProvider != null ? clientMetricsProvider.metricsFor(options) : null;
+      VertxMetrics vertxMetrics = vertx.metricsSPI();
+      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(db2Options.getSocketAddress(), "sql", db2Options.getMetricsName()) : null;
       DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, metrics, db2Options, cachePreparedStatements,
         preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();

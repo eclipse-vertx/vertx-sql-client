@@ -4,7 +4,6 @@ import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.impl.metrics.ClientMetricsProvider;
 
 /**
  * A connection factory, can be obtained from {@link Driver#createConnectionFactory}
@@ -42,7 +41,5 @@ public interface ConnectionFactory extends Closeable {
    * @return the future connection
    */
   Future<SqlConnection> connect(Context context, SqlConnectOptions options);
-
-  ClientMetricsProvider metricsProvider();
 
 }
