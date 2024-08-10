@@ -11,10 +11,11 @@
 
 package io.vertx.mssqlclient.tck;
 
-import io.vertx.core.Vertx;
 import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.junit.MSSQLRule;
+import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 
@@ -24,8 +25,13 @@ public class MSSQLMetricsTest extends MetricsTestBase {
   public static MSSQLRule rule = MSSQLRule.SHARED_INSTANCE;
 
   @Override
-  protected Pool createPool(Vertx vertx) {
-    return MSSQLBuilder.pool(builder -> builder.connectingTo(rule.options()).using(vertx));
+  protected SqlConnectOptions connectOptions() {
+    return rule.options();
+  }
+
+  @Override
+  protected ClientBuilder<Pool> poolBuilder() {
+    return MSSQLBuilder.pool();
   }
 
   @Override

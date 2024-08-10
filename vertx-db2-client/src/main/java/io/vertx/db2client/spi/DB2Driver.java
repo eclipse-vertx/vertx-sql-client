@@ -83,7 +83,7 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
 
   @Override
   public ConnectionFactory<DB2ConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
-    return new DB2ConnectionFactory((VertxInternal) vertx);
+    return new DB2ConnectionFactory((VertxInternal) vertx, transportOptions);
   }
 
   @Override

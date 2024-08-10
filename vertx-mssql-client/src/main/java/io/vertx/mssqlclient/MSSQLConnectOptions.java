@@ -229,6 +229,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     this.setUser(DEFAULT_USER);
     this.setPassword(DEFAULT_PASSWORD);
     this.setDatabase(DEFAULT_DATABASE);
+    this.setMetricsName(DEFAULT_METRICS_NAME);
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
     packetSize = DEFAULT_PACKET_SIZE;
     ssl = DEFAULT_SSL;

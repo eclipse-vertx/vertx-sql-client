@@ -20,6 +20,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -38,6 +39,10 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
     super(vertx);
   }
 
+  public DB2ConnectionFactory(VertxInternal vertx, NetClientOptions tcpOptions) {
+    super(vertx, tcpOptions);
+  }
+
   @Override
   protected Future<Connection> doConnectInternal(DB2ConnectOptions options, ContextInternal context) {
     SocketAddress server = options.getSocketAddress();
@@ -51,7 +56,7 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
     int pipeliningLimit = options.getPipeliningLimit();
     return client.connect(server).flatMap(so -> {
       VertxMetrics vertxMetrics = vertx.metricsSPI();
-      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", tcpOptions.getMetricsName()) : null;
+      ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
       DB2SocketConnection conn = new DB2SocketConnection((NetSocketInternal) so, metrics, options, cachePreparedStatements,
         preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();

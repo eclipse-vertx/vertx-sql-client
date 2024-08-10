@@ -11,9 +11,10 @@
 
 package io.vertx.pgclient;
 
-import io.vertx.core.Vertx;
 import io.vertx.pgclient.junit.ContainerPgRule;
+import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 
@@ -23,8 +24,12 @@ public class PgMetricsTest extends MetricsTestBase {
   public static ContainerPgRule rule = new ContainerPgRule();
 
   @Override
-  protected Pool createPool(Vertx vertx) {
-    return PgBuilder.pool().connectingTo(rule.options()).using(vertx).build();
+  protected SqlConnectOptions connectOptions() {
+    return rule.options();
+  }
+
+  protected ClientBuilder<Pool> poolBuilder() {
+    return PgBuilder.pool();
   }
 
   @Override
