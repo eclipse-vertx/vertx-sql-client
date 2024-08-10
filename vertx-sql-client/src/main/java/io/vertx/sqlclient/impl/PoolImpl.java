@@ -23,9 +23,10 @@ import io.vertx.core.impl.CloseFuture;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.VertxInternal;
 import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.spi.metrics.PoolMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.vertx.sqlclient.impl.metrics.ClientMetricsProvider;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -57,11 +58,18 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   Driver driver,
                   boolean pipelined,
                   PoolOptions poolOptions,
-                  ClientMetricsProvider clientMetricsProvider,
                   Function<Connection, Future<Void>> afterAcquire,
                   Function<Connection, Future<Void>> beforeRecycle,
                   CloseFuture closeFuture) {
     super(driver);
+
+    VertxMetrics metrics = vertx.metricsSPI();
+    PoolMetrics<?> poolMetrics;
+    if (metrics != null) {
+      poolMetrics = metrics.createPoolMetrics("sql", poolOptions.getName(), poolOptions.getMaxSize());
+    } else {
+      poolMetrics = null;
+    }
 
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
@@ -71,8 +79,8 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.pipelined = pipelined;
     this.vertx = vertx;
     this.pool = new SqlConnectionPool(ctx -> connectionProvider.apply(ctx), () -> connectionInitializer,
-      clientMetricsProvider, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(),
-      pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+      poolMetrics, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined,
+      poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
   }
 
