@@ -16,6 +16,7 @@ import io.vertx.core.*;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.core.internal.pool.*;
@@ -43,8 +44,11 @@ import java.util.stream.Collectors;
  */
 public class SqlConnectionPool {
 
+  private static final Object NO_METRICS = new Object();
+
   private final Function<Context, Future<SqlConnection>> connectionProvider;
   private final VertxInternal vertx;
+  private final PoolMetrics metrics;
   private final ConnectionPool<PooledConnection> pool;
   private final Handler<PooledConnection> hook;
   private final Function<Connection, Future<Void>> afterAcquire;
@@ -55,6 +59,7 @@ public class SqlConnectionPool {
   private final int maxSize;
 
   public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
+                           PoolMetrics metrics,
                            Handler<PooledConnection> hook,
                            Function<Connection, Future<Void>> afterAcquire,
                            Function<Connection, Future<Void>> beforeRecycle,
@@ -72,6 +77,7 @@ public class SqlConnectionPool {
       throw new IllegalArgumentException("afterAcquire and beforeRecycle hooks must be both not null");
     }
     this.pool = ConnectionPool.pool(connector, new int[]{maxSize}, maxWaitQueueSize);
+    this.metrics = metrics;
     this.vertx = vertx;
     this.pipelined = pipelined;
     this.idleTimeout = idleTimeout;
@@ -154,10 +160,33 @@ public class SqlConnectionPool {
     });
   }
 
+  private Object enqueueMetric() {
+    if (metrics != null) {
+      try {
+        return metrics.enqueue();
+      } catch (Exception e) {
+        // Log
+      }
+    }
+    return NO_METRICS;
+  }
+
+  private void dequeueMetric(Object metric) {
+    if (metrics != null && metric != NO_METRICS) {
+      try {
+        metrics.dequeue(metric);
+      } catch (Exception e) {
+        //
+      }
+    }
+  }
+
   public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
     Promise<Lease<PooledConnection>> p = context.promise();
+    Object metric = enqueueMetric();
     pool.acquire(context, 0, p);
     return p.future().compose(lease -> {
+      dequeueMetric(metric);
       PooledConnection pooled = lease.get();
       Connection conn = pooled.conn;
       Future<R> future;
@@ -177,7 +206,13 @@ public class SqlConnectionPool {
 
   public void acquire(ContextInternal context, long timeout, Handler<AsyncResult<PooledConnection>> handler) {
     class PoolRequest implements PoolWaiter.Listener<PooledConnection>, Handler<AsyncResult<Lease<PooledConnection>>> {
+
+      private final Object metric;
       private long timerID = -1L;
+
+      PoolRequest(Object metric) {
+        this.metric = metric;
+      }
 
       @Override
       public void handle(AsyncResult<Lease<PooledConnection>> ar) {
@@ -204,6 +239,7 @@ public class SqlConnectionPool {
       }
 
       private void handle(Lease<PooledConnection> lease) {
+        dequeueMetric(metric);
         PooledConnection pooled = lease.get();
         pooled.lease = lease;
         handler.handle(Future.succeededFuture(pooled));
@@ -231,7 +267,8 @@ public class SqlConnectionPool {
         onEnqueue(waiter);
       }
     }
-    PoolRequest request = new PoolRequest();
+    Object metric = enqueueMetric();
+    PoolRequest request = new PoolRequest(metric);
     pool.acquire(context, request, 0, request);
   }
 

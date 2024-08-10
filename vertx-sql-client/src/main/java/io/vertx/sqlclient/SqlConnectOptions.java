@@ -15,6 +15,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.ClientOptionsBase;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
@@ -70,6 +71,7 @@ public class SqlConnectOptions {
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE = 256;
   public static final int DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT = 2048;
   public static final Predicate<String> DEFAULT_PREPARED_STATEMENT_CACHE_FILTER = sql -> sql.length() < DEFAULT_PREPARED_STATEMENT_CACHE_SQL_LIMIT;
+  public static final String DEFAULT_METRICS_NAME = "";
 
   private String host;
   private int port;
@@ -83,6 +85,7 @@ public class SqlConnectOptions {
   private TracingPolicy tracingPolicy;
   private int reconnectAttempts;
   private long reconnectInterval;
+  private String metricsName;
   private ClientSSLOptions sslOptions;
 
   public SqlConnectOptions() {
@@ -109,6 +112,7 @@ public class SqlConnectOptions {
     this.tracingPolicy = other.tracingPolicy;
     this.reconnectAttempts = other.reconnectAttempts;
     this.reconnectInterval = other.reconnectInterval;
+    this.metricsName = other.metricsName;
     ClientSSLOptions sslOptions = other.sslOptions;
     this.sslOptions = sslOptions != null ? sslOptions.copy() : null;
   }
@@ -395,6 +399,25 @@ public class SqlConnectOptions {
       throw new IllegalArgumentException("reconnect interval must be >= 1");
     }
     this.reconnectInterval = interval;
+    return this;
+  }
+
+  /**
+   * @return the metrics name identifying the reported metrics.
+   */
+  public String getMetricsName() {
+    return metricsName;
+  }
+
+  /**
+   * Set the metrics name identifying the reported metrics, useful for grouping metrics
+   * with the same name.
+   *
+   * @param metricsName the metrics name
+   * @return a reference to this, so the API can be used fluently
+   */
+  public SqlConnectOptions setMetricsName(String metricsName) {
+    this.metricsName = metricsName;
     return this;
   }
 

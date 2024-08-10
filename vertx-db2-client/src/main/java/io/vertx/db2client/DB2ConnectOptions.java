@@ -232,6 +232,7 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   protected void init() {
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
+    this.setMetricsName(DEFAULT_METRICS_NAME);
     this.setProperties(new HashMap<>(DEFAULT_CONNECTION_ATTRIBUTES));
   }
 

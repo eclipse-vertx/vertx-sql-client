@@ -34,12 +34,13 @@ jobs:
           - os: ubuntu-latest
             jdk: 11
             profile: 'MariaDB-10.4'
-          - os: ubuntu-latest
-            jdk: 11
-            profile: 'MSSQL-2017-latest'
-          - os: ubuntu-latest
-            jdk: 11
-            profile: 'MSSQL-2019-latest'
+            # Currently does not pass in CI due to a container issue
+#          - os: ubuntu-latest
+#            jdk: 11
+#            profile: 'MSSQL-2017-latest'
+#          - os: ubuntu-latest
+#            jdk: 11
+#            profile: 'MSSQL-2019-latest'
           - os: ubuntu-latest
             jdk: 11
             profile: 'DB2-11.5'
@@ -55,9 +56,10 @@ jobs:
           - os: ubuntu-latest
             jdk: 17
             profile: 'MariaDB-10.4'
-          - os: ubuntu-latest
-            jdk: 17
-            profile: 'MSSQL-2019-latest'
+            # Currently does not pass in CI due to a container issue
+#          - os: ubuntu-latest
+#            jdk: 17
+#            profile: 'MSSQL-2019-latest'
           - os: ubuntu-latest
             jdk: 17
             profile: 'Oracle-23'
