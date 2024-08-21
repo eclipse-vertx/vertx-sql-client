@@ -14,6 +14,8 @@ import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.future.PromiseInternal;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
