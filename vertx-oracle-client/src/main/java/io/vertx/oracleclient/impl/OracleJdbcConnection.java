@@ -108,7 +108,7 @@ public class OracleJdbcConnection implements Connection {
   @Override
   public boolean isValid() {
     try {
-      return connection.isValid(OracleConnection.ConnectionValidation.SOCKET, 0);
+      return connection.isValid(OracleConnection.ConnectionValidation.NONE, 0);
     } catch (SQLException e) {
       log.trace("Failed to validate connection", e);
       return false;
