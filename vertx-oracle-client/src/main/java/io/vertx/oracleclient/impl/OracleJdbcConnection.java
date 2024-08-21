@@ -34,6 +34,8 @@ import static io.vertx.oracleclient.impl.Helper.isFatal;
 
 public class OracleJdbcConnection implements Connection {
 
+  private static final Logger log = LoggerFactory.getLogger(OracleJdbcConnection.class);
+
   private final ClientMetrics metrics;
   private final OracleConnection connection;
   private final OracleMetadata metadata;
@@ -104,7 +106,12 @@ public class OracleJdbcConnection implements Connection {
 
   @Override
   public boolean isValid() {
-    return true;
+    try {
+      return connection.isValid(OracleConnection.ConnectionValidation.NONE, 0);
+    } catch (SQLException e) {
+      log.trace("Failed to validate connection", e);
+      return false;
+    }
   }
 
   @Override
