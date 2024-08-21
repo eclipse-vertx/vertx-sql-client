@@ -242,7 +242,7 @@ To use the SASL `SCRAM-SHA-256` authentication add the following dependency to t
 <dependency>
   <groupId>com.ongres.scram</groupId>
   <artifactId>scram-client</artifactId>
-  <version>3.0</version>
+  <version>3.1</version>
 </dependency>
 ----
 * Gradle (in your `build.gradle` file):
@@ -250,7 +250,7 @@ To use the SASL `SCRAM-SHA-256` authentication add the following dependency to t
 [source,groovy]
 ----
 dependencies {
-  compile 'com.ongres.scram:scram-client:3.0'
+  compile 'com.ongres.scram:scram-client:3.1'
 }
 ----
 
