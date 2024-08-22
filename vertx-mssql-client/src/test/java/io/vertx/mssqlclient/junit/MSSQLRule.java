@@ -115,11 +115,12 @@ public class MSSQLRule extends ExternalResource {
   private void initDb() throws IOException {
     try {
       ExecResult execResult = server.execInContainer(
-        "/opt/mssql-tools/bin/sqlcmd",
+        "/opt/mssql-tools18/bin/sqlcmd",
         "-S", "localhost",
         "-U", USER,
         "-P", PASSWORD,
-        "-i", INIT_SQL
+        "-i", INIT_SQL,
+        "-C", "-No"
       );
       if (execResult.getExitCode() != 0) {
         throw new RuntimeException(String.format("Failure while initializing database%nstdout:%s%nstderr:%s%n", execResult.getStdout(), execResult.getStderr()));
