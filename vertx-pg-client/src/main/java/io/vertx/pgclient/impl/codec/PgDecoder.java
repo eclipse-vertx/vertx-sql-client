@@ -17,14 +17,14 @@
 
 package io.vertx.pgclient.impl.codec;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.vertx.sqlclient.impl.Notification;
-import io.vertx.pgclient.impl.util.Util;
-import io.netty.buffer.ByteBuf;
 import io.netty.util.ByteProcessor;
+import io.vertx.pgclient.impl.util.Util;
+import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.impl.command.CommandBase;
 import io.vertx.sqlclient.impl.command.CommandResponse;
 
@@ -273,7 +273,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   private void decodeNotice(ByteBuf in) {
     NoticeResponse response = new NoticeResponse();
     decodeErrorOrNotice(response, in);
-    codec.peek().handleNoticeResponse(response);
+    fireNoticeResponse(response);
   }
 
   private void decodeErrorOrNotice(Response response, ByteBuf in) {

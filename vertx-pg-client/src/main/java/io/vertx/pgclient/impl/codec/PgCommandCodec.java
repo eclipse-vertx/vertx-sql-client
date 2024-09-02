@@ -16,12 +16,12 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.netty.buffer.ByteBuf;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.pgclient.PgException;
-import io.vertx.sqlclient.impl.command.CommandResponse;
 import io.vertx.sqlclient.impl.command.CommandBase;
-import io.netty.buffer.ByteBuf;
+import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import java.util.Arrays;
 
@@ -66,10 +66,6 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
 
   void handleNoData() {
     logger.warn(getClass().getSimpleName() + " should handle message NoData");
-  }
-
-  void handleNoticeResponse(NoticeResponse noticeResponse) {
-    decoder.fireNoticeResponse(noticeResponse);
   }
 
   void handleErrorResponse(ErrorResponse errorResponse) {

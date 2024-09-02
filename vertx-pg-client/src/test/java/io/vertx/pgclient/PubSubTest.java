@@ -17,6 +17,7 @@
 package io.vertx.pgclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.impl.pubsub.PgSubscriberImpl;
@@ -28,6 +29,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -306,5 +308,37 @@ public class PubSubTest extends PgTestBase {
     subscriber.close();
     endLatch.awaitSuccess(10000);
     closeLatch.awaitSuccess(10000);
+  }
+
+  @Test
+  public void testNoticedRaised(TestContext ctx) {
+    Async async = ctx.async();
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    CompletableFuture<Void> connected = new CompletableFuture<>();
+    proxy.proxyHandler(conn -> {
+      connected.thenAccept(v -> {
+        Buffer noticeMsg = Buffer.buffer();
+        noticeMsg.appendByte((byte) 'N'); // Notice
+        noticeMsg.appendInt(0);
+        noticeMsg.appendByte((byte) 0);
+        noticeMsg.setInt(1, noticeMsg.length() - 1);
+        conn.clientSocket().write(noticeMsg);
+      });
+      conn.connect();
+    });
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v1 -> {
+      PgConnectOptions connectOptions = new PgConnectOptions(options).setPort(8080).setHost("localhost");
+      PgConnection.connect(vertx, connectOptions).onComplete(ctx.asyncAssertSuccess(conn -> {
+        conn
+          .noticeHandler(notice -> {
+            async.complete();
+          })
+          .query("LISTEN \"toto\"")
+          .execute()
+          .onComplete(ctx.asyncAssertSuccess(result1 -> {
+            connected.complete(null);
+          }));
+      }));
+    }));
   }
 }
