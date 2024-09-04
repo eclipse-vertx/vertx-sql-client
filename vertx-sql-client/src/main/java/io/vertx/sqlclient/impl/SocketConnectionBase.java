@@ -162,8 +162,8 @@ public abstract class SocketConnectionBase implements Connection {
 
   @Override
   public void init(Holder holder) {
-    Context context = Vertx.currentContext();
-    if (context != this.context) {
+    ContextInternal context = (ContextInternal) Vertx.currentContext();
+    if (context == null || context.nettyEventLoop() != this.context.nettyEventLoop()) {
       throw new IllegalStateException();
     }
     if (status != Status.CONNECTED) {
