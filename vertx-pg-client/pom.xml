@@ -161,6 +161,21 @@
               </environmentVariables>
             </configuration>
           </execution>
+          <execution>
+            <id>missing-scram-test</id>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+            <phase>integration-test</phase>
+            <configuration>
+              <includes>
+                <include>io/vertx/pgclient/it/MissingScramTest.java</include>
+              </includes>
+              <classpathDependencyExcludes>
+                <classpathDependencyExclude>com.ongres.scram:scram-client</classpathDependencyExclude>
+              </classpathDependencyExcludes>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
