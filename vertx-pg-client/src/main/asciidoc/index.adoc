@@ -254,6 +254,8 @@ dependencies {
 }
 ----
 
+When the database requires a scram authentication and the scram client jar is not on the class/module path, the connection will be closed by the client.
+
 include::queries.adoc[leveloffset=1]
 
 == Returning clauses

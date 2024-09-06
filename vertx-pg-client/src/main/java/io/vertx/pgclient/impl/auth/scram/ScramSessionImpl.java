@@ -15,17 +15,7 @@
  *
  */
 
-package io.vertx.pgclient.impl.util;
-
-import java.nio.charset.StandardCharsets;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
+package io.vertx.pgclient.impl.auth.scram;
 
 import com.ongres.scram.client.ScramClient;
 import com.ongres.scram.common.StringPreparation;
@@ -33,19 +23,28 @@ import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.util.TlsServerEndpoint;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.ssl.SslHandler;
 import io.vertx.pgclient.impl.codec.ScramClientInitialMessage;
+import io.vertx.pgclient.impl.util.Util;
 
-public class ScramAuthentication {
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ScramSessionImpl implements ScramSession {
 
   private final String username;
   private final char[] password;
   private ScramClient scramClient;
 
-  public ScramAuthentication(String username, char[] password) {
+  public ScramSessionImpl(String username, char[] password) {
     this.username = username;
     this.password = password;
   }
