@@ -1,5 +1,6 @@
 module io.vertx.client.sql {
 
+  requires io.netty.common;
   requires io.netty.buffer;
   requires io.netty.codec;
   requires io.netty.transport;
