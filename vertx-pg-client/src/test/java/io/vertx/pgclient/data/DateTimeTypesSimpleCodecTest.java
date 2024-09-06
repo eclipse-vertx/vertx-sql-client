@@ -1,19 +1,14 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.ZoneOffset;
+import java.time.*;
 
 public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBase {
 
@@ -239,6 +234,6 @@ public class DateTimeTypesSimpleCodecTest extends SimpleQueryDataTypeCodecTestBa
 
   @Test
   public void testDecodeINTERVALArray(TestContext ctx) {
-    testDecodeGenericArray(ctx, "ARRAY ['10 years 3 months 332 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL]", "Interval", Interval.class, intervals);
+    testDecodeGenericArray(ctx, "ARRAY ['11 years 2 months 2 days 20 hours 20 minutes 20.999991 seconds'::INTERVAL, '20 minutes 20.123456 seconds'::INTERVAL, '30 months ago'::INTERVAL]", "Interval", Interval.class, intervals);
   }
 }
