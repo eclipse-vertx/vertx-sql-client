@@ -52,11 +52,7 @@ class PgParamDesc extends ParamDesc {
       ParamExtractor<?> extractor = paramDataType.paramExtractor;
       Object val;
       try {
-        if (extractor != null) {
-          val = extractor.get(values, i);
-        } else {
-          val = values.get(paramDataType.encodingType, i);
-        }
+        val = extractor.get(values, i);
       } catch (Exception e) {
         return ErrorMessageFactory.buildWhenArgumentsTypeNotMatched(paramDataType.decodingType, i, values.getValue(i));
       }
