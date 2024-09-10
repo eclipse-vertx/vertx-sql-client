@@ -54,7 +54,7 @@
     <unix.socket.port/>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
     <testcontainers.version>1.17.6</testcontainers.version>
-    <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc,${asciidoc.dir}/*.adoc</docgen.source>
+    <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc,${vertx.asciidoc.sources.dir}/*.adoc</docgen.source>
   </properties>
 
   <dependencyManagement>
