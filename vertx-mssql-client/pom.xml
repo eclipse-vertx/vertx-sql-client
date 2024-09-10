@@ -16,6 +16,10 @@
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive MSSQL Client</description>
 
+  <properties>
+    <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
+  </properties>
+
   <dependencies>
 
     <!-- Vert.x dependencies -->

@@ -34,6 +34,7 @@
   <properties>
     <!-- Set to a value for testing with a specific database -->
     <embedded.postgres.version />
+    <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
   </properties>
 
   <dependencies>

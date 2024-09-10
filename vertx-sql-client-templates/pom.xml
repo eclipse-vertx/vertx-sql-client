@@ -31,10 +31,6 @@
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>Vert.x SQL Client Templates</description>
 
-  <properties>
-    <docgen.source>${vertx.asciidoc.sources.dir}</docgen.source>
-  </properties>
-
   <dependencies>
 
     <!-- Vert.x dependencies -->

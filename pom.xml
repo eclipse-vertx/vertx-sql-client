@@ -54,7 +54,6 @@
     <unix.socket.port/>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
     <testcontainers.version>1.17.6</testcontainers.version>
-    <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc,${vertx.asciidoc.sources.dir}/*.adoc</docgen.source>
   </properties>
 
   <dependencyManagement>
@@ -147,14 +146,6 @@
                     <classifier>processor</classifier>
                   </annotationProcessorPath>
                 </annotationProcessorPaths>
-                <compilerArgs>
-                  <!-- Configure the docgen processor -->
-                  <compilerArg>-Adocgen.source=${docgen.source}</compilerArg>
-                  <compilerArg>-Adocgen.output=${project.build.directory}/asciidoc/java</compilerArg>
-                  <compilerArg>-Amaven.groupId=${project.groupId}</compilerArg>
-                  <compilerArg>-Amaven.artifactId=${project.artifactId}</compilerArg>
-                  <compilerArg>-Amaven.version=${project.version}</compilerArg>
-                </compilerArgs>
               </configuration>
             </execution>
             <execution>

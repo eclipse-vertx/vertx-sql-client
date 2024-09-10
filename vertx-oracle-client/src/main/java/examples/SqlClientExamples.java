@@ -350,4 +350,19 @@ public class SqlClientExamples {
   private Future<SqlConnectOptions> retrieveOptions() {
     return null;
   }
+
+  public void poolSharing1() {
+  }
+
+  public void poolSharing2() {
+  }
+
+  public void poolSharing3() {
+  }
+
+  public void poolConfig01() {
+  }
+
+  public void poolConfig02() {
+  }
 }
