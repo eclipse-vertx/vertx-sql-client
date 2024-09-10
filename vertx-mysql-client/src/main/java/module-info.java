@@ -14,7 +14,7 @@ module io.vertx.client.sql.mysql  {
   exports io.vertx.mysqlclient.spi;
   exports io.vertx.mysqlclient.data.spatial;
 
-  requires static vertx.docgen;
+  requires static io.vertx.docgen;
   requires static io.vertx.codegen.api;
   requires static io.vertx.codegen.json;
 

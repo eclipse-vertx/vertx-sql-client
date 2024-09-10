@@ -4,6 +4,6 @@ module io.vertx.client.sql.templates {
   requires io.vertx.codegen.api;
   requires io.vertx.core;
   requires java.compiler;
-  requires static vertx.docgen;
+  requires static io.vertx.docgen;
 
 }

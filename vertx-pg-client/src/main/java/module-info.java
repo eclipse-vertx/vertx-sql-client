@@ -18,7 +18,7 @@ module io.vertx.client.sql.pg {
   exports io.vertx.pgclient.data;
   exports io.vertx.pgclient.pubsub;
 
-  requires static vertx.docgen;
+  requires static io.vertx.docgen;
   requires static io.vertx.codegen.api;
   requires static io.vertx.codegen.json;
 

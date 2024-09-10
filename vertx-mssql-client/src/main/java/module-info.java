@@ -13,7 +13,7 @@ module io.vertx.client.sql.mssql  {
   exports io.vertx.mssqlclient;
   exports io.vertx.mssqlclient.spi;
 
-  requires static vertx.docgen;
+  requires static io.vertx.docgen;
   requires static io.vertx.codegen.api;
   requires static io.vertx.codegen.json;
 

@@ -85,6 +85,11 @@ public class SqlConnectOptionsConverter {
             obj.setReconnectInterval(((Number)member.getValue()).longValue());
           }
           break;
+        case "metricsName":
+          if (member.getValue() instanceof String) {
+            obj.setMetricsName((String)member.getValue());
+          }
+          break;
         case "sslOptions":
           if (member.getValue() instanceof JsonObject) {
             obj.setSslOptions(new io.vertx.core.net.ClientSSLOptions((io.vertx.core.json.JsonObject)member.getValue()));
@@ -125,6 +130,9 @@ public class SqlConnectOptionsConverter {
     json.put("usingDomainSocket", obj.isUsingDomainSocket());
     json.put("reconnectAttempts", obj.getReconnectAttempts());
     json.put("reconnectInterval", obj.getReconnectInterval());
+    if (obj.getMetricsName() != null) {
+      json.put("metricsName", obj.getMetricsName());
+    }
     if (obj.getSslOptions() != null) {
       json.put("sslOptions", obj.getSslOptions().toJson());
     }

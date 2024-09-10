@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx5-parent</artifactId>
-    <version>3</version>
+    <version>4</version>
   </parent>
 
   <artifactId>vertx-sql-client-parent</artifactId>
@@ -71,6 +71,23 @@
 
   <dependencies>
 
+    <!-- Code generation -->
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-codegen-api</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-codegen-json</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-docgen-api</artifactId>
+      <optional>true</optional>
+    </dependency>
+
     <!-- Testing purposes -->
     <dependency>
       <groupId>junit</groupId>
@@ -118,18 +135,16 @@
             <execution>
               <id>default-compile</id>
               <configuration>
-                <annotationProcessors>
-                  <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
-                  <annotationProcessor>io.vertx.docgen.JavaDocGenProcessor</annotationProcessor>
-                </annotationProcessors>
                 <annotationProcessorPaths>
                   <annotationProcessorPath>
                     <groupId>io.vertx</groupId>
                     <artifactId>vertx-codegen</artifactId>
+                    <classifier>processor</classifier>
                   </annotationProcessorPath>
                   <annotationProcessorPath>
                     <groupId>io.vertx</groupId>
-                    <artifactId>vertx-docgen</artifactId>
+                    <artifactId>vertx-docgen-processor</artifactId>
+                    <classifier>processor</classifier>
                   </annotationProcessorPath>
                 </annotationProcessorPaths>
                 <compilerArgs>

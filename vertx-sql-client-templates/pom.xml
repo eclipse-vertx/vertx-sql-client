@@ -32,7 +32,7 @@
   <description>Vert.x SQL Client Templates</description>
 
   <properties>
-    <docgen.source>${asciidoc.dir}</docgen.source>
+    <docgen.source>${vertx.asciidoc.sources.dir}</docgen.source>
   </properties>
 
   <dependencies>
@@ -41,21 +41,6 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-codegen-processor</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-codegen-api</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-docgen</artifactId>
-      <optional>true</optional>
     </dependency>
 
     <!-- For testing -->

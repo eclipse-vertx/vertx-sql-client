@@ -13,7 +13,7 @@ module io.vertx.client.sql.db2  {
   exports io.vertx.db2client;
   exports io.vertx.db2client.spi;
 
-  requires static vertx.docgen;
+  requires static io.vertx.docgen;
   requires static io.vertx.codegen.api;
   requires static io.vertx.codegen.json;
 
