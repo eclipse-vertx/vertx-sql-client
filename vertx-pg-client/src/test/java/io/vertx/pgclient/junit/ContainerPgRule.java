@@ -20,10 +20,12 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.InternetProtocol;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
-import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Postgresql test database based on https://www.testcontainers.org
@@ -34,11 +36,13 @@ import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT;
  */
 public class ContainerPgRule extends ExternalResource {
 
+  private static final int POSTGRESQL_PORT = 5432;
+
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
   private static final String tlsForceConnectionUri = System.getProperty("tls.force.connection.uri");
 
-  private ServerContainer<?> server;
+  private ServerContainer server;
   private PgConnectOptions options;
   private String databaseVersion;
   private boolean ssl;
@@ -72,10 +76,7 @@ public class ContainerPgRule extends ExternalResource {
   }
 
   private void initServer(String version) throws Exception {
-    server = new ServerContainer<>("postgres:" + version)
-      .withDatabaseName("postgres")
-      .withUsername(user)
-      .withPassword("postgres")
+    server = new ServerContainer("postgres:" + version)
       .withClasspathResourceMapping("create-postgres.sql", "/docker-entrypoint-initdb.d/create-postgres.sql", BindMode.READ_ONLY);
     if (ssl) {
       server
@@ -183,15 +184,29 @@ public class ContainerPgRule extends ExternalResource {
     }
   }
 
-  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends PostgreSQLContainer<SELF> {
+  private class ServerContainer extends GenericContainer<ServerContainer> {
 
     public ServerContainer(String dockerImageName) {
       super(dockerImageName);
+      this.waitStrategy = (new LogMessageWaitStrategy()).withRegEx(".*database system is ready to accept connections.*\\s").withTimes(2).withStartupTimeout(Duration.of(60L, ChronoUnit.SECONDS));
+      this.setCommand("postgres", "-c", "fsync=off");
+      this.addExposedPort(POSTGRESQL_PORT);
     }
 
-    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+    @Override
+    protected void configure() {
+      this.addEnv("POSTGRES_DB", "postgres");
+      this.addEnv("POSTGRES_USER", user);
+      this.addEnv("POSTGRES_PASSWORD", "postgres");
+    }
+
+    public ServerContainer withFixedExposedPort(int hostPort, int containerPort) {
       super.addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
       return self();
+    }
+
+    protected void waitUntilContainerStarted() {
+      this.getWaitStrategy().waitUntilReady(this);
     }
   }
 }

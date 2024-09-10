@@ -19,7 +19,8 @@ import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.JksOptions;
 import io.vertx.db2client.DB2ConnectOptions;
 import org.junit.rules.ExternalResource;
-import org.testcontainers.containers.Db2Container;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.nio.file.Files;
@@ -45,12 +46,25 @@ public class DB2Resource extends ExternalResource {
   private boolean started = false;
   private boolean isDb2OnZ = false;
   private DB2ConnectOptions options;
-  private final Db2Container instance = new Db2Container("ibmcom/db2:11.5.0.0a")
-    .acceptLicense()
+  private final String database = "vertx";
+  private final String user = "vertx";
+  private final String password = "vertx";
+  private final ServerContainer instance = new ServerContainer("ibmcom/db2:11.5.0.0a") {
+    @Override
+    protected void configure() {
+      this.addEnv("LICENSE", "accept");
+      this.addEnv("DBNAME", database);
+      this.addEnv("DB2INSTANCE", user);
+      this.addEnv("DB2INST1_PASSWORD", password);
+      if (!this.getEnvMap().containsKey("AUTOCONFIG")) {
+        this.addEnv("AUTOCONFIG", "false");
+      }
+      if (!this.getEnvMap().containsKey("ARCHIVE_LOGS")) {
+        this.addEnv("ARCHIVE_LOGS", "false");
+      }
+    }
+  }
     .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()))
-    .withUsername("vertx")
-    .withPassword("vertx")
-    .withDatabaseName("vertx")
     .withExposedPorts(50000, 50001)
     .withFileSystemBind("src/test/resources/tls/server/", "/certs/")
     .withFileSystemBind("src/test/resources/tls/db2_tls_setup.sh", "/var/custom/db2_tls_setup.sh")
@@ -69,9 +83,9 @@ public class DB2Resource extends ExternalResource {
           options = new DB2ConnectOptions()
             .setHost(instance.getHost())
             .setPort(instance.getMappedPort(50000))
-                  .setDatabase(instance.getDatabaseName())
-                  .setUser(instance.getUsername())
-                  .setPassword(instance.getPassword());
+                  .setDatabase(database)
+                  .setUser(user)
+                  .setPassword(password);
       } else {
           System.out.println("Using custom DB2 instance as requested via DB2_HOST=" + get("DB2_HOST"));
           Objects.requireNonNull(get("DB2_PORT"), "Must set DB2_PORT to a non-null value if DB2_HOST is set");
@@ -143,4 +157,15 @@ public class DB2Resource extends ExternalResource {
       }
   }
 
+  private class ServerContainer extends GenericContainer<ServerContainer> {
+
+    public ServerContainer(String dockerImageName) {
+      super(dockerImageName);
+    }
+
+    public ServerContainer withFixedExposedPort(int hostPort, int containerPort) {
+      super.addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
+      return self();
+    }
+  }
 }
