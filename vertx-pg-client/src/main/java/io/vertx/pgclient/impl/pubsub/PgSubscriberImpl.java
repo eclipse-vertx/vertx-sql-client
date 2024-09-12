@@ -106,8 +106,8 @@ public class PgSubscriberImpl implements PgSubscriber {
     if (!closed) {
       Long val = reconnectPolicy.apply(count);
       if (val >= 0) {
-        tryConnect(val, ar -> {
-          if (ar.failed()) {
+        tryConnect(val, (res, err) -> {
+          if (err != null) {
             checkReconnect(count + 1);
           }
         });
@@ -150,7 +150,7 @@ public class PgSubscriberImpl implements PgSubscriber {
     return promise.future();
   }
 
-  private void tryConnect(long delayMillis, Handler<AsyncResult<Void>> handler) {
+  private void tryConnect(long delayMillis, Completable<Void> handler) {
     if (!connecting) {
       connecting = true;
       if (delayMillis > 0) {
@@ -161,11 +161,11 @@ public class PgSubscriberImpl implements PgSubscriber {
     }
   }
 
-  private void doConnect(Handler<AsyncResult<Void>> completionHandler) {
+  private void doConnect(Completable<Void> completionHandler) {
     PgConnection.connect(vertx, options).onComplete(ar -> handleConnectResult(completionHandler, ar));
   }
 
-  private synchronized void handleConnectResult(Handler<AsyncResult<Void>> completionHandler, AsyncResult<PgConnection> ar1) {
+  private synchronized void handleConnectResult(Completable<Void> completionHandler, AsyncResult<PgConnection> ar1) {
     connecting = false;
     if (ar1.succeeded()) {
       conn = ar1.result();
@@ -192,12 +192,12 @@ public class PgSubscriberImpl implements PgSubscriber {
           } else {
             handlers.forEach(vertx::runOnContext);
           }
-          completionHandler.handle(ar2.mapEmpty());
+          completionHandler.complete(null, ar2.cause());
         });
         return;
       }
     }
-    completionHandler.handle(ar1.mapEmpty());
+    completionHandler.complete(null, ar1.cause());
   }
 
   private class ChannelList {

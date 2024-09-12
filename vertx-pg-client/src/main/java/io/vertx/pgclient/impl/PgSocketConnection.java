@@ -19,10 +19,7 @@ package io.vertx.pgclient.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -158,7 +155,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  protected <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     if (cmd instanceof TxCommand) {
       TxCommand<R> tx = (TxCommand<R>) cmd;
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
@@ -167,7 +164,7 @@ public class PgSocketConnection extends SocketConnectionBase {
         false,
         QueryCommandBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, ar -> handler.handle(ar.map(tx.result)));
+      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result, err));
     } else {
       super.doSchedule(cmd, handler);
     }

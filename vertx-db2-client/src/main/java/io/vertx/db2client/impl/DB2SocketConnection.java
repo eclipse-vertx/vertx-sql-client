@@ -17,6 +17,7 @@ package io.vertx.db2client.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
@@ -79,7 +80,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  protected <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     if (cmd instanceof TxCommand) {
       TxCommand<R> txCmd = (TxCommand<R>) cmd;
       if (txCmd.kind == TxCommand.Kind.BEGIN) {
@@ -90,7 +91,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
       } else {
         SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.kind.sql, false, false,
             QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);
-        super.doSchedule(cmd2, ar -> handler.handle(ar.map(txCmd.result)));
+        super.doSchedule(cmd2, (res, err) -> handler.complete(txCmd.result, err));
 
       }
     } else {

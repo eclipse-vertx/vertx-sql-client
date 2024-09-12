@@ -16,10 +16,7 @@
  */
 package io.vertx.sqlclient.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.Transaction;
@@ -59,18 +56,17 @@ public class TransactionImpl implements Transaction {
   }
 
   private <R> void execute(CommandBase<R> cmd) {
-    Handler<AsyncResult<R>> handler = cmd.handler;
+    Completable<R> handler = cmd.handler;
     connection.schedule(context, cmd).onComplete(handler);
   }
 
-  private <T> Handler<AsyncResult<T>> wrap(CommandBase<?> cmd, Promise<T> handler) {
-    return ar -> {
-      CommandBase<?> abc = cmd;
+  private <T> Completable<T> wrap(CommandBase<?> cmd, Promise<T> handler) {
+    return (res, err) -> {
       synchronized (TransactionImpl.this) {
         pendingQueries--;
       }
       checkEnd();
-      handler.handle(ar);
+      handler.complete(res, err);
     };
   }
 
@@ -150,11 +146,11 @@ public class TransactionImpl implements Transaction {
 
   private TxCommand<Void> txCommand(TxCommand.Kind kind) {
     TxCommand<Void> cmd = new TxCommand<>(kind, null);
-    cmd.handler = ar -> {
-      if (ar.succeeded()) {
+    cmd.handler = (res, err) -> {
+      if (err == null) {
         completion.complete(kind);
       } else {
-        completion.fail(ar.cause());
+        completion.fail(err);
       }
     };
     return cmd;

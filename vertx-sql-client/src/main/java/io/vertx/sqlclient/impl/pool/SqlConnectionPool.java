@@ -150,7 +150,7 @@ public class SqlConnectionPool {
 
   public void evict() {
     long now = System.currentTimeMillis();
-    pool.evict(conn -> conn.shouldEvict(now), ar -> {
+    pool.evict(conn -> conn.shouldEvict(now)).onComplete(ar -> {
       if (ar.succeeded()) {
         List<PooledConnection> res = ar.result();
         for (PooledConnection conn : res) {
@@ -184,7 +184,8 @@ public class SqlConnectionPool {
   public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
     Promise<Lease<PooledConnection>> p = context.promise();
     Object metric = enqueueMetric();
-    pool.acquire(context, 0, p);
+    pool.acquire(context, 0)
+      .onComplete(p);
     return p.future().compose(lease -> {
       dequeueMetric(metric);
       PooledConnection pooled = lease.get();
@@ -204,8 +205,8 @@ public class SqlConnectionPool {
     });
   }
 
-  public void acquire(ContextInternal context, long timeout, Handler<AsyncResult<PooledConnection>> handler) {
-    class PoolRequest implements PoolWaiter.Listener<PooledConnection>, Handler<AsyncResult<Lease<PooledConnection>>> {
+  public void acquire(ContextInternal context, long timeout, Completable<PooledConnection> handler) {
+    class PoolRequest implements PoolWaiter.Listener<PooledConnection>, Completable<Lease<PooledConnection>> {
 
       private final Object metric;
       private long timerID = -1L;
@@ -215,26 +216,25 @@ public class SqlConnectionPool {
       }
 
       @Override
-      public void handle(AsyncResult<Lease<PooledConnection>> ar) {
+      public void complete(Lease<PooledConnection> lease, Throwable failure) {
         if (timerID != -1L) {
           vertx.cancelTimer(timerID);
         }
-        if (ar.succeeded()) {
-          Lease<PooledConnection> lease = ar.result();
+        if (failure == null) {
           if (afterAcquire != null) {
             afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
               if (ar2.succeeded()) {
                 handle(lease);
               } else {
                 // Should we do some cleanup ?
-                handler.handle(Future.failedFuture(ar.cause()));
+                handler.fail(failure);
               }
             });
           } else {
             handle(lease);
           }
         } else {
-          handler.handle(Future.failedFuture(ar.cause()));
+          handler.fail(failure);
         }
       }
 
@@ -242,17 +242,17 @@ public class SqlConnectionPool {
         dequeueMetric(metric);
         PooledConnection pooled = lease.get();
         pooled.lease = lease;
-        handler.handle(Future.succeededFuture(pooled));
+        handler.succeed(pooled);
       }
 
       @Override
       public void onEnqueue(PoolWaiter<PooledConnection> waiter) {
         if (timeout > 0L && timerID == -1L) {
           timerID = context.setTimer(timeout, id -> {
-            pool.cancel(waiter, ar -> {
+            pool.cancel(waiter).onComplete(ar -> {
               if (ar.succeeded()) {
                 if (ar.result()) {
-                  handler.handle(Future.failedFuture("Timeout"));
+                  handler.fail("Timeout");
                 }
               } else {
                 // ????
@@ -269,12 +269,13 @@ public class SqlConnectionPool {
     }
     Object metric = enqueueMetric();
     PoolRequest request = new PoolRequest(metric);
-    pool.acquire(context, request, 0, request);
+    pool.acquire(context, request, 0)
+      .onComplete(request);
   }
 
   public Future<Void> close() {
     Promise<Void> promise = vertx.promise();
-    pool.close(ar1 -> {
+    pool.close().onComplete(ar1 -> {
       if (ar1.succeeded()) {
         List<Future<Void>> results = ar1
           .result()

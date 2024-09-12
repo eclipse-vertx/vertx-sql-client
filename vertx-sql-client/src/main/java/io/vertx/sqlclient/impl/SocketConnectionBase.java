@@ -21,13 +21,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
+import io.vertx.core.*;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.net.SocketAddress;
@@ -206,7 +200,7 @@ public abstract class SocketConnectionBase implements Connection {
     return promise.future();
   }
 
-  protected <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  protected <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     if (handler == null) {
       throw new IllegalArgumentException();
     }
@@ -220,7 +214,7 @@ public abstract class SocketConnectionBase implements Connection {
         CompositeCommand composite = (CompositeCommand) cmd;
         List<CommandBase<?>> commands = composite.commands();
         pending.addAll(commands);
-        composite.handler.handle(Future.succeededFuture());
+        composite.handler.succeed();
       } else {
         pending.add(cmd);
       }
@@ -285,10 +279,9 @@ public abstract class SocketConnectionBase implements Connection {
 
   private PrepareStatementCommand prepareCommand(ExtendedQueryCommand<?> queryCmd, boolean cache, boolean sendParameterTypes) {
     PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), null, cache, sendParameterTypes ? queryCmd.parameterTypes() : null);
-    prepareCmd.handler = ar -> {
+    prepareCmd.handler = (ps, cause) -> {
       paused = false;
-      if (ar.succeeded()) {
-        PreparedStatement ps = ar.result();
+      if (cause == null) {
         if (cache) {
           cacheStatement(ps);
         }
@@ -303,7 +296,6 @@ public abstract class SocketConnectionBase implements Connection {
           ctx.flush();
         }
       } else {
-        Throwable cause = ar.cause();
         if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           // We cannot cache this prepared statement because it might be executed with another type
@@ -340,9 +332,9 @@ public abstract class SocketConnectionBase implements Connection {
     if (psCache != null && psCache.isFull()) {
       PreparedStatement evicted = psCache.evict();
       CloseStatementCommand closeCmd = new CloseStatementCommand(evicted);
-      closeCmd.handler = ar -> {
-        if (ar.failed()) {
-          logger.error("Error when closing cached prepared statement", ar.cause());
+      closeCmd.handler = (res, err) -> {
+        if (err != null) {
+          logger.error("Error when closing cached prepared statement", err);
         }
       };
       return closeCmd;

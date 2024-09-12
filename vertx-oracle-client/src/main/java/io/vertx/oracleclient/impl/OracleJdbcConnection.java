@@ -173,7 +173,7 @@ public class OracleJdbcConnection implements Connection {
     return promise.future();
   }
 
-  private <R> void doSchedule(CommandBase<R> cmd, Handler<AsyncResult<R>> handler) {
+  private <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     cmd.handler = handler;
     if (closePromise == null) {
       pending.add(cmd);

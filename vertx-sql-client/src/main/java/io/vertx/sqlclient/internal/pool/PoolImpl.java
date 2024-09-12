@@ -175,7 +175,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     return pool.execute(context, cmd);
   }
 
-  private void acquire(ContextInternal context, long timeout, Handler<AsyncResult<SqlConnectionPool.PooledConnection>> completionHandler) {
+  private void acquire(ContextInternal context, long timeout, Completable<SqlConnectionPool.PooledConnection> completionHandler) {
     pool.acquire(context, timeout, completionHandler);
   }
 

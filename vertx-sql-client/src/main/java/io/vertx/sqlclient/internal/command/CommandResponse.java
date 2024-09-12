@@ -43,7 +43,7 @@ public class CommandResponse<R> {
 
   public void fire() {
     if (cmd.handler != null) {
-      cmd.handler.handle(toAsyncResult());
+      cmd.handler.complete(res.result(), res.cause());
     }
   }
 }
