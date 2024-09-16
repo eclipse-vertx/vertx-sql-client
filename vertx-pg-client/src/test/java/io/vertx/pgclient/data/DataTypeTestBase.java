@@ -1,8 +1,8 @@
 package io.vertx.pgclient.data;
 
-import io.vertx.pgclient.PgTestBase;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.pgclient.PgTestBase;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
@@ -34,7 +34,7 @@ public abstract class DataTypeTestBase extends PgTestBase {
   protected static final OffsetTime dt = OffsetTime.parse("17:55:04.90512+03:00");
   protected static final OffsetDateTime odt = OffsetDateTime.parse("2017-05-15T02:59:59.237666Z");
   protected static final Interval[] intervals = new Interval[] {
-    Interval.of().years(10).months(3).days(332).hours(20).minutes(20).seconds(20).microseconds(999991),
+    Interval.of().years(11).months(2).days(2).hours(20).minutes(20).seconds(20).microseconds(999991),
     Interval.of().minutes(20).seconds(20).microseconds(123456),
     Interval.of().years(-2).months(-6)
   };

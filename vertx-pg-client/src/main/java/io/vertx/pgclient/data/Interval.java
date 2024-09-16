@@ -1,7 +1,6 @@
 package io.vertx.pgclient.data;
 
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonObject;
+import java.time.Duration;
 
 /**
  * Postgres Interval is date and time based
@@ -82,6 +81,35 @@ public class Interval {
 
   public static Interval of(int years) {
     return new Interval(years);
+  }
+
+  /**
+   * Creates an instance from the given {@link Duration}.
+   * <p>
+   * The conversion algorithm assumes a year lasts 12 months and a month lasts 30 days, as <a href="https://github.com/postgres/postgres/blob/5bbdfa8a18dc56d3e64aa723a68e02e897cb5ec3/src/include/datatype/timestamp.h#L116">Postgres does</a> and ISO 8601 suggests.
+   *
+   * @param duration the value to convert
+   * @return a new instance of {@link Interval}
+   */
+  public static Interval of(Duration duration) {
+    long totalSeconds = duration.getSeconds();
+
+    int years = (int) (totalSeconds / 31104000);
+    long remainder = totalSeconds % 31104000;
+
+    int months = (int) (remainder / 2592000);
+    remainder = totalSeconds % 2592000;
+
+    int days = (int) (remainder / 86400);
+    remainder = remainder % 86400;
+
+    int hours = (int) (remainder / 3600);
+    remainder = remainder % 3600;
+
+    int minutes = (int) (remainder / 60);
+    remainder = remainder % 60;
+
+    return new Interval(years, months, days, hours, minutes, (int) remainder, duration.getNano() / 1000);
   }
 
   public Interval years(int years)  {
@@ -203,7 +231,25 @@ public class Interval {
 
   @Override
   public String toString() {
-    return "Interval( " + years + " years " + months + " months " + days + " days " + hours + " hours " +
-      minutes + " minutes " + seconds + (microseconds == 0 ? "" : "." + Math.abs(microseconds)) + " seconds )";
+    return "Interval( "
+           + years + " years "
+           + months + " months "
+           + days + " days "
+           + hours + " hours "
+           + minutes + " minutes "
+           + seconds + " seconds "
+           + microseconds + " microseconds )";
+  }
+
+  /**
+   * Convert this interval to an instance of {@link Duration}.
+   * <p>
+   * The conversion algorithm assumes a year lasts 12 months and a month lasts 30 days, as <a href="https://github.com/postgres/postgres/blob/5bbdfa8a18dc56d3e64aa723a68e02e897cb5ec3/src/include/datatype/timestamp.h#L116">Postgres does</a> and ISO 8601 suggests.
+   *
+   * @return an instance of {@link Duration} representing the same amount of time as this interval
+   */
+  public Duration toDuration() {
+    return Duration.ofSeconds(((((years * 12L + months) * 30L + days) * 24L + hours) * 60 + minutes) * 60 + seconds)
+      .plusNanos(microseconds * 1000L);
   }
 }
