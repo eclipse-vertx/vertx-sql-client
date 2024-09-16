@@ -244,7 +244,7 @@ public class Interval {
   /**
    * Convert this interval to an instance of {@link Duration}.
    * <p>
-   * The conversion algorithm assumes a year last 12 months and a month lasts 30 days, as <a href="https://github.com/postgres/postgres/blob/5bbdfa8a18dc56d3e64aa723a68e02e897cb5ec3/src/include/datatype/timestamp.h#L116">Postgres does</a> and ISO 8601 suggests.
+   * The conversion algorithm assumes a year lasts 12 months and a month lasts 30 days, as <a href="https://github.com/postgres/postgres/blob/5bbdfa8a18dc56d3e64aa723a68e02e897cb5ec3/src/include/datatype/timestamp.h#L116">Postgres does</a> and ISO 8601 suggests.
    *
    * @return an instance of {@link Duration} representing the same amount of time as this interval
    */
