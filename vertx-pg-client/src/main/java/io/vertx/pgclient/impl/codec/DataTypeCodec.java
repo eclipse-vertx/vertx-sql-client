@@ -52,7 +52,6 @@ import java.util.function.IntFunction;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
-import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -1303,32 +1302,49 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeINTERVAL(Interval interval, ByteBuf buff) {
-    Duration duration = Duration
-      .ofHours(interval.getHours())
-      .plusMinutes(interval.getMinutes())
-      .plusSeconds(interval.getSeconds())
-      .plus(interval.getMicroseconds(), ChronoUnit.MICROS);
-    // days won't be changed
-    Period monthYear = Period.of(interval.getYears(), interval.getMonths(), interval.getDays()).normalized();
-    binaryEncodeINT8(NANOSECONDS.toMicros(duration.toNanos()), buff);
-    binaryEncodeINT4(monthYear.getDays(), buff);
-    binaryEncodeINT4((int) monthYear.toTotalMonths(), buff);
+    // We decompose the interval in 3 parts: months, seconds and micros
+    int monthsPart = Math.addExact(Math.multiplyExact(interval.getYears(), 12), interval.getMonths());
+    // A long is big enough to store the maximum/minimum value of the seconds part
+    long secondsPart = interval.getDays() * 24 * 3600L
+                       + interval.getHours() * 3600L
+                       + interval.getMinutes() * 60L
+                       + interval.getSeconds()
+                       + interval.getMicroseconds() / 1000000;
+    int microsPart = interval.getMicroseconds() % 1000000;
+
+    // The actual number of months is the sum of the months part and the number of months present in the seconds part
+    int months = Math.addExact(monthsPart, Math.toIntExact(secondsPart / 2592000));
+    // The actual number of days is computed from the remainder of the previous division
+    // It's necessarily smaller than or equal to 29
+    int days = (int) secondsPart % 2592000 / 86400;
+    // The actual number of micros is the sum of the micros part and the remainder of previous divisions
+    // The remainder of previous divisions is necessarily smaller than or equal to a day less a second
+    // The microseconds part is smaller than a second
+    // Therefore, their sum is necessarily smaller than a day
+    long micros = microsPart + secondsPart % 2592000 % 86400 * 1000000;
+
+    binaryEncodeINT8(micros, buff);
+    binaryEncodeINT4(days, buff);
+    binaryEncodeINT4(months, buff);
   }
 
   private static Interval binaryDecodeINTERVAL(int index, int len, ByteBuf buff) {
-    Duration duration = Duration.of(buff.getLong(index), ChronoUnit.MICROS);
-    final long hours = duration.toHours();
-    duration = duration.minusHours(hours);
-    final long minutes = duration.toMinutes();
-    duration = duration.minusMinutes(minutes);
-    final long seconds = NANOSECONDS.toSeconds(duration.toNanos());
-    duration = duration.minusSeconds(seconds);
-    final long microseconds = NANOSECONDS.toMicros(duration.toNanos());
-    int days = buff.getInt(index + 8);
-    int months = buff.getInt(index + 12);
-    Period monthYear = Period.of(0, months, days).normalized();
-    return new Interval(monthYear.getYears(), monthYear.getMonths(), monthYear.getDays(),
-      (int) hours, (int) minutes, (int) seconds, (int) microseconds);
+    long micros = buff.getLong(index);
+    long seconds = micros / 1000000;
+    micros -= seconds * 1000000;
+    long minutes = seconds / 60;
+    seconds -= minutes * 60;
+    long hours = minutes / 60;
+    minutes -= hours * 60;
+    long days = hours / 24;
+    hours -= days * 24;
+    days += buff.getInt(index + 8);
+    long months = days / 30;
+    days -= months * 30;
+    months += buff.getInt(index + 12);
+    long years = months / 12;
+    months -= years * 12;
+    return new Interval((int) years, (int) months, (int) days, (int) hours, (int) minutes, (int) seconds, (int) micros);
   }
 
   private static UUID binaryDecodeUUID(int index, int len, ByteBuf buff) {

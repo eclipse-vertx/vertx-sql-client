@@ -1,18 +1,14 @@
 package io.vertx.pgclient.data;
 
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
 import org.junit.Test;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
@@ -365,9 +361,9 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
   @Test
   public void testDecodeInterval(TestContext ctx) {
     Interval interval = Interval.of()
-      .years(10)
-      .months(3)
-      .days(332)
+      .years(11)
+      .months(2)
+      .days(2)
       .hours(20)
       .minutes(20)
       .seconds(20)
@@ -397,12 +393,12 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       conn.prepare("UPDATE \"TemporalDataType\" SET \"Interval\" = $1 WHERE \"id\" = $2 RETURNING \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
-          // 2000 years 1 months 403 days 59 hours 35 minutes 13.999998 seconds
+          // 2001 years 2 months 15 days 11 hours 35 minutes 13.999998 seconds
           Interval expected = Interval.of()
-            .years(2000)
-            .months(1)
-            .days(403)
-            .hours(59)
+            .years(2001)
+            .months(2)
+            .days(15)
+            .hours(11)
             .minutes(35)
             .seconds(13)
             .microseconds(999998);
@@ -568,7 +564,7 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
       conn.prepare("UPDATE \"ArrayDataType\" SET \"Interval\" = $1  WHERE \"id\" = $2 RETURNING \"Interval\"",
         ctx.asyncAssertSuccess(p -> {
           Interval[] intervals = new Interval[]{
-            Interval.of().years(10).months(3).days(332).hours(20).minutes(20).seconds(20).microseconds(999991),
+            Interval.of().years(11).months(2).days(2).hours(20).minutes(20).seconds(20).microseconds(999991),
             Interval.of().minutes(20).seconds(20).microseconds(123456),
             Interval.of().years(-2).months(-6),
             Interval.of()
