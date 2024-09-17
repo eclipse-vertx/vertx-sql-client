@@ -17,10 +17,34 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.ext.unit.TestContext;
+import io.vertx.sqlclient.Tuple;
+import org.junit.Test;
+
+import java.time.Duration;
+
 public class PreparedStatementTest extends PreparedStatementTestBase {
 
   @Override
   protected PgConnectOptions options() {
     return new PgConnectOptions(options).setCachePreparedStatements(false);
+  }
+
+  @Test
+  public void testPrepareExecuteValidationErrorDefaultExtractor(TestContext ctx) {
+    PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1 :: INTERVAL \"Interval\"").onComplete(ctx.asyncAssertSuccess(ps -> {
+        ps.query().execute(Tuple.of(Duration.ofHours(3))).onComplete(ctx.asyncAssertFailure());
+      }));
+    }));
+  }
+
+  @Test
+  public void testPrepareExecuteValidationErrorDefaultExtractor_(TestContext ctx) {
+    PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT $1 :: INTERVAL \"Interval\"")
+        .execute(Tuple.of(Duration.ofHours(3))).onComplete(ctx.asyncAssertFailure());
+    }));
   }
 }
