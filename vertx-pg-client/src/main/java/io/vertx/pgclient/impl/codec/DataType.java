@@ -18,29 +18,22 @@ package io.vertx.pgclient.impl.codec;
 
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
+import io.vertx.core.VertxException;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.pgclient.data.Box;
-import io.vertx.pgclient.data.Circle;
-import io.vertx.pgclient.data.Inet;
-import io.vertx.pgclient.data.Line;
-import io.vertx.pgclient.data.LineSegment;
-import io.vertx.pgclient.data.Money;
-import io.vertx.pgclient.data.Cidr;
+import io.vertx.pgclient.data.*;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.pgclient.data.Interval;
-import io.vertx.pgclient.data.Path;
-import io.vertx.pgclient.data.Point;
-import io.vertx.pgclient.data.Polygon;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.sqlclient.impl.TupleInternal;
 
 import java.sql.JDBCType;
 import java.time.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -155,11 +148,11 @@ public enum DataType {
   <T> DataType(int id, boolean supportsBinary, Class<T> encodingType, Class<?> decodingType, JDBCType jdbcType, ParamExtractor<T> paramExtractor) {
     this.id = id;
     this.supportsBinary = supportsBinary;
-    this.encodingType = encodingType;
+    this.encodingType = Objects.requireNonNull(encodingType);
     this.decodingType = decodingType;
     this.jdbcType = jdbcType;
     this.array = decodingType.isArray();
-    this.paramExtractor = paramExtractor;
+    this.paramExtractor = paramExtractor != null ? paramExtractor : new DefaultParamExtractor<>(encodingType);
   }
 
   static DataType valueOf(int oid) {
@@ -230,5 +223,24 @@ public enum DataType {
     encodingTypeToDataType.put(Polygon[].class, POLYGON_ARRAY);
     encodingTypeToDataType.put(Circle.class, CIRCLE);
     encodingTypeToDataType.put(Circle[].class, CIRCLE_ARRAY);
+  }
+
+  private static class DefaultParamExtractor<T> implements ParamExtractor<T> {
+    static final RuntimeException FAILURE = new VertxException("ignored", true);
+
+    final Class<T> encodingType;
+
+    DefaultParamExtractor(Class<T> encodingType) {
+      this.encodingType = encodingType;
+    }
+
+    @Override
+    public T get(TupleInternal tuple, int idx) {
+      Object value = tuple.getValue(idx);
+      if (value != null && encodingType.isAssignableFrom(value.getClass())) {
+        return encodingType.cast(value);
+      }
+      throw FAILURE;
+    }
   }
 }
