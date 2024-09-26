@@ -1,15 +1,15 @@
 package io.vertx.sqlclient.impl.tracing;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.tracing.SpanKind;
 import io.vertx.core.spi.tracing.TagExtractor;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.core.internal.ContextInternal;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.QueryResultBuilder;
+import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.internal.command.QueryCommandBase;
 import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
@@ -26,17 +26,16 @@ public class QueryReporter {
   enum RequestTags {
 
     // Generic
-    PEER_ADDRESS("peer.address", q -> q.tracer.address),
+    PEER_ADDRESS("network.peer.address", q -> q.tracer.address),
     SPAN_KIND("span.kind", q -> "client"),
 
     // DB
-    // See https://github.com/open-telemetry/opentelemetry-specification/blob/v1.18.0/specification/trace/semantic_conventions/database.md#connection-level-attributes
+    // See https://opentelemetry.io/docs/specs/semconv/database/
 
     DB_USER("db.user", q -> q.tracer.user),
-    DB_INSTANCE("db.instance", q -> q.tracer.database),
-    DB_STATEMENT("db.statement", QueryRequest::sql),
-    DB_TYPE("db.type", q -> "sql"),
-    DB_NAME("db.system", q -> q.tracer.system),
+    DB_NAMESPACE("db.namespace", q -> q.tracer.database),
+    DB_QUERY_TEXT("db.query.text", QueryRequest::sql),
+    DB_SYSTEM("db.system", q -> q.tracer.system),
     ;
 
     final String name;
@@ -48,7 +47,7 @@ public class QueryReporter {
     }
   }
 
-  private static final TagExtractor<QueryRequest> REQUEST_TAG_EXTRACTOR = new TagExtractor<QueryRequest>() {
+  private static final TagExtractor<QueryRequest> REQUEST_TAG_EXTRACTOR = new TagExtractor<>() {
 
     private final RequestTags[] TAGS = RequestTags.values();
 
@@ -56,10 +55,12 @@ public class QueryReporter {
     public int len(QueryRequest obj) {
       return TAGS.length;
     }
+
     @Override
     public String name(QueryRequest obj, int index) {
       return TAGS[index].name;
     }
+
     @Override
     public String value(QueryRequest obj, int index) {
       return TAGS[index].fn.apply(obj);

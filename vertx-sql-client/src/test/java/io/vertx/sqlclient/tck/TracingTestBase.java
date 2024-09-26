@@ -14,7 +14,6 @@ package io.vertx.sqlclient.tck;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.spi.tracing.SpanKind;
 import io.vertx.core.spi.tracing.TagExtractor;
 import io.vertx.core.spi.tracing.VertxTracer;
@@ -124,8 +123,7 @@ public abstract class TracingTestBase {
         ctx.assertEquals(expectedTuples, query.tuples());
         Map<String, String> tags = tagExtractor.extract(request);
         ctx.assertEquals("client", tags.get("span.kind"));
-        ctx.assertEquals("sql", tags.get("db.type"));
-        ctx.assertEquals(expectedSql, tags.get("db.statement"));
+        ctx.assertEquals(expectedSql, tags.get("db.query.text"));
         String dbSystem = tags.get("db.system");
         ctx.assertNotNull(dbSystem);
         ctx.assertTrue(isValidDbSystem(dbSystem));
