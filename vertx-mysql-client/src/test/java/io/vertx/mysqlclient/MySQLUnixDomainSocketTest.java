@@ -52,13 +52,9 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
   }
 
   @After
-  public void after(TestContext ctx) {
-    if (vertx != null) {
-      vertx.close().onComplete(ctx.asyncAssertSuccess());
-    }
-    if (client != null) {
-      client.close().onComplete(ctx.asyncAssertSuccess());
-    }
+  public void after() {
+    client.close().await();
+    vertx.close().await();
   }
 
   @Test
