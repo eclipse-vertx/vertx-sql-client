@@ -53,6 +53,7 @@
     <unix.socket.directory/>
     <unix.socket.port/>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
+    <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
     <testcontainers.version>1.17.6</testcontainers.version>
   </properties>
 
@@ -155,12 +156,6 @@
               </configuration>
             </execution>
           </executions>
-        </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <useModulePath>false</useModulePath>
-          </configuration>
         </plugin>
       </plugins>
     </pluginManagement>
