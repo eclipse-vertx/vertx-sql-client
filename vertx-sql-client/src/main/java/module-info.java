@@ -4,7 +4,7 @@ module io.vertx.client.sql {
   requires io.netty.buffer;
   requires io.netty.codec;
   requires io.netty.transport;
-  requires transitive io.vertx.core;
+  requires io.vertx.core;
   requires io.vertx.core.logging;
   requires java.sql;
 
