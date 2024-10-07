@@ -55,7 +55,7 @@ public class MySQLConnectOptionsConverter {
           break;
         case "serverRsaPublicKeyValue":
           if (member.getValue() instanceof String) {
-            obj.setServerRsaPublicKeyValue(io.vertx.core.buffer.Buffer.buffer(BASE64_DECODER.decode((String)member.getValue())));
+            obj.setServerRsaPublicKeyValue(io.vertx.core.buffer.Buffer.fromJson((String)member.getValue()));
           }
           break;
         case "pipeliningLimit":
@@ -92,7 +92,7 @@ public class MySQLConnectOptionsConverter {
       json.put("serverRsaPublicKeyPath", obj.getServerRsaPublicKeyPath());
     }
     if (obj.getServerRsaPublicKeyValue() != null) {
-      json.put("serverRsaPublicKeyValue", BASE64_ENCODER.encodeToString(obj.getServerRsaPublicKeyValue().getBytes()));
+      json.put("serverRsaPublicKeyValue", obj.getServerRsaPublicKeyValue().toJson());
     }
     json.put("pipeliningLimit", obj.getPipeliningLimit());
   }
