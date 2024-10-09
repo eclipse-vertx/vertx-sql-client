@@ -25,6 +25,7 @@ import io.vertx.sqlclient.impl.ListTuple;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -630,6 +631,27 @@ public interface Tuple {
       return new BigDecimal(val.toString());
     } else {
       return (BigDecimal) val; // Throw CCE
+    }
+  }
+
+
+  /**
+   * Get {@link BigInteger} value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default BigInteger getBigInteger(int pos) {
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof BigInteger) {
+      return (BigInteger) val;
+    } else if (val instanceof Number) {
+      return new BigInteger(val.toString());
+    } else {
+      return (BigInteger) val; // Throw CCE
     }
   }
 

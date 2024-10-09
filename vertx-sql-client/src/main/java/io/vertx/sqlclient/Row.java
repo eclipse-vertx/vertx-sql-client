@@ -25,6 +25,7 @@ import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.Utils;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.NoSuchElementException;
@@ -381,6 +382,22 @@ public interface Row extends Tuple {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
     return getBigDecimal(pos);
+  }
+
+  /**
+   * Get {@link BigInteger} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default BigInteger getBigInteger(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getBigInteger(pos);
   }
 
   /**
