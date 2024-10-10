@@ -11,6 +11,7 @@ import io.vertx.codegen.processor.type.DataObjectInfo;
 import io.vertx.codegen.processor.type.MapperInfo;
 import io.vertx.codegen.processor.type.PrimitiveTypeInfo;
 import io.vertx.codegen.processor.type.TypeInfo;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.annotations.Column;
 import io.vertx.sqlclient.templates.annotations.RowMapped;
@@ -148,7 +149,7 @@ public class RowMapperGen extends MapperGenBase {
 
   private static String wrapExpr(TypeInfo type, String expr) {
     DataObjectInfo dataObject = type.getDataObject();
-    if (dataObject != null) {
+    if (dataObject != null && !type.getName().equals(Buffer.class.getName())) {
       MapperInfo deserializer = dataObject.getDeserializer();
       if (deserializer != null) {
         if (deserializer.getKind() == MapperKind.SELF) {
@@ -164,7 +165,7 @@ public class RowMapperGen extends MapperGenBase {
 
   private static String rowType(TypeInfo type) {
     DataObjectInfo dataObject = type.getDataObject();
-    if (dataObject != null) {
+    if (dataObject != null && !type.getName().equals(Buffer.class.getName())) {
       TypeInfo dataObjectType = dataObject.getJsonType();
       if (dataObjectType != null) {
         return dataObjectType.getName();
@@ -214,10 +215,6 @@ public class RowMapperGen extends MapperGenBase {
         return "getJsonArray";
     }
     if (type instanceof ClassTypeInfo) {
-      DataObjectInfo dataObject = type.getDataObject();
-      if (dataObject != null && dataObject.isSerializable()) {
-        return getter(dataObject.getSerializer().getJsonType());
-      }
       ClassTypeInfo ct = (ClassTypeInfo) type;
       switch (ct.getName()) {
         case "java.time.LocalDateTime":
@@ -237,6 +234,10 @@ public class RowMapperGen extends MapperGenBase {
         case "io.vertx.core.buffer.Buffer":
           return "getBuffer";
       }
+    }
+    DataObjectInfo dataObject = type.getDataObject();
+    if (dataObject != null && dataObject.isSerializable()) {
+      return getter(dataObject.getSerializer().getJsonType());
     }
     return null;
   }
