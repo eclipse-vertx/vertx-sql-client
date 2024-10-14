@@ -593,7 +593,3 @@ When doing so, prepared statement cannot be cached and therefore
 == Advanced pool configuration
 
 include::pool_config.adoc[]
-
-ifeval::["$lang" == "java"]
-include::override/rxjava3.adoc[]
-endif::[]
