@@ -282,7 +282,3 @@ More information can be found in the http://vertx.io/docs/vertx-core/java/#_usin
 == Advanced pool configuration
 
 include::pool_config.adoc[]
-
-ifeval::["$lang" == "java"]
-include::override/rxjava3.adoc[]
-endif::[]
