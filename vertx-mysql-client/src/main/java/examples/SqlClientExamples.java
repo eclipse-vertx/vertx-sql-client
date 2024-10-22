@@ -16,10 +16,7 @@
  */
 package examples;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.docgen.Source;
 import io.vertx.mysqlclient.MySQLBuilder;
@@ -361,19 +358,20 @@ public class SqlClientExamples {
       .connectingTo(database)
       .using(vertx)
       .build();
-    vertx.deployVerticle(() -> new AbstractVerticle() {
+    vertx.deployVerticle(() -> new VerticleBase() {
       @Override
-      public void start() throws Exception {
+      public Future<?> start() throws Exception {
         // Use the pool
+        return super.start();
       }
     }, new DeploymentOptions().setInstances(4));
   }
 
   public void poolSharing2(Vertx vertx, MySQLConnectOptions database, int maxSize) {
-    vertx.deployVerticle(() -> new AbstractVerticle() {
+    vertx.deployVerticle(() -> new VerticleBase() {
       Pool pool;
       @Override
-      public void start() {
+      public Future<?> start() throws Exception {
         // Get or create a shared pool
         // this actually creates a lease to the pool
         // when the verticle is undeployed, the lease will be released automaticaly
@@ -384,6 +382,7 @@ public class SqlClientExamples {
             .setName("my-pool"))
           .using(vertx)
           .build();
+        return super.start();
       }
     }, new DeploymentOptions().setInstances(4));
   }
