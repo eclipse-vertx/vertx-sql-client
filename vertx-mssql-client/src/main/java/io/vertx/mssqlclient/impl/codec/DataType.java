@@ -12,12 +12,12 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
-import io.vertx.core.internal.buffer.VertxByteBufAllocator;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -994,6 +994,8 @@ public enum DataType {
     }
   };
 
+  private static final ByteBufAllocator ALLOCATOR = BufferInternal.buffer().getByteBuf().alloc();
+
   public final int id;
 
   DataType(int id) {
@@ -1032,7 +1034,7 @@ public enum DataType {
       totalSize += chunkSize;
       nextIndex += 4 + chunkSize;
     }
-    ByteBuf heapBuffer = VertxByteBufAllocator.DEFAULT.heapBuffer(totalSize);
+    ByteBuf heapBuffer = ALLOCATOR.heapBuffer(totalSize);
     nextIndex = startIndex;
     for (int chunkSize = (int) byteBuf.getUnsignedIntLE(nextIndex); chunkSize > 0; chunkSize = (int) byteBuf.getUnsignedIntLE(nextIndex)) {
       heapBuffer.writeBytes(byteBuf, nextIndex + 4, chunkSize);

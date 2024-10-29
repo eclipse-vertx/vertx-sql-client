@@ -18,6 +18,7 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.buffer.Buffer;
@@ -26,7 +27,6 @@ import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.internal.buffer.VertxByteBufAllocator;
 import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.pgclient.data.*;
 import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
@@ -63,6 +63,7 @@ import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
  */
 public class DataTypeCodec {
 
+  private static final ByteBufAllocator ALLOCATOR = BufferInternal.buffer().getByteBuf().alloc();
   private static final Logger logger = LoggerFactory.getLogger(DataTypeCodec.class);
 
   private static final String[] empty_string_array = new String[0];
@@ -1179,7 +1180,7 @@ public class DataTypeCodec {
   }
 
   private static Buffer binaryDecodeBYTEA(int index, int len, ByteBuf buff) {
-    ByteBuf byteBuf = VertxByteBufAllocator.DEFAULT.heapBuffer(len);
+    ByteBuf byteBuf = ALLOCATOR.heapBuffer(len);
     byteBuf.writeBytes(buff, index, len);
     return BufferInternal.buffer(byteBuf);
   }
