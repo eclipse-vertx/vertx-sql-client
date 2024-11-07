@@ -1,4 +1,4 @@
-module io.vertx.client.sql.db2  {
+module io.vertx.sql.client.oracle {
 
   requires io.netty.buffer;
   requires io.netty.codec;
@@ -6,7 +6,7 @@ module io.vertx.client.sql.db2  {
   requires io.netty.handler;
   requires io.netty.transport;
   requires com.oracle.database.jdbc;
-  requires io.vertx.client.sql;
+  requires io.vertx.sql.client;
   requires io.vertx.core;
   requires io.vertx.core.logging;
   requires java.sql;

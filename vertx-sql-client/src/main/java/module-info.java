@@ -1,4 +1,4 @@
-module io.vertx.client.sql {
+module io.vertx.sql.client {
 
   requires io.netty.common;
   requires io.netty.buffer;
@@ -25,9 +25,9 @@ module io.vertx.client.sql {
   // Expose impl to our own implementation, this actually would deserve to be in another module since it is not
   // related to the API or the internal API
 
-  exports io.vertx.sqlclient.impl to io.vertx.client.sql.pg, io.vertx.client.sql.mysql, io.vertx.client.sql.mssql, io.vertx.client.sql.db2, io.vertx.client.sql.templates;
-  exports io.vertx.sqlclient.impl.codec to io.vertx.client.sql.pg, io.vertx.client.sql.mysql, io.vertx.client.sql.mssql, io.vertx.client.sql.db2;
-  exports io.vertx.sqlclient.impl.cache to io.vertx.client.sql.mysql, io.vertx.client.sql.mssql, io.vertx.client.sql.db2;
+  exports io.vertx.sqlclient.impl to io.vertx.sql.client.pg, io.vertx.sql.client.mysql, io.vertx.sql.client.mssql, io.vertx.sql.client.db2, io.vertx.sql.client.oracle, io.vertx.sql.client.templates;
+  exports io.vertx.sqlclient.impl.codec to io.vertx.sql.client.pg, io.vertx.sql.client.mysql, io.vertx.sql.client.mssql, io.vertx.sql.client.db2;
+  exports io.vertx.sqlclient.impl.cache to io.vertx.sql.client.mysql, io.vertx.sql.client.mssql, io.vertx.sql.client.db2;
   exports io.vertx.sqlclient.impl.pool;
 
 }

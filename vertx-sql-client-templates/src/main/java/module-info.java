@@ -1,5 +1,5 @@
-module io.vertx.client.sql.templates {
-  requires io.vertx.client.sql;
+module io.vertx.sql.client.templates {
+  requires io.vertx.sql.client;
   requires io.vertx.codegen.processor;
   requires io.vertx.codegen.api;
   requires io.vertx.core;

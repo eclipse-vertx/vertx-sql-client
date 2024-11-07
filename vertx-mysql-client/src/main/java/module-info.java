@@ -1,11 +1,11 @@
-module io.vertx.client.sql.mysql  {
+module io.vertx.sql.client.mysql {
 
   requires io.netty.buffer;
   requires io.netty.codec;
   requires io.netty.common;
   requires io.netty.handler;
   requires io.netty.transport;
-  requires io.vertx.client.sql;
+  requires io.vertx.sql.client;
   requires io.vertx.core;
   requires io.vertx.core.logging;
   requires java.sql;
