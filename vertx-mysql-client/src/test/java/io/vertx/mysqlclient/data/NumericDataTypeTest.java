@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 @RunWith(VertxUnitRunner.class)
 public class NumericDataTypeTest extends MySQLDataTypeTestBase {
@@ -218,12 +219,12 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
   @Test
   public void testTextDecodeUnsignedBigInt(TestContext ctx) {
     testTextDecodeGenericWithTable(ctx, "test_unsigned_bigint", ((row, columnName) -> {
-      ctx.assertTrue(row.getValue(0) instanceof Numeric);
-      ctx.assertEquals(Numeric.parse("18446744073709551615"), row.getValue(0));
-      ctx.assertEquals(Numeric.parse("18446744073709551615"), row.getValue(columnName));
-      ctx.assertEquals(Numeric.parse("18446744073709551615"), row.get(Numeric.class, 0));
-      ctx.assertEquals(new BigDecimal("18446744073709551615"), row.getBigDecimal(0));
-      ctx.assertEquals(new BigDecimal("18446744073709551615"), row.getBigDecimal(columnName));
+      ctx.assertTrue(row.getValue(0) instanceof BigInteger);
+      ctx.assertEquals(new BigInteger("18446744073709551615"), row.getValue(0));
+      ctx.assertEquals(new BigInteger("18446744073709551615"), row.getValue(columnName));
+      ctx.assertEquals(new BigInteger("18446744073709551615"), row.get(BigInteger.class, 0));
+      ctx.assertEquals(new BigInteger("18446744073709551615"), row.getBigInteger(0));
+      ctx.assertEquals(new BigInteger("18446744073709551615"), row.getBigInteger(columnName));
     }));
   }
 }

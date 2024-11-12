@@ -78,6 +78,7 @@ public class DataTypeCodec {
         case INT64:
           return textDecodeInt64(buffer, index, length);
         case U_INT64:
+          return textDecodeBigInteger(collationId, buffer, index, length);
         case NUMERIC:
           return textDecodeNUMERIC(collationId, buffer, index, length);
         case FLOAT:
@@ -667,6 +668,11 @@ public class DataTypeCodec {
 
   private static Long textDecodeBit(ByteBuf buffer, int index, int length) {
     return decodeBit(buffer, index, length);
+  }
+
+  private static Number textDecodeBigInteger(int collationId, ByteBuf buff, int index, int length) {
+    Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
+    return new BigInteger(buff.toString(index, length, charset));
   }
 
   private static Number textDecodeNUMERIC(int collationId, ByteBuf buff, int index, int length) {
