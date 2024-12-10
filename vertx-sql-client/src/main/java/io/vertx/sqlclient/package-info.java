@@ -15,7 +15,7 @@
  *
  */
 
-@ModuleGen(name = "vertx-sql-client", groupPackage = "io.vertx", useFutures = true)
+@ModuleGen(name = "vertx-sql-client", groupPackage = "io.vertx")
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.ModuleGen;
