@@ -6,4 +6,7 @@ module io.vertx.sql.client.templates {
   requires java.compiler;
   requires static io.vertx.docgen;
 
+  exports io.vertx.sqlclient.templates;
+  exports io.vertx.sqlclient.templates.annotations;
+
 }
