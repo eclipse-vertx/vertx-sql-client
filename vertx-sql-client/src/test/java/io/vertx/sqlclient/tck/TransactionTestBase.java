@@ -14,6 +14,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.*;
@@ -385,7 +386,7 @@ public abstract class TransactionTestBase {
       .execute()
       .onComplete(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(3, rows.size());
-        ctx.assertNull(Vertx.currentContext().getLocal("propagatable_connection"));
+        ctx.assertNull(((ContextInternal)Vertx.currentContext()).getLocal("propagatable_connection"));
         async.complete();
       }))));
     });
@@ -406,7 +407,7 @@ public abstract class TransactionTestBase {
         .execute()
         .onComplete(ctx.asyncAssertSuccess(rows -> {
           ctx.assertEquals(0, rows.size());
-          ctx.assertNull(Vertx.currentContext().getLocal("propagatable_connection"));
+          ctx.assertNull(((ContextInternal)Vertx.currentContext()).getLocal("propagatable_connection"));
           async.complete();
         }))));
     });
