@@ -16,6 +16,8 @@ import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -40,5 +42,25 @@ public class OracleConnectionTest extends ConnectionTestBase {
   protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
     ctx.assertTrue(md.fullVersion().contains("Oracle"));
     ctx.assertTrue(md.productName().contains("Oracle"));
+  }
+
+  @Test
+  @Ignore
+  @Override
+  public void testConnectNoLeak(TestContext ctx) throws Exception {
+    // Disabled for Oracle because we frequently get ORA-12516 Cannot connect to database
+    // https://docs.oracle.com/en/error-help/db/ora-12516/?r=23ai
+    // Probable cause is that the service handler gets in a blocked state and is not accepting new connections
+    super.testConnectNoLeak(ctx);
+  }
+
+  @Test
+  @Ignore
+  @Override
+  public void testConnectNoLeakInVerticle(TestContext ctx) throws Exception {
+    // Disabled for Oracle because we frequently get ORA-12516 Cannot connect to database
+    // https://docs.oracle.com/en/error-help/db/ora-12516/?r=23ai
+    // Probable cause is that the service handler gets in a blocked state and is not accepting new connections
+    super.testConnectNoLeakInVerticle(ctx);
   }
 }
