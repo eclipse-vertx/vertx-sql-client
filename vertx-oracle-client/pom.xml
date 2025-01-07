@@ -99,9 +99,6 @@
             <systemPropertyVariables>
               <target.dir>${project.build.directory}</target.dir>
             </systemPropertyVariables>
-            <excludes>
-              <exclude>io/vertx/pgclient/it/**</exclude>
-            </excludes>
           </configuration>
         </plugin>
         <plugin>

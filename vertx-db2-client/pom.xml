@@ -102,9 +102,6 @@
                    (https://bugs.openjdk.java.net/browse/JDK-8258598) -->
               <java.security.properties>${project.basedir}/src/test/java.security</java.security.properties>
             </systemPropertyVariables>
-            <excludes>
-              <exclude>io/vertx/db2client/it/**</exclude>
-            </excludes>
           </configuration>
         </plugin>
       </plugins>
