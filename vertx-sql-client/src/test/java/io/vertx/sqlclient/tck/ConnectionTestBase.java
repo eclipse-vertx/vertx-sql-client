@@ -105,19 +105,19 @@ public abstract class ConnectionTestBase {
 
   @Test
   public void testCloseOnUndeploy(TestContext ctx) {
-    Async done = ctx.async();
+    Async done = ctx.async(2);
     vertx.deployVerticle(new AbstractVerticle() {
       @Override
       public void start(Promise<Void> startPromise) throws Exception {
         connect(ctx.asyncAssertSuccess(conn -> {
           conn.closeHandler(v -> {
-            done.complete();
+            done.countDown();
           });
           startPromise.complete();
         }));
       }
     }).onComplete(ctx.asyncAssertSuccess(id -> {
-      vertx.undeploy(id);
+      vertx.undeploy(id).onComplete(ctx.asyncAssertSuccess(v -> done.countDown()));
     }));
   }
 
