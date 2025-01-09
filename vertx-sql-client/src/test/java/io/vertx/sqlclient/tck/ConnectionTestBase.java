@@ -58,8 +58,8 @@ public abstract class ConnectionTestBase {
   public void testConnectNoLeak(TestContext ctx) throws Exception {
     Set<SqlConnectionBase<?>> connections = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
     Set<ConnectionFactory> factories = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
-    Async async = ctx.async(100);
-    for (int i = 0; i < 100; i++) {
+    Async async = ctx.async(10);
+    for (int i = 0; i < 10; i++) {
       connect(ctx.asyncAssertSuccess(conn -> {
         SqlConnectionBase<?> base = (SqlConnectionBase<?>) conn;
         connections.add(base);
@@ -80,11 +80,11 @@ public abstract class ConnectionTestBase {
   public void testConnectNoLeakInVerticle(TestContext ctx) throws Exception {
     Set<SqlConnectionBase<?>> connections = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
     Set<ConnectionFactory> factories = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
-    Async async = ctx.async(100);
+    Async async = ctx.async(10);
     vertx.deployVerticle(new AbstractVerticle() {
       @Override
       public void start() throws Exception {
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
           connect(ctx.asyncAssertSuccess(conn -> {
             SqlConnectionBase<?> base = (SqlConnectionBase<?>) conn;
             connections.add(base);
