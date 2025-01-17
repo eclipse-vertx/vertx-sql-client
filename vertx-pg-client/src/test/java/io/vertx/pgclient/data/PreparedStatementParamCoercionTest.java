@@ -1,9 +1,9 @@
 package io.vertx.pgclient.data;
 
-import io.vertx.pgclient.PgConnection;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.pgclient.PgConnection;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import org.junit.Test;
 
@@ -65,6 +65,18 @@ public class PreparedStatementParamCoercionTest extends DataTypeTestBase {
           .execute(Tuple.of("not-an-uuid"))
           .onComplete(ctx.asyncAssertFailure(res -> {
         }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testNoCoercionErrorWithNull(TestContext ctx) {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT $1::POINT").onComplete(ctx.asyncAssertSuccess(pq -> {
+        pq
+          .query()
+          .execute(Tuple.of(null))
+          .onComplete(ctx.asyncAssertSuccess());
       }));
     }));
   }
