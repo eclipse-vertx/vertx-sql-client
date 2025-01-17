@@ -237,7 +237,10 @@ public enum DataType {
     @Override
     public T get(TupleInternal tuple, int idx) {
       Object value = tuple.getValue(idx);
-      if (value != null && encodingType.isAssignableFrom(value.getClass())) {
+      if (value == null) {
+        return null;
+      }
+      if (encodingType.isAssignableFrom(value.getClass())) {
         return encodingType.cast(value);
       }
       throw FAILURE;
