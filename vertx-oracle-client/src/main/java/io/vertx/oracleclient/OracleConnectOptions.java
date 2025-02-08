@@ -43,6 +43,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "";
   public static final String DEFAULT_DATABASE = "";
   public static final boolean DEFAULT_SSL = false;
+  public static final int DEFAULT_PIPELINING_LIMIT = 1;
 
   private String serviceId;
   private String serviceName;
@@ -51,6 +52,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
   private String tnsAlias;
   private String tnsAdmin;
   private boolean ssl;
+  private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
 
   public OracleConnectOptions() {
     super();
@@ -69,6 +71,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
     this.tnsAlias = other.tnsAlias;
     this.tnsAdmin = other.tnsAdmin;
     this.ssl = other.ssl;
+    this.pipeliningLimit = other.pipeliningLimit;
   }
 
   public OracleConnectOptions(SqlConnectOptions options) {
@@ -205,6 +208,29 @@ public class OracleConnectOptions extends SqlConnectOptions {
    */
   public OracleConnectOptions setTnsAdmin(String tnsAdmin) {
     this.tnsAdmin = tnsAdmin;
+    return this;
+  }
+
+  /**
+   * Get the pipelining limit count.
+   *
+   * @return the pipelining count
+   */
+  public int getPipeliningLimit() {
+    return pipeliningLimit;
+  }
+
+  /**
+   * Set the pipelining limit count.
+   *
+   * @param pipeliningLimit the count to configure
+   * @return a reference to this, so the API can be used fluently
+   */
+  public OracleConnectOptions setPipeliningLimit(int pipeliningLimit) {
+    if (pipeliningLimit < 1) {
+      throw new IllegalArgumentException("pipelining limit can not be less than 1");
+    }
+    this.pipeliningLimit = pipeliningLimit;
     return this;
   }
 

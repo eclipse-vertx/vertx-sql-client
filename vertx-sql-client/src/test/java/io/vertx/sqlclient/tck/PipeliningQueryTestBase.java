@@ -196,7 +196,7 @@ public abstract class PipeliningQueryTestBase {
     testOneShotPreparedBatchInsert(ctx, client);
   }
 
-  private void testOneShotPreparedBatchInsert(TestContext ctx, SqlClient client) {
+  protected void testOneShotPreparedBatchInsert(TestContext ctx, SqlClient client) {
     Async latch = ctx.async(1000);
     List<Tuple> batchParams = new ArrayList<>();
     for (int i = 0; i < 1000; i++) {
@@ -228,7 +228,7 @@ public abstract class PipeliningQueryTestBase {
       }));
   }
 
-  private void cleanTestTable(TestContext ctx) {
+  protected void cleanTestTable(TestContext ctx) {
     connectionConnector.connect(ctx.asyncAssertSuccess(conn -> {
       conn
         .query("TRUNCATE TABLE mutable;")
