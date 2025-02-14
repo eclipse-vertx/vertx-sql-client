@@ -20,10 +20,14 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.InternetProtocol;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
-import static org.testcontainers.containers.PostgreSQLContainer.POSTGRESQL_PORT;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+
+import static io.vertx.pgclient.PgConnectOptions.DEFAULT_PORT;
 
 /**
  * Postgresql test database based on https://www.testcontainers.org
@@ -73,9 +77,14 @@ public class ContainerPgRule extends ExternalResource {
 
   private void initServer(String version) throws Exception {
     server = new ServerContainer<>("postgres:" + version)
-      .withDatabaseName("postgres")
-      .withUsername(user)
-      .withPassword("postgres")
+      .withEnv("POSTGRES_DB", "postgres")
+      .withEnv("POSTGRES_USER", user)
+      .withEnv("POSTGRES_PASSWORD", "postgres")
+      .waitingFor(new LogMessageWaitStrategy()
+        .withRegEx(".*database system is ready to accept connections.*\\s")
+        .withTimes(2)
+        .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS)))
+      .withCommand("postgres", "-c", "fsync=off")
       .withClasspathResourceMapping("create-postgres.sql", "/docker-entrypoint-initdb.d/create-postgres.sql", BindMode.READ_ONLY);
     if (ssl) {
       server
@@ -89,9 +98,9 @@ public class ContainerPgRule extends ExternalResource {
         }
     }
     if (System.getProperties().containsKey("containerFixedPort")) {
-      server.withFixedExposedPort(POSTGRESQL_PORT, POSTGRESQL_PORT);
+      server.withFixedExposedPort(DEFAULT_PORT, DEFAULT_PORT);
     } else {
-      server.withExposedPorts(POSTGRESQL_PORT);
+      server.withExposedPorts(DEFAULT_PORT);
     }
   }
 
@@ -108,7 +117,7 @@ public class ContainerPgRule extends ExternalResource {
     server.start();
 
     return new PgConnectOptions()
-      .setPort(server.getMappedPort(POSTGRESQL_PORT))
+      .setPort(server.getMappedPort(DEFAULT_PORT))
       .setHost(server.getHost())
         .setDatabase("postgres")
         .setUser(user)
@@ -183,7 +192,7 @@ public class ContainerPgRule extends ExternalResource {
     }
   }
 
-  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends PostgreSQLContainer<SELF> {
+  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends GenericContainer<SELF> {
 
     public ServerContainer(String dockerImageName) {
       super(dockerImageName);

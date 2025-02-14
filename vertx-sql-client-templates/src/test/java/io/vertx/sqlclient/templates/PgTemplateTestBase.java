@@ -12,21 +12,32 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.function.Function;
+
+import static io.vertx.pgclient.PgConnectOptions.DEFAULT_PORT;
 
 @RunWith(VertxUnitRunner.class)
 public abstract class PgTemplateTestBase {
 
-  private static PostgreSQLContainer server;
+  private static GenericContainer<?> server;
 
   @BeforeClass
   public static void startDatabase() {
-    server = new PostgreSQLContainer("postgres:" + "10.10")
-      .withDatabaseName("postgres")
-      .withUsername("postgres")
-      .withPassword("postgres");
+    server = new GenericContainer<>("postgres:" + "10.10")
+      .withEnv("POSTGRES_DB", "postgres")
+      .withEnv("POSTGRES_USER", "postgres")
+      .withEnv("POSTGRES_PASSWORD", "postgres")
+      .withExposedPorts(DEFAULT_PORT)
+      .waitingFor(new LogMessageWaitStrategy()
+        .withRegEx(".*database system is ready to accept connections.*\\s")
+        .withTimes(2)
+        .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS)))
+      .withCommand("postgres", "-c", "fsync=off");
     server.start();
   }
 
@@ -40,7 +51,7 @@ public abstract class PgTemplateTestBase {
   }
 
   public static PgConnectOptions connectOptions() {
-    Integer port = server.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
+    Integer port = server.getMappedPort(DEFAULT_PORT);
     String ip = server.getHost();
     return new PgConnectOptions()
       .setPort(port)
