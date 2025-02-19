@@ -101,6 +101,28 @@ public class OracleBinaryDataTypesTest extends OracleTestBase {
       }));
   }
 
+  private void testDecodeUsingStream(TestContext ctx, String columnName, JDBCType jdbcType, Buffer expected) {
+    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT " + columnName + " FROM binary_data_types WHERE id = 1")
+        .onComplete(ctx.asyncAssertSuccess(preparedStatement -> {
+          preparedStatement.cursor().read(10).onComplete(ctx.asyncAssertSuccess(result -> {
+            ctx.assertEquals(1, result.size());
+            Row row = result.iterator().next();
+            ctx.assertEquals(expected, row.get(Buffer.class, 0));
+            ctx.assertEquals(expected, row.get(Buffer.class, columnName));
+            ColumnDescriptor columnDescriptor = result.columnDescriptors().get(0);
+            ctx.assertEquals(jdbcType, columnDescriptor.jdbcType());
+            ctx.assertNotNull(columnDescriptor);
+          }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testDecodeRawUsingStream(TestContext ctx) {
+    testDecodeUsingStream(ctx, "test_raw", JDBCType.VARBINARY, Buffer.buffer("See you space cowboy..."));
+  }
+
   @Test
   public void testEncodeNull(TestContext ctx) {
     pool
