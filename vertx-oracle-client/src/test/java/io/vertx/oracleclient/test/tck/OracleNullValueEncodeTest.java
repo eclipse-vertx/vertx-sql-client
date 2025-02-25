@@ -12,7 +12,7 @@ package io.vertx.oracleclient.test.tck;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.test.junit.OracleRule;
-import io.vertx.sqlclient.tck.NullValueEncodeTestBase;
+import io.vertx.tests.sqlclient.tck.NullValueEncodeTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

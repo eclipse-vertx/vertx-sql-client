@@ -10,13 +10,10 @@
  */
 package io.vertx.oracleclient.test.tck;
 
-import io.vertx.ext.unit.Async;
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.test.junit.OracleRule;
-import io.vertx.sqlclient.tck.SimpleQueryTestBase;
+import io.vertx.tests.sqlclient.tck.SimpleQueryTestBase;
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)

@@ -5,7 +5,7 @@ import org.junit.runner.RunWith;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
-import io.vertx.sqlclient.tck.CollectorTestBase;
+import io.vertx.tests.sqlclient.tck.CollectorTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class PgCollectorTest extends CollectorTestBase {

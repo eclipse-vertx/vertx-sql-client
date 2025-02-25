@@ -24,7 +24,7 @@ import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.tck.Connector;
+import io.vertx.tests.sqlclient.tck.Connector;
 
 public enum ClientConfig {
 

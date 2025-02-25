@@ -19,19 +19,12 @@ package io.vertx.pgclient;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.impl.pubsub.PgSubscriberImpl;
-import io.vertx.pgclient.pubsub.PgChannel;
-import io.vertx.pgclient.pubsub.PgSubscriber;
-import io.vertx.sqlclient.ProxyServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class NoticeTest extends PgTestBase {
 

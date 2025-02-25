@@ -23,7 +23,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.impl.pubsub.PgSubscriberImpl;
 import io.vertx.pgclient.pubsub.PgChannel;
 import io.vertx.pgclient.pubsub.PgSubscriber;
-import io.vertx.sqlclient.ProxyServer;
+import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

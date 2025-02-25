@@ -5,7 +5,7 @@ import static org.junit.Assert.assertFalse;
 
 import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.pgclient.PgConnection;
-import io.vertx.sqlclient.ColumnChecker;
+import io.vertx.tests.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.buffer.Buffer;

@@ -3,7 +3,7 @@ package io.vertx.pgclient.data;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgTestBase;
-import io.vertx.sqlclient.ColumnChecker;
+import io.vertx.tests.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static io.vertx.sqlclient.ColumnChecker.*;
+import static io.vertx.tests.sqlclient.ColumnChecker.*;
 
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>

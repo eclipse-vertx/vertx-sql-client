@@ -3,7 +3,7 @@ package io.vertx.db2client.tck;
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.tck.PreparedBatchTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedBatchTestBase;
 
 import org.junit.Before;
 import org.junit.ClassRule;

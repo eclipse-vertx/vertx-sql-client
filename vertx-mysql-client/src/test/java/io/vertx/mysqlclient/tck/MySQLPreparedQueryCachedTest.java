@@ -14,7 +14,7 @@ package io.vertx.mysqlclient.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.MySQLRule;
-import io.vertx.sqlclient.tck.PreparedQueryCachedTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedQueryCachedTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

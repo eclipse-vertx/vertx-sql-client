@@ -17,7 +17,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.tck.TracingTestBase;
+import io.vertx.tests.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

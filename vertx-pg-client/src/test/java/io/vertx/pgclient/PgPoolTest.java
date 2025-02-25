@@ -28,6 +28,7 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.pgclient.impl.PgSocketConnection;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
+import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.Rule;
 import org.junit.Test;
 

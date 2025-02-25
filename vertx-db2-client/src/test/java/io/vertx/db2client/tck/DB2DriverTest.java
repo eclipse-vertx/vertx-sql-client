@@ -26,13 +26,13 @@ import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.tck.DriverTestBase;
+import io.vertx.tests.sqlclient.tck.DriverTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2DriverTest extends DriverTestBase {
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
-  
+
   @Rule
   public TestName testName = new TestName();
 

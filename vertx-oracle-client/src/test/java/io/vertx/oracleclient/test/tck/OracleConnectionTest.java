@@ -14,7 +14,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
-import io.vertx.sqlclient.tck.ConnectionTestBase;
+import io.vertx.tests.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

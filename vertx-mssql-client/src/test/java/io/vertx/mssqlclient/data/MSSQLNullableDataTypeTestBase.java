@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.data;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.ColumnChecker;
+import io.vertx.tests.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import org.junit.Test;
 

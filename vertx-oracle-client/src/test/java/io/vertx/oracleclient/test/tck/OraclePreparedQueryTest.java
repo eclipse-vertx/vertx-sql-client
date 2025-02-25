@@ -14,7 +14,7 @@ package io.vertx.oracleclient.test.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.test.junit.OracleRule;
-import io.vertx.sqlclient.tck.PreparedQueryTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedQueryTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

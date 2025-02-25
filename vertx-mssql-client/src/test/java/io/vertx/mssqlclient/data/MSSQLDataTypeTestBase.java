@@ -16,7 +16,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLTestBase;
-import io.vertx.sqlclient.ColumnChecker;
+import io.vertx.tests.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static io.vertx.sqlclient.ColumnChecker.getByIndex;
-import static io.vertx.sqlclient.ColumnChecker.getByName;
+import static io.vertx.tests.sqlclient.ColumnChecker.getByIndex;
+import static io.vertx.tests.sqlclient.ColumnChecker.getByName;
 
 public abstract class MSSQLDataTypeTestBase extends MSSQLTestBase {
   Vertx vertx;

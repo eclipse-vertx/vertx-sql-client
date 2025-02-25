@@ -19,7 +19,7 @@ import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.ProxyServer;
+import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Test;

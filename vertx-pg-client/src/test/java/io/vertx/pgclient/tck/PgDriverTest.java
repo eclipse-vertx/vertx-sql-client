@@ -18,7 +18,7 @@ package io.vertx.pgclient.tck;
 
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.tck.DriverTestBase;
+import io.vertx.tests.sqlclient.tck.DriverTestBase;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;

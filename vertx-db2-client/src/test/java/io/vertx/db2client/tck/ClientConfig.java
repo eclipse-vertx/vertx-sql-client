@@ -24,7 +24,7 @@ import io.vertx.db2client.DB2Builder;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.DB2Connection;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.tck.Connector;
+import io.vertx.tests.sqlclient.tck.Connector;
 
 @SuppressWarnings("unchecked")
 public enum ClientConfig {

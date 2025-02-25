@@ -16,7 +16,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.tck.TracingTestBase;
+import io.vertx.tests.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

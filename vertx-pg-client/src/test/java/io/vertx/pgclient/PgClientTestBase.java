@@ -24,7 +24,7 @@ import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.sqlclient.ProxyServer;
+import io.vertx.tests.sqlclient.ProxyServer;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlClient;

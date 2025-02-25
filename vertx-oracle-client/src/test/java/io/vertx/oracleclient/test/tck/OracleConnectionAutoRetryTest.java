@@ -14,7 +14,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.test.junit.OracleRule;
-import io.vertx.sqlclient.tck.ConnectionAutoRetryTestBase;
+import io.vertx.tests.sqlclient.tck.ConnectionAutoRetryTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

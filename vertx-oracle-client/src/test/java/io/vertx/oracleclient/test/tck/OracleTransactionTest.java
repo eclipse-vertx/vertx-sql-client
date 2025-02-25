@@ -18,7 +18,7 @@ import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.tck.TransactionTestBase;
+import io.vertx.tests.sqlclient.tck.TransactionTestBase;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;

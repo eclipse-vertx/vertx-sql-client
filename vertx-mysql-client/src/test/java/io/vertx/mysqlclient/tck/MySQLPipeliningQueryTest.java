@@ -5,7 +5,7 @@ import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.tck.PipeliningQueryTestBase;
+import io.vertx.tests.sqlclient.tck.PipeliningQueryTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

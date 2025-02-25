@@ -31,7 +31,7 @@ import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.db2client.tck.ClientConfig;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.tck.Connector;
+import io.vertx.tests.sqlclient.tck.Connector;
 
 public abstract class DB2TestBase {
 

@@ -18,7 +18,7 @@ import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.tck.PreparedBatchTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedBatchTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

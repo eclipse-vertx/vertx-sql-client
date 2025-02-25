@@ -11,7 +11,7 @@ import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.db2client.tck.ClientConfig;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.tck.SimpleQueryTestBase;
+import io.vertx.tests.sqlclient.tck.SimpleQueryTestBase;
 
 @RunWith(VertxUnitRunner.class)
 @Ignore

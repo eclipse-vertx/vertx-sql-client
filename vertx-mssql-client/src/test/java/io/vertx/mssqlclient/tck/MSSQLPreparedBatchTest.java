@@ -3,7 +3,7 @@ package io.vertx.mssqlclient.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.junit.MSSQLRule;
-import io.vertx.sqlclient.tck.PreparedBatchTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedBatchTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

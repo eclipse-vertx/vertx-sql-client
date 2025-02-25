@@ -19,7 +19,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.tck.Connector;
+import io.vertx.tests.sqlclient.tck.Connector;
 
 public enum ClientConfig {
   CONNECT() {

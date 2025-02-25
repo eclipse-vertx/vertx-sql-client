@@ -18,7 +18,7 @@ package io.vertx.db2client.tck;
 import static io.vertx.db2client.junit.TestUtil.assertContains;
 
 import io.vertx.sqlclient.spi.DatabaseMetadata;
-import io.vertx.sqlclient.tck.ConnectionTestBase;
+import io.vertx.tests.sqlclient.tck.ConnectionTestBase;
 import io.vertx.db2client.DB2Exception;
 import io.vertx.db2client.impl.drda.SQLState;
 import io.vertx.db2client.impl.drda.SqlCode;

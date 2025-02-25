@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.tck.PreparedQueryCachedTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedQueryCachedTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2PreparedQueryCachedTest extends PreparedQueryCachedTestBase {

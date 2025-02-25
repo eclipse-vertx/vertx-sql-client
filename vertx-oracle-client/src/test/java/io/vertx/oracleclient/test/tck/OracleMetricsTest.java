@@ -17,7 +17,7 @@ import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.tck.MetricsTestBase;
+import io.vertx.tests.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

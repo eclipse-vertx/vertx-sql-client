@@ -14,7 +14,7 @@ package io.vertx.pgclient.tck;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.tck.TextDataTypeDecodeTestBase;
+import io.vertx.tests.sqlclient.tck.TextDataTypeDecodeTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

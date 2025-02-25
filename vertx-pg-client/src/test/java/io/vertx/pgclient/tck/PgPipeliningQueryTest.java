@@ -5,7 +5,7 @@ import io.vertx.pgclient.PgBuilder;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.tck.PipeliningQueryTestBase;
+import io.vertx.tests.sqlclient.tck.PipeliningQueryTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

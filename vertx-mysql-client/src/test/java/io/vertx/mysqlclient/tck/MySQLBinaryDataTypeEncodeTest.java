@@ -17,7 +17,7 @@ import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.tck.BinaryDataTypeEncodeTestBase;
+import io.vertx.tests.sqlclient.tck.BinaryDataTypeEncodeTestBase;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;

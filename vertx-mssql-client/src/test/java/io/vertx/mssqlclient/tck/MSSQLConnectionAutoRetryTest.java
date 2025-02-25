@@ -16,7 +16,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.tck.ConnectionAutoRetryTestBase;
+import io.vertx.tests.sqlclient.tck.ConnectionAutoRetryTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

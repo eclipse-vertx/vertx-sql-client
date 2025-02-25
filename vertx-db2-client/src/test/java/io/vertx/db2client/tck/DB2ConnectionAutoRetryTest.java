@@ -16,7 +16,7 @@ import io.vertx.db2client.junit.DB2Resource;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.tck.ConnectionAutoRetryTestBase;
+import io.vertx.tests.sqlclient.tck.ConnectionAutoRetryTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

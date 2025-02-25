@@ -3,7 +3,7 @@ package io.vertx.pgclient.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.tck.PreparedQueryTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedQueryTestBase;
 import org.junit.ClassRule;
 import org.junit.Test;
 

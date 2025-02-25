@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.tck;
 
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.tck.SimpleQueryTestBase;
+import io.vertx.tests.sqlclient.tck.SimpleQueryTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

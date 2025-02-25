@@ -2,7 +2,7 @@ package io.vertx.pgclient.tck;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.junit.ContainerPgRule;
-import io.vertx.sqlclient.tck.PreparedBatchTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedBatchTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

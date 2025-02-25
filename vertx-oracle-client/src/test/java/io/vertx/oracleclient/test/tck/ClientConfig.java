@@ -18,7 +18,7 @@ import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OracleConnection;
 import io.vertx.sqlclient.*;
-import io.vertx.sqlclient.tck.Connector;
+import io.vertx.tests.sqlclient.tck.Connector;
 
 public enum ClientConfig {
 

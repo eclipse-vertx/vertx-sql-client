@@ -11,7 +11,7 @@
 
 package io.vertx.db2client.impl;
 
-import io.vertx.sqlclient.impl.TestRowDesc;
+import io.vertx.tests.sqlclient.TestRowDesc;
 import org.junit.Test;
 
 import java.time.LocalDate;

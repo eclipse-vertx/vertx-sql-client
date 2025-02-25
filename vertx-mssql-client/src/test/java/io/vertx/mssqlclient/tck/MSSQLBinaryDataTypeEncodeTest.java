@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.tck;
 
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.junit.MSSQLRule;
-import io.vertx.sqlclient.tck.BinaryDataTypeEncodeTestBase;
+import io.vertx.tests.sqlclient.tck.BinaryDataTypeEncodeTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

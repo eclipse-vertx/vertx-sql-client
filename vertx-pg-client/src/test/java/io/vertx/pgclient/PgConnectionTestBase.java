@@ -22,6 +22,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.*;
+import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.Test;
 
 import java.util.ArrayList;

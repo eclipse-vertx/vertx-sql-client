@@ -15,7 +15,7 @@ import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.tck.MetricsTestBase;
+import io.vertx.tests.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 
 public class PgMetricsTest extends MetricsTestBase {

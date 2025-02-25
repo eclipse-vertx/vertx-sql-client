@@ -17,7 +17,7 @@
 package io.vertx.pgclient.tck;
 
 import io.vertx.pgclient.junit.ContainerPgRule;
-import io.vertx.sqlclient.tck.SimpleQueryTestBase;
+import io.vertx.tests.sqlclient.tck.SimpleQueryTestBase;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;

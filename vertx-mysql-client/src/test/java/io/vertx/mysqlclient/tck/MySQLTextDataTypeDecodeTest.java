@@ -16,7 +16,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.tck.TextDataTypeDecodeTestBase;
+import io.vertx.tests.sqlclient.tck.TextDataTypeDecodeTestBase;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -16,7 +16,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.tck.TracingTestBase;
+import io.vertx.tests.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

@@ -17,7 +17,7 @@
 package io.vertx.mssqlclient.tck;
 
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.tck.DriverTestBase;
+import io.vertx.tests.sqlclient.tck.DriverTestBase;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.junit.MSSQLRule;
 

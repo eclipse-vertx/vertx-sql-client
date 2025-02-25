@@ -31,7 +31,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.tck.TransactionTestBase;
+import io.vertx.tests.sqlclient.tck.TransactionTestBase;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2TransactionTest extends TransactionTestBase {

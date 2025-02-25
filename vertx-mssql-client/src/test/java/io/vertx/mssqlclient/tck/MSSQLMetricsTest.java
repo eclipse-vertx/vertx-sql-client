@@ -16,7 +16,7 @@ import io.vertx.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.tck.MetricsTestBase;
+import io.vertx.tests.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 
 public class MSSQLMetricsTest extends MetricsTestBase {

@@ -40,14 +40,14 @@ public final class PropertyKindMap {
     return null;
   }
 
-  public void put(PropertyKind<?> property, Object value) {
+  public PropertyKindMap put(PropertyKind<?> property, Object value) {
     Objects.requireNonNull(property, "property is null");
     Objects.requireNonNull(value, "value is null");
     for (int i = 0; i < elements.length; i += 2) {
       Object key = elements[i];
       if (key == property || key.equals(property)) {
         elements[i + 1] = value;
-        return;
+        return this;
       }
     }
     if (elements == EMPTY_ELEMENTS) {
@@ -57,10 +57,11 @@ public final class PropertyKindMap {
     }
     elements[elements.length - 2] = property;
     elements[elements.length - 1] = value;
+    return this;
   }
 
   // visible for testing
-  int count() {
+  public int count() {
     return elements.length >> 1;
   }
 }

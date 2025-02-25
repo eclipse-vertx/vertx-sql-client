@@ -20,7 +20,7 @@ import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.tck.TransactionTestBase;
+import io.vertx.tests.sqlclient.tck.TransactionTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 

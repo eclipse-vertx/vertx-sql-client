@@ -23,7 +23,7 @@ import io.vertx.core.Handler;
 import io.vertx.db2client.tck.DB2SimpleQueryTest;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.tck.Connector;
+import io.vertx.tests.sqlclient.tck.Connector;
 
 /*
  * Runs the tck SimpleQueryTest, but with a uri instead of connection properties.

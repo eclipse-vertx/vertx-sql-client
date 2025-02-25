@@ -15,7 +15,7 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.tck.CollectorTestBase;
+import io.vertx.tests.sqlclient.tck.CollectorTestBase;
 import org.junit.Assume;
 import org.junit.ClassRule;
 import org.junit.Test;

@@ -15,7 +15,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.mssqlclient.MSSQLException;
 import io.vertx.mssqlclient.junit.MSSQLRule;
-import io.vertx.sqlclient.tck.PreparedQueryTestBase;
+import io.vertx.tests.sqlclient.tck.PreparedQueryTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;

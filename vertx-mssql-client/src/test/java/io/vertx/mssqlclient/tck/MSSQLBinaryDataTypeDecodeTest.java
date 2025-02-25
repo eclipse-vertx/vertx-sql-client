@@ -14,7 +14,7 @@ package io.vertx.mssqlclient.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.junit.MSSQLRule;
-import io.vertx.sqlclient.tck.BinaryDataTypeDecodeTestBase;
+import io.vertx.tests.sqlclient.tck.BinaryDataTypeDecodeTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 
