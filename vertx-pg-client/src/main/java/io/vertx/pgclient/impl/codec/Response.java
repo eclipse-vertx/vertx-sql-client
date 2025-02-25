@@ -50,7 +50,7 @@ abstract class Response {
     return severity;
   }
 
-  void setSeverity(String severity) {
+  public void setSeverity(String severity) {
     this.severity = severity;
   }
 
@@ -58,7 +58,7 @@ abstract class Response {
     return code;
   }
 
-  void setCode(String code) {
+  public void setCode(String code) {
     this.code = code;
   }
 
@@ -66,7 +66,7 @@ abstract class Response {
     return message;
   }
 
-  void setMessage(String message) {
+  public  void setMessage(String message) {
     this.message = message;
   }
 
@@ -74,7 +74,7 @@ abstract class Response {
     return detail;
   }
 
-  void setDetail(String detail) {
+  public void setDetail(String detail) {
     this.detail = detail;
   }
 
@@ -82,7 +82,7 @@ abstract class Response {
     return hint;
   }
 
-  void setHint(String hint) {
+  public void setHint(String hint) {
     this.hint = hint;
   }
 
@@ -90,7 +90,7 @@ abstract class Response {
     return position;
   }
 
-  void setPosition(String position) {
+  public void setPosition(String position) {
     this.position = position;
   }
 
@@ -98,7 +98,7 @@ abstract class Response {
     return where;
   }
 
-  void setWhere(String where) {
+  public void setWhere(String where) {
     this.where = where;
   }
 
@@ -106,7 +106,7 @@ abstract class Response {
     return file;
   }
 
-  void setFile(String file) {
+  public void setFile(String file) {
     this.file = file;
   }
 
@@ -114,7 +114,7 @@ abstract class Response {
     return line;
   }
 
-  void setLine(String line) {
+  public void setLine(String line) {
     this.line = line;
   }
 
@@ -122,7 +122,7 @@ abstract class Response {
     return routine;
   }
 
-  void setRoutine(String routine) {
+  public void setRoutine(String routine) {
     this.routine = routine;
   }
 
@@ -130,7 +130,7 @@ abstract class Response {
     return schema;
   }
 
-  void setSchema(String schema) {
+  public void setSchema(String schema) {
     this.schema = schema;
   }
 
@@ -138,7 +138,7 @@ abstract class Response {
     return table;
   }
 
-  void setTable(String table) {
+  public void setTable(String table) {
     this.table = table;
   }
 
@@ -146,7 +146,7 @@ abstract class Response {
     return column;
   }
 
-  void setColumn(String column) {
+  public void setColumn(String column) {
     this.column = column;
   }
 
@@ -154,7 +154,7 @@ abstract class Response {
     return dataType;
   }
 
-  void setDataType(String dataType) {
+  public void setDataType(String dataType) {
     this.dataType = dataType;
   }
 
@@ -162,7 +162,7 @@ abstract class Response {
     return constraint;
   }
 
-  void setConstraint(String constraint) {
+  public void setConstraint(String constraint) {
     this.constraint = constraint;
   }
 
@@ -170,7 +170,7 @@ abstract class Response {
     return internalPosition;
   }
 
-  void setInternalPosition(String internalPosition) {
+  public void setInternalPosition(String internalPosition) {
     this.internalPosition = internalPosition;
   }
 
@@ -178,7 +178,7 @@ abstract class Response {
     return internalQuery;
   }
 
-  void setInternalQuery(String internalQuery) {
+  public void setInternalQuery(String internalQuery) {
     this.internalQuery = internalQuery;
   }
 

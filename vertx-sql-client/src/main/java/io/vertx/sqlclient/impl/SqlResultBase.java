@@ -30,7 +30,7 @@ public abstract class SqlResultBase<T> implements SqlResult<T> {
   List<ColumnDescriptor> columnDescriptors;
   int size;
   SqlResult<T> next;
-  PropertyKindMap properties;
+  protected PropertyKindMap properties;
 
   @Override
   public List<String> columnsNames() {
@@ -77,4 +77,5 @@ public abstract class SqlResultBase<T> implements SqlResult<T> {
   public SqlResult<T> next() {
     return next;
   }
+
 }
