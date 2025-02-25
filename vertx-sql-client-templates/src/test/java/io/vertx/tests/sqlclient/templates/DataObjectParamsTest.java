@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.templates;
+package io.vertx.tests.sqlclient.templates;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;

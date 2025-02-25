@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.templates.wrappers;
+package io.vertx.tests.sqlclient.templates.wrappers;
 
 public class BooleanWrapper extends WrapperBase<Boolean> {
 

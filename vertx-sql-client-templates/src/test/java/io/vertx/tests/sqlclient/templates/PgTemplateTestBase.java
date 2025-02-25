@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.templates;
+package io.vertx.tests.sqlclient.templates;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
@@ -7,6 +7,9 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.templates.RowMapper;
+import io.vertx.sqlclient.templates.SqlTemplate;
+import io.vertx.sqlclient.templates.TupleMapper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

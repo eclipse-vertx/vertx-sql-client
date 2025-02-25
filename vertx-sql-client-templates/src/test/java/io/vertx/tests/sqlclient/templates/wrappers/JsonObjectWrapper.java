@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.templates.wrappers;
+package io.vertx.tests.sqlclient.templates.wrappers;
 
 import io.vertx.core.json.JsonObject;
 

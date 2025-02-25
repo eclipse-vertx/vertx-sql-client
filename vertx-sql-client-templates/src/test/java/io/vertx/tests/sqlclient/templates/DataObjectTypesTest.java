@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.templates;
+package io.vertx.tests.sqlclient.templates;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -23,15 +23,17 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.templates.wrappers.BooleanWrapper;
-import io.vertx.sqlclient.templates.wrappers.DoubleWrapper;
-import io.vertx.sqlclient.templates.wrappers.FloatWrapper;
-import io.vertx.sqlclient.templates.wrappers.IntegerWrapper;
-import io.vertx.sqlclient.templates.wrappers.JsonArrayWrapper;
-import io.vertx.sqlclient.templates.wrappers.JsonObjectWrapper;
-import io.vertx.sqlclient.templates.wrappers.LongWrapper;
-import io.vertx.sqlclient.templates.wrappers.ShortWrapper;
-import io.vertx.sqlclient.templates.wrappers.StringWrapper;
+import io.vertx.sqlclient.templates.SqlTemplate;
+import io.vertx.sqlclient.templates.TupleMapper;
+import io.vertx.tests.sqlclient.templates.wrappers.BooleanWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.DoubleWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.FloatWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.IntegerWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.JsonArrayWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.JsonObjectWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.LongWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.ShortWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.StringWrapper;
 import org.junit.Test;
 
 import java.time.LocalDate;

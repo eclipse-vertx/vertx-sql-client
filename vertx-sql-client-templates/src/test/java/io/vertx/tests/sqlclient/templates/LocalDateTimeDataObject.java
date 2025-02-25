@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.templates;
+package io.vertx.tests.sqlclient.templates;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.sqlclient.templates.annotations.RowMapped;

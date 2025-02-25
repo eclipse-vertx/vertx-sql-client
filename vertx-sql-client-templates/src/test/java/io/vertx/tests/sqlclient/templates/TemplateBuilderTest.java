@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.templates;
+package io.vertx.tests.sqlclient.templates;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;

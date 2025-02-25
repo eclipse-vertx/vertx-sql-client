@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.templates;
+package io.vertx.tests.sqlclient.templates;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.TestContext;
@@ -6,6 +6,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.templates.SqlTemplate;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
