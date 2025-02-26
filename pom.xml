@@ -52,7 +52,7 @@
     <tls.connection.uri/>
     <unix.socket.directory/>
     <unix.socket.port/>
-    <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
+    <vertx.surefire.useModulePath>true</vertx.surefire.useModulePath>
     <testcontainers.version>1.17.6</testcontainers.version>
   </properties>
 
@@ -151,7 +151,7 @@
             <execution>
               <id>default-testCompile</id>
               <configuration>
-                <useModulePath>false</useModulePath>
+                <useModulePath>${vertx.surefire.useModulePath}</useModulePath>
               </configuration>
             </execution>
           </executions>

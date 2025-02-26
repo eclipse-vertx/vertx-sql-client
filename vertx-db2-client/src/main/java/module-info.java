@@ -10,6 +10,8 @@ module io.vertx.sql.client.db2 {
   requires io.vertx.core.logging;
   requires java.sql;
 
+  provides io.vertx.sqlclient.spi.Driver with io.vertx.db2client.spi.DB2Driver; // Un-tested
+
   exports io.vertx.db2client;
   exports io.vertx.db2client.spi;
 

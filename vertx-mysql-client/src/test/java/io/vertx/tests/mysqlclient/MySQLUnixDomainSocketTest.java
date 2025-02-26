@@ -56,8 +56,12 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   @After
   public void after() {
-    client.close().await();
-    vertx.close().await();
+    if (client != null) {
+      client.close().await();
+    }
+    if (vertx != null) {
+      vertx.close().await();
+    }
   }
 
   @Test

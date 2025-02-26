@@ -33,6 +33,7 @@
 
   <properties>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
+    <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
   </properties>
 
   <dependencies>

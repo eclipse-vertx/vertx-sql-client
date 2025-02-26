@@ -31,6 +31,10 @@
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>Vert.x SQL Client Templates</description>
 
+  <properties>
+    <s>${path.separator}</s>
+  </properties>
+
   <dependencies>
 
     <!-- Vert.x dependencies -->
@@ -66,13 +70,6 @@
       <artifactId>vertx-mysql-client</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>io.vertx</groupId>
-      <artifactId>vertx-pg-client</artifactId>
-      <version>5.0.0-SNAPSHOT</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <build>
@@ -87,12 +84,29 @@
                 <annotationProcessors>
                   <annotationProcessor>io.vertx.codegen.processor.Processor</annotationProcessor>
                 </annotationProcessors>
+                <testCompilerArguments>
+                  <processorpath>${project.build.directory}/classes${s}${io.vertx:vertx-codegen-api:jar}${s}${io.vertx:vertx-codegen-processor:jar}${s}${io.vertx:vertx-core:jar}</processorpath>
+                </testCompilerArguments>
               </configuration>
             </execution>
           </executions>
         </plugin>
       </plugins>
     </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>properties</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
 </project>
