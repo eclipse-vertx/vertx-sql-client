@@ -59,12 +59,6 @@
 
     <!-- Testing purposes -->
     <dependency>
-      <groupId>ru.yandex.qatools.embed</groupId>
-      <artifactId>postgresql-embedded</artifactId>
-      <version>2.10</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>net.java.dev.jna</groupId>
       <artifactId>jna</artifactId>
       <version>5.13.0</version>
@@ -121,7 +115,7 @@
               <unix.socket.port>${unix.socket.port}</unix.socket.port>
             </systemPropertyVariables>
             <excludes>
-              <exclude>io/vertx/pgclient/it/**</exclude>
+              <exclude>io/vertx/tests/pgclient/it/**</exclude>
             </excludes>
           </configuration>
         </plugin>
@@ -140,7 +134,7 @@
             <phase>integration-test</phase>
             <configuration>
               <includes>
-                <include>io/vertx/pgclient/it/EnvTest.java</include>
+                <include>io/vertx/tests/pgclient/it/EnvTest.java</include>
               </includes>
               <environmentVariables>
                 <PGHOSTADDR>test_host</PGHOSTADDR>
@@ -160,7 +154,7 @@
             <phase>integration-test</phase>
             <configuration>
               <includes>
-                <include>io/vertx/pgclient/it/MissingScramTest.java</include>
+                <include>io/vertx/tests/pgclient/it/MissingScramTest.java</include>
               </includes>
               <classpathDependencyExcludes>
                 <classpathDependencyExclude>com.ongres.scram:scram-client</classpathDependencyExclude>

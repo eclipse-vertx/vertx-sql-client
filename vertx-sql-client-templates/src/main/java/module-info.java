@@ -1,4 +1,5 @@
 module io.vertx.sql.client.templates {
+
   requires io.vertx.sql.client;
   requires io.vertx.codegen.processor;
   requires io.vertx.codegen.api;
@@ -8,5 +9,7 @@ module io.vertx.sql.client.templates {
 
   exports io.vertx.sqlclient.templates;
   exports io.vertx.sqlclient.templates.annotations;
+
+  exports io.vertx.sqlclient.templates.impl to io.vertx.tests.sql.client.templates;
 
 }

@@ -11,9 +11,13 @@ module io.vertx.sql.client.oracle {
   requires io.vertx.core.logging;
   requires java.sql;
 
+  provides io.vertx.sqlclient.spi.Driver with io.vertx.oracleclient.spi.OracleDriver;
+
   exports io.vertx.oracleclient;
   exports io.vertx.oracleclient.data;
   exports io.vertx.oracleclient.spi;
+
+  exports io.vertx.oracleclient.impl to io.vertx.tests.sql.client.oracle;
 
   requires static io.vertx.docgen;
   requires static io.vertx.codegen.api;
