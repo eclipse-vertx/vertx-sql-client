@@ -24,10 +24,15 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.vertx.pgclient.PgConnectOptions.DEFAULT_PORT;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Postgresql test database based on https://www.testcontainers.org
@@ -48,6 +53,7 @@ public class ContainerPgRule extends ExternalResource {
   private boolean ssl;
   private boolean forceSsl;
   private String user = "postgres";
+  private File domainSocketMount;
 
   public ContainerPgRule ssl(boolean ssl) {
     this.ssl = ssl;
@@ -76,6 +82,18 @@ public class ContainerPgRule extends ExternalResource {
   }
 
   private void initServer(String version) throws Exception {
+
+    // Domain socket on Linux
+    String osName = System.getProperty("os.name");
+    if (osName != null && (osName.startsWith("Linux") || osName.startsWith("LINUX"))) {
+      // Create temp file, length must be < 107 chars (Linux limitation)
+      domainSocketMount = Files.createTempDirectory("postgresql_var_run").toFile();
+      domainSocketMount.deleteOnExit();
+      domainSocketMount.setReadable(true, false);
+      domainSocketMount.setWritable(true, false);
+      domainSocketMount.setExecutable(true, false);
+    }
+
     server = new ServerContainer<>("postgres:" + version)
       .withEnv("POSTGRES_DB", "postgres")
       .withEnv("POSTGRES_USER", user)
@@ -86,6 +104,11 @@ public class ContainerPgRule extends ExternalResource {
         .withStartupTimeout(Duration.of(60, ChronoUnit.SECONDS)))
       .withCommand("postgres", "-c", "fsync=off")
       .withClasspathResourceMapping("create-postgres.sql", "/docker-entrypoint-initdb.d/create-postgres.sql", BindMode.READ_ONLY);
+
+    if (domainSocketMount != null) {
+      server = server.withFileSystemBind(domainSocketMount.getAbsolutePath(), "/var/run/postgresql");
+    }
+
     if (ssl) {
       server
         .withClasspathResourceMapping("tls/server.crt", "/server.crt", BindMode.READ_ONLY)
@@ -102,6 +125,10 @@ public class ContainerPgRule extends ExternalResource {
     } else {
       server.withExposedPorts(DEFAULT_PORT);
     }
+  }
+
+  public String domainSocketPath() {
+    return domainSocketMount != null ? domainSocketMount.getAbsolutePath() : null;
   }
 
   public static boolean isTestingWithExternalDatabase() {
@@ -124,7 +151,6 @@ public class ContainerPgRule extends ExternalResource {
         .setPassword("postgres");
   }
 
-
   private static String getPostgresVersion() {
     String specifiedVersion = System.getProperty("embedded.postgres.version");
     String version;
@@ -138,7 +164,7 @@ public class ContainerPgRule extends ExternalResource {
     return version;
   }
 
-  public synchronized void stopServer() throws Exception {
+  public synchronized void stopServer() {
     if (server != null) {
       try {
         server.stop();
