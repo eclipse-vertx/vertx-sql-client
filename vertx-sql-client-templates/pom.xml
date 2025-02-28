@@ -106,6 +106,33 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <useModulePath>true</useModulePath>
+          <failIfNoTests>true</failIfNoTests>
+        </configuration>
+        <executions>
+          <execution>
+            <id>module-path-codegen</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <includes>
+                <include>io/vertx/tests/sqlclient/templates/PgClientTest.java</include>
+              </includes>
+              <classpathDependencyExcludes>
+                <classpathDependencyExclude>io.vertx:vertx-codegen-api</classpathDependencyExclude>
+                <classpathDependencyExclude>io.vertx:vertx-codegen-processor</classpathDependencyExclude>
+                <classpathDependencyExclude>io.vertx:vertx-codegen-json</classpathDependencyExclude>
+              </classpathDependencyExcludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 
