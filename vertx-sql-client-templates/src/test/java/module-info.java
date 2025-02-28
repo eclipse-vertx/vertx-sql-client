@@ -1,7 +1,7 @@
 open module io.vertx.tests.sql.client.templates {
   requires com.fasterxml.jackson.databind;
   requires com.fasterxml.jackson.datatype.jsr310;
-  requires io.vertx.codegen.api;
+  requires static io.vertx.codegen.api;
   requires io.vertx.core;
   requires io.vertx.sql.client;
   requires io.vertx.sql.client.mysql;
