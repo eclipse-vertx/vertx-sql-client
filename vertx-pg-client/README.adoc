@@ -224,6 +224,8 @@ The *Reactive Postgres Client* currently supports the following data types
 |`CIDR`
 |`io.vertx.pgclient.data.Cidr`
 |&#10004;
+|`io.vertx.pgclient.data.Cidr[]`
+|&#10004;
 
 |`PATH`
 |`i.r.p.data.Path`
@@ -274,7 +276,7 @@ Note: PostgreSQL JSON and JSONB types are represented by the following Java type
 
 The following types
 
-_MONEY_, _BIT_, _VARBIT_, _MACADDR_, _MACADDR8_,
+_BIT_, _VARBIT_, _MACADDR_, _MACADDR8_,
 _XML_, _HSTORE_, _OID_,
 _VOID_
 
