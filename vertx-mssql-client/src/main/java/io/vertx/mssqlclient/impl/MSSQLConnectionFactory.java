@@ -76,7 +76,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
   }
 
   private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, ContextInternal context) {
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
+    VertxMetrics vertxMetrics = vertx.metrics();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
     MSSQLSocketConnection conn = new MSSQLSocketConnection((NetSocketInternal) so, sslContextManager, metrics, options, false, 0, sql -> true, 1, context);
     conn.init();

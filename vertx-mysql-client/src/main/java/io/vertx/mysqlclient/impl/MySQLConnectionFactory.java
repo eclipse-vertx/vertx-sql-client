@@ -133,7 +133,7 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
     ConnectOptions connectOptions = new ConnectOptions().setRemoteAddress(server);
     Future<NetSocket> fut = client.connect(connectOptions);
     return fut.flatMap(so -> {
-      VertxMetrics vertxMetrics = vertx.metricsSPI();
+      VertxMetrics vertxMetrics = vertx.metrics();
       ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
       MySQLSocketConnection conn = new MySQLSocketConnection((NetSocketInternal) so, metrics, options, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
       conn.init();

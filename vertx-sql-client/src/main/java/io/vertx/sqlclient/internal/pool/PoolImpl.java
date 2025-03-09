@@ -69,7 +69,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
 
     Handler<SqlConnectionPool.PooledConnection> hook = connectionInitializer != null ? this::initializeConnection : null;
 
-    VertxMetrics metrics = vertx.metricsSPI();
+    VertxMetrics metrics = vertx.metrics();
     PoolMetrics poolMetrics;
     if (metrics != null) {
       poolMetrics = metrics.createPoolMetrics("sql", poolOptions.getName(), poolOptions.getMaxSize());

@@ -175,7 +175,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
     Predicate<String> preparedStatementCacheSqlFilter = options.getPreparedStatementCacheSqlFilter();
     int pipeliningLimit = options.getPipeliningLimit();
     boolean useLayer7Proxy = options.getUseLayer7Proxy();
-    VertxMetrics vertxMetrics = vertx.metricsSPI();
+    VertxMetrics vertxMetrics = vertx.metrics();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
     PgSocketConnection conn = new PgSocketConnection(socket, metrics, options, cachePreparedStatements, preparedStatementCacheMaxSize, preparedStatementCacheSqlFilter, pipeliningLimit, useLayer7Proxy, context);
     return conn;

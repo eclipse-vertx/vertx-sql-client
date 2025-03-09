@@ -51,7 +51,10 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   }
 
   public static ContextInternal asEventLoopContext(ContextInternal ctx) {
-    return ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.owner().getWorkerPool(), ctx.classLoader());
+    return ctx.owner().contextBuilder()
+      .withEventLoop(ctx.nettyEventLoop())
+      .withWorkerPool(ctx.workerPool())
+      .build();
   }
 
   public Future<Connection> connect(ContextInternal context, C options) {

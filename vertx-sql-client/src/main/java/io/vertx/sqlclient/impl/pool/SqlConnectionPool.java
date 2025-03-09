@@ -93,7 +93,7 @@ public class SqlConnectionPool {
       for (int i = 0; i < eventLoopSize; i++) {
         loops[i] = vertx.nettyEventLoopGroup().next();
       }
-      pool.contextProvider(new Function<ContextInternal, ContextInternal>() {
+      pool.contextProvider(new Function<>() {
         int idx = 0;
 
         @Override
@@ -102,15 +102,15 @@ public class SqlConnectionPool {
           if (idx == loops.length) {
             idx = 0;
           }
-          return vertx.createEventLoopContext(loop, null, Thread.currentThread().getContextClassLoader());
+          return vertx.contextBuilder().withEventLoop(loop).build();
         }
       });
     } else {
-      pool.contextProvider(ctx -> ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), null, Thread.currentThread().getContextClassLoader()));
+      pool.contextProvider(ctx -> ctx.owner().contextBuilder().withEventLoop(ctx.nettyEventLoop()).build());
     }
   }
 
-  private final PoolConnector<PooledConnection> connector = new PoolConnector<PooledConnection>() {
+  private final PoolConnector<PooledConnection> connector = new PoolConnector<>() {
     @Override
     public Future<ConnectResult<PooledConnection>> connect(ContextInternal context, Listener listener) {
       Future<SqlConnection> future = connectionProvider.apply(context);

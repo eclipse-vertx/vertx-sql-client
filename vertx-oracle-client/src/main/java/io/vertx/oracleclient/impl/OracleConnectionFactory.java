@@ -60,7 +60,7 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
   @Override
   public Future<SqlConnection> connect(Context context, OracleConnectOptions options) {
     OracleDataSource datasource = getDatasource(options);
-    VertxMetrics vertxMetrics = ((VertxInternal)context.owner()).metricsSPI();
+    VertxMetrics vertxMetrics = ((VertxInternal)context.owner()).metrics();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
     ContextInternal ctx = (ContextInternal) context;
     return executeBlocking(context, () -> {
