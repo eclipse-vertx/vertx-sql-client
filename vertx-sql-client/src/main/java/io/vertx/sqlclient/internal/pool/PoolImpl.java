@@ -49,6 +49,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final long idleTimeout;
   private final long connectionTimeout;
   private final long maxLifetime;
+  private final long jitter;
   private final long cleanerPeriod;
   private final boolean pipelined;
   private final Handler<SqlConnection> connectionInitializer;
@@ -80,11 +81,12 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
     this.maxLifetime = MILLISECONDS.convert(poolOptions.getMaxLifetime(), poolOptions.getMaxLifetimeUnit());
+    this.jitter = MILLISECONDS.convert(poolOptions.getJitter(), poolOptions.getMaxLifetimeUnit());
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.pipelined = pipelined;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(connectionProvider, poolMetrics, hook, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(connectionProvider, poolMetrics, hook, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, jitter, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
     this.connectionInitializer = connectionInitializer;
   }
