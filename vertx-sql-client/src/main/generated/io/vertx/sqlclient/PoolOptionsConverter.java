@@ -44,6 +44,11 @@ public class PoolOptionsConverter {
             obj.setMaxLifetime(((Number)member.getValue()).intValue());
           }
           break;
+        case "jitter":
+          if (member.getValue() instanceof Number) {
+            obj.setJitter(((Number)member.getValue()).intValue());
+          }
+          break;
         case "poolCleanerPeriod":
           if (member.getValue() instanceof Number) {
             obj.setPoolCleanerPeriod(((Number)member.getValue()).intValue());
@@ -93,6 +98,7 @@ public class PoolOptionsConverter {
       json.put("maxLifetimeUnit", obj.getMaxLifetimeUnit().name());
     }
     json.put("maxLifetime", obj.getMaxLifetime());
+    json.put("jitter", obj.getJitter());
     json.put("poolCleanerPeriod", obj.getPoolCleanerPeriod());
     if (obj.getConnectionTimeoutUnit() != null) {
       json.put("connectionTimeoutUnit", obj.getConnectionTimeoutUnit().name());
