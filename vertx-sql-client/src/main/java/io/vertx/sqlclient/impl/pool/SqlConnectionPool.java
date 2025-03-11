@@ -32,6 +32,7 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,6 +57,7 @@ public class SqlConnectionPool {
   private final boolean pipelined;
   private final long idleTimeout;
   private final long maxLifetime;
+  private final long jitter;
   private final int maxSize;
 
   public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
@@ -66,6 +68,7 @@ public class SqlConnectionPool {
                            VertxInternal vertx,
                            long idleTimeout,
                            long maxLifetime,
+                           long jitter,
                            int maxSize,
                            boolean pipelined,
                            int maxWaitQueueSize,
@@ -82,6 +85,7 @@ public class SqlConnectionPool {
     this.pipelined = pipelined;
     this.idleTimeout = idleTimeout;
     this.maxLifetime = maxLifetime;
+    this.jitter = jitter;
     this.maxSize = maxSize;
     this.hook = hook;
     this.connectionProvider = connectionProvider;
@@ -309,7 +313,8 @@ public class SqlConnectionPool {
       this.factory = factory;
       this.conn = conn;
       this.listener = listener;
-      this.lifetimeEvictionTimestamp = maxLifetime > 0 ? System.currentTimeMillis() + maxLifetime : Long.MAX_VALUE;
+      long randomizedJitter = jitter > 0 ? ThreadLocalRandom.current().nextLong(-jitter, -jitter + 1) : 0;
+      this.lifetimeEvictionTimestamp = maxLifetime > 0 ? System.currentTimeMillis() + maxLifetime + randomizedJitter : Long.MAX_VALUE;
       refresh();
     }
 

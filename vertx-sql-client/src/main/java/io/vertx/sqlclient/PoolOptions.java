@@ -93,6 +93,11 @@ public class PoolOptions {
    */
   public static final int DEFAULT_EVENT_LOOP_SIZE = 0;
 
+  /**
+   * Default jitter value = 0
+   */
+  public static final int DEFAULT_JITTER = 0;
+
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
@@ -105,6 +110,7 @@ public class PoolOptions {
   private boolean shared = DEFAULT_SHARED_POOL;
   private String name = DEFAULT_NAME;
   private int eventLoopSize = DEFAULT_EVENT_LOOP_SIZE;
+  private int jitter = DEFAULT_JITTER;
 
   public PoolOptions() {
   }
@@ -238,6 +244,29 @@ public class PoolOptions {
       throw new IllegalArgumentException("maxLifetime must be >= 0");
     }
     this.maxLifetime = maxLifetime;
+    return this;
+  }
+
+  /**
+   * Get the jitter value that will be applied to maxLifetime.
+   *
+   * @return the jitter value in milliseconds
+   */
+  public int getJitter() {
+    return this.jitter;
+  }
+
+  /**
+   * Set the jitter value, to be applied to maxLifetime.
+   *
+   * @param jitter the jitter value
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setJitter(int jitter) {
+    if (jitter < 0) {
+      throw new IllegalArgumentException("jitter must be >= 0");
+    }
+    this.jitter = jitter;
     return this;
   }
 
