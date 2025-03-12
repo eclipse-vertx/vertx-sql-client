@@ -233,28 +233,9 @@ $ PGUSER=user \
 
 === SASL SCRAM-SHA-256 authentication mechanism.
 
-To use the SASL `SCRAM-SHA-256` authentication add the following dependency to the _dependencies_ section of your build descriptor:
+The `vertx-pg-client` supports the `SCRAM-SHA-256` and `SCRAM-SHA-256-PLUS` SASL authentication. From version v5.0.0 on `vertx-pg-client` ships with the `com.ongres.scram` library dependency, when migrating from an older version `vertx-pg-client` users can remove the `com.ongres.scram` library from their `pom.xml` and `build.gradle` files.
 
-* Maven (in your `pom.xml`):
-
-[source,xml]
-----
-<dependency>
-  <groupId>com.ongres.scram</groupId>
-  <artifactId>scram-client</artifactId>
-  <version>3.1</version>
-</dependency>
-----
-* Gradle (in your `build.gradle` file):
-
-[source,groovy]
-----
-dependencies {
-  compile 'com.ongres.scram:scram-client:3.1'
-}
-----
-
-When the database requires a scram authentication and the scram client jar is not on the class/module path, the connection will be closed by the client.
+If a client uses other auth methods only then the transitive `com.ongres.scram` dependency can be excluded using maven `<exclusions>` or gradle `exclude` to reduce the software size.
 
 include::queries.adoc[leveloffset=1]
 
