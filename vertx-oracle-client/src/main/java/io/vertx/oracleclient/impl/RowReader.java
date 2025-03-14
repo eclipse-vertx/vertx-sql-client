@@ -38,6 +38,7 @@ import static io.vertx.oracleclient.impl.Helper.*;
 public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jdbc.OracleRow, Row> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RowReader.class);
+  private static final String byteArrayClassName = byte[].class.getName();
 
   private final ContextInternal context;
   private final List<String> types;
@@ -187,6 +188,11 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
 
   private static Class<?> getType(String cn) {
     try {
+      // Oracle will return "[B" as class name for byte[], I don't know why the class loader is not able to load this
+      // So let's return the correct class in this case
+      if (cn.equals(byteArrayClassName)) {
+        return byte[].class;
+      }
       return OraclePreparedQueryCommand.class.getClassLoader().loadClass(cn);
     } catch (ClassNotFoundException e) {
       return null;
