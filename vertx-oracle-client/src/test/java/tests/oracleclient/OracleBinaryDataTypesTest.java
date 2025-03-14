@@ -102,7 +102,7 @@ public class OracleBinaryDataTypesTest extends OracleTestBase {
   }
 
   private void testDecodeUsingStream(TestContext ctx, String columnName, JDBCType jdbcType, Buffer expected) {
-    pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+    pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.prepare("SELECT " + columnName + " FROM binary_data_types WHERE id = 1")
         .onComplete(ctx.asyncAssertSuccess(preparedStatement -> {
           preparedStatement.cursor().read(10).onComplete(ctx.asyncAssertSuccess(result -> {
