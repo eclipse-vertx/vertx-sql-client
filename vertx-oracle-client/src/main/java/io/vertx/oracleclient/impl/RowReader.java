@@ -16,7 +16,6 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.oracleclient.OracleException;
-import io.vertx.oracleclient.impl.commands.OraclePreparedQueryCommand;
 import io.vertx.oracleclient.impl.commands.OracleResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.RowDesc;
@@ -40,7 +39,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
   private static final Logger LOG = LoggerFactory.getLogger(RowReader.class);
 
   private final ContextInternal context;
-  private final List<String> types;
+  private final List<Class<?>> classes;
   private final RowDesc description;
   private final Statement resultSetStatement;
 
@@ -63,9 +62,9 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
     resultSetStatement = ors.getStatement();
     ResultSetMetaData metaData = ors.getMetaData();
     int cols = metaData.getColumnCount();
-    types = new ArrayList<>(cols);
+    classes = new ArrayList<>(cols);
     for (int i = 1; i <= cols; i++) {
-      types.add(metaData.getColumnClassName(i));
+      classes.add(getType(metaData.getColumnClassName(i)));
     }
     Flow.Publisher<Row> publisher = ors.publisherOracle(this);
     description = OracleRowDesc.create(metaData);
@@ -170,16 +169,16 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
   @Override
   public Row apply(oracle.jdbc.OracleRow oracleRow) {
     try {
-      return transform(types, description, oracleRow);
+      return transform(classes, description, oracleRow);
     } catch (SQLException e) {
       throw new OracleException(e);
     }
   }
 
-  private static Row transform(List<String> ors, RowDesc desc, oracle.jdbc.OracleRow or) throws SQLException {
+  private static Row transform(List<Class<?>> classes, RowDesc desc, oracle.jdbc.OracleRow or) throws SQLException {
     Row row = new OracleRow(desc);
     for (int i = 1; i <= desc.columnNames().size(); i++) {
-      Object res = convertSqlValue(or.getObject(i, getType(ors.get(i - 1))));
+      Object res = convertSqlValue(or.getObject(i, classes.get(i - 1)));
       row.addValue(res);
     }
     return row;
@@ -187,7 +186,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
 
   private static Class<?> getType(String cn) {
     try {
-      return OraclePreparedQueryCommand.class.getClassLoader().loadClass(cn);
+      return Class.forName(cn, true, RowReader.class.getClassLoader());
     } catch (ClassNotFoundException e) {
       return null;
     }
