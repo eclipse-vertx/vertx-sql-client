@@ -34,17 +34,17 @@ import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.Rule;
 import org.junit.Test;
+import org.testcontainers.shaded.com.trilead.ssh2.ConnectionInfo;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collector;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
@@ -58,6 +58,17 @@ public class PgPoolTest extends PgPoolTestBase {
   public RepeatRule rule = new RepeatRule();
 
   private Set<Pool> pools = new HashSet<>();
+
+  // Static inner class to store connection info with timestamp
+  private static class ConnectionRecord {
+    final int pid;
+    final long timestamp;
+
+    ConnectionRecord(int pid, long timestamp) {
+      this.pid = pid;
+      this.timestamp = timestamp;
+    }
+  }
 
   @Override
   public void tearDown(TestContext ctx) {
@@ -618,5 +629,62 @@ public class PgPoolTest extends PgPoolTestBase {
         async.countDown();
       }));
     }));
+  }
+
+  @Test
+  @Repeat(2)
+  public void testConnectionJitter(TestContext ctx) {
+    poolOptions
+      .setMaxSize(1)
+      .setMaxLifetime(2000)
+      .setMaxLifetimeUnit(TimeUnit.MILLISECONDS)
+      .setJitter(400)
+      .setPoolCleanerPeriod(50);
+
+    Pool pool = createPool(options, poolOptions);
+    Async latch = ctx.async();
+
+    List<Integer> pids = Collections.synchronizedList(new ArrayList<>());
+    List<Long> times = Collections.synchronizedList(new ArrayList<>());
+    AtomicInteger lastPid = new AtomicInteger(-1);
+    AtomicLong timerId = new AtomicLong();
+
+    Consumer<TestContext> checkPid = testCtx -> {
+      pool.query("SELECT pg_backend_pid() as pid")
+        .execute()
+        .onComplete(testCtx.asyncAssertSuccess(rs -> {
+          int currentPid = rs.iterator().next().getInteger("pid");
+          if (lastPid.get() != currentPid) {
+            pids.add(currentPid);
+            times.add(System.currentTimeMillis());
+            lastPid.set(currentPid);
+
+            if (pids.size() == 3) {
+              vertx.cancelTimer(timerId.get());
+              long diff1to2 = times.get(1) - times.get(0);
+              long diff2to3 = times.get(2) - times.get(1);
+
+              // Verify time ranges
+              int maxLifetime = 2000;
+              int jitter = 400;
+              int lowerBound = maxLifetime - jitter;
+              int upperBound = maxLifetime + jitter;
+
+              ctx.assertTrue(diff1to2 >= lowerBound && diff1to2 <= upperBound,
+                String.format("Time between PIDs %d->%d (%dms) should be between %dms and %dms",
+                  pids.get(0), pids.get(1), diff1to2, lowerBound, upperBound));
+
+              ctx.assertTrue(diff2to3 >= lowerBound && diff2to3 <= upperBound,
+                String.format("Time between PIDs %d->%d (%dms) should be between %dms and %dms",
+                  pids.get(1), pids.get(2), diff2to3, lowerBound, upperBound));
+
+              pool.close().onComplete(ctx.asyncAssertSuccess(v -> latch.complete()));
+            }
+          }
+        }));
+    };
+
+    timerId.set(vertx.setPeriodic(30, id -> checkPid.accept(ctx)));
+    latch.awaitSuccess(20000);
   }
 }
