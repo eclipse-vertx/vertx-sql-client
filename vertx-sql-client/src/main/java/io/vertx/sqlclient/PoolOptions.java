@@ -118,6 +118,11 @@ public class PoolOptions {
     maxWaitQueueSize = other.maxWaitQueueSize;
     idleTimeout = other.idleTimeout;
     idleTimeoutUnit = other.idleTimeoutUnit;
+    maxLifetime = other.maxLifetime;
+    maxLifetimeUnit = other.maxLifetimeUnit;
+    poolCleanerPeriod = other.poolCleanerPeriod;
+    connectionTimeout = other.connectionTimeout;
+    connectionTimeoutUnit = other.connectionTimeoutUnit;
     shared= other.shared;
     name = other.name;
     eventLoopSize = other.eventLoopSize;
