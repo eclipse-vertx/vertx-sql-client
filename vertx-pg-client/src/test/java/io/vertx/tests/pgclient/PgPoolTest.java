@@ -36,7 +36,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.testcontainers.shaded.com.trilead.ssh2.ConnectionInfo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,17 +62,6 @@ public class PgPoolTest extends PgPoolTestBase {
   public RepeatRule rule = new RepeatRule();
 
   private Set<Pool> pools = new HashSet<>();
-
-  // Static inner class to store connection info with timestamp
-  private static class ConnectionRecord {
-    final int pid;
-    final long timestamp;
-
-    ConnectionRecord(int pid, long timestamp) {
-      this.pid = pid;
-      this.timestamp = timestamp;
-    }
-  }
 
   @Override
   public void tearDown(TestContext ctx) {
@@ -634,11 +627,12 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   @Repeat(2)
   public void testConnectionJitter(TestContext ctx) {
-    poolOptions
+    PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(1)
-      .setMaxLifetime(2000)
+      .setMaxLifetime(3000)
       .setMaxLifetimeUnit(TimeUnit.MILLISECONDS)
-      .setJitter(400)
+      .setJitter(1)
+      .setJitterUnit(TimeUnit.SECONDS)
       .setPoolCleanerPeriod(50);
 
     Pool pool = createPool(options, poolOptions);
@@ -665,10 +659,11 @@ public class PgPoolTest extends PgPoolTestBase {
               long diff2to3 = times.get(2) - times.get(1);
 
               // Verify time ranges
-              int maxLifetime = 2000;
-              int jitter = 400;
-              int lowerBound = maxLifetime - jitter;
-              int upperBound = maxLifetime + jitter;
+              int maxLifetime = 3000;
+              int jitter = 1000;
+              int buffer = 100;
+              int lowerBound = maxLifetime - jitter + buffer;
+              int upperBound = maxLifetime + jitter + buffer;
 
               ctx.assertTrue(diff1to2 >= lowerBound && diff1to2 <= upperBound,
                 String.format("Time between PIDs %d->%d (%dms) should be between %dms and %dms",

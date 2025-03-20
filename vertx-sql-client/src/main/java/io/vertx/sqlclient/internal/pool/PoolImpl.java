@@ -81,7 +81,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
     this.maxLifetime = MILLISECONDS.convert(poolOptions.getMaxLifetime(), poolOptions.getMaxLifetimeUnit());
-    this.jitter = MILLISECONDS.convert(poolOptions.getJitter(), poolOptions.getMaxLifetimeUnit());
+    this.jitter = MILLISECONDS.convert(poolOptions.getJitter(), poolOptions.getJitterUnit());
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.pipelined = pipelined;

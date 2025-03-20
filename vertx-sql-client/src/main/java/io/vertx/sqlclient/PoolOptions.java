@@ -98,6 +98,11 @@ public class PoolOptions {
    */
   public static final int DEFAULT_JITTER = 0;
 
+  /**
+   * Default jitter unit = milliseconds
+   */
+  public static final TimeUnit DEFAULT_JITTER_UNIT = TimeUnit.SECONDS;
+
   private int maxSize = DEFAULT_MAX_SIZE;
   private int maxWaitQueueSize = DEFAULT_MAX_WAIT_QUEUE_SIZE;
   private int idleTimeout = DEFAULT_IDLE_TIMEOUT;
@@ -111,7 +116,8 @@ public class PoolOptions {
   private String name = DEFAULT_NAME;
   private int eventLoopSize = DEFAULT_EVENT_LOOP_SIZE;
   private int jitter = DEFAULT_JITTER;
-
+  private TimeUnit jitterUnit = DEFAULT_JITTER_UNIT;
+  
   public PoolOptions() {
   }
 
@@ -267,6 +273,26 @@ public class PoolOptions {
       throw new IllegalArgumentException("jitter must be >= 0");
     }
     this.jitter = jitter;
+    return this;
+  }
+
+  /**
+   * Get the time unit for the jitter value.
+   *
+   * @return the jitter time unit
+   */
+  public TimeUnit getJitterUnit() {
+    return this.jitterUnit;
+  }
+
+  /**
+   * Set the time unit for the jitter value.
+   *
+   * @param jitterUnit the jitter time unit
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setJitterUnit(TimeUnit jitterUnit) {
+    this.jitterUnit = jitterUnit;
     return this;
   }
 
