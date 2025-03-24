@@ -20,6 +20,7 @@ import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowBase;
 
+import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.List;
@@ -50,6 +51,8 @@ public class MySQLRowImpl extends RowBase {
       return type.cast(getFloat(position));
     } else if (type == Double.class) {
       return type.cast(getDouble(position));
+    } else if (type == BigDecimal.class) {
+      return type.cast(getBigDecimal(position));
     } else if (type == Numeric.class) {
       return type.cast(getNumeric(position));
     } else if (type == String.class) {
