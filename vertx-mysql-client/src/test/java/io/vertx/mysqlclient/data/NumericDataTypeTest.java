@@ -53,6 +53,8 @@ public class NumericDataTypeTest extends MySQLDataTypeTestBase {
       ctx.assertEquals(999999999L, row.getLong(columnName));
       ctx.assertEquals(BigDecimal.valueOf(999999999L), row.getBigDecimal(columnName));
       ctx.assertEquals(BigDecimal.valueOf(999999999L), row.getBigDecimal(columnName));
+      ctx.assertEquals(BigDecimal.valueOf(999999999L), row.get(BigDecimal.class, columnName));
+      ctx.assertEquals(BigDecimal.valueOf(999999999L), row.get(BigDecimal.class, columnName));
       ctx.assertEquals(Numeric.parse("999999999"), row.getValue(0));
       ctx.assertEquals(Numeric.parse("999999999"), row.getValue(columnName));
     });
