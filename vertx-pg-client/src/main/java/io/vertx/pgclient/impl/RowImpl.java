@@ -264,8 +264,12 @@ public class RowImpl extends RowBase {
     return (Interval[]) getValue(pos);
   }
 
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private Object[] getArrayOfEnums(Class enumType, int pos) {
     Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    }
     if (val instanceof String[]) {
       String[] array = (String[]) val;
       Object[] ret = (Object[]) Array.newInstance(enumType, array.length);
@@ -276,7 +280,8 @@ public class RowImpl extends RowBase {
         }
       }
       return ret;
-    } else if (val instanceof Number[]) {
+    }
+    if (val instanceof Number[]) {
       Number[] array = (Number[]) val;
       Object[] ret = (Object[]) Array.newInstance(enumType, array.length);
       Object[] constants = enumType.getEnumConstants();
@@ -290,8 +295,7 @@ public class RowImpl extends RowBase {
         }
       }
       return ret;
-    } else {
-      throw new ClassCastException();
     }
+    throw new ClassCastException();
   }
 }
