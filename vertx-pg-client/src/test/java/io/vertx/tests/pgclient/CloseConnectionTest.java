@@ -12,6 +12,7 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class CloseConnectionTest extends PgTestBase {
@@ -75,6 +76,7 @@ public class CloseConnectionTest extends PgTestBase {
   }
 
   @Test
+  @Ignore("Ignored due to https://github.com/eclipse-vertx/vertx-sql-client/issues/1506")
   public void testTransactionInProgressShouldFail(TestContext ctx) {
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     proxy.proxyHandler(conn -> {
@@ -87,8 +89,9 @@ public class CloseConnectionTest extends PgTestBase {
 
       Pool pool = Pool.pool(vertx, options, new PoolOptions().setMaxSize(1));
       pool.withTransaction(conn -> conn.query("select pg_sleep(60)").execute())
-        .onComplete(ctx.asyncAssertFailure())
-      ;
+        .onComplete(ctx.asyncAssertFailure(t -> {
+          t.printStackTrace();
+        }));
     }));
   }
 }
