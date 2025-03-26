@@ -84,6 +84,22 @@ public class JavaEnumTest extends ExtendedQueryDataTypeCodecTestBase {
   }
 
   @Test
+  public void testJavaEnumToNullArrayColumn(TestContext ctx) {
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT NULL")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(v -> {
+          RowIterator<Row> it = v.iterator();
+          ctx.assertTrue(it.hasNext());
+          Row row = it.next();
+          Mood[] result = row.get(Mood[].class, 0);
+          ctx.assertNull(result);
+        }));
+    }));
+  }
+
+  @Test
   public void testJavaEnumToEnumParam(TestContext ctx) {
     testJavaEnumToParam(ctx, "happy", "Mood");
   }
