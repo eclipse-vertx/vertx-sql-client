@@ -18,8 +18,11 @@
 package io.vertx.tests.pgclient;
 
 import io.netty.channel.EventLoop;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Repeat;
@@ -38,9 +41,13 @@ import org.testcontainers.shaded.com.trilead.ssh2.ConnectionInfo;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,6 +59,8 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
+
+import java.time.OffsetDateTime;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -625,7 +634,6 @@ public class PgPoolTest extends PgPoolTestBase {
   }
 
   @Test
-  @Repeat(2)
   public void testConnectionJitter(TestContext ctx) {
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(1)
@@ -681,5 +689,127 @@ public class PgPoolTest extends PgPoolTestBase {
 
     timerId.set(vertx.setPeriodic(30, id -> checkPid.accept(ctx)));
     latch.awaitSuccess(20000);
+  }
+
+  @Test
+  public void testConnectionCloseTimingParallel(TestContext ctx) {
+    // Configure pool options.
+    PoolOptions poolOptions = new PoolOptions()
+      .setMaxSize(20)              // Allow parallel tasks.
+      .setMaxLifetime(5000)        // Maximum lifetime = 5000 ms.
+      .setMaxLifetimeUnit(TimeUnit.MILLISECONDS)
+      .setJitter(1)                // Jitter = 1 second.
+      .setJitterUnit(TimeUnit.SECONDS)
+      .setPoolCleanerPeriod(50);
+
+    Pool pool = createPool(options, poolOptions);
+    Async latch = ctx.async();
+    int totalConnections = 50;
+    List<Future<JsonObject>> futures = new ArrayList<>();
+    List<Integer> pids = Collections.synchronizedList(new ArrayList<>());
+    ConcurrentMap<Integer, Long> startTimes = new ConcurrentHashMap<>();
+    ConcurrentMap<Integer, Long> endTimes = new ConcurrentHashMap<>();
+
+    // Launch connection tasks in parallel.
+    for (int i = 0; i < totalConnections; i++) {
+      futures.add(processSingleConnection(pool, i, ctx, pids, startTimes, endTimes));
+    }
+
+    Future.all(futures).onComplete(ctx.asyncAssertSuccess(ar -> {
+      pool.close().onComplete(ctx.asyncAssertSuccess(v -> {
+        // Wait 3 seconds after pool closure.
+        vertx.setTimer(3000, timerId -> {
+          PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+            // (Optional) Query to verify that none of our recorded PIDs are still active.
+            String pidList = pids.stream().map(String::valueOf).collect(Collectors.joining(","));
+            String sql = "SELECT pid FROM pg_stat_activity WHERE pid IN (" + pidList + ")";
+            conn.query(sql).execute().onComplete(ctx.asyncAssertSuccess(rs2 -> {
+              // Compute durations for each PID.
+              List<Long> durations = pids.stream()
+                .map(pid -> endTimes.get(pid) - startTimes.get(pid))
+                .collect(Collectors.toList());
+              long maxLifetime = 5000;
+              long jitterMs = 1000;
+              long bucketWidth = jitterMs / 5;
+              // Bucket the durations based on an offset of maxLifetime.
+              Map<Integer, List<Integer>> bucketMap = new HashMap<>();
+              for (Integer pid : pids) {
+                long duration = endTimes.get(pid) - startTimes.get(pid);
+                int bucket = (int) ((duration - maxLifetime) / bucketWidth);
+                bucketMap.computeIfAbsent(bucket, k -> new ArrayList<>()).add(pid);
+              }
+
+              ctx.assertTrue(bucketMap.size() >= 5, "Bucket Size should be 5");
+              bucketMap.forEach((bucket, bucketPids) -> {
+                ctx.assertTrue(!bucketPids.isEmpty(), "Bucket " + bucket + " should not be empty");
+              });
+              // Print one line per PID with its duration.
+              for (Integer pid : pids) {
+                long duration = endTimes.get(pid) - startTimes.get(pid);
+              }
+              conn.close();
+              latch.complete();
+            }));
+          }));
+        });
+      }));
+    }));
+    latch.awaitSuccess(60000);
+  }
+
+  /**
+   * Acquires a connection, retrieves its PID and backend_start time,
+   * closes the connection, and polls for its closure.
+   * Returns a Future with a JsonObject containing the PID, start time, and end time.
+   */
+  private Future<JsonObject> processSingleConnection(Pool pool, int index, TestContext ctx,
+                                                     List<Integer> pids,
+                                                     ConcurrentMap<Integer, Long> startTimes,
+                                                     ConcurrentMap<Integer, Long> endTimes) {
+    Promise<JsonObject> promise = Promise.promise();
+    pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.query("SELECT pg_backend_pid() AS pid")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(rs -> {
+          int pid = rs.iterator().next().getInteger("pid");
+          pids.add(pid);
+          String sql = "SELECT backend_start FROM pg_stat_activity WHERE pid = " + pid;
+          conn.query(sql).execute().onComplete(ctx.asyncAssertSuccess(rs2 -> {
+            Row row = rs2.iterator().next();
+            OffsetDateTime backendStart = row.getOffsetDateTime("backend_start");
+            long startMillis = backendStart.toInstant().toEpochMilli();
+            startTimes.put(pid, startMillis);
+            pollForClose(pool, pid, closeTime -> {
+              endTimes.put(pid, closeTime);
+              JsonObject res = new JsonObject()
+                .put("pid", pid)
+                .put("start", startMillis)
+                .put("end", closeTime);
+              promise.complete(res);
+            });
+            conn.close().onComplete(x -> {});
+          }));
+        }));
+    }));
+    return promise.future();
+  }
+
+  /**
+   * Polls pg_stat_activity periodically for the given PID.
+   * Once the PID is no longer found (i.e. the connection is closed),
+   * returns the current system time via the resultHandler.
+   */
+  private void pollForClose(Pool pool, int pid, Handler<Long> resultHandler) {
+    long timerId = vertx.setPeriodic(50, id -> {
+      pool.query("SELECT 1 FROM pg_stat_activity WHERE pid = " + pid)
+        .execute()
+        .onComplete(ar -> {
+          if (ar.succeeded() && !ar.result().iterator().hasNext()) {
+            long closeTime = System.currentTimeMillis();
+            vertx.cancelTimer(id);
+            resultHandler.handle(closeTime);
+          }
+        });
+    });
   }
 }

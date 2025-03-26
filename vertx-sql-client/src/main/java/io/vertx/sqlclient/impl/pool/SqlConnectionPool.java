@@ -313,8 +313,7 @@ public class SqlConnectionPool {
       this.factory = factory;
       this.conn = conn;
       this.listener = listener;
-      long randomizedJitter = (maxLifetime > 0 && jitter > 0 && maxLifetime > jitter) ? ThreadLocalRandom.current().nextLong(-jitter, jitter + 1) : 0;
-      this.lifetimeEvictionTimestamp = maxLifetime > 0 ? System.currentTimeMillis() + maxLifetime + randomizedJitter : Long.MAX_VALUE;
+      this.lifetimeEvictionTimestamp = maxLifetime > 0 ? System.currentTimeMillis() + maxLifetime + Math.max(0, ThreadLocalRandom.current().nextLong(0, jitter + 1)) : Long.MAX_VALUE;
       refresh();
     }
 
