@@ -76,7 +76,6 @@ public class CloseConnectionTest extends PgTestBase {
   }
 
   @Test
-  @Ignore("Ignored due to https://github.com/eclipse-vertx/vertx-sql-client/issues/1506")
   public void testTransactionInProgressShouldFail(TestContext ctx) {
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     proxy.proxyHandler(conn -> {
