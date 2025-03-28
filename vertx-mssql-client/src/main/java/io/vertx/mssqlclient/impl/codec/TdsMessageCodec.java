@@ -14,9 +14,8 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
+import io.vertx.core.Completable;
 import io.vertx.sqlclient.ClosedConnectionException;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -66,9 +65,10 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   }
 
   private void fail(MSSQLCommandCodec<?, ?> codec, Throwable cause) {
-    CommandResponse<Object> failure = CommandResponse.failure(cause);
-    failure.cmd = (CommandBase) codec.cmd;
-    chctx.fireChannelRead(failure);
+    Completable<?> handler = codec.cmd.handler;
+    if (handler != null) {
+      handler.complete(null, cause);
+    }
   }
 
   @Override
