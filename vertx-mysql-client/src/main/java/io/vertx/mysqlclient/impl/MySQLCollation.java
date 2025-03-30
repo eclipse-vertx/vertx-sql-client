@@ -255,7 +255,7 @@ public enum MySQLCollation {
   public static final List<String> SUPPORTED_CHARSET_NAMES = Arrays.stream(values()).map(MySQLCollation::mysqlCharsetName).distinct().collect(Collectors.toList());
 
   private static final Map<String, String> charsetToDefaultCollationMapping = new HashMap<>();
-  private static final IntObjectMap<Charset> idToJavaCharsetMapping = new IntObjectHashMap<>();
+  private static final Charset[] idToJavaCharsetMapping = new Charset[256];
 
   static {
     charsetToDefaultCollationMapping.put("big5", "big5_chinese_ci");
@@ -303,9 +303,15 @@ public enum MySQLCollation {
     for (MySQLCollation collation : MySQLCollation.values()) {
       try {
         Charset charset = Charset.forName(collation.mappedJavaCharsetName);
-        idToJavaCharsetMapping.put(collation.collationId, charset);
+        idToJavaCharsetMapping[collation.collationId] = charset;
       } catch (Exception e) {
         LOGGER.warn(String.format("Java charset: [%s] is not supported by this platform, data with collation[%s] will be decoded in UTF-8 instead.", collation.mysqlCharsetName, collation.name()));
+      }
+    }
+    // set the remaining missing ones to the default charset
+    for (int i = 0; i < idToJavaCharsetMapping.length; i++) {
+      if (idToJavaCharsetMapping[i] == null) {
+        idToJavaCharsetMapping[i] = StandardCharsets.UTF_8;
       }
     }
   }
@@ -337,12 +343,10 @@ public enum MySQLCollation {
    * @return the charset
    */
   public static Charset getJavaCharsetByCollationId(int collationId) {
-    Charset charset = idToJavaCharsetMapping.get(collationId);
-    if (charset == null) {
+    if (collationId >= idToJavaCharsetMapping.length) {
       return StandardCharsets.UTF_8;
-    } else {
-      return charset;
     }
+    return idToJavaCharsetMapping[collationId];
   }
 
   public static String getDefaultCollationFromCharsetName(String charset) {
