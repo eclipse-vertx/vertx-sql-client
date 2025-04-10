@@ -26,6 +26,7 @@ import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.internal.RowDesc;
 
 import java.lang.reflect.Array;
+import java.math.BigDecimal;
 import java.time.*;
 import java.util.List;
 import java.util.UUID;
@@ -74,6 +75,8 @@ public class RowImpl extends RowBase {
         return type.cast(getArrayOfFloats(position));
       } else if (componentType == Double.class) {
         return type.cast(getArrayOfDoubles(position));
+      } else if (componentType == BigDecimal.class) {
+        return type.cast(getArrayOfBigDecimals(position));
       } else if (componentType == String.class) {
         return type.cast(getArrayOfStrings(position));
       } else if (componentType == Buffer.class) {
@@ -128,6 +131,8 @@ public class RowImpl extends RowBase {
         return type.cast(getFloat(position));
       } else if (type == Double.class) {
         return type.cast(getDouble(position));
+      } else if (type == BigDecimal.class) {
+        return type.cast(getBigDecimal(position));
       } else if (type == Numeric.class) {
         return type.cast(getNumeric(position));
       } else if (type == String.class) {
