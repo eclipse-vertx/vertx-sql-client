@@ -75,7 +75,7 @@ public class RowImpl extends RowBase {
         return type.cast(getArrayOfFloats(position));
       } else if (componentType == Double.class) {
         return type.cast(getArrayOfDoubles(position));
-      } else if (type == BigDecimal.class) {
+      } else if (componentType == BigDecimal.class) {
         return type.cast(getArrayOfBigDecimals(position));
       } else if (componentType == String.class) {
         return type.cast(getArrayOfStrings(position));
