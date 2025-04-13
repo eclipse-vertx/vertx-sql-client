@@ -1288,7 +1288,25 @@ public interface Tuple {
    */
   @GenIgnore(GenIgnore.PERMITTED_TYPE)
   default BigDecimal[] getArrayOfBigDecimals(int pos) {
-    return (BigDecimal[]) getValue(pos);
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof BigDecimal[]) {
+      return (BigDecimal[]) val;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      BigDecimal[] arr = new BigDecimal[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = new BigDecimal(elt.toString());
+        }
+      }
+      return arr;
+    } else {
+      return (BigDecimal[]) val; // Throw CCE
+    }
   }
 
   /**
