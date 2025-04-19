@@ -11,6 +11,8 @@ import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.util.Collections;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
   @Test
@@ -470,6 +472,26 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
       Tuple::getArrayOfNumerics);
   }
 */
+
+  @Test
+  public void testNumericToBigDecimalRowConverter(TestContext ctx) {
+    BigDecimal[] expected = {new BigDecimal("2.22")};
+    testGetter(ctx,
+      "SELECT c FROM (VALUES ($1 :: NUMERIC)) AS t (c)",
+      Stream.of(expected).map(Tuple::of).collect(Collectors.toList()),
+      expected,
+      (row, index) -> row.get(BigDecimal.class, index));
+  }
+
+  @Test
+  public void testNumericArrayToBigDecimalArrayRowConverter(TestContext ctx) {
+    BigDecimal[] expected = {new BigDecimal("2.22"), new BigDecimal("3.33")};
+    testGetter(ctx,
+      "SELECT c FROM (VALUES ($1 :: NUMERIC[])) AS t (c)",
+      Collections.singletonList(Tuple.tuple().addValue(expected)),
+      new BigDecimal[][]{expected},
+      (row, index) -> row.get(BigDecimal[].class, index));
+  }
 
   @Test
   public void testShortArray(TestContext ctx) {

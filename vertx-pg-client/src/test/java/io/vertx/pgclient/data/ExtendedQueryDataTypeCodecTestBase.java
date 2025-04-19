@@ -67,6 +67,26 @@ public abstract class ExtendedQueryDataTypeCodecTestBase extends DataTypeTestBas
     }));
   }
 
+  protected <T> void testGetter(TestContext ctx, String sql, List<Tuple> batch, T[] expected, BiFunction<Row, Integer, T> getter) {
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery(sql)
+        .executeBatch(batch)
+        .onComplete(ctx.asyncAssertSuccess(result -> {
+          for (T n : expected) {
+            ctx.assertEquals(result.size(), 1);
+            Iterator<Row> it = result.iterator();
+            Row row = it.next();
+            compare(ctx, n, getter.apply(row, 0));
+            result = result.next();
+          }
+          ctx.assertNull(result);
+          async.complete();
+        }));
+    }));
+  }
+
   protected <T> void testDecode(TestContext ctx, String sql, BiFunction<Row, Integer, T> getter, T... expected) {
     Async async = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
