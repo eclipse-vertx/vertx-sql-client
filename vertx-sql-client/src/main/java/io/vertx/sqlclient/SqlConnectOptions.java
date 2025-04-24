@@ -15,19 +15,12 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.ClientOptionsBase;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.spi.Driver;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -78,10 +71,10 @@ public class SqlConnectOptions {
   private String user;
   private String password;
   private String database;
-  private boolean cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
-  private int preparedStatementCacheMaxSize = DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE;
-  private Predicate<String> preparedStatementCacheSqlFilter = DEFAULT_PREPARED_STATEMENT_CACHE_FILTER;
-  private Map<String, String> properties = new HashMap<>(4);
+  private boolean cachePreparedStatements;
+  private int preparedStatementCacheMaxSize;
+  private Predicate<String> preparedStatementCacheSqlFilter;
+  private Map<String, String> properties;
   private TracingPolicy tracingPolicy;
   private int reconnectAttempts;
   private long reconnectInterval;
@@ -440,6 +433,12 @@ public class SqlConnectOptions {
    * Initialize with the default options.
    */
   protected void init() {
+    cachePreparedStatements = DEFAULT_CACHE_PREPARED_STATEMENTS;
+    preparedStatementCacheMaxSize = DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE;
+    preparedStatementCacheSqlFilter = DEFAULT_PREPARED_STATEMENT_CACHE_FILTER;
+    properties = new HashMap<>(4);
+    reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
+    reconnectInterval = DEFAULT_RECONNECT_INTERVAL;
   }
 
   /**
