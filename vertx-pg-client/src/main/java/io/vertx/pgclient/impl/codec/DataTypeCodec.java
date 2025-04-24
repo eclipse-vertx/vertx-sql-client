@@ -154,14 +154,14 @@ public class DataTypeCodec {
   private static void textEncode(DataType id, Object value, ByteBuf buff) {
     switch (id) {
       case NUMERIC:
-        textEncodeNUMERIC((Number) value, buff);
+        textEncodeNUMERIC((String) value, buff);
         break;
       case NUMERIC_ARRAY:
-        textEncodeNUMERIC_ARRAY((Number[]) value, buff);
+        textEncodeNUMERIC_ARRAY((Object[]) value, buff);
         break;
       case UNKNOWN:
         //default to treating unknown as a string
-        buff.writeCharSequence(String.valueOf(value), StandardCharsets.UTF_8);
+        buff.writeCharSequence((CharSequence) value, StandardCharsets.UTF_8);
         break;
       default:
         logger.debug("Data type " + id + " does not support text encoding");
@@ -281,13 +281,13 @@ public class DataTypeCodec {
         binaryEncodeArray((UUID[]) value, DataType.UUID, buff);
         break;
       case JSON:
-        binaryEncodeJSON((Object) value, buff);
+        binaryEncodeJSON((CharSequence) value, buff);
         break;
       case JSON_ARRAY:
         binaryEncodeArray((Object[]) value, DataType.JSON, buff);
         break;
       case JSONB:
-        binaryEncodeJSONB((Object) value, buff);
+        binaryEncodeJSONB((CharSequence) value, buff);
         break;
       case JSONB_ARRAY:
         binaryEncodeArray((Object[]) value, DataType.JSONB, buff);
@@ -938,12 +938,11 @@ public class DataTypeCodec {
     return new Interval(years, months, days, hours, minutes, seconds, microseconds);
   }
 
-  private static void textEncodeNUMERIC(Number value, ByteBuf buff) {
-    String s = value.toString();
-    buff.writeCharSequence(s, StandardCharsets.UTF_8);
+  private static void textEncodeNUMERIC(String value, ByteBuf buff) {
+    buff.writeCharSequence(value, StandardCharsets.UTF_8);
   }
 
-  private static void textEncodeNUMERIC_ARRAY(Number[] value, ByteBuf buff) {
+  private static void textEncodeNUMERIC_ARRAY(Object[] value, ByteBuf buff) {
     textEncodeArray(value, DataType.NUMERIC, buff);
   }
 
@@ -1366,14 +1365,8 @@ public class DataTypeCodec {
     return textDecodeJSONB(index, len, buff);
   }
 
-  private static void binaryEncodeJSON(Object value, ByteBuf buff) {
-    String s;
-    if (value == Tuple.JSON_NULL) {
-      s = "null";
-    } else {
-      s = Json.encode(value);
-    }
-    buff.writeCharSequence(s, StandardCharsets.UTF_8);
+  private static void binaryEncodeJSON(CharSequence value, ByteBuf buff) {
+    buff.writeCharSequence(value, StandardCharsets.UTF_8);
   }
 
   private static Object textDecodeJSONB(int index, int len, ByteBuf buff) {
@@ -1410,7 +1403,7 @@ public class DataTypeCodec {
     return textDecodeJSONB(index + 1, len - 1, buff);
   }
 
-  private static void binaryEncodeJSONB(Object value, ByteBuf buff) {
+  private static void binaryEncodeJSONB(CharSequence value, ByteBuf buff) {
     buff.writeByte(1); // version
     binaryEncodeJSON(value, buff);
   }

@@ -20,7 +20,7 @@ package io.vertx.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class Describe {
+class Describe extends OutboundMessage {
 
   final byte[] statement;
   final String portal;

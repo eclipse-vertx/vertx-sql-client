@@ -72,10 +72,11 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   protected final PrepareOptions options;
   public PreparedStatement ps;
   protected final boolean batch;
-  protected final Object tuples;
+  private Object tuples;
   protected final int fetch;
   protected final String cursorId;
   protected final boolean suspended;
+  private boolean prepared;
 
   private ExtendedQueryCommand(String sql,
                                PrepareOptions options,
@@ -97,6 +98,7 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
     this.fetch = fetch;
     this.cursorId = cursorId;
     this.suspended = suspended;
+    this.prepared = ps != null;
   }
 
   public PrepareOptions options() {
@@ -109,17 +111,17 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
    * @return {@code null} if the tuple preparation was successfull otherwise the validation error
    */
   public String prepare() {
-    if (ps != null) {
-      if (batch) {
-        for (TupleInternal tuple : (List<TupleInternal>) tuples) {
-          String msg = ps.prepare(tuple);
-          if (msg != null) {
-            return msg;
-          }
+    if (ps != null && !prepared) {
+      prepared = true; // TODO : fix this
+      try {
+        if (batch) {
+          tuples = ps.prepare((List<TupleInternal>) tuples);
+          return null;
+        } else {
+          tuples = ps.prepare((TupleInternal) tuples);
         }
-        return null;
-      } else {
-        return ps.prepare((TupleInternal) tuples);
+      } catch (Exception e) {
+        return e.getMessage();
       }
     }
     return null;

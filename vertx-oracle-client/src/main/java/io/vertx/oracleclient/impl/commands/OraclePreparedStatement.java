@@ -50,10 +50,4 @@ public class OraclePreparedStatement implements PreparedStatement {
   public String sql() {
     return sql;
   }
-
-  @Override
-  public String prepare(TupleInternal values) {
-    return null;
-  }
-
 }

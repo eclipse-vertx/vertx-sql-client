@@ -17,6 +17,11 @@
 
 package io.vertx.sqlclient.internal;
 
+import io.vertx.sqlclient.Tuple;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public interface PreparedStatement {
 
   ParamDesc paramDesc();
@@ -25,6 +30,23 @@ public interface PreparedStatement {
 
   String sql();
 
-  String prepare(TupleInternal values);
+  default List<TupleInternal> prepare(List<TupleInternal> batch) throws Exception {
+    List<TupleInternal> actual = batch;
+    int size = actual.size();
+    for (int idx = 0;idx < size;idx++) {
+      TupleInternal values = batch.get(idx);
+      TupleInternal prepared = prepare(values);
+      if (prepared != values) {
+        if (batch == actual) {
+          actual = new ArrayList<>(actual);
+        }
+        actual.set(idx, prepared);
+      }
+    }
+    return actual;
+  }
 
+  default TupleInternal prepare(TupleInternal values) throws Exception {
+    return values;
+  }
 }
