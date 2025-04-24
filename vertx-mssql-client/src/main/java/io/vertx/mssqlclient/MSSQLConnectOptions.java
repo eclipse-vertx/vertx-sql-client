@@ -393,7 +393,9 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   /**
    * Initialize with the default options.
    */
+  @Override
   protected void init() {
+    super.init();
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
     this.setUser(DEFAULT_USER);

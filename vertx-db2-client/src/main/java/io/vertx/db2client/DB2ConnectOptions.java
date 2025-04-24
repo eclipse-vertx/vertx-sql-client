@@ -15,32 +15,23 @@
  */
 package io.vertx.db2client;
 
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
+import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.*;
+import io.vertx.core.tracing.TracingPolicy;
+import io.vertx.db2client.impl.DB2ConnectionUriParser;
+import io.vertx.db2client.impl.drda.SQLState;
+import io.vertx.db2client.impl.drda.SqlCode;
+import io.vertx.sqlclient.SqlConnectOptions;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
-
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.codegen.json.annotations.JsonGen;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.ClientOptionsBase;
-import io.vertx.core.net.JdkSSLEngineOptions;
-import io.vertx.core.net.JksOptions;
-import io.vertx.core.net.KeyCertOptions;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.OpenSSLEngineOptions;
-import io.vertx.core.net.PemKeyCertOptions;
-import io.vertx.core.net.PemTrustOptions;
-import io.vertx.core.net.SSLEngineOptions;
-import io.vertx.core.net.TrustOptions;
-import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.db2client.impl.DB2ConnectionUriParser;
-import io.vertx.db2client.impl.drda.SQLState;
-import io.vertx.db2client.impl.drda.SqlCode;
-import io.vertx.sqlclient.SqlConnectOptions;
 
 /**
  * Connect options for configuring {@link DB2Connection} or {@link DB2Builder}.
@@ -276,7 +267,9 @@ public class DB2ConnectOptions extends SqlConnectOptions {
   /**
    * Initialize with the default options.
    */
+  @Override
   protected void init() {
+    super.init();
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
     this.setProperties(new HashMap<>(DEFAULT_CONNECTION_ATTRIBUTES));
