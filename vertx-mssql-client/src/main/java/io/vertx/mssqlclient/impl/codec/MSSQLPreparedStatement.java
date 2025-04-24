@@ -40,8 +40,4 @@ public class MSSQLPreparedStatement implements PreparedStatement {
     return sql;
   }
 
-  @Override
-  public String prepare(TupleInternal values) {
-    return null;
-  }
 }

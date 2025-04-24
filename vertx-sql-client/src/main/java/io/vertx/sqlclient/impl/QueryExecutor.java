@@ -29,6 +29,7 @@ import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.TupleInternal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -65,23 +66,24 @@ public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>
                                                    PreparedStatement preparedStatement,
                                                    PrepareOptions options,
                                                    boolean autoCommit,
-                                                   Tuple arguments,
+                                                   Tuple values,
                                                    int fetch,
                                                    String cursorId,
                                                    boolean suspended,
                                                    PromiseInternal<L> promise) {
     ContextInternal context = promise.context();
     QueryResultBuilder handler = createHandler(promise);
-    String msg = preparedStatement.prepare((TupleInternal) arguments);
-    if (msg != null) {
-      handler.fail(msg);
+    try {
+      values = preparedStatement.prepare((TupleInternal) values);
+    } catch (Exception e) {
+      handler.fail(e);
       return null;
     }
     ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createQuery(
       preparedStatement.sql(),
       options,
       preparedStatement,
-      arguments,
+      values,
       fetch,
       cursorId,
       suspended,
@@ -122,12 +124,11 @@ public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>
                          PromiseInternal<L> promise) {
     ContextInternal context = promise.context();
     QueryResultBuilder handler = createHandler(promise);
-    for  (Tuple args : batch) {
-      String msg = preparedStatement.prepare((TupleInternal)args);
-      if (msg != null) {
-        handler.fail(msg);
-        return;
-      }
+    try {
+      batch = preparedStatement.prepare((List) batch);
+    } catch (Exception e) {
+      handler.fail(e);
+      return;
     }
     ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createBatch(preparedStatement.sql(), options, preparedStatement, batch, autoCommit, collector, handler);
     scheduler.schedule(cmd, handler);

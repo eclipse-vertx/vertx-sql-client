@@ -20,7 +20,7 @@ package io.vertx.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-final class Bind {
+final class Bind extends OutboundMessage {
 
   final byte[] statement;
   final DataType[] paramTypes;

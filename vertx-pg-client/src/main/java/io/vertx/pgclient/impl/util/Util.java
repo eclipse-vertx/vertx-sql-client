@@ -18,6 +18,7 @@
 package io.vertx.pgclient.impl.util;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.util.CharsetUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
 

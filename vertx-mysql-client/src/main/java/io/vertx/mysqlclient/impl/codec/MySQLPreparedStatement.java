@@ -17,6 +17,7 @@
 
 package io.vertx.mysqlclient.impl.codec;
 
+import io.vertx.core.VertxException;
 import io.vertx.mysqlclient.impl.MySQLParamDesc;
 import io.vertx.mysqlclient.impl.MySQLRowDesc;
 import io.vertx.mysqlclient.impl.datatype.DataType;
@@ -71,13 +72,13 @@ class MySQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public String prepare(TupleInternal values) {
+  public TupleInternal prepare(TupleInternal values) {
     int numberOfParameters = values.size();
     int paramDescLength = paramDesc.paramDefinitions().length;
     if (numberOfParameters != paramDescLength) {
-      return ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDescLength, numberOfParameters);
+      throw new VertxException(ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDescLength, numberOfParameters), true);
     } else {
-      return null;
+      return values;
     }
   }
 

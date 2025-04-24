@@ -22,7 +22,7 @@ import io.vertx.pgclient.impl.util.MD5Authentication;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PasswordMessage {
+class PasswordMessage extends OutboundMessage {
 
   final String hash;
 

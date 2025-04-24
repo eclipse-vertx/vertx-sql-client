@@ -27,10 +27,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class StartupMessage {
+class StartupMessage extends OutboundMessage {
 
   static final ByteBuf BUFF_USER = Unpooled.copiedBuffer("user", UTF_8).asReadOnly();
   static final ByteBuf BUFF_DATABASE = Unpooled.copiedBuffer("database", UTF_8).asReadOnly();
+
+  static final int BUFF_USER_LENGTH = 4;
+  static final int BUFF_DATABASE_LENGTH = 8;
 
   final String username;
   final String database;

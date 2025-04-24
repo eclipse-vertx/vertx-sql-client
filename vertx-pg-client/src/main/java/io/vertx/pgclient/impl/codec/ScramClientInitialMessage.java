@@ -19,7 +19,7 @@ package io.vertx.pgclient.impl.codec;
 
 /**
  */
-public class ScramClientInitialMessage {
+public class ScramClientInitialMessage extends OutboundMessage {
 
   final String mechanism;
   final String message;

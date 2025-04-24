@@ -53,7 +53,7 @@ class PgPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public String prepare(TupleInternal values) {
+  public TupleInternal prepare(TupleInternal values) {
     return paramDesc.prepare(values);
   }
 

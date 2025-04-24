@@ -15,6 +15,7 @@
  */
 package io.vertx.db2client.impl.codec;
 
+import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.db2client.impl.drda.ClientTypes;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
@@ -35,19 +36,19 @@ class DB2ParamDesc extends ParamDesc {
     return paramDefinitions;
   }
 
-  public String prepare(TupleInternal values) {
+  public TupleInternal prepare(TupleInternal values) {
     if (values.size() != paramDefinitions.columns_) {
-      return ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDefinitions.columns_, values.size());
+      throw new VertxException(ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDefinitions.columns_, values.size()), true);
     }
     for (int i = 0; i < paramDefinitions.columns_; i++) {
       Object val = values.getValue(i);
       int type = paramDefinitions.types_[i];
       if (!canConvert(val, type)) {
         Class<?> preferredType = ClientTypes.preferredJavaType(type);
-        return ErrorMessageFactory.buildWhenArgumentsTypeNotMatched(preferredType, i, val);
+        throw new VertxException(ErrorMessageFactory.buildWhenArgumentsTypeNotMatched(preferredType, i, val), true);
       }
     }
-    return null;
+    return values;
   }
 
   private static boolean canConvert(Object val, int type) {

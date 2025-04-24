@@ -20,7 +20,7 @@ package io.vertx.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class Query {
+class Query extends OutboundMessage {
 
   final String sql;
 
