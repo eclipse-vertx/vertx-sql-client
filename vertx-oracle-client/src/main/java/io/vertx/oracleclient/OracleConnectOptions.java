@@ -345,6 +345,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
 
   @Override
   protected void init() {
+    super.init();
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
     this.setUser(DEFAULT_USER);
