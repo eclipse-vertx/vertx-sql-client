@@ -15,7 +15,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.*;
+import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
@@ -223,7 +223,9 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   /**
    * Initialize with the default options.
    */
+  @Override
   protected void init() {
+    super.init();
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
     this.setUser(DEFAULT_USER);

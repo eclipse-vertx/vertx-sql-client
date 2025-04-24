@@ -30,7 +30,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(VertxUnitRunner.class)
@@ -57,7 +60,6 @@ public abstract class ConnectionAutoRetryTestBase {
   @Test
   public void testConnSuccessWithoutRetry(TestContext ctx) {
     options.setReconnectAttempts(3);
-    options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(0);
     unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
@@ -71,7 +73,6 @@ public abstract class ConnectionAutoRetryTestBase {
   @Test
   public void testPoolSuccessWithoutRetry(TestContext ctx) {
     options.setReconnectAttempts(3);
-    options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(0);
     unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
@@ -84,7 +85,6 @@ public abstract class ConnectionAutoRetryTestBase {
   @Test
   public void testConnExceedingRetryLimit(TestContext ctx) {
     options.setReconnectAttempts(1);
-    options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(2);
     unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
@@ -96,7 +96,6 @@ public abstract class ConnectionAutoRetryTestBase {
   @Test
   public void testPoolExceedingRetryLimit(TestContext ctx) {
     options.setReconnectAttempts(1);
-    options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(2);
     unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
@@ -108,7 +107,6 @@ public abstract class ConnectionAutoRetryTestBase {
   @Test
   public void testConnRetrySuccess(TestContext ctx) {
     options.setReconnectAttempts(1);
-    options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(1);
     unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());
@@ -121,7 +119,6 @@ public abstract class ConnectionAutoRetryTestBase {
   @Test
   public void testPoolRetrySuccess(TestContext ctx) {
     options.setReconnectAttempts(1);
-    options.setReconnectInterval(1000);
     UnstableProxyServer unstableProxyServer = new UnstableProxyServer(1);
     unstableProxyServer.initialize(options, ctx.asyncAssertSuccess(v -> {
       initialConnector(unstableProxyServer.port());

@@ -17,14 +17,15 @@
 
 package io.vertx.pgclient;
 
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.Unstable;
 import io.vertx.codegen.json.annotations.JsonGen;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.ClientSSLOptions;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.pgclient.impl.PgConnectionUriParser;
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.*;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.util.Collections;
@@ -188,6 +189,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     return this;
   }
 
+  @Override
   public PgConnectOptions setCachePreparedStatements(boolean cachePreparedStatements) {
     return (PgConnectOptions) super.setCachePreparedStatements(cachePreparedStatements);
   }
@@ -281,7 +283,9 @@ public class PgConnectOptions extends SqlConnectOptions {
   /**
    * Initialize with the default options.
    */
+  @Override
   protected void init() {
+    super.init();
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
     this.setUser(DEFAULT_USER);
@@ -298,6 +302,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     return json;
   }
 
+  @Override
   @GenIgnore
   public SocketAddress getSocketAddress() {
     if (!isUsingDomainSocket()) {
@@ -329,6 +334,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     return result;
   }
 
+  @Override
   public boolean isUsingDomainSocket() {
     return this.getHost().startsWith("/");
   }
