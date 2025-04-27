@@ -74,7 +74,9 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   public Future<PreparedStatement> prepare(String sql, PrepareOptions options) {
-    return schedule(context, new PrepareStatementCommand(sql, options, true))
+    Promise<io.vertx.sqlclient.internal.PreparedStatement> promise = context.promise();
+    schedule(new PrepareStatementCommand(sql, options, true), promise);
+    return promise.future()
       .compose(
       cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, context, cr, autoCommit())),
       err -> {
@@ -113,12 +115,10 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   @Override
-  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
+  public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
     if (tx != null) {
       // TODO
-      Promise<R> promise = context.promise();
-      tx.schedule(cmd, promise);
-      return promise.future();
+      tx.schedule(cmd, handler);
     } else {
       QueryReporter queryReporter;
       VertxTracer tracer = context.owner().tracer();
@@ -126,13 +126,13 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
       if (!(conn instanceof SqlConnectionPool.PooledConnection) && cmd instanceof QueryCommandBase && (tracer != null || metrics != null)) {
         queryReporter = new QueryReporter(tracer, metrics, context, (QueryCommandBase<?>) cmd, conn);
         queryReporter.before();
-        return conn
-          .schedule(context, cmd)
-          .andThen(ar -> {
-            queryReporter.after(ar);
+        conn
+          .schedule(cmd, (res, err) -> {
+            queryReporter.after(res, err);
+            handler.complete(res, err);
           });
       } else {
-        return conn.schedule(context, cmd);
+        conn.schedule(cmd, handler);
       }
     }
   }

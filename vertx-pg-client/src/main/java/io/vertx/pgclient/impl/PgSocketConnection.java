@@ -82,7 +82,9 @@ public class PgSocketConnection extends SocketConnectionBase {
   // TODO RETURN FUTURE ???
   Future<Connection> sendStartupMessage(String username, String password, String database, Map<String, String> properties) {
     InitCommand cmd = new InitCommand(this, username, password, database, properties);
-    return schedule(context, cmd);
+    Promise<Connection> promise = context.promise();
+    schedule(cmd, promise);
+    return promise.future();
   }
 
   Future<Void> sendCancelRequestMessage(int processId, int secretKey) {

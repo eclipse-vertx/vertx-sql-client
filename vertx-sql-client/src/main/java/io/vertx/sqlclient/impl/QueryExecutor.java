@@ -58,7 +58,7 @@ public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>
                           PromiseInternal<L> promise) {
     ContextInternal context = promise.context();
     QueryResultBuilder handler = createHandler(promise);
-    scheduler.schedule(context, new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler)).onComplete(handler);
+    scheduler.schedule(new SimpleQueryCommand<>(sql, singleton, autoCommit, collector, handler), handler);
   }
 
   QueryResultBuilder<T, R, L> executeExtendedQuery(CommandScheduler scheduler,
@@ -88,7 +88,7 @@ public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>
       autoCommit,
       collector,
       handler);
-    scheduler.schedule(context, cmd).onComplete(handler);
+    scheduler.schedule(cmd, handler);
     return handler;
   }
 
@@ -96,7 +96,7 @@ public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>
     ContextInternal context = (ContextInternal) promise.context();
     QueryResultBuilder handler = this.createHandler(promise);
     ExtendedQueryCommand cmd = createExtendedQueryCommand(sql, options, autoCommit, arguments, handler);
-    scheduler.schedule(context, cmd).onComplete(handler);
+    scheduler.schedule(cmd, handler);
   }
 
   private ExtendedQueryCommand<T> createExtendedQueryCommand(String sql,
@@ -130,14 +130,14 @@ public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>
       }
     }
     ExtendedQueryCommand<T> cmd = ExtendedQueryCommand.createBatch(preparedStatement.sql(), options, preparedStatement, batch, autoCommit, collector, handler);
-    scheduler.schedule(context, cmd).onComplete(handler);
+    scheduler.schedule(cmd, handler);
   }
 
   public void executeBatchQuery(CommandScheduler scheduler, String sql, PrepareOptions options, boolean autoCommit, List<Tuple> batch, PromiseInternal<L> promise) {
     ContextInternal context = promise.context();
     QueryResultBuilder handler = createHandler(promise);
     ExtendedQueryCommand<T> cmd = createBatchQueryCommand(sql, options, autoCommit, batch, handler);
-    scheduler.schedule(context, cmd).onComplete(handler);
+    scheduler.schedule(cmd, handler);
   }
 
   private ExtendedQueryCommand<T> createBatchQueryCommand(String sql,

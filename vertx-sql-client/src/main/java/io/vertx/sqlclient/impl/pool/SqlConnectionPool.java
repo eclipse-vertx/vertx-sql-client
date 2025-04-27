@@ -13,6 +13,7 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.netty.channel.EventLoop;
 import io.vertx.core.*;
+import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -181,28 +182,32 @@ public class SqlConnectionPool {
     }
   }
 
-  public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
+  // TODO : try optimize without promise
+  public <R> void execute(CommandBase<R> cmd, Completable<R> handler) {
+    ContextInternal context = vertx.getOrCreateContext();
     Promise<Lease<PooledConnection>> p = context.promise();
     Object metric = enqueueMetric();
     pool.acquire(context, 0)
       .onComplete(p);
-    return p.future().compose(lease -> {
+    p.future().compose(lease -> {
       dequeueMetric(metric);
       PooledConnection pooled = lease.get();
       Connection conn = pooled.conn;
       Future<R> future;
       if (afterAcquire != null) {
         future = afterAcquire.apply(conn)
-          .compose(v -> pooled.schedule(context, cmd))
+          .compose(v -> Future.<R>future(d -> pooled.schedule(cmd, d)))
           .eventually(() -> beforeRecycle.apply(conn));
       } else {
-        future = pooled.schedule(context, cmd);
+        PromiseInternal<R> pp = context.promise();
+        pooled.schedule(cmd, pp);
+        future = pp;
       }
       return future.andThen(ar -> {
         pooled.refresh();
         lease.recycle();
       });
-    });
+    }).onComplete(handler);
   }
 
   public void acquire(ContextInternal context, long timeout, Completable<PooledConnection> handler) {
@@ -368,7 +373,8 @@ public class SqlConnectionPool {
     }
 
     @Override
-    public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
+    public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
+      ContextInternal context = vertx.getOrCreateContext();
       QueryReporter queryReporter;
       VertxTracer tracer = vertx.tracer();
       ClientMetrics metrics = conn.metrics();
@@ -378,12 +384,16 @@ public class SqlConnectionPool {
       } else {
         queryReporter = null;
       }
-      Future<R> fut = conn.schedule(context, cmd);
       if (queryReporter != null) {
-        fut = fut.andThen(queryReporter::after);
+        Completable<R> ori = handler;
+        handler = (res, err) -> {
+          queryReporter.after(res, err);
+          ori.complete(res, err);
+        };
       }
-      return fut;
+      conn.schedule(cmd, handler);
     }
+
 
     /**
      * Close the underlying connection
