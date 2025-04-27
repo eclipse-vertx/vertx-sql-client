@@ -26,7 +26,7 @@ import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.impl.PreparedStatementImpl;
+import io.vertx.sqlclient.impl.PreparedStatementBase;
 import io.vertx.sqlclient.impl.TransactionImpl;
 import io.vertx.sqlclient.internal.command.CommandBase;
 import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
@@ -78,10 +78,10 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
     schedule(new PrepareStatementCommand(sql, options, true), promise);
     return promise.future()
       .compose(
-      cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, context, cr, autoCommit())),
+      cr -> Future.succeededFuture(PreparedStatementBase.create(conn, context, cr, autoCommit())),
       err -> {
         if (conn.isIndeterminatePreparedStatementError(err)) {
-          return Future.succeededFuture(PreparedStatementImpl.create(conn, context, options, sql, autoCommit()));
+          return Future.succeededFuture(PreparedStatementBase.create(conn, context, options, sql, autoCommit()));
         } else {
           return Future.failedFuture(err);
         }

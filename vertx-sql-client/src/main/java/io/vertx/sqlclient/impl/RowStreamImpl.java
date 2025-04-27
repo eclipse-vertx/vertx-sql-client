@@ -32,7 +32,7 @@ import java.util.Iterator;
 
 public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<RowSet<Row>>> {
 
-  private final PreparedStatementImpl ps;
+  private final PreparedStatementBase ps;
   private final ContextInternal context;
   private final int fetch;
   private final Tuple params;
@@ -46,7 +46,7 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
   private boolean readInProgress;
   private Iterator<Row> result;
 
-  RowStreamImpl(PreparedStatementImpl ps, ContextInternal context, int fetch, Tuple params) {
+  RowStreamImpl(PreparedStatementBase ps, ContextInternal context, int fetch, Tuple params) {
     this.ps = ps;
     this.context = context;
     this.fetch = fetch;
