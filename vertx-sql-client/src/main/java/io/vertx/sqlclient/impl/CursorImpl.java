@@ -36,16 +36,16 @@ import java.util.UUID;
 public class CursorImpl implements Cursor {
 
   private final Connection conn;
-  private final PreparedStatementImpl ps;
+  private final PreparedStatementBase ps;
   private final ContextInternal context;
   private final boolean autoCommit;
   private final TupleInternal params;
 
   private String id;
   private boolean closed;
-  private QueryResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
+  QueryResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
-  CursorImpl(PreparedStatementImpl ps, Connection conn, ContextInternal context, boolean autoCommit, TupleInternal params) {
+  CursorImpl(PreparedStatementBase ps, Connection conn, ContextInternal context, boolean autoCommit, TupleInternal params) {
     this.ps = ps;
     this.conn = conn;
     this.context = context;
@@ -64,22 +64,14 @@ public class CursorImpl implements Cursor {
   @Override
   public synchronized Future<RowSet<Row>> read(int count) {
     PromiseInternal<RowSet<Row>> promise = context.promise();
-    ps.withPreparedStatement(ps.options(), params, ar -> {
-      if (ar.succeeded()) {
-        PreparedStatement preparedStatement = ar.result();
-        QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
-        if (id == null) {
-          id = UUID.randomUUID().toString();
-          this.result = builder.executeExtendedQuery(conn, preparedStatement, ps.options(), autoCommit, params, count, id, false, promise);
-        } else if (this.result.isSuspended()) {
-          this.result = builder.executeExtendedQuery(conn, preparedStatement, ps.options(), autoCommit, params, count, id, true, promise);
-        } else {
-          throw new IllegalStateException();
-        }
-      } else {
-        promise.fail(ar.cause());
-      }
-    });
+    boolean suspended;
+    if (id == null) {
+      id = UUID.randomUUID().toString();
+      suspended = false;
+    } else {
+      suspended = true;
+    }
+    ps.readCursor(this, id, suspended, params, count, promise);
     return promise.future();
   }
 
