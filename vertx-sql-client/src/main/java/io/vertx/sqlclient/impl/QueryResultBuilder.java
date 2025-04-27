@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.PromiseInternal;
@@ -30,7 +31,7 @@ import java.util.function.Function;
 /**
  * A query result for building a {@link SqlResult}.
  */
-public class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Promise<Boolean> {
+public class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResult<T>> implements QueryResultHandler<T>, Completable<Boolean> {
 
   private final Promise<L> handler;
   private final Function<T, R> factory;
@@ -81,28 +82,17 @@ public class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResu
   }
 
   @Override
-  public boolean tryComplete(Boolean result) {
-    suspended = result;
-    if (failure != null) {
-      return tryFail(failure);
+  public void complete(Boolean aBoolean, Throwable throwable) {
+    if (throwable == null) {
+      suspended = aBoolean;
+      if (failure != null) {
+        handler.tryFail(failure);
+      } else {
+        handler.tryComplete((L) first);
+      }
     } else {
-      return handler.tryComplete((L) first);
+      handler.tryFail(throwable);
     }
-  }
-
-  @Override
-  public boolean tryFail(Throwable cause) {
-    return handler.tryFail(cause);
-  }
-
-  @Override
-  public boolean tryFail(String message) {
-    return handler.tryFail(message);
-  }
-
-  @Override
-  public Future<Boolean> future() {
-    return handler.future().map(l -> isSuspended());
   }
 
   public boolean isSuspended() {

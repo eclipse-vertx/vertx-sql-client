@@ -57,10 +57,10 @@ public class TransactionImpl implements Transaction {
 
   private <R> void execute(CommandBase<R> cmd) {
     Completable<R> handler = cmd.handler;
-    connection.schedule(context, cmd).onComplete(handler);
+    connection.schedule(cmd, handler);
   }
 
-  private <T> Completable<T> wrap(CommandBase<?> cmd, Promise<T> handler) {
+  private <T> Completable<T> wrap(CommandBase<?> cmd, Completable<T> handler) {
     return (res, err) -> {
       synchronized (TransactionImpl.this) {
         pendingQueries--;
@@ -70,7 +70,7 @@ public class TransactionImpl implements Transaction {
     };
   }
 
-  public <R> void schedule(CommandBase<R> cmd, Promise<R> handler) {
+  public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
     cmd.handler = wrap(cmd, handler);
     if (!schedule(cmd)) {
       handler.fail("Transaction already completed");

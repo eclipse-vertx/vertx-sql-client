@@ -171,8 +171,8 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   }
 
   @Override
-  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
-    return pool.execute(context, cmd);
+  public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
+    pool.execute(cmd, handler);
   }
 
   private void acquire(ContextInternal context, long timeout, Completable<SqlConnectionPool.PooledConnection> completionHandler) {

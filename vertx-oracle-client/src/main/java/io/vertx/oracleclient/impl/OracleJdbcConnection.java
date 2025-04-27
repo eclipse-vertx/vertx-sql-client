@@ -167,10 +167,8 @@ public class OracleJdbcConnection implements Connection {
   }
 
   @Override
-  public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
-    Promise<R> promise = context.promise();
-    this.context.emit(v -> doSchedule(cmd, promise));
-    return promise.future();
+  public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
+    this.context.emit(v -> doSchedule(cmd, handler));
   }
 
   private <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {

@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.internal;
 
+import io.vertx.core.Completable;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PrepareOptions;
@@ -167,7 +168,7 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
   public void group(Handler<SqlClient> block) {
     GroupingClient grouping = new GroupingClient();
     block.handle(grouping);
-    schedule(context(), grouping.composite);
+    schedule(grouping.composite, (res, err) -> {});
   }
 
   private class GroupingClient extends SqlClientBase {
@@ -194,8 +195,8 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
     }
 
     @Override
-    public <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
-      return composite.add(context, cmd);
+    public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
+      composite.add(cmd, handler);
     }
   }
 }

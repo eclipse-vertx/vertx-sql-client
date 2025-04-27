@@ -131,13 +131,13 @@ public class QueryReporter {
     }
   }
 
-  public void after(AsyncResult ar) {
+  public void after(Object res, Throwable err) {
     if (tracer != null) {
       QueryResultBuilder<?, ?, ?> qbr = (QueryResultBuilder) cmd.resultHandler();
-      receiveResponse(context, payload, ar.succeeded() ? qbr.first : null, ar.succeeded() ? null : ar.cause());
+      receiveResponse(context, payload, err == null ? qbr.first : null, err);
     }
     if (metrics != null) {
-      if (ar.succeeded()) {
+      if (err == null) {
         metrics.responseBegin(metric, null);
         metrics.responseEnd(metric);
       } else {

@@ -101,7 +101,7 @@ public class PreparedStatementImpl implements PreparedStatement {
       if (future == null) {
         // Lazy statement;
         PrepareStatementCommand prepare = new PrepareStatementCommand(sql, options, true, args.types());
-        conn.schedule(context, prepare).onComplete(promise);
+        conn.schedule(prepare, promise);
         future = promise.future();
       }
       future.onComplete(handler);
@@ -161,7 +161,7 @@ public class PreparedStatementImpl implements PreparedStatement {
       Promise<Void> promise = context.promise();
       if (this.promise == null) {
         CloseStatementCommand cmd = new CloseStatementCommand(future.result());
-        conn.schedule(context, cmd).onComplete(promise);
+        conn.schedule(cmd, promise);
       } else {
         if (future == null) {
           future = this.promise.future();
@@ -170,7 +170,7 @@ public class PreparedStatementImpl implements PreparedStatement {
         future.onComplete(ar -> {
           if (ar.succeeded()) {
             CloseStatementCommand cmd = new CloseStatementCommand(ar.result());
-            conn.schedule(context, cmd).onComplete(promise);
+            conn.schedule(cmd, promise);
           } else {
             promise.complete();
           }
@@ -191,7 +191,7 @@ public class PreparedStatementImpl implements PreparedStatement {
     future.onComplete(ar -> {
       if (ar.succeeded()) {
         CloseCursorCommand cmd = new CloseCursorCommand(cursorId, ar.result());
-        conn.schedule(context, cmd).onComplete(promise);
+        conn.schedule(cmd, promise);
       } else {
         promise.fail(ar.cause());
       }
