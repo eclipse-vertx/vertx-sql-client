@@ -134,6 +134,7 @@ public abstract class SocketConnectionBase implements Connection {
         handleException(e);
       }
     });
+    socket.readCompletionHandler(this::handleReadComplete);
   }
 
   public NetSocketInternal socket() {
@@ -313,11 +314,14 @@ public abstract class SocketConnectionBase implements Connection {
       inflight--;
       CommandResponse resp =(CommandResponse) msg;
       resp.fire();
-      checkPending();
     } else if (msg instanceof InvalidCachedStatementEvent) {
       InvalidCachedStatementEvent event = (InvalidCachedStatementEvent) msg;
       removeCachedStatement(event.sql());
     }
+  }
+
+  private void handleReadComplete(Void v) {
+    checkPending();
   }
 
   protected void handleEvent(Object event) {
