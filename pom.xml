@@ -21,7 +21,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>41</version>
+    <version>42</version>
   </parent>
 
   <artifactId>vertx-sql-client-parent</artifactId>
