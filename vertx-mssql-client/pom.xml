@@ -42,7 +42,7 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>
-      <version>${stack.version}</version>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Testing purposes -->
