@@ -18,6 +18,10 @@
 package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.codegen.annotations.GenIgnore;
+
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * The execution result of the row set of a query provided as {@code <R>}, commonly used as a {@code RowSet<Row>}.
@@ -32,4 +36,11 @@ public interface RowSet<R> extends Iterable<R>, SqlResult<RowSet<R>> {
   @Override
   RowSet<R> next();
 
+  /**
+   * @return a stream of rows
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Stream<R> stream() {
+    return StreamSupport.stream(spliterator(), false);
+  }
 }
