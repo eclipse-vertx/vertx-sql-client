@@ -53,7 +53,7 @@
     <unix.socket.directory/>
     <unix.socket.port/>
     <vertx.surefire.useModulePath>true</vertx.surefire.useModulePath>
-    <testcontainers.version>1.17.6</testcontainers.version>
+    <testcontainers.version>1.20.6</testcontainers.version>
   </properties>
 
   <dependencyManagement>
