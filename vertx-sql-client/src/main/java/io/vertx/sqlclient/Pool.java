@@ -28,7 +28,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.internal.ContextInternal;
-import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.impl.TransactionPropagationLocal;
 import io.vertx.sqlclient.impl.Utils;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -158,7 +158,7 @@ public interface Pool extends SqlClient {
   default <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation, Function<SqlConnection, Future<@Nullable T>> function) {
     if (txPropagation == TransactionPropagation.CONTEXT) {
       ContextInternal context = (ContextInternal) Vertx.currentContext();
-      SqlConnection sqlConnection = context.getLocal(PoolImpl.PROPAGATABLE_CONNECTION);
+      SqlConnection sqlConnection = context.getLocal(TransactionPropagationLocal.KEY);
       if (sqlConnection == null) {
         return startPropagatableConnection(this, function);
       }

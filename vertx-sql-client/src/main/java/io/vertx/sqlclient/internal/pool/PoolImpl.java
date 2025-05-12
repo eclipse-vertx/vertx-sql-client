@@ -26,6 +26,7 @@ import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.impl.TransactionPropagationLocal;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.internal.SqlClientBase;
@@ -53,8 +54,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final boolean pipelined;
   private final Handler<SqlConnection> connectionInitializer;
   private long timerID;
-
-  public static final String PROPAGATABLE_CONNECTION = "propagatable_connection";
 
   public PoolImpl(VertxInternal vertx,
                   Driver driver,
@@ -149,7 +148,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
 
   public static <T> Future<@Nullable T> startPropagatableConnection(Pool pool, Function<SqlConnection, Future<@Nullable T>> function) {
     ContextInternal context = (ContextInternal) Vertx.currentContext();
-    return pool.getConnection().onComplete(handler -> context.putLocal(PROPAGATABLE_CONNECTION, handler.result()))
+    return pool.getConnection().onComplete(handler -> context.putLocal(TransactionPropagationLocal.KEY, handler.result()))
       .flatMap(conn -> conn
         .begin()
         .flatMap(tx -> function
@@ -167,7 +166,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   .compose(v -> context.failedFuture(err), failure -> context.failedFuture(err));
               }
             }))
-        .onComplete(ar -> conn.close().onComplete(v -> context.removeLocal(PROPAGATABLE_CONNECTION))));
+        .onComplete(ar -> conn.close().onComplete(v -> context.removeLocal(TransactionPropagationLocal.KEY))));
   }
 
   @Override
