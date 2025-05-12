@@ -1,3 +1,6 @@
+import io.vertx.core.spi.VertxServiceProvider;
+import io.vertx.sqlclient.impl.TransactionPropagationLocal;
+
 module io.vertx.sql.client {
 
   requires io.netty.common;
@@ -17,6 +20,8 @@ module io.vertx.sql.client {
   exports io.vertx.sqlclient.spi;
 
   uses io.vertx.sqlclient.spi.Driver;
+
+  provides io.vertx.core.spi.VertxServiceProvider with io.vertx.sqlclient.impl.TransactionPropagationLocal;
 
   // Expose enough for implementing a client back-end on top of this API (e.g. vertx-jdbc-client)
 
