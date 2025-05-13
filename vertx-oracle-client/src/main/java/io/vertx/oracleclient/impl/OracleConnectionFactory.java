@@ -10,6 +10,7 @@
  */
 package io.vertx.oracleclient.impl;
 
+import io.vertx.core.Completable;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -40,8 +41,8 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
   }
 
   @Override
-  public void close(Promise<Void> promise) {
-    promise.complete();
+  public void close(Completable<Void> promise) {
+    promise.succeed();
   }
 
   private OracleDataSource getDatasource(SqlConnectOptions options) {

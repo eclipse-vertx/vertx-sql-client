@@ -179,7 +179,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   }
 
   @Override
-  public void close(Promise<Void> completion) {
+  public void close(Completable<Void> completion) {
     doClose().onComplete(completion);
   }
 

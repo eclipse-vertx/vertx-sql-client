@@ -121,7 +121,7 @@ public class OracleJdbcConnection implements Connection {
   }
 
   @Override
-  public void close(Holder holder, Promise<Void> promise) {
+  public void close(Holder holder, Completable<Void> promise) {
     if (Vertx.currentContext() == context) {
       Future<Void> future;
       if (closePromise == null) {

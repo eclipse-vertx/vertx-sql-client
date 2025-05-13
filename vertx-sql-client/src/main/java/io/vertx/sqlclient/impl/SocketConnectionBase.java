@@ -178,7 +178,7 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
-  public void close(Holder holder, Promise<Void> promise) {
+  public void close(Holder holder, Completable<Void> promise) {
     if (Vertx.currentContext() == context) {
       Channel ch = socket.channelHandlerContext().channel();
       if (status == Status.CONNECTED) {
@@ -188,7 +188,7 @@ public abstract class SocketConnectionBase implements Connection {
         checkPending();
       }
       ch.closeFuture()
-        .addListener((ChannelFutureListener) channelFuture -> promise.complete());
+        .addListener((ChannelFutureListener) channelFuture -> promise.succeed());
     } else {
       context.runOnContext(v -> close(holder, promise));
     }

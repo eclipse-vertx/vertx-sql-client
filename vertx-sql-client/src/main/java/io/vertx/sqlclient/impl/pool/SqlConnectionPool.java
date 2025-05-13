@@ -415,11 +415,11 @@ public class SqlConnectionPool {
     }
 
     @Override
-    public void close(Holder holder, Promise<Void> promise) {
+    public void close(Holder holder, Completable<Void> promise) {
       doClose(holder, promise);
     }
 
-    private void doClose(Holder holder, Promise<Void> promise) {
+    private void doClose(Holder holder, Completable<Void> promise) {
       if (holder != this.holder) {
         String msg;
         if (this.holder == null) {
@@ -434,7 +434,7 @@ public class SqlConnectionPool {
         Promise<ConnectResult<PooledConnection>> resultHandler = poolCallback;
         if (resultHandler != null) {
           poolCallback = null;
-          promise.complete();
+          promise.succeed();
           resultHandler.complete(new ConnectResult<>(this, pipelined ? conn.pipeliningLimit() : 1, 0));
           return;
         }
@@ -446,12 +446,12 @@ public class SqlConnectionPool {
       }
     }
 
-    private void cleanup(Promise<Void> promise) {
+    private void cleanup(Completable<Void> promise) {
       Lease<PooledConnection> l = this.lease;
       this.lease = null;
       refresh();
       l.recycle();
-      promise.complete();
+      promise.succeed();
     }
 
     @Override

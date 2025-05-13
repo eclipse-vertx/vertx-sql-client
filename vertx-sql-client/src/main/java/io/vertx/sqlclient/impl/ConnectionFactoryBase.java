@@ -10,6 +10,7 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.net.NetClient;
@@ -46,8 +47,8 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
     this.tcpOptions = tcpOptions;
   }
 
-  private void doClose(Promise<Void> p) {
-    client.close().onComplete(ar -> p.complete());
+  private void doClose(Completable<Void> p) {
+    client.close().onComplete(ar -> p.succeed());
   }
 
   public static ContextInternal asEventLoopContext(ContextInternal ctx) {
@@ -64,7 +65,7 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   }
 
   @Override
-  public void close(Promise<Void> promise) {
+  public void close(Completable<Void> promise) {
     clientCloseFuture.close(promise);
   }
 

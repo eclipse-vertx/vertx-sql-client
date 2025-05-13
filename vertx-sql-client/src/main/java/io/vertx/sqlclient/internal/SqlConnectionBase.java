@@ -199,15 +199,24 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   @Override
-  public void close(Promise<Void> completion) {
+  public void close(Completable<Void> completion) {
+    if (closeFactoryAfterUsage) {
+      Completable<Void> next = completion;
+      completion = (res, err) -> {
+        try {
+          next.complete(res, err);
+        } finally {
+          factory.close((res2, err2) -> {});
+        }
+      };
+    }
     doClose(completion);
     if (closeFactoryAfterUsage) {
-      completion.future().onComplete(v -> factory.close(Promise.promise()));
       context.removeCloseHook(this);
     }
   }
 
-  private void doClose(Promise<Void> promise) {
+  private void doClose(Completable<Void> promise) {
     context.execute(promise, p -> {
       if (tx != null) {
         tx.rollback(ar -> conn.close(this, p));

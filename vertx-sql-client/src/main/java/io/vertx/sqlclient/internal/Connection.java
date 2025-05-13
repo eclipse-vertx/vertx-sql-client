@@ -17,6 +17,7 @@
 
 package io.vertx.sqlclient.internal;
 
+import io.vertx.core.Completable;
 import io.vertx.core.Promise;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
@@ -60,7 +61,7 @@ public interface Connection extends CommandScheduler  {
 
   DatabaseMetadata getDatabaseMetaData();
 
-  void close(Holder holder, Promise<Void> promise);
+  void close(Holder holder, Completable<Void> promise);
 
   int getProcessId();
 
