@@ -1,0 +1,77 @@
+name: CI matrix (5.x)
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+jobs:
+  CI:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'PostgreSQL-9'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'PostgreSQL-10'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'PostgreSQL-11'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MySQL-8.0'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MySQL-5.6'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MySQL-5.7'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MariaDB-10.4'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MSSQL-2017-latest'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MSSQL-2019-latest'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'DB2-11.5'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'SQL-templates'
+          - os: ubuntu-latest
+            jdk: 21
+            profile: 'PostgreSQL-11'
+          - os: ubuntu-latest
+            jdk: 21
+            profile: 'MySQL-5.7'
+          - os: ubuntu-latest
+            jdk: 21
+            profile: 'MariaDB-10.4'
+          - os: ubuntu-latest
+            jdk: 21
+            profile: 'MSSQL-2019-latest'
+          - os: ubuntu-latest
+            jdk: 21
+            profile: 'Oracle-23'
+    uses: ./.github/workflows/ci.yml
+    with:
+      branch: ${{ github.event.pull_request.head.sha || github.ref_name }}
+      jdk: ${{ matrix.jdk }}
+      os: ${{ matrix.os }}
+      profile: ${{ matrix.profile }}
+      deploy: ${{ matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
+    secrets: inherit
+  Deploy:
+    name: Deploy to OSSRH
+    if: ${{ github.repository_owner == 'eclipse-vertx' && (github.event_name == 'push' || github.event_name == 'schedule') }}
+    needs: CI
+    uses: ./.github/workflows/deploy.yml
+    with:
+      branch: ${{ github.event.pull_request.head.sha || github.ref_name }}
+      jdk: 11
+    secrets: inherit
