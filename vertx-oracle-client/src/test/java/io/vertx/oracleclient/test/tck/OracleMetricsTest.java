@@ -13,9 +13,11 @@ package io.vertx.oracleclient.test.tck;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.oracleclient.OracleBuilder;
+import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.test.junit.OracleRule;
 import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -27,8 +29,13 @@ public class OracleMetricsTest extends MetricsTestBase {
   public static OracleRule rule = OracleRule.SHARED_INSTANCE;
 
   @Override
+  protected SqlConnectOptions connectOptions() {
+    return new OracleConnectOptions(rule.options());
+  }
+
+  @Override
   protected ClientBuilder<Pool> poolBuilder() {
-    return OracleBuilder.pool().connectingTo(rule.options());
+    return OracleBuilder.pool().connectingTo(connectOptions());
   }
 
   @Override
