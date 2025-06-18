@@ -56,4 +56,11 @@ public class OracleMetricsTest extends MetricsTestBase {
   public void testPrepareAndBatchQuery(TestContext ctx) {
     super.testPrepareAndBatchQuery(ctx);
   }
+
+  @Test
+  @Ignore("Implementation of the test does not work with Oracle")
+  @Override
+  public void testConnectionLost(TestContext ctx) throws Exception {
+    super.testConnectionLost(ctx);
+  }
 }
