@@ -255,6 +255,7 @@ public class SqlConnectionPool {
             pool.cancel(waiter, (res, err) -> {
               if (err == null) {
                 if (res) {
+                  dequeueMetric(metric);
                   handler.fail("Timeout");
                 }
               } else {
