@@ -14,6 +14,7 @@ package io.vertx.pgclient;
 import io.vertx.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 
@@ -23,8 +24,13 @@ public class PgMetricsTest extends MetricsTestBase {
   public static ContainerPgRule rule = new ContainerPgRule();
 
   @Override
+  protected SqlConnectOptions connectOptions() {
+    return new PgConnectOptions(rule.options());
+  }
+
+  @Override
   protected ClientBuilder<Pool> poolBuilder() {
-    return PgBuilder.pool().connectingTo(rule.options());
+    return PgBuilder.pool().connectingTo(connectOptions());
   }
 
   @Override

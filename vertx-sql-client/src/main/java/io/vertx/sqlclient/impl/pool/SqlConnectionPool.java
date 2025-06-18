@@ -186,6 +186,16 @@ public class SqlConnectionPool {
     return NO_METRICS;
   }
 
+  private void dequeueAndReject(Object metric) {
+    if (metrics != null && metric != NO_METRICS) {
+      try {
+        metrics.rejected(metric);
+      } catch (Exception e) {
+        // Log
+      }
+    }
+  }
+
   private Object endUse(Object metric) {
     if (metrics != null && metric != NO_METRICS) {
       try {
@@ -271,6 +281,7 @@ public class SqlConnectionPool {
             pool.cancel(waiter, ar -> {
               if (ar.succeeded()) {
                 if (ar.result()) {
+                  dequeueAndReject(queueMetric);
                   handler.handle(Future.failedFuture("Timeout"));
                 }
               } else {
