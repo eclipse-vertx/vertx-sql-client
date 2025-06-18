@@ -60,6 +60,20 @@ public class OracleMetricsTest extends MetricsTestBase {
   @Test
   @Ignore("Implementation of the test does not work with Oracle")
   @Override
+  public void testQueuing(TestContext ctx) throws Exception {
+    super.testQueuing(ctx);
+  }
+
+  @Test
+  @Ignore("Implementation of the test does not work with Oracle")
+  @Override
+  public void testQueuingTimeout(TestContext ctx) throws Exception {
+    super.testQueuingTimeout(ctx);
+  }
+
+  @Test
+  @Ignore("Implementation of the test does not work with Oracle")
+  @Override
   public void testConnectionLost(TestContext ctx) throws Exception {
     super.testConnectionLost(ctx);
   }

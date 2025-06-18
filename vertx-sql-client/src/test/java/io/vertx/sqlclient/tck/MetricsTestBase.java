@@ -182,7 +182,7 @@ public abstract class MetricsTestBase {
       futures.add(pool.withConnection(sqlConn -> sqlConn.query("SELECT * FROM immutable WHERE id=1").execute()));
     }
     awaitQueueSize(ctx, queueSize, timeout ? 0 : num);
-    conn.close();
+    Future.await(conn.close(), 20, SECONDS);
     Future.await(Future.join(futures).otherwiseEmpty(), 20, SECONDS);
     ctx.assertEquals(0, queueSize.get());
     ctx.assertEquals(0, inUse.get());
