@@ -28,7 +28,7 @@
 
   <artifactId>vertx-oracle-client</artifactId>
 
-  <name>Vertx Oracle Client</name>
+  <name>Vert.x Oracle Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive Oracle Client</description>
 

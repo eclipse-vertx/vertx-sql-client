@@ -27,7 +27,7 @@
 
   <artifactId>vertx-mysql-client</artifactId>
 
-  <name>Vertx MySQL Client</name>
+  <name>Vert.x MySQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive MySQL Client</description>
 

@@ -27,7 +27,7 @@
 
   <artifactId>vertx-pg-client</artifactId>
 
-  <name>Vertx PostgreSQL Client</name>
+  <name>Vert.x PostgreSQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive PostgreSQL Client</description>
 

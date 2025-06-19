@@ -28,7 +28,7 @@
   <version>4.5.16-SNAPSHOT</version>
   <packaging>pom</packaging>
 
-  <name>Vertx SQL Client parent</name>
+  <name>Vert.x SQL Client parent</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive SQL Client parent</description>
 

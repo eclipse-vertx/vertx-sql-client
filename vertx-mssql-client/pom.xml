@@ -12,7 +12,7 @@
 
   <artifactId>vertx-mssql-client</artifactId>
 
-  <name>Vertx MSSQL Client</name>
+  <name>Vert.x MSSQL Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive MSSQL Client</description>
 

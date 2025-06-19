@@ -27,7 +27,7 @@
 
   <artifactId>vertx-db2-client</artifactId>
 
-  <name>Vertx DB2 Client</name>
+  <name>Vert.x DB2 Client</name>
   <url>https://github.com/eclipse-vertx/vertx-sql-client</url>
   <description>The Reactive DB2 client</description>
 
