@@ -61,7 +61,8 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
     Function<Connection, Future<Void>> afterAcquire = conn -> ((OracleJdbcConnection) conn).afterAcquire();
     Function<Connection, Future<Void>> beforeRecycle = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
     ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx, null);
-    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle,
+      factory, databases, connectHandler, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;

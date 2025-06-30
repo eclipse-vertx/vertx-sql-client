@@ -11,6 +11,7 @@
 
 package io.vertx.oracleclient.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.ContextInternal;
@@ -30,6 +31,11 @@ public class OracleConnectionImpl extends SqlConnectionBase<OracleConnectionImpl
   public static Future<OracleConnection> connect(Vertx vertx, OracleConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     OracleConnectionFactory client = new OracleConnectionFactory(ctx.owner());
-    return prepareForClose(ctx, client.connect(ctx, options)).map(OracleConnection::cast);
+    return client.connect(ctx, options).map(conn -> {
+      OracleConnectionImpl impl = new OracleConnectionImpl(ctx, client, conn);
+      conn.init(impl);
+      prepareForClose(ctx, impl);
+      return impl;
+    });
   }
 }

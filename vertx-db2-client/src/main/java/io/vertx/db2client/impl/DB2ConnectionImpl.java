@@ -37,7 +37,12 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    return prepareForClose(ctx, client.connect((Context)ctx, options)).map(DB2Connection::cast);
+    return client.connect((Context)ctx, options).map(conn -> {
+      DB2ConnectionImpl impl = new DB2ConnectionImpl(ctx, client, conn);
+      conn.init(impl);
+      prepareForClose(ctx, impl);
+      return impl;
+    });
   }
 
   public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {

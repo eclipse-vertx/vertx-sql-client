@@ -42,7 +42,12 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     } catch (Exception e) {
       return context.failedFuture(e);
     }
-    return prepareForClose(context, client.connect((Context)context, options)).map(PgConnection::cast);
+    return client.connect((Context)context, options).map(conn -> {
+      PgConnectionImpl impl = new PgConnectionImpl(client, context, conn);
+      conn.init(impl);
+      prepareForClose(context, impl);
+      return impl;
+    });
   }
 
   private volatile Handler<PgNotification> notificationHandler;

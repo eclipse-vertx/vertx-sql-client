@@ -230,10 +230,13 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   protected static Future<SqlConnection> prepareForClose(ContextInternal ctx, Future<SqlConnection> future) {
     return future.andThen(ar -> {
       if (ar.succeeded()) {
-        SqlConnectionBase<?> base = (SqlConnectionBase<?>) ar.result();
-        base.closeFactoryAfterUsage = true;
-        ctx.addCloseHook(base);
+        prepareForClose(ctx, (SqlConnectionBase<?>) ar.result());
       }
     });
+  }
+
+  protected static void prepareForClose(ContextInternal ctx, SqlConnectionBase<?> base) {
+    base.closeFactoryAfterUsage = true;
+    ctx.addCloseHook(base);
   }
 }

@@ -28,7 +28,6 @@ import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
@@ -153,19 +152,13 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, PgConnectOptions options) {
+  public Future<Connection> connect(Context context, PgConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
     if (options.isUsingDomainSocket() && !vertx.isNativeTransportEnabled()) {
       return contextInternal.failedFuture(new IllegalArgumentException(NATIVE_TRANSPORT_REQUIRED));
     }
-    PromiseInternal<SqlConnection> promise = contextInternal.promise();
-    connect(asEventLoopContext(contextInternal), options)
-      .map(conn -> {
-        PgConnectionImpl pgConn = new PgConnectionImpl(this, contextInternal, conn);
-        conn.init(pgConn);
-        return (SqlConnection)pgConn;
-      })
-      .onComplete(promise);
+    PromiseInternal<Connection> promise = contextInternal.promise();
+    connect(asEventLoopContext(contextInternal), options).onComplete(promise);
     return promise.future();
   }
 

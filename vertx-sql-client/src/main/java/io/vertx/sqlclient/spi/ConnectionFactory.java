@@ -6,14 +6,14 @@ import io.vertx.core.Future;
 import io.vertx.core.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.internal.Connection;
 
 /**
  * A connection factory, can be obtained from {@link Driver#createConnectionFactory}
  */
 public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeable {
 
-  default Future<SqlConnection> connect(Context context, Future<C> fut) {
+  default Future<Connection> connect(Context context, Future<C> fut) {
     // The future might be on any context or context-less
     // So we need to use a specific context promise
     Promise<C> promise = ((ContextInternal) context).promise();
@@ -30,6 +30,6 @@ public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeabl
    * @param context the context
    * @return the future connection
    */
-  Future<SqlConnection> connect(Context context, C options);
+  Future<Connection> connect(Context context, C options);
 
 }

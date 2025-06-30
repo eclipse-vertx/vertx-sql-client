@@ -23,6 +23,7 @@ import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.core.internal.pool.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
@@ -34,6 +35,7 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -47,7 +49,8 @@ public class SqlConnectionPool {
 
   private static final Object NO_METRICS = new Object();
 
-  private final Function<Context, Future<SqlConnection>> connectionProvider;
+  private final Function<Context, Future<Connection>> connectionProvider;
+  private final ConnectionFactory<?> connectionFactory;
   private final VertxInternal vertx;
   private final PoolMetrics metrics;
   private final ConnectionPool<PooledConnection> pool;
@@ -59,7 +62,9 @@ public class SqlConnectionPool {
   private final long maxLifetime;
   private final int maxSize;
 
-  public SqlConnectionPool(Function<Context, Future<SqlConnection>> connectionProvider,
+  // TODO : use connection provider with Connection instead of SqlConnection
+  public <O extends SqlConnectOptions> SqlConnectionPool(Supplier<Future<O>> optionsProvider,
+                           ConnectionFactory<O> connectionFactory,
                            PoolMetrics metrics,
                            Handler<PooledConnection> hook,
                            Function<Connection, Future<Void>> afterAcquire,
@@ -78,6 +83,7 @@ public class SqlConnectionPool {
       throw new IllegalArgumentException("afterAcquire and beforeRecycle hooks must be both not null");
     }
     this.pool = ConnectionPool.pool(connector, new int[]{maxSize}, maxWaitQueueSize);
+    this.connectionFactory = connectionFactory;
     this.metrics = metrics;
     this.vertx = vertx;
     this.pipelined = pipelined;
@@ -85,7 +91,7 @@ public class SqlConnectionPool {
     this.maxLifetime = maxLifetime;
     this.maxSize = maxSize;
     this.hook = hook;
-    this.connectionProvider = connectionProvider;
+    this.connectionProvider = context -> connectionFactory.connect(context, optionsProvider.get());
     this.afterAcquire = afterAcquire;
     this.beforeRecycle = beforeRecycle;
 
@@ -114,12 +120,10 @@ public class SqlConnectionPool {
   private final PoolConnector<PooledConnection> connector = new PoolConnector<>() {
     @Override
     public Future<ConnectResult<PooledConnection>> connect(ContextInternal context, Listener listener) {
-      Future<SqlConnection> future = connectionProvider.apply(context);
-      return future.compose(res -> {
-        SqlConnectionBase connBase = (SqlConnectionBase) res;
-        Connection conn = connBase.unwrap();
+      Future<Connection> future = connectionProvider.apply(context);
+      return future.compose(conn -> {
         if (conn.isValid()) {
-          PooledConnection pooled = new PooledConnection(connBase.factory(), conn, listener);
+          PooledConnection pooled = new PooledConnection(connectionFactory, conn, listener);
           conn.init(pooled);
           if (hook != null) {
             Promise<ConnectResult<PooledConnection>> p = Promise.promise();

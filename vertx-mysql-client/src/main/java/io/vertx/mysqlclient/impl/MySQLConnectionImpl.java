@@ -37,7 +37,12 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    return prepareForClose(ctx, client.connect((Context)ctx, options)).map(MySQLConnection::cast);
+    return client.connect((Context)ctx, options).map(conn -> {
+      MySQLConnectionImpl impl = new MySQLConnectionImpl(ctx, client, conn);
+      conn.init(impl);
+      prepareForClose(ctx, impl);
+      return impl;
+    });
   }
 
   public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {

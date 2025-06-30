@@ -142,15 +142,15 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, MySQLConnectOptions options) {
+  public Future<Connection> connect(Context context, MySQLConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
-    Promise<SqlConnection> promise = contextInternal.promise();
+    Promise<Connection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
-      .map(conn -> {
+      /*.map(conn -> {
         MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn);
         conn.init(mySQLConnection);
         return (SqlConnection)mySQLConnection;
-      })
+      })*/
       .onComplete(promise);
     return promise.future();
   }

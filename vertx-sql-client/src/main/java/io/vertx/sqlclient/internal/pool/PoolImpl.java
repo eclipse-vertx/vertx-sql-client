@@ -32,9 +32,11 @@ import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.internal.SqlClientBase;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
@@ -55,13 +57,14 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final Handler<SqlConnection> connectionInitializer;
   private long timerID;
 
-  public PoolImpl(VertxInternal vertx,
+  public <O extends SqlConnectOptions> PoolImpl(VertxInternal vertx,
                   Driver driver,
                   boolean pipelined,
                   PoolOptions poolOptions,
                   Function<Connection, Future<Void>> afterAcquire,
                   Function<Connection, Future<Void>> beforeRecycle,
-                  Function<Context, Future<SqlConnection>> connectionProvider,
+                  ConnectionFactory<O> connectionFactory,
+                  Supplier<Future<O>> connectionProvider,
                   Handler<SqlConnection> connectionInitializer,
                   CloseFuture closeFuture) {
     super(driver);
@@ -83,7 +86,9 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.timerID = -1L;
     this.pipelined = pipelined;
     this.vertx = vertx;
-    this.pool = new SqlConnectionPool(connectionProvider, poolMetrics, hook, afterAcquire, beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined, poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
+    this.pool = new SqlConnectionPool(connectionProvider, connectionFactory, poolMetrics, hook, afterAcquire,
+      beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined,
+      poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.closeFuture = closeFuture;
     this.connectionInitializer = connectionInitializer;
   }

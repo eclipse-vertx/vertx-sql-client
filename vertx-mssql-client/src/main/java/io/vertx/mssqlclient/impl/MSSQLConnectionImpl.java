@@ -36,7 +36,12 @@ public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner());
-    return prepareForClose(ctx, client.connect((Context)ctx, options)).map(MSSQLConnection::cast);
+    return client.connect((Context)ctx, options).map(conn -> {
+      MSSQLConnectionImpl impl = new MSSQLConnectionImpl(ctx, client, conn);
+      conn.init(impl);
+      prepareForClose(ctx, impl);
+      return impl;
+    });
   }
 
   @Override
