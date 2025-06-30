@@ -20,16 +20,16 @@ import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
 public class CloseCursorCommandCodec extends MSSQLCommandCodec<Void, CloseCursorCommand> {
 
-  private final CursorData cursorData;
+  private CursorData cursorData;
   private boolean cursorClosed;
 
-  public CloseCursorCommandCodec(TdsMessageCodec tdsMessageCodec, CloseCursorCommand cmd) {
-    super(tdsMessageCodec, cmd);
-    cursorData = tdsMessageCodec.removeCursorData(cmd.id());
+  public CloseCursorCommandCodec(CloseCursorCommand cmd) {
+    super(cmd);
   }
 
   @Override
   void encode() {
+    cursorData = tdsMessageCodec.removeCursorData(cmd.id());
     if (cursorData != null && cursorData.serverCursorId > 0) {
       sendCursorClose();
     } else {

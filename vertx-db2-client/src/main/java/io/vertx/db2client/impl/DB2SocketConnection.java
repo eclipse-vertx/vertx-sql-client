@@ -24,10 +24,12 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
+import io.vertx.db2client.impl.codec.CommandCodec;
 import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -77,6 +79,11 @@ public class DB2SocketConnection extends SocketConnectionBase {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
     super.init();
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    return CommandCodec.wrap(command);
   }
 
   @Override

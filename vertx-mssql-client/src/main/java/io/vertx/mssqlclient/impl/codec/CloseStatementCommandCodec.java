@@ -20,8 +20,8 @@ import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
 class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementCommand> {
 
-  CloseStatementCommandCodec(TdsMessageCodec tdsMessageCodec, CloseStatementCommand cmd) {
-    super(tdsMessageCodec, cmd);
+  CloseStatementCommandCodec(CloseStatementCommand cmd) {
+    super(cmd);
   }
 
   @Override

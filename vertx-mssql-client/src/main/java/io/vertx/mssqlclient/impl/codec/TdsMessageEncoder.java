@@ -15,7 +15,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.internal.command.*;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.MIN_PACKET_SIZE;
@@ -42,40 +41,18 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandBase<?>) {
-      CommandBase<?> cmd = (CommandBase<?>) msg;
+    if (msg instanceof MSSQLCommandCodec<?, ?>) {
+      MSSQLCommandCodec<?, ?> cmd = (MSSQLCommandCodec<?, ?>) msg;
+      cmd.tdsMessageCodec = tdsMessageCodec;
       write(cmd);
     } else {
       super.write(ctx, msg, promise);
     }
   }
 
-  void write(CommandBase<?> cmd) {
-    MSSQLCommandCodec<?, ?> codec = wrap(cmd);
-    if (tdsMessageCodec.add(codec)) {
-      codec.encode();
-    }
-  }
-
-  private MSSQLCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
-    if (cmd instanceof PreLoginCommand) {
-      return new PreLoginCommandCodec(tdsMessageCodec, (PreLoginCommand) cmd);
-    } else if (cmd instanceof InitCommand) {
-      return new InitCommandCodec(tdsMessageCodec, (InitCommand) cmd);
-    } else if (cmd instanceof SimpleQueryCommand) {
-      return new SQLBatchCommandCodec<>(tdsMessageCodec, (SimpleQueryCommand<?>) cmd);
-    } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCodec(tdsMessageCodec, (PrepareStatementCommand) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand) {
-      return ExtendedQueryCommandBaseCodec.create(tdsMessageCodec, (ExtendedQueryCommand<?>) cmd);
-    } else if (cmd instanceof CloseStatementCommand) {
-      return new CloseStatementCommandCodec(tdsMessageCodec, (CloseStatementCommand) cmd);
-    } else if (cmd == CloseConnectionCommand.INSTANCE) {
-      return new CloseConnectionCommandCodec(tdsMessageCodec, (CloseConnectionCommand) cmd);
-    } else if (cmd instanceof CloseCursorCommand) {
-      return new CloseCursorCommandCodec(tdsMessageCodec, (CloseCursorCommand) cmd);
-    } else {
-      throw new UnsupportedOperationException();
+  void write(MSSQLCommandCodec<?, ?> cmd) {
+    if (tdsMessageCodec.add(cmd)) {
+      cmd.encode();
     }
   }
 

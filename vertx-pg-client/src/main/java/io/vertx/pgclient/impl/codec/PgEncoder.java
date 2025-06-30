@@ -25,6 +25,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.SocketChannel;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
+import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.impl.HexSequence;
 import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.RowDesc;
@@ -97,7 +98,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
     if (!closeSent) {
       CloseConnectionCommand cmd = CloseConnectionCommand.INSTANCE;
-      PgCommandCodec<?, ?> codec = wrap(cmd);
+      PgCommandCodec<?, ?> codec = PgCommandCodec.wrap(cmd);
       codec.encode(this);
     }
   }
@@ -108,30 +109,10 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     capacityEstimate = 0;
   }
 
-  void write(CommandBase<?> cmd) {
-    PgCommandCodec<?, ?> cmdCodec = wrap(cmd);
-    if (codec.add(cmdCodec)) {
-      cmdCodec.encode(this);
+  void write(PgCommandCodec<?, ?> cmd) {
+    if (codec.add(cmd)) {
+      cmd.encode(this);
     }
-  }
-
-  private PgCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
-    if (cmd instanceof InitCommand) {
-      return new InitCommandCodec((InitCommand) cmd);
-    } else if (cmd instanceof SimpleQueryCommand<?>) {
-      return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand<?>) {
-      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) cmd);
-    } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCommandCodec((PrepareStatementCommand) cmd);
-    } else if (cmd instanceof CloseConnectionCommand) {
-      return CloseConnectionCommandCodec.INSTANCE;
-    } else if (cmd instanceof CloseCursorCommand) {
-      return new ClosePortalCommandCodec((CloseCursorCommand) cmd);
-    } else if (cmd instanceof CloseStatementCommand) {
-      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
-    }
-    throw new AssertionError();
   }
 
   @Override
@@ -141,9 +122,8 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandBase<?>) {
-      CommandBase<?> cmd = (CommandBase<?>) msg;
-      write(cmd);
+    if (msg instanceof PgCommandCodec<?, ?>) {
+      write((PgCommandCodec<?, ?>) msg);
     } else {
       super.write(ctx, msg, promise);
     }

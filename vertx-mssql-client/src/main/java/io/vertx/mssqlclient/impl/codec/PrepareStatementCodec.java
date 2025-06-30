@@ -16,8 +16,8 @@ import io.vertx.sqlclient.internal.command.CommandResponse;
 import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
 
 class PrepareStatementCodec extends MSSQLCommandCodec<PreparedStatement, PrepareStatementCommand> {
-  PrepareStatementCodec(TdsMessageCodec tdsMessageCodec, PrepareStatementCommand cmd) {
-    super(tdsMessageCodec, cmd);
+  PrepareStatementCodec(PrepareStatementCommand cmd) {
+    super(cmd);
   }
 
   @Override

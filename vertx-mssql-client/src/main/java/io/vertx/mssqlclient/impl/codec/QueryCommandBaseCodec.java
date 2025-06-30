@@ -23,8 +23,8 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
   protected int rowCount;
   protected RowResultDecoder<?, T> rowResultDecoder;
 
-  QueryCommandBaseCodec(TdsMessageCodec tdsMessageCodec, C cmd) {
-    super(tdsMessageCodec, cmd);
+  QueryCommandBaseCodec(C cmd) {
+    super(cmd);
   }
 
   private static <A, T> T emptyResult(Collector<Row, A, T> collector) {

@@ -20,12 +20,20 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.pgclient.PgException;
+import io.vertx.sqlclient.impl.CommandMessage;
+import io.vertx.sqlclient.internal.command.CloseConnectionCommand;
+import io.vertx.sqlclient.internal.command.CloseCursorCommand;
+import io.vertx.sqlclient.internal.command.CloseStatementCommand;
 import io.vertx.sqlclient.internal.command.CommandBase;
 import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.command.InitCommand;
+import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
 
 import java.util.Arrays;
 
-abstract class PgCommandCodec<R, C extends CommandBase<R>> {
+public abstract class PgCommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
   private static final Logger logger = LoggerFactory.getLogger(PgCommandCodec.class);
 
@@ -36,6 +44,25 @@ abstract class PgCommandCodec<R, C extends CommandBase<R>> {
 
   PgCommandCodec(C cmd) {
     this.cmd = cmd;
+  }
+
+  public static PgCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+    if (cmd instanceof InitCommand) {
+      return new InitCommandCodec((InitCommand) cmd);
+    } else if (cmd instanceof SimpleQueryCommand<?>) {
+      return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
+    } else if (cmd instanceof ExtendedQueryCommand<?>) {
+      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      return new PrepareStatementCommandCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof CloseConnectionCommand) {
+      return CloseConnectionCommandCodec.INSTANCE;
+    } else if (cmd instanceof CloseCursorCommand) {
+      return new ClosePortalCommandCodec((CloseCursorCommand) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    }
+    throw new AssertionError();
   }
 
   abstract void encode(PgEncoder encoder);

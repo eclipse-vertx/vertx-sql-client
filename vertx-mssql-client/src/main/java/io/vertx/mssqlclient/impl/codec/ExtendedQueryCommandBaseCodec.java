@@ -23,18 +23,18 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
 
   final MSSQLPreparedStatement ps;
 
-  ExtendedQueryCommandBaseCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
-    super(tdsMessageCodec, cmd);
+  ExtendedQueryCommandBaseCodec(ExtendedQueryCommand<T> cmd) {
+    super(cmd);
     ps = (MSSQLPreparedStatement) this.cmd.preparedStatement();
   }
 
-  public static <U> MSSQLCommandCodec<?, ?> create(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<U> queryCmd) {
+  public static <U> MSSQLCommandCodec<?, ?> create(ExtendedQueryCommand<U> queryCmd) {
     if (queryCmd.isBatch()) {
-      return new ExtendedBatchQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+      return new ExtendedBatchQueryCommandCodec<>(queryCmd);
     } else if (queryCmd.cursorId() != null) {
-      return new ExtendedCursorQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+      return new ExtendedCursorQueryCommandCodec<>(queryCmd);
     } else {
-      return new ExtendedQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+      return new ExtendedQueryCommandCodec<>(queryCmd);
     }
   }
 

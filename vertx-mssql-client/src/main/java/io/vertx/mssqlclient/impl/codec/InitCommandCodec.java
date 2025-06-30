@@ -31,8 +31,8 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
 
   static final Object LOGIN_SENT = new Object();
 
-  InitCommandCodec(TdsMessageCodec tdsMessageCodec, InitCommand cmd) {
-    super(tdsMessageCodec, cmd);
+  InitCommandCodec(InitCommand cmd) {
+    super(cmd);
   }
 
   @Override

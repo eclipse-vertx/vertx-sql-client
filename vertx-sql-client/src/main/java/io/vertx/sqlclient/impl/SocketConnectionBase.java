@@ -249,7 +249,7 @@ public abstract class SocketConnectionBase implements Connection {
               if (closeCmd != null) {
                 inflight++;
                 written++;
-                ctx.write(closeCmd, ctx.voidPromise());
+                ctx.write(toMessage(closeCmd), ctx.voidPromise());
               }
             }
             PrepareStatementCommand prepareCmd = prepareCommand(queryCmd, cache, false);
@@ -266,7 +266,7 @@ public abstract class SocketConnectionBase implements Connection {
           }
         }
         written++;
-        ctx.write(cmd, ctx.voidPromise());
+        ctx.write(toMessage(cmd), ctx.voidPromise());
       }
       if (written > 0) {
         ctx.flush();
@@ -274,6 +274,10 @@ public abstract class SocketConnectionBase implements Connection {
     } finally {
       executing = false;
     }
+  }
+
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    throw new UnsupportedOperationException();
   }
 
   private PrepareStatementCommand prepareCommand(ExtendedQueryCommand<?> queryCmd, boolean cache, boolean sendParameterTypes) {
@@ -291,14 +295,14 @@ public abstract class SocketConnectionBase implements Connection {
           queryCmd.fail(VertxException.noStackTrace(msg));
         } else {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
-          ctx.write(queryCmd, ctx.voidPromise());
+          ctx.write(toMessage(queryCmd), ctx.voidPromise());
           ctx.flush();
         }
       } else {
         if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           // We cannot cache this prepared statement because it might be executed with another type
-          ctx.write(prepareCommand(queryCmd, false, true), ctx.voidPromise());
+          ctx.write(toMessage(prepareCommand(queryCmd, false, true)), ctx.voidPromise());
           ctx.flush();
         } else {
           inflight--;

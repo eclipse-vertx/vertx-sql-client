@@ -28,10 +28,12 @@ import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.ClearCachedStatementsEvent;
+import io.vertx.mysqlclient.impl.codec.CommandCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLPacketDecoder;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -94,6 +96,11 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     pipeline.addBefore("handler", "codec", codec);
     pipeline.addBefore("codec", "packetDecoder", new MySQLPacketDecoder());
     super.init();
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    return CommandCodec.wrap(command);
   }
 
   @Override

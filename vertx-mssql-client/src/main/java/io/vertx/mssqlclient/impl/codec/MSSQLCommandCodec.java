@@ -16,25 +16,55 @@ import io.netty.channel.ChannelHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.vertx.mssqlclient.MSSQLException;
 import io.vertx.mssqlclient.MSSQLInfo;
+import io.vertx.mssqlclient.impl.command.PreLoginCommand;
+import io.vertx.sqlclient.impl.CommandMessage;
+import io.vertx.sqlclient.internal.command.CloseConnectionCommand;
+import io.vertx.sqlclient.internal.command.CloseCursorCommand;
+import io.vertx.sqlclient.internal.command.CloseStatementCommand;
 import io.vertx.sqlclient.internal.command.CommandBase;
 import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.command.InitCommand;
+import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.EnvChange.*;
 import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedByteLengthString;
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedShortLengthString;
 
-abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
+public abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
-  protected final TdsMessageCodec tdsMessageCodec;
+  public TdsMessageCodec tdsMessageCodec;
 
   final C cmd;
   public MSSQLException failure;
   public R result;
 
-  MSSQLCommandCodec(TdsMessageCodec tdsMessageCodec, C cmd) {
-    this.tdsMessageCodec = tdsMessageCodec;
+  MSSQLCommandCodec(C cmd) {
     this.cmd = cmd;
+  }
+
+  public static MSSQLCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+    if (cmd instanceof PreLoginCommand) {
+      return new PreLoginCommandCodec((PreLoginCommand) cmd);
+    } else if (cmd instanceof InitCommand) {
+      return new InitCommandCodec((InitCommand) cmd);
+    } else if (cmd instanceof SimpleQueryCommand) {
+      return new SQLBatchCommandCodec<>((SimpleQueryCommand<?>) cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof ExtendedQueryCommand) {
+      return ExtendedQueryCommandBaseCodec.create((ExtendedQueryCommand<?>) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    } else if (cmd == CloseConnectionCommand.INSTANCE) {
+      return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+    } else if (cmd instanceof CloseCursorCommand) {
+      return new CloseCursorCommandCodec((CloseCursorCommand) cmd);
+    } else {
+      throw new UnsupportedOperationException();
+    }
   }
 
   abstract void encode();

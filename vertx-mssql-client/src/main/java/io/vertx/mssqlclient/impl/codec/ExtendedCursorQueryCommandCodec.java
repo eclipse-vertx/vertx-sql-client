@@ -21,15 +21,15 @@ import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
 class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
 
-  private final CursorData cursorData;
+  private CursorData cursorData;
 
-  ExtendedCursorQueryCommandCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
-    super(tdsMessageCodec, cmd);
-    cursorData = tdsMessageCodec.getOrCreateCursorData(cmd.cursorId());
+  ExtendedCursorQueryCommandCodec(ExtendedQueryCommand<T> cmd) {
+    super(cmd);
   }
 
   @Override
   void encode() {
+    cursorData = tdsMessageCodec.getOrCreateCursorData(cmd.cursorId());
     if (cursorData.preparedHandle == 0) {
       sendCursorPrepExec();
     } else {

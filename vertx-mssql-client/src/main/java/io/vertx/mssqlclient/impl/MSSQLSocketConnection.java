@@ -29,12 +29,14 @@ import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
+import io.vertx.mssqlclient.impl.codec.MSSQLCommandCodec;
 import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
@@ -145,6 +147,11 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec(connectOptions.getPacketSize()));
     pipeline.addBefore("messageCodec", "packetDecoder", new TdsPacketDecoder());
     super.init();
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    return MSSQLCommandCodec.wrap(command);
   }
 
   @Override

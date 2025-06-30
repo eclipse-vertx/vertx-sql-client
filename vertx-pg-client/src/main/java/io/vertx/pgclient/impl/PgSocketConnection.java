@@ -29,7 +29,9 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.PgCodec;
+import io.vertx.pgclient.impl.codec.PgCommandCodec;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
+import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.internal.QueryResultHandler;
@@ -170,6 +172,11 @@ public class PgSocketConnection extends SocketConnectionBase {
     } else {
       super.doSchedule(cmd, handler);
     }
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    return PgCommandCodec.wrap(command);
   }
 
   @Override

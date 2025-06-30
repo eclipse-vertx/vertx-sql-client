@@ -27,8 +27,8 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
   private static final int ENCRYPTION = 0x01;
   private static final int TERMINATOR = 0xFF;
 
-  PreLoginCommandCodec(TdsMessageCodec tdsMessageCodec, PreLoginCommand cmd) {
-    super(tdsMessageCodec, cmd);
+  PreLoginCommandCodec(PreLoginCommand cmd) {
+    super(cmd);
   }
 
   @Override
