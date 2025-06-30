@@ -8,5 +8,6 @@ open module io.vertx.tests.sql.client.mssql {
   requires io.vertx.testing.unit;
   requires junit;
   requires testcontainers;
+  requires hamcrest.core;
 
 }
