@@ -18,33 +18,26 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.pool.CloseablePool;
 import io.vertx.sqlclient.internal.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
-import io.vertx.sqlclient.spi.Driver;
+import io.vertx.sqlclient.spi.GenericDriver;
 
 import java.util.function.Supplier;
 
-public class PgDriver implements Driver<PgConnectOptions> {
+public class PgDriver extends GenericDriver<PgConnectOptions> {
 
-  private static final String SHARED_CLIENT_KEY = "__vertx.shared.pgclient";
+  private static final String DISCRIMINANT = "pgclient";
 
   public static final PgDriver INSTANCE = new PgDriver();
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
-    VertxInternal vx = (VertxInternal) vertx;
-    PoolImpl pool;
-    if (poolOptions.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, poolOptions.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, poolOptions, transportOptions, cf));
-    } else {
-      pool = newPoolImpl(vx, connectHandler, databases, poolOptions, transportOptions, closeFuture);
-    }
-    return new CloseablePool(vx, closeFuture, pool);
+  protected String discriminant() {
+    return DISCRIMINANT;
   }
 
-  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  @Override
+  protected Pool newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     boolean pipelinedPool = poolOptions instanceof PgPoolOptions && ((PgPoolOptions) poolOptions).isPipelined();
     ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null,
