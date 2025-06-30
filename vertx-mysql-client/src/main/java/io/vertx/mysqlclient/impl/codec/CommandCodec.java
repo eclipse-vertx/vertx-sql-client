@@ -49,12 +49,11 @@ public abstract class CommandCodec<R, C extends CommandBase<R>> extends CommandM
 
   public Throwable failure;
   public R result;
-  final C cmd;
   MySQLEncoder encoder;
   int sequenceId;
 
   CommandCodec(C cmd) {
-    this.cmd = cmd;
+    super(cmd);
   }
 
   public static CommandCodec<?, ?> wrap(CommandBase<?> cmd) {

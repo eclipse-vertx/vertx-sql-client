@@ -46,6 +46,8 @@ import java.util.function.Predicate;
  */
 public abstract class SocketConnectionBase implements Connection {
 
+  private static final Completable<?> NULL_HANDLER = (res, err) -> {};
+
   public static final Logger logger = LoggerFactory.getLogger(SocketConnectionBase.class);
 
   public enum Status {
@@ -65,6 +67,7 @@ public abstract class SocketConnectionBase implements Connection {
 
   // Command pipeline state
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
+  private final ArrayDeque<Completable<?>> handlers = new ArrayDeque<>();
   private boolean executing;
   private int inflight;
   private boolean paused;
@@ -185,6 +188,7 @@ public abstract class SocketConnectionBase implements Connection {
         status = Status.CLOSING;
         // Append directly since schedule checks the status and won't enqueue the command
         pending.add(CloseConnectionCommand.INSTANCE);
+        handlers.add(NULL_HANDLER);
         checkPending();
       }
       ch.closeFuture()
@@ -207,19 +211,20 @@ public abstract class SocketConnectionBase implements Connection {
     if (context != this.context) {
       throw new IllegalStateException();
     }
-    cmd.handler = handler;
+//    cmd.handler = handler;
     if (status == Status.CONNECTED) {
       if (cmd instanceof CompositeCommand) {
         CompositeCommand composite = (CompositeCommand) cmd;
-        List<CommandBase<?>> commands = composite.commands();
-        pending.addAll(commands);
-        composite.succeed();
+        pending.addAll(composite.commands());
+        handlers.addAll(composite.handlers());
+        handler.succeed();
       } else {
         pending.add(cmd);
+        handlers.add(handler);
       }
       checkPending();
     } else {
-      cmd.fail(VertxException.noStackTrace("Connection is not active now, current status: " + status));
+      handler.fail(VertxException.noStackTrace("Connection is not active now, current status: " + status));
     }
   }
 
@@ -234,6 +239,8 @@ public abstract class SocketConnectionBase implements Connection {
       CommandBase<?> cmd;
       while (!paused && inflight < pipeliningLimit && (cmd = pending.poll()) != null) {
         inflight++;
+        Completable<?> handler = handlers.poll();
+        CommandMessage<?, ?> toSend;
         if (cmd instanceof ExtendedQueryCommand) {
           ExtendedQueryCommand queryCmd = (ExtendedQueryCommand) cmd;
           if (queryCmd.ps == null) {
@@ -245,28 +252,32 @@ public abstract class SocketConnectionBase implements Connection {
             // Execute prepare
             boolean cache = psCache != null && preparedStatementCacheSqlFilter.test(queryCmd.sql());
             if (cache) {
-              CloseStatementCommand closeCmd = evictStatementIfNecessary();
+              CommandMessage<?, ?> closeCmd = evictStatementIfNecessary();
               if (closeCmd != null) {
                 inflight++;
                 written++;
-                ctx.write(toMessage(closeCmd), ctx.voidPromise());
+                ctx.write(closeCmd, ctx.voidPromise());
               }
             }
-            PrepareStatementCommand prepareCmd = prepareCommand(queryCmd, cache, false);
+            CommandMessage<?, ?> prepareCmd = prepareCommand(queryCmd, handler, cache, false);
             paused = true;
             inflight++;
-            cmd = prepareCmd;
+            toSend = prepareCmd;
           } else {
             String msg = queryCmd.prepare();
             if (msg != null) {
               inflight--;
-              queryCmd.fail(VertxException.noStackTrace(msg));
+              handler.fail(VertxException.noStackTrace(msg));
               continue;
+            } else {
+              toSend = createMessage(cmd, handler);
             }
           }
+        } else {
+          toSend = createMessage(cmd, handler);
         }
         written++;
-        ctx.write(toMessage(cmd), ctx.voidPromise());
+        ctx.write(toSend, ctx.voidPromise());
       }
       if (written > 0) {
         ctx.flush();
@@ -276,13 +287,29 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
+  private CommandMessage<?, ?> createMessage(CommandBase<?> command, Completable<?> handler) {
+    CommandMessage<?, ?> msg = toMessage(command);
+    msg.handler = (Completable) handler;
+/*
+    if (command.handler != null) {
+      msg.handler = (Completable) command.handler;
+      command.handler = (a, r) -> {
+        System.out.println("Handle me ------------------------");
+        new Exception().printStackTrace(System.out);
+      };
+    }
+*/
+    return msg;
+  }
+
   protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
     throw new UnsupportedOperationException();
   }
 
-  private PrepareStatementCommand prepareCommand(ExtendedQueryCommand<?> queryCmd, boolean cache, boolean sendParameterTypes) {
+  private CommandMessage<?, ?> prepareCommand(ExtendedQueryCommand<?> queryCmd, Completable<?> handler, boolean cache, boolean sendParameterTypes) {
     PrepareStatementCommand prepareCmd = new PrepareStatementCommand(queryCmd.sql(), null, cache, sendParameterTypes ? queryCmd.parameterTypes() : null);
-    prepareCmd.handler = (ps, cause) -> {
+    CommandMessage<PreparedStatement, ?> prepareMsg = (CommandMessage) toMessage(prepareCmd);
+    prepareMsg.handler = (ps, cause) -> {
       paused = false;
       if (cause == null) {
         if (cache) {
@@ -292,25 +319,25 @@ public abstract class SocketConnectionBase implements Connection {
         String msg = queryCmd.prepare();
         if (msg != null) {
           inflight--;
-          queryCmd.fail(VertxException.noStackTrace(msg));
+          handler.fail(VertxException.noStackTrace(msg));
         } else {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
-          ctx.write(toMessage(queryCmd), ctx.voidPromise());
+          ctx.write(createMessage(queryCmd, handler), ctx.voidPromise());
           ctx.flush();
         }
       } else {
         if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           // We cannot cache this prepared statement because it might be executed with another type
-          ctx.write(toMessage(prepareCommand(queryCmd, false, true)), ctx.voidPromise());
+          ctx.write(prepareCommand(queryCmd, handler, false, true), ctx.voidPromise());
           ctx.flush();
         } else {
           inflight--;
-          queryCmd.fail(cause);
+          handler.fail(cause);
         }
       }
     };
-    return prepareCmd;
+    return prepareMsg;
   }
 
   protected void handleMessage(Object msg) {
@@ -334,16 +361,17 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  private CloseStatementCommand evictStatementIfNecessary() {
+  private CommandMessage<?, ?> evictStatementIfNecessary() {
     if (psCache != null && psCache.isFull()) {
       PreparedStatement evicted = psCache.evict();
       CloseStatementCommand closeCmd = new CloseStatementCommand(evicted);
-      closeCmd.handler = (res, err) -> {
+      CommandMessage<?, ?> msg = toMessage(closeCmd);
+      msg.handler = (res, err) -> {
         if (err != null) {
           logger.error("Error when closing cached prepared statement", err);
         }
       };
-      return closeCmd;
+      return msg;
     } else {
       return null;
     }
@@ -395,7 +423,8 @@ public abstract class SocketConnectionBase implements Connection {
       CommandBase<?> cmd;
       while ((cmd = pending.poll()) != null) {
         CommandBase<?> c = cmd;
-        context.runOnContext(v -> c.fail(cause));
+        Completable<?> handler = handlers.poll();
+        context.runOnContext(v -> handler.fail(cause));
       }
       if (holder != null) {
         holder.handleClosed();

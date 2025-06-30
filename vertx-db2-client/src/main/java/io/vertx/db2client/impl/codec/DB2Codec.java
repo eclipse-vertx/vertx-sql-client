@@ -43,7 +43,7 @@ public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encode
 
   private void clearInflightCommands(Throwable failure) {
     for (CommandCodec<?, ?> commandCodec : inflight) {
-      commandCodec.cmd.fail(failure);
+      commandCodec.fail(failure);
     }
   }
 }

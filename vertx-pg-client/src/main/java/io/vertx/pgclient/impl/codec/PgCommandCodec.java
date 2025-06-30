@@ -40,10 +40,9 @@ public abstract class PgCommandCodec<R, C extends CommandBase<R>> extends Comman
   PgDecoder decoder;
   PgException failure;
   R result;
-  final C cmd;
 
   PgCommandCodec(C cmd) {
-    this.cmd = cmd;
+    super(cmd);
   }
 
   public static PgCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
@@ -62,7 +61,7 @@ public abstract class PgCommandCodec<R, C extends CommandBase<R>> extends Comman
     } else if (cmd instanceof CloseStatementCommand) {
       return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
     }
-    throw new AssertionError();
+    throw new AssertionError("Invalid command " + cmd);
   }
 
   abstract void encode(PgEncoder encoder);

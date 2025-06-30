@@ -65,7 +65,7 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   }
 
   private void fail(MSSQLCommandCodec<?, ?> codec, Throwable cause) {
-    codec.cmd.fail(cause);
+    codec.fail(cause);
   }
 
   @Override

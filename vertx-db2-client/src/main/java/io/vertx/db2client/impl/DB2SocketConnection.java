@@ -93,8 +93,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
       if (txCmd.kind == TxCommand.Kind.BEGIN) {
         // DB2 always implicitly starts a transaction with each query, and does
         // not support the 'BEGIN' keyword. Instead we can no-op BEGIN commands
-        cmd.handler = handler;
-        cmd.complete(CommandResponse.success(txCmd.result).toAsyncResult());
+        handler.succeed(txCmd.result);
       } else {
         SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.kind.sql, false, false,
             QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);

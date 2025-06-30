@@ -10,7 +10,31 @@
  */
 package io.vertx.sqlclient.impl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Completable;
+import io.vertx.core.Future;
 import io.vertx.sqlclient.internal.command.CommandBase;
 
 public class CommandMessage<R, C extends CommandBase<R>> {
+
+  public Completable<R> handler;
+  public final C cmd;
+
+  public CommandMessage(C cmd) {
+    this.cmd = cmd;
+  }
+
+  public final void fail(Throwable err) {
+    complete(Future.failedFuture(err));
+  }
+
+  public final void fail(String failureMsg) {
+    complete(Future.failedFuture(failureMsg));
+  }
+
+  public final void complete(AsyncResult<R> resp) {
+    if (handler != null) {
+      handler.complete(resp.result(), resp.cause());
+    }
+  }
 }

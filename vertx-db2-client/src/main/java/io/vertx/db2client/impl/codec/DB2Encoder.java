@@ -20,6 +20,7 @@ import java.util.ArrayDeque;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.core.Completable;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2SocketConnection;
@@ -59,7 +60,7 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
   void write(CommandCodec<?, ?> msg) {
     msg.completionHandler = resp -> {
       CommandCodec<?, ?> c = inflight.poll();
-      resp.cmd = (CommandBase) c.cmd;
+      resp.handler = (Completable) c.handler;
       chctx.fireChannelRead(resp);
     };
     inflight.add(msg);

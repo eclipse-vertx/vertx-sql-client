@@ -83,7 +83,7 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
   }
 
   private void fail(PgCommandCodec<?, ?> codec, Throwable cause) {
-    codec.cmd.fail(cause);
+    codec.fail(cause);
   }
 
   @Override

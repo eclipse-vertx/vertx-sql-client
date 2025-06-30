@@ -14,6 +14,7 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.vertx.core.Completable;
 import io.vertx.sqlclient.internal.command.CommandBase;
 import io.vertx.sqlclient.internal.command.CommandResponse;
 
@@ -55,7 +56,7 @@ public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
 
   void fireCommandResponse(CommandResponse<?> commandResponse) {
     MSSQLCommandCodec<?, ?> c = tdsMessageCodec.poll();
-    commandResponse.cmd = (CommandBase) c.cmd;
+    commandResponse.handler = (Completable) c.handler;
     chctx.fireChannelRead(commandResponse);
   }
 

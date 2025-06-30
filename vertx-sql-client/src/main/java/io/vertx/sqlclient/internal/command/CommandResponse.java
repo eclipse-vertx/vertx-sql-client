@@ -11,6 +11,7 @@
 
 package io.vertx.sqlclient.internal.command;
 
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.VertxException;
@@ -31,6 +32,7 @@ public class CommandResponse<R> {
 
   // The connection that executed the command
   public CommandBase<R> cmd;
+  public Completable<R> handler;
   private final AsyncResult<R> res;
 
   public CommandResponse(AsyncResult<R> res) {
@@ -41,8 +43,10 @@ public class CommandResponse<R> {
     return res;
   }
 
-  public void fire() {
-    if (cmd.handler != null) {
+  public final void fire() {
+    if (handler != null) {
+      handler.complete(res.result(), res.cause());
+    } else if (cmd.handler != null) {
       cmd.handler.complete(res.result(), res.cause());
     }
   }

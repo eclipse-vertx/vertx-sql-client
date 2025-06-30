@@ -10,6 +10,7 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
@@ -25,6 +26,7 @@ import static io.vertx.oracleclient.impl.Helper.SQLBlockingTaskHandler;
 
 public abstract class OracleCommand<T> {
 
+  public Completable<T> handler;
   protected final OracleConnection oracleConnection;
   protected final ContextInternal connectionContext;
   private CommandResponse<T> response;
@@ -34,7 +36,7 @@ public abstract class OracleCommand<T> {
     this.connectionContext = connectionContext;
   }
 
-  public final Future<Void> processCommand(CommandBase<T> cmd) {
+  public final Future<Void> processCommand(CommandBase<T> cmd, Completable<T> handler) {
     return execute().andThen(ar -> {
       if (ar.succeeded()) {
         response = CommandResponse.success(ar.result());
@@ -42,6 +44,7 @@ public abstract class OracleCommand<T> {
         response = CommandResponse.failure(ar.cause());
       }
       response.cmd = cmd;
+      response.handler = handler;
     }).mapEmpty();
   }
 

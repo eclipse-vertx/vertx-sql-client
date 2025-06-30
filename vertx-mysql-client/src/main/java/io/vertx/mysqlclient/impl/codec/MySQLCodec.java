@@ -78,7 +78,7 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
   private void fail(CommandCodec<?, ?> codec, Throwable cause) {
     if (failure == null) {
       failure = cause;
-      codec.cmd.fail(cause);
+      codec.fail(cause);
     }
   }
 

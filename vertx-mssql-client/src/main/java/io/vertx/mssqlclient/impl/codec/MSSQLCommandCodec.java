@@ -37,12 +37,11 @@ public abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> extends Com
 
   public TdsMessageCodec tdsMessageCodec;
 
-  final C cmd;
   public MSSQLException failure;
   public R result;
 
   MSSQLCommandCodec(C cmd) {
-    this.cmd = cmd;
+    super(cmd);
   }
 
   public static MSSQLCommandCodec<?, ?> wrap(CommandBase<?> cmd) {

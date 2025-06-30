@@ -34,11 +34,10 @@ public abstract class CommandCodec<R, C extends CommandBase<R>> extends CommandM
   Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
   public R result;
-  final C cmd;
   DB2Encoder encoder;
 
   CommandCodec(C cmd) {
-    this.cmd = cmd;
+    super(cmd);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })

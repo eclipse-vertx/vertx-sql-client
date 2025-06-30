@@ -35,6 +35,8 @@ import static io.vertx.oracleclient.impl.Helper.isFatal;
 
 public class OracleJdbcConnection implements Connection {
 
+  private static final Completable<?> NULL_HANDLER = (res, err) -> {};
+
   private static final Logger log = LoggerFactory.getLogger(OracleJdbcConnection.class);
 
   private final ClientMetrics metrics;
@@ -49,6 +51,7 @@ public class OracleJdbcConnection implements Connection {
   // Command pipeline state
   @SuppressWarnings("rawtypes")
   private final Deque<CommandBase> pending = new ArrayDeque<>();
+  private final Deque<Completable<?>> completables = new ArrayDeque<>();
   private Promise<Void> closePromise;
   private boolean inflight, executing;
 
@@ -128,6 +131,7 @@ public class OracleJdbcConnection implements Connection {
         closePromise = context.promise();
         future = closePromise.future().andThen(ar -> holder.handleClosed());
         pending.add(CloseConnectionCommand.INSTANCE);
+        completables.add(NULL_HANDLER);
         checkPending();
       } else {
         future = closePromise.future();
@@ -172,12 +176,12 @@ public class OracleJdbcConnection implements Connection {
   }
 
   private <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
-    cmd.handler = handler;
     if (closePromise == null) {
       pending.add(cmd);
+      completables.add(handler);
       checkPending();
     } else {
-      cmd.fail(VertxException.noStackTrace("Connection is no longer active"));
+      handler.fail(VertxException.noStackTrace("Connection is no longer active"));
     }
   }
 
@@ -190,12 +194,14 @@ public class OracleJdbcConnection implements Connection {
       executing = true;
       CommandBase cmd;
       while (!inflight && (cmd = pending.poll()) != null) {
+        Completable handler = completables.poll();
         inflight = true;
         if (metrics != null && cmd instanceof CloseConnectionCommand) {
           metrics.close();
         }
         OracleCommand action = wrap(cmd);
-        Future<Void> future = action.processCommand(cmd);
+        action.handler = handler;
+        Future<Void> future = action.processCommand(cmd, handler);
         CommandBase capture = cmd;
         future.onComplete(ar -> actionComplete(capture, action, ar));
       }
