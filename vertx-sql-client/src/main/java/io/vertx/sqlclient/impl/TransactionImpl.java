@@ -46,8 +46,7 @@ public class TransactionImpl implements Transaction {
   public Future<Transaction> begin() {
     PromiseInternal<Transaction> promise = context.promise();
     TxCommand<Transaction> begin = new TxCommand<>(TxCommand.Kind.BEGIN, this);
-    begin.handler = wrap(begin, promise);
-    schedule(begin);
+    scheduleInternal(begin, wrap(begin, promise));
     return promise.future();
   }
 
@@ -55,8 +54,7 @@ public class TransactionImpl implements Transaction {
     failed = true;
   }
 
-  private <R> void execute(CommandBase<R> cmd) {
-    Completable<R> handler = cmd.handler;
+  private <R> void execute(CommandBase<R> cmd, Completable<R> handler) {
     connection.schedule(cmd, handler);
   }
 
@@ -71,35 +69,42 @@ public class TransactionImpl implements Transaction {
   }
 
   public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
-    cmd.handler = wrap(cmd, handler);
-    if (!schedule(cmd)) {
+    if (!scheduleInternal(cmd, wrap(cmd, handler))) {
       handler.fail("Transaction already completed");
     }
   }
 
-  public <R> boolean schedule(CommandBase<R> b) {
+  public <R> boolean scheduleInternal(CommandBase<R> b, Completable<R> handler) {
     synchronized (this) {
       if (ended) {
         return false;
       }
       pendingQueries++;
     }
-    execute(b);
+    execute(b, handler);
     return true;
   }
 
   private void checkEnd() {
-    TxCommand<?> cmd;
+    TxCommand<Void> cmd;
+    Completable<Void> handler;
     synchronized (this) {
       if (pendingQueries > 0 || !ended || endCommand != null) {
         return;
       }
       TxCommand.Kind kind = failed ? TxCommand.Kind.ROLLBACK : TxCommand.Kind.COMMIT;
-      endCommand = txCommand(kind);
-      cmd = endCommand;
+      cmd = new TxCommand<>(kind, null);
+      handler = (res, err) -> {
+        if (err == null) {
+          completion.complete(kind);
+        } else {
+          completion.fail(err);
+        }
+      };
+      endCommand = cmd;
     }
     endHandler.handle(null);
-    execute(cmd);
+    execute(cmd, handler);
   }
 
   private Future<TxCommand.Kind> end(boolean rollback) {
@@ -142,18 +147,6 @@ public class TransactionImpl implements Transaction {
     if (handler != null) {
       fut.onComplete(handler);
     }
-  }
-
-  private TxCommand<Void> txCommand(TxCommand.Kind kind) {
-    TxCommand<Void> cmd = new TxCommand<>(kind, null);
-    cmd.handler = (res, err) -> {
-      if (err == null) {
-        completion.complete(kind);
-      } else {
-        completion.fail(err);
-      }
-    };
-    return cmd;
   }
 
   @Override

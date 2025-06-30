@@ -213,7 +213,7 @@ public abstract class SocketConnectionBase implements Connection {
         CompositeCommand composite = (CompositeCommand) cmd;
         List<CommandBase<?>> commands = composite.commands();
         pending.addAll(commands);
-        composite.handler.succeed();
+        composite.succeed();
       } else {
         pending.add(cmd);
       }

@@ -65,10 +65,7 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   }
 
   private void fail(MSSQLCommandCodec<?, ?> codec, Throwable cause) {
-    Completable<?> handler = codec.cmd.handler;
-    if (handler != null) {
-      handler.complete(null, cause);
-    }
+    codec.cmd.fail(cause);
   }
 
   @Override

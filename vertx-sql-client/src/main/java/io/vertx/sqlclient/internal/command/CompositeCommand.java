@@ -20,4 +20,8 @@ public class CompositeCommand extends CommandBase<Void> {
   public List<CommandBase<?>> commands() {
     return commands;
   }
+
+  public final void succeed() {
+    handler.succeed();
+  }
 }

@@ -28,7 +28,6 @@ import io.vertx.core.Handler;
 
 public abstract class CommandBase<R> {
 
-  // Todo : hide this
   public Completable<R> handler;
 
   public final void fail(Throwable err) {
