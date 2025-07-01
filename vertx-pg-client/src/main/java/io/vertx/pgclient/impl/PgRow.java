@@ -23,7 +23,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.*;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
@@ -32,7 +32,7 @@ import java.util.UUID;
 
 public class PgRow extends RowBase {
 
-  public PgRow(RowDescriptor desc) {
+  public PgRow(RowDescriptorBase desc) {
     super(desc);
   }
 

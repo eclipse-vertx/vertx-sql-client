@@ -19,7 +19,7 @@ package io.vertx.pgclient.impl.codec;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.TupleBase;
 import io.vertx.sqlclient.codec.InvalidCachedStatementEvent;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
@@ -79,7 +79,7 @@ public class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> ext
   void handlePortalSuspended() {
     Throwable failure = rowDecoder.complete();
     R result = rowDecoder.result();
-    RowDescriptor desc = rowDecoder.desc;
+    RowDescriptorBase desc = rowDecoder.desc;
     int size = rowDecoder.size();
     rowDecoder.reset();
     this.result = true;

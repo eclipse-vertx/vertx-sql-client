@@ -11,17 +11,17 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.util.Arrays;
 
 /**
- * An implementation of {@link RowDescriptor} for MSSQL.
+ * An implementation of {@link RowDescriptorBase} for MSSQL.
  * <p>
  * When reading rows with a cursor, an extra column named {@code ROWSTAT} is returned by the server.
  * This column should not be conveyed to the user so this class filters it out.
  */
-public class MSSQLRowDescriptor extends RowDescriptor {
+public class MSSQLRowDescriptor extends RowDescriptorBase {
 
   private final ColumnData[] columnDatas;
   private final boolean rowStat;

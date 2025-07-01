@@ -29,12 +29,12 @@ public interface QueryResultHandler<T> {
     public <V> void addProperty(PropertyKind<V> property, V value) {
     }
     @Override
-    public void handleResult(int updatedCount, int size, RowDescriptor desc, Void result, Throwable failure) {
+    public void handleResult(int updatedCount, int size, RowDescriptorBase desc, Void result, Throwable failure) {
     }
   };
 
   <V> void addProperty(PropertyKind<V> property, V value);
 
-  void handleResult(int updatedCount, int size, RowDescriptor desc, T result, Throwable failure);
+  void handleResult(int updatedCount, int size, RowDescriptorBase desc, T result, Throwable failure);
 
 }

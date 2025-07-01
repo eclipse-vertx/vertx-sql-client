@@ -23,7 +23,7 @@ import io.vertx.oracleclient.impl.OracleRow;
 import io.vertx.oracleclient.impl.OracleRowDescriptor;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 import oracle.sql.TIMESTAMPTZ;
@@ -209,7 +209,7 @@ public abstract class OracleQueryCommand<C, R> extends OracleCommand<Boolean> {
 
     BiConsumer<C, Row> accumulator = collector.accumulator();
 
-    RowDescriptor desc = OracleRowDescriptor.EMPTY;
+    RowDescriptorBase desc = OracleRowDescriptor.EMPTY;
     C container = collector.supplier().get();
     for (int result : returnedBatchResult) {
       Row row = new OracleRow(desc);
@@ -233,7 +233,7 @@ public abstract class OracleQueryCommand<C, R> extends OracleCommand<Boolean> {
     C container = collector.supplier().get();
     int size = 0;
     ResultSetMetaData metaData = rs.getMetaData();
-    RowDescriptor desc = OracleRowDescriptor.create(metaData);
+    RowDescriptorBase desc = OracleRowDescriptor.create(metaData);
     while (rs.next()) {
       size++;
       Row row = new OracleRow(desc);
@@ -255,10 +255,10 @@ public abstract class OracleQueryCommand<C, R> extends OracleCommand<Boolean> {
         if (metaData != null) {
           int cols = metaData.getColumnCount();
           if (cols > 0) {
-            RowDescriptor keysDesc = OracleRowDescriptor.create(metaData);
+            RowDescriptorBase keysDesc = OracleRowDescriptor.create(metaData);
             OracleRow keys = new OracleRow(keysDesc);
             for (int i = 1; i <= cols; i++) {
-              ColumnDescriptor columnDesc = keysDesc.columnDescriptor().get(i - 1);
+              ColumnDescriptor columnDesc = keysDesc.columnDescriptors().get(i - 1);
               Object res;
               switch (columnDesc.jdbcType()) {
                 case TIMESTAMP:

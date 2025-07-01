@@ -18,7 +18,7 @@ import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
@@ -132,7 +132,7 @@ public class GenericDriverTest {
                 Collector<Row, A, T> collector = (Collector<Row, A, T>) simpleQuery.collector();
                 A container = collector.supplier().get();
                 BiConsumer<A, Row> accumulator = collector.accumulator();
-                RowDescriptor rowDescriptor = new RowDescriptor(new ColumnDescriptor[]{new VarcharColumnDescriptor("value")});
+                RowDescriptorBase rowDescriptor = new RowDescriptorBase(new ColumnDescriptor[]{new VarcharColumnDescriptor("value")});
                 Row row = new RowBase(rowDescriptor);
                 row.addValue("Hello " + simpleQuery.sql());
                 accumulator.accept(container, row);

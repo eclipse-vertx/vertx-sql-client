@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.stream.Collector;
@@ -58,7 +58,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
     T result;
     Throwable failure;
     int size;
-    RowDescriptor rowDescriptor;
+    RowDescriptorBase rowDescriptor;
     if (rowResultDecoder != null) {
       failure = rowResultDecoder.complete();
       result = rowResultDecoder.result();

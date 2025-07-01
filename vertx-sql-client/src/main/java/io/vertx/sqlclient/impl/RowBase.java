@@ -2,7 +2,7 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.internal.ArrayTuple;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.internal.RowInternal;
 
 import java.util.Collection;
@@ -14,21 +14,21 @@ import java.util.List;
 public class RowBase extends ArrayTuple implements RowInternal {
 
   private boolean released;
-  protected final RowDescriptor desc;
+  protected final RowDescriptorBase desc;
 
-  public RowBase(RowDescriptor desc) {
+  public RowBase(RowDescriptorBase desc) {
     super(desc.columnNames().size());
 
     this.desc = desc;
   }
 
-  public RowBase(RowDescriptor desc, Collection<?> c) {
+  public RowBase(RowDescriptorBase desc, Collection<?> c) {
     super(c);
 
     this.desc = desc;
   }
 
-  public RowBase(RowDescriptor desc, Tuple tuple) {
+  public RowBase(RowDescriptorBase desc, Tuple tuple) {
     super(tuple);
 
     this.desc = desc;

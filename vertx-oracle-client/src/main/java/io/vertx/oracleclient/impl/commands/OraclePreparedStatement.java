@@ -11,7 +11,7 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.oracleclient.impl.OracleRowDescriptor;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.sql.ResultSetMetaData;
@@ -20,11 +20,11 @@ import java.sql.SQLException;
 public class OraclePreparedStatement implements PreparedStatement {
 
   private final String sql;
-  private final RowDescriptor rowDescriptor;
+  private final RowDescriptorBase rowDescriptor;
 
   public OraclePreparedStatement(String sql, java.sql.PreparedStatement preparedStatement) throws SQLException {
     ResultSetMetaData metaData = preparedStatement.getMetaData();
-    RowDescriptor rowDescriptor;
+    RowDescriptorBase rowDescriptor;
     if (metaData != null) {
       rowDescriptor = OracleRowDescriptor.create(metaData);
     } else {
@@ -35,7 +35,7 @@ public class OraclePreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public RowDescriptor rowDesc() {
+  public RowDescriptorBase rowDesc() {
     return rowDescriptor;
   }
 

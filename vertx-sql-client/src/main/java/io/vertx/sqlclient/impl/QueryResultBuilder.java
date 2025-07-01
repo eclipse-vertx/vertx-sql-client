@@ -23,7 +23,7 @@ import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.util.function.Function;
 
@@ -45,15 +45,14 @@ public class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResu
   }
 
   @Override
-  public void handleResult(int updatedCount, int size, RowDescriptor desc, T result, Throwable failure) {
+  public void handleResult(int updatedCount, int size, RowDescriptorBase desc, T result, Throwable failure) {
     if (failure != null) {
       this.failure = failure;
     } else {
       R r = factory.apply(result);
       r.updated = updatedCount;
       r.size = size;
-      r.columnNames = desc != null ? desc.columnNames() : null;
-      r.columnDescriptors = desc != null ? desc.columnDescriptor() : null;
+      r.rowDescriptor = desc;
       handleResult(r);
     }
   }

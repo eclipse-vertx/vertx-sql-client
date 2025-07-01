@@ -11,12 +11,12 @@
 
 package io.vertx.oracleclient.impl;
 
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-public class OracleRowDescriptor extends RowDescriptor {
+public class OracleRowDescriptor extends RowDescriptorBase {
 
   public static final OracleRowDescriptor EMPTY = new OracleRowDescriptor(new OracleColumnDesc[0]);
 

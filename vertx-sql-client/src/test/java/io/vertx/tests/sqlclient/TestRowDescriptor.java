@@ -12,11 +12,11 @@
 package io.vertx.tests.sqlclient;
 
 import io.vertx.sqlclient.desc.ColumnDescriptor;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.sql.JDBCType;
 
-public class TestRowDescriptor extends RowDescriptor {
+public class TestRowDescriptor extends RowDescriptorBase {
 
   private TestRowDescriptor(TestColumnDescriptor[] columnDescriptors) {
     super(columnDescriptors);

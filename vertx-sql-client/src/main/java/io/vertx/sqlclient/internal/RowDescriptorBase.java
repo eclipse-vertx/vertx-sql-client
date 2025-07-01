@@ -18,6 +18,7 @@
 package io.vertx.sqlclient.internal;
 
 import io.vertx.sqlclient.desc.ColumnDescriptor;
+import io.vertx.sqlclient.desc.RowDescriptor;
 
 import java.util.AbstractList;
 import java.util.List;
@@ -26,12 +27,12 @@ import java.util.RandomAccess;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class RowDescriptor {
+public class RowDescriptorBase implements RowDescriptor {
 
   private final ColumnNames columnNames;
   private final ColumnDescriptors columnDescriptors;
 
-  public RowDescriptor(ColumnDescriptor[] columnDescriptors) {
+  public RowDescriptorBase(ColumnDescriptor[] columnDescriptors) {
     this.columnNames = new ColumnNames(columnDescriptors);
     this.columnDescriptors = new ColumnDescriptors(columnDescriptors);
   }
@@ -47,7 +48,7 @@ public class RowDescriptor {
     return columnNames;
   }
 
-  public List<ColumnDescriptor> columnDescriptor() {
+  public List<ColumnDescriptor> columnDescriptors() {
     return columnDescriptors;
   }
 
@@ -59,7 +60,8 @@ public class RowDescriptor {
   }
 
   private static class ColumnNames extends AbstractList<String> implements RandomAccess {
-    final ColumnDescriptor[] elements;
+
+    private final ColumnDescriptor[] elements;
 
     ColumnNames(ColumnDescriptor[] elements) {
       this.elements = elements;
@@ -90,7 +92,8 @@ public class RowDescriptor {
   }
 
   private static class ColumnDescriptors extends AbstractList<ColumnDescriptor> implements RandomAccess {
-    final ColumnDescriptor[] elements;
+
+    private final ColumnDescriptor[] elements;
 
     ColumnDescriptors(ColumnDescriptor[] elements) {
       this.elements = elements;

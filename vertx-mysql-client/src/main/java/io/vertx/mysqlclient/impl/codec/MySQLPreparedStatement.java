@@ -25,7 +25,7 @@ import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.*;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.Arrays;
@@ -56,7 +56,7 @@ public class MySQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public RowDescriptor rowDesc() {
+  public RowDescriptorBase rowDesc() {
     return rowDesc;
   }
 

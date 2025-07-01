@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,7 +25,7 @@ import java.util.UUID;
 
 public class MSSQLRow extends RowBase {
 
-  public MSSQLRow(RowDescriptor rowDescriptor) {
+  public MSSQLRow(RowDescriptorBase rowDescriptor) {
     super(rowDescriptor);
   }
 

@@ -18,9 +18,9 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
-public class MySQLRowDescriptor extends RowDescriptor {
+public class MySQLRowDescriptor extends RowDescriptorBase {
 
   private final ColumnDefinition[] columnDefinitions;
   private final DataFormat dataFormat;

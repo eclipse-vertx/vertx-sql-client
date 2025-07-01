@@ -23,7 +23,7 @@ import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
@@ -146,7 +146,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     T result;
     Throwable failure;
     int size;
-    RowDescriptor rowDescriptor;
+    RowDescriptorBase rowDescriptor;
     if (decoder != null) {
       failure = decoder.complete();
       result = decoder.result();

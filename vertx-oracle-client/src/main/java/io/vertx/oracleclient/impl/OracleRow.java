@@ -15,14 +15,14 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.time.*;
 import java.util.UUID;
 
 public class OracleRow extends RowBase {
 
-  public OracleRow(RowDescriptor desc) {
+  public OracleRow(RowDescriptorBase desc) {
     super(desc);
   }
 

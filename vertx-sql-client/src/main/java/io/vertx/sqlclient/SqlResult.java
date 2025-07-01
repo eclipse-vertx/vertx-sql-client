@@ -19,6 +19,7 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
+import io.vertx.sqlclient.desc.RowDescriptor;
 
 import java.util.List;
 
@@ -36,6 +37,8 @@ public interface SqlResult<T> {
    * @return the count of affected rows.
    */
   int rowCount();
+
+  RowDescriptor rowDescriptor();
 
   /**
    * Get the names of columns in the SqlResult.

@@ -16,9 +16,9 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
-class PgRowDescriptor extends RowDescriptor {
+class PgRowDescriptor extends RowDescriptorBase {
 
   static PgRowDescriptor createBinary(PgColumnDesc[] columns) {
     // Fix to use binary when possible

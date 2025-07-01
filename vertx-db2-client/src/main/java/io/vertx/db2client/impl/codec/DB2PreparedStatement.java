@@ -24,7 +24,7 @@ import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.Section;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.internal.TupleBase;
 
 public class DB2PreparedStatement implements PreparedStatement {
@@ -58,7 +58,7 @@ public class DB2PreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public RowDescriptor rowDesc() {
+  public RowDescriptorBase rowDesc() {
     return rowDesc;
   }
 

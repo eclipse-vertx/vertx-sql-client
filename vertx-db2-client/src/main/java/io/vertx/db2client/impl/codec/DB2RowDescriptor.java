@@ -16,12 +16,12 @@
 package io.vertx.db2client.impl.codec;
 
 import io.vertx.db2client.impl.drda.ColumnMetaData;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.sql.JDBCType;
 import java.util.List;
 
-class DB2RowDescriptor extends RowDescriptor {
+class DB2RowDescriptor extends RowDescriptorBase {
 
   private final ColumnMetaData columnMetaData;
 

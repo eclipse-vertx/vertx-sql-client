@@ -29,11 +29,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.db2client.impl.drda.DB2RowId;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.internal.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 public class DB2Row extends RowBase {
 
-  public DB2Row(RowDescriptor rowDescriptor) {
+  public DB2Row(RowDescriptorBase rowDescriptor) {
     super(rowDescriptor);
   }
 
