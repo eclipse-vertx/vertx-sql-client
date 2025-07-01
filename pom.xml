@@ -201,7 +201,7 @@
       </modules>
     </profile>
     <profile>
-      <id>default-jdk</id>
+      <id>java-11</id>
       <modules>
         <module>vertx-sql-client</module>
         <module>vertx-sql-client-codec</module>
