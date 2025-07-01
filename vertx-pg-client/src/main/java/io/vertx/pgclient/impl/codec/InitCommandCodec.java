@@ -26,7 +26,7 @@ import io.vertx.pgclient.impl.PgSocketConnection;
 import io.vertx.pgclient.impl.auth.scram.ScramAuthentication;
 import io.vertx.pgclient.impl.auth.scram.ScramSession;
 import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 import io.vertx.sqlclient.internal.command.InitCommand;
 
 class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {

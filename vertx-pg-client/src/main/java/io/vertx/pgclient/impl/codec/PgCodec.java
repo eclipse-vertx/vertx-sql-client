@@ -18,10 +18,7 @@ package io.vertx.pgclient.impl.codec;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
-import io.vertx.core.Completable;
 import io.vertx.sqlclient.ClosedConnectionException;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;

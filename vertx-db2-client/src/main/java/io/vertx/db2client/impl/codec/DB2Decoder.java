@@ -25,7 +25,7 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.DB2Exception;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 
 class DB2Decoder extends ByteToMessageDecoder {
 

@@ -26,7 +26,7 @@ import io.vertx.db2client.impl.drda.DRDAConstants;
 import io.vertx.db2client.impl.drda.SQLState;
 import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 
 /**
  * InitialHandshakeCommandCodec encodes the packets to get a connection from the database.

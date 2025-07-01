@@ -15,8 +15,7 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.vertx.core.Completable;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 
 public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
 

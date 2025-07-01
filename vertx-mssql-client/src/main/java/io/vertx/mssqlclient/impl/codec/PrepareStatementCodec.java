@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
 
 class PrepareStatementCodec extends MSSQLCommandCodec<PreparedStatement, PrepareStatementCommand> {

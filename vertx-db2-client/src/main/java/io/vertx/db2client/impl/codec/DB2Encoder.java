@@ -24,8 +24,7 @@ import io.vertx.core.Completable;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.impl.DB2SocketConnection;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 
 class DB2Encoder extends ChannelOutboundHandlerAdapter {
 

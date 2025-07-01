@@ -1,6 +1,3 @@
-import io.vertx.core.spi.VertxServiceProvider;
-import io.vertx.sqlclient.impl.TransactionPropagationLocal;
-
 module io.vertx.sql.client {
 
   requires io.netty.common;

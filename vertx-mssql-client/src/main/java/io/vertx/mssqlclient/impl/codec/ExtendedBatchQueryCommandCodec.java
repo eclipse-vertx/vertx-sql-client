@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 
 import java.util.List;

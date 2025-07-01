@@ -22,7 +22,7 @@ import io.vertx.sqlclient.internal.command.CloseConnectionCommand;
 import io.vertx.sqlclient.internal.command.CloseCursorCommand;
 import io.vertx.sqlclient.internal.command.CloseStatementCommand;
 import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.internal.command.InitCommand;
 import io.vertx.sqlclient.internal.command.PrepareStatementCommand;

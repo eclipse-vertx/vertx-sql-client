@@ -9,12 +9,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.VertxException;
+import io.vertx.sqlclient.internal.command.CommandBase;
 
 public class CommandResponse<R> {
 

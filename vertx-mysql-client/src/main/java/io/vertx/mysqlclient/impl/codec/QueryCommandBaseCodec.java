@@ -24,7 +24,7 @@ import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.impl.CommandResponse;
 import io.vertx.sqlclient.internal.command.QueryCommandBase;
 
 import java.util.stream.Collector;
