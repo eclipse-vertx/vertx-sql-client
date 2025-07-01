@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.spi.protocol;
 
 import io.vertx.core.Completable;
 import io.vertx.core.Future;

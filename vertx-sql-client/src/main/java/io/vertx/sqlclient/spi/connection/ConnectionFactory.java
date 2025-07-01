@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.spi;
+package io.vertx.sqlclient.spi.connection;
 
 import io.vertx.core.Closeable;
 import io.vertx.core.Context;
@@ -6,7 +6,7 @@ import io.vertx.core.Future;
 import io.vertx.core.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.Driver;
 
 /**
  * A connection factory, can be obtained from {@link Driver#createConnectionFactory}

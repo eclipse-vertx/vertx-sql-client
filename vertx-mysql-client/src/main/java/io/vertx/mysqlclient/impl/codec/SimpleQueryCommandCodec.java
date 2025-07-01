@@ -20,7 +20,7 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.core.Future;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;

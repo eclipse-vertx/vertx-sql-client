@@ -24,13 +24,11 @@ import io.vertx.core.internal.pool.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.SqlConnectionBase;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.QueryCommandBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.List;

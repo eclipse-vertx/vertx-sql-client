@@ -21,9 +21,9 @@ import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.mysqlclient.spi.MySQLDriver;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 
 public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> implements MySQLConnection {
 

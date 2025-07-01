@@ -20,14 +20,13 @@ import io.vertx.core.Handler;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.sqlclient.impl.CommandMessage;
-import io.vertx.sqlclient.internal.command.CloseConnectionCommand;
-import io.vertx.sqlclient.internal.command.CloseCursorCommand;
-import io.vertx.sqlclient.internal.command.CloseStatementCommand;
-import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.impl.CommandResponse;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 public abstract class CommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 

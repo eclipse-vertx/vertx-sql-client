@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
 

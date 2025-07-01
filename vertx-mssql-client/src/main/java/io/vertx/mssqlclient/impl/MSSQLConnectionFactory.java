@@ -24,8 +24,7 @@ import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
 import java.util.Map;

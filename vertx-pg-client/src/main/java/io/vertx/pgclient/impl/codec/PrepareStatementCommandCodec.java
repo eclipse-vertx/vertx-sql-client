@@ -16,7 +16,7 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.util.List;

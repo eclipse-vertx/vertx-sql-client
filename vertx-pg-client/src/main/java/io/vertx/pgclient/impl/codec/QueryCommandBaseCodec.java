@@ -18,7 +18,7 @@ package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.command.QueryCommandBase;
+import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.stream.Collector;
 

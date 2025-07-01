@@ -15,22 +15,12 @@
  *
  */
 
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.spi.protocol;
 
-import io.vertx.sqlclient.internal.PreparedStatement;
+public class CloseConnectionCommand extends CommandBase<Void> {
 
-/**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
- */
-public class CloseStatementCommand extends CommandBase<Void> {
+  public static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
 
-  private final PreparedStatement statement;
-
-  public CloseStatementCommand(PreparedStatement statement) {
-    this.statement = statement;
-  }
-
-  public PreparedStatement statement() {
-    return statement;
+  private CloseConnectionCommand() {
   }
 }

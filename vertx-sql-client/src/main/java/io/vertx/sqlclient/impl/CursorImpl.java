@@ -24,8 +24,7 @@ import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.UUID;

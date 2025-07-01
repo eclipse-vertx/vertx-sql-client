@@ -1,6 +1,5 @@
 package io.vertx.sqlclient.impl.tracing;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.tracing.SpanKind;
@@ -9,10 +8,10 @@ import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.QueryResultBuilder;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.internal.command.QueryCommandBase;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 import java.util.Collections;
 import java.util.List;

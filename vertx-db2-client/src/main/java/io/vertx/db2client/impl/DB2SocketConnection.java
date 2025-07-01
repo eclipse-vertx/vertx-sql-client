@@ -32,12 +32,15 @@ import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.CommandMessage;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.internal.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 
 import java.util.Map;
 import java.util.function.Predicate;

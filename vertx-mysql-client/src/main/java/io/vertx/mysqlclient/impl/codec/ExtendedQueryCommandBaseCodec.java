@@ -17,7 +17,7 @@ import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 

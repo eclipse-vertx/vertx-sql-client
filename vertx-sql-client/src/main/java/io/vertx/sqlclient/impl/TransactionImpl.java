@@ -21,9 +21,9 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.TransactionRollbackException;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.TxCommand;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 
 public class TransactionImpl implements Transaction {
 

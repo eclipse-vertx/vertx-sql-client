@@ -37,17 +37,21 @@ import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.CommandMessage;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.internal.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.InitCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 
 import java.util.Map;
 import java.util.function.Predicate;
 
-import static io.vertx.sqlclient.internal.command.TxCommand.Kind.BEGIN;
+import static io.vertx.sqlclient.spi.protocol.TxCommand.Kind.BEGIN;
 
 public class MSSQLSocketConnection extends SocketConnectionBase {
 

@@ -15,10 +15,9 @@
  *
  */
 
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.spi.protocol;
 
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.spi.connection.Connection;
 
 import java.util.Map;
 

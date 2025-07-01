@@ -7,7 +7,6 @@ import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlClientInternal;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.templates.impl.SqlTemplate;
 import org.junit.Assert;

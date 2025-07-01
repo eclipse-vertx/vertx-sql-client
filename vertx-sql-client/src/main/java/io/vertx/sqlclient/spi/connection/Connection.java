@@ -15,20 +15,19 @@
  *
  */
 
-package io.vertx.sqlclient.internal;
+package io.vertx.sqlclient.spi.connection;
 
 import io.vertx.core.Completable;
-import io.vertx.core.Promise;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.sqlclient.internal.command.CommandScheduler;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.protocol.CommandScheduler;
 
 /**
  * A connection capable of scheduling command execution.
  */
-public interface Connection extends CommandScheduler  {
+public interface Connection extends CommandScheduler {
 
   /**
    * @return {@code true} when {@code error} is an indeterminate data type reported when preparing a statement

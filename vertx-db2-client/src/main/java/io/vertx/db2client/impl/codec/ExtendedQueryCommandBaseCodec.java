@@ -28,7 +28,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.CommandResponse;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R>>
     extends QueryCommandBaseCodec<R, C> {

@@ -28,12 +28,13 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.PreparedStatementBase;
 import io.vertx.sqlclient.impl.TransactionImpl;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
-import io.vertx.sqlclient.internal.command.QueryCommandBase;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.Driver;
 

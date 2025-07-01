@@ -17,8 +17,8 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.impl.MSSQLSocketConnection;
 import io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket;
 import io.vertx.mssqlclient.impl.utils.Utils;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.InitCommand;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.protocol.InitCommand;
 
 import java.util.Map;
 

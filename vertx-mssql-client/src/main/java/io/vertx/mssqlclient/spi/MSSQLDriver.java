@@ -25,9 +25,9 @@ import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.GenericDriver;
 
 public class MSSQLDriver extends GenericDriver<MSSQLConnectOptions> {

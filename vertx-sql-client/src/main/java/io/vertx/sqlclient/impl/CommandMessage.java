@@ -13,7 +13,7 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Completable;
 import io.vertx.core.Future;
-import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
 
 public class CommandMessage<R, C extends CommandBase<R>> {
 

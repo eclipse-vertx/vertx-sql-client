@@ -33,10 +33,15 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.*;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.CompositeCommand;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 
 import java.util.ArrayDeque;
 import java.util.List;

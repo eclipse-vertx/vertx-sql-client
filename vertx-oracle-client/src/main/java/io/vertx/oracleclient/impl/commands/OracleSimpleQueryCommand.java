@@ -15,7 +15,7 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 

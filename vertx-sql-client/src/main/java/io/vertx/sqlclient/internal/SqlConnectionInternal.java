@@ -11,6 +11,7 @@
 package io.vertx.sqlclient.internal;
 
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.spi.connection.Connection;
 
 public interface SqlConnectionInternal extends SqlConnection {
 

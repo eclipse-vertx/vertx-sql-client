@@ -21,7 +21,7 @@ import io.vertx.sqlclient.internal.TupleInternal;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.internal.RowDesc;
 import io.vertx.sqlclient.impl.CommandResponse;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 public class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {
 

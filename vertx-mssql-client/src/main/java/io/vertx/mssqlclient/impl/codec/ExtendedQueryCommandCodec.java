@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
 

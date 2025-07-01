@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.spi.protocol;
 
 public class TxCommand<R> extends CommandBase<R> {
 

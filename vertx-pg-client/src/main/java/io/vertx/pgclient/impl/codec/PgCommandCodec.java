@@ -21,15 +21,14 @@ import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.impl.CommandMessage;
-import io.vertx.sqlclient.internal.command.CloseConnectionCommand;
-import io.vertx.sqlclient.internal.command.CloseCursorCommand;
-import io.vertx.sqlclient.internal.command.CloseStatementCommand;
-import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.impl.CommandResponse;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.internal.command.InitCommand;
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.InitCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 import java.util.Arrays;
 

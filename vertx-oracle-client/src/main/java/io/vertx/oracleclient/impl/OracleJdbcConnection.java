@@ -20,9 +20,16 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.commands.*;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.*;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 import oracle.jdbc.OracleConnection;
 
 import java.sql.SQLException;

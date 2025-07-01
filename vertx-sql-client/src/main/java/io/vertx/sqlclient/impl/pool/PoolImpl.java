@@ -27,11 +27,11 @@ import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.TransactionPropagationLocal;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlClientBase;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;

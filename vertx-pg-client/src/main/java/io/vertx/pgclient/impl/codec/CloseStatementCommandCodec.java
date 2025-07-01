@@ -16,7 +16,7 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.internal.command.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 
 class CloseStatementCommandCodec extends PgCommandCodec<Void, CloseStatementCommand> {
 

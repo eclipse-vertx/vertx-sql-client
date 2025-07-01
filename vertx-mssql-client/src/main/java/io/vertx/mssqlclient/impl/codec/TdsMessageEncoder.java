@@ -15,7 +15,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.vertx.sqlclient.internal.command.*;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.MIN_PACKET_SIZE;
 import static io.vertx.mssqlclient.impl.codec.MessageStatus.END_OF_MESSAGE;

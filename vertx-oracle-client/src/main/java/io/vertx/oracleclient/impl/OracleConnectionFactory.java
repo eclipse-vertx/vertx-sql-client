@@ -20,8 +20,8 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.OracleDataSource;
 

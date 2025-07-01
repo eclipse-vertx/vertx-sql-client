@@ -11,7 +11,7 @@
 
 package io.vertx.mysqlclient.impl.command;
 
-import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
 
 public class InitDbCommand extends CommandBase<Void> {
   private final String schemaName;

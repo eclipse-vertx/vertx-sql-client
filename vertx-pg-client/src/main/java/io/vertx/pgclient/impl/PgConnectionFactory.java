@@ -28,7 +28,7 @@ import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
 import java.util.Collections;

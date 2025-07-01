@@ -14,7 +14,7 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.data.NullValue;
 import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.*;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;

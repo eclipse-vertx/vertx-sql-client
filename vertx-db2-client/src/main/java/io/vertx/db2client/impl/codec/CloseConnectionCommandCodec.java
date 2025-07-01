@@ -18,7 +18,7 @@ package io.vertx.db2client.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
-import io.vertx.sqlclient.internal.command.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 
 class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionCommand> {
 

@@ -15,11 +15,22 @@
  *
  */
 
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.spi.protocol;
+
+import io.vertx.sqlclient.internal.PreparedStatement;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+public class CloseStatementCommand extends CommandBase<Void> {
 
-public abstract class CommandBase<R> {
+  private final PreparedStatement statement;
+
+  public CloseStatementCommand(PreparedStatement statement) {
+    this.statement = statement;
+  }
+
+  public PreparedStatement statement() {
+    return statement;
+  }
 }

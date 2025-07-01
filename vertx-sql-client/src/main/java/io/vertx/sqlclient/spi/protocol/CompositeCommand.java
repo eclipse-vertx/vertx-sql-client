@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.spi.protocol;
 
 import io.vertx.core.Completable;
 

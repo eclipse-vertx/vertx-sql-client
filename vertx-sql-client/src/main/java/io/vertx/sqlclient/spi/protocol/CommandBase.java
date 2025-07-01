@@ -15,12 +15,11 @@
  *
  */
 
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.spi.protocol;
 
-public class CloseConnectionCommand extends CommandBase<Void> {
+/**
+ * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ */
 
-  public static final CloseConnectionCommand INSTANCE = new CloseConnectionCommand();
-
-  private CloseConnectionCommand() {
-  }
+public abstract class CommandBase<R> {
 }

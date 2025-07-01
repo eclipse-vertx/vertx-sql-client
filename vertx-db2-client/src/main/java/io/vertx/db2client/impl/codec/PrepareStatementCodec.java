@@ -24,7 +24,7 @@ import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.db2client.impl.drda.Section;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.impl.CommandResponse;
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 
 class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
 

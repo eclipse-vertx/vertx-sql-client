@@ -11,11 +11,12 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.pool.CloseablePool;
 import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 
 import java.util.function.Function;
 import java.util.function.Supplier;

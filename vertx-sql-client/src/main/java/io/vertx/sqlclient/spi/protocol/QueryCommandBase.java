@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.internal.command;
+package io.vertx.sqlclient.spi.protocol;
 
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.QueryResultHandler;
@@ -26,28 +26,30 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public class SimpleQueryCommand<T> extends QueryCommandBase<T> {
+public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
 
-  private final String sql;
-  private final boolean singleton;
+  private final QueryResultHandler<T> resultHandler;
+  private final Collector<Row, ?, T> collector;
+  private final boolean autoCommit;
 
-  public SimpleQueryCommand(String sql,
-                     boolean singleton,
-                     boolean autoCommit,
-                     Collector<Row, ?, T> collector,
-                     QueryResultHandler<T> resultHandler) {
-    super(autoCommit, collector, resultHandler);
-    this.sql = sql;
-    this.singleton = singleton;
+  QueryCommandBase(boolean autoCommit, Collector<Row, ?, T> collector, QueryResultHandler<T> resultHandler) {
+    this.autoCommit = autoCommit;
+    this.resultHandler = resultHandler;
+    this.collector = collector;
   }
 
-  public boolean isSingleton() {
-    return singleton;
+  public QueryResultHandler<T> resultHandler() {
+    return resultHandler;
   }
 
-  @Override
-  public String sql() {
-    return sql;
+  public boolean autoCommit() {
+    return autoCommit;
   }
+
+  public Collector<Row, ?, T> collector() {
+    return collector;
+  }
+
+  public abstract String sql();
 
 }

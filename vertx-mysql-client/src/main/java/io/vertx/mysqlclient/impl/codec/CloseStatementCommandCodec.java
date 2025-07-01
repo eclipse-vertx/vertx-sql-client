@@ -13,7 +13,7 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
-import io.vertx.sqlclient.internal.command.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 import io.vertx.sqlclient.impl.CommandResponse;
 
 class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementCommand> {

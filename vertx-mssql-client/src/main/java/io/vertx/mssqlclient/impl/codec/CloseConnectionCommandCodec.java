@@ -11,7 +11,7 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.internal.command.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 
 class CloseConnectionCommandCodec extends MSSQLCommandCodec<Void, CloseConnectionCommand> {
   CloseConnectionCommandCodec(CloseConnectionCommand cmd) {
