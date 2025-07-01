@@ -66,7 +66,7 @@ public class OracleDriver extends GenericDriver<OracleConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<OracleConnectOptions> factory, Connection conn) {
-    return new OracleConnectionImpl(context, factory, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<OracleConnectOptions> factory, Connection connection) {
+    return new OracleConnectionImpl(context, factory, connection);
   }
 }

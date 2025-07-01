@@ -69,7 +69,7 @@ public class MSSQLDriver extends GenericDriver<MSSQLConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection conn) {
-    return new MSSQLConnectionImpl(context, factory, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection connection) {
+    return new MSSQLConnectionImpl(context, factory, connection);
   }
 }

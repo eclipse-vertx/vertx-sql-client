@@ -58,7 +58,7 @@ public class MySQLDriver extends GenericDriver<MySQLConnectOptions> {
     boolean pipelinedPool = poolOptions instanceof MySQLPoolOptions && ((MySQLPoolOptions) poolOptions).isPipelined();
     ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, factory,
-      databases, connectHandler, closeFuture);
+      databases, connectHandler, this::wrapConnection, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -81,7 +81,7 @@ public class MySQLDriver extends GenericDriver<MySQLConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MySQLConnectOptions> factory, Connection conn) {
-    return new MySQLConnectionImpl(context, factory, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MySQLConnectOptions> factory, Connection connection) {
+    return new MySQLConnectionImpl(context, factory, connection);
   }
 }

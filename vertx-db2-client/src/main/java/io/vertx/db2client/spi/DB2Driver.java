@@ -58,7 +58,7 @@ public class DB2Driver extends GenericDriver<DB2ConnectOptions> {
     boolean pipelinedPool = poolOptions instanceof Db2PoolOptions && ((Db2PoolOptions) poolOptions).isPipelined();
     ConnectionFactory<DB2ConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null,
-      factory, databases, connectHandler, closeFuture);
+      factory, databases, connectHandler, this::wrapConnection, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -81,7 +81,7 @@ public class DB2Driver extends GenericDriver<DB2ConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<DB2ConnectOptions> factory, Connection conn) {
-    return new DB2ConnectionImpl(context, factory, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<DB2ConnectOptions> factory, Connection connection) {
+    return new DB2ConnectionImpl(context, factory, connection);
   }
 }

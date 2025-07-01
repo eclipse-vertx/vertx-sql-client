@@ -41,7 +41,7 @@ public class PgDriver extends GenericDriver<PgConnectOptions> {
     boolean pipelinedPool = poolOptions instanceof PgPoolOptions && ((PgPoolOptions) poolOptions).isPipelined();
     ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null,
-      factory, databases, connectHandler, closeFuture);
+      factory, databases, connectHandler, this::wrapConnection, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -75,7 +75,7 @@ public class PgDriver extends GenericDriver<PgConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<PgConnectOptions> factory, Connection conn) {
-    return new PgConnectionImpl((PgConnectionFactory) factory, context, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<PgConnectOptions> factory, Connection connection) {
+    return new PgConnectionImpl((PgConnectionFactory) factory, context, connection);
   }
 }

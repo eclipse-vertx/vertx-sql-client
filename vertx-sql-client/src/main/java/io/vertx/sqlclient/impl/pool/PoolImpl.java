@@ -54,6 +54,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final long cleanerPeriod;
   private final boolean pipelined;
   private final Handler<SqlConnection> connectionInitializer;
+  private final ConnectionWrapper<?> connectionWrapper;
   private long timerID;
 
   public <O extends SqlConnectOptions> PoolImpl(VertxInternal vertx,
@@ -65,6 +66,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   ConnectionFactory<O> connectionFactory,
                   Supplier<Future<O>> connectionProvider,
                   Handler<SqlConnection> connectionInitializer,
+                  ConnectionWrapper connectionWrapper,
                   CloseFuture closeFuture) {
     super(driver);
 
@@ -78,6 +80,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
       poolMetrics = null;
     }
 
+    this.connectionWrapper = connectionWrapper;
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
     this.maxLifetime = MILLISECONDS.convert(poolOptions.getMaxLifetime(), poolOptions.getMaxLifetimeUnit());
@@ -95,7 +98,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private void initializeConnection(SqlConnectionPool.PooledConnection conn) {
     if (connectionInitializer != null) {
       ContextInternal current = vertx.getContext();
-      SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn);
+      SqlConnectionInternal wrapper = connectionWrapper.wrap(current, conn.factory(), conn);
       conn.init((Connection.Holder) wrapper);
       current.dispatch(wrapper, connectionInitializer);
     }
@@ -144,7 +147,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     Promise<SqlConnectionPool.PooledConnection> promise = current.promise();
     acquire(current, connectionTimeout, promise);
     return promise.future().map(conn -> {
-      SqlConnectionInternal wrapper = driver.wrapConnection(current, conn.factory(), conn);
+      SqlConnectionInternal wrapper = connectionWrapper.wrap(current, conn.factory(), conn);
       conn.init((Connection.Holder) wrapper);
       return wrapper;
     });

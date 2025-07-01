@@ -42,10 +42,6 @@ public class TemplateBuilderTest {
           throw new UnsupportedOperationException();
         }
         @Override
-        public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
-          throw new UnsupportedOperationException();
-        }
-        @Override
         public boolean acceptsOptions(SqlConnectOptions connectOptions) {
           throw new UnsupportedOperationException();
         }
