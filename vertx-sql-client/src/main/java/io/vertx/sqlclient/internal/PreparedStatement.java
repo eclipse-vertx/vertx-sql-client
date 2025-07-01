@@ -17,12 +17,14 @@
 
 package io.vertx.sqlclient.internal;
 
+import io.vertx.sqlclient.desc.RowDescriptor;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public interface PreparedStatement {
 
-  RowDescriptorBase rowDesc();
+  RowDescriptor rowDesc();
 
   String sql();
 
