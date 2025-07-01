@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.internal.pool;
+package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
@@ -27,7 +27,6 @@ import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.TransactionPropagationLocal;
-import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.internal.SqlClientBase;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.vertx.sqlclient.internal.pool;
+package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Future;

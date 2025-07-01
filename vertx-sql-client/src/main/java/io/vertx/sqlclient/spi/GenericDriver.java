@@ -10,9 +10,11 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.pool.CloseablePool;
-import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.impl.pool.CloseablePool;
+import io.vertx.sqlclient.impl.pool.PoolImpl;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class GenericDriver<O extends SqlConnectOptions> implements Driver<O> {
@@ -22,6 +24,19 @@ public abstract class GenericDriver<O extends SqlConnectOptions> implements Driv
   private final String sharedClientKey = SHARED_CLIENT_KEY_PREFIX + "." + discriminant();
 
   protected abstract String discriminant();
+
+  private final Function<Connection, Future<Void>> afterAcquire;
+  private final Function<Connection, Future<Void>> beforeRecycle;
+
+  public GenericDriver() {
+    this.afterAcquire = null;
+    this.beforeRecycle = null;
+  }
+
+  public GenericDriver(Function<Connection, Future<Void>> afterAcquire, Function<Connection, Future<Void>> beforeRecycle) {
+    this.afterAcquire = afterAcquire;
+    this.beforeRecycle = beforeRecycle;
+  }
 
   @Override
   public Pool newPool(Vertx vertx, Supplier<Future<O>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
@@ -37,7 +52,7 @@ public abstract class GenericDriver<O extends SqlConnectOptions> implements Driv
 
   protected Pool newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<O>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     ConnectionFactory<O> factory = createConnectionFactory(vertx, transportOptions);
-    PoolImpl pool = new PoolImpl(vertx, this, false, poolOptions, null, null,
+    PoolImpl pool = new PoolImpl(vertx, this, false, poolOptions, afterAcquire, beforeRecycle,
       factory, databases, connectHandler, closeFuture);
     pool.init();
     closeFuture.add(factory);

@@ -34,7 +34,7 @@ import io.vertx.sqlclient.spi.Driver;
 
 import java.util.function.Function;
 
-import static io.vertx.sqlclient.internal.pool.PoolImpl.startPropagatableConnection;
+import static io.vertx.sqlclient.impl.pool.PoolImpl.startPropagatableConnection;
 
 /**
  * A connection pool which reuses a number of SQL connections.

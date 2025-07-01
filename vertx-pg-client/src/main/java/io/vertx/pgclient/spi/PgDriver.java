@@ -18,7 +18,7 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.GenericDriver;

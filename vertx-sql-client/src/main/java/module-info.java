@@ -24,8 +24,7 @@ module io.vertx.sql.client {
 
   exports io.vertx.sqlclient.internal;
   exports io.vertx.sqlclient.internal.command;
-  exports io.vertx.sqlclient.internal.pool;
-
+  
   // Expose impl to our own implementation, this actually would deserve to be in another module since it is not
   // related to the API or the internal API
 
