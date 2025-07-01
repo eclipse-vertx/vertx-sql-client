@@ -11,9 +11,7 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.oracleclient.impl.OracleRowDesc;
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.TupleInternal;
 import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.sql.ResultSetMetaData;
@@ -34,11 +32,6 @@ public class OraclePreparedStatement implements PreparedStatement {
     }
     this.sql = sql;
     this.rowDesc = rowDesc;
-  }
-
-  @Override
-  public ParamDesc paramDesc() {
-    throw new UnsupportedOperationException();
   }
 
   @Override

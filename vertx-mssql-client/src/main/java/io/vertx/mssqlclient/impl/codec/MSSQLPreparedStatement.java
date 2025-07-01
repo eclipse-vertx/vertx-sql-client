@@ -11,10 +11,8 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.TupleInternal;
 
 public class MSSQLPreparedStatement implements PreparedStatement {
 
@@ -23,11 +21,6 @@ public class MSSQLPreparedStatement implements PreparedStatement {
 
   public MSSQLPreparedStatement(String sql) {
     this.sql = sql;
-  }
-
-  @Override
-  public ParamDesc paramDesc() {
-    throw new UnsupportedOperationException();
   }
 
   @Override

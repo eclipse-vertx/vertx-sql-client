@@ -21,10 +21,9 @@ import io.vertx.db2client.impl.drda.ClientTypes;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.ErrorMessageFactory;
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.TupleInternal;
 
-class DB2ParamDesc extends ParamDesc {
+class DB2ParamDesc {
 
   private final ColumnMetaData paramDefinitions;
 

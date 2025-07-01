@@ -18,7 +18,6 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.TupleInternal;
 
 class PgPreparedStatement implements PreparedStatement {
@@ -35,11 +34,6 @@ class PgPreparedStatement implements PreparedStatement {
     this.sql = sql;
     this.bind = new Bind(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : PgColumnDesc.EMPTY_COLUMNS);
     this.cached = cached;
-  }
-
-  @Override
-  public ParamDesc paramDesc() {
-    return paramDesc;
   }
 
   @Override

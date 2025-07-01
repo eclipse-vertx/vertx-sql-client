@@ -19,7 +19,6 @@ package io.vertx.pgclient.impl.codec;
 import io.vertx.core.VertxException;
 import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.internal.ArrayTuple;
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.Arrays;
@@ -28,7 +27,7 @@ import java.util.function.Function;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class PgParamDesc extends ParamDesc {
+class PgParamDesc {
 
   // OIDs
   private final DataType[] paramDataTypes;

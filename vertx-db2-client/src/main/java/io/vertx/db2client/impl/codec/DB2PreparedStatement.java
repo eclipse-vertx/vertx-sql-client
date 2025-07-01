@@ -23,7 +23,6 @@ import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.Section;
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.RowDesc;
 import io.vertx.sqlclient.internal.TupleInternal;
@@ -56,11 +55,6 @@ public class DB2PreparedStatement implements PreparedStatement {
     this.rowDesc = rowDesc;
     this.sql = sql;
     this.section = section;
-  }
-
-  @Override
-  public ParamDesc paramDesc() {
-    return paramDesc;
   }
 
   @Override
