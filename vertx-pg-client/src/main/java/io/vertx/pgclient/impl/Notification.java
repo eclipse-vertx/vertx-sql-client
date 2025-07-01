@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.pgclient.impl;
 
 import java.util.Objects;
 

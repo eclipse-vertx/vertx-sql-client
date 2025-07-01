@@ -32,7 +32,7 @@ import io.vertx.pgclient.data.*;
 import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.impl.codec.CommonCodec;
+import io.vertx.sqlclient.impl.Utils;
 
 import java.math.BigDecimal;
 import java.net.Inet4Address;
@@ -688,7 +688,7 @@ public class DataTypeCodec {
   }
 
   private static Short textDecodeINT2(int index, int len, ByteBuf buff) {
-    return (short) CommonCodec.decodeDecStringToLong(index, len, buff);
+    return (short) Utils.decodeDecStringToLong(index, len, buff);
   }
 
   private static Short binaryDecodeINT2(int index, int len, ByteBuf buff) {
@@ -700,7 +700,7 @@ public class DataTypeCodec {
   }
 
   private static Integer textDecodeINT4(int index, int len, ByteBuf buff) {
-    return (int) CommonCodec.decodeDecStringToLong(index, len, buff);
+    return (int) Utils.decodeDecStringToLong(index, len, buff);
   }
 
   private static Integer binaryDecodeINT4(int index, int len, ByteBuf buff) {
@@ -712,7 +712,7 @@ public class DataTypeCodec {
   }
 
   private static Long textDecodeINT8(int index, int len, ByteBuf buff) {
-    return CommonCodec.decodeDecStringToLong(index, len, buff);
+    return Utils.decodeDecStringToLong(index, len, buff);
   }
 
   private static Long binaryDecodeINT8(int index, int len, ByteBuf buff) {

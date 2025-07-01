@@ -25,7 +25,7 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.util.ByteProcessor;
 import io.vertx.core.Completable;
 import io.vertx.pgclient.impl.util.Util;
-import io.vertx.sqlclient.impl.Notification;
+import io.vertx.pgclient.impl.Notification;
 import io.vertx.sqlclient.codec.CommandResponse;
 
 /**

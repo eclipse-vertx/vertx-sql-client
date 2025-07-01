@@ -35,7 +35,6 @@ import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.codec.CommandMessage;
 import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.spi.connection.Connection;
-import io.vertx.sqlclient.impl.Notification;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
