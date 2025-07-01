@@ -17,30 +17,9 @@
 
 package io.vertx.sqlclient.internal.command;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Completable;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
 public abstract class CommandBase<R> {
-
-  public Completable<R> handler;
-
-  public final void fail(Throwable err) {
-    complete(Future.failedFuture(err));
-  }
-
-  public final void fail(String failureMsg) {
-    complete(Future.failedFuture(failureMsg));
-  }
-
-  public final void complete(AsyncResult<R> resp) {
-    if (handler != null) {
-      handler.complete(resp.result(), resp.cause());
-    }
-  }
 }

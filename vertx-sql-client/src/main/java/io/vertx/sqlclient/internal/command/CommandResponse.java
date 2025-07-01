@@ -46,8 +46,6 @@ public class CommandResponse<R> {
   public final void fire() {
     if (handler != null) {
       handler.complete(res.result(), res.cause());
-    } else if (cmd.handler != null) {
-      cmd.handler.complete(res.result(), res.cause());
     }
   }
 }
