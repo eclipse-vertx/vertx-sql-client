@@ -21,25 +21,29 @@ import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class GenericDriver<O extends SqlConnectOptions> implements Driver<O> {
+/**
+ * A generic driver.
+ * @param <O>
+ */
+public abstract class DriverBase<O extends SqlConnectOptions> implements Driver<O> {
 
   private static final String SHARED_CLIENT_KEY_PREFIX = "__vertx.shared.";
 
-  private final String sharedClientKey = SHARED_CLIENT_KEY_PREFIX + "." + discriminant();
 
-  protected abstract String discriminant();
-
+  private final String discriminant;
+  private final String sharedClientKey;
   private final Function<Connection, Future<Void>> afterAcquire;
   private final Function<Connection, Future<Void>> beforeRecycle;
 
-  public GenericDriver() {
-    this.afterAcquire = null;
-    this.beforeRecycle = null;
+  public DriverBase(String discriminant) {
+    this(discriminant, null, null);
   }
 
-  public GenericDriver(Function<Connection, Future<Void>> afterAcquire, Function<Connection, Future<Void>> beforeRecycle) {
+  public DriverBase(String discriminant, Function<Connection, Future<Void>> afterAcquire, Function<Connection, Future<Void>> beforeRecycle) {
     this.afterAcquire = afterAcquire;
     this.beforeRecycle = beforeRecycle;
+    this.discriminant = discriminant;
+    this.sharedClientKey = SHARED_CLIENT_KEY_PREFIX + "." + discriminant;
   }
 
   /**

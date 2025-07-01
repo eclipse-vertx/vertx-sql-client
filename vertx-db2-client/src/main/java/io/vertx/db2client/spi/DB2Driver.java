@@ -33,19 +33,18 @@ import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
-import io.vertx.sqlclient.spi.GenericDriver;
+import io.vertx.sqlclient.spi.DriverBase;
 
 import java.util.function.Supplier;
 
-public class DB2Driver extends GenericDriver<DB2ConnectOptions> {
+public class DB2Driver extends DriverBase<DB2ConnectOptions> {
 
   private static final String DISCRIMINANT = "db2client";
 
   public static final DB2Driver INSTANCE = new DB2Driver();
 
-  @Override
-  protected String discriminant() {
-    return DISCRIMINANT;
+  public DB2Driver() {
+    super(DISCRIMINANT);
   }
 
   @Override

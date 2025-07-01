@@ -33,19 +33,18 @@ import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
-import io.vertx.sqlclient.spi.GenericDriver;
+import io.vertx.sqlclient.spi.DriverBase;
 
 import java.util.function.Supplier;
 
-public class MySQLDriver extends GenericDriver<MySQLConnectOptions> {
+public class MySQLDriver extends DriverBase<MySQLConnectOptions> {
 
   private static final String DISCRIMINANT = "mysqlclient";
 
   public static final MySQLDriver INSTANCE = new MySQLDriver();
 
-  @Override
-  protected String discriminant() {
-    return DISCRIMINANT;
+  public MySQLDriver() {
+    super(DISCRIMINANT);
   }
 
   @Override

@@ -22,11 +22,11 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
-import io.vertx.sqlclient.spi.GenericDriver;
+import io.vertx.sqlclient.spi.DriverBase;
 
 import java.util.function.Function;
 
-public class OracleDriver extends GenericDriver<OracleConnectOptions> {
+public class OracleDriver extends DriverBase<OracleConnectOptions> {
 
   private static final String DISCRIMINANT = "oracleclient";
 
@@ -36,12 +36,7 @@ public class OracleDriver extends GenericDriver<OracleConnectOptions> {
   public static final OracleDriver INSTANCE = new OracleDriver();
 
   public OracleDriver() {
-    super(AFTER_ACQUIRE, BEFORE_RECYCLE);
-  }
-
-  @Override
-  protected String discriminant() {
-    return DISCRIMINANT;
+    super(DISCRIMINANT, AFTER_ACQUIRE, BEFORE_RECYCLE);
   }
 
   @Override

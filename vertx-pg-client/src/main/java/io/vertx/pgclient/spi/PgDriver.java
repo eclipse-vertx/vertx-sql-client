@@ -21,19 +21,18 @@ import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
-import io.vertx.sqlclient.spi.GenericDriver;
+import io.vertx.sqlclient.spi.DriverBase;
 
 import java.util.function.Supplier;
 
-public class PgDriver extends GenericDriver<PgConnectOptions> {
+public class PgDriver extends DriverBase<PgConnectOptions> {
 
   private static final String DISCRIMINANT = "pgclient";
 
   public static final PgDriver INSTANCE = new PgDriver();
 
-  @Override
-  protected String discriminant() {
-    return DISCRIMINANT;
+  public PgDriver() {
+    super(DISCRIMINANT);
   }
 
   @Override

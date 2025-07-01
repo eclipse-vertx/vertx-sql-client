@@ -28,17 +28,16 @@ import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
-import io.vertx.sqlclient.spi.GenericDriver;
+import io.vertx.sqlclient.spi.DriverBase;
 
-public class MSSQLDriver extends GenericDriver<MSSQLConnectOptions> {
+public class MSSQLDriver extends DriverBase<MSSQLConnectOptions> {
 
   private static final String DISCRIMINANT = "mssqlclient";
 
   public static final MSSQLDriver INSTANCE = new MSSQLDriver();
 
-  @Override
-  protected String discriminant() {
-    return DISCRIMINANT;
+  public MSSQLDriver() {
+    super(DISCRIMINANT);
   }
 
   @Override

@@ -24,7 +24,7 @@ import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
-import io.vertx.sqlclient.spi.GenericDriver;
+import io.vertx.sqlclient.spi.DriverBase;
 import org.junit.Test;
 
 import java.sql.JDBCType;
@@ -33,7 +33,7 @@ import java.util.stream.Collector;
 
 import static org.junit.Assert.*;
 
-public class GenericDriverTest {
+public class DriverBaseTest {
 
   private static class VarcharColumnDescriptor implements ColumnDescriptor {
 
@@ -64,11 +64,7 @@ public class GenericDriverTest {
   @Test
   public void testSimple() {
 
-    GenericDriver<SqlConnectOptions> driver = new GenericDriver<SqlConnectOptions>() {
-      @Override
-      protected String discriminant() {
-        return "generic";
-      }
+    DriverBase<SqlConnectOptions> driver = new DriverBase<SqlConnectOptions>("generic") {
       @Override
       public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
         return new ConnectionFactory<>() {

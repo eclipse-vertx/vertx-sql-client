@@ -13,6 +13,6 @@
 /**
  * <p>The Connection Service Provider Interface (SPI).</p>
  *
- * <p>This SPI is the contract between a {@link io.vertx.sqlclient.spi.GenericDriver} and a database backend.</p>
+ * <p>This SPI is the contract between a {@link io.vertx.sqlclient.spi.DriverBase} and a database backend.</p>
  */
 package io.vertx.sqlclient.spi.connection;
