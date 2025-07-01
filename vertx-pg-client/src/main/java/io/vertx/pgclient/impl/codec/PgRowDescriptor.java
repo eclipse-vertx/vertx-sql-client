@@ -16,11 +16,11 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
-class PgRowDesc extends RowDesc {
+class PgRowDescriptor extends RowDescriptor {
 
-  static PgRowDesc createBinary(PgColumnDesc[] columns) {
+  static PgRowDescriptor createBinary(PgColumnDesc[] columns) {
     // Fix to use binary when possible
     for (int i = 0; i < columns.length; i++) {
       PgColumnDesc columnDesc = columns[i];
@@ -28,16 +28,16 @@ class PgRowDesc extends RowDesc {
         columns[i] = columnDesc.toBinaryDataFormat();
       }
     }
-    return new PgRowDesc(columns);
+    return new PgRowDescriptor(columns);
   }
 
-  static PgRowDesc create(PgColumnDesc[] columns) {
-    return new PgRowDesc(columns);
+  static PgRowDescriptor create(PgColumnDesc[] columns) {
+    return new PgRowDescriptor(columns);
   }
 
   final PgColumnDesc[] columns;
 
-  private PgRowDesc(PgColumnDesc[] columns) {
+  private PgRowDescriptor(PgColumnDesc[] columns) {
     super(columns);
     this.columns = columns;
   }

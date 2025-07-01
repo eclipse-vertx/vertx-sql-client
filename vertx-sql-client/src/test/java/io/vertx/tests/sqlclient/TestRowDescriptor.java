@@ -12,22 +12,22 @@
 package io.vertx.tests.sqlclient;
 
 import io.vertx.sqlclient.desc.ColumnDescriptor;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
 import java.sql.JDBCType;
 
-public class TestRowDesc extends RowDesc {
+public class TestRowDescriptor extends RowDescriptor {
 
-  private TestRowDesc(TestColumnDescriptor[] columnDescriptors) {
+  private TestRowDescriptor(TestColumnDescriptor[] columnDescriptors) {
     super(columnDescriptors);
   }
 
-  public static TestRowDesc create(String... names) {
+  public static TestRowDescriptor create(String... names) {
     TestColumnDescriptor[] columnDescriptors = new TestColumnDescriptor[names.length];
     for (int i = 0; i < names.length; i++) {
       columnDescriptors[i] = new TestColumnDescriptor(names[i]);
     }
-    return new TestRowDesc(columnDescriptors);
+    return new TestRowDescriptor(columnDescriptors);
   }
 
   public static class TestColumnDescriptor implements ColumnDescriptor {

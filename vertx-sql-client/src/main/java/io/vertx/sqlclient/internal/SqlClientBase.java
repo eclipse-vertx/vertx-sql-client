@@ -45,9 +45,9 @@ import java.util.stream.Collector;
 
 public abstract class SqlClientBase implements SqlClientInternal, CommandScheduler {
 
-  protected final Driver driver;
+  protected final Driver<?> driver;
 
-  public SqlClientBase(Driver driver) {
+  public SqlClientBase(Driver<?> driver) {
     this.driver = driver;
   }
 
@@ -56,7 +56,7 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
   protected abstract <T> PromiseInternal<T> promise();
 
   @Override
-  public Driver driver() {
+  public Driver<?> driver() {
     return driver;
   }
 

@@ -16,7 +16,7 @@ import io.vertx.core.VertxException;
 import io.vertx.mysqlclient.MySQLBatchException;
 import io.vertx.mysqlclient.MySQLException;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
@@ -27,7 +27,7 @@ import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.*;
 
 public class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
-  private final List<TupleInternal> params;
+  private final List<TupleBase> params;
   private final BitSet bindingFailures;
   private boolean pipeliningEnabled;
   private int sent;

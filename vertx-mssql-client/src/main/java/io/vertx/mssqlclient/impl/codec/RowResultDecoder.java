@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mssqlclient.impl.MSSQLRowImpl;
+import io.vertx.mssqlclient.impl.MSSQLRow;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.impl.RowDecoder;
 import io.vertx.sqlclient.internal.RowInternal;
@@ -23,21 +23,21 @@ public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   private static final int FETCH_MISSING = 0x0002;
 
-  private final MSSQLRowDesc desc;
+  private final MSSQLRowDescriptor desc;
   public boolean nbc;
 
-  public RowResultDecoder(Collector<Row, C, R> collector, MSSQLRowDesc desc) {
+  public RowResultDecoder(Collector<Row, C, R> collector, MSSQLRowDescriptor desc) {
     super(collector);
     this.desc = desc;
   }
 
-  public MSSQLRowDesc desc() {
+  public MSSQLRowDescriptor desc() {
     return desc;
   }
 
   @Override
   protected RowInternal row() {
-    return new MSSQLRowImpl(desc);
+    return new MSSQLRow(desc);
   }
 
   @Override

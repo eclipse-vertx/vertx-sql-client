@@ -23,21 +23,20 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.*;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.time.*;
-import java.util.List;
 import java.util.UUID;
 
-public class RowImpl extends RowBase {
+public class PgRow extends RowBase {
 
-  public RowImpl(RowDesc desc) {
+  public PgRow(RowDescriptor desc) {
     super(desc);
   }
 
-  public RowImpl(RowImpl row) {
+  public PgRow(PgRow row) {
     super(row.desc, row);
   }
 

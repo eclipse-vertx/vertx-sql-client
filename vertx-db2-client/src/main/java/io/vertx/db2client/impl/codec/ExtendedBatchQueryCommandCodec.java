@@ -27,7 +27,7 @@ import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
@@ -35,7 +35,7 @@ public class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseC
 
   private static final Logger LOG = LoggerFactory.getLogger(ExtendedBatchQueryCommandCodec.class);
 
-  private final List<TupleInternal> params;
+  private final List<TupleBase> params;
   private final List<QueryInstance> queryInstances;
   private final String baseCursorId;
 

@@ -9,10 +9,10 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.tests.mssqlclient.impl;
+package io.vertx.tests.pgclient.impl;
 
-import io.vertx.mssqlclient.impl.MSSQLRowImpl;
-import io.vertx.tests.sqlclient.TestRowDesc;
+import io.vertx.pgclient.impl.PgRow;
+import io.vertx.tests.sqlclient.TestRowDescriptor;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -20,14 +20,13 @@ import java.time.LocalDate;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-public class MSSQLRowImplTest {
+public class PgRowTest {
   enum EnumValue {
     SOME, NONE
   }
-
   @Test
   public void testGetNullEnum() {
-    MSSQLRowImpl row = new MSSQLRowImpl(TestRowDesc.create("enum"));
+    PgRow row = new PgRow(TestRowDescriptor.create("enum"));
     row.addValue(null);
     assertNull(row.get(EnumValue.class, 0));
 

@@ -12,7 +12,7 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
 public class MSSQLPreparedStatement implements PreparedStatement {
 
@@ -24,7 +24,7 @@ public class MSSQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public RowDesc rowDesc() {
+  public RowDescriptor rowDesc() {
     throw new UnsupportedOperationException();
   }
 

@@ -12,11 +12,11 @@ package io.vertx.sqlclient.templates.impl;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.function.Function;
 
-public class JsonTuple extends TupleInternal {
+public class JsonTuple extends TupleBase {
 
   private final int size;
   private final Function<Integer, String> columnMapping;

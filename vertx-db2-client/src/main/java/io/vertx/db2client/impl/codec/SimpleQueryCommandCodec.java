@@ -75,7 +75,7 @@ class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCom
     resp.readPrepareDescribeOutput();
     resp.readBeginOpenQuery();
     columnDefinitions = resp.getOutputColumnMetaData();
-    RowResultDecoder<?, T> decoder = new RowResultDecoder<>(cmd.collector(), DB2RowDesc.create(columnDefinitions), resp.getCursor(), resp);
+    RowResultDecoder<?, T> decoder = new RowResultDecoder<>(cmd.collector(), DB2RowDescriptor.create(columnDefinitions), resp.getCursor(), resp);
 
     while (decoder.next()) {
       decoder.handleRow(columnDefinitions.columns_, payload);

@@ -13,7 +13,7 @@ package io.vertx.oracleclient.impl.commands;
 import io.vertx.oracleclient.OracleClient;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +23,9 @@ public class OracleResponse<R> {
   static class RS<R> {
     R holder;
     int size;
-    RowDesc desc;
+    RowDescriptor desc;
 
-    RS(R holder, RowDesc desc, int size) {
+    RS(R holder, RowDescriptor desc, int size) {
       this.holder = holder;
       this.desc = desc;
       this.size = size;
@@ -42,7 +42,7 @@ public class OracleResponse<R> {
     this.update = updateCount;
   }
 
-  public void push(R decodeResultSet, RowDesc desc, int size) {
+  public void push(R decodeResultSet, RowDescriptor desc, int size) {
     if (rs == null) {
       rs = new ArrayList<>();
     }
@@ -57,7 +57,7 @@ public class OracleResponse<R> {
     this.empty = apply;
   }
 
-  public void outputs(R decodeResultSet, RowDesc desc, int size) {
+  public void outputs(R decodeResultSet, RowDescriptor desc, int size) {
     if (output == null) {
       output = new ArrayList<>();
     }

@@ -151,11 +151,11 @@ public abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> extends Com
     handleRowDesc(createRowDesc(columnDatas));
   }
 
-  protected MSSQLRowDesc createRowDesc(ColumnData[] columnData) {
-    return MSSQLRowDesc.create(columnData, false);
+  protected MSSQLRowDescriptor createRowDesc(ColumnData[] columnData) {
+    return MSSQLRowDescriptor.create(columnData, false);
   }
 
-  protected void handleRowDesc(MSSQLRowDesc mssqlRowDesc) {
+  protected void handleRowDesc(MSSQLRowDescriptor mssqlRowDesc) {
   }
 
   protected void handleRow(ByteBuf payload) {

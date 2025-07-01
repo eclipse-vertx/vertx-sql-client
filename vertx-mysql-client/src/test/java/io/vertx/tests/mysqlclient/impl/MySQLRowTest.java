@@ -11,8 +11,8 @@
 
 package io.vertx.tests.mysqlclient.impl;
 
-import io.vertx.mysqlclient.impl.MySQLRowDesc;
-import io.vertx.mysqlclient.impl.MySQLRowImpl;
+import io.vertx.mysqlclient.impl.MySQLRowDescriptor;
+import io.vertx.mysqlclient.impl.MySQLRow;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import org.junit.Test;
 
@@ -21,14 +21,14 @@ import java.time.LocalDate;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-public class MySQLRowImplTest {
+public class MySQLRowTest {
   enum EnumValue {
     SOME, NONE
   }
 
   @Test
   public void testGetNullEnum() {
-    MySQLRowImpl row = new MySQLRowImpl(MySQLRowDesc.create(new ColumnDefinition[0], null));
+    MySQLRow row = new MySQLRow(MySQLRowDescriptor.create(new ColumnDefinition[0], null));
     row.addValue(null);
     assertNull(row.get(EnumValue.class, 0));
 

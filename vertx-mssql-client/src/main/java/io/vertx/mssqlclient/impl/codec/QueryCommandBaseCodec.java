@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.stream.Collector;
@@ -32,7 +32,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
   }
 
   @Override
-  protected void handleRowDesc(MSSQLRowDesc mssqlRowDesc) {
+  protected void handleRowDesc(MSSQLRowDescriptor mssqlRowDesc) {
     rowResultDecoder = new RowResultDecoder<>(cmd.collector(), mssqlRowDesc);
   }
 
@@ -58,20 +58,20 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends M
     T result;
     Throwable failure;
     int size;
-    RowDesc rowDesc;
+    RowDescriptor rowDescriptor;
     if (rowResultDecoder != null) {
       failure = rowResultDecoder.complete();
       result = rowResultDecoder.result();
-      rowDesc = rowResultDecoder.desc();
+      rowDescriptor = rowResultDecoder.desc();
       size = rowResultDecoder.size();
       rowResultDecoder.reset();
     } else {
       result = emptyResult(cmd.collector());
       failure = null;
       size = 0;
-      rowDesc = null;
+      rowDescriptor = null;
     }
-    cmd.resultHandler().handleResult(rowCount, size, rowDesc, result, failure);
+    cmd.resultHandler().handleResult(rowCount, size, rowDescriptor, result, failure);
   }
 }
 

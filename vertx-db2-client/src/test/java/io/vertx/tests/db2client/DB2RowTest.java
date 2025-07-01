@@ -11,8 +11,8 @@
 
 package io.vertx.tests.db2client;
 
-import io.vertx.db2client.impl.DB2RowImpl;
-import io.vertx.tests.sqlclient.TestRowDesc;
+import io.vertx.db2client.impl.DB2Row;
+import io.vertx.tests.sqlclient.TestRowDescriptor;
 import org.junit.Test;
 
 import java.time.LocalDate;
@@ -20,14 +20,14 @@ import java.time.LocalDate;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
-public class DB2RowImplTest {
+public class DB2RowTest {
   enum EnumValue {
     SOME, NONE
   }
 
   @Test
   public void testGetNullEnum() {
-    DB2RowImpl row = new DB2RowImpl(TestRowDesc.create("enum"));
+    DB2Row row = new DB2Row(TestRowDescriptor.create("enum"));
     row.addValue(null);
     assertNull(row.get(EnumValue.class, 0));
 

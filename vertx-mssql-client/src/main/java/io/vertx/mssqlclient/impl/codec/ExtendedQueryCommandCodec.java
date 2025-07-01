@@ -11,7 +11,7 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
@@ -21,12 +21,12 @@ class ExtendedQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
   }
 
   @Override
-  protected TupleInternal prepexecRequestParams() {
+  protected TupleBase prepexecRequestParams() {
     return cmd.params();
   }
 
   @Override
-  protected TupleInternal execRequestParams() {
+  protected TupleBase execRequestParams() {
     return cmd.params();
   }
 }

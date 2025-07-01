@@ -18,21 +18,21 @@ package io.vertx.mysqlclient.impl;
 
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
-public class MySQLRowDesc extends RowDesc {
+public class MySQLRowDescriptor extends RowDescriptor {
 
   private final ColumnDefinition[] columnDefinitions;
   private final DataFormat dataFormat;
 
-  private MySQLRowDesc(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
+  private MySQLRowDescriptor(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
     super(columnDefinitions);
     this.columnDefinitions = columnDefinitions;
     this.dataFormat = dataFormat;
   }
 
-  public static MySQLRowDesc create(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
-    return new MySQLRowDesc(columnDefinitions, dataFormat);
+  public static MySQLRowDescriptor create(ColumnDefinition[] columnDefinitions, DataFormat dataFormat) {
+    return new MySQLRowDescriptor(columnDefinitions, dataFormat);
   }
 
   public ColumnDefinition[] columnDefinitions() {

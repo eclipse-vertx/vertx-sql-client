@@ -72,7 +72,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
     if (queryInstance.cursor == null) {
       resp.setOutputColumnMetaData(columnDefinitions);
       resp.readBeginOpenQuery();
-      decoder = new RowResultDecoder<>(cmd.collector(), DB2RowDesc.create(columnDefinitions), resp.getCursor(), resp);
+      decoder = new RowResultDecoder<>(cmd.collector(), DB2RowDescriptor.create(columnDefinitions), resp.getCursor(), resp);
       queryInstance.cursor = resp.getCursor();
       queryInstance.queryInstanceId = resp.getQueryInstanceId();
     } else {

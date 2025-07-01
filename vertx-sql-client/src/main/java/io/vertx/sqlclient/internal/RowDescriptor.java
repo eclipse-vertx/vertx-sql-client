@@ -26,12 +26,12 @@ import java.util.RandomAccess;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class RowDesc {
+public class RowDescriptor {
 
   private final ColumnNames columnNames;
   private final ColumnDescriptors columnDescriptors;
 
-  public RowDesc(ColumnDescriptor[] columnDescriptors) {
+  public RowDescriptor(ColumnDescriptor[] columnDescriptors) {
     this.columnNames = new ColumnNames(columnDescriptors);
     this.columnDescriptors = new ColumnDescriptors(columnDescriptors);
   }

@@ -17,9 +17,9 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 import io.vertx.sqlclient.codec.InvalidCachedStatementEvent;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
@@ -54,7 +54,7 @@ public class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> ext
           if (encoder.useLayer7Proxy) {
             encoder.writeParse(ps.sql, ps.bind.statement, new DataType[0]);
           }
-          for (TupleInternal param : cmd.paramsList()) {
+          for (TupleBase param : cmd.paramsList()) {
             encoder.writeBind(ps.bind, cmd.cursorId(), param);
             encoder.writeExecute(cmd.cursorId(), cmd.fetch());
           }
@@ -79,7 +79,7 @@ public class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> ext
   void handlePortalSuspended() {
     Throwable failure = rowDecoder.complete();
     R result = rowDecoder.result();
-    RowDesc desc = rowDecoder.desc;
+    RowDescriptor desc = rowDecoder.desc;
     int size = rowDecoder.size();
     rowDecoder.reset();
     this.result = true;

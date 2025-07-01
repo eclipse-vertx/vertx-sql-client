@@ -23,19 +23,18 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.temporal.Temporal;
-import java.util.List;
 import java.util.UUID;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.db2client.impl.drda.DB2RowId;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
-public class DB2RowImpl extends RowBase {
+public class DB2Row extends RowBase {
 
-  public DB2RowImpl(RowDesc rowDesc) {
-    super(rowDesc);
+  public DB2Row(RowDescriptor rowDescriptor) {
+    super(rowDescriptor);
   }
 
   @Override

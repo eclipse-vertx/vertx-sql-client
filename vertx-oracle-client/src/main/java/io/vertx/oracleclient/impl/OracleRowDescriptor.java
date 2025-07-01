@@ -11,20 +11,20 @@
 
 package io.vertx.oracleclient.impl;
 
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-public class OracleRowDesc extends RowDesc {
+public class OracleRowDescriptor extends RowDescriptor {
 
-  public static final OracleRowDesc EMPTY = new OracleRowDesc(new OracleColumnDesc[0]);
+  public static final OracleRowDescriptor EMPTY = new OracleRowDescriptor(new OracleColumnDesc[0]);
 
-  private OracleRowDesc(OracleColumnDesc[] columnDescriptors) {
+  private OracleRowDescriptor(OracleColumnDesc[] columnDescriptors) {
     super(columnDescriptors);
   }
 
-  public static OracleRowDesc create(ResultSetMetaData metaData) throws SQLException {
+  public static OracleRowDescriptor create(ResultSetMetaData metaData) throws SQLException {
     if (metaData == null) {
       return EMPTY;
     }
@@ -33,6 +33,6 @@ public class OracleRowDesc extends RowDesc {
     for (int i = 0; i < cols; i++) {
       columnDescriptors[i] = new OracleColumnDesc(metaData, i + 1);
     }
-    return new OracleRowDesc(columnDescriptors);
+    return new OracleRowDescriptor(columnDescriptors);
   }
 }

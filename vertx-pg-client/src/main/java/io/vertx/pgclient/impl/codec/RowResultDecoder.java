@@ -18,7 +18,7 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.Row;
-import io.vertx.pgclient.impl.RowImpl;
+import io.vertx.pgclient.impl.PgRow;
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.impl.RowDecoder;
 import io.vertx.sqlclient.internal.RowInternal;
@@ -27,16 +27,16 @@ import java.util.stream.Collector;
 
 public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
-  final PgRowDesc desc;
+  final PgRowDescriptor desc;
 
-  public RowResultDecoder(Collector<Row, C, R> collector, PgRowDesc desc) {
+  public RowResultDecoder(Collector<Row, C, R> collector, PgRowDescriptor desc) {
     super(collector);
     this.desc = desc;
   }
 
   @Override
   protected RowInternal row() {
-    return new RowImpl(desc);
+    return new PgRow(desc);
   }
 
   @Override

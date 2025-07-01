@@ -19,7 +19,7 @@ package io.vertx.pgclient.impl.codec;
 import io.vertx.core.VertxException;
 import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.internal.ArrayTuple;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.Arrays;
 import java.util.function.Function;
@@ -40,7 +40,7 @@ class PgParamDesc {
     return paramDataTypes;
   }
 
-  public TupleInternal prepare(TupleInternal values) {
+  public TupleBase prepare(TupleBase values) {
     int numberOfParams = values.size();
     if (numberOfParams > 65535) {
       throw new VertxException("The number of parameters (" + numberOfParams + ") exceeds the maximum of 65535. Use arrays or split the query.", true);
@@ -49,7 +49,7 @@ class PgParamDesc {
     if (numberOfParams != paramDescLength) {
       throw new VertxException(ErrorMessageFactory.buildWhenArgumentsLengthNotMatched(paramDescLength, numberOfParams), true);
     }
-    TupleInternal prepared = values;
+    TupleBase prepared = values;
     for (int i = 0; i < paramDescLength; i++) {
       DataType paramDataType = paramDataTypes[i];
       ParamExtractor<?> extractor = paramDataType.paramExtractor;

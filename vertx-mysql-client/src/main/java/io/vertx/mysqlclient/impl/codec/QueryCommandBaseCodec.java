@@ -18,12 +18,12 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.MySQLClient;
-import io.vertx.mysqlclient.impl.MySQLRowDesc;
+import io.vertx.mysqlclient.impl.MySQLRowDescriptor;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
@@ -93,7 +93,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
 
   protected void handleResultsetColumnDefinitionsDecodingCompleted() {
     commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
-    MySQLRowDesc mySQLRowDesc = MySQLRowDesc.create(columnDefinitions, format); // use the column definitions if provided by execute or fetch response instead of prepare response
+    MySQLRowDescriptor mySQLRowDesc = MySQLRowDescriptor.create(columnDefinitions, format); // use the column definitions if provided by execute or fetch response instead of prepare response
     decoder = new RowResultDecoder<>(cmd.collector(), mySQLRowDesc);
   }
 
@@ -146,20 +146,20 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
     T result;
     Throwable failure;
     int size;
-    RowDesc rowDesc;
+    RowDescriptor rowDescriptor;
     if (decoder != null) {
       failure = decoder.complete();
       result = decoder.result();
-      rowDesc = decoder.rowDesc;
+      rowDescriptor = decoder.rowDesc;
       size = decoder.size();
       decoder.reset();
     } else {
       result = emptyResult(cmd.collector());
       failure = null;
       size = 0;
-      rowDesc = null;
+      rowDescriptor = null;
     }
-    cmd.resultHandler().handleResult(affectedRows, size, rowDesc, result, failure);
+    cmd.resultHandler().handleResult(affectedRows, size, rowDescriptor, result, failure);
     if (lastInsertId > 0) {
       cmd.resultHandler().addProperty(MySQLClient.LAST_INSERTED_ID, lastInsertId);
     }

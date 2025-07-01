@@ -18,17 +18,17 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 
 class PgPreparedStatement implements PreparedStatement {
 
   final String sql;
   final Bind bind;
   final PgParamDesc paramDesc;
-  final PgRowDesc rowDesc;
+  final PgRowDescriptor rowDesc;
   final boolean cached;
 
-  PgPreparedStatement(String sql, byte[] statement, PgParamDesc paramDesc, PgRowDesc rowDesc, boolean cached) {
+  PgPreparedStatement(String sql, byte[] statement, PgParamDesc paramDesc, PgRowDescriptor rowDesc, boolean cached) {
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
@@ -37,7 +37,7 @@ class PgPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public PgRowDesc rowDesc() {
+  public PgRowDescriptor rowDesc() {
     return rowDesc;
   }
 
@@ -47,7 +47,7 @@ class PgPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public TupleInternal prepare(TupleInternal values) {
+  public TupleBase prepare(TupleBase values) {
     return paramDesc.prepare(values);
   }
 

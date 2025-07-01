@@ -22,16 +22,16 @@ import java.util.List;
 
 public interface PreparedStatement {
 
-  RowDesc rowDesc();
+  RowDescriptor rowDesc();
 
   String sql();
 
-  default List<TupleInternal> prepare(List<TupleInternal> batch) throws Exception {
-    List<TupleInternal> actual = batch;
+  default List<TupleBase> prepare(List<TupleBase> batch) throws Exception {
+    List<TupleBase> actual = batch;
     int size = actual.size();
     for (int idx = 0;idx < size;idx++) {
-      TupleInternal values = batch.get(idx);
-      TupleInternal prepared = prepare(values);
+      TupleBase values = batch.get(idx);
+      TupleBase prepared = prepare(values);
       if (prepared != values) {
         if (batch == actual) {
           actual = new ArrayList<>(actual);
@@ -42,7 +42,7 @@ public interface PreparedStatement {
     return actual;
   }
 
-  default TupleInternal prepare(TupleInternal values) throws Exception {
+  default TupleBase prepare(TupleBase values) throws Exception {
     return values;
   }
 }

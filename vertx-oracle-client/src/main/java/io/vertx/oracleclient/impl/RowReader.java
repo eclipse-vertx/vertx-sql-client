@@ -18,7 +18,7 @@ import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.oracleclient.OracleException;
 import io.vertx.oracleclient.impl.commands.OracleResponse;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 import oracle.jdbc.OracleResultSet;
 
 import java.sql.ResultSetMetaData;
@@ -40,7 +40,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
 
   private final ContextInternal context;
   private final List<Class<?>> classes;
-  private final RowDesc description;
+  private final RowDescriptor description;
   private final Statement resultSetStatement;
 
   // The following fields must be read/updated on the RowReader context
@@ -67,7 +67,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
       classes.add(getType(metaData.getColumnClassName(i)));
     }
     Flow.Publisher<Row> publisher = ors.publisherOracle(this);
-    description = OracleRowDesc.create(metaData);
+    description = OracleRowDescriptor.create(metaData);
     publisher.subscribe(this);
   }
 
@@ -175,7 +175,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
     }
   }
 
-  private static Row transform(List<Class<?>> classes, RowDesc desc, oracle.jdbc.OracleRow or) throws SQLException {
+  private static Row transform(List<Class<?>> classes, RowDescriptor desc, oracle.jdbc.OracleRow or) throws SQLException {
     Row row = new OracleRow(desc);
     for (int i = 1; i <= desc.columnNames().size(); i++) {
       Object res = convertSqlValue(or.getObject(i, classes.get(i - 1)));

@@ -18,13 +18,12 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Completable;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
 import java.util.function.Function;
 
@@ -46,7 +45,7 @@ public class QueryResultBuilder<T, R extends SqlResultBase<T>, L extends SqlResu
   }
 
   @Override
-  public void handleResult(int updatedCount, int size, RowDesc desc, T result, Throwable failure) {
+  public void handleResult(int updatedCount, int size, RowDescriptor desc, T result, Throwable failure) {
     if (failure != null) {
       this.failure = failure;
     } else {

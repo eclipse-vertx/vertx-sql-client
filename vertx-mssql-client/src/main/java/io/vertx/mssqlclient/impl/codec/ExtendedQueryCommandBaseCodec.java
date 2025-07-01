@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.data.NullValue;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.*;
@@ -87,7 +87,7 @@ public abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseC
     // OUT Parameter
     INTN.encodeParam(content, null, true, ps.handle);
 
-    TupleInternal params = prepexecRequestParams();
+    TupleBase params = prepexecRequestParams();
 
     // Param definitions
     String paramDefinitions = parseParamDefinitions(params);
@@ -102,7 +102,7 @@ public abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseC
     tdsMessageCodec.encoder().writeTdsMessage(RPC, content);
   }
 
-  protected abstract TupleInternal prepexecRequestParams();
+  protected abstract TupleBase prepexecRequestParams();
 
   void sendExecRequest() {
     ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
@@ -131,9 +131,9 @@ public abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseC
     encodeParams(packet, execRequestParams());
   }
 
-  protected abstract TupleInternal execRequestParams();
+  protected abstract TupleBase execRequestParams();
 
-  protected String parseParamDefinitions(TupleInternal params) {
+  protected String parseParamDefinitions(TupleBase params) {
     StringBuilder stringBuilder = new StringBuilder();
     for (int i = 0; i < params.size(); i++) {
       if (i > 0) {
@@ -156,7 +156,7 @@ public abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseC
     return stringBuilder.toString();
   }
 
-  protected void encodeParams(ByteBuf buffer, TupleInternal params) {
+  protected void encodeParams(ByteBuf buffer, TupleBase params) {
     for (int i = 0; i < params.size(); i++) {
       String name = "@P" + (i + 1);
       Object value = params.getValue(i);

@@ -22,7 +22,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.List;
 import java.util.stream.Collector;
@@ -115,10 +115,10 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
       prepared = true; // TODO : fix this
       try {
         if (batch) {
-          tuples = ps.prepare((List<TupleInternal>) tuples);
+          tuples = ps.prepare((List<TupleBase>) tuples);
           return null;
         } else {
-          tuples = ps.prepare((TupleInternal) tuples);
+          tuples = ps.prepare((TupleBase) tuples);
         }
       } catch (Exception e) {
         return e.getMessage();
@@ -134,8 +134,8 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   /**
    * @return the list of parameters for batch execution
    */
-  public List<TupleInternal> paramsList() {
-    return batch ? (List<TupleInternal>) tuples : null;
+  public List<TupleBase> paramsList() {
+    return batch ? (List<TupleBase>) tuples : null;
   }
 
   /**
@@ -150,7 +150,7 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
       }
       tuple = list.get(0);
     } else {
-      tuple = (TupleInternal) tuples;
+      tuple = (TupleBase) tuples;
     }
     return tuple.types();
   }
@@ -158,8 +158,8 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   /**
    * @return the parameters for query execution
    */
-  public TupleInternal params() {
-    return batch ? null : (TupleInternal) tuples;
+  public TupleBase params() {
+    return batch ? null : (TupleBase) tuples;
   }
 
   public PreparedStatement preparedStatement() {

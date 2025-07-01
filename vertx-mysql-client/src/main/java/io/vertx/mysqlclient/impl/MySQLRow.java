@@ -23,12 +23,11 @@ import io.vertx.sqlclient.impl.RowBase;
 import java.math.BigDecimal;
 import java.time.*;
 import java.time.temporal.Temporal;
-import java.util.List;
 import java.util.UUID;
 
-public class MySQLRowImpl extends RowBase {
+public class MySQLRow extends RowBase {
 
-  public MySQLRowImpl(MySQLRowDesc rowDesc) {
+  public MySQLRow(MySQLRowDescriptor rowDesc) {
     super(rowDesc);
   }
 
@@ -224,7 +223,7 @@ public class MySQLRowImpl extends RowBase {
 
   @Override
   public LocalTime getLocalTime(int pos) {
-    ColumnDefinition columnDefinition = ((MySQLRowDesc)desc).get(pos);
+    ColumnDefinition columnDefinition = ((MySQLRowDescriptor)desc).get(pos);
     Object val = getValue(pos);
     if (columnDefinition.type() == DataType.TIME && val instanceof Duration) {
       // map MySQL TIME data type to java.time.LocalTime

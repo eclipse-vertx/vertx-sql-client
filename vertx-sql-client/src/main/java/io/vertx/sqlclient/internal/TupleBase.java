@@ -17,7 +17,7 @@ import io.vertx.sqlclient.data.NullValue;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class TupleInternal implements Tuple {
+public abstract class TupleBase implements Tuple {
 
   public abstract void setValue(int pos, Object value);
 

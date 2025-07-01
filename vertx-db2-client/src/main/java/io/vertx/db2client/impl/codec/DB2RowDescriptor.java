@@ -16,16 +16,16 @@
 package io.vertx.db2client.impl.codec;
 
 import io.vertx.db2client.impl.drda.ColumnMetaData;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptor;
 
 import java.sql.JDBCType;
 import java.util.List;
 
-class DB2RowDesc extends RowDesc {
+class DB2RowDescriptor extends RowDescriptor {
 
   private final ColumnMetaData columnMetaData;
 
-  private DB2RowDesc(DB2ColumnDesc[] columnDescs, ColumnMetaData columnMetaData) {
+  private DB2RowDescriptor(DB2ColumnDesc[] columnDescs, ColumnMetaData columnMetaData) {
     super(columnDescs);
     this.columnMetaData = columnMetaData;
   }
@@ -34,13 +34,13 @@ class DB2RowDesc extends RowDesc {
     return columnMetaData;
   }
 
-  static DB2RowDesc create(ColumnMetaData md) {
+  static DB2RowDescriptor create(ColumnMetaData md) {
     List<String> names = md.getColumnNames();
     List<JDBCType> types = md.getJdbcTypes();
     DB2ColumnDesc[] columns = new DB2ColumnDesc[names.size()];
     for (int i = 0; i < columns.length; i++) {
       columns[i] = new DB2ColumnDesc(names.get(i), types.get(i));
     }
-    return new DB2RowDesc(columns, md);
+    return new DB2RowDescriptor(columns, md);
   }
 }
