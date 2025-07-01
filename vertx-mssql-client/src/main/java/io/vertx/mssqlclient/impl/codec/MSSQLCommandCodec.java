@@ -53,8 +53,6 @@ public abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> extends Com
       return new SQLBatchCommandCodec<>((SimpleQueryCommand<?>) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
       return new PrepareStatementCodec((PrepareStatementCommand) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand) {
-      return ExtendedQueryCommandBaseCodec.create((ExtendedQueryCommand<?>) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
       return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
     } else if (cmd == CloseConnectionCommand.INSTANCE) {

@@ -25,8 +25,8 @@ class ExtendedBatchQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T>
   private int paramsIdx;
   private int messageDecoded;
 
-  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<T> cmd) {
-    super(cmd);
+  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+    super(cmd, ps);
     paramsList = cmd.paramsList();
   }
 

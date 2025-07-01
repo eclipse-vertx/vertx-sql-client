@@ -35,10 +35,10 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
 
   final DB2PreparedStatement statement;
 
-  ExtendedQueryCommandBaseCodec(C cmd) {
+  ExtendedQueryCommandBaseCodec(C cmd, DB2PreparedStatement statement) {
     super(cmd);
-    statement = (DB2PreparedStatement) cmd.preparedStatement();
-    columnDefinitions = statement.rowDesc.columnDefinitions();
+    this.statement = statement;
+    this.columnDefinitions = statement.rowDesc.columnDefinitions();
   }
 
   void encodePreparedQuery(DRDAQueryRequest queryRequest, QueryInstance queryInstance, Tuple params) {

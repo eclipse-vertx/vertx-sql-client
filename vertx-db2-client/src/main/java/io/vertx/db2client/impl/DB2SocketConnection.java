@@ -16,7 +16,6 @@
 package io.vertx.db2client.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -26,11 +25,15 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.impl.codec.CommandCodec;
 import io.vertx.db2client.impl.codec.DB2Codec;
+import io.vertx.db2client.impl.codec.DB2PreparedStatement;
+import io.vertx.db2client.impl.codec.ExtendedBatchQueryCommandCodec;
+import io.vertx.db2client.impl.codec.ExtendedQueryCommandCodec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.internal.command.*;
@@ -79,6 +82,15 @@ public class DB2SocketConnection extends SocketConnectionBase {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
     super.init();
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    if (command.isBatch()) {
+      return new ExtendedBatchQueryCommandCodec<>(command, (DB2PreparedStatement) preparedStatement);
+    } else {
+      return new ExtendedQueryCommandCodec(command, (DB2PreparedStatement) preparedStatement);
+    }
   }
 
   @Override

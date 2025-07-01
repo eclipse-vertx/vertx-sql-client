@@ -31,7 +31,7 @@ import io.vertx.sqlclient.internal.TupleInternal;
 
 import java.util.Arrays;
 
-class MySQLPreparedStatement implements PreparedStatement {
+public class MySQLPreparedStatement implements PreparedStatement {
 
   final long statementId;
   final String sql;

@@ -47,13 +47,6 @@ public abstract class CommandCodec<R, C extends CommandBase<R>> extends CommandM
       codec = new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
       codec = new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand) {
-      ExtendedQueryCommand<?> queryCmd = (ExtendedQueryCommand<?>) cmd;
-      if (queryCmd.isBatch()) {
-        codec = new ExtendedBatchQueryCommandCodec<>(queryCmd);
-      } else {
-        codec = new ExtendedQueryCommandCodec(queryCmd);
-      }
     } else if (cmd instanceof CloseConnectionCommand) {
       codec = new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {

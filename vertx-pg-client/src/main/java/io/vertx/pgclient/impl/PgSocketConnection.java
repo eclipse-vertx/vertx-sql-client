@@ -27,6 +27,7 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgException;
+import io.vertx.pgclient.impl.codec.ExtendedQueryCommandCodec;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.pgclient.impl.codec.PgCommandCodec;
@@ -34,6 +35,7 @@ import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.internal.command.*;
@@ -170,6 +172,11 @@ public class PgSocketConnection extends SocketConnectionBase {
     } else {
       super.doSchedule(cmd, handler);
     }
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) command, preparedStatement);
   }
 
   @Override

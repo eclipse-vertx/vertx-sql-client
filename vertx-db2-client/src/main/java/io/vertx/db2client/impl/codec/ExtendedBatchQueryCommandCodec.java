@@ -31,7 +31,7 @@ import io.vertx.sqlclient.internal.TupleInternal;
 import io.vertx.sqlclient.impl.CommandResponse;
 import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 
-class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+public class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
   private static final Logger LOG = LoggerFactory.getLogger(ExtendedBatchQueryCommandCodec.class);
 
@@ -39,8 +39,8 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   private final List<QueryInstance> queryInstances;
   private final String baseCursorId;
 
-  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
-    super(cmd);
+  public ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd, DB2PreparedStatement statement) {
+    super(cmd, statement);
     params = cmd.paramsList();
     queryInstances = new ArrayList<>(params.size());
     baseCursorId = (cmd.cursorId() == null ? UUID.randomUUID().toString() : cmd.cursorId()) + "-";

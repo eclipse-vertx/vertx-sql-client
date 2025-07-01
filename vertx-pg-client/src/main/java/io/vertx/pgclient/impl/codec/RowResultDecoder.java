@@ -25,11 +25,11 @@ import io.vertx.sqlclient.internal.RowInternal;
 
 import java.util.stream.Collector;
 
-class RowResultDecoder<C, R> extends RowDecoder<C, R> {
+public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   final PgRowDesc desc;
 
-  RowResultDecoder(Collector<Row, C, R> collector, PgRowDesc desc) {
+  public RowResultDecoder(Collector<Row, C, R> collector, PgRowDesc desc) {
     super(collector);
     this.desc = desc;
   }

@@ -16,8 +16,8 @@ import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 
 class ExtendedQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
 
-  ExtendedQueryCommandCodec(ExtendedQueryCommand<T> cmd) {
-    super(cmd);
+  ExtendedQueryCommandCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+    super(cmd, ps);
   }
 
   @Override

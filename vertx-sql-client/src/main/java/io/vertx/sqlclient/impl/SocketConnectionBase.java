@@ -233,12 +233,13 @@ public abstract class SocketConnectionBase implements Connection {
         CommandMessage<?, ?> toSend;
         if (cmd instanceof ExtendedQueryCommand) {
           ExtendedQueryCommand queryCmd = (ExtendedQueryCommand) cmd;
-          if (queryCmd.ps == null) {
+          PreparedStatement ps = queryCmd.preparedStatement();
+          if (ps == null) {
             if (psCache != null) {
-              queryCmd.ps = psCache.get(queryCmd.sql());
+              ps = psCache.get(queryCmd.sql());
             }
           }
-          if (queryCmd.ps == null) {
+          if (ps == null) {
             // Execute prepare
             boolean cache = psCache != null && preparedStatementCacheSqlFilter.test(queryCmd.sql());
             if (cache) {
@@ -254,13 +255,13 @@ public abstract class SocketConnectionBase implements Connection {
             inflight++;
             toSend = prepareCmd;
           } else {
-            String msg = queryCmd.prepare();
+            String msg = queryCmd.prepare(ps);
             if (msg != null) {
               inflight--;
               handler.fail(VertxException.noStackTrace(msg));
               continue;
             } else {
-              toSend = createMessage(cmd, handler);
+              toSend = createMessage(queryCmd, ps, handler);
             }
           }
         } else {
@@ -277,19 +278,20 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
+  private CommandMessage<?, ?> createMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement, Completable<?> handler) {
+    CommandMessage<?, ?> msg = toMessage(command, preparedStatement);
+    msg.handler = (Completable) handler;
+    return msg;
+  }
+
   private CommandMessage<?, ?> createMessage(CommandBase<?> command, Completable<?> handler) {
     CommandMessage<?, ?> msg = toMessage(command);
     msg.handler = (Completable) handler;
-/*
-    if (command.handler != null) {
-      msg.handler = (Completable) command.handler;
-      command.handler = (a, r) -> {
-        System.out.println("Handle me ------------------------");
-        new Exception().printStackTrace(System.out);
-      };
-    }
-*/
     return msg;
+  }
+
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    throw new UnsupportedOperationException();
   }
 
   protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
@@ -305,14 +307,14 @@ public abstract class SocketConnectionBase implements Connection {
         if (cache) {
           cacheStatement(ps);
         }
-        queryCmd.ps = ps;
-        String msg = queryCmd.prepare();
+//        queryCmd.ps = ps;
+        String msg = queryCmd.prepare(ps);
         if (msg != null) {
           inflight--;
           handler.fail(VertxException.noStackTrace(msg));
         } else {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
-          ctx.write(createMessage(queryCmd, handler), ctx.voidPromise());
+          ctx.write(createMessage(queryCmd, ps, handler), ctx.voidPromise());
           ctx.flush();
         }
       } else {

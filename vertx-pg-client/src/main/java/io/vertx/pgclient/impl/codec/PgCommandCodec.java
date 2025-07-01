@@ -50,8 +50,6 @@ public abstract class PgCommandCodec<R, C extends CommandBase<R>> extends Comman
       return new InitCommandCodec((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand<?>) {
       return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand<?>) {
-      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
       return new PrepareStatementCommandCodec((PrepareStatementCommand) cmd);
     } else if (cmd instanceof CloseConnectionCommand) {

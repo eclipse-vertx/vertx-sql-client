@@ -23,8 +23,8 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
 
   private CursorData cursorData;
 
-  ExtendedCursorQueryCommandCodec(ExtendedQueryCommand<T> cmd) {
-    super(cmd);
+  ExtendedCursorQueryCommandCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+    super(cmd, ps);
   }
 
   @Override

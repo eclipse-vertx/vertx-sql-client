@@ -28,7 +28,7 @@ import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.RowDesc;
 import io.vertx.sqlclient.internal.TupleInternal;
 
-class DB2PreparedStatement implements PreparedStatement {
+public class DB2PreparedStatement implements PreparedStatement {
 
   private static final Logger LOG = LoggerFactory.getLogger(DB2PreparedStatement.class);
 

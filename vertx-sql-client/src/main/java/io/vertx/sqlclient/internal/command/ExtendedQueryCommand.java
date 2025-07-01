@@ -68,19 +68,19 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
     return new ExtendedQueryCommand<>(sql, options, ps, true, tuples, 0, null, false, autoCommit, collector, resultHandler);
   }
 
-  protected final String sql;
-  protected final PrepareOptions options;
-  public PreparedStatement ps;
-  protected final boolean batch;
+  private final String sql;
+  private final PrepareOptions options;
+  private final PreparedStatement preparedStatement;
+  private final boolean batch;
+  private final int fetch;
+  private final String cursorId;
+  private final boolean suspended;
   private Object tuples;
-  protected final int fetch;
-  protected final String cursorId;
-  protected final boolean suspended;
   private boolean prepared;
 
   private ExtendedQueryCommand(String sql,
                                PrepareOptions options,
-                               PreparedStatement ps,
+                               PreparedStatement preparedStatement,
                                boolean batch,
                                Object tuples,
                                int fetch,
@@ -92,13 +92,13 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
     super(autoCommit, collector, resultHandler);
     this.sql = sql;
     this.options = options;
-    this.ps = ps;
+    this.preparedStatement = preparedStatement;
     this.batch = batch;
     this.tuples = tuples;
     this.fetch = fetch;
     this.cursorId = cursorId;
     this.suspended = suspended;
-    this.prepared = ps != null;
+    this.prepared = preparedStatement != null;
   }
 
   public PrepareOptions options() {
@@ -110,7 +110,7 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
    *
    * @return {@code null} if the tuple preparation was successfull otherwise the validation error
    */
-  public String prepare() {
+  public String prepare(PreparedStatement ps) {
     if (ps != null && !prepared) {
       prepared = true; // TODO : fix this
       try {
@@ -163,7 +163,7 @@ public class ExtendedQueryCommand<R> extends QueryCommandBase<R> {
   }
 
   public PreparedStatement preparedStatement() {
-    return ps;
+    return preparedStatement;
   }
 
   public int fetch() {

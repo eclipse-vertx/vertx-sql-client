@@ -29,7 +29,9 @@ import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
+import io.vertx.mssqlclient.impl.codec.ExtendedQueryCommandBaseCodec;
 import io.vertx.mssqlclient.impl.codec.MSSQLCommandCodec;
+import io.vertx.mssqlclient.impl.codec.MSSQLPreparedStatement;
 import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
@@ -38,6 +40,7 @@ import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.internal.command.*;
@@ -147,6 +150,11 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec(connectOptions.getPacketSize()));
     pipeline.addBefore("messageCodec", "packetDecoder", new TdsPacketDecoder());
     super.init();
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    return ExtendedQueryCommandBaseCodec.create(command, (MSSQLPreparedStatement)preparedStatement);
   }
 
   @Override

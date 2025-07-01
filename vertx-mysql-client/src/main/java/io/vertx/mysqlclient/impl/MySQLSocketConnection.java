@@ -29,15 +29,20 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.ClearCachedStatementsEvent;
 import io.vertx.mysqlclient.impl.codec.CommandCodec;
+import io.vertx.mysqlclient.impl.codec.ExtendedBatchQueryCommandCodec;
+import io.vertx.mysqlclient.impl.codec.ExtendedQueryCommandCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLPacketDecoder;
+import io.vertx.mysqlclient.impl.codec.MySQLPreparedStatement;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.CommandMessage;
 import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.impl.SocketConnectionBase;
 import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
 import io.vertx.sqlclient.internal.command.QueryCommandBase;
 import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
 import io.vertx.sqlclient.internal.command.TxCommand;
@@ -96,6 +101,15 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     pipeline.addBefore("handler", "codec", codec);
     pipeline.addBefore("codec", "packetDecoder", new MySQLPacketDecoder());
     super.init();
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    if (command.isBatch()) {
+      return new ExtendedBatchQueryCommandCodec<>(command, (MySQLPreparedStatement) preparedStatement);
+    } else {
+      return new ExtendedQueryCommandCodec<>(command, (MySQLPreparedStatement) preparedStatement);
+    }
   }
 
   @Override

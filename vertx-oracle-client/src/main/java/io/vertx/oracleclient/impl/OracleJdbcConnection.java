@@ -141,7 +141,7 @@ public class OracleJdbcConnection implements Connection {
       context.runOnContext(v -> close(holder, promise));
     }
   }
-  
+
   public Future<Void> afterAcquire() {
     PromiseInternal<Void> promise = context.owner().promise();
     context.<Void>executeBlocking(() -> {

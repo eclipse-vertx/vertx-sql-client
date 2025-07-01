@@ -25,7 +25,7 @@ import java.util.List;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.*;
 
-class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+public class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
   private final List<TupleInternal> params;
   private final BitSet bindingFailures;
@@ -33,8 +33,8 @@ class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R,
   private int sent;
   private int received;
 
-  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
-    super(cmd);
+  public ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd, MySQLPreparedStatement statement) {
+    super(cmd, statement);
     params = cmd.paramsList();
     bindingFailures = new BitSet(params.size());
   }
