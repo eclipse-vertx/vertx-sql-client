@@ -200,10 +200,9 @@ public class OracleJdbcConnection implements Connection {
           metrics.close();
         }
         OracleCommand action = wrap(cmd);
-        action.handler = handler;
-        Future<Void> future = action.processCommand(cmd, handler);
+        Future<?> future = action.processCommand(handler);
         CommandBase capture = cmd;
-        future.onComplete(ar -> actionComplete(capture, action, ar));
+        future.onComplete(ar -> actionComplete(action, ar));
       }
     } finally {
       executing = false;
@@ -254,7 +253,7 @@ public class OracleJdbcConnection implements Connection {
     return action;
   }
 
-  private void actionComplete(CommandBase cmd, OracleCommand<?> action, AsyncResult<Void> ar) {
+  private void actionComplete(OracleCommand<?> action, AsyncResult<?> ar) {
     inflight = false;
     Future<Void> future = Future.succeededFuture();
     if (ar.failed()) {
