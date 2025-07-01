@@ -36,6 +36,7 @@ import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
@@ -71,7 +72,7 @@ public abstract class SocketConnectionBase implements Connection {
   protected final PreparedStatementCache psCache;
   protected final ContextInternal context;
   private final Predicate<String> preparedStatementCacheSqlFilter;
-  private Holder holder;
+  private ConnectionContext holder;
   private final int pipeliningLimit;
 
   // Command pipeline state
@@ -128,11 +129,11 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return null;
   }
 
-  public Context context() {
+  public io.vertx.core.Context context() {
     return context;
   }
 
@@ -168,7 +169,7 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
-  public void init(Holder holder) {
+  public void init(ConnectionContext holder) {
     ContextInternal context = (ContextInternal) Vertx.currentContext();
     if (context == null || context.nettyEventLoop() != this.context.nettyEventLoop()) {
       throw new IllegalStateException();
@@ -180,7 +181,7 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
-  public void close(Holder holder, Completable<Void> promise) {
+  public void close(ConnectionContext holder, Completable<Void> promise) {
     if (Vertx.currentContext() == context) {
       Channel ch = socket.channelHandlerContext().channel();
       if (status == Status.CONNECTED) {
@@ -206,7 +207,7 @@ public abstract class SocketConnectionBase implements Connection {
     if (handler == null) {
       throw new IllegalArgumentException();
     }
-    Context context = Vertx.currentContext();
+    io.vertx.core.Context context = Vertx.currentContext();
     if (context != this.context) {
       throw new IllegalStateException();
     }

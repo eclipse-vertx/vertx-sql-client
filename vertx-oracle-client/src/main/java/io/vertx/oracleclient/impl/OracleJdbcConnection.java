@@ -22,6 +22,7 @@ import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.commands.*;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
@@ -53,7 +54,7 @@ public class OracleJdbcConnection implements Connection {
   private final OracleConnectOptions options;
   @SuppressWarnings("rawtypes")
   private final ConcurrentMap<String, RowReader> cursors = new ConcurrentHashMap<>();
-  private Holder holder;
+  private ConnectionContext holder;
 
   // Command pipeline state
   @SuppressWarnings("rawtypes")
@@ -73,11 +74,6 @@ public class OracleJdbcConnection implements Connection {
   @Override
   public ClientMetrics metrics() {
     return metrics;
-  }
-
-  @Override
-  public int pipeliningLimit() {
-    return 1;
   }
 
   @Override
@@ -106,8 +102,8 @@ public class OracleJdbcConnection implements Connection {
   }
 
   @Override
-  public void init(Holder holder) {
-    this.holder = holder;
+  public void init(ConnectionContext context) {
+    this.holder = context;
   }
 
   @Override
@@ -126,12 +122,12 @@ public class OracleJdbcConnection implements Connection {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return metadata;
   }
 
   @Override
-  public void close(Holder holder, Completable<Void> promise) {
+  public void close(ConnectionContext holder, Completable<Void> promise) {
     if (Vertx.currentContext() == context) {
       Future<Void> future;
       if (closePromise == null) {

@@ -196,7 +196,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return databaseMetadata;
   }
 

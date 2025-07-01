@@ -30,6 +30,7 @@ import io.vertx.sqlclient.impl.TransactionPropagationLocal;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlClientBase;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
+import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
@@ -99,7 +100,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     if (connectionInitializer != null) {
       ContextInternal current = vertx.getContext();
       SqlConnectionInternal wrapper = connectionWrapper.wrap(current, conn.factory(), conn);
-      conn.init((Connection.Holder) wrapper);
+      conn.init((ConnectionContext) wrapper);
       current.dispatch(wrapper, connectionInitializer);
     }
   }
@@ -148,7 +149,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     acquire(current, connectionTimeout, promise);
     return promise.future().map(conn -> {
       SqlConnectionInternal wrapper = connectionWrapper.wrap(current, conn.factory(), conn);
-      conn.init((Connection.Holder) wrapper);
+      conn.init((ConnectionContext) wrapper);
       return wrapper;
     });
   }

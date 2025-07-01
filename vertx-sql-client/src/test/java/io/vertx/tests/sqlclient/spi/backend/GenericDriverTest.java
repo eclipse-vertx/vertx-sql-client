@@ -19,6 +19,7 @@ import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
@@ -95,7 +96,7 @@ public class GenericDriverTest {
                 return null;
               }
               @Override
-              public void init(Holder holder) {
+              public void init(ConnectionContext context) {
               }
               @Override
               public boolean isSsl() {
@@ -110,11 +111,11 @@ public class GenericDriverTest {
                 return 1;
               }
               @Override
-              public DatabaseMetadata getDatabaseMetaData() {
+              public DatabaseMetadata databaseMetadata() {
                 throw new UnsupportedOperationException();
               }
               @Override
-              public void close(Holder holder, Completable<Void> promise) {
+              public void close(ConnectionContext holder, Completable<Void> promise) {
                 promise.succeed();
               }
               @Override

@@ -28,6 +28,7 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.PreparedStatementBase;
 import io.vertx.sqlclient.impl.TransactionImpl;
+import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
@@ -41,7 +42,7 @@ import io.vertx.sqlclient.spi.Driver;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, Closeable, Connection.Holder {
+public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, Closeable, ConnectionContext {
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
@@ -139,12 +140,12 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   @Override
-  public void handleException(Throwable err) {
+  public void handleException(Throwable failure) {
     Handler<Throwable> handler = exceptionHandler;
     if (handler != null) {
-      context.emit(err, handler);
+      context.emit(failure, handler);
     } else {
-      err.printStackTrace();
+      failure.printStackTrace();
     }
   }
 
@@ -155,7 +156,7 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
 
   @Override
   public DatabaseMetadata databaseMetadata() {
-    return conn.getDatabaseMetaData();
+    return conn.databaseMetadata();
   }
 
   @Override

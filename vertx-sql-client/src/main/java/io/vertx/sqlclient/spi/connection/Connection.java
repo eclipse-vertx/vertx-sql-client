@@ -25,7 +25,7 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.protocol.CommandScheduler;
 
 /**
- * A connection capable of scheduling command execution.
+ * A connection capable of scheduling commands.
  */
 public interface Connection extends CommandScheduler {
 
@@ -36,44 +36,69 @@ public interface Connection extends CommandScheduler {
     return false;
   }
 
+  /**
+   * @return The connection tracing policy
+   */
   TracingPolicy tracingPolicy();
 
+  /**
+   * @return The connection client metrics
+   */
+  ClientMetrics metrics();
+
+  /**
+   * @return the known server address
+   */
   SocketAddress server();
 
+  /**
+   * @return a database specific discriminant / identifier
+   */
   default String system() {
     return "other_sql";
   }
 
+  /**
+   * @return the database name
+   */
   String database();
 
+  /**
+   * @return the database user
+   */
   String user();
 
-  ClientMetrics metrics();
+  /**
+   * Initialize the connection with the context for its usage.
+   *
+   * @param context the context
+   */
+  void init(ConnectionContext context);
 
-  void init(Holder holder);
-
-  boolean isSsl();
-
-  boolean isValid();
-
-  int pipeliningLimit();
-
-  DatabaseMetadata getDatabaseMetaData();
-
-  void close(Holder holder, Completable<Void> promise);
+  void close(ConnectionContext holder, Completable<Void> promise);
 
   /**
-   * The connection holder that handles connection interactions with the outer world, e.g. handling an event.
+   * @return whether the underlying transport uses TLS
    */
-  interface Holder {
+  boolean isSsl();
 
-    void handleEvent(Object event);
+  /**
+   * @return whether the connection is valid
+   */
+  boolean isValid();
 
-    void handleClosed();
-
-    void handleException(Throwable err);
-
+  /**
+   * @return the connection pipelining limit, that is how many queries can be scheduled on this connection
+   * @implNote returns {@literal 1}, the connection does not support pipelining
+   */
+  default int pipeliningLimit() {
+    return 1;
   }
+
+  /**
+   * @return the metadata
+   */
+  DatabaseMetadata databaseMetadata();
 
   /**
    * @return the most unwrapped connection (e.g. for pooled connections)

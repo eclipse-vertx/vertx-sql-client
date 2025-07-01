@@ -140,7 +140,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return dbMetaData;
   }
 

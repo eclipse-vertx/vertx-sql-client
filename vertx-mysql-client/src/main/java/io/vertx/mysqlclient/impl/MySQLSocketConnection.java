@@ -157,7 +157,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return metaData;
   }
 }

@@ -25,6 +25,7 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
@@ -297,12 +298,12 @@ public class SqlConnectionPool {
     return promise.future();
   }
 
-  public class PooledConnection implements Connection, Connection.Holder {
+  public class PooledConnection implements Connection, ConnectionContext {
 
     private final ConnectionFactory factory;
     private final Connection conn;
     private final PoolConnector.Listener listener;
-    private Holder holder;
+    private ConnectionContext holder;
     private Promise<ConnectResult<PooledConnection>> poolCallback;
     private Lease<PooledConnection> lease;
     public long idleEvictionTimestamp;
@@ -366,8 +367,8 @@ public class SqlConnectionPool {
     }
 
     @Override
-    public DatabaseMetadata getDatabaseMetaData() {
-      return conn.getDatabaseMetaData();
+    public DatabaseMetadata databaseMetadata() {
+      return conn.databaseMetadata();
     }
 
     @Override
@@ -405,19 +406,19 @@ public class SqlConnectionPool {
     }
 
     @Override
-    public void init(Holder holder) {
+    public void init(ConnectionContext context) {
       if (this.holder != null) {
         throw new IllegalStateException();
       }
-      this.holder = holder;
+      this.holder = context;
     }
 
     @Override
-    public void close(Holder holder, Completable<Void> promise) {
+    public void close(ConnectionContext holder, Completable<Void> promise) {
       doClose(holder, promise);
     }
 
-    private void doClose(Holder holder, Completable<Void> promise) {
+    private void doClose(ConnectionContext holder, Completable<Void> promise) {
       if (holder != this.holder) {
         String msg;
         if (this.holder == null) {
@@ -473,9 +474,9 @@ public class SqlConnectionPool {
     }
 
     @Override
-    public void handleException(Throwable err) {
+    public void handleException(Throwable failure) {
       if (holder != null) {
-        holder.handleException(err);
+        holder.handleException(failure);
       }
     }
 

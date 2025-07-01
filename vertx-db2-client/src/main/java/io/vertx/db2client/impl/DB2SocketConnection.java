@@ -132,7 +132,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return connMetadata.getDbMetadata();
   }
 
