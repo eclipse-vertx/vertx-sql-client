@@ -20,7 +20,6 @@ package io.vertx.sqlclient.internal.command;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 
-import java.util.function.Function;
 import java.util.stream.Collector;
 
 /**
@@ -28,8 +27,6 @@ import java.util.stream.Collector;
  */
 
 public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
-
-  public static final Collector<Row, Void, Void> NULL_COLLECTOR = Collector.of(() -> null, (v,row) -> {}, (v1, v2) -> null, Function.identity());
 
   private final QueryResultHandler<T> resultHandler;
   private final Collector<Row, ?, T> collector;

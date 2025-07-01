@@ -14,10 +14,8 @@ package io.vertx.mssqlclient.impl;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.ssl.SslHandler;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Completable;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.tls.SslContextManager;
@@ -166,14 +164,14 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   protected <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     if (cmd instanceof TxCommand) {
       TxCommand<R> tx = (TxCommand<R>) cmd;
-      String sql = tx.kind == BEGIN ? "BEGIN TRANSACTION":tx.kind.sql;
+      String sql = tx.kind() == BEGIN ? "BEGIN TRANSACTION" : tx.kind().sql();
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
         sql,
         false,
         false,
-        QueryCommandBase.NULL_COLLECTOR,
+        SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result, err));
+      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }

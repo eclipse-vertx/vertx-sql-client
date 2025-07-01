@@ -35,14 +35,14 @@ public class OracleTransactionCommand<R> extends OracleCommand<R> {
   @Override
   protected Future<R> execute() {
     Future<Void> result;
-    if (op.kind == BEGIN) {
+    if (op.kind() == BEGIN) {
       result = begin();
-    } else if (op.kind == COMMIT) {
+    } else if (op.kind() == COMMIT) {
       result = commit();
     } else {
       result = rollback();
     }
-    return result.map(op.result);
+    return result.map(op.result());
   }
 
   private Future<Void> begin() {

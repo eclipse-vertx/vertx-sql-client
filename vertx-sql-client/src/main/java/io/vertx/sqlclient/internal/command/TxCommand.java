@@ -17,18 +17,30 @@ public class TxCommand<R> extends CommandBase<R> {
 
     BEGIN(), ROLLBACK(), COMMIT();
 
-    public final String sql;
+    private final String sql;
 
     Kind() {
       this.sql = name();
     }
+
+    public String sql() {
+      return sql;
+    }
   }
 
-  public final R result;
-  public final Kind kind;
+  private final R result;
+  private final Kind kind;
 
   public TxCommand(Kind kind, R result) {
     this.kind = kind;
     this.result = result;
+  }
+
+  public R result() {
+    return result;
+  }
+
+  public Kind kind() {
+    return kind;
   }
 }

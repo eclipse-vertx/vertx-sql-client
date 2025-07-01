@@ -29,6 +29,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
+import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
 import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
@@ -39,13 +40,16 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public abstract class SocketConnectionBase implements Connection {
 
+  public static final Collector<Row, Void, Void> NULL_COLLECTOR = Collector.of(() -> null, (v, row) -> {}, (v1, v2) -> null, Function.identity());
   private static final Completable<?> NULL_HANDLER = (res, err) -> {};
 
   public static final Logger logger = LoggerFactory.getLogger(SocketConnectionBase.class);

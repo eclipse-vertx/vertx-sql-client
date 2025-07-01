@@ -163,12 +163,12 @@ public class PgSocketConnection extends SocketConnectionBase {
     if (cmd instanceof TxCommand) {
       TxCommand<R> tx = (TxCommand<R>) cmd;
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
-        tx.kind.sql,
+        tx.kind().sql(),
         false,
         false,
-        QueryCommandBase.NULL_COLLECTOR,
+        SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result, err));
+      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }
