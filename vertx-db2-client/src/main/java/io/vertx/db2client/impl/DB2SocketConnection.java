@@ -16,7 +16,6 @@
 package io.vertx.db2client.impl;
 
 import io.netty.channel.ChannelPipeline;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Completable;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -24,15 +23,24 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
+import io.vertx.db2client.impl.codec.CommandCodec;
 import io.vertx.db2client.impl.codec.DB2Codec;
+import io.vertx.db2client.impl.codec.DB2PreparedStatement;
+import io.vertx.db2client.impl.codec.ExtendedBatchQueryCommandCodec;
+import io.vertx.db2client.impl.codec.ExtendedQueryCommandCodec;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.codec.CommandMessage;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.internal.command.*;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -80,18 +88,31 @@ public class DB2SocketConnection extends SocketConnectionBase {
   }
 
   @Override
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    if (command.isBatch()) {
+      return new ExtendedBatchQueryCommandCodec<>(command, (DB2PreparedStatement) preparedStatement);
+    } else {
+      return new ExtendedQueryCommandCodec(command, (DB2PreparedStatement) preparedStatement);
+    }
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    return CommandCodec.wrap(command);
+  }
+
+  @Override
   protected <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     if (cmd instanceof TxCommand) {
       TxCommand<R> txCmd = (TxCommand<R>) cmd;
-      if (txCmd.kind == TxCommand.Kind.BEGIN) {
+      if (txCmd.kind() == TxCommand.Kind.BEGIN) {
         // DB2 always implicitly starts a transaction with each query, and does
         // not support the 'BEGIN' keyword. Instead we can no-op BEGIN commands
-        cmd.handler = handler;
-        cmd.complete(CommandResponse.success(txCmd.result).toAsyncResult());
+        handler.succeed(txCmd.result());
       } else {
-        SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.kind.sql, false, false,
-            QueryCommandBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);
-        super.doSchedule(cmd2, (res, err) -> handler.complete(txCmd.result, err));
+        SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(txCmd.kind().sql(), false, false,
+            SocketConnectionBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);
+        super.doSchedule(cmd2, (res, err) -> handler.complete(txCmd.result(), err));
 
       }
     } else {
@@ -111,7 +132,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return connMetadata.getDbMetadata();
   }
 

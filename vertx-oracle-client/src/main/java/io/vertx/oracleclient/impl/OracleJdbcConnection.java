@@ -20,9 +20,17 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.commands.*;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.*;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.connection.ConnectionContext;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 import oracle.jdbc.OracleConnection;
 
 import java.sql.SQLException;
@@ -35,6 +43,8 @@ import static io.vertx.oracleclient.impl.Helper.isFatal;
 
 public class OracleJdbcConnection implements Connection {
 
+  private static final Completable<?> NULL_HANDLER = (res, err) -> {};
+
   private static final Logger log = LoggerFactory.getLogger(OracleJdbcConnection.class);
 
   private final ClientMetrics metrics;
@@ -44,11 +54,12 @@ public class OracleJdbcConnection implements Connection {
   private final OracleConnectOptions options;
   @SuppressWarnings("rawtypes")
   private final ConcurrentMap<String, RowReader> cursors = new ConcurrentHashMap<>();
-  private Holder holder;
+  private ConnectionContext holder;
 
   // Command pipeline state
   @SuppressWarnings("rawtypes")
   private final Deque<CommandBase> pending = new ArrayDeque<>();
+  private final Deque<Completable<?>> completables = new ArrayDeque<>();
   private Promise<Void> closePromise;
   private boolean inflight, executing;
 
@@ -63,11 +74,6 @@ public class OracleJdbcConnection implements Connection {
   @Override
   public ClientMetrics metrics() {
     return metrics;
-  }
-
-  @Override
-  public int pipeliningLimit() {
-    return 1;
   }
 
   @Override
@@ -96,8 +102,8 @@ public class OracleJdbcConnection implements Connection {
   }
 
   @Override
-  public void init(Holder holder) {
-    this.holder = holder;
+  public void init(ConnectionContext context) {
+    this.holder = context;
   }
 
   @Override
@@ -116,18 +122,19 @@ public class OracleJdbcConnection implements Connection {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return metadata;
   }
 
   @Override
-  public void close(Holder holder, Completable<Void> promise) {
+  public void close(ConnectionContext holder, Completable<Void> promise) {
     if (Vertx.currentContext() == context) {
       Future<Void> future;
       if (closePromise == null) {
         closePromise = context.promise();
         future = closePromise.future().andThen(ar -> holder.handleClosed());
         pending.add(CloseConnectionCommand.INSTANCE);
+        completables.add(NULL_HANDLER);
         checkPending();
       } else {
         future = closePromise.future();
@@ -136,16 +143,6 @@ public class OracleJdbcConnection implements Connection {
     } else {
       context.runOnContext(v -> close(holder, promise));
     }
-  }
-
-  @Override
-  public int getProcessId() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getSecretKey() {
-    throw new UnsupportedOperationException();
   }
 
   public Future<Void> afterAcquire() {
@@ -172,12 +169,12 @@ public class OracleJdbcConnection implements Connection {
   }
 
   private <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
-    cmd.handler = handler;
     if (closePromise == null) {
       pending.add(cmd);
+      completables.add(handler);
       checkPending();
     } else {
-      cmd.fail(VertxException.noStackTrace("Connection is no longer active"));
+      handler.fail(VertxException.noStackTrace("Connection is no longer active"));
     }
   }
 
@@ -190,14 +187,15 @@ public class OracleJdbcConnection implements Connection {
       executing = true;
       CommandBase cmd;
       while (!inflight && (cmd = pending.poll()) != null) {
+        Completable handler = completables.poll();
         inflight = true;
         if (metrics != null && cmd instanceof CloseConnectionCommand) {
           metrics.close();
         }
         OracleCommand action = wrap(cmd);
-        Future<Void> future = action.processCommand(cmd);
+        Future<?> future = action.processCommand(handler);
         CommandBase capture = cmd;
-        future.onComplete(ar -> actionComplete(capture, action, ar));
+        future.onComplete(ar -> actionComplete(action, ar));
       }
     } finally {
       executing = false;
@@ -248,7 +246,7 @@ public class OracleJdbcConnection implements Connection {
     return action;
   }
 
-  private void actionComplete(CommandBase cmd, OracleCommand<?> action, AsyncResult<Void> ar) {
+  private void actionComplete(OracleCommand<?> action, AsyncResult<?> ar) {
     inflight = false;
     Future<Void> future = Future.succeededFuture();
     if (ar.failed()) {

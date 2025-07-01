@@ -27,8 +27,8 @@ import io.vertx.sqlclient.impl.QueryBase;
 import io.vertx.sqlclient.impl.QueryExecutor;
 import io.vertx.sqlclient.impl.RowSetImpl;
 import io.vertx.sqlclient.impl.SqlClientInternal;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandScheduler;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.CommandScheduler;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Row;
@@ -36,7 +36,7 @@ import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.sqlclient.internal.command.CompositeCommand;
+import io.vertx.sqlclient.spi.protocol.CompositeCommand;
 import io.vertx.sqlclient.spi.Driver;
 
 import java.util.List;
@@ -45,9 +45,9 @@ import java.util.stream.Collector;
 
 public abstract class SqlClientBase implements SqlClientInternal, CommandScheduler {
 
-  protected final Driver driver;
+  protected final Driver<?> driver;
 
-  public SqlClientBase(Driver driver) {
+  public SqlClientBase(Driver<?> driver) {
     this.driver = driver;
   }
 
@@ -56,7 +56,7 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
   protected abstract <T> PromiseInternal<T> promise();
 
   @Override
-  public Driver driver() {
+  public Driver<?> driver() {
     return driver;
   }
 

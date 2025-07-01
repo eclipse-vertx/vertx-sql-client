@@ -16,7 +16,7 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.util.List;
@@ -26,7 +26,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
   private static final byte[] EMPTY_STRING = { 0 };
 
   private PgParamDesc parameterDesc;
-  private PgRowDesc rowDesc;
+  private PgRowDescriptor rowDesc;
 
   private byte[] statement;
 
@@ -77,7 +77,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
   @Override
   public void handleRowDescription(PgColumnDesc[] rowDesc) {
     // Response to Describe
-    this.rowDesc = PgRowDesc.createBinary(rowDesc);
+    this.rowDesc = PgRowDescriptor.createBinary(rowDesc);
   }
 
   @Override

@@ -65,6 +65,13 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
+
+      <!-- TMP -->
+      <dependency>
+        <groupId>io.vertx</groupId>
+        <artifactId>vertx-sql-client-codec</artifactId>
+        <version>${project.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -184,6 +191,7 @@
       </activation>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-pg-client</module>
         <module>vertx-mysql-client</module>
         <module>vertx-mssql-client</module>
@@ -199,6 +207,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-pg-client</module>
       </modules>
     </profile>
@@ -209,6 +218,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-pg-client</module>
       </modules>
     </profile>
@@ -219,6 +229,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-pg-client</module>
       </modules>
     </profile>
@@ -230,6 +241,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-mysql-client</module>
       </modules>
     </profile>
@@ -241,6 +253,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-mysql-client</module>
       </modules>
     </profile>
@@ -252,6 +265,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-mysql-client</module>
       </modules>
     </profile>
@@ -263,6 +277,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-mysql-client</module>
       </modules>
     </profile>
@@ -273,6 +288,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-mssql-client</module>
       </modules>
     </profile>
@@ -283,6 +299,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-mssql-client</module>
       </modules>
     </profile>
@@ -290,6 +307,7 @@
       <id>DB2-11.5</id>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-db2-client</module>
       </modules>
     </profile>
@@ -297,6 +315,7 @@
       <id>SQL-templates</id>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-pg-client</module>
         <module>vertx-mysql-client</module>
         <module>vertx-sql-client-templates</module>
@@ -309,6 +328,7 @@
       </properties>
       <modules>
         <module>vertx-sql-client</module>
+        <module>vertx-sql-client-codec</module>
         <module>vertx-oracle-client</module>
       </modules>
     </profile>

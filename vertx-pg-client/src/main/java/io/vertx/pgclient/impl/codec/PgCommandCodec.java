@@ -20,22 +20,45 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.pgclient.PgException;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.codec.CommandMessage;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.InitCommand;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 import java.util.Arrays;
 
-abstract class PgCommandCodec<R, C extends CommandBase<R>> {
+public abstract class PgCommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
   private static final Logger logger = LoggerFactory.getLogger(PgCommandCodec.class);
 
   PgDecoder decoder;
   PgException failure;
   R result;
-  final C cmd;
 
   PgCommandCodec(C cmd) {
-    this.cmd = cmd;
+    super(cmd);
+  }
+
+  public static PgCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+    if (cmd instanceof InitCommand) {
+      return new InitCommandCodec((InitCommand) cmd);
+    } else if (cmd instanceof SimpleQueryCommand<?>) {
+      return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      return new PrepareStatementCommandCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof CloseConnectionCommand) {
+      return CloseConnectionCommandCodec.INSTANCE;
+    } else if (cmd instanceof CloseCursorCommand) {
+      return new ClosePortalCommandCodec((CloseCursorCommand) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    }
+    throw new AssertionError("Invalid command " + cmd);
   }
 
   abstract void encode(PgEncoder encoder);

@@ -23,13 +23,12 @@ import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.command.CommandScheduler;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.CommandScheduler;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
@@ -74,7 +73,7 @@ public class QueryExecutor<T, R extends SqlResultBase<T>, L extends SqlResult<T>
     ContextInternal context = promise.context();
     QueryResultBuilder handler = createHandler(promise);
     try {
-      values = preparedStatement.prepare((TupleInternal) values);
+      values = preparedStatement.prepare((TupleBase) values);
     } catch (Exception e) {
       handler.fail(e);
       return null;

@@ -20,26 +20,34 @@ package io.vertx.sqlclient.impl;
 import io.vertx.sqlclient.PropertyKind;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
+import io.vertx.sqlclient.desc.RowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.util.List;
 
 public abstract class SqlResultBase<T> implements SqlResult<T> {
 
   int updated;
-  List<String> columnNames;
-  List<ColumnDescriptor> columnDescriptors;
+  RowDescriptorBase rowDescriptor;
   int size;
   SqlResult<T> next;
   protected PropertyKindMap properties;
 
   @Override
   public List<String> columnsNames() {
-    return columnNames;
+    RowDescriptorBase desc = rowDescriptor;
+    return desc != null ? desc.columnNames() : null;
+  }
+
+  @Override
+  public RowDescriptor rowDescriptor() {
+    return rowDescriptor;
   }
 
   @Override
   public List<ColumnDescriptor> columnDescriptors() {
-    return columnDescriptors;
+    RowDescriptorBase desc = rowDescriptor;
+    return desc != null ? desc.columnDescriptors() : null;
   }
 
   @Override

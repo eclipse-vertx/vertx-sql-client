@@ -46,6 +46,10 @@
       <groupId>io.vertx</groupId>
       <artifactId>vertx-sql-client</artifactId>
     </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-sql-client-codec</artifactId>
+    </dependency>
 
     <!-- Testing purposes -->
     <dependency>

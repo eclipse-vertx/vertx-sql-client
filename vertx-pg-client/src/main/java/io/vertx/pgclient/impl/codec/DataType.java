@@ -27,7 +27,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.*;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.sql.JDBCType;
 import java.time.*;
@@ -243,7 +243,7 @@ public enum DataType {
     }
 
     @Override
-    public T get(TupleInternal tuple, int idx) {
+    public T get(TupleBase tuple, int idx) {
       Object value = tuple.getValue(idx);
       if (value == null) {
         return null;

@@ -12,12 +12,12 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.command.CommandResponse;
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 
 class PrepareStatementCodec extends MSSQLCommandCodec<PreparedStatement, PrepareStatementCommand> {
-  PrepareStatementCodec(TdsMessageCodec tdsMessageCodec, PrepareStatementCommand cmd) {
-    super(tdsMessageCodec, cmd);
+  PrepareStatementCodec(PrepareStatementCommand cmd) {
+    super(cmd);
   }
 
   @Override

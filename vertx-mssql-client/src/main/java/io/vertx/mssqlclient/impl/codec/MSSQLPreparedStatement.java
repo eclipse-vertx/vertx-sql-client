@@ -11,10 +11,8 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 public class MSSQLPreparedStatement implements PreparedStatement {
 
@@ -26,12 +24,7 @@ public class MSSQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public ParamDesc paramDesc() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public RowDesc rowDesc() {
+  public RowDescriptorBase rowDesc() {
     throw new UnsupportedOperationException();
   }
 

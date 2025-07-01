@@ -18,10 +18,7 @@ package io.vertx.pgclient.impl.codec;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
-import io.vertx.core.Completable;
 import io.vertx.sqlclient.ClosedConnectionException;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -83,10 +80,7 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
   }
 
   private void fail(PgCommandCodec<?, ?> codec, Throwable cause) {
-    Completable<?> handler = codec.cmd.handler;
-    if (handler != null) {
-      handler.complete(null, cause);
-    }
+    codec.fail(cause);
   }
 
   @Override

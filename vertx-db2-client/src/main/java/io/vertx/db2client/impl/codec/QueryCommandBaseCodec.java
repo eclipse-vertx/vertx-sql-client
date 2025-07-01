@@ -18,8 +18,8 @@ package io.vertx.db2client.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.drda.ColumnMetaData;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
-import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.command.QueryCommandBase;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
+import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
 
@@ -79,11 +79,11 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   void handleQueryResult(RowResultDecoder<?, T> decoder) {
     Throwable failure = decoder.complete();
     T result = decoder.result();
-    RowDesc rowDesc = decoder.rowDesc;
+    RowDescriptorBase rowDescriptor = decoder.rowDesc;
     int size = decoder.size();
     int updatedCount = decoder.size();
     decoder.reset();
-    cmd.resultHandler().handleResult(updatedCount, size, rowDesc, result, failure);
+    cmd.resultHandler().handleResult(updatedCount, size, rowDescriptor, result, failure);
   }
 
 }

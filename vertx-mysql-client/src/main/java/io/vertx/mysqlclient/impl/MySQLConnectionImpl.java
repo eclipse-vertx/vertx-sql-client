@@ -21,9 +21,9 @@ import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.mysqlclient.spi.MySQLDriver;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 
 public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> implements MySQLConnection {
 
@@ -37,7 +37,12 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
     } catch (Exception e) {
       return ctx.failedFuture(e);
     }
-    return prepareForClose(ctx, client.connect((Context)ctx, options)).map(MySQLConnection::cast);
+    return client.connect((Context)ctx, options).map(conn -> {
+      MySQLConnectionImpl impl = new MySQLConnectionImpl(ctx, client, conn);
+      conn.init(impl);
+      prepareForClose(ctx, impl);
+      return impl;
+    });
   }
 
   public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {

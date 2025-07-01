@@ -10,12 +10,12 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.impl.Helper.SQLBlockingCodeHandler;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
 import oracle.jdbc.OracleConnection;
 
 import java.util.concurrent.Flow;
@@ -27,22 +27,19 @@ public abstract class OracleCommand<T> {
 
   protected final OracleConnection oracleConnection;
   protected final ContextInternal connectionContext;
-  private CommandResponse<T> response;
+  private Completable<T> handler;
+  private AsyncResult<T> result;
 
   protected OracleCommand(OracleConnection oracleConnection, ContextInternal connectionContext) {
     this.oracleConnection = oracleConnection;
     this.connectionContext = connectionContext;
   }
 
-  public final Future<Void> processCommand(CommandBase<T> cmd) {
+  public final Future<?> processCommand(Completable<T> handler) {
+    this.handler = handler;
     return execute().andThen(ar -> {
-      if (ar.succeeded()) {
-        response = CommandResponse.success(ar.result());
-      } else {
-        response = CommandResponse.failure(ar.cause());
-      }
-      response.cmd = cmd;
-    }).mapEmpty();
+      this.result =  ar;
+    });
   }
 
   protected abstract Future<T> execute();
@@ -87,6 +84,6 @@ public abstract class OracleCommand<T> {
   }
 
   public final void fireResponse() {
-    response.fire();
+    handler.complete(result.result(), result.cause());
   }
 }

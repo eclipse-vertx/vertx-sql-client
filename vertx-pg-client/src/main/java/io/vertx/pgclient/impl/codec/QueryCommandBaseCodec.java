@@ -17,8 +17,8 @@
 package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.command.QueryCommandBase;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
+import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.stream.Collector;
 
@@ -36,7 +36,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends P
     T result;
     Throwable failure;
     int size;
-    RowDesc desc;
+    RowDescriptorBase desc;
     if (rowDecoder != null) {
       failure = rowDecoder.complete();
       result = rowDecoder.result();

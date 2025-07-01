@@ -12,16 +12,16 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.sqlclient.internal.command.CloseStatementCommand;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.codec.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
 class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementCommand> {
 
-  CloseStatementCommandCodec(TdsMessageCodec tdsMessageCodec, CloseStatementCommand cmd) {
-    super(tdsMessageCodec, cmd);
+  CloseStatementCommandCodec(CloseStatementCommand cmd) {
+    super(cmd);
   }
 
   @Override

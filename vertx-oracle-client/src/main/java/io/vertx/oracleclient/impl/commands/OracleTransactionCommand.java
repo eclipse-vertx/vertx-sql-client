@@ -13,11 +13,11 @@ package io.vertx.oracleclient.impl.commands;
 import io.vertx.core.Future;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.impl.Helper.SQLFutureMapper;
-import io.vertx.sqlclient.internal.command.TxCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 import oracle.jdbc.OracleConnection;
 
-import static io.vertx.sqlclient.internal.command.TxCommand.Kind.BEGIN;
-import static io.vertx.sqlclient.internal.command.TxCommand.Kind.COMMIT;
+import static io.vertx.sqlclient.spi.protocol.TxCommand.Kind.BEGIN;
+import static io.vertx.sqlclient.spi.protocol.TxCommand.Kind.COMMIT;
 
 public class OracleTransactionCommand<R> extends OracleCommand<R> {
 
@@ -35,14 +35,14 @@ public class OracleTransactionCommand<R> extends OracleCommand<R> {
   @Override
   protected Future<R> execute() {
     Future<Void> result;
-    if (op.kind == BEGIN) {
+    if (op.kind() == BEGIN) {
       result = begin();
-    } else if (op.kind == COMMIT) {
+    } else if (op.kind() == COMMIT) {
       result = commit();
     } else {
       result = rollback();
     }
-    return result.map(op.result);
+    return result.map(op.result());
   }
 
   private Future<Void> begin() {

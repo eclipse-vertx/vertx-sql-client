@@ -22,7 +22,7 @@ class CursorData {
   int serverCursorId;
   // When invoking CursorPrepExec, the database server returns column metadata.
   // We store it so that we can tell the server not to return column metadata again when invoking CursorFetch
-  MSSQLRowDesc mssqlRowDesc;
+  MSSQLRowDescriptor mssqlRowDesc;
   boolean fetchSent;
   int rowsTotal;
   int rowsFetched;

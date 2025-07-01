@@ -27,18 +27,18 @@ import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.internal.command.CommandResponse;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R>>
     extends QueryCommandBaseCodec<R, C> {
 
   final DB2PreparedStatement statement;
 
-  ExtendedQueryCommandBaseCodec(C cmd) {
+  ExtendedQueryCommandBaseCodec(C cmd, DB2PreparedStatement statement) {
     super(cmd);
-    statement = (DB2PreparedStatement) cmd.preparedStatement();
-    columnDefinitions = statement.rowDesc.columnDefinitions();
+    this.statement = statement;
+    this.columnDefinitions = statement.rowDesc.columnDefinitions();
   }
 
   void encodePreparedQuery(DRDAQueryRequest queryRequest, QueryInstance queryInstance, Tuple params) {
@@ -72,7 +72,7 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
     if (queryInstance.cursor == null) {
       resp.setOutputColumnMetaData(columnDefinitions);
       resp.readBeginOpenQuery();
-      decoder = new RowResultDecoder<>(cmd.collector(), DB2RowDesc.create(columnDefinitions), resp.getCursor(), resp);
+      decoder = new RowResultDecoder<>(cmd.collector(), DB2RowDescriptor.create(columnDefinitions), resp.getCursor(), resp);
       queryInstance.cursor = resp.getCursor();
       queryInstance.queryInstanceId = resp.getQueryInstanceId();
     } else {

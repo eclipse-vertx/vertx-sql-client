@@ -17,8 +17,8 @@ import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.TupleBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 
@@ -36,7 +36,7 @@ import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
 public class OraclePreparedBatchQuery<C, R> extends OracleQueryCommand<C, R> {
 
   private final String sql;
-  private final List<TupleInternal> listParams;
+  private final List<TupleBase> listParams;
   private final QueryResultHandler<R> resultHandler;
 
   public OraclePreparedBatchQuery(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<R> cmd, Collector<Row, C, R> collector) {

@@ -15,10 +15,7 @@
  */
 package io.vertx.mssqlclient.spi;
 
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -27,48 +24,25 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.pool.CloseablePool;
-import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
-import io.vertx.sqlclient.spi.ConnectionFactory;
-import io.vertx.sqlclient.spi.Driver;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
+import io.vertx.sqlclient.spi.DriverBase;
 
-import java.util.function.Supplier;
+public class MSSQLDriver extends DriverBase<MSSQLConnectOptions> {
 
-public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
-
-  private static final String SHARED_CLIENT_KEY = "__vertx.shared.mssqlclient";
+  private static final String DISCRIMINANT = "mssqlclient";
 
   public static final MSSQLDriver INSTANCE = new MSSQLDriver();
+
+  public MSSQLDriver() {
+    super(DISCRIMINANT);
+  }
 
   @Override
   public MSSQLConnectOptions downcast(SqlConnectOptions connectOptions) {
     return connectOptions instanceof MSSQLConnectOptions ? (MSSQLConnectOptions) connectOptions : new MSSQLConnectOptions(connectOptions);
-  }
-
-  @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
-    VertxInternal vx = (VertxInternal) vertx;
-    PoolImpl pool;
-    if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, options, transportOptions, cf));
-    } else {
-      pool = newPoolImpl(vx, connectHandler, databases, options, transportOptions, closeFuture);
-    }
-    return new CloseablePool(vx, closeFuture, pool);
-  }
-
-  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MSSQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
-    ConnectionFactory<MSSQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
-    PoolImpl pool = new PoolImpl(vertx, this, false, poolOptions, null, null, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
-    pool.init();
-    closeFuture.add(factory);
-    return pool;
   }
 
   @Override
@@ -94,7 +68,7 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection conn) {
-    return new MSSQLConnectionImpl(context, factory, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection connection) {
+    return new MSSQLConnectionImpl(context, factory, connection);
   }
 }

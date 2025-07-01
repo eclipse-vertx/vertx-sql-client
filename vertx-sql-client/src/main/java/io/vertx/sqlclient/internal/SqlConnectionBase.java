@@ -28,19 +28,21 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.PreparedStatementBase;
 import io.vertx.sqlclient.impl.TransactionImpl;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
-import io.vertx.sqlclient.internal.command.QueryCommandBase;
+import io.vertx.sqlclient.spi.connection.ConnectionContext;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.Driver;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, Closeable, Connection.Holder {
+public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, Closeable, ConnectionContext {
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
@@ -138,12 +140,12 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   }
 
   @Override
-  public void handleException(Throwable err) {
+  public void handleException(Throwable failure) {
     Handler<Throwable> handler = exceptionHandler;
     if (handler != null) {
-      context.emit(err, handler);
+      context.emit(failure, handler);
     } else {
-      err.printStackTrace();
+      failure.printStackTrace();
     }
   }
 
@@ -154,7 +156,7 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
 
   @Override
   public DatabaseMetadata databaseMetadata() {
-    return conn.getDatabaseMetaData();
+    return conn.databaseMetadata();
   }
 
   @Override
@@ -230,10 +232,13 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
   protected static Future<SqlConnection> prepareForClose(ContextInternal ctx, Future<SqlConnection> future) {
     return future.andThen(ar -> {
       if (ar.succeeded()) {
-        SqlConnectionBase<?> base = (SqlConnectionBase<?>) ar.result();
-        base.closeFactoryAfterUsage = true;
-        ctx.addCloseHook(base);
+        prepareForClose(ctx, (SqlConnectionBase<?>) ar.result());
       }
     });
+  }
+
+  protected static void prepareForClose(ContextInternal ctx, SqlConnectionBase<?> base) {
+    base.closeFactoryAfterUsage = true;
+    ctx.addCloseHook(base);
   }
 }

@@ -12,21 +12,21 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.internal.command.CommandResponse;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.TupleBase;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import java.util.List;
 
 class ExtendedBatchQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
 
-  private final List<TupleInternal> paramsList;
+  private final List<TupleBase> paramsList;
 
   private int paramsIdx;
   private int messageDecoded;
 
-  ExtendedBatchQueryCommandCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
-    super(tdsMessageCodec, cmd);
+  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+    super(cmd, ps);
     paramsList = cmd.paramsList();
   }
 
@@ -49,7 +49,7 @@ class ExtendedBatchQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T>
   }
 
   @Override
-  protected TupleInternal prepexecRequestParams() {
+  protected TupleBase prepexecRequestParams() {
     paramsIdx = 1;
     return paramsList.get(0);
   }
@@ -65,7 +65,7 @@ class ExtendedBatchQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T>
   }
 
   @Override
-  protected TupleInternal execRequestParams() {
+  protected TupleBase execRequestParams() {
     return paramsList.get(paramsIdx);
   }
 }

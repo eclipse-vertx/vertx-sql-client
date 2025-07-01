@@ -10,10 +10,8 @@
  */
 package io.vertx.oracleclient.impl.commands;
 
-import io.vertx.oracleclient.impl.OracleRowDesc;
-import io.vertx.sqlclient.internal.ParamDesc;
-import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.oracleclient.impl.OracleRowDescriptor;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.sql.ResultSetMetaData;
@@ -22,28 +20,23 @@ import java.sql.SQLException;
 public class OraclePreparedStatement implements PreparedStatement {
 
   private final String sql;
-  private final RowDesc rowDesc;
+  private final RowDescriptorBase rowDescriptor;
 
   public OraclePreparedStatement(String sql, java.sql.PreparedStatement preparedStatement) throws SQLException {
     ResultSetMetaData metaData = preparedStatement.getMetaData();
-    RowDesc rowDesc;
+    RowDescriptorBase rowDescriptor;
     if (metaData != null) {
-      rowDesc = OracleRowDesc.create(metaData);
+      rowDescriptor = OracleRowDescriptor.create(metaData);
     } else {
-      rowDesc = OracleRowDesc.EMPTY;
+      rowDescriptor = OracleRowDescriptor.EMPTY;
     }
     this.sql = sql;
-    this.rowDesc = rowDesc;
+    this.rowDescriptor = rowDescriptor;
   }
 
   @Override
-  public ParamDesc paramDesc() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public RowDesc rowDesc() {
-    return rowDesc;
+  public RowDescriptorBase rowDesc() {
+    return rowDescriptor;
   }
 
   @Override

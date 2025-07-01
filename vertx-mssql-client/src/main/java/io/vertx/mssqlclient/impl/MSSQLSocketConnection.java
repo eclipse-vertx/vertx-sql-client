@@ -14,10 +14,8 @@ package io.vertx.mssqlclient.impl;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.ssl.SslHandler;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Completable;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.tls.SslContextManager;
@@ -29,22 +27,31 @@ import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
+import io.vertx.mssqlclient.impl.codec.ExtendedQueryCommandBaseCodec;
+import io.vertx.mssqlclient.impl.codec.MSSQLCommandCodec;
+import io.vertx.mssqlclient.impl.codec.MSSQLPreparedStatement;
 import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.codec.CommandMessage;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.internal.command.*;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.InitCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 
 import java.util.Map;
 import java.util.function.Predicate;
 
-import static io.vertx.sqlclient.internal.command.TxCommand.Kind.BEGIN;
+import static io.vertx.sqlclient.spi.protocol.TxCommand.Kind.BEGIN;
 
 public class MSSQLSocketConnection extends SocketConnectionBase {
 
@@ -148,17 +155,27 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   }
 
   @Override
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    return ExtendedQueryCommandBaseCodec.create(command, (MSSQLPreparedStatement)preparedStatement);
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    return MSSQLCommandCodec.wrap(command);
+  }
+
+  @Override
   protected <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     if (cmd instanceof TxCommand) {
       TxCommand<R> tx = (TxCommand<R>) cmd;
-      String sql = tx.kind == BEGIN ? "BEGIN TRANSACTION":tx.kind.sql;
+      String sql = tx.kind() == BEGIN ? "BEGIN TRANSACTION" : tx.kind().sql();
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
         sql,
         false,
         false,
-        QueryCommandBase.NULL_COLLECTOR,
+        SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result, err));
+      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }
@@ -179,7 +196,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return databaseMetadata;
   }
 

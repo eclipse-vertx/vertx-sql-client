@@ -24,7 +24,7 @@ import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.impl.codec.CommonCodec;
+import io.vertx.sqlclient.impl.Utils;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -637,23 +637,23 @@ public class DataTypeCodec {
   }
 
   private static Byte textDecodeInt8(ByteBuf buffer, int index, int length) {
-    return (byte) CommonCodec.decodeDecStringToLong(index, length, buffer);
+    return (byte) Utils.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Short textDecodeInt16(ByteBuf buffer, int index, int length) {
-    return (short) CommonCodec.decodeDecStringToLong(index, length, buffer);
+    return (short) Utils.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Integer textDecodeInt24(ByteBuf buffer, int index, int length) {
-    return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
+    return (int) Utils.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Integer textDecodeInt32(ByteBuf buffer, int index, int length) {
-    return (int) CommonCodec.decodeDecStringToLong(index, length, buffer);
+    return (int) Utils.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Long textDecodeInt64(ByteBuf buffer, int index, int length) {
-    return CommonCodec.decodeDecStringToLong(index, length, buffer);
+    return Utils.decodeDecStringToLong(index, length, buffer);
   }
 
   private static Float textDecodeFloat(int collationId, ByteBuf buffer, int index, int length) {

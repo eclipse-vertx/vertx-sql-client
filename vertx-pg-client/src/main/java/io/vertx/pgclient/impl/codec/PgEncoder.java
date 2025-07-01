@@ -26,9 +26,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
 import io.vertx.sqlclient.impl.HexSequence;
-import io.vertx.sqlclient.internal.ParamDesc;
-import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.command.*;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 
 import java.util.*;
 
@@ -97,7 +96,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
     if (!closeSent) {
       CloseConnectionCommand cmd = CloseConnectionCommand.INSTANCE;
-      PgCommandCodec<?, ?> codec = wrap(cmd);
+      PgCommandCodec<?, ?> codec = PgCommandCodec.wrap(cmd);
       codec.encode(this);
     }
   }
@@ -108,30 +107,10 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     capacityEstimate = 0;
   }
 
-  void write(CommandBase<?> cmd) {
-    PgCommandCodec<?, ?> cmdCodec = wrap(cmd);
-    if (codec.add(cmdCodec)) {
-      cmdCodec.encode(this);
+  void write(PgCommandCodec<?, ?> cmd) {
+    if (codec.add(cmd)) {
+      cmd.encode(this);
     }
-  }
-
-  private PgCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
-    if (cmd instanceof InitCommand) {
-      return new InitCommandCodec((InitCommand) cmd);
-    } else if (cmd instanceof SimpleQueryCommand<?>) {
-      return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand<?>) {
-      return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) cmd);
-    } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCommandCodec((PrepareStatementCommand) cmd);
-    } else if (cmd instanceof CloseConnectionCommand) {
-      return CloseConnectionCommandCodec.INSTANCE;
-    } else if (cmd instanceof CloseCursorCommand) {
-      return new ClosePortalCommandCodec((CloseCursorCommand) cmd);
-    } else if (cmd instanceof CloseStatementCommand) {
-      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
-    }
-    throw new AssertionError();
   }
 
   @Override
@@ -141,9 +120,8 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandBase<?>) {
-      CommandBase<?> cmd = (CommandBase<?>) msg;
-      write(cmd);
+    if (msg instanceof PgCommandCodec<?, ?>) {
+      write((PgCommandCodec<?, ?>) msg);
     } else {
       super.write(ctx, msg, promise);
     }
@@ -599,7 +577,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * This message includes an SQL command (or commands) expressed as a text string.
    * <p>
    * The possible response messages from the backend are
-   * {@link CommandComplete}, {@link RowDesc}, {@link DataRow}, {@link EmptyQueryResponse}, {@link ErrorResponse},
+   * {@link CommandComplete}, {@link RowDescriptorBase}, {@link DataRow}, {@link EmptyQueryResponse}, {@link ErrorResponse},
    * {@link ReadyForQuery} and {@link NoticeResponse}
    */
   void writeQuery(Query query) {
@@ -611,16 +589,16 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * The message that using "statement" variant specifies the name of an existing prepared statement.
    * <p>
    * The response is a {@link ParamDesc} message describing the parameters needed by the statement,
-   * followed by a {@link RowDesc} message describing the rows that will be returned when the statement is eventually
+   * followed by a {@link RowDescriptorBase} message describing the rows that will be returned when the statement is eventually
    * executed or a {@link NoData} message if the statement will not return rows.
    * {@link ErrorResponse} is issued if there is no such prepared statement.
    * <p>
    * Note that since {@link Bind} has not yet been issued, the formats to be used for returned columns are not yet known to
-   * the backend; the format code fields in the {@link RowDesc} message will be zeroes in this case.
+   * the backend; the format code fields in the {@link RowDescriptorBase} message will be zeroes in this case.
    * <p>
    * The message that using "portal" variant specifies the name of an existing portal.
    * <p>
-   * The response is a {@link RowDesc} message describing the rows that will be returned by executing the portal;
+   * The response is a {@link RowDescriptorBase} message describing the rows that will be returned by executing the portal;
    * or a {@link NoData} message if the portal does not contain a query that will return rows; or {@link ErrorResponse}
    * if there is no such portal.
    */
@@ -639,7 +617,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * in other cases the command is always executed to completion, and the row count of the result is ignored.
    * <p>
    * The possible responses to this message are the same as {@link Query} message, except that
-   * it doesn't cause {@link ReadyForQuery} or {@link RowDesc} to be issued.
+   * it doesn't cause {@link ReadyForQuery} or {@link RowDescriptorBase} to be issued.
    * <p>
    * If Execute terminates before completing the execution of a portal, it will send a {@link PortalSuspended} message;
    * the appearance of this message tells the frontend that another Execute should be issued against the same portal to

@@ -15,7 +15,7 @@
  */
 package io.vertx.db2client.impl.command;
 
-import io.vertx.sqlclient.internal.command.CommandBase;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
 
 public class PingCommand extends CommandBase<Void> {
 }

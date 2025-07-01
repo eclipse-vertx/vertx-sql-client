@@ -17,19 +17,65 @@ package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.Handler;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.db2client.impl.command.InitialHandshakeCommand;
+import io.vertx.db2client.impl.command.PingCommand;
+import io.vertx.sqlclient.codec.CommandMessage;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
-abstract class CommandCodec<R, C extends CommandBase<R>> {
+public abstract class CommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
   Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
   public R result;
-  final C cmd;
   DB2Encoder encoder;
 
   CommandCodec(C cmd) {
-    this.cmd = cmd;
+    super(cmd);
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+    CommandCodec<?, ?> codec = null;
+    if (cmd instanceof InitialHandshakeCommand) {
+      codec = new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
+    } else if (cmd instanceof SimpleQueryCommand) {
+      codec = new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
+    } else if (cmd instanceof CloseConnectionCommand) {
+      codec = new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      codec = new PrepareStatementCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      codec = new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    } else if (cmd instanceof CloseCursorCommand) {
+      codec = new CloseCursorCommandCodec((CloseCursorCommand) cmd);
+    } else if (cmd instanceof PingCommand) {
+      codec = new PingCommandCodec((PingCommand) cmd);
+//        } else if (cmd instanceof InitDbCommand) {
+//            codec = new InitDbCommandCodec((InitDbCommand) cmd);
+      // } else if (cmd instanceof StatisticsCommand) {
+      // codec = new StatisticsCommandCodec((StatisticsCommand) cmd);
+      // } else if (cmd instanceof SetOptionCommand) {
+      // codec = new SetOptionCommandCodec((SetOptionCommand) cmd);
+      // } else if (cmd instanceof ResetConnectionCommand) {
+      // codec = new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
+      // } else if (cmd instanceof DebugCommand) {
+      // codec = new DebugCommandCodec((DebugCommand) cmd);
+      // } else if (cmd instanceof ChangeUserCommand) {
+      // codec = new ChangeUserCommandCodec((ChangeUserCommand) cmd);
+    } else {
+      UnsupportedOperationException uoe = new UnsupportedOperationException("Unsupported command type: " + cmd);
+      DB2Encoder.LOG.error(uoe);
+      throw uoe;
+    }
+    if (DB2Encoder.LOG.isDebugEnabled())
+      DB2Encoder.LOG.debug(">>> ENCODE " + codec);
+    return codec;
   }
 
   abstract void decodePayload(ByteBuf payload, int payloadLength);

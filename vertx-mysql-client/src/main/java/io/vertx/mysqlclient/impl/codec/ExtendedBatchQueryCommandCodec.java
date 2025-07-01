@@ -16,25 +16,25 @@ import io.vertx.core.VertxException;
 import io.vertx.mysqlclient.MySQLBatchException;
 import io.vertx.mysqlclient.MySQLException;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.internal.command.CommandResponse;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.TupleBase;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import java.util.BitSet;
 import java.util.List;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.*;
 
-class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+public class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
 
-  private final List<TupleInternal> params;
+  private final List<TupleBase> params;
   private final BitSet bindingFailures;
   private boolean pipeliningEnabled;
   private int sent;
   private int received;
 
-  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd) {
-    super(cmd);
+  public ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd, MySQLPreparedStatement statement) {
+    super(cmd, statement);
     params = cmd.paramsList();
     bindingFailures = new BitSet(params.size());
   }

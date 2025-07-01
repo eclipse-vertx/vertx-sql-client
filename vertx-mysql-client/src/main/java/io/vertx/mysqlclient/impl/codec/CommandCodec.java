@@ -18,28 +18,74 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.MySQLException;
+import io.vertx.mysqlclient.impl.command.ChangeUserCommand;
+import io.vertx.mysqlclient.impl.command.DebugCommand;
+import io.vertx.mysqlclient.impl.command.InitDbCommand;
+import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
+import io.vertx.mysqlclient.impl.command.PingCommand;
+import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
+import io.vertx.mysqlclient.impl.command.SetOptionCommand;
+import io.vertx.mysqlclient.impl.command.StatisticsCommand;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.codec.CommandMessage;
+import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
-abstract class CommandCodec<R, C extends CommandBase<R>> {
+public abstract class CommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
   public Throwable failure;
   public R result;
-  final C cmd;
   MySQLEncoder encoder;
   int sequenceId;
 
   CommandCodec(C cmd) {
-    this.cmd = cmd;
+    super(cmd);
+  }
+
+  public static CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+    if (cmd instanceof InitialHandshakeCommand) {
+      return new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
+    } else if (cmd instanceof SimpleQueryCommand) {
+      return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd);
+    } else if (cmd instanceof CloseConnectionCommand) {
+      return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+    } else if (cmd instanceof PrepareStatementCommand) {
+      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+    } else if (cmd instanceof CloseStatementCommand) {
+      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+    } else if (cmd instanceof CloseCursorCommand) {
+      return new ResetStatementCommandCodec((CloseCursorCommand) cmd);
+    } else if (cmd instanceof PingCommand) {
+      return new PingCommandCodec((PingCommand) cmd);
+    } else if (cmd instanceof InitDbCommand) {
+      return new InitDbCommandCodec((InitDbCommand) cmd);
+    } else if (cmd instanceof StatisticsCommand) {
+      return new StatisticsCommandCodec((StatisticsCommand) cmd);
+    } else if (cmd instanceof SetOptionCommand) {
+      return new SetOptionCommandCodec((SetOptionCommand) cmd);
+    } else if (cmd instanceof ResetConnectionCommand) {
+      return new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
+    } else if (cmd instanceof DebugCommand) {
+      return new DebugCommandCodec((DebugCommand) cmd);
+    } else if (cmd instanceof ChangeUserCommand) {
+      return new ChangeUserCommandCodec((ChangeUserCommand) cmd);
+    } else {
+      System.out.println("Unsupported command " + cmd);
+      throw new UnsupportedOperationException("Todo");
+    }
   }
 
   abstract void decodePayload(ByteBuf payload, int payloadLength);

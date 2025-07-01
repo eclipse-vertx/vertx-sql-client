@@ -18,11 +18,8 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
-import io.vertx.core.Completable;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 import io.vertx.sqlclient.ClosedConnectionException;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.CommandResponse;
 
 import java.util.ArrayDeque;
 import java.util.Iterator;
@@ -81,10 +78,7 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
   private void fail(CommandCodec<?, ?> codec, Throwable cause) {
     if (failure == null) {
       failure = cause;
-      Completable<?> handler = codec.cmd.handler;
-      if (handler != null) {
-        handler.complete(null, cause);
-      }
+      codec.fail(cause);
     }
   }
 

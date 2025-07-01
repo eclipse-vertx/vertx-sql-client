@@ -18,11 +18,11 @@
 package io.vertx.sqlclient.impl;
 
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.List;
 
-public class ListTuple extends TupleInternal {
+public class ListTuple extends TupleBase {
 
   private final List<Object> list;
 

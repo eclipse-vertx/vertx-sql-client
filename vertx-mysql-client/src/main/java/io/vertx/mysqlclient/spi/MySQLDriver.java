@@ -29,20 +29,23 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.pool.CloseablePool;
-import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
-import io.vertx.sqlclient.spi.ConnectionFactory;
-import io.vertx.sqlclient.spi.Driver;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
+import io.vertx.sqlclient.spi.DriverBase;
 
 import java.util.function.Supplier;
 
-public class MySQLDriver implements Driver<MySQLConnectOptions> {
+public class MySQLDriver extends DriverBase<MySQLConnectOptions> {
 
-  private static final String SHARED_CLIENT_KEY = "__vertx.shared.mysqlclient";
+  private static final String DISCRIMINANT = "mysqlclient";
 
   public static final MySQLDriver INSTANCE = new MySQLDriver();
+
+  public MySQLDriver() {
+    super(DISCRIMINANT);
+  }
 
   @Override
   public MySQLConnectOptions downcast(SqlConnectOptions connectOptions) {
@@ -50,21 +53,11 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
   }
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
-    VertxInternal vx = (VertxInternal) vertx;
-    PoolImpl pool;
-    if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, options, transportOptions, cf));
-    } else {
-      pool = newPoolImpl(vx, connectHandler, databases, options, transportOptions, closeFuture);
-    }
-    return new CloseablePool(vx, closeFuture, pool);
-  }
-
-  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  protected Pool newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     boolean pipelinedPool = poolOptions instanceof MySQLPoolOptions && ((MySQLPoolOptions) poolOptions).isPipelined();
     ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
-    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, factory,
+      databases, connectHandler, this::wrapConnection, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -87,7 +80,7 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MySQLConnectOptions> factory, Connection conn) {
-    return new MySQLConnectionImpl(context, factory, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MySQLConnectOptions> factory, Connection connection) {
+    return new MySQLConnectionImpl(context, factory, connection);
   }
 }

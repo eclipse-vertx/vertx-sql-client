@@ -23,18 +23,17 @@ import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.Section;
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
+import io.vertx.sqlclient.internal.TupleBase;
 
-class DB2PreparedStatement implements PreparedStatement {
+public class DB2PreparedStatement implements PreparedStatement {
 
   private static final Logger LOG = LoggerFactory.getLogger(DB2PreparedStatement.class);
 
   final String sql;
   final DB2ParamDesc paramDesc;
-  final DB2RowDesc rowDesc;
+  final DB2RowDescriptor rowDesc;
   final Section section;
 
   private final Map<String, QueryInstance> activeQueries = new ConcurrentHashMap<>(4);
@@ -51,7 +50,7 @@ class DB2PreparedStatement implements PreparedStatement {
     }
   }
 
-  DB2PreparedStatement(String sql, DB2ParamDesc paramDesc, DB2RowDesc rowDesc, Section section) {
+  DB2PreparedStatement(String sql, DB2ParamDesc paramDesc, DB2RowDescriptor rowDesc, Section section) {
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
@@ -59,12 +58,7 @@ class DB2PreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public ParamDesc paramDesc() {
-    return paramDesc;
-  }
-
-  @Override
-  public RowDesc rowDesc() {
+  public RowDescriptorBase rowDesc() {
     return rowDesc;
   }
 
@@ -74,7 +68,7 @@ class DB2PreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public TupleInternal prepare(TupleInternal values) {
+  public TupleBase prepare(TupleBase values) {
     return paramDesc.prepare(values);
   }
 

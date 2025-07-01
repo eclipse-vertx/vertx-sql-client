@@ -10,5 +10,6 @@ open module io.vertx.tests.sql.client.mysql {
   requires io.vertx.testing.unit;
   requires junit;
   requires testcontainers;
+  requires com.github.dockerjava.api;
 
 }

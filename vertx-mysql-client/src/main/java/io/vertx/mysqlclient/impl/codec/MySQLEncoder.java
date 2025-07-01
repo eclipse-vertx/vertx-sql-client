@@ -14,9 +14,9 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import io.vertx.core.Completable;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
-import io.vertx.mysqlclient.impl.command.*;
-import io.vertx.sqlclient.internal.command.*;
+import io.vertx.sqlclient.codec.CommandResponse;
 
 import java.nio.charset.Charset;
 
@@ -41,8 +41,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandBase<?>) {
-      CommandBase<?> cmd = (CommandBase<?>) msg;
+    if (msg instanceof CommandCodec<?, ?>) {
+      CommandCodec<?, ?> cmd = (CommandCodec<?, ?>) msg;
       write(cmd);
       codec.checkFireAndForgetCommands();
     } else {
@@ -50,57 +50,15 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     }
   }
 
-  void write(CommandBase<?> cmd) {
-    CommandCodec<?, ?> cmdCodec = wrap(cmd);
-    if (codec.add(cmdCodec)) {
-      cmdCodec.encode(this);
+  void write(CommandCodec<?, ?> cmd) {
+    if (codec.add(cmd)) {
+      cmd.encode(this);
     }
   }
 
   final void fireCommandResponse(CommandResponse<?> commandResponse) {
     CommandCodec<?, ?> c = codec.poll();
-    commandResponse.cmd = (CommandBase) c.cmd;
+    commandResponse.handler = (Completable) c.handler;
     chctx.fireChannelRead(commandResponse);
   }
-
-  private CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
-    if (cmd instanceof InitialHandshakeCommand) {
-      return new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
-    } else if (cmd instanceof SimpleQueryCommand) {
-      return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd);
-    } else if (cmd instanceof ExtendedQueryCommand) {
-      ExtendedQueryCommand<?> queryCmd = (ExtendedQueryCommand<?>) cmd;
-      if (queryCmd.isBatch()) {
-        return new ExtendedBatchQueryCommandCodec<>(queryCmd);
-      } else {
-        return new ExtendedQueryCommandCodec<>(queryCmd);
-      }
-    } else if (cmd instanceof CloseConnectionCommand) {
-      return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
-    } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
-    } else if (cmd instanceof CloseStatementCommand) {
-      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
-    } else if (cmd instanceof CloseCursorCommand) {
-      return new ResetStatementCommandCodec((CloseCursorCommand) cmd);
-    } else if (cmd instanceof PingCommand) {
-      return new PingCommandCodec((PingCommand) cmd);
-    } else if (cmd instanceof InitDbCommand) {
-      return new InitDbCommandCodec((InitDbCommand) cmd);
-    } else if (cmd instanceof StatisticsCommand) {
-      return new StatisticsCommandCodec((StatisticsCommand) cmd);
-    } else if (cmd instanceof SetOptionCommand) {
-      return new SetOptionCommandCodec((SetOptionCommand) cmd);
-    } else if (cmd instanceof ResetConnectionCommand) {
-      return new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
-    } else if (cmd instanceof DebugCommand) {
-      return new DebugCommandCodec((DebugCommand) cmd);
-    } else if (cmd instanceof ChangeUserCommand) {
-      return new ChangeUserCommandCodec((ChangeUserCommand) cmd);
-    } else {
-      System.out.println("Unsupported command " + cmd);
-      throw new UnsupportedOperationException("Todo");
-    }
-  }
-
 }

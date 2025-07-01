@@ -12,8 +12,8 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.MySQLRowDesc;
-import io.vertx.mysqlclient.impl.MySQLRowImpl;
+import io.vertx.mysqlclient.impl.MySQLRowDescriptor;
+import io.vertx.mysqlclient.impl.MySQLRow;
 import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
@@ -27,16 +27,16 @@ import java.util.stream.Collector;
 class RowResultDecoder<C, R> extends RowDecoder<C, R> {
   private static final int NULL = 0xFB;
 
-  MySQLRowDesc rowDesc;
+  MySQLRowDescriptor rowDesc;
 
-  RowResultDecoder(Collector<Row, C, R> collector, MySQLRowDesc rowDesc) {
+  RowResultDecoder(Collector<Row, C, R> collector, MySQLRowDescriptor rowDesc) {
     super(collector);
     this.rowDesc = rowDesc;
   }
 
   @Override
   protected RowInternal row() {
-    return new MySQLRowImpl(rowDesc);
+    return new MySQLRow(rowDesc);
   }
 
   @Override

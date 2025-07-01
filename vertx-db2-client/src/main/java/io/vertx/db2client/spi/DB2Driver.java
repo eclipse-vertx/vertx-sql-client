@@ -29,20 +29,23 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.pool.CloseablePool;
-import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
-import io.vertx.sqlclient.spi.ConnectionFactory;
-import io.vertx.sqlclient.spi.Driver;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
+import io.vertx.sqlclient.spi.DriverBase;
 
 import java.util.function.Supplier;
 
-public class DB2Driver implements Driver<DB2ConnectOptions> {
+public class DB2Driver extends DriverBase<DB2ConnectOptions> {
 
-  private static final String SHARED_CLIENT_KEY = "__vertx.shared.db2client";
+  private static final String DISCRIMINANT = "db2client";
 
   public static final DB2Driver INSTANCE = new DB2Driver();
+
+  public DB2Driver() {
+    super(DISCRIMINANT);
+  }
 
   @Override
   public DB2ConnectOptions downcast(SqlConnectOptions connectOptions) {
@@ -50,21 +53,11 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
   }
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
-    VertxInternal vx = (VertxInternal) vertx;
-    PoolImpl pool;
-    if (poolOptions.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, poolOptions.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, poolOptions, transportOptions, cf));
-    } else {
-      pool = newPoolImpl(vx, connectHandler, databases, poolOptions, transportOptions, closeFuture);
-    }
-    return new CloseablePool(vx, closeFuture, pool);
-  }
-
-  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, CloseFuture closeFuture) {
-    boolean pipelinedPool = options instanceof Db2PoolOptions && ((Db2PoolOptions) options).isPipelined();
+  protected Pool newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+    boolean pipelinedPool = poolOptions instanceof Db2PoolOptions && ((Db2PoolOptions) poolOptions).isPipelined();
     ConnectionFactory<DB2ConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
-    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, options, null, null, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
+    PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null,
+      factory, databases, connectHandler, this::wrapConnection, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -87,7 +80,7 @@ public class DB2Driver implements Driver<DB2ConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<DB2ConnectOptions> factory, Connection conn) {
-    return new DB2ConnectionImpl(context, factory, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<DB2ConnectOptions> factory, Connection connection) {
+    return new DB2ConnectionImpl(context, factory, connection);
   }
 }

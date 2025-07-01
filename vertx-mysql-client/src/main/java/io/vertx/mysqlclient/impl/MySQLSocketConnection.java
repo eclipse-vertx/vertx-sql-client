@@ -28,17 +28,23 @@ import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.ClearCachedStatementsEvent;
+import io.vertx.mysqlclient.impl.codec.CommandCodec;
+import io.vertx.mysqlclient.impl.codec.ExtendedBatchQueryCommandCodec;
+import io.vertx.mysqlclient.impl.codec.ExtendedQueryCommandCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLPacketDecoder;
+import io.vertx.mysqlclient.impl.codec.MySQLPreparedStatement;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.codec.CommandMessage;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.internal.command.CommandBase;
-import io.vertx.sqlclient.internal.command.QueryCommandBase;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
-import io.vertx.sqlclient.internal.command.TxCommand;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.nio.charset.Charset;
@@ -97,16 +103,30 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   }
 
   @Override
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    if (command.isBatch()) {
+      return new ExtendedBatchQueryCommandCodec<>(command, (MySQLPreparedStatement) preparedStatement);
+    } else {
+      return new ExtendedQueryCommandCodec<>(command, (MySQLPreparedStatement) preparedStatement);
+    }
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    return CommandCodec.wrap(command);
+  }
+
+  @Override
   protected <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     if (cmd instanceof TxCommand) {
       TxCommand<R> tx = (TxCommand<R>) cmd;
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
-        tx.kind.sql,
+        tx.kind().sql(),
         false,
         false,
-        QueryCommandBase.NULL_COLLECTOR,
+        SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result, err));
+      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }
@@ -121,12 +141,6 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     }
   }
 
-  private void clearCachedStatements() {
-    if (this.psCache != null) {
-      this.psCache.clear();
-    }
-  }
-
   public Future<Void> upgradeToSsl(ClientSSLOptions sslOptions) {
     return socket.upgradeToSsl(sslOptions);
   }
@@ -137,7 +151,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return metaData;
   }
 }

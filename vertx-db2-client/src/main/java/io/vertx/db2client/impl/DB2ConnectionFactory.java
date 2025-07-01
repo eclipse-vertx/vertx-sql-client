@@ -26,8 +26,7 @@ import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
 import java.util.Map;
@@ -65,15 +64,10 @@ public class DB2ConnectionFactory extends ConnectionFactoryBase<DB2ConnectOption
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, DB2ConnectOptions options) {
+  public Future<Connection> connect(Context context, DB2ConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
-    Promise<SqlConnection> promise = contextInternal.promise();
-    connect(asEventLoopContext(contextInternal), options)
-      .map(conn -> {
-        DB2ConnectionImpl db2Connection = new DB2ConnectionImpl(contextInternal, this, conn);
-        conn.init(db2Connection);
-        return (SqlConnection)db2Connection;
-      }).onComplete(promise);
+    Promise<Connection> promise = contextInternal.promise();
+    connect(asEventLoopContext(contextInternal), options).onComplete(promise);
     return promise.future();
   }
 }

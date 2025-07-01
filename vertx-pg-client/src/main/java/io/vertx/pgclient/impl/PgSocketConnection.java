@@ -27,15 +27,22 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgException;
+import io.vertx.pgclient.impl.codec.ExtendedQueryCommandCodec;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.PgCodec;
+import io.vertx.pgclient.impl.codec.PgCommandCodec;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.impl.Notification;
+import io.vertx.sqlclient.codec.CommandMessage;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
-import io.vertx.sqlclient.internal.command.*;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.InitCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.TxCommand;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -123,18 +130,16 @@ public class PgSocketConnection extends SocketConnectionBase {
     }
   }
 
-  @Override
   public int getProcessId() {
     return processId;
   }
 
-  @Override
   public int getSecretKey() {
     return secretKey;
   }
 
   @Override
-  public DatabaseMetadata getDatabaseMetaData() {
+  public DatabaseMetadata databaseMetadata() {
     return dbMetaData;
   }
 
@@ -161,15 +166,25 @@ public class PgSocketConnection extends SocketConnectionBase {
     if (cmd instanceof TxCommand) {
       TxCommand<R> tx = (TxCommand<R>) cmd;
       SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
-        tx.kind.sql,
+        tx.kind().sql(),
         false,
         false,
-        QueryCommandBase.NULL_COLLECTOR,
+        SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
-      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result, err));
+      super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
+    return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) command, preparedStatement);
+  }
+
+  @Override
+  protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
+    return PgCommandCodec.wrap(command);
   }
 
   @Override

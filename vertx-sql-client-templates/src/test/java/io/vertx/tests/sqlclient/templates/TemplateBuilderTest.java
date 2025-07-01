@@ -7,7 +7,6 @@ import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlClientInternal;
-import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.templates.impl.SqlTemplate;
 import org.junit.Assert;
@@ -39,10 +38,6 @@ public class TemplateBuilderTest {
         }
         @Override
         public Pool newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
-          throw new UnsupportedOperationException();
-        }
-        @Override
-        public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
           throw new UnsupportedOperationException();
         }
         @Override

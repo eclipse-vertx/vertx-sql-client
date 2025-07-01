@@ -12,15 +12,15 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.sqlclient.internal.command.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mssqlclient.impl.codec.MessageType.SQL_BATCH;
 
 class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
-  SQLBatchCommandCodec(TdsMessageCodec tdsMessageCodec, SimpleQueryCommand<T> cmd) {
-    super(tdsMessageCodec, cmd);
+  SQLBatchCommandCodec(SimpleQueryCommand<T> cmd) {
+    super(cmd);
   }
 
   @Override

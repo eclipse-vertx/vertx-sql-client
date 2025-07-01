@@ -28,9 +28,8 @@ import io.vertx.pgclient.PgNotification;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.pgclient.spi.PgDriver;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.impl.Notification;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
 
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
@@ -42,7 +41,12 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
     } catch (Exception e) {
       return context.failedFuture(e);
     }
-    return prepareForClose(context, client.connect((Context)context, options)).map(PgConnection::cast);
+    return client.connect((Context)context, options).map(conn -> {
+      PgConnectionImpl impl = new PgConnectionImpl(client, context, conn);
+      conn.init(impl);
+      prepareForClose(context, impl);
+      return impl;
+    });
   }
 
   private volatile Handler<PgNotification> notificationHandler;
@@ -110,12 +114,14 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
 
   @Override
   public int processId() {
-    return conn.getProcessId();
+    PgSocketConnection actual = (PgSocketConnection) conn.unwrap();
+    return actual.getProcessId();
   }
 
   @Override
   public int secretKey() {
-    return conn.getSecretKey();
+    PgSocketConnection actual = (PgSocketConnection) conn.unwrap();
+    return actual.getSecretKey();
   }
 
   @Override

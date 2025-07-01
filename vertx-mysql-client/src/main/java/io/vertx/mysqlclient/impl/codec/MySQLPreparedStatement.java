@@ -19,24 +19,23 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.vertx.core.VertxException;
 import io.vertx.mysqlclient.impl.MySQLParamDesc;
-import io.vertx.mysqlclient.impl.MySQLRowDesc;
+import io.vertx.mysqlclient.impl.MySQLRowDescriptor;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.*;
-import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.Arrays;
 
-class MySQLPreparedStatement implements PreparedStatement {
+public class MySQLPreparedStatement implements PreparedStatement {
 
   final long statementId;
   final String sql;
   final MySQLParamDesc paramDesc;
-  final MySQLRowDesc rowDesc;
+  final MySQLRowDescriptor rowDesc;
   final boolean closeAfterUsage;
 
   private boolean sendTypesToServer;
@@ -44,7 +43,7 @@ class MySQLPreparedStatement implements PreparedStatement {
 
   boolean isCursorOpen;
 
-  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc, boolean closeAfterUsage) {
+  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDescriptor rowDesc, boolean closeAfterUsage) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
@@ -57,12 +56,7 @@ class MySQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public ParamDesc paramDesc() {
-    return paramDesc;
-  }
-
-  @Override
-  public RowDesc rowDesc() {
+  public RowDescriptorBase rowDesc() {
     return rowDesc;
   }
 
@@ -72,7 +66,7 @@ class MySQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public TupleInternal prepare(TupleInternal values) {
+  public TupleBase prepare(TupleBase values) {
     int numberOfParameters = values.size();
     int paramDescLength = paramDesc.paramDefinitions().length;
     if (numberOfParameters != paramDescLength) {

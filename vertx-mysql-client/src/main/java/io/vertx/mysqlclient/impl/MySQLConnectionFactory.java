@@ -28,8 +28,7 @@ import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
 import java.nio.charset.Charset;
@@ -142,15 +141,15 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, MySQLConnectOptions options) {
+  public Future<Connection> connect(Context context, MySQLConnectOptions options) {
     ContextInternal contextInternal = (ContextInternal) context;
-    Promise<SqlConnection> promise = contextInternal.promise();
+    Promise<Connection> promise = contextInternal.promise();
     connect(asEventLoopContext(contextInternal), options)
-      .map(conn -> {
+      /*.map(conn -> {
         MySQLConnectionImpl mySQLConnection = new MySQLConnectionImpl(contextInternal, this, conn);
         conn.init(mySQLConnection);
         return (SqlConnection)mySQLConnection;
-      })
+      })*/
       .onComplete(promise);
     return promise.future();
   }

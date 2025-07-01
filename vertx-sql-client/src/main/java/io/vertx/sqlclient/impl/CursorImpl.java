@@ -24,9 +24,8 @@ import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.UUID;
 
@@ -39,13 +38,13 @@ public class CursorImpl implements Cursor {
   private final PreparedStatementBase ps;
   private final ContextInternal context;
   private final boolean autoCommit;
-  private final TupleInternal params;
+  private final TupleBase params;
 
   private String id;
   private boolean closed;
   QueryResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
-  CursorImpl(PreparedStatementBase ps, Connection conn, ContextInternal context, boolean autoCommit, TupleInternal params) {
+  CursorImpl(PreparedStatementBase ps, Connection conn, ContextInternal context, boolean autoCommit, TupleBase params) {
     this.ps = ps;
     this.conn = conn;
     this.context = context;

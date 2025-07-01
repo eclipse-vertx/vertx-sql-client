@@ -28,9 +28,6 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.SqlConnectionBase;
-import io.vertx.sqlclient.internal.SqlConnectionInternal;
 
 import java.util.function.Supplier;
 
@@ -102,15 +99,6 @@ public interface Driver<C extends SqlConnectOptions> {
   Pool newPool(Vertx vertx, Supplier<Future<C>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture);
 
   /**
-   * Create a connection factory to the given {@code database}.
-   *
-   * @param vertx            the Vertx instance
-   * @param transportOptions the options to configure the TCP client
-   * @return the connection factory
-   */
-  ConnectionFactory<C> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions);
-
-  /**
    * @return {@code true} if the driver accepts the {@code connectOptions}, {@code false} otherwise
    */
   SqlConnectOptions parseConnectionUri(String uri);
@@ -148,9 +136,5 @@ public interface Driver<C extends SqlConnectOptions> {
   default int appendQueryPlaceholder(StringBuilder queryBuilder, int index, int current) {
     queryBuilder.append("?");
     return current;
-  }
-
-  default SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<C> factory, Connection conn) {
-    return new SqlConnectionBase<>(context, factory, conn, this);
   }
 }

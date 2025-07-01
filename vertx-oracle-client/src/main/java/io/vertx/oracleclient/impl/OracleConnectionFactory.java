@@ -13,7 +13,6 @@ package io.vertx.oracleclient.impl;
 import io.vertx.core.Completable;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -21,8 +20,8 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import oracle.jdbc.OracleConnection;
 import oracle.jdbc.datasource.OracleDataSource;
 
@@ -59,7 +58,7 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, OracleConnectOptions options) {
+  public Future<Connection> connect(Context context, OracleConnectOptions options) {
     OracleDataSource datasource = getDatasource(options);
     VertxMetrics vertxMetrics = ((VertxInternal)context.owner()).metrics();
     ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
@@ -68,9 +67,7 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
       OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, options, orac, metadata);
-      OracleConnectionImpl msConn = new OracleConnectionImpl(ctx, this, conn);
-      conn.init(msConn);
-      return msConn;
+      return conn;
     });
   }
 }

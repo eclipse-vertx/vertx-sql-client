@@ -24,8 +24,7 @@ import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 
 import java.util.Map;
@@ -106,16 +105,10 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
   }
 
   @Override
-  public Future<SqlConnection> connect(Context context, MSSQLConnectOptions options) {
+  public Future<Connection> connect(Context context, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) context;
-    Promise<SqlConnection> promise = ctx.promise();
-    connect(asEventLoopContext(ctx), options)
-      .map(conn -> {
-        MSSQLConnectionImpl msConn = new MSSQLConnectionImpl(ctx, this, conn);
-        conn.init(msConn);
-        return (SqlConnection)msConn;
-      })
-      .onComplete(promise);
+    Promise<Connection> promise = ctx.promise();
+    connect(asEventLoopContext(ctx), options).onComplete(promise);
     return promise.future();
   }
 }

@@ -15,30 +15,19 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowBase;
-import io.vertx.sqlclient.internal.RowDesc;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 
 import java.time.*;
-import java.util.List;
 import java.util.UUID;
 
 public class OracleRow extends RowBase {
 
-  private final RowDesc desc;
-
-  public OracleRow(RowDesc desc) {
-    super(desc.columnNames().size());
-    this.desc = desc;
+  public OracleRow(RowDescriptorBase desc) {
+    super(desc);
   }
 
   public OracleRow(OracleRow row) {
-    super(row);
-    this.desc = row.desc;
-  }
-
-  @Override
-  public String getColumnName(int pos) {
-    List<String> columnNames = desc.columnNames();
-    return pos < 0 || columnNames.size() - 1 < pos ? null : columnNames.get(pos);
+    super(row.desc, row);
   }
 
   @Override
@@ -46,7 +35,7 @@ public class OracleRow extends RowBase {
     if (name == null) {
       throw new NullPointerException();
     }
-    return desc.columnNames().indexOf(name.toUpperCase());
+    return super.getColumnIndex(name.toUpperCase());
   }
 
   @Override

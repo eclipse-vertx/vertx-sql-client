@@ -16,21 +16,25 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
-import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.internal.command.CommandResponse;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.PreparedStatement;
+import io.vertx.sqlclient.internal.TupleBase;
+import io.vertx.sqlclient.codec.InvalidCachedStatementEvent;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
-class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {
+public class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {
 
   private PgEncoder encoder;
 
   private static final String TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN = "bind message has \\d result formats but query has \\d columns";
 
-  ExtendedQueryCommandCodec(C cmd) {
+  private PgPreparedStatement ps;
+
+  public ExtendedQueryCommandCodec(C cmd, PreparedStatement ps) {
     super(cmd);
-    rowDecoder = new RowResultDecoder<>(cmd.collector(), ((PgPreparedStatement)cmd.preparedStatement()).rowDesc());
+    this.rowDecoder = new RowResultDecoder<>(cmd.collector(), ((PgPreparedStatement)ps).rowDesc());
+    this.ps = (PgPreparedStatement) ps;
   }
 
   @Override
@@ -40,7 +44,6 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
       encoder.writeExecute(cmd.cursorId(), cmd.fetch());
       encoder.writeSync();
     } else {
-      PgPreparedStatement ps = (PgPreparedStatement) cmd.preparedStatement();
       if (cmd.isBatch()) {
         if (cmd.paramsList().isEmpty()) {
           // We set suspended to false as we won't get a command complete command back from Postgres
@@ -51,7 +54,7 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
           if (encoder.useLayer7Proxy) {
             encoder.writeParse(ps.sql, ps.bind.statement, new DataType[0]);
           }
-          for (TupleInternal param : cmd.paramsList()) {
+          for (TupleBase param : cmd.paramsList()) {
             encoder.writeBind(ps.bind, cmd.cursorId(), param);
             encoder.writeExecute(cmd.cursorId(), cmd.fetch());
           }
@@ -76,7 +79,7 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
   void handlePortalSuspended() {
     Throwable failure = rowDecoder.complete();
     R result = rowDecoder.result();
-    RowDesc desc = rowDecoder.desc;
+    RowDescriptorBase desc = rowDecoder.desc;
     int size = rowDecoder.size();
     rowDecoder.reset();
     this.result = true;
@@ -90,8 +93,8 @@ class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends Qu
 
   @Override
   public void handleErrorResponse(ErrorResponse errorResponse) {
-    if (((PgPreparedStatement)cmd.preparedStatement()).isCached() && isTableSchemaErrorMessage(errorResponse)) {
-      encoder.channelHandlerContext().fireChannelRead(new InvalidCachedStatementEvent(cmd.preparedStatement().sql()));
+    if (ps.isCached() && isTableSchemaErrorMessage(errorResponse)) {
+      encoder.channelHandlerContext().fireChannelRead(new InvalidCachedStatementEvent(ps.sql()));
     }
     super.handleErrorResponse(errorResponse);
   }

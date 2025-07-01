@@ -23,8 +23,8 @@ import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.db2client.impl.drda.Section;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.command.CommandResponse;
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
+import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 
 class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
 
@@ -89,7 +89,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
 
   private void handleReadyForQuery() {
     completionHandler.handle(CommandResponse.success(new DB2PreparedStatement(cmd.sql(), new DB2ParamDesc(paramDesc),
-      DB2RowDesc.create(rowDesc), section)));
+      DB2RowDescriptor.create(rowDesc), section)));
   }
 
   private void resetIntermediaryResult() {

@@ -22,7 +22,7 @@ import io.vertx.sqlclient.Tuple;
 import java.util.Arrays;
 import java.util.Collection;
 
-public class ArrayTuple extends TupleInternal {
+public class ArrayTuple extends TupleBase {
 
   private static final Object[] EMPTY_ARRAY = new Object[0];
   public static Tuple EMPTY = new ArrayTuple(0);

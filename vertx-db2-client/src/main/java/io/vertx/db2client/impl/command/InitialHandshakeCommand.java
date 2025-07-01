@@ -17,8 +17,8 @@ package io.vertx.db2client.impl.command;
 
 import java.util.Map;
 
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 
 public class InitialHandshakeCommand extends AuthenticationCommandBase<Connection> {
 

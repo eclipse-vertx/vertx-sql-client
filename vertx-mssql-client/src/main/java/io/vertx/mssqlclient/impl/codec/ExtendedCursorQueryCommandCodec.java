@@ -12,8 +12,8 @@
 package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.TupleBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 import static io.vertx.mssqlclient.impl.codec.DataType.NVARCHAR;
@@ -21,15 +21,15 @@ import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
 class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
 
-  private final CursorData cursorData;
+  private CursorData cursorData;
 
-  ExtendedCursorQueryCommandCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
-    super(tdsMessageCodec, cmd);
-    cursorData = tdsMessageCodec.getOrCreateCursorData(cmd.cursorId());
+  ExtendedCursorQueryCommandCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+    super(cmd, ps);
   }
 
   @Override
   void encode() {
+    cursorData = tdsMessageCodec.getOrCreateCursorData(cmd.cursorId());
     if (cursorData.preparedHandle == 0) {
       sendCursorPrepExec();
     } else {
@@ -68,7 +68,7 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
     INTN.encodeParam(content, null, true, 0); // prepared handle
     INTN.encodeParam(content, null, true, 0); // cursor
 
-    TupleInternal params = prepexecRequestParams();
+    TupleBase params = prepexecRequestParams();
 
     // Param definitions
     String paramDefinitions = parseParamDefinitions(params);
@@ -112,9 +112,9 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
   }
 
   @Override
-  protected MSSQLRowDesc createRowDesc(ColumnData[] columnData) {
+  protected MSSQLRowDescriptor createRowDesc(ColumnData[] columnData) {
     boolean hasRowStat = columnData.length > 0 && "ROWSTAT".equals(columnData[columnData.length - 1].name());
-    return (cursorData.mssqlRowDesc = MSSQLRowDesc.create(columnData, hasRowStat));
+    return (cursorData.mssqlRowDesc = MSSQLRowDescriptor.create(columnData, hasRowStat));
   }
 
   private void sendCursorFetch() {
@@ -174,12 +174,12 @@ class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T
   }
 
   @Override
-  protected TupleInternal prepexecRequestParams() {
+  protected TupleBase prepexecRequestParams() {
     return cmd.params();
   }
 
   @Override
-  protected TupleInternal execRequestParams() {
+  protected TupleBase execRequestParams() {
     throw new UnsupportedOperationException();
   }
 }

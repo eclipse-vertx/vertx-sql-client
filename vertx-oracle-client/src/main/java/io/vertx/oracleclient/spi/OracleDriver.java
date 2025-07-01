@@ -11,60 +11,37 @@
 package io.vertx.oracleclient.spi;
 
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.*;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.pool.CloseablePool;
-import io.vertx.sqlclient.internal.pool.PoolImpl;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
-import io.vertx.sqlclient.spi.ConnectionFactory;
-import io.vertx.sqlclient.spi.Driver;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
+import io.vertx.sqlclient.spi.DriverBase;
 
 import java.util.function.Function;
-import java.util.function.Supplier;
 
-public class OracleDriver implements Driver<OracleConnectOptions> {
+public class OracleDriver extends DriverBase<OracleConnectOptions> {
 
-  private static final String SHARED_CLIENT_KEY = "__vertx.shared.oracleclient";
+  private static final String DISCRIMINANT = "oracleclient";
+
+  private static final Function<Connection, Future<Void>> AFTER_ACQUIRE = conn -> ((OracleJdbcConnection) conn).afterAcquire();
+  private static final Function<Connection, Future<Void>> BEFORE_RECYCLE = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
 
   public static final OracleDriver INSTANCE = new OracleDriver();
+
+  public OracleDriver() {
+    super(DISCRIMINANT, AFTER_ACQUIRE, BEFORE_RECYCLE);
+  }
 
   @Override
   public OracleConnectOptions downcast(SqlConnectOptions connectOptions) {
     return connectOptions instanceof OracleConnectOptions ? (OracleConnectOptions) connectOptions : new OracleConnectOptions(connectOptions);
-  }
-
-  @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
-    VertxInternal vx = (VertxInternal) vertx;
-    PoolImpl pool;
-    if (options.isShared()) {
-      pool = vx.createSharedResource(SHARED_CLIENT_KEY, options.getName(), closeFuture, cf -> newPoolImpl(vx, connectHandler, databases, options, cf));
-    } else {
-      pool = newPoolImpl(vx, connectHandler, databases, options, closeFuture);
-    }
-    return new CloseablePool(vx, closeFuture, pool);
-  }
-
-  private PoolImpl newPoolImpl(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<OracleConnectOptions>> databases, PoolOptions options, CloseFuture closeFuture) {
-    Function<Connection, Future<Void>> afterAcquire = conn -> ((OracleJdbcConnection) conn).afterAcquire();
-    Function<Connection, Future<Void>> beforeRecycle = conn -> ((OracleJdbcConnection) conn).beforeRecycle();
-    ConnectionFactory<OracleConnectOptions> factory = createConnectionFactory(vertx, null);
-    PoolImpl pool = new PoolImpl(vertx, this,  false, options, afterAcquire, beforeRecycle, context -> factory.connect(context, databases.get()), connectHandler, closeFuture);
-    pool.init();
-    closeFuture.add(factory);
-    return pool;
   }
 
   @Override
@@ -84,7 +61,7 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
   }
 
   @Override
-  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<OracleConnectOptions> factory, Connection conn) {
-    return new OracleConnectionImpl(context, factory, conn);
+  public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<OracleConnectOptions> factory, Connection connection) {
+    return new OracleConnectionImpl(context, factory, connection);
   }
 }

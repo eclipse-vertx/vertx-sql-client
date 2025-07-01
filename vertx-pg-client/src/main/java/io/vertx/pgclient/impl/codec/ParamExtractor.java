@@ -12,14 +12,14 @@ package io.vertx.pgclient.impl.codec;
 
 import io.vertx.core.json.Json;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 interface ParamExtractor<T> {
 
-  static String extractUnknownType(TupleInternal tuple, int pos) {
+  static String extractUnknownType(TupleBase tuple, int pos) {
     Object value = tuple.getValue(pos);
     if (value instanceof Object[]) {
       String[] strings = tuple.getArrayOfStrings(pos);
@@ -29,7 +29,7 @@ interface ParamExtractor<T> {
     }
   }
 
-  T get(TupleInternal tuple, int idx);
+  T get(TupleBase tuple, int idx);
 
   private static String encodeJsonToString(Object value) {
     if (value == Tuple.JSON_NULL) {

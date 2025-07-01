@@ -15,7 +15,7 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.mssqlclient.impl.MSSQLDatabaseMetadata;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.mssqlclient.impl.command.PreLoginResponse;
-import io.vertx.sqlclient.internal.command.CommandResponse;
+import io.vertx.sqlclient.codec.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_OFF;
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_ON;
@@ -27,8 +27,8 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
   private static final int ENCRYPTION = 0x01;
   private static final int TERMINATOR = 0xFF;
 
-  PreLoginCommandCodec(TdsMessageCodec tdsMessageCodec, PreLoginCommand cmd) {
-    super(tdsMessageCodec, cmd);
+  PreLoginCommandCodec(PreLoginCommand cmd) {
+    super(cmd);
   }
 
   @Override

@@ -21,7 +21,7 @@ import java.util.stream.Collector;
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
-import io.vertx.db2client.impl.DB2RowImpl;
+import io.vertx.db2client.impl.DB2Row;
 import io.vertx.db2client.impl.drda.Cursor;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Row;
@@ -33,11 +33,11 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RowResultDecoder.class);
 
-  final DB2RowDesc rowDesc;
+  final DB2RowDescriptor rowDesc;
   final Cursor cursor;
   final DRDAQueryResponse response;
 
-  RowResultDecoder(Collector<Row, C, R> collector, DB2RowDesc rowDesc, Cursor cursor, DRDAQueryResponse resp) {
+  RowResultDecoder(Collector<Row, C, R> collector, DB2RowDescriptor rowDesc, Cursor cursor, DRDAQueryResponse resp) {
     super(collector);
     this.rowDesc = rowDesc;
     this.cursor = cursor;
@@ -55,7 +55,7 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   @Override
   protected RowInternal row() {
-    return new DB2RowImpl(rowDesc);
+    return new DB2Row(rowDesc);
   }
 
   @Override

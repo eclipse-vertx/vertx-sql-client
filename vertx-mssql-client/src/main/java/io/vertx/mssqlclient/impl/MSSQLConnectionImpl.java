@@ -20,10 +20,10 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.impl.SocketConnectionBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
-import io.vertx.sqlclient.spi.ConnectionFactory;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 
 public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> implements MSSQLConnection {
 
@@ -36,7 +36,12 @@ public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> 
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner());
-    return prepareForClose(ctx, client.connect((Context)ctx, options)).map(MSSQLConnection::cast);
+    return client.connect((Context)ctx, options).map(conn -> {
+      MSSQLConnectionImpl impl = new MSSQLConnectionImpl(ctx, client, conn);
+      conn.init(impl);
+      prepareForClose(ctx, impl);
+      return impl;
+    });
   }
 
   @Override

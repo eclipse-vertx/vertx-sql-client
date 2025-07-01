@@ -13,28 +13,28 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.data.NullValue;
-import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.internal.TupleBase;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.*;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
-abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
+public abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
 
   final MSSQLPreparedStatement ps;
 
-  ExtendedQueryCommandBaseCodec(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<T> cmd) {
-    super(tdsMessageCodec, cmd);
-    ps = (MSSQLPreparedStatement) this.cmd.preparedStatement();
+  public ExtendedQueryCommandBaseCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+    super(cmd);
+    this.ps = ps;
   }
 
-  public static <U> MSSQLCommandCodec<?, ?> create(TdsMessageCodec tdsMessageCodec, ExtendedQueryCommand<U> queryCmd) {
+  public static <U> MSSQLCommandCodec<?, ?> create(ExtendedQueryCommand<U> queryCmd, MSSQLPreparedStatement ps) {
     if (queryCmd.isBatch()) {
-      return new ExtendedBatchQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+      return new ExtendedBatchQueryCommandCodec<>(queryCmd, ps);
     } else if (queryCmd.cursorId() != null) {
-      return new ExtendedCursorQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+      return new ExtendedCursorQueryCommandCodec<>(queryCmd, ps);
     } else {
-      return new ExtendedQueryCommandCodec<>(tdsMessageCodec, queryCmd);
+      return new ExtendedQueryCommandCodec<>(queryCmd, ps);
     }
   }
 
@@ -87,7 +87,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
     // OUT Parameter
     INTN.encodeParam(content, null, true, ps.handle);
 
-    TupleInternal params = prepexecRequestParams();
+    TupleBase params = prepexecRequestParams();
 
     // Param definitions
     String paramDefinitions = parseParamDefinitions(params);
@@ -102,7 +102,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
     tdsMessageCodec.encoder().writeTdsMessage(RPC, content);
   }
 
-  protected abstract TupleInternal prepexecRequestParams();
+  protected abstract TupleBase prepexecRequestParams();
 
   void sendExecRequest() {
     ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
@@ -131,9 +131,9 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
     encodeParams(packet, execRequestParams());
   }
 
-  protected abstract TupleInternal execRequestParams();
+  protected abstract TupleBase execRequestParams();
 
-  protected String parseParamDefinitions(TupleInternal params) {
+  protected String parseParamDefinitions(TupleBase params) {
     StringBuilder stringBuilder = new StringBuilder();
     for (int i = 0; i < params.size(); i++) {
       if (i > 0) {
@@ -156,7 +156,7 @@ abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T,
     return stringBuilder.toString();
   }
 
-  protected void encodeParams(ByteBuf buffer, TupleInternal params) {
+  protected void encodeParams(ByteBuf buffer, TupleBase params) {
     for (int i = 0; i < params.size(); i++) {
       String name = "@P" + (i + 1);
       Object value = params.getValue(i);

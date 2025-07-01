@@ -17,7 +17,7 @@ import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.internal.command.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
@@ -25,9 +25,9 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
 
   protected final MySQLPreparedStatement statement;
 
-  ExtendedQueryCommandBaseCodec(C cmd) {
+  ExtendedQueryCommandBaseCodec(C cmd, MySQLPreparedStatement statement) {
     super(cmd, DataFormat.BINARY);
-    statement = (MySQLPreparedStatement) cmd.preparedStatement();
+    this.statement = statement;
   }
 
   @Override
@@ -52,9 +52,8 @@ abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R
   }
 
   protected void closePreparedStatement() {
-    MySQLPreparedStatement ps = (MySQLPreparedStatement) this.cmd.ps;
-    if (ps.closeAfterUsage) {
-      sendCloseStatementCommand(ps);
+    if (statement.closeAfterUsage) {
+      sendCloseStatementCommand(statement);
     }
   }
 

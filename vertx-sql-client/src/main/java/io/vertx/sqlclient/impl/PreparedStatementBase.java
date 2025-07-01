@@ -22,9 +22,9 @@ import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedQuery;
 import io.vertx.sqlclient.internal.ArrayTuple;
-import io.vertx.sqlclient.internal.Connection;
-import io.vertx.sqlclient.internal.command.CloseCursorCommand;
-import io.vertx.sqlclient.internal.command.CloseStatementCommand;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlResult;
@@ -33,8 +33,8 @@ import io.vertx.sqlclient.RowStream;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.core.*;
-import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
-import io.vertx.sqlclient.internal.TupleInternal;
+import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,7 +69,7 @@ public abstract class PreparedStatementBase implements PreparedStatement {
         conn.schedule(cmd, promise);
       }
       @Override
-      protected void readCursor(CursorImpl cursor, String id, boolean suspended, TupleInternal params, int count, PromiseInternal<RowSet<Row>> promise) {
+      protected void readCursor(CursorImpl cursor, String id, boolean suspended, TupleBase params, int count, PromiseInternal<RowSet<Row>> promise) {
         QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
         cursor.result = builder.executeExtendedQuery(conn, preparedStatement, null, autoCommit, params, count, id, suspended, promise);
       }
@@ -113,7 +113,7 @@ public abstract class PreparedStatementBase implements PreparedStatement {
         });
       }
       @Override
-      protected void readCursor(CursorImpl cursor, String id, boolean suspended, TupleInternal params, int count, PromiseInternal<RowSet<Row>> promise) {
+      protected void readCursor(CursorImpl cursor, String id, boolean suspended, TupleBase params, int count, PromiseInternal<RowSet<Row>> promise) {
         withPreparedStatement(options, params, ar -> {
           if (ar.succeeded()) {
             QueryExecutor<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> builder = new QueryExecutor<>(RowSetImpl.FACTORY, RowSetImpl.COLLECTOR);
@@ -170,7 +170,7 @@ public abstract class PreparedStatementBase implements PreparedStatement {
   protected abstract <R, F extends SqlResult<R>> void executeBatch(List<Tuple> argsList, QueryExecutor<R, ?, F> builder, PromiseInternal<F> p);
   protected abstract void close(Promise<Void> promise);
   protected abstract void closeCursor(String cursorId, Promise<Void> promise);
-  protected abstract void readCursor(CursorImpl cursor, String id, boolean suspended, TupleInternal params, int count, PromiseInternal<RowSet<Row>> promise);
+  protected abstract void readCursor(CursorImpl cursor, String id, boolean suspended, TupleBase params, int count, PromiseInternal<RowSet<Row>> promise);
 
   @Override
   public final PreparedQuery<RowSet<Row>> query() {
@@ -179,7 +179,7 @@ public abstract class PreparedStatementBase implements PreparedStatement {
 
   @Override
   public final Cursor cursor(Tuple args) {
-    return new CursorImpl(this, conn, context, autoCommit, (TupleInternal) args);
+    return new CursorImpl(this, conn, context, autoCommit, (TupleBase) args);
   }
 
   @Override
