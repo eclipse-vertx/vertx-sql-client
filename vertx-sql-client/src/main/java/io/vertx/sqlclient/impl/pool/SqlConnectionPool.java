@@ -482,16 +482,6 @@ public class SqlConnectionPool {
     }
 
     @Override
-    public int getProcessId() {
-      return conn.getProcessId();
-    }
-
-    @Override
-    public int getSecretKey() {
-      return conn.getSecretKey();
-    }
-
-    @Override
     public Connection unwrap() {
       return conn;
     }

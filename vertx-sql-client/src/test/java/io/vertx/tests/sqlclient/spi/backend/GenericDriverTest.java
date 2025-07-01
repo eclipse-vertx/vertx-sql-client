@@ -118,14 +118,6 @@ public class GenericDriverTest {
                 promise.succeed();
               }
               @Override
-              public int getProcessId() {
-                return 0;
-              }
-              @Override
-              public int getSecretKey() {
-                return 0;
-              }
-              @Override
               public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
                 if (cmd instanceof SimpleQueryCommand) {
                   SimpleQueryCommand simpleQueryCmd = (SimpleQueryCommand) cmd;

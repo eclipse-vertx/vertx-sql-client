@@ -115,12 +115,14 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
 
   @Override
   public int processId() {
-    return conn.getProcessId();
+    PgSocketConnection actual = (PgSocketConnection) conn.unwrap();
+    return actual.getProcessId();
   }
 
   @Override
   public int secretKey() {
-    return conn.getSecretKey();
+    PgSocketConnection actual = (PgSocketConnection) conn.unwrap();
+    return actual.getSecretKey();
   }
 
   @Override

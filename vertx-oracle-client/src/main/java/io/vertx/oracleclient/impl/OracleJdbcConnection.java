@@ -141,17 +141,7 @@ public class OracleJdbcConnection implements Connection {
       context.runOnContext(v -> close(holder, promise));
     }
   }
-
-  @Override
-  public int getProcessId() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getSecretKey() {
-    throw new UnsupportedOperationException();
-  }
-
+  
   public Future<Void> afterAcquire() {
     PromiseInternal<Void> promise = context.owner().promise();
     context.<Void>executeBlocking(() -> {

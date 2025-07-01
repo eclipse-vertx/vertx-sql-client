@@ -171,16 +171,6 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   @Override
-  public int getProcessId() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
-  public int getSecretKey() {
-    throw new UnsupportedOperationException();
-  }
-
-  @Override
   public void close(Holder holder, Completable<Void> promise) {
     if (Vertx.currentContext() == context) {
       Channel ch = socket.channelHandlerContext().channel();

@@ -63,10 +63,6 @@ public interface Connection extends CommandScheduler  {
 
   void close(Holder holder, Completable<Void> promise);
 
-  int getProcessId();
-
-  int getSecretKey();
-
   /**
    * The connection holder that handles connection interactions with the outer world, e.g. handling an event.
    */

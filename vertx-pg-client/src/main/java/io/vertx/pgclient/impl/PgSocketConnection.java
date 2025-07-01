@@ -125,12 +125,10 @@ public class PgSocketConnection extends SocketConnectionBase {
     }
   }
 
-  @Override
   public int getProcessId() {
     return processId;
   }
 
-  @Override
   public int getSecretKey() {
     return secretKey;
   }
