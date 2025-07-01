@@ -34,11 +34,8 @@ import io.vertx.sqlclient.internal.RowDesc;
 
 public class DB2RowImpl extends RowBase {
 
-  private final RowDesc rowDesc;
-
   public DB2RowImpl(RowDesc rowDesc) {
-    super(rowDesc.columnNames().size());
-    this.rowDesc = rowDesc;
+    super(rowDesc);
   }
 
   @Override
@@ -83,22 +80,13 @@ public class DB2RowImpl extends RowBase {
   }
 
   @Override
-  public String getColumnName(int pos) {
-    List<String> columnNames = rowDesc.columnNames();
-    return pos < 0 || columnNames.size() - 1 < pos ? null : columnNames.get(pos);
-  }
-
-  @Override
   public int getColumnIndex(String name) {
-    if (name == null) {
-      throw new NullPointerException();
-    }
-    int idx = rowDesc.columnIndex(name);
+    int idx = super.getColumnIndex(name);
     if (idx >= 0) {
       return idx;
     }
     // Unless the column is renamed in the SQL query, the column name will be uppercase
-    return rowDesc.columnIndex(name.toUpperCase());
+    return super.getColumnIndex(name.toUpperCase());
   }
 
   @Override

@@ -28,11 +28,8 @@ import java.util.UUID;
 
 public class MySQLRowImpl extends RowBase {
 
-  private final MySQLRowDesc rowDesc;
-
   public MySQLRowImpl(MySQLRowDesc rowDesc) {
-    super(rowDesc.columnNames().size());
-    this.rowDesc = rowDesc;
+    super(rowDesc);
   }
 
   @Override
@@ -90,20 +87,6 @@ public class MySQLRowImpl extends RowBase {
     } else {
       throw new UnsupportedOperationException("Unsupported type " + type.getName());
     }
-  }
-
-  @Override
-  public String getColumnName(int pos) {
-    List<String> columnNames = rowDesc.columnNames();
-    return pos < 0 || columnNames.size() - 1 < pos ? null : columnNames.get(pos);
-  }
-
-  @Override
-  public int getColumnIndex(String name) {
-    if (name == null) {
-      throw new NullPointerException();
-    }
-    return rowDesc.columnNames().indexOf(name);
   }
 
   @Override
@@ -241,7 +224,7 @@ public class MySQLRowImpl extends RowBase {
 
   @Override
   public LocalTime getLocalTime(int pos) {
-    ColumnDefinition columnDefinition = rowDesc.get(pos);
+    ColumnDefinition columnDefinition = ((MySQLRowDesc)desc).get(pos);
     Object val = getValue(pos);
     if (columnDefinition.type() == DataType.TIME && val instanceof Duration) {
       // map MySQL TIME data type to java.time.LocalTime

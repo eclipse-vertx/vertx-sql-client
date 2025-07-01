@@ -33,30 +33,12 @@ import java.util.UUID;
 
 public class RowImpl extends RowBase {
 
-  private final RowDesc desc;
-
   public RowImpl(RowDesc desc) {
-    super(desc.columnNames().size());
-    this.desc = desc;
+    super(desc);
   }
 
   public RowImpl(RowImpl row) {
-    super(row);
-    this.desc = row.desc;
-  }
-
-  @Override
-  public String getColumnName(int pos) {
-    List<String> columnNames = desc.columnNames();
-    return pos < 0 || columnNames.size() - 1 < pos ? null : columnNames.get(pos);
-  }
-
-  @Override
-  public int getColumnIndex(String name) {
-    if (name == null) {
-      throw new NullPointerException();
-    }
-    return desc.columnNames().indexOf(name);
+    super(row.desc, row);
   }
 
   @Override

@@ -34,13 +34,6 @@ import static org.junit.Assert.*;
 
 public class GenericDriverTest {
 
-  private static class GenericRowDesc extends RowDesc {
-    public GenericRowDesc(ColumnDescriptor[] columnDescriptors) {
-      super(columnDescriptors);
-    }
-  }
-
-
   private static class VarcharColumnDescriptor implements ColumnDescriptor {
 
     private final String name;
@@ -64,31 +57,6 @@ public class GenericDriverTest {
     @Override
     public JDBCType jdbcType() {
       return JDBCType.VARCHAR;
-    }
-  }
-
-  private static class GenericRow extends RowBase {
-    public GenericRow() {
-      super(10);
-    }
-    @Override
-    public String getColumnName(int pos) {
-      switch (pos) {
-        case 0:
-          return "value";
-        default:
-          return null;
-      }
-    }
-
-    @Override
-    public int getColumnIndex(String column) {
-      switch (column) {
-        case "value":
-          return 0;
-        default:
-          return -1;
-      }
     }
   }
 
@@ -171,11 +139,12 @@ public class GenericDriverTest {
                 Collector<Row, A, T> collector = (Collector<Row, A, T>) simpleQuery.collector();
                 A container = collector.supplier().get();
                 BiConsumer<A, Row> accumulator = collector.accumulator();
-                Row row = new GenericRow();
+                RowDesc rowDesc = new RowDesc(new ColumnDescriptor[]{new VarcharColumnDescriptor("value")});
+                Row row = new RowBase(rowDesc);
                 row.addValue("Hello " + simpleQuery.sql());
                 accumulator.accept(container, row);
                 T result = collector.finisher().apply(container);
-                qrh.handleResult(0, 1, new GenericRowDesc(new ColumnDescriptor[] { new VarcharColumnDescriptor("value") })
+                qrh.handleResult(0, 1, rowDesc
                   , result, null);
                 handler.succeed(true);
               }

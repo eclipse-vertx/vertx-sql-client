@@ -25,25 +25,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class MSSQLRowImpl extends RowBase {
-  private final RowDesc rowDesc;
 
   public MSSQLRowImpl(RowDesc rowDesc) {
-    super(rowDesc.columnNames().size());
-    this.rowDesc = rowDesc;
-  }
-
-  @Override
-  public String getColumnName(int pos) {
-    List<String> columnNames = rowDesc.columnNames();
-    return pos < 0 || columnNames.size() - 1 < pos ? null : columnNames.get(pos);
-  }
-
-  @Override
-  public int getColumnIndex(String column) {
-    if (column == null) {
-      throw new IllegalArgumentException("Column name can not be null");
-    }
-    return rowDesc.columnNames().indexOf(column);
+    super(rowDesc);
   }
 
   @Override
