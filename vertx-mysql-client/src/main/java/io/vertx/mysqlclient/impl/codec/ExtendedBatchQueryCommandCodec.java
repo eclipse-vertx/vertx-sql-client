@@ -17,7 +17,7 @@ import io.vertx.mysqlclient.MySQLBatchException;
 import io.vertx.mysqlclient.MySQLException;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.impl.connection.CommandResponse;
+import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import java.util.BitSet;

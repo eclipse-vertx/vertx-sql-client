@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.sqlclient.impl.connection;
+package io.vertx.sqlclient.codec;
 
 import io.vertx.core.Completable;
 import io.vertx.core.Future;

@@ -18,9 +18,9 @@ package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.TupleInternal;
-import io.vertx.sqlclient.impl.connection.InvalidCachedStatementEvent;
+import io.vertx.sqlclient.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.internal.RowDesc;
-import io.vertx.sqlclient.impl.connection.CommandResponse;
+import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 public class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {

@@ -36,11 +36,11 @@ import io.vertx.mysqlclient.impl.codec.MySQLPacketDecoder;
 import io.vertx.mysqlclient.impl.codec.MySQLPreparedStatement;
 import io.vertx.mysqlclient.impl.command.InitialHandshakeCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.impl.connection.CommandMessage;
+import io.vertx.sqlclient.codec.CommandMessage;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.impl.connection.SocketConnectionBase;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
@@ -138,12 +138,6 @@ public class MySQLSocketConnection extends SocketConnectionBase {
       clearCachedStatements();
     } else {
       super.handleMessage(msg);
-    }
-  }
-
-  private void clearCachedStatements() {
-    if (this.psCache != null) {
-      this.psCache.clear();
     }
   }
 

@@ -13,7 +13,7 @@ package io.vertx.mssqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
-import io.vertx.sqlclient.impl.connection.CommandResponse;
+import io.vertx.sqlclient.codec.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;

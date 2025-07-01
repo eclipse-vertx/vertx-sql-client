@@ -28,7 +28,7 @@ import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.CachingSha2Authenticator;
 import io.vertx.mysqlclient.impl.util.Native41Authenticator;
 import io.vertx.sqlclient.spi.connection.Connection;
-import io.vertx.sqlclient.impl.connection.CommandResponse;
+import io.vertx.sqlclient.codec.CommandResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;

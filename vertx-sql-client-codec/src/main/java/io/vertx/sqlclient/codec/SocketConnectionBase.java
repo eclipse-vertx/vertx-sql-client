@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.impl.connection;
+package io.vertx.sqlclient.codec;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -31,6 +31,7 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.codec.impl.PreparedStatementCache;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
@@ -442,5 +443,11 @@ public abstract class SocketConnectionBase implements Connection {
 
   public void resumePipeline() {
     this.paused = false;
+  }
+
+  protected void clearCachedStatements() {
+    if (this.psCache != null) {
+      this.psCache.clear();
+    }
   }
 }

@@ -16,7 +16,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.mysqlclient.impl.command.AuthenticationCommandBase;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.mysqlclient.impl.util.RsaPublicKeyEncryptor;
-import io.vertx.sqlclient.impl.connection.CommandResponse;
+import io.vertx.sqlclient.codec.CommandResponse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;

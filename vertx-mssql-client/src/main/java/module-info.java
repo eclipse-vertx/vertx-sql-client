@@ -6,6 +6,7 @@ module io.vertx.sql.client.mssql {
   requires io.netty.handler;
   requires io.netty.transport;
   requires io.vertx.sql.client;
+  requires io.vertx.sql.client.codec;
   requires io.vertx.core;
   requires io.vertx.core.logging;
   requires java.sql;

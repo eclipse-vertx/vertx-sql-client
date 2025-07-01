@@ -17,7 +17,7 @@ import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.sqlclient.spi.connection.Connection;
-import io.vertx.sqlclient.impl.connection.SocketConnectionBase;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 
 import java.nio.charset.Charset;
 import java.util.Map;

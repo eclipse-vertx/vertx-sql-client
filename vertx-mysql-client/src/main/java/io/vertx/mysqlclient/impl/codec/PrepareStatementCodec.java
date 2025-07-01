@@ -23,7 +23,7 @@ import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.impl.connection.CommandResponse;
+import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;

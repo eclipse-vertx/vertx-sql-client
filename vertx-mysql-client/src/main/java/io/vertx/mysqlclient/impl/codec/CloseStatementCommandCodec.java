@@ -14,7 +14,7 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
-import io.vertx.sqlclient.impl.connection.CommandResponse;
+import io.vertx.sqlclient.codec.CommandResponse;
 
 class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementCommand> {
   private static final int PAYLOAD_LENGTH = 5;

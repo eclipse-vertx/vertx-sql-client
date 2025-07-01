@@ -25,7 +25,7 @@ import io.netty.handler.codec.DecoderException;
 import io.vertx.core.Promise;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.pgclient.impl.codec.PgProtocolConstants;
-import io.vertx.sqlclient.impl.connection.SocketConnectionBase;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.core.VertxException;
 
 public class InitiateSslHandler extends ChannelInboundHandlerAdapter {

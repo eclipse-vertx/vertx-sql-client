@@ -21,7 +21,7 @@ import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.mssqlclient.MSSQLInfo;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.spi.connection.Connection;
-import io.vertx.sqlclient.impl.connection.SocketConnectionBase;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 
