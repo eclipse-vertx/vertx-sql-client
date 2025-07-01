@@ -22,7 +22,7 @@ import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
-import io.vertx.sqlclient.impl.CommandResponse;
+import io.vertx.sqlclient.impl.connection.CommandResponse;
 
 class CloseCursorCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
 

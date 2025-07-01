@@ -15,7 +15,7 @@
  *
  */
 
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.impl.connection;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
@@ -31,8 +31,6 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.impl.cache.PreparedStatementCache;
-import io.vertx.sqlclient.impl.codec.InvalidCachedStatementEvent;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.spi.DatabaseMetadata;

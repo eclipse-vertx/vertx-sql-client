@@ -30,8 +30,8 @@ module io.vertx.sql.client {
   exports io.vertx.sqlclient.impl to
     io.vertx.tests.sql.client, io.vertx.tests.sql.client.pg, io.vertx.tests.sql.client.mysql, io.vertx.tests.sql.client.templates,
     io.vertx.sql.client.pg, io.vertx.sql.client.mysql, io.vertx.sql.client.mssql, io.vertx.sql.client.db2, io.vertx.sql.client.oracle, io.vertx.sql.client.templates;
+  exports io.vertx.sqlclient.impl.connection to io.vertx.sql.client.db2, io.vertx.sql.client.mssql, io.vertx.sql.client.mysql, io.vertx.sql.client.oracle, io.vertx.sql.client.pg, io.vertx.sql.client.templates, io.vertx.tests.sql.client, io.vertx.tests.sql.client.mysql, io.vertx.tests.sql.client.pg, io.vertx.tests.sql.client.templates;
   exports io.vertx.sqlclient.impl.codec to io.vertx.sql.client.pg, io.vertx.tests.sql.client.pg, io.vertx.sql.client.mysql, io.vertx.sql.client.mssql, io.vertx.sql.client.db2;
-  exports io.vertx.sqlclient.impl.cache to io.vertx.tests.sql.client, io.vertx.sql.client.mysql, io.vertx.sql.client.mssql, io.vertx.sql.client.db2;
   exports io.vertx.sqlclient.impl.tracing to io.vertx.tests.sql.client;
   exports io.vertx.sqlclient.impl.pool;
   exports io.vertx.sqlclient.spi.protocol;

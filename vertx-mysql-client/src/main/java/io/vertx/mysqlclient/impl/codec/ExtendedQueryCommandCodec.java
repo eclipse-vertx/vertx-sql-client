@@ -19,7 +19,7 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.CommandResponse;
+import io.vertx.sqlclient.impl.connection.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;

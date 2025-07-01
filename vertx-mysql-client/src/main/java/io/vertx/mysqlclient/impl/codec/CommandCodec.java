@@ -30,12 +30,12 @@ import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
-import io.vertx.sqlclient.impl.CommandMessage;
+import io.vertx.sqlclient.impl.connection.CommandMessage;
 import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
-import io.vertx.sqlclient.impl.CommandResponse;
+import io.vertx.sqlclient.impl.connection.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 

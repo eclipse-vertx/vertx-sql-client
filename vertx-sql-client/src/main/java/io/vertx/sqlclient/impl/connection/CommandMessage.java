@@ -8,7 +8,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
-package io.vertx.sqlclient.impl;
+package io.vertx.sqlclient.impl.connection;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Completable;

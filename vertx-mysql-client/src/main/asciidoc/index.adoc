@@ -244,7 +244,7 @@ Currently, the client supports the following parameter keys (case-insensitive):
 * `user`
 * `password`
 * `schema`
-* `socket`
+* `connection`
 * `useAffectedRows`
 
 NOTE: Configuring parameters in connection URI will override the default properties.

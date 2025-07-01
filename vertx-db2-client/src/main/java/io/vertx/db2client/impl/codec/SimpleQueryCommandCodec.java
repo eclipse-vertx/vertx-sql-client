@@ -23,7 +23,7 @@ import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.db2client.impl.drda.Section;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.impl.CommandResponse;
+import io.vertx.sqlclient.impl.connection.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {

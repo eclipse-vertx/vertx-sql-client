@@ -1,6 +1,6 @@
 package io.vertx.tests.sqlclient;
 
-import io.vertx.sqlclient.impl.cache.LruCache;
+import io.vertx.sqlclient.impl.connection.LruCache;
 import org.junit.Test;
 
 import java.util.List;

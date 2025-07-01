@@ -9,7 +9,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
-package io.vertx.sqlclient.impl.cache;
+package io.vertx.sqlclient.impl.connection;
 
 import java.util.*;
 

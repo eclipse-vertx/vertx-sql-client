@@ -1,4 +1,4 @@
-package io.vertx.sqlclient.impl.codec;
+package io.vertx.sqlclient.impl.connection;
 
 /**
  * An event signals when a cached prepared statement is invalid and needs to be evicted from the cache.

@@ -15,7 +15,7 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.mssqlclient.impl.MSSQLDatabaseMetadata;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.mssqlclient.impl.command.PreLoginResponse;
-import io.vertx.sqlclient.impl.CommandResponse;
+import io.vertx.sqlclient.impl.connection.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_OFF;
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_ON;
