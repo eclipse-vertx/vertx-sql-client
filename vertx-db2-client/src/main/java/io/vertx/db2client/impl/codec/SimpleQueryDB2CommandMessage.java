@@ -26,11 +26,11 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
-class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
+class SimpleQueryDB2CommandMessage<T> extends QueryDB2CommandBaseMessage<T, SimpleQueryCommand<T>> {
 
   private Section querySection;
 
-  SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd) {
+  SimpleQueryDB2CommandMessage(SimpleQueryCommand<T> cmd) {
     super(cmd);
   }
 

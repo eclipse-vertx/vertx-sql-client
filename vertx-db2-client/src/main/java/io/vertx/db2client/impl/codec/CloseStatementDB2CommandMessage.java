@@ -19,9 +19,9 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 import io.vertx.sqlclient.codec.CommandResponse;
 
-class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementCommand> {
+class CloseStatementDB2CommandMessage extends DB2CommandMessage<Void, CloseStatementCommand> {
 
-  CloseStatementCommandCodec(CloseStatementCommand cmd) {
+  CloseStatementDB2CommandMessage(CloseStatementCommand cmd) {
     super(cmd);
   }
 

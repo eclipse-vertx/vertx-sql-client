@@ -26,9 +26,9 @@ import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 
-class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
+class PrepareStatementDB2CommandMessage extends DB2CommandMessage<PreparedStatement, PrepareStatementCommand> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementCodec.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PrepareStatementDB2CommandMessage.class);
 
   private static enum CommandHandlerState {
     INIT, HANDLING_PARAM_COLUMN_DEFINITION,
@@ -42,7 +42,7 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
   private ColumnMetaData rowDesc;
   private Section section;
 
-  PrepareStatementCodec(PrepareStatementCommand cmd) {
+  PrepareStatementDB2CommandMessage(PrepareStatementCommand cmd) {
     super(cmd);
   }
 

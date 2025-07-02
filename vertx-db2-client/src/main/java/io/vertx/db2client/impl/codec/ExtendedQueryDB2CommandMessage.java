@@ -22,11 +22,11 @@ import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
-public class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+public class ExtendedQueryDB2CommandMessage<R> extends ExtendedQueryDB2CommandBaseMessage<R, ExtendedQueryCommand<R>> {
 
   final QueryInstance queryInstance;
 
-  public ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd, DB2PreparedStatement statement) {
+  public ExtendedQueryDB2CommandMessage(ExtendedQueryCommand<R> cmd, DB2PreparedStatement statement) {
     super(cmd, statement);
     queryInstance = statement.getQueryInstance(cmd.cursorId());
   }

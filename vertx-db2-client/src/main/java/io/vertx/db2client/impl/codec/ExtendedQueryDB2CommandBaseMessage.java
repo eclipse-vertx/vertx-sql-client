@@ -30,12 +30,12 @@ import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
-abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R>>
-    extends QueryCommandBaseCodec<R, C> {
+abstract class ExtendedQueryDB2CommandBaseMessage<R, C extends ExtendedQueryCommand<R>>
+    extends QueryDB2CommandBaseMessage<R, C> {
 
   final DB2PreparedStatement statement;
 
-  ExtendedQueryCommandBaseCodec(C cmd, DB2PreparedStatement statement) {
+  ExtendedQueryDB2CommandBaseMessage(C cmd, DB2PreparedStatement statement) {
     super(cmd);
     this.statement = statement;
     this.columnDefinitions = statement.rowDesc.columnDefinitions();

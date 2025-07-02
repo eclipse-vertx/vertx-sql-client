@@ -24,12 +24,12 @@ import io.vertx.db2client.impl.drda.DRDAConstants;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.codec.CommandResponse;
 
-class PingCommandCodec extends CommandCodec<Void, PingCommand> {
+class PingDB2CommandMessage extends DB2CommandMessage<Void, PingCommand> {
 
   // Use an isolated metadata instance since we will flow a new EXCSAT
   private final ConnectionMetaData md = new ConnectionMetaData();
 
-  PingCommandCodec(PingCommand cmd) {
+  PingDB2CommandMessage(PingCommand cmd) {
     super(cmd);
   }
 

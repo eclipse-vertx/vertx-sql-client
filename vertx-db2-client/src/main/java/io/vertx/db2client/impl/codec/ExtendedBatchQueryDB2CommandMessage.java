@@ -31,15 +31,15 @@ import io.vertx.sqlclient.internal.TupleBase;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
-public class ExtendedBatchQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
+public class ExtendedBatchQueryDB2CommandMessage<R> extends ExtendedQueryDB2CommandBaseMessage<R, ExtendedQueryCommand<R>> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ExtendedBatchQueryCommandCodec.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ExtendedBatchQueryDB2CommandMessage.class);
 
   private final List<TupleBase> params;
   private final List<QueryInstance> queryInstances;
   private final String baseCursorId;
 
-  public ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<R> cmd, DB2PreparedStatement statement) {
+  public ExtendedBatchQueryDB2CommandMessage(ExtendedQueryCommand<R> cmd, DB2PreparedStatement statement) {
     super(cmd, statement);
     params = cmd.paramsList();
     queryInstances = new ArrayList<>(params.size());

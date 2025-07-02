@@ -35,7 +35,7 @@ import io.vertx.sqlclient.codec.CommandResponse;
  * always EBCDIC, but the second two are EBCDIC for Db2 LUW and UTF8 for Db2/z
  *
  */
-class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitialHandshakeCommand> {
+class InitialHandshakeDB2CommandMessage extends AuthenticationDB2CommandBaseMessage<Connection, InitialHandshakeCommand> {
 
   private static enum ConnectionState {
     CONNECTING, AUTHENTICATING, CONNECTED, CONNECT_FAILED
@@ -45,7 +45,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
   private ConnectionState status = ConnectionState.CONNECTING;
 
-  InitialHandshakeCommandCodec(InitialHandshakeCommand cmd) {
+  InitialHandshakeDB2CommandMessage(InitialHandshakeCommand cmd) {
     super(cmd);
   }
 

@@ -30,12 +30,12 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
 
   public static final Logger LOG = LoggerFactory.getLogger(DB2Encoder.class);
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight;
+  private final ArrayDeque<DB2CommandMessage<?, ?>> inflight;
   ChannelHandlerContext chctx;
 
   final DB2SocketConnection socketConnection;
 
-  DB2Encoder(ArrayDeque<CommandCodec<?, ?>> inflight, DB2SocketConnection db2SocketConnection) {
+  DB2Encoder(ArrayDeque<DB2CommandMessage<?, ?>> inflight, DB2SocketConnection db2SocketConnection) {
     this.inflight = inflight;
     this.socketConnection = db2SocketConnection;
   }
@@ -47,8 +47,8 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandCodec<?, ?>) {
-      CommandCodec<?, ?> cmd = (CommandCodec<?, ?>) msg;
+    if (msg instanceof DB2CommandMessage<?, ?>) {
+      DB2CommandMessage<?, ?> cmd = (DB2CommandMessage<?, ?>) msg;
       write(cmd);
     } else {
       super.write(ctx, msg, promise);
@@ -56,9 +56,9 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
   }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  void write(CommandCodec<?, ?> msg) {
+  void write(DB2CommandMessage<?, ?> msg) {
     msg.completionHandler = resp -> {
-      CommandCodec<?, ?> c = inflight.poll();
+      DB2CommandMessage<?, ?> c = inflight.poll();
       resp.handler = (Completable) c.handler;
       chctx.fireChannelRead(resp);
     };

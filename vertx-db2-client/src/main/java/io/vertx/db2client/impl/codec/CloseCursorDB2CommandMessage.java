@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (C) 2020 IBM Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,34 @@
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
+import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
-import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
+import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
+import io.vertx.sqlclient.codec.CommandResponse;
 
-class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionCommand> {
+class CloseCursorDB2CommandMessage extends DB2CommandMessage<Void, CloseCursorCommand> {
 
-  CloseConnectionCommandCodec(CloseConnectionCommand cmd) {
+  private static final Logger LOG = LoggerFactory.getLogger(CloseCursorDB2CommandMessage.class);
+
+  CloseCursorDB2CommandMessage(CloseCursorCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encode(DB2Encoder encoder) {
     super.encode(encoder);
+    DB2PreparedStatement statement = (DB2PreparedStatement) cmd.statement();
+    if (LOG.isDebugEnabled())
+      LOG.debug("Close cursor with id=" + cmd.id());
+    QueryInstance query = statement.getQueryInstance(cmd.id());
+    statement.closeQuery(query);
+
     ByteBuf packet = allocateBuffer();
     DRDAQueryRequest closeCursor = new DRDAQueryRequest(packet, encoder.socketConnection.connMetadata);
-    closeCursor.buildRDBCMM();
+    closeCursor.buildCLSQRY(statement.section, encoder.socketConnection.connMetadata.databaseName, query.queryInstanceId);
     closeCursor.completeCommand();
     sendNonSplitPacket(packet);
   }
@@ -39,7 +51,7 @@ class CloseConnectionCommandCodec extends CommandCodec<Void, CloseConnectionComm
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
     DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload, encoder.socketConnection.connMetadata);
-    closeCursor.readLocalCommit();
-    encoder.chctx.channel().close();
+    closeCursor.readCursorClose();
+    completionHandler.handle(CommandResponse.success(null));
   }
 }

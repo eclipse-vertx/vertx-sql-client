@@ -17,9 +17,9 @@ package io.vertx.db2client.impl.codec;
 
 import io.vertx.db2client.impl.command.AuthenticationCommandBase;
 
-abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommandBase<R>> extends CommandCodec<R, C> {
+abstract class AuthenticationDB2CommandBaseMessage<R, C extends AuthenticationCommandBase<R>> extends DB2CommandMessage<R, C> {
 
-  AuthenticationCommandBaseCodec(C cmd) {
+  AuthenticationDB2CommandBaseMessage(C cmd) {
     super(cmd);
   }
 

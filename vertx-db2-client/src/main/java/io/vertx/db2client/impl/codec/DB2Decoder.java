@@ -31,9 +31,9 @@ class DB2Decoder extends ByteToMessageDecoder {
 
   private static final Logger LOG = LoggerFactory.getLogger(DB2Decoder.class);
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight;
+  private final ArrayDeque<DB2CommandMessage<?, ?>> inflight;
 
-  DB2Decoder(ArrayDeque<CommandCodec<?, ?>> inflight) {
+  DB2Decoder(ArrayDeque<DB2CommandMessage<?, ?>> inflight) {
     this.inflight = inflight;
   }
 
@@ -71,7 +71,7 @@ class DB2Decoder extends ByteToMessageDecoder {
   }
 
   private void decodePayload(ByteBuf payload, int payloadLength) {
-    CommandCodec<?, ?> ctx = inflight.peek();
+    DB2CommandMessage<?, ?> ctx = inflight.peek();
     int startIndex = payload.readerIndex();
     try {
       if (LOG.isDebugEnabled())

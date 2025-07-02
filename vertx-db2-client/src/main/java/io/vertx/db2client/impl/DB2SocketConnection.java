@@ -23,11 +23,11 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
-import io.vertx.db2client.impl.codec.CommandCodec;
+import io.vertx.db2client.impl.codec.DB2CommandMessage;
 import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement;
-import io.vertx.db2client.impl.codec.ExtendedBatchQueryCommandCodec;
-import io.vertx.db2client.impl.codec.ExtendedQueryCommandCodec;
+import io.vertx.db2client.impl.codec.ExtendedBatchQueryDB2CommandMessage;
+import io.vertx.db2client.impl.codec.ExtendedQueryDB2CommandMessage;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -90,15 +90,15 @@ public class DB2SocketConnection extends SocketConnectionBase {
   @Override
   protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
     if (command.isBatch()) {
-      return new ExtendedBatchQueryCommandCodec<>(command, (DB2PreparedStatement) preparedStatement);
+      return new ExtendedBatchQueryDB2CommandMessage<>(command, (DB2PreparedStatement) preparedStatement);
     } else {
-      return new ExtendedQueryCommandCodec(command, (DB2PreparedStatement) preparedStatement);
+      return new ExtendedQueryDB2CommandMessage(command, (DB2PreparedStatement) preparedStatement);
     }
   }
 
   @Override
   protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
-    return CommandCodec.wrap(command);
+    return DB2CommandMessage.wrap(command);
   }
 
   @Override

@@ -21,12 +21,12 @@ import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
-abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
+abstract class QueryDB2CommandBaseMessage<T, C extends QueryCommandBase<T>> extends DB2CommandMessage<Boolean, C> {
 
   protected ColumnMetaData columnDefinitions;
   protected final boolean isQuery;
 
-  QueryCommandBaseCodec(C cmd) {
+  QueryDB2CommandBaseMessage(C cmd) {
     super(cmd);
     this.isQuery = DRDAQueryRequest.isQuery(cmd.sql());
   }

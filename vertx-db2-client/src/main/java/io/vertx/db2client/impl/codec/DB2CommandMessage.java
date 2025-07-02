@@ -28,34 +28,34 @@ import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
-public abstract class CommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
+public abstract class DB2CommandMessage<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
   Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
   public R result;
   DB2Encoder encoder;
 
-  CommandCodec(C cmd) {
+  DB2CommandMessage(C cmd) {
     super(cmd);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  public static CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
-    CommandCodec<?, ?> codec = null;
+  public static DB2CommandMessage<?, ?> wrap(CommandBase<?> cmd) {
+    DB2CommandMessage<?, ?> codec = null;
     if (cmd instanceof InitialHandshakeCommand) {
-      codec = new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
+      codec = new InitialHandshakeDB2CommandMessage((InitialHandshakeCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
-      codec = new SimpleQueryCommandCodec((SimpleQueryCommand) cmd);
+      codec = new SimpleQueryDB2CommandMessage((SimpleQueryCommand) cmd);
     } else if (cmd instanceof CloseConnectionCommand) {
-      codec = new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+      codec = new CloseConnectionDB2CommandMessage((CloseConnectionCommand) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
-      codec = new PrepareStatementCodec((PrepareStatementCommand) cmd);
+      codec = new PrepareStatementDB2CommandMessage((PrepareStatementCommand) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
-      codec = new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+      codec = new CloseStatementDB2CommandMessage((CloseStatementCommand) cmd);
     } else if (cmd instanceof CloseCursorCommand) {
-      codec = new CloseCursorCommandCodec((CloseCursorCommand) cmd);
+      codec = new CloseCursorDB2CommandMessage((CloseCursorCommand) cmd);
     } else if (cmd instanceof PingCommand) {
-      codec = new PingCommandCodec((PingCommand) cmd);
+      codec = new PingDB2CommandMessage((PingCommand) cmd);
 //        } else if (cmd instanceof InitDbCommand) {
 //            codec = new InitDbCommandCodec((InitDbCommand) cmd);
       // } else if (cmd instanceof StatisticsCommand) {
