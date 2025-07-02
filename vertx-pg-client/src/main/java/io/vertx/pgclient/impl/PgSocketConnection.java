@@ -27,10 +27,10 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgException;
-import io.vertx.pgclient.impl.codec.ExtendedQueryCommandCodec;
+import io.vertx.pgclient.impl.codec.ExtendedQueryPgCommandMessage;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.PgCodec;
-import io.vertx.pgclient.impl.codec.PgCommandCodec;
+import io.vertx.pgclient.impl.codec.PgCommandMessage;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.sqlclient.codec.CommandMessage;
 import io.vertx.sqlclient.codec.SocketConnectionBase;
@@ -179,12 +179,12 @@ public class PgSocketConnection extends SocketConnectionBase {
 
   @Override
   protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
-    return new ExtendedQueryCommandCodec<>((ExtendedQueryCommand<?>) command, preparedStatement);
+    return new ExtendedQueryPgCommandMessage<>((ExtendedQueryCommand<?>) command, preparedStatement);
   }
 
   @Override
   protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
-    return PgCommandCodec.wrap(command);
+    return PgCommandMessage.wrap(command);
   }
 
   @Override

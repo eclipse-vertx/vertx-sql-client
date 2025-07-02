@@ -14,7 +14,6 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.vertx.core.Completable;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 import io.vertx.sqlclient.codec.CommandResponse;
 
@@ -41,8 +40,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandCodec<?, ?>) {
-      CommandCodec<?, ?> cmd = (CommandCodec<?, ?>) msg;
+    if (msg instanceof MySQLCommand<?, ?>) {
+      MySQLCommand<?, ?> cmd = (MySQLCommand<?, ?>) msg;
       write(cmd);
       codec.checkFireAndForgetCommands();
     } else {
@@ -50,15 +49,13 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     }
   }
 
-  void write(CommandCodec<?, ?> cmd) {
-    if (codec.add(cmd)) {
-      cmd.encode(this);
-    }
+  void write(MySQLCommand<?, ?> cmd) {
+    codec.add(cmd);
+    cmd.encode(this);
   }
 
   final void fireCommandResponse(CommandResponse<?> commandResponse) {
-    CommandCodec<?, ?> c = codec.poll();
-    commandResponse.handler = (Completable) c.handler;
+    codec.poll();
     chctx.fireChannelRead(commandResponse);
   }
 }

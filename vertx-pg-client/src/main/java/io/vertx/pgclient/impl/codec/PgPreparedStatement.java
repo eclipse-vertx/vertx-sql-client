@@ -23,7 +23,7 @@ import io.vertx.sqlclient.internal.TupleBase;
 class PgPreparedStatement implements PreparedStatement {
 
   final String sql;
-  final Bind bind;
+  final BindMessage bind;
   final PgParamDesc paramDesc;
   final PgRowDescriptor rowDesc;
   final boolean cached;
@@ -32,7 +32,7 @@ class PgPreparedStatement implements PreparedStatement {
     this.paramDesc = paramDesc;
     this.rowDesc = rowDesc;
     this.sql = sql;
-    this.bind = new Bind(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : PgColumnDesc.EMPTY_COLUMNS);
+    this.bind = new BindMessage(statement, paramDesc != null ? paramDesc.paramDataTypes() : null, rowDesc != null ? rowDesc.columns : PgColumnDesc.EMPTY_COLUMNS);
     this.cached = cached;
   }
 

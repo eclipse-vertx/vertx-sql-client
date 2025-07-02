@@ -40,8 +40,8 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof MSSQLCommandCodec<?, ?>) {
-      MSSQLCommandCodec<?, ?> cmd = (MSSQLCommandCodec<?, ?>) msg;
+    if (msg instanceof MSSQLCommandMessage<?, ?>) {
+      MSSQLCommandMessage<?, ?> cmd = (MSSQLCommandMessage<?, ?>) msg;
       cmd.tdsMessageCodec = tdsMessageCodec;
       write(cmd);
     } else {
@@ -49,10 +49,9 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
     }
   }
 
-  void write(MSSQLCommandCodec<?, ?> cmd) {
-    if (tdsMessageCodec.add(cmd)) {
-      cmd.encode();
-    }
+  void write(MSSQLCommandMessage<?, ?> cmd) {
+    tdsMessageCodec.add(cmd);
+    cmd.encode();
   }
 
   public int packetSize() {

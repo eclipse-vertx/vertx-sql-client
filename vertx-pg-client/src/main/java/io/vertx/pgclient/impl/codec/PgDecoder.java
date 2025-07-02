@@ -47,8 +47,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   void fireCommandResponse(CommandResponse<?> commandResponse) {
-    PgCommandCodec<?, ?> c = codec.poll();
-    commandResponse.handler = (Completable) c.handler;
+    PgCommandMessage<?, ?> c = codec.poll();
     chctx.fireChannelRead(commandResponse);
   }
 
@@ -203,8 +202,8 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   }
 
   private void decodeDataRow(ByteBuf in) {
-    PgCommandCodec<?, ?> cmdCodec = codec.peek();
-    QueryCommandBaseCodec<?, ?> cmd = (QueryCommandBaseCodec<?, ?>) cmdCodec;
+    PgCommandMessage<?, ?> cmdCodec = codec.peek();
+    QueryBasePgCommandMessage<?, ?> cmd = (QueryBasePgCommandMessage<?, ?>) cmdCodec;
     int len = in.readUnsignedShort();
     cmd.rowDecoder.handleRow(len, in);
   }
@@ -253,7 +252,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     decodeErrorOrNotice(response, in);
     switch (response.getCode()) {
       default:
-        PgCommandCodec<?, ?> cmd = codec.peek();
+        PgCommandMessage<?, ?> cmd = codec.peek();
         if (cmd != null) {
           cmd.handleErrorResponse(response);
         }
@@ -361,7 +360,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
 
   private void decodeAuthentication(ByteBuf in) {
     int type = in.readInt();
-    PgCommandCodec<?, ?> pending = codec.peek();
+    PgCommandMessage<?, ?> pending = codec.peek();
     switch (type) {
       case PgProtocolConstants.AUTHENTICATION_TYPE_OK: {
         pending.handleAuthenticationOk();

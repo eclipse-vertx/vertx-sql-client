@@ -30,12 +30,12 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
 
   public static final Logger LOG = LoggerFactory.getLogger(DB2Encoder.class);
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight;
+  private final ArrayDeque<DB2CommandMessage<?, ?>> inflight;
   ChannelHandlerContext chctx;
 
   final DB2SocketConnection socketConnection;
 
-  DB2Encoder(ArrayDeque<CommandCodec<?, ?>> inflight, DB2SocketConnection db2SocketConnection) {
+  DB2Encoder(ArrayDeque<DB2CommandMessage<?, ?>> inflight, DB2SocketConnection db2SocketConnection) {
     this.inflight = inflight;
     this.socketConnection = db2SocketConnection;
   }
@@ -47,27 +47,41 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandCodec<?, ?>) {
-      CommandCodec<?, ?> cmd = (CommandCodec<?, ?>) msg;
+    if (msg instanceof DB2CommandMessage<?, ?>) {
+      DB2CommandMessage<?, ?> cmd = (DB2CommandMessage<?, ?>) msg;
       write(cmd);
     } else {
       super.write(ctx, msg, promise);
     }
   }
 
+  void fireCommandFailure(DB2CommandMessage msg, Throwable err) {
+    DB2CommandMessage<?, ?> c = inflight.poll();
+    if (c == msg) {
+      chctx.fireChannelRead(CommandResponse.failure(err));
+    } else {
+      throw new IllegalStateException();
+    }
+  }
+
+  <R> void fireCommandSuccess(DB2CommandMessage msg, R result) {
+    DB2CommandMessage<?, ?> c = inflight.poll();
+    if (c == msg) {
+      chctx.fireChannelRead(CommandResponse.success(result));
+    } else {
+      throw new IllegalStateException();
+    }
+  }
+
   @SuppressWarnings({ "unchecked", "rawtypes" })
-  void write(CommandCodec<?, ?> msg) {
-    msg.completionHandler = resp -> {
-      CommandCodec<?, ?> c = inflight.poll();
-      resp.handler = (Completable) c.handler;
-      chctx.fireChannelRead(resp);
-    };
-    inflight.add(msg);
+  void write(DB2CommandMessage<?, ?> msg) {
     try {
+      inflight.add(msg);
       msg.encode(this);
     } catch (Throwable e) {
+      inflight.pollLast();
       LOG.error("FATAL: Unable to encode command: " + msg, e);
-      msg.completionHandler.handle(CommandResponse.failure(e));
+      chctx.fireChannelRead(CommandResponse.failure(e));
     }
   }
 }

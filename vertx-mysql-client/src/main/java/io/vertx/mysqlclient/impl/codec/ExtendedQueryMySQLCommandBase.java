@@ -1,0 +1,124 @@
+/*
+ * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
+package io.vertx.mysqlclient.impl.codec;
+
+import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.datatype.DataFormat;
+import io.vertx.mysqlclient.impl.datatype.DataType;
+import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
+import io.vertx.mysqlclient.impl.protocol.CommandType;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+
+import static io.vertx.mysqlclient.impl.protocol.Packets.*;
+
+abstract class ExtendedQueryMySQLCommandBase<R, C extends ExtendedQueryCommand<R>> extends QueryMySQLCommandBase<R, C> {
+
+  protected final MySQLPreparedStatement statement;
+
+  ExtendedQueryMySQLCommandBase(C cmd, MySQLPreparedStatement statement) {
+    super(cmd, DataFormat.BINARY);
+    this.statement = statement;
+  }
+
+  @Override
+  protected void handleInitPacket(ByteBuf payload) {
+    // may receive ERR_Packet, OK_Packet, Binary Protocol Resultset
+    int firstByte = payload.getUnsignedByte(payload.readerIndex());
+    if (firstByte == OK_PACKET_HEADER) {
+      OkPacket okPacket = decodeOkPacketPayload(payload);
+      handleSingleResultsetDecodingCompleted(okPacket.serverStatusFlags(), okPacket.affectedRows(), okPacket.lastInsertId());
+    } else if (firstByte == ERROR_PACKET_HEADER) {
+      closePreparedStatement();
+      handleErrorPacketPayload(payload);
+    } else {
+      handleResultsetColumnCountPacketBody(payload);
+    }
+  }
+
+  @Override
+  protected void handleAllResultsetDecodingCompleted() {
+    closePreparedStatement();
+    super.handleAllResultsetDecodingCompleted();
+  }
+
+  protected void closePreparedStatement() {
+    if (statement.closeAfterUsage) {
+      sendCloseStatementCommand(statement);
+    }
+  }
+
+  protected void sendCloseStatementCommand(MySQLPreparedStatement statement) {
+    ByteBuf packet = allocateBuffer(9);
+    // encode packet header
+    packet.writeMediumLE(5);
+    packet.writeByte(0); // sequenceId set to zero
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_CLOSE);
+    packet.writeIntLE((int) statement.statementId);
+
+    sendNonSplitPacket(packet);
+  }
+
+  protected final void sendStatementExecuteCommand(MySQLPreparedStatement statement, boolean sendTypesToServer, Tuple params, byte cursorType) {
+    ByteBuf packet = allocateBuffer();
+    // encode packet header
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
+    packet.writeByte(sequenceId);
+
+    // encode packet payload
+    packet.writeByte(CommandType.COM_STMT_EXECUTE);
+    packet.writeIntLE((int) statement.statementId);
+    packet.writeByte(cursorType);
+    // iteration count, always 1
+    packet.writeIntLE(1);
+
+    int numOfParams = statement.bindingTypes().length;
+    int bitmapLength = (numOfParams + 7) >> 3;
+    byte[] nullBitmap = new byte[bitmapLength];
+
+    int pos = packet.writerIndex();
+
+    if (numOfParams > 0) {
+      // write a dummy bitmap first
+      packet.writeBytes(nullBitmap);
+      packet.writeBoolean(sendTypesToServer);
+
+      if (sendTypesToServer) {
+        for (DataType bindingType : statement.bindingTypes()) {
+          packet.writeByte(bindingType.getColumnType());
+          packet.writeByte(0); // parameter flag: signed
+        }
+      }
+
+      for (int i = 0; i < numOfParams; i++) {
+        Object value = params.getValue(i);
+        if (value != null) {
+          DataTypeCodec.encodeBinary(statement.bindingTypes()[i], value, encoder.encodingCharset, packet);
+        } else {
+          nullBitmap[i >> 3] |= (1 << (i & 7));
+        }
+      }
+
+      // padding null-bitmap content
+      packet.setBytes(pos, nullBitmap);
+    }
+
+    // set payload length
+    int payloadLength = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, payloadLength);
+
+    sendPacket(packet, payloadLength);
+  }
+}

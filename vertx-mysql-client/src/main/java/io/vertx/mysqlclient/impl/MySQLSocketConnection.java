@@ -28,9 +28,9 @@ import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
 import io.vertx.mysqlclient.impl.codec.ClearCachedStatementsEvent;
-import io.vertx.mysqlclient.impl.codec.CommandCodec;
-import io.vertx.mysqlclient.impl.codec.ExtendedBatchQueryCommandCodec;
-import io.vertx.mysqlclient.impl.codec.ExtendedQueryCommandCodec;
+import io.vertx.mysqlclient.impl.codec.MySQLCommand;
+import io.vertx.mysqlclient.impl.codec.ExtendedBatchQueryMySQLCommand;
+import io.vertx.mysqlclient.impl.codec.ExtendedQueryMySQLCommand;
 import io.vertx.mysqlclient.impl.codec.MySQLCodec;
 import io.vertx.mysqlclient.impl.codec.MySQLPacketDecoder;
 import io.vertx.mysqlclient.impl.codec.MySQLPreparedStatement;
@@ -105,15 +105,15 @@ public class MySQLSocketConnection extends SocketConnectionBase {
   @Override
   protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
     if (command.isBatch()) {
-      return new ExtendedBatchQueryCommandCodec<>(command, (MySQLPreparedStatement) preparedStatement);
+      return new ExtendedBatchQueryMySQLCommand<>(command, (MySQLPreparedStatement) preparedStatement);
     } else {
-      return new ExtendedQueryCommandCodec<>(command, (MySQLPreparedStatement) preparedStatement);
+      return new ExtendedQueryMySQLCommand<>(command, (MySQLPreparedStatement) preparedStatement);
     }
   }
 
   @Override
   protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
-    return CommandCodec.wrap(command);
+    return MySQLCommand.wrap(command);
   }
 
   @Override

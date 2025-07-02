@@ -10,31 +10,16 @@
  */
 package io.vertx.sqlclient.codec;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Completable;
-import io.vertx.core.Future;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 
 public class CommandMessage<R, C extends CommandBase<R>> {
 
-  public Completable<R> handler;
+  Completable<R> handler; // Should not leak outside of this package
   public final C cmd;
 
   public CommandMessage(C cmd) {
     this.cmd = cmd;
   }
 
-  public final void fail(Throwable err) {
-    complete(Future.failedFuture(err));
-  }
-
-  public final void fail(String failureMsg) {
-    complete(Future.failedFuture(failureMsg));
-  }
-
-  public final void complete(AsyncResult<R> resp) {
-    if (handler != null) {
-      handler.complete(resp.result(), resp.cause());
-    }
-  }
 }

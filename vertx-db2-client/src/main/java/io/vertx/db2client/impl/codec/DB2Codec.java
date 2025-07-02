@@ -15,10 +15,8 @@
  */
 package io.vertx.db2client.impl.codec;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.db2client.impl.DB2SocketConnection;
-import io.vertx.sqlclient.ClosedConnectionException;
 
 import java.util.ArrayDeque;
 
@@ -27,23 +25,11 @@ public class DB2Codec extends CombinedChannelDuplexHandler<DB2Decoder, DB2Encode
   // TODO @AGG check what packet length limit actually is for DB2
   static final int PACKET_PAYLOAD_LENGTH_LIMIT = 0xFFFFFF;
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight = new ArrayDeque<>();
+  private final ArrayDeque<DB2CommandMessage<?, ?>> inflight = new ArrayDeque<>();
 
   public DB2Codec(DB2SocketConnection db2SocketConnection) {
     DB2Encoder encoder = new DB2Encoder(inflight, db2SocketConnection);
     DB2Decoder decoder = new DB2Decoder(inflight);
     init(decoder, encoder);
-  }
-
-  @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands(ClosedConnectionException.INSTANCE);
-    super.channelInactive(ctx);
-  }
-
-  private void clearInflightCommands(Throwable failure) {
-    for (CommandCodec<?, ?> commandCodec : inflight) {
-      commandCodec.fail(failure);
-    }
   }
 }

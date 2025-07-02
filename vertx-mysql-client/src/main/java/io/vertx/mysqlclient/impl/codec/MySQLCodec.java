@@ -26,9 +26,7 @@ import java.util.Iterator;
 
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight;
-  private ChannelHandlerContext chctx;
-  private Throwable failure;
+  private final ArrayDeque<MySQLCommand<?, ?>> inflight;
 
   public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
     inflight = new ArrayDeque<>();
@@ -37,49 +35,16 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
     init(decoder, encoder);
   }
 
-  @Override
-  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-    chctx = ctx;
-    super.handlerAdded(ctx);
+  public void add(MySQLCommand<?, ?> codec) {
+    inflight.add(codec);
   }
 
-  @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands(ClosedConnectionException.INSTANCE);
-    super.channelInactive(ctx);
-  }
-
-  public boolean add(CommandCodec<?, ?> codec) {
-    if (failure == null) {
-      inflight.add(codec);
-      return true;
-    } else {
-      fail(codec, failure);
-      return false;
-    }
-  }
-
-  public CommandCodec<?, ?> poll() {
+  public MySQLCommand<?, ?> poll() {
     return inflight.poll();
   }
 
-  public CommandCodec<?, ?> peek() {
+  public MySQLCommand<?, ?> peek() {
     return inflight.peek();
-  }
-
-  private void clearInflightCommands(Throwable cause) {
-    for (Iterator<CommandCodec<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
-      CommandCodec<?, ?> codec = it.next();
-      it.remove();
-      fail(codec, cause);
-    }
-  }
-
-  private void fail(CommandCodec<?, ?> codec, Throwable cause) {
-    if (failure == null) {
-      failure = cause;
-      codec.fail(cause);
-    }
   }
 
   /**
@@ -87,9 +52,9 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
    */
   void checkFireAndForgetCommands() {
     // check if there is any completed command
-    CommandCodec<?, ?> commandCodec;
-    while ((commandCodec = inflight.peek()) != null && commandCodec.expectNoResponsePacket()) {
-      commandCodec.decodePayload(null, 0);
+    MySQLCommand<?, ?> commandMsg;
+    while ((commandMsg = inflight.peek()) != null && commandMsg.expectNoResponsePacket()) {
+      commandMsg.decodePayload(null, 0);
     }
   }
 }
