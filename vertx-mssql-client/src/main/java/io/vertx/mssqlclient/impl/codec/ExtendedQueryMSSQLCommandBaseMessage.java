@@ -19,22 +19,22 @@ import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 import static io.vertx.mssqlclient.impl.codec.DataType.*;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
-public abstract class ExtendedQueryCommandBaseCodec<T> extends QueryCommandBaseCodec<T, ExtendedQueryCommand<T>> {
+public abstract class ExtendedQueryMSSQLCommandBaseMessage<T> extends QueryMSSQLCommandBaseMessage<T, ExtendedQueryCommand<T>> {
 
   final MSSQLPreparedStatement ps;
 
-  public ExtendedQueryCommandBaseCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+  public ExtendedQueryMSSQLCommandBaseMessage(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
     super(cmd);
     this.ps = ps;
   }
 
-  public static <U> MSSQLCommandCodec<?, ?> create(ExtendedQueryCommand<U> queryCmd, MSSQLPreparedStatement ps) {
+  public static <U> MSSQLCommandMessage<?, ?> create(ExtendedQueryCommand<U> queryCmd, MSSQLPreparedStatement ps) {
     if (queryCmd.isBatch()) {
-      return new ExtendedBatchQueryCommandCodec<>(queryCmd, ps);
+      return new ExtendedBatchQueryMSSQLCommandMessage<>(queryCmd, ps);
     } else if (queryCmd.cursorId() != null) {
-      return new ExtendedCursorQueryCommandCodec<>(queryCmd, ps);
+      return new ExtendedCursorQueryMSSQLCommandMessage<>(queryCmd, ps);
     } else {
-      return new ExtendedQueryCommandCodec<>(queryCmd, ps);
+      return new ExtendedQueryMSSQLCommandMessage<>(queryCmd, ps);
     }
   }
 

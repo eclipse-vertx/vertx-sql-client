@@ -18,14 +18,14 @@ import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import java.util.List;
 
-class ExtendedBatchQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
+class ExtendedBatchQueryMSSQLCommandMessage<T> extends ExtendedQueryMSSQLCommandBaseMessage<T> {
 
   private final List<TupleBase> paramsList;
 
   private int paramsIdx;
   private int messageDecoded;
 
-  ExtendedBatchQueryCommandCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+  ExtendedBatchQueryMSSQLCommandMessage(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
     super(cmd, ps);
     paramsList = cmd.paramsList();
   }

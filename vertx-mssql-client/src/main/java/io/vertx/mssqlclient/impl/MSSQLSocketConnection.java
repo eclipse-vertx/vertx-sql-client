@@ -27,8 +27,8 @@ import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
-import io.vertx.mssqlclient.impl.codec.ExtendedQueryCommandBaseCodec;
-import io.vertx.mssqlclient.impl.codec.MSSQLCommandCodec;
+import io.vertx.mssqlclient.impl.codec.ExtendedQueryMSSQLCommandBaseMessage;
+import io.vertx.mssqlclient.impl.codec.MSSQLCommandMessage;
 import io.vertx.mssqlclient.impl.codec.MSSQLPreparedStatement;
 import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
@@ -156,12 +156,12 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
 
   @Override
   protected CommandMessage<?, ?> toMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement) {
-    return ExtendedQueryCommandBaseCodec.create(command, (MSSQLPreparedStatement)preparedStatement);
+    return ExtendedQueryMSSQLCommandBaseMessage.create(command, (MSSQLPreparedStatement)preparedStatement);
   }
 
   @Override
   protected CommandMessage<?, ?> toMessage(CommandBase<?> command) {
-    return MSSQLCommandCodec.wrap(command);
+    return MSSQLCommandMessage.wrap(command);
   }
 
   @Override

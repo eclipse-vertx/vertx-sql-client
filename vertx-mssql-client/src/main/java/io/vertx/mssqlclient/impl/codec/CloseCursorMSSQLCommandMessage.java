@@ -18,12 +18,12 @@ import io.vertx.sqlclient.codec.CommandResponse;
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
-public class CloseCursorCommandCodec extends MSSQLCommandCodec<Void, CloseCursorCommand> {
+public class CloseCursorMSSQLCommandMessage extends MSSQLCommandMessage<Void, CloseCursorCommand> {
 
   private CursorData cursorData;
   private boolean cursorClosed;
 
-  public CloseCursorCommandCodec(CloseCursorCommand cmd) {
+  public CloseCursorMSSQLCommandMessage(CloseCursorCommand cmd) {
     super(cmd);
   }
 

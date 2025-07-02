@@ -32,32 +32,32 @@ import static io.vertx.mssqlclient.impl.codec.TokenType.*;
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedByteLengthString;
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedShortLengthString;
 
-public abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
+public abstract class MSSQLCommandMessage<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
   public TdsMessageCodec tdsMessageCodec;
 
   public MSSQLException failure;
   public R result;
 
-  MSSQLCommandCodec(C cmd) {
+  MSSQLCommandMessage(C cmd) {
     super(cmd);
   }
 
-  public static MSSQLCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+  public static MSSQLCommandMessage<?, ?> wrap(CommandBase<?> cmd) {
     if (cmd instanceof PreLoginCommand) {
-      return new PreLoginCommandCodec((PreLoginCommand) cmd);
+      return new PreLoginMSSQLCommandMessage((PreLoginCommand) cmd);
     } else if (cmd instanceof InitCommand) {
-      return new InitCommandCodec((InitCommand) cmd);
+      return new InitMSSQLCommandMessage((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
-      return new SQLBatchCommandCodec<>((SimpleQueryCommand<?>) cmd);
+      return new SQLBatchMSSQLCommandMessage<>((SimpleQueryCommand<?>) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+      return new PrepareStatementMSSQLMessage((PrepareStatementCommand) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
-      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+      return new CloseStatementMSSQLCommandMessage((CloseStatementCommand) cmd);
     } else if (cmd == CloseConnectionCommand.INSTANCE) {
-      return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+      return new CloseConnectionMSSQLCommandMessage((CloseConnectionCommand) cmd);
     } else if (cmd instanceof CloseCursorCommand) {
-      return new CloseCursorCommandCodec((CloseCursorCommand) cmd);
+      return new CloseCursorMSSQLCommandMessage((CloseCursorCommand) cmd);
     } else {
       throw new UnsupportedOperationException();
     }

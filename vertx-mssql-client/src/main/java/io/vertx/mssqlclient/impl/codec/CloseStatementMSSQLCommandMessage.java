@@ -18,9 +18,9 @@ import io.vertx.sqlclient.codec.CommandResponse;
 import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
-class CloseStatementCommandCodec extends MSSQLCommandCodec<Void, CloseStatementCommand> {
+class CloseStatementMSSQLCommandMessage extends MSSQLCommandMessage<Void, CloseStatementCommand> {
 
-  CloseStatementCommandCodec(CloseStatementCommand cmd) {
+  CloseStatementMSSQLCommandMessage(CloseStatementCommand cmd) {
     super(cmd);
   }
 

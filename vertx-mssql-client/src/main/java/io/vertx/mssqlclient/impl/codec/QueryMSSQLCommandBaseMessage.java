@@ -18,12 +18,12 @@ import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.stream.Collector;
 
-abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends MSSQLCommandCodec<Boolean, C> {
+abstract class QueryMSSQLCommandBaseMessage<T, C extends QueryCommandBase<T>> extends MSSQLCommandMessage<Boolean, C> {
 
   protected int rowCount;
   protected RowResultDecoder<?, T> rowResultDecoder;
 
-  QueryCommandBaseCodec(C cmd) {
+  QueryMSSQLCommandBaseMessage(C cmd) {
     super(cmd);
   }
 

@@ -27,11 +27,11 @@ import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedShortLeng
 import static java.nio.charset.StandardCharsets.UTF_16LE;
 import static java.util.Locale.ENGLISH;
 
-class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
+class InitMSSQLCommandMessage extends MSSQLCommandMessage<Connection, InitCommand> {
 
   static final Object LOGIN_SENT = new Object();
 
-  InitCommandCodec(InitCommand cmd) {
+  InitMSSQLCommandMessage(InitCommand cmd) {
     super(cmd);
   }
 

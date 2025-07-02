@@ -19,11 +19,11 @@ import static io.vertx.mssqlclient.impl.codec.DataType.INTN;
 import static io.vertx.mssqlclient.impl.codec.DataType.NVARCHAR;
 import static io.vertx.mssqlclient.impl.codec.MessageType.RPC;
 
-class ExtendedCursorQueryCommandCodec<T> extends ExtendedQueryCommandBaseCodec<T> {
+class ExtendedCursorQueryMSSQLCommandMessage<T> extends ExtendedQueryMSSQLCommandBaseMessage<T> {
 
   private CursorData cursorData;
 
-  ExtendedCursorQueryCommandCodec(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
+  ExtendedCursorQueryMSSQLCommandMessage(ExtendedQueryCommand<T> cmd, MSSQLPreparedStatement ps) {
     super(cmd, ps);
   }
 

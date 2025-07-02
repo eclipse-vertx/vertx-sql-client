@@ -21,13 +21,13 @@ import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_OFF;
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_ON;
 import static io.vertx.mssqlclient.impl.codec.MessageType.PRE_LOGIN;
 
-class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginCommand> {
+class PreLoginMSSQLCommandMessage extends MSSQLCommandMessage<PreLoginResponse, PreLoginCommand> {
 
   private static final int VERSION = 0x00;
   private static final int ENCRYPTION = 0x01;
   private static final int TERMINATOR = 0xFF;
 
-  PreLoginCommandCodec(PreLoginCommand cmd) {
+  PreLoginMSSQLCommandMessage(PreLoginCommand cmd) {
     super(cmd);
   }
 

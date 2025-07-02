@@ -14,7 +14,6 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
-import io.vertx.core.Completable;
 import io.vertx.sqlclient.ClosedConnectionException;
 
 import java.util.ArrayDeque;
@@ -24,7 +23,7 @@ import java.util.Map;
 
 public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDecoder, TdsMessageEncoder> {
 
-  private final ArrayDeque<MSSQLCommandCodec<?, ?>> inflight = new ArrayDeque<>();
+  private final ArrayDeque<MSSQLCommandMessage<?, ?>> inflight = new ArrayDeque<>();
   private final TdsMessageEncoder encoder;
   private final TdsMessageDecoder decoder;
 
@@ -56,15 +55,15 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   private void fail(Throwable cause) {
     if (failure == null) {
       failure = cause;
-      for (Iterator<MSSQLCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
-        MSSQLCommandCodec<?, ?> codec = it.next();
+      for (Iterator<MSSQLCommandMessage<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
+        MSSQLCommandMessage<?, ?> codec = it.next();
         it.remove();
         fail(codec, cause);
       }
     }
   }
 
-  private void fail(MSSQLCommandCodec<?, ?> codec, Throwable cause) {
+  private void fail(MSSQLCommandMessage<?, ?> codec, Throwable cause) {
     codec.fail(cause);
   }
 
@@ -98,15 +97,15 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
     this.transactionDescriptor = transactionDescriptor;
   }
 
-  MSSQLCommandCodec<?, ?> peek() {
+  MSSQLCommandMessage<?, ?> peek() {
     return inflight.peek();
   }
 
-  MSSQLCommandCodec<?, ?> poll() {
+  MSSQLCommandMessage<?, ?> poll() {
     return inflight.poll();
   }
 
-  boolean add(MSSQLCommandCodec<?, ?> codec) {
+  boolean add(MSSQLCommandMessage<?, ?> codec) {
     if (failure == null) {
       inflight.add(codec);
       return true;

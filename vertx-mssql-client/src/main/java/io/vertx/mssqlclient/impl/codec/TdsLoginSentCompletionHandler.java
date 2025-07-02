@@ -21,7 +21,7 @@ import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.ENCRYPT_OFF;
 /**
  * A channel handler which listens to the {@code LOGIN_SENT} user event.
  * <p>
- * This event is triggered by the {@link InitCommandCodec} after the login packet has been sent to the server.
+ * This event is triggered by the {@link InitMSSQLCommandMessage} after the login packet has been sent to the server.
  * This handler removes the {@link SslHandler} from the pipeline if the client and the server agreed to encrypt the login packet only.
  * In this case, further traffic (including the login response) will be unencrypted.
  */
@@ -44,7 +44,7 @@ public class TdsLoginSentCompletionHandler extends ChannelInboundHandlerAdapter 
 
   @Override
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-    if (evt == InitCommandCodec.LOGIN_SENT) {
+    if (evt == InitMSSQLCommandMessage.LOGIN_SENT) {
       pipeline.remove(this);
       if (encryptionLevel == ENCRYPT_OFF) {
         pipeline.remove(sslHandler);

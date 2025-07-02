@@ -18,8 +18,8 @@ import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mssqlclient.impl.codec.MessageType.SQL_BATCH;
 
-class SQLBatchCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
-  SQLBatchCommandCodec(SimpleQueryCommand<T> cmd) {
+class SQLBatchMSSQLCommandMessage<T> extends QueryMSSQLCommandBaseMessage<T, SimpleQueryCommand<T>> {
+  SQLBatchMSSQLCommandMessage(SimpleQueryCommand<T> cmd) {
     super(cmd);
   }
 

@@ -54,7 +54,7 @@ public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
   }
 
   void fireCommandResponse(CommandResponse<?> commandResponse) {
-    MSSQLCommandCodec<?, ?> c = tdsMessageCodec.poll();
+    MSSQLCommandMessage<?, ?> c = tdsMessageCodec.poll();
     commandResponse.handler = (Completable) c.handler;
     chctx.fireChannelRead(commandResponse);
   }
@@ -68,7 +68,7 @@ public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
 
   private void decodeMessage() {
     try {
-      MSSQLCommandCodec<?, ?> commandCodec = tdsMessageCodec.peek();
+      MSSQLCommandMessage<?, ?> commandCodec = tdsMessageCodec.peek();
       if (commandCodec == null) {
         throw new IllegalStateException("No command codec for message of type [" + message.type() + "]");
       }
