@@ -12,36 +12,37 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.command.DebugCommand;
+import io.vertx.mysqlclient.impl.command.StatisticsCommand;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
+import io.vertx.sqlclient.codec.CommandResponse;
 
-class DebugCommandCodec extends CommandCodec<Void, DebugCommand> {
+class StatisticsMySQLCommand extends MySQLCommand<String, StatisticsCommand> {
   private static final int PAYLOAD_LENGTH = 1;
 
-  DebugCommandCodec(DebugCommand cmd) {
+  StatisticsMySQLCommand(StatisticsCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
-    sendDebugCommand();
+    sendStatisticsCommand();
   }
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
-    handleOkPacketOrErrorPacketPayload(payload);
+    encoder.fireCommandResponse(CommandResponse.success(payload.toString()));
   }
 
-  private void sendDebugCommand() {
+  private void sendStatisticsCommand() {
     ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
     packet.writeMediumLE(PAYLOAD_LENGTH);
     packet.writeByte(sequenceId);
 
     // encode packet payload
-    packet.writeByte(CommandType.COM_DEBUG);
+    packet.writeByte(CommandType.COM_STATISTICS);
 
-    sendPacket(packet, 1);
+    sendNonSplitPacket(packet);
   }
 }

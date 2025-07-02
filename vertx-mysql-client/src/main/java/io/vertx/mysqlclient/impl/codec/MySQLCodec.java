@@ -26,7 +26,7 @@ import java.util.Iterator;
 
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 
-  private final ArrayDeque<CommandCodec<?, ?>> inflight;
+  private final ArrayDeque<MySQLCommand<?, ?>> inflight;
   private ChannelHandlerContext chctx;
   private Throwable failure;
 
@@ -49,7 +49,7 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
     super.channelInactive(ctx);
   }
 
-  public boolean add(CommandCodec<?, ?> codec) {
+  public boolean add(MySQLCommand<?, ?> codec) {
     if (failure == null) {
       inflight.add(codec);
       return true;
@@ -59,23 +59,23 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
     }
   }
 
-  public CommandCodec<?, ?> poll() {
+  public MySQLCommand<?, ?> poll() {
     return inflight.poll();
   }
 
-  public CommandCodec<?, ?> peek() {
+  public MySQLCommand<?, ?> peek() {
     return inflight.peek();
   }
 
   private void clearInflightCommands(Throwable cause) {
-    for (Iterator<CommandCodec<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
-      CommandCodec<?, ?> codec = it.next();
+    for (Iterator<MySQLCommand<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
+      MySQLCommand<?, ?> codec = it.next();
       it.remove();
       fail(codec, cause);
     }
   }
 
-  private void fail(CommandCodec<?, ?> codec, Throwable cause) {
+  private void fail(MySQLCommand<?, ?> codec, Throwable cause) {
     if (failure == null) {
       failure = cause;
       codec.fail(cause);
@@ -87,9 +87,9 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
    */
   void checkFireAndForgetCommands() {
     // check if there is any completed command
-    CommandCodec<?, ?> commandCodec;
-    while ((commandCodec = inflight.peek()) != null && commandCodec.expectNoResponsePacket()) {
-      commandCodec.decodePayload(null, 0);
+    MySQLCommand<?, ?> commandMsg;
+    while ((commandMsg = inflight.peek()) != null && commandMsg.expectNoResponsePacket()) {
+      commandMsg.decodePayload(null, 0);
     }
   }
 }

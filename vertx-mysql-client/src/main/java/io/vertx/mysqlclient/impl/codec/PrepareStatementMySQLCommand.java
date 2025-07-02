@@ -28,14 +28,14 @@ import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;
 
-class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareStatementCommand> {
+class PrepareStatementMySQLCommand extends MySQLCommand<PreparedStatement, PrepareStatementCommand> {
 
   private CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
   private long statementId;
   private int processingIndex;
   private ColumnDefinition[] paramDescs;
   private ColumnDefinition[] columnDescs;
-  PrepareStatementCodec(PrepareStatementCommand cmd) {
+  PrepareStatementMySQLCommand(PrepareStatementCommand cmd) {
     super(cmd);
   }
 

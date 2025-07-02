@@ -44,44 +44,44 @@ import java.nio.charset.StandardCharsets;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
-public abstract class CommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
+public abstract class MySQLCommand<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
   public Throwable failure;
   public R result;
   MySQLEncoder encoder;
   int sequenceId;
 
-  CommandCodec(C cmd) {
+  MySQLCommand(C cmd) {
     super(cmd);
   }
 
-  public static CommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+  public static MySQLCommand<?, ?> wrap(CommandBase<?> cmd) {
     if (cmd instanceof InitialHandshakeCommand) {
-      return new InitialHandshakeCommandCodec((InitialHandshakeCommand) cmd);
+      return new InitialHandshakeMySQLCommand((InitialHandshakeCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand) {
-      return new SimpleQueryCommandCodec<>((SimpleQueryCommand<?>) cmd);
+      return new SimpleQueryMySQLCommand<>((SimpleQueryCommand<?>) cmd);
     } else if (cmd instanceof CloseConnectionCommand) {
-      return new CloseConnectionCommandCodec((CloseConnectionCommand) cmd);
+      return new CloseConnectionMySQLCommand((CloseConnectionCommand) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCodec((PrepareStatementCommand) cmd);
+      return new PrepareStatementMySQLCommand((PrepareStatementCommand) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
-      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+      return new CloseStatementMySQLCommand((CloseStatementCommand) cmd);
     } else if (cmd instanceof CloseCursorCommand) {
-      return new ResetStatementCommandCodec((CloseCursorCommand) cmd);
+      return new ResetStatementMySQLCommand((CloseCursorCommand) cmd);
     } else if (cmd instanceof PingCommand) {
-      return new PingCommandCodec((PingCommand) cmd);
+      return new PingMySQLCommand((PingCommand) cmd);
     } else if (cmd instanceof InitDbCommand) {
-      return new InitDbCommandCodec((InitDbCommand) cmd);
+      return new InitDbMySQLCommand((InitDbCommand) cmd);
     } else if (cmd instanceof StatisticsCommand) {
-      return new StatisticsCommandCodec((StatisticsCommand) cmd);
+      return new StatisticsMySQLCommand((StatisticsCommand) cmd);
     } else if (cmd instanceof SetOptionCommand) {
-      return new SetOptionCommandCodec((SetOptionCommand) cmd);
+      return new SetOptionMySQLCommand((SetOptionCommand) cmd);
     } else if (cmd instanceof ResetConnectionCommand) {
-      return new ResetConnectionCommandCodec((ResetConnectionCommand) cmd);
+      return new ResetConnectionMySQLCommand((ResetConnectionCommand) cmd);
     } else if (cmd instanceof DebugCommand) {
-      return new DebugCommandCodec((DebugCommand) cmd);
+      return new DebugMySQLCommand((DebugCommand) cmd);
     } else if (cmd instanceof ChangeUserCommand) {
-      return new ChangeUserCommandCodec((ChangeUserCommand) cmd);
+      return new ChangeUserMySQLCommand((ChangeUserCommand) cmd);
     } else {
       System.out.println("Unsupported command " + cmd);
       throw new UnsupportedOperationException("Todo");

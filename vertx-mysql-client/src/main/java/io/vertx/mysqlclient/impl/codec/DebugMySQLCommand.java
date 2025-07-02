@@ -12,20 +12,20 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.mysqlclient.impl.command.SetOptionCommand;
+import io.vertx.mysqlclient.impl.command.DebugCommand;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 
-class SetOptionCommandCodec extends CommandCodec<Void, SetOptionCommand> {
-  private static final int PAYLOAD_LENGTH = 3;
+class DebugMySQLCommand extends MySQLCommand<Void, DebugCommand> {
+  private static final int PAYLOAD_LENGTH = 1;
 
-  SetOptionCommandCodec(SetOptionCommand cmd) {
+  DebugMySQLCommand(DebugCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
-    sendSetOptionCommand();
+    sendDebugCommand();
   }
 
   @Override
@@ -33,16 +33,15 @@ class SetOptionCommandCodec extends CommandCodec<Void, SetOptionCommand> {
     handleOkPacketOrErrorPacketPayload(payload);
   }
 
-  private void sendSetOptionCommand() {
+  private void sendDebugCommand() {
     ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
     packet.writeMediumLE(PAYLOAD_LENGTH);
     packet.writeByte(sequenceId);
 
     // encode packet payload
-    packet.writeByte(CommandType.COM_SET_OPTION);
-    packet.writeShortLE(cmd.option().ordinal());
+    packet.writeByte(CommandType.COM_DEBUG);
 
-    sendNonSplitPacket(packet);
+    sendPacket(packet, 1);
   }
 }

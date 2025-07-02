@@ -61,7 +61,7 @@ class MySQLDecoder extends ChannelInboundHandlerAdapter {
   private void decodePackets() {
     try {
       codec.checkFireAndForgetCommands();
-      CommandCodec<?, ?> ctx = codec.peek();
+      MySQLCommand<?, ?> ctx = codec.peek();
       if (ctx == null) {
         throw new IllegalStateException("No command codec for packet");
       }

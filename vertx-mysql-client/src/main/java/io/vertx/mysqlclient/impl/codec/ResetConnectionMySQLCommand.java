@@ -15,10 +15,10 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.command.ResetConnectionCommand;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 
-class ResetConnectionCommandCodec extends CommandCodec<Void, ResetConnectionCommand> {
+class ResetConnectionMySQLCommand extends MySQLCommand<Void, ResetConnectionCommand> {
   private static final int PAYLOAD_LENGTH = 1;
 
-  ResetConnectionCommandCodec(ResetConnectionCommand cmd) {
+  ResetConnectionMySQLCommand(ResetConnectionCommand cmd) {
     super(cmd);
   }
 

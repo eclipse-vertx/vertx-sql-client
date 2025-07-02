@@ -41,8 +41,8 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof CommandCodec<?, ?>) {
-      CommandCodec<?, ?> cmd = (CommandCodec<?, ?>) msg;
+    if (msg instanceof MySQLCommand<?, ?>) {
+      MySQLCommand<?, ?> cmd = (MySQLCommand<?, ?>) msg;
       write(cmd);
       codec.checkFireAndForgetCommands();
     } else {
@@ -50,14 +50,14 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
     }
   }
 
-  void write(CommandCodec<?, ?> cmd) {
+  void write(MySQLCommand<?, ?> cmd) {
     if (codec.add(cmd)) {
       cmd.encode(this);
     }
   }
 
   final void fireCommandResponse(CommandResponse<?> commandResponse) {
-    CommandCodec<?, ?> c = codec.poll();
+    MySQLCommand<?, ?> c = codec.poll();
     commandResponse.handler = (Completable) c.handler;
     chctx.fireChannelRead(commandResponse);
   }

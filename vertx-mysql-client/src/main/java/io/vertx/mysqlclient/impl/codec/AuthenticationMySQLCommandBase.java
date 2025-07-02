@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
 
-abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommandBase<R>> extends CommandCodec<R, C> {
+abstract class AuthenticationMySQLCommandBase<R, C extends AuthenticationCommandBase<R>> extends MySQLCommand<R, C> {
   protected static final int NONCE_LENGTH = 20;
   protected static final int AUTH_SWITCH_REQUEST_STATUS_FLAG = 0xFE;
 
@@ -35,7 +35,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
 
   private boolean isWaitingForRsaPublicKey = false;
 
-  AuthenticationCommandBaseCodec(C cmd) {
+  AuthenticationMySQLCommandBase(C cmd) {
     super(cmd);
   }
 

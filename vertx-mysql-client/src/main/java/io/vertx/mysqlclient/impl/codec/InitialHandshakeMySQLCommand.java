@@ -36,9 +36,9 @@ import java.util.Map;
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
-class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connection, InitialHandshakeCommand> {
+class InitialHandshakeMySQLCommand extends AuthenticationMySQLCommandBase<Connection, InitialHandshakeCommand> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(InitialHandshakeCommandCodec.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(InitialHandshakeMySQLCommand.class);
 
   private static final int AUTH_PLUGIN_DATA_PART1_LENGTH = 8;
 
@@ -48,7 +48,7 @@ class InitialHandshakeCommandCodec extends AuthenticationCommandBaseCodec<Connec
 
   private int status = ST_CONNECTING;
 
-  InitialHandshakeCommandCodec(InitialHandshakeCommand cmd) {
+  InitialHandshakeMySQLCommand(InitialHandshakeCommand cmd) {
     super(cmd);
   }
 

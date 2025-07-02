@@ -26,8 +26,8 @@ import java.util.Map;
 import static io.vertx.mysqlclient.impl.protocol.CapabilitiesFlag.*;
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
-class ChangeUserCommandCodec extends AuthenticationCommandBaseCodec<Void, ChangeUserCommand> {
-  ChangeUserCommandCodec(ChangeUserCommand cmd) {
+class ChangeUserMySQLCommand extends AuthenticationMySQLCommandBase<Void, ChangeUserCommand> {
+  ChangeUserMySQLCommand(ChangeUserCommand cmd) {
     super(cmd);
   }
 

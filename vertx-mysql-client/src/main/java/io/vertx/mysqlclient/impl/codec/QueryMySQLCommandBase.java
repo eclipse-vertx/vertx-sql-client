@@ -31,7 +31,7 @@ import java.util.stream.Collector;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
-abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends CommandCodec<Boolean, C> {
+abstract class QueryMySQLCommandBase<T, C extends QueryCommandBase<T>> extends MySQLCommand<Boolean, C> {
 
   private final DataFormat format;
 
@@ -40,7 +40,7 @@ abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends C
   protected RowResultDecoder<?, T> decoder;
   private int currentColumn;
 
-  QueryCommandBaseCodec(C cmd, DataFormat format) {
+  QueryMySQLCommandBase(C cmd, DataFormat format) {
     super(cmd);
     this.format = format;
   }

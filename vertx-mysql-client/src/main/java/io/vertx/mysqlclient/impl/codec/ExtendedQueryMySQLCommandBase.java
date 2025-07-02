@@ -21,11 +21,11 @@ import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
-abstract class ExtendedQueryCommandBaseCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {
+abstract class ExtendedQueryMySQLCommandBase<R, C extends ExtendedQueryCommand<R>> extends QueryMySQLCommandBase<R, C> {
 
   protected final MySQLPreparedStatement statement;
 
-  ExtendedQueryCommandBaseCodec(C cmd, MySQLPreparedStatement statement) {
+  ExtendedQueryMySQLCommandBase(C cmd, MySQLPreparedStatement statement) {
     super(cmd, DataFormat.BINARY);
     this.statement = statement;
   }

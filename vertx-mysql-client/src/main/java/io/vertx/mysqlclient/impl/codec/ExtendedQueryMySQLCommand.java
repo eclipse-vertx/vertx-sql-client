@@ -26,8 +26,8 @@ import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.CURSOR_TYPE_NO_CURSOR;
 import static io.vertx.mysqlclient.impl.protocol.Packets.EnumCursorType.CURSOR_TYPE_READ_ONLY;
 
-public class ExtendedQueryCommandCodec<R> extends ExtendedQueryCommandBaseCodec<R, ExtendedQueryCommand<R>> {
-  public ExtendedQueryCommandCodec(ExtendedQueryCommand<R> cmd, MySQLPreparedStatement statement) {
+public class ExtendedQueryMySQLCommand<R> extends ExtendedQueryMySQLCommandBase<R, ExtendedQueryCommand<R>> {
+  public ExtendedQueryMySQLCommand(ExtendedQueryCommand<R> cmd, MySQLPreparedStatement statement) {
     super(cmd, statement);
     if (cmd.fetch() > 0 && statement.isCursorOpen) {
       // restore the state we need for decoding fetch response based on the prepared statement

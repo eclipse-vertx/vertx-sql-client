@@ -30,9 +30,9 @@ import java.util.function.Supplier;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
-class SimpleQueryCommandCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
+class SimpleQueryMySQLCommand<T> extends QueryMySQLCommandBase<T, SimpleQueryCommand<T>> {
 
-  SimpleQueryCommandCodec(SimpleQueryCommand<T> cmd) {
+  SimpleQueryMySQLCommand(SimpleQueryCommand<T> cmd) {
     super(cmd, DataFormat.TEXT);
   }
 

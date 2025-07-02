@@ -12,46 +12,38 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.command.PingCommand;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
-import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 import io.vertx.sqlclient.codec.CommandResponse;
 
-class CloseStatementCommandCodec extends CommandCodec<Void, CloseStatementCommand> {
-  private static final int PAYLOAD_LENGTH = 5;
+class PingMySQLCommand extends MySQLCommand<Void, PingCommand> {
+  private static final int PAYLOAD_LENGTH = 1;
 
-  CloseStatementCommandCodec(CloseStatementCommand cmd) {
+  PingMySQLCommand(PingCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
-    MySQLPreparedStatement statement = (MySQLPreparedStatement) cmd.statement();
-    sendCloseStatementCommand(statement);
+    sendPingCommand();
   }
 
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
-    // no statement response
-    // it will be called by the connection in order
+    // we don't care what the response payload is from the server
     encoder.fireCommandResponse(CommandResponse.success(null));
   }
 
-  private void sendCloseStatementCommand(MySQLPreparedStatement statement) {
+  private void sendPingCommand() {
     ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
     // encode packet header
     packet.writeMediumLE(PAYLOAD_LENGTH);
     packet.writeByte(sequenceId);
 
     // encode packet payload
-    packet.writeByte(CommandType.COM_STMT_CLOSE);
-    packet.writeIntLE((int) statement.statementId);
+    packet.writeByte(CommandType.COM_PING);
 
     sendNonSplitPacket(packet);
-  }
-
-  @Override
-  boolean expectNoResponsePacket() {
-    return true;
   }
 }

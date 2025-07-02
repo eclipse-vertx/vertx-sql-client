@@ -12,24 +12,20 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.command.InitDbCommand;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
-import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
 
-class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> {
-  private static final int PAYLOAD_LENGTH = 5;
+import java.nio.charset.StandardCharsets;
 
-  ResetStatementCommandCodec(CloseCursorCommand cmd) {
+class InitDbMySQLCommand extends MySQLCommand<Void, InitDbCommand> {
+  InitDbMySQLCommand(InitDbCommand cmd) {
     super(cmd);
   }
 
   @Override
   void encode(MySQLEncoder encoder) {
     super.encode(encoder);
-    MySQLPreparedStatement statement = (MySQLPreparedStatement) cmd.statement();
-    statement.cleanBindings();
-
-    statement.isCursorOpen = false;
-    sendStatementResetCommand(statement.statementId);
+    sendInitDbCommand();
   }
 
   @Override
@@ -37,16 +33,21 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
     handleOkPacketOrErrorPacketPayload(payload);
   }
 
-  private void sendStatementResetCommand(long statementId) {
-    ByteBuf packet = allocateBuffer(PAYLOAD_LENGTH + 4);
+  private void sendInitDbCommand() {
+    ByteBuf packet = allocateBuffer();
     // encode packet header
-    packet.writeMediumLE(PAYLOAD_LENGTH);
+    int packetStartIdx = packet.writerIndex();
+    packet.writeMediumLE(0); // will set payload length later by calculation
     packet.writeByte(sequenceId);
 
     // encode packet payload
-    packet.writeByte(CommandType.COM_STMT_RESET);
-    packet.writeIntLE((int) statementId);
+    packet.writeByte(CommandType.COM_INIT_DB);
+    packet.writeCharSequence(cmd.schemaName(), StandardCharsets.UTF_8);
 
-    sendNonSplitPacket(packet);
+    // set payload length
+    int lenOfPayload = packet.writerIndex() - packetStartIdx - 4;
+    packet.setMediumLE(packetStartIdx, lenOfPayload);
+
+    sendPacket(packet, lenOfPayload);
   }
 }
