@@ -20,11 +20,11 @@ import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
-class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>> {
+class SimpleQueryPgCommandMessage<T> extends QueryBasePgCommandMessage<T, SimpleQueryCommand<T>> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PgCommandCodec.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(PgCommandMessage.class);
 
-  SimpleQueryCodec(SimpleQueryCommand<T> cmd) {
+  SimpleQueryPgCommandMessage(SimpleQueryCommand<T> cmd) {
     super(cmd);
   }
 

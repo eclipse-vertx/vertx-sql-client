@@ -96,7 +96,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
     if (!closeSent) {
       CloseConnectionCommand cmd = CloseConnectionCommand.INSTANCE;
-      PgCommandCodec<?, ?> codec = PgCommandCodec.wrap(cmd);
+      PgCommandMessage<?, ?> codec = PgCommandMessage.wrap(cmd);
       codec.encode(this);
     }
   }
@@ -107,7 +107,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     capacityEstimate = 0;
   }
 
-  void write(PgCommandCodec<?, ?> cmd) {
+  void write(PgCommandMessage<?, ?> cmd) {
     if (codec.add(cmd)) {
       cmd.encode(this);
     }
@@ -120,8 +120,8 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
 
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (msg instanceof PgCommandCodec<?, ?>) {
-      write((PgCommandCodec<?, ?>) msg);
+    if (msg instanceof PgCommandMessage<?, ?>) {
+      write((PgCommandMessage<?, ?>) msg);
     } else {
       super.write(ctx, msg, promise);
     }

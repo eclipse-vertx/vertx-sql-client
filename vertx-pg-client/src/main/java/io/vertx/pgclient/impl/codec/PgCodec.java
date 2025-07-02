@@ -25,7 +25,7 @@ import java.util.Iterator;
 
 public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> {
 
-  private final ArrayDeque<PgCommandCodec<?, ?>> inflight = new ArrayDeque<>();
+  private final ArrayDeque<PgCommandMessage<?, ?>> inflight = new ArrayDeque<>();
   private final PgDecoder decoder;
   private final PgEncoder encoder;
   private ChannelHandlerContext chctx;
@@ -37,7 +37,7 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
     init(decoder, encoder);
   }
 
-  boolean add(PgCommandCodec<?, ?> codec) {
+  boolean add(PgCommandMessage<?, ?> codec) {
     if (failure == null) {
       codec.decoder = decoder;
       inflight.add(codec);
@@ -48,11 +48,11 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
     }
   }
 
-  PgCommandCodec<?, ?> peek() {
+  PgCommandMessage<?, ?> peek() {
     return inflight.peek();
   }
 
-  PgCommandCodec<?, ?> poll() {
+  PgCommandMessage<?, ?> poll() {
     return inflight.poll();
   }
 
@@ -71,15 +71,15 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
   private void fail(Throwable cause) {
     if (failure == null) {
       failure = cause;
-      for  (Iterator<PgCommandCodec<?, ?>> it = inflight.iterator(); it.hasNext();) {
-        PgCommandCodec<?, ?> cmdCodec = it.next();
+      for  (Iterator<PgCommandMessage<?, ?>> it = inflight.iterator(); it.hasNext();) {
+        PgCommandMessage<?, ?> cmdCodec = it.next();
         it.remove();
         fail(cmdCodec, cause);
       }
     }
   }
 
-  private void fail(PgCommandCodec<?, ?> codec, Throwable cause) {
+  private void fail(PgCommandMessage<?, ?> codec, Throwable cause) {
     codec.fail(cause);
   }
 

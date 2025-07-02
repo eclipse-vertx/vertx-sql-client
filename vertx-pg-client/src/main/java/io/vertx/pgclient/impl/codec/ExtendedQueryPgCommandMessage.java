@@ -23,7 +23,7 @@ import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
-public class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> extends QueryCommandBaseCodec<R, C> {
+public class ExtendedQueryPgCommandMessage<R, C extends ExtendedQueryCommand<R>> extends QueryBasePgCommandMessage<R, C> {
 
   private PgEncoder encoder;
 
@@ -31,7 +31,7 @@ public class ExtendedQueryCommandCodec<R, C extends ExtendedQueryCommand<R>> ext
 
   private PgPreparedStatement ps;
 
-  public ExtendedQueryCommandCodec(C cmd, PreparedStatement ps) {
+  public ExtendedQueryPgCommandMessage(C cmd, PreparedStatement ps) {
     super(cmd);
     this.rowDecoder = new RowResultDecoder<>(cmd.collector(), ((PgPreparedStatement)ps).rowDesc());
     this.ps = (PgPreparedStatement) ps;

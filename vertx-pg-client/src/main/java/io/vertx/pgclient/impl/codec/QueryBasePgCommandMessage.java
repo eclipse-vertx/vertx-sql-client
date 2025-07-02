@@ -22,11 +22,11 @@ import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.stream.Collector;
 
-abstract class QueryCommandBaseCodec<T, C extends QueryCommandBase<T>> extends PgCommandCodec<Boolean, C> {
+abstract class QueryBasePgCommandMessage<T, C extends QueryCommandBase<T>> extends PgCommandMessage<Boolean, C> {
 
   RowResultDecoder<?, T> rowDecoder;
 
-  QueryCommandBaseCodec(C cmd) {
+  QueryBasePgCommandMessage(C cmd) {
     super(cmd);
   }
 

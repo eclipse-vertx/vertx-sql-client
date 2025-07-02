@@ -18,9 +18,9 @@ package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 
-class CloseStatementCommandCodec extends PgCommandCodec<Void, CloseStatementCommand> {
+class CloseStatementPgCommandMessage extends PgCommandMessage<Void, CloseStatementCommand> {
 
-  CloseStatementCommandCodec(CloseStatementCommand cmd) {
+  CloseStatementPgCommandMessage(CloseStatementCommand cmd) {
     super(cmd);
   }
 

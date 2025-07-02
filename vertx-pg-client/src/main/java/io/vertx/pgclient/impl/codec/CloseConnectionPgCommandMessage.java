@@ -18,11 +18,11 @@ package io.vertx.pgclient.impl.codec;
 
 import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 
-class CloseConnectionCommandCodec extends PgCommandCodec<Void, CloseConnectionCommand> {
+class CloseConnectionPgCommandMessage extends PgCommandMessage<Void, CloseConnectionCommand> {
 
-  static final CloseConnectionCommandCodec INSTANCE = new CloseConnectionCommandCodec();
+  static final CloseConnectionPgCommandMessage INSTANCE = new CloseConnectionPgCommandMessage();
 
-  private CloseConnectionCommandCodec() {
+  private CloseConnectionPgCommandMessage() {
     super(CloseConnectionCommand.INSTANCE);
   }
 

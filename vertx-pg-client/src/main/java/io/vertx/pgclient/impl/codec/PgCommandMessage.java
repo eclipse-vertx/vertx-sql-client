@@ -32,31 +32,31 @@ import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 import java.util.Arrays;
 
-public abstract class PgCommandCodec<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
+public abstract class PgCommandMessage<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
-  private static final Logger logger = LoggerFactory.getLogger(PgCommandCodec.class);
+  private static final Logger logger = LoggerFactory.getLogger(PgCommandMessage.class);
 
   PgDecoder decoder;
   PgException failure;
   R result;
 
-  PgCommandCodec(C cmd) {
+  PgCommandMessage(C cmd) {
     super(cmd);
   }
 
-  public static PgCommandCodec<?, ?> wrap(CommandBase<?> cmd) {
+  public static PgCommandMessage<?, ?> wrap(CommandBase<?> cmd) {
     if (cmd instanceof InitCommand) {
-      return new InitCommandCodec((InitCommand) cmd);
+      return new InitPgCommandMessage((InitCommand) cmd);
     } else if (cmd instanceof SimpleQueryCommand<?>) {
-      return new SimpleQueryCodec<>((SimpleQueryCommand<?>) cmd);
+      return new SimpleQueryPgCommandMessage<>((SimpleQueryCommand<?>) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
-      return new PrepareStatementCommandCodec((PrepareStatementCommand) cmd);
+      return new PrepareStatementPgCommandMessage((PrepareStatementCommand) cmd);
     } else if (cmd instanceof CloseConnectionCommand) {
-      return CloseConnectionCommandCodec.INSTANCE;
+      return CloseConnectionPgCommandMessage.INSTANCE;
     } else if (cmd instanceof CloseCursorCommand) {
-      return new ClosePortalCommandCodec((CloseCursorCommand) cmd);
+      return new ClosePortalPgCommandMessage((CloseCursorCommand) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
-      return new CloseStatementCommandCodec((CloseStatementCommand) cmd);
+      return new CloseStatementPgCommandMessage((CloseStatementCommand) cmd);
     }
     throw new AssertionError("Invalid command " + cmd);
   }

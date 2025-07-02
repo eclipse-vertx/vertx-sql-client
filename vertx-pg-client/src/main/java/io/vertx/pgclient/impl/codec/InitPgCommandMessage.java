@@ -29,13 +29,13 @@ import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.InitCommand;
 
-class InitCommandCodec extends PgCommandCodec<Connection, InitCommand> {
+class InitPgCommandMessage extends PgCommandMessage<Connection, InitCommand> {
 
   private PgEncoder encoder;
   private String encoding;
   private ScramSession scramSession;
 
-  InitCommandCodec(InitCommand cmd) {
+  InitPgCommandMessage(InitCommand cmd) {
     super(cmd);
   }
 

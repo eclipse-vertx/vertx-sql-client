@@ -21,7 +21,7 @@ import io.vertx.sqlclient.internal.PreparedStatement;
 
 import java.util.List;
 
-class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, PrepareStatementCommand> {
+class PrepareStatementPgCommandMessage extends PgCommandMessage<PreparedStatement, PrepareStatementCommand> {
 
   private static final byte[] EMPTY_STRING = { 0 };
 
@@ -30,7 +30,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
 
   private byte[] statement;
 
-  PrepareStatementCommandCodec(PrepareStatementCommand cmd) {
+  PrepareStatementPgCommandMessage(PrepareStatementCommand cmd) {
     super(cmd);
   }
 
