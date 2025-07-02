@@ -20,12 +20,12 @@ package io.vertx.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class Describe extends OutboundMessage {
+class DescribeMessage extends OutboundMessage {
 
   final byte[] statement;
   final String portal;
 
-  Describe(byte[] statement, String portal) {
+  DescribeMessage(byte[] statement, String portal) {
     this.statement = statement;
     this.portal = portal;
   }

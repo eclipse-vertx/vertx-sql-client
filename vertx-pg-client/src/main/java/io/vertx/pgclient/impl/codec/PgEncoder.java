@@ -160,10 +160,10 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
         renderScramInitialMessage((ScramClientInitialMessage) msg, out);
       } else if (msg.getClass() == ScramClientFinalMessage.class) {
         renderScramFinalMessage((ScramClientFinalMessage) msg, out);
-      } else if (msg.getClass() == Query.class) {
-        renderQueryMessage((Query) msg, out);
-      } else if (msg.getClass() == Describe.class) {
-        renderDescribe((Describe) msg, out);
+      } else if (msg.getClass() == QueryMessage.class) {
+        renderQueryMessage((QueryMessage) msg, out);
+      } else if (msg.getClass() == DescribeMessage.class) {
+        renderDescribe((DescribeMessage) msg, out);
       } else if (msg.getClass() == ParseMessage.class) {
         String sql = (String) pendingMessages.get(index++);
         byte[] statement = (byte[]) pendingMessages.get(index++);
@@ -173,10 +173,10 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
         String portal = (String) pendingMessages.get(index++);
         int rowCount = (Integer) pendingMessages.get(index++);
         renderExecute(portal, rowCount, out);
-      } else if (msg.getClass() == Bind.class) {
+      } else if (msg.getClass() == BindMessage.class) {
         String portal = (String) pendingMessages.get(index++);
         Tuple paramValues = (Tuple) pendingMessages.get(index++);
-        renderBind((Bind) msg, portal, paramValues, out);
+        renderBind((BindMessage) msg, portal, paramValues, out);
       } else {
         throw new AssertionError();
       }
@@ -186,7 +186,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     return out;
   }
 
-  private static void renderQueryMessage(Query query, ByteBuf out) {
+  private static void renderQueryMessage(QueryMessage query, ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(QUERY);
     out.writeInt(0);
@@ -194,7 +194,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
-  private static int estimateQueryMessage(Query query) {
+  private static int estimateQueryMessage(QueryMessage query) {
     return 1 + 4 + DataTypeEstimator.estimateCStringUTF8(query.sql);
   }
 
@@ -327,7 +327,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     return 1 + 4 + (portal != null ? DataTypeEstimator.estimateUTF8(portal) : 0) + 1 + 4;
   }
 
-  private static  void renderDescribe(Describe describe, ByteBuf out) {
+  private static  void renderDescribe(DescribeMessage describe, ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(DESCRIBE);
     out.writeInt(0);
@@ -344,7 +344,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos- 1);
   }
 
-  private static  int estimateDescribe(Describe describe) {
+  private static  int estimateDescribe(DescribeMessage describe) {
     int length = 1 + 4;
     if (describe.statement.length > 1) {
       length += 1 + DataTypeEstimator.estimateByteArray(describe.statement);
@@ -382,7 +382,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
       2 + (parameterTypes == null ? 0 : parameterTypes.length * 4);
   }
 
-  private static void renderBind(Bind bind, String portal, Tuple paramValues, ByteBuf out) {
+  private static void renderBind(BindMessage bind, String portal, Tuple paramValues, ByteBuf out) {
     int pos = out.writerIndex();
     out.writeByte(BIND);
     out.writeInt(0);
@@ -432,7 +432,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
     out.setInt(pos + 1, out.writerIndex() - pos - 1);
   }
 
-  private static int estimateBind(Bind bind, String portal, Tuple paramValues) {
+  private static int estimateBind(BindMessage bind, String portal, Tuple paramValues) {
 
     int paramLen = paramValues.size();
 
@@ -580,7 +580,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * {@link CommandComplete}, {@link RowDescriptorBase}, {@link DataRow}, {@link EmptyQueryResponse}, {@link ErrorResponse},
    * {@link ReadyForQuery} and {@link NoticeResponse}
    */
-  void writeQuery(Query query) {
+  void writeQuery(QueryMessage query) {
     enqueueMessage(query, estimateQueryMessage(query));
   }
 
@@ -593,7 +593,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * executed or a {@link NoData} message if the statement will not return rows.
    * {@link ErrorResponse} is issued if there is no such prepared statement.
    * <p>
-   * Note that since {@link Bind} has not yet been issued, the formats to be used for returned columns are not yet known to
+   * Note that since {@link BindMessage} has not yet been issued, the formats to be used for returned columns are not yet known to
    * the backend; the format code fields in the {@link RowDescriptorBase} message will be zeroes in this case.
    * <p>
    * The message that using "portal" variant specifies the name of an existing portal.
@@ -602,7 +602,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * or a {@link NoData} message if the portal does not contain a query that will return rows; or {@link ErrorResponse}
    * if there is no such portal.
    */
-  void writeDescribe(Describe describe) {
+  void writeDescribe(DescribeMessage describe) {
     enqueueMessage(describe, estimateDescribe(describe));
   }
 
@@ -616,7 +616,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * The row count of the result is only meaningful for portals containing commands that return row sets;
    * in other cases the command is always executed to completion, and the row count of the result is ignored.
    * <p>
-   * The possible responses to this message are the same as {@link Query} message, except that
+   * The possible responses to this message are the same as {@link QueryMessage} message, except that
    * it doesn't cause {@link ReadyForQuery} or {@link RowDescriptorBase} to be issued.
    * <p>
    * If Execute terminates before completing the execution of a portal, it will send a {@link PortalSuspended} message;
@@ -640,7 +640,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    * <p>
    * The response is either {@link BindComplete} or {@link ErrorResponse}.
    */
-  void writeBind(Bind bind, String portal, Tuple paramValues) {
+  void writeBind(BindMessage bind, String portal, Tuple paramValues) {
     enqueueMessage(bind, portal, paramValues, estimateBind(bind, portal, paramValues));
   }
 

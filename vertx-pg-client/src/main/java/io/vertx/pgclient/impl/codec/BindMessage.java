@@ -20,13 +20,13 @@ package io.vertx.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-final class Bind extends OutboundMessage {
+final class BindMessage extends OutboundMessage {
 
   final byte[] statement;
   final DataType[] paramTypes;
   final PgColumnDesc[] resultColumns;
 
-  Bind(byte[] statement, DataType[] paramTypes, PgColumnDesc[] resultColumns) {
+  BindMessage(byte[] statement, DataType[] paramTypes, PgColumnDesc[] resultColumns) {
     this.statement = statement;
     this.paramTypes = paramTypes;
     this.resultColumns = resultColumns;

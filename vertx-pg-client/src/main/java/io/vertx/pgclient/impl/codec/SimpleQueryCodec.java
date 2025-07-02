@@ -30,7 +30,7 @@ class SimpleQueryCodec<T> extends QueryCommandBaseCodec<T, SimpleQueryCommand<T>
 
   @Override
   void encode(PgEncoder encoder) {
-    encoder.writeQuery(new Query(cmd.sql()));
+    encoder.writeQuery(new QueryMessage(cmd.sql()));
   }
 
   @Override

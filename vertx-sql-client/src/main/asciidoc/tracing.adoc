@@ -2,7 +2,7 @@ The SQL client can trace query execution when Vert.x has tracing enabled.
 
 The client reports the following _client_ spans:
 
-- `Query` operation name
+- `QueryMessage` operation name
 - tags
   - `db.system`: the database management system product
   - `db.user`: the database username

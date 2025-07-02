@@ -20,11 +20,11 @@ package io.vertx.pgclient.impl.codec;
 /**
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-class Query extends OutboundMessage {
+class QueryMessage extends OutboundMessage {
 
   final String sql;
 
-  Query(String sql) {
+  QueryMessage(String sql) {
     this.sql = sql;
   }
 

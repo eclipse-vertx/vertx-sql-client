@@ -46,7 +46,7 @@ class PrepareStatementCommandCodec extends PgCommandCodec<PreparedStatement, Pre
     List<Class<?>> parameterTypes = cmd.parameterTypes();
     DataType[] parameterTypes2 = parameterTypes != null ? build(parameterTypes) : null;
     encoder.writeParse(cmd.sql(), statement, parameterTypes2);
-    encoder.writeDescribe(new Describe(statement, null));
+    encoder.writeDescribe(new DescribeMessage(statement, null));
     encoder.writeSync();
   }
 
