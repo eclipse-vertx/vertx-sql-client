@@ -16,36 +16,26 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
-import io.vertx.sqlclient.ClosedConnectionException;
 
 import java.util.ArrayDeque;
-import java.util.Iterator;
 
 public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> {
 
-  private final ArrayDeque<PgCommandMessage<?, ?>> inflight = new ArrayDeque<>();
+  private final ArrayDeque<PgCommandMessage<?, ?>> inflight;
   private final PgDecoder decoder;
   private final PgEncoder encoder;
-  private ChannelHandlerContext chctx;
-  private Throwable failure;
 
   public PgCodec(boolean useLayer7Proxy) {
+    inflight =  new ArrayDeque<>();
     decoder = new PgDecoder(this);
     encoder = new PgEncoder(useLayer7Proxy, this);
     init(decoder, encoder);
   }
 
-  boolean add(PgCommandMessage<?, ?> codec) {
-    if (failure == null) {
-      codec.decoder = decoder;
-      inflight.add(codec);
-      return true;
-    } else {
-      fail(codec, failure);
-      return false;
-    }
+  void add(PgCommandMessage<?, ?> codec) {
+    codec.decoder = decoder;
+    inflight.add(codec);
   }
 
   PgCommandMessage<?, ?> peek() {
@@ -54,38 +44,5 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
 
   PgCommandMessage<?, ?> poll() {
     return inflight.poll();
-  }
-
-  @Override
-  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-    chctx = ctx;
-    super.handlerAdded(ctx);
-  }
-
-  @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    fail(cause);
-    super.exceptionCaught(ctx, cause);
-  }
-
-  private void fail(Throwable cause) {
-    if (failure == null) {
-      failure = cause;
-      for  (Iterator<PgCommandMessage<?, ?>> it = inflight.iterator(); it.hasNext();) {
-        PgCommandMessage<?, ?> cmdCodec = it.next();
-        it.remove();
-        fail(cmdCodec, cause);
-      }
-    }
-  }
-
-  private void fail(PgCommandMessage<?, ?> codec, Throwable cause) {
-    codec.fail(cause);
-  }
-
-  @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    fail(ClosedConnectionException.INSTANCE);
-    super.channelInactive(ctx);
   }
 }

@@ -19,6 +19,7 @@ import java.sql.ResultSet;
 import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
@@ -44,8 +45,8 @@ abstract class ExtendedQueryDB2CommandBaseMessage<R, C extends ExtendedQueryComm
   void encodePreparedQuery(DRDAQueryRequest queryRequest, QueryInstance queryInstance, Tuple params) {
     int requiredParams = statement.paramDesc.paramDefinitions().columns_;
     if (params.size() != requiredParams) {
-      completionHandler.handle(CommandResponse.failure("Only " + params.size()
-          + " prepared statement parameters were provided " + "but " + requiredParams + " parameters are required."));
+      fireCommandFailure(VertxException.noStackTrace("Only " + params.size()
+        + " prepared statement parameters were provided " + "but " + requiredParams + " parameters are required."));
       return;
     }
 

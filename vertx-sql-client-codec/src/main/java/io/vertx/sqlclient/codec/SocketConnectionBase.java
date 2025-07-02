@@ -29,6 +29,7 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
+import io.vertx.sqlclient.ClosedConnectionException;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.codec.impl.PreparedStatementCache;
@@ -77,6 +78,8 @@ public abstract class SocketConnectionBase implements Connection {
   // Command pipeline state
   private final ArrayDeque<CommandBase<?>> pending = new ArrayDeque<>();
   private final ArrayDeque<Completable<?>> handlers = new ArrayDeque<>();
+  private final ArrayDeque<CommandMessage<?, ?>> inflights = new ArrayDeque<>();
+
   private boolean executing;
   private int inflight;
   private boolean paused;
@@ -256,7 +259,7 @@ public abstract class SocketConnectionBase implements Connection {
               if (closeCmd != null) {
                 inflight++;
                 written++;
-                ctx.write(closeCmd, ctx.voidPromise());
+                fireCommandMessage(ctx, closeCmd);
               }
             }
             CommandMessage<?, ?> prepareCmd = prepareCommand(queryCmd, handler, cache, false);
@@ -277,7 +280,7 @@ public abstract class SocketConnectionBase implements Connection {
           toSend = createMessage(cmd, handler);
         }
         written++;
-        ctx.write(toSend, ctx.voidPromise());
+        fireCommandMessage(ctx, toSend);
       }
       if (written > 0) {
         ctx.flush();
@@ -285,6 +288,11 @@ public abstract class SocketConnectionBase implements Connection {
     } finally {
       executing = false;
     }
+  }
+
+  private void fireCommandMessage(ChannelHandlerContext chctx, CommandMessage<?, ?> msg) {
+    inflights.add(msg);
+    chctx.write(msg, chctx.voidPromise());
   }
 
   private CommandMessage<?, ?> createMessage(ExtendedQueryCommand<?> command, PreparedStatement preparedStatement, Completable<?> handler) {
@@ -316,21 +324,20 @@ public abstract class SocketConnectionBase implements Connection {
         if (cache) {
           cacheStatement(ps);
         }
-//        queryCmd.ps = ps;
         String msg = queryCmd.prepare(ps);
         if (msg != null) {
           inflight--;
           handler.fail(VertxException.noStackTrace(msg));
         } else {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
-          ctx.write(createMessage(queryCmd, ps, handler), ctx.voidPromise());
+          fireCommandMessage(ctx, createMessage(queryCmd, ps, handler));
           ctx.flush();
         }
       } else {
         if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           // We cannot cache this prepared statement because it might be executed with another type
-          ctx.write(prepareCommand(queryCmd, handler, false, true), ctx.voidPromise());
+          fireCommandMessage(ctx, prepareCommand(queryCmd, handler, false, true));
           ctx.flush();
         } else {
           inflight--;
@@ -345,10 +352,17 @@ public abstract class SocketConnectionBase implements Connection {
     if (msg instanceof CommandResponse) {
       inflight--;
       CommandResponse resp =(CommandResponse) msg;
-      resp.fire();
+      CommandMessage<?, ?> command = inflights.poll();
+      fire(resp, command.handler);
     } else if (msg instanceof InvalidCachedStatementEvent) {
       InvalidCachedStatementEvent event = (InvalidCachedStatementEvent) msg;
       removeCachedStatement(event.sql());
+    }
+  }
+
+  private static <R> void fire(CommandResponse<R> response, Completable<R> handler) {
+    if (handler != null) {
+      handler.complete(response.result, response.failure);
     }
   }
 
@@ -420,17 +434,29 @@ public abstract class SocketConnectionBase implements Connection {
       if (t != null) {
         reportException(t);
       }
+      CommandMessage<?, ?> msg;
+      while ((msg = inflights.poll()) != null) {
+        fail(msg, ClosedConnectionException.INSTANCE);
+      }
       Throwable cause = t == null ? VertxException.noStackTrace(PENDING_CMD_CONNECTION_CORRUPT_MSG) : new VertxException(PENDING_CMD_CONNECTION_CORRUPT_MSG, t);
       CommandBase<?> cmd;
       while ((cmd = pending.poll()) != null) {
-        CommandBase<?> c = cmd;
-        Completable<?> handler = handlers.poll();
-        context.runOnContext(v -> handler.fail(cause));
+        CommandBase c = cmd;
+        Completable handler = handlers.poll();
+        fail(c, handler, cause);
       }
       if (holder != null) {
         holder.handleClosed();
       }
     }
+  }
+
+  private <R> void fail(CommandMessage<R, ?> msg, Throwable err) {
+    fail(msg.cmd, msg.handler, err);
+  }
+
+  protected <R> void fail(CommandBase<R> command, Completable<R> handler, Throwable err) {
+    context.runOnContext(v -> handler.fail(err));
   }
 
   public boolean pipeliningEnabled() {

@@ -55,19 +55,33 @@ class DB2Encoder extends ChannelOutboundHandlerAdapter {
     }
   }
 
+  void fireCommandFailure(DB2CommandMessage msg, Throwable err) {
+    DB2CommandMessage<?, ?> c = inflight.poll();
+    if (c == msg) {
+      chctx.fireChannelRead(CommandResponse.failure(err));
+    } else {
+      throw new IllegalStateException();
+    }
+  }
+
+  <R> void fireCommandSuccess(DB2CommandMessage msg, R result) {
+    DB2CommandMessage<?, ?> c = inflight.poll();
+    if (c == msg) {
+      chctx.fireChannelRead(CommandResponse.success(result));
+    } else {
+      throw new IllegalStateException();
+    }
+  }
+
   @SuppressWarnings({ "unchecked", "rawtypes" })
   void write(DB2CommandMessage<?, ?> msg) {
-    msg.completionHandler = resp -> {
-      DB2CommandMessage<?, ?> c = inflight.poll();
-      resp.handler = (Completable) c.handler;
-      chctx.fireChannelRead(resp);
-    };
-    inflight.add(msg);
     try {
+      inflight.add(msg);
       msg.encode(this);
     } catch (Throwable e) {
+      inflight.pollLast();
       LOG.error("FATAL: Unable to encode command: " + msg, e);
-      msg.completionHandler.handle(CommandResponse.failure(e));
+      chctx.fireChannelRead(CommandResponse.failure(e));
     }
   }
 }

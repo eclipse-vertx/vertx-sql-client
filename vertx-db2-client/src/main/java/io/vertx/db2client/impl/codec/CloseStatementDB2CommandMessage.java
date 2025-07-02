@@ -27,9 +27,10 @@ class CloseStatementDB2CommandMessage extends DB2CommandMessage<Void, CloseState
 
   @Override
   void encode(DB2Encoder encoder) {
+    super.encode(encoder);
     DB2PreparedStatement statement = (DB2PreparedStatement) cmd.statement();
     statement.close();
-    completionHandler.handle(CommandResponse.success(null));
+    fireCommandSuccess(null);
   }
 
   @Override

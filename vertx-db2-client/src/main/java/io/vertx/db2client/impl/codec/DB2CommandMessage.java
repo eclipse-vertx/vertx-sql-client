@@ -30,13 +30,20 @@ import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 
 public abstract class DB2CommandMessage<R, C extends CommandBase<R>> extends CommandMessage<R, C> {
 
-  Handler<? super CommandResponse<R>> completionHandler;
   public Throwable failure;
   public R result;
   DB2Encoder encoder;
 
   DB2CommandMessage(C cmd) {
     super(cmd);
+  }
+
+  void fireCommandFailure(Throwable err) {
+    encoder.fireCommandFailure(this, err);
+  }
+
+  void fireCommandSuccess(R result) {
+    encoder.fireCommandSuccess(this, result);
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })

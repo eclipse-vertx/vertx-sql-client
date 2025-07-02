@@ -93,7 +93,7 @@ class DB2Decoder extends ByteToMessageDecoder {
           LOG.error("Command failed with: " + t.getMessage() + "\nCommand=" + ctx, t);
         }
       }
-      ctx.completionHandler.handle(CommandResponse.failure(t));
+      ctx.fireCommandFailure(t);
     } finally {
       payload.clear();
       payload.release();

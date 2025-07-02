@@ -88,8 +88,8 @@ class PrepareStatementDB2CommandMessage extends DB2CommandMessage<PreparedStatem
   }
 
   private void handleReadyForQuery() {
-    completionHandler.handle(CommandResponse.success(new DB2PreparedStatement(cmd.sql(), new DB2ParamDesc(paramDesc),
-      DB2RowDescriptor.create(rowDesc), section)));
+    fireCommandSuccess(new DB2PreparedStatement(cmd.sql(), new DB2ParamDesc(paramDesc),
+      DB2RowDescriptor.create(rowDesc), section));
   }
 
   private void resetIntermediaryResult() {

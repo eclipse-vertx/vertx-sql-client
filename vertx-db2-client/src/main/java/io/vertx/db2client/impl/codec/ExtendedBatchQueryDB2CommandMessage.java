@@ -21,6 +21,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.core.VertxException;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
@@ -49,7 +50,7 @@ public class ExtendedBatchQueryDB2CommandMessage<R> extends ExtendedQueryDB2Comm
   @Override
   void encode(DB2Encoder encoder) {
     if (params.isEmpty()) {
-      completionHandler.handle(CommandResponse.failure("Can not execute batch query with 0 sets of batch parameters."));
+      fireCommandFailure(VertxException.noStackTrace("Can not execute batch query with 0 sets of batch parameters."));
       return;
     }
 
@@ -88,7 +89,7 @@ public class ExtendedBatchQueryDB2CommandMessage<R> extends ExtendedQueryDB2Comm
       hasMoreResults &= !queryComplete;
       handleQueryResult(decoder);
     }
-    completionHandler.handle(CommandResponse.success(hasMoreResults));
+    fireCommandSuccess(hasMoreResults);
   }
 
   void decodeUpdate(ByteBuf payload) {
@@ -99,7 +100,7 @@ public class ExtendedBatchQueryDB2CommandMessage<R> extends ExtendedQueryDB2Comm
     if (cmd.autoCommit()) {
       updateResponse.readLocalCommit();
     }
-    completionHandler.handle(CommandResponse.success(true));
+    fireCommandSuccess(true);
   }
 
   @Override

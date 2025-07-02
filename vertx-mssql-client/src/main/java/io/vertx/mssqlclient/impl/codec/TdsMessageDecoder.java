@@ -55,7 +55,6 @@ public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
 
   void fireCommandResponse(CommandResponse<?> commandResponse) {
     MSSQLCommandMessage<?, ?> c = tdsMessageCodec.poll();
-    commandResponse.handler = (Completable) c.handler;
     chctx.fireChannelRead(commandResponse);
   }
 

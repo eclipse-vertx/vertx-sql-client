@@ -49,7 +49,7 @@ public class ExtendedQueryDB2CommandMessage<R> extends ExtendedQueryDB2CommandBa
     RowResultDecoder<?, R> decoder = decodePreparedQuery(payload, resp, queryInstance);
     boolean hasMoreResults = !decoder.isQueryComplete();
     handleQueryResult(decoder);
-    completionHandler.handle(CommandResponse.success(hasMoreResults));
+    fireCommandSuccess(hasMoreResults);
   }
 
   void decodeUpdate(ByteBuf payload) {
@@ -58,7 +58,7 @@ public class ExtendedQueryDB2CommandMessage<R> extends ExtendedQueryDB2CommandBa
     if (cmd.autoCommit()) {
       updateResponse.readLocalCommit();
     }
-    completionHandler.handle(CommandResponse.success(true));
+    fireCommandSuccess(true);
   }
 
   @Override

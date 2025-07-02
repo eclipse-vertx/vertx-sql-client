@@ -11,11 +11,7 @@
 
 package io.vertx.sqlclient.codec;
 
-import io.vertx.core.Completable;
-import io.vertx.core.Future;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.VertxException;
-import io.vertx.sqlclient.spi.protocol.CommandBase;
 
 public class CommandResponse<R> {
 
@@ -24,29 +20,19 @@ public class CommandResponse<R> {
   }
 
   public static <R> CommandResponse<R> failure(Throwable cause) {
-    return new CommandResponse<>(Future.failedFuture(cause));
+    return new CommandResponse<>(null, cause);
   }
 
   public static <R> CommandResponse<R> success(R result) {
-    return new CommandResponse<>(Future.succeededFuture(result));
+    return new CommandResponse<>(result, null);
   }
 
   // The connection that executed the command
-  public CommandBase<R> cmd;
-  public Completable<R> handler;
-  private final AsyncResult<R> res;
+  final R result;
+  final Throwable failure;
 
-  public CommandResponse(AsyncResult<R> res) {
-    this.res = res;
-  }
-
-  public AsyncResult<R> toAsyncResult() {
-    return res;
-  }
-
-  public final void fire() {
-    if (handler != null) {
-      handler.complete(res.result(), res.cause());
-    }
+  private CommandResponse(R result, Throwable failure) {
+    this.result = result;
+    this.failure = failure;
   }
 }

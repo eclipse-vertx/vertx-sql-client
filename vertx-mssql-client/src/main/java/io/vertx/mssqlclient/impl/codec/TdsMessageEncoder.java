@@ -50,9 +50,8 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   void write(MSSQLCommandMessage<?, ?> cmd) {
-    if (tdsMessageCodec.add(cmd)) {
-      cmd.encode();
-    }
+    tdsMessageCodec.add(cmd);
+    cmd.encode();
   }
 
   public int packetSize() {

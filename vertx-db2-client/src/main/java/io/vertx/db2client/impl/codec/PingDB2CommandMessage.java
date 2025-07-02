@@ -43,8 +43,7 @@ class PingDB2CommandMessage extends DB2CommandMessage<Void, PingCommand> {
   void decodePayload(ByteBuf payload, int payloadLength) {
     DRDAConnectResponse response = new DRDAConnectResponse(payload, md);
     response.readExchangeServerAttributes();
-    completionHandler.handle(CommandResponse.success(null));
-    return;
+    fireCommandSuccess(null);
   }
 
   private void sendPingRequest() {

@@ -23,6 +23,8 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.db2client.DB2ConnectOptions;
+import io.vertx.db2client.DB2Exception;
+import io.vertx.db2client.impl.codec.ConnectionState;
 import io.vertx.db2client.impl.codec.DB2CommandMessage;
 import io.vertx.db2client.impl.codec.DB2Codec;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement;
@@ -30,6 +32,8 @@ import io.vertx.db2client.impl.codec.ExtendedBatchQueryDB2CommandMessage;
 import io.vertx.db2client.impl.codec.ExtendedQueryDB2CommandMessage;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
+import io.vertx.db2client.impl.drda.SQLState;
+import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.codec.CommandMessage;
 import io.vertx.sqlclient.spi.connection.Connection;
@@ -51,6 +55,7 @@ public class DB2SocketConnection extends SocketConnectionBase {
   private DB2Codec codec;
   private Handler<Void> closeHandler;
   public final ConnectionMetaData connMetadata = new ConnectionMetaData();
+  public ConnectionState status = ConnectionState.CONNECTING;
 
   public DB2SocketConnection(NetSocketInternal socket,
       ClientMetrics clientMetrics,
@@ -62,6 +67,19 @@ public class DB2SocketConnection extends SocketConnectionBase {
                              ContextInternal context) {
     super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
     this.connectOptions = connectOptions;
+  }
+
+  @Override
+  protected <R> void fail(CommandBase<R> command, Completable<R> handler, Throwable err) {
+    if (status == ConnectionState.CONNECTING && command instanceof InitialHandshakeCommand) {
+      // Sometimes DB2 closes the connection when sending an invalid Database name.
+      // -4499 = A fatal error occurred that resulted in a disconnect from the data
+      // source.
+      // 08001 = "The connection was unable to be established"
+      err = new DB2Exception("The connection was closed by the database server.", SqlCode.CONNECTION_REFUSED,
+        SQLState.AUTH_DATABASE_CONNECTION_REFUSED);
+    }
+    super.fail(command, handler, err);
   }
 
   // TODO RETURN FUTURE ???

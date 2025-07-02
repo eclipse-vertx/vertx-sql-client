@@ -26,7 +26,6 @@ import io.vertx.db2client.impl.drda.DRDAConstants;
 import io.vertx.db2client.impl.drda.SQLState;
 import io.vertx.db2client.impl.drda.SqlCode;
 import io.vertx.sqlclient.spi.connection.Connection;
-import io.vertx.sqlclient.codec.CommandResponse;
 
 /**
  * InitialHandshakeCommandCodec encodes the packets to get a connection from the database.
@@ -37,13 +36,7 @@ import io.vertx.sqlclient.codec.CommandResponse;
  */
 class InitialHandshakeDB2CommandMessage extends AuthenticationDB2CommandBaseMessage<Connection, InitialHandshakeCommand> {
 
-  private static enum ConnectionState {
-    CONNECTING, AUTHENTICATING, CONNECTED, CONNECT_FAILED
-  }
-
   private static final int TARGET_SECURITY_MEASURE = DRDAConstants.SECMEC_USRIDPWD;
-
-  private ConnectionState status = ConnectionState.CONNECTING;
 
   InitialHandshakeDB2CommandMessage(InitialHandshakeCommand cmd) {
     super(cmd);
@@ -53,16 +46,6 @@ class InitialHandshakeDB2CommandMessage extends AuthenticationDB2CommandBaseMess
   void encode(DB2Encoder encoder) {
     super.encode(encoder);
     encoder.socketConnection.connMetadata.databaseName = cmd.database();
-    encoder.socketConnection.closeHandler(h -> {
-      if (status == ConnectionState.CONNECTING) {
-        // Sometimes DB2 closes the connection when sending an invalid Database name.
-        // -4499 = A fatal error occurred that resulted in a disconnect from the data
-        // source.
-        // 08001 = "The connection was unable to be established"
-        fail(new DB2Exception("The connection was closed by the database server.", SqlCode.CONNECTION_REFUSED,
-            SQLState.AUTH_DATABASE_CONNECTION_REFUSED));
-      }
-    });
 
     ByteBuf packet = allocateBuffer();
     int packetStartIdx = packet.writerIndex();
@@ -90,7 +73,7 @@ class InitialHandshakeDB2CommandMessage extends AuthenticationDB2CommandBaseMess
   @Override
   void decodePayload(ByteBuf payload, int payloadLength) {
     DRDAConnectResponse response = new DRDAConnectResponse(payload, encoder.socketConnection.connMetadata);
-    switch (status) {
+    switch (encoder.socketConnection.status) {
       case CONNECTING:
         response.readExchangeServerAttributes();
         // readAccessSecurity can throw a DB2Exception if there are problems connecting.
@@ -100,7 +83,7 @@ class InitialHandshakeDB2CommandMessage extends AuthenticationDB2CommandBaseMess
         try {
           response.readAccessSecurity(TARGET_SECURITY_MEASURE);
         } catch (DB2Exception de) {
-          status = ConnectionState.CONNECT_FAILED;
+          encoder.socketConnection.status = ConnectionState.CONNECT_FAILED;
           throw de;
         }
 
@@ -116,7 +99,7 @@ class InitialHandshakeDB2CommandMessage extends AuthenticationDB2CommandBaseMess
 
         int lenOfPayload = packet.writerIndex() - packetStartIdx;
         sendPacket(packet, lenOfPayload);
-        status = ConnectionState.AUTHENTICATING;
+        encoder.socketConnection.status = ConnectionState.AUTHENTICATING;
         break;
 
       case AUTHENTICATING:
@@ -125,12 +108,12 @@ class InitialHandshakeDB2CommandMessage extends AuthenticationDB2CommandBaseMess
         if (accData.correlationToken != null) {
           encoder.socketConnection.connMetadata.correlationToken = accData.correlationToken;
         }
-        status = ConnectionState.CONNECTED;
-        completionHandler.handle(CommandResponse.success(cmd.connection()));
+        encoder.socketConnection.status = ConnectionState.CONNECTED;
+        fireCommandSuccess(cmd.connection());
         break;
 
       default:
-        fail(new DB2Exception("The connection was unable to be established. Invalid connection state.", SqlCode.CONNECTION_REFUSED,
+        fireCommandFailure(new DB2Exception("The connection was unable to be established. Invalid connection state.", SqlCode.CONNECTION_REFUSED,
           SQLState.AUTH_DATABASE_CONNECTION_REFUSED));
         break;
 

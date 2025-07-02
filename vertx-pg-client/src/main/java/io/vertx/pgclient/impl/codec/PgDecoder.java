@@ -48,7 +48,6 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
 
   void fireCommandResponse(CommandResponse<?> commandResponse) {
     PgCommandMessage<?, ?> c = codec.poll();
-    commandResponse.handler = (Completable) c.handler;
     chctx.fireChannelRead(commandResponse);
   }
 

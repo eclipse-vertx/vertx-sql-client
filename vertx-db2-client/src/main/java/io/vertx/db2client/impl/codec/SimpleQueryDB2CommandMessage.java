@@ -61,7 +61,7 @@ class SimpleQueryDB2CommandMessage<T> extends QueryDB2CommandBaseMessage<T, Simp
     if (cmd.autoCommit()) {
       updateResponse.readLocalCommit();
     }
-    completionHandler.handle(CommandResponse.success(true));
+    fireCommandSuccess(true);
   }
 
   static <A, T> T emptyResult(Collector<Row, A, T> collector) {
@@ -87,7 +87,7 @@ class SimpleQueryDB2CommandMessage<T> extends QueryDB2CommandBaseMessage<T, Simp
     }
 
     handleQueryResult(decoder);
-    completionHandler.handle(CommandResponse.success(true));
+    fireCommandSuccess(true);
   }
 
   @Override

@@ -14,7 +14,6 @@ package io.vertx.mysqlclient.impl.codec;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.vertx.core.Completable;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
 import io.vertx.sqlclient.codec.CommandResponse;
 
@@ -51,14 +50,12 @@ class MySQLEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   void write(MySQLCommand<?, ?> cmd) {
-    if (codec.add(cmd)) {
-      cmd.encode(this);
-    }
+    codec.add(cmd);
+    cmd.encode(this);
   }
 
   final void fireCommandResponse(CommandResponse<?> commandResponse) {
-    MySQLCommand<?, ?> c = codec.poll();
-    commandResponse.handler = (Completable) c.handler;
+    codec.poll();
     chctx.fireChannelRead(commandResponse);
   }
 }

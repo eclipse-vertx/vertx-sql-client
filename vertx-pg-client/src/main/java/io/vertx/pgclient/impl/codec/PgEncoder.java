@@ -108,9 +108,8 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   }
 
   void write(PgCommandMessage<?, ?> cmd) {
-    if (codec.add(cmd)) {
-      cmd.encode(this);
-    }
+    codec.add(cmd);
+    cmd.encode(this);
   }
 
   @Override

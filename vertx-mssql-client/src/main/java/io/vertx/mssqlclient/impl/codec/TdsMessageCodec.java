@@ -31,7 +31,6 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   private ByteBufAllocator alloc;
   private long transactionDescriptor;
   private Map<String, CursorData> cursorDataMap;
-  private Throwable failure;
 
   public TdsMessageCodec(int desiredPacketSize) {
     decoder = new TdsMessageDecoder(this);
@@ -44,33 +43,6 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
     super.handlerAdded(ctx);
     chctx = ctx;
     alloc = chctx.alloc();
-  }
-
-  @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    fail(cause);
-    super.exceptionCaught(ctx, cause);
-  }
-
-  private void fail(Throwable cause) {
-    if (failure == null) {
-      failure = cause;
-      for (Iterator<MSSQLCommandMessage<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
-        MSSQLCommandMessage<?, ?> codec = it.next();
-        it.remove();
-        fail(codec, cause);
-      }
-    }
-  }
-
-  private void fail(MSSQLCommandMessage<?, ?> codec, Throwable cause) {
-    codec.fail(cause);
-  }
-
-  @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    fail(ClosedConnectionException.INSTANCE);
-    super.channelInactive(ctx);
   }
 
   TdsMessageEncoder encoder() {
@@ -105,14 +77,8 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
     return inflight.poll();
   }
 
-  boolean add(MSSQLCommandMessage<?, ?> codec) {
-    if (failure == null) {
-      inflight.add(codec);
-      return true;
-    } else {
-      fail(codec, failure);
-      return false;
-    }
+  void add(MSSQLCommandMessage<?, ?> codec) {
+    inflight.add(codec);
   }
 
   CursorData getOrCreateCursorData(String cursorId) {

@@ -52,6 +52,6 @@ class CloseCursorDB2CommandMessage extends DB2CommandMessage<Void, CloseCursorCo
   void decodePayload(ByteBuf payload, int payloadLength) {
     DRDAQueryResponse closeCursor = new DRDAQueryResponse(payload, encoder.socketConnection.connMetadata);
     closeCursor.readCursorClose();
-    completionHandler.handle(CommandResponse.success(null));
+    fireCommandSuccess(null);
   }
 }

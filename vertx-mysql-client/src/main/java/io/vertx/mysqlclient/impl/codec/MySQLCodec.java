@@ -27,8 +27,6 @@ import java.util.Iterator;
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 
   private final ArrayDeque<MySQLCommand<?, ?>> inflight;
-  private ChannelHandlerContext chctx;
-  private Throwable failure;
 
   public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
     inflight = new ArrayDeque<>();
@@ -37,26 +35,8 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
     init(decoder, encoder);
   }
 
-  @Override
-  public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-    chctx = ctx;
-    super.handlerAdded(ctx);
-  }
-
-  @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    clearInflightCommands(ClosedConnectionException.INSTANCE);
-    super.channelInactive(ctx);
-  }
-
-  public boolean add(MySQLCommand<?, ?> codec) {
-    if (failure == null) {
-      inflight.add(codec);
-      return true;
-    } else {
-      fail(codec, failure);
-      return false;
-    }
+  public void add(MySQLCommand<?, ?> codec) {
+    inflight.add(codec);
   }
 
   public MySQLCommand<?, ?> poll() {
@@ -65,21 +45,6 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
 
   public MySQLCommand<?, ?> peek() {
     return inflight.peek();
-  }
-
-  private void clearInflightCommands(Throwable cause) {
-    for (Iterator<MySQLCommand<?, ?>> it = inflight.iterator(); it.hasNext(); ) {
-      MySQLCommand<?, ?> codec = it.next();
-      it.remove();
-      fail(codec, cause);
-    }
-  }
-
-  private void fail(MySQLCommand<?, ?> codec, Throwable cause) {
-    if (failure == null) {
-      failure = cause;
-      codec.fail(cause);
-    }
   }
 
   /**
