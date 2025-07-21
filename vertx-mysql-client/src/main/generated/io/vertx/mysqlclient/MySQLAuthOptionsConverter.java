@@ -2,8 +2,6 @@ package io.vertx.mysqlclient;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 
 /**
  * Converter and mapper for {@link io.vertx.mysqlclient.MySQLAuthOptions}.
