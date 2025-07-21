@@ -29,7 +29,7 @@ public class ProxySQLRule extends ExternalResource {
         createContainerCmd.getHostConfig().withNetworkMode(mySQLRule.network());
       })
       .withExposedPorts(6032, 6033, 6070)
-      .waitingFor(Wait.forLogMessage(".*Latest ProxySQL version available.*\\n", 1));
+      .waitingFor(Wait.forLogMessage(".*Started Monitor scheduler thread for PgSQL servers.*\\n", 1));
 
     proxySql.start();
 
