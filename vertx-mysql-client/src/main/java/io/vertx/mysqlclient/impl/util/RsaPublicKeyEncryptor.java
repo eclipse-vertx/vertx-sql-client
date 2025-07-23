@@ -56,7 +56,7 @@ public class RsaPublicKeyEncryptor {
   }
 
   private static byte[] encrypt(PublicKey key, byte[] plainData) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-    Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-1AndMGF1Padding");
+    Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
     cipher.init(Cipher.ENCRYPT_MODE, key);
     return cipher.doFinal(plainData);
   }

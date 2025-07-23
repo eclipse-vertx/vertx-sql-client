@@ -99,7 +99,7 @@ public class MySQLRule extends ExternalResource {
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
     } else {
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
-      String cmd = "--disable-ssl --max_allowed_packet=33554432 --max_prepared_stmt_count=1024 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci";
+      String cmd = "--max_allowed_packet=33554432 --max_prepared_stmt_count=1024 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci";
       if (isUsingMySQL8()) {
         // introduced in MySQL 8.0.3
         cmd += " --caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem --caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem";
@@ -148,7 +148,7 @@ public class MySQLRule extends ExternalResource {
   }
 
   public boolean isUsingMySQL8() {
-    return databaseServerInfo == DatabaseServerInfo.MySQL_V8_0;
+    return databaseServerInfo == DatabaseServerInfo.MySQL_V8_0 || databaseServerInfo == DatabaseServerInfo.MySQL_V8_4;
   }
 
   public MySQLConnectOptions options() {
@@ -236,6 +236,7 @@ public class MySQLRule extends ExternalResource {
     MySQL_V5_6(DatabaseType.MySQL, "5.6"),
     MySQL_V5_7(DatabaseType.MySQL, "5.7"),
     MySQL_V8_0(DatabaseType.MySQL, "8.0"),
+    MySQL_V8_4(DatabaseType.MySQL, "8.4"),
     MySQL_LATEST(DatabaseType.MySQL, "latest"),
     MariaDB_V10_4(DatabaseType.MariaDB, "10.4"),
     MariaDB_LATEST(DatabaseType.MariaDB, "latest"),
@@ -264,8 +265,10 @@ public class MySQLRule extends ExternalResource {
             return MySQL_V5_6;
           } else if (dockerImageTag.startsWith("5.7")) {
             return MySQL_V5_7;
-          } else if (dockerImageTag.startsWith("8")) {
+          } else if (dockerImageTag.startsWith("8.0")) {
             return MySQL_V8_0;
+          } else if (dockerImageTag.startsWith("8.4")) {
+            return MySQL_V8_4;
           } else if (dockerImageTag.equalsIgnoreCase("latest")) {
             return MySQL_LATEST;
           } else {
