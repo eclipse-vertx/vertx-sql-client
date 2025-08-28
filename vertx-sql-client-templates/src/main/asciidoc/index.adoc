@@ -221,11 +221,10 @@ A Vert.x data object is a simple Java bean class annotated with the `@DataObject
 Any data object annotated by {@link io.vertx.sqlclient.templates.annotations.RowMapped} or {@link io.vertx.sqlclient.templates.annotations.ParametersMapped}
 will trigger  the generation of a corresponding mapper class.
 
-The _codegen_ annotation processor generates these classes at compilation time. It is a feature of the Java
-compiler so _no extra step_ is required, it is just a matter of configuring correctly your build:
+The _codegen_ annotation processor generates these classes at compilation time.
+It is a feature of the Java compiler so _no extra step_ is required, it is just a matter of configuring correctly your build.
 
-Just add the `io.vertx:vertx-codegen:processor` and `io.vertx:${maven.artifactId}`
-dependencies to your build.
+Add the `io.vertx:vertx-codegen:processor` and `io.vertx:${maven.artifactId}` dependencies to your build.
 
 Here a configuration example for Maven:
 
@@ -249,16 +248,16 @@ This feature can also be used in Gradle:
 [source]
 ----
 annotationProcessor "io.vertx:vertx-codegen:${maven.version}:processor"
+annotationProcessor "io.vertx:vertx-sql-client-templates:${maven.version}"
 compile "io.vertx:${maven.artifactId}:${maven.version}"
+compile "io.vertx:vertx-codegen-json:${maven.version}"
 ----
 
 IDEs usually provide support for annotation processors.
 
-The codegen `processor` classifier adds to the jar the automatic configuration of the service proxy annotation processor
-via the `META-INF/services` plugin mechanism.
+The codegen `processor` classifier adds to the jar the automatic configuration of the service proxy annotation processor via the `META-INF/services` plugin mechanism.
 
-If you want you can use it too with the regular jar, but you need then to declare the annotation processor
-explicitly, for instance in Maven:
+If you want you can use it too with the regular jar, but you need then to declare the annotation processor explicitly, for instance in Maven:
 
 [source,xml]
 ----
@@ -271,6 +270,21 @@ explicitly, for instance in Maven:
   </configuration>
 </plugin>
 ----
+
+[IMPORTANT]
+====
+The codegen `processor` requires a `package-info.java` file annotated with `@io.vertx.codegen.annotations.ModuleGen` at the root of the package of the annotated classes.
+Here's an example:
+
+[source,java]
+.`package-info.java` file
+----
+@ModuleGen(name = "templates", groupPackage = "org.acme")
+package org.acme.templates;
+
+import io.vertx.codegen.annotations.ModuleGen;
+----
+====
 
 === Row mapping
 
