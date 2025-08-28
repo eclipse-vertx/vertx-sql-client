@@ -40,7 +40,7 @@ wrapper for a `PreparedQuery`.
 {@link examples.TemplateExamples#queryExample}
 ----
 
-When you need to perform an insert or update operation and you do not care of the result, you can use {@link io.vertx.sqlclient.templates.SqlTemplate#forUpdate} instead:
+When you need to perform an insert or update operation, and you do not care of the result, you can use {@link io.vertx.sqlclient.templates.SqlTemplate#forUpdate} instead:
 
 [source,$lang]
 ----
@@ -52,7 +52,7 @@ When you need to perform an insert or update operation and you do not care of th
 The template syntax uses `#{XXX}` syntax where `XXX` is a valid https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.8[java identifier] string
 (without the keyword restriction).
 
-You can use the backslash char `\` to escape  any `#` character, i.e `\#{foo}` will be interpreted as `#{foo}` string without a `foo` parameter.
+You can use the backslash char `\` to escape any `#` character, i.e. `\#{foo}` will be interpreted as `#{foo}` string without a `foo` parameter.
 
 == Row mapping
 
@@ -151,7 +151,7 @@ Row mapping is achieved by creating a `JsonObject` using the row key/value pairs
 {@link examples.TemplateExamples#bindingRowWithJacksonDatabind}
 ----
 
-Likewise parameters mapping is achieved by mapping the object to a `JsonObject` using  {@link io.vertx.core.json.JsonObject#mapFrom}
+Likewise, parameters mapping is achieved by mapping the object to a `JsonObject` using  {@link io.vertx.core.json.JsonObject#mapFrom}
 and then using the key/value pairs to produce template parameters.
 
 [source,$lang]
@@ -252,12 +252,12 @@ annotationProcessor "io.vertx:vertx-codegen:${maven.version}:processor"
 compile "io.vertx:${maven.artifactId}:${maven.version}"
 ----
 
-IDEs usually provide usually support for annotation processors.
+IDEs usually provide support for annotation processors.
 
 The codegen `processor` classifier adds to the jar the automatic configuration of the service proxy annotation processor
 via the `META-INF/services` plugin mechanism.
 
-If you want you can use it too with the regular jar but you need then to declare the annotation processor
+If you want you can use it too with the regular jar, but you need then to declare the annotation processor
 explicitly, for instance in Maven:
 
 [source,xml]
@@ -281,7 +281,7 @@ You can generate a row mapper by annotating your data object by {@link io.vertx.
 {@link examples.TemplateExamples#rowMappedDataObject}
 ----
 
-By default each column name is bound after the data object properties, e.g the `userName` property binds to
+By default, each column name is bound after the data object properties, e.g. the `userName` property binds to
 the `userName` column.
 
 You can use custom names thanks to the {@link io.vertx.sqlclient.templates.annotations.Column}
@@ -310,7 +310,7 @@ You can generate a parameters mapper by annotating your data object by {@link io
 {@link examples.TemplateExamples#paramsMappedDataObject}
 ----
 
-By default each parameter is bound after the data object properties, e.g the `userName` property binds to
+By default, each parameter is bound after the data object properties, e.g. the `userName` property binds to
 the `userName` parameter.
 
 You can use custom names thanks to the {@link io.vertx.sqlclient.templates.annotations.TemplateParameter}
@@ -332,7 +332,7 @@ The generated mapper can be used to perform param mapping like explained in <<pa
 
 === Java enum types mapping
 
-You can map Java enum types when the client supports it (e.g the Reactive PostgreSQL client).
+You can map Java enum types when the client supports it (e.g. the Reactive PostgreSQL client).
 
 Usually Java enum types are mapped to string / numbers and possibly custom database enumerated types.
 
