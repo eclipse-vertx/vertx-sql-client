@@ -250,7 +250,7 @@ This feature can also be used in Gradle:
 annotationProcessor "io.vertx:vertx-codegen:${maven.version}:processor"
 annotationProcessor "io.vertx:vertx-sql-client-templates:${maven.version}"
 compile "io.vertx:${maven.artifactId}:${maven.version}"
-compile "io.vertx:vertx-codegen-json:${maven.version}"
+compile "io.vertx:vertx-codegen:${maven.version}"
 ----
 
 IDEs usually provide support for annotation processors.
