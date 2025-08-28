@@ -56,7 +56,7 @@ You can use the backslash char `\` to escape  any `#` character, i.e `\#{foo}` w
 
 == Row mapping
 
-By default templates produce {@link io.vertx.sqlclient.Row} as result type.
+By default, templates produce {@link io.vertx.sqlclient.Row} as result type.
 
 You can provide a custom {@link io.vertx.sqlclient.templates.RowMapper} to achieve row level mapping instead:
 
@@ -323,7 +323,7 @@ annotation.
 
 You can annotate the field, the getter or the setter.
 
-The generated mapper can be used to perform param mapping like explained in <<params_mapping_with_custom_function,parameter mapping chapter>>.
+The generated mapper can be used to perform param mapping like explained in <<params_mapping_with_custom_mapper,parameter mapping chapter>>.
 
 [source,$lang]
 ----
