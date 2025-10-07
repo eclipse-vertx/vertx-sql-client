@@ -120,7 +120,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     // 2. Create and set up an SSLHelper and SSLHandler
     // options.getApplicationLayerProtocols()
     Future<SslChannelProvider> f = SslContextManager
-      .resolveSslContextProvider(sslOptions, "", null, null, context)
+      .resolveSslContextProvider(sslOptions, "", null, context)
       .map(provider -> new SslChannelProvider(context.owner(), provider, false));
     return f.compose(provider -> {
       SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, sslOptions.isUseAlpn(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
