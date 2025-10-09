@@ -312,7 +312,9 @@ public class MySQLTLSTest {
     options.setHost("localhost");
 
     MySQLConnection.connect(vertx, options).onComplete( ctx.asyncAssertFailure(err -> {
-      ctx.assertEquals(err.getMessage(), "No name matching localhost found");
+      String expected = "No name matching localhost found";
+      ctx.assertTrue(err.getMessage().contains(expected), "Was expecting <" + err.getMessage() +
+        "> to contain <" + expected + ">");
     }));
   }
 

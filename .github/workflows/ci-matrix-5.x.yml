@@ -44,19 +44,19 @@ jobs:
             jdk: 11
             profile: 'SQL-templates'
           - os: ubuntu-latest
-            jdk: 21
+            jdk: 25
             profile: 'PostgreSQL-11'
           - os: ubuntu-latest
-            jdk: 21
+            jdk: 25
             profile: 'MySQL-5.7'
           - os: ubuntu-latest
-            jdk: 21
+            jdk: 25
             profile: 'MariaDB-10.4'
           - os: ubuntu-latest
-            jdk: 21
+            jdk: 25
             profile: 'MSSQL-2019-latest'
           - os: ubuntu-latest
-            jdk: 21
+            jdk: 25
             profile: 'Oracle-23'
     uses: ./.github/workflows/ci.yml
     with:
