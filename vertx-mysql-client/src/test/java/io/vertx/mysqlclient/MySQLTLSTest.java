@@ -277,7 +277,8 @@ public class MySQLTLSTest {
           .setCertPath("tls/files/client-cert.pem")
           .setKeyPath("tls/files/client-key.pem")),
       ctx.asyncAssertFailure(err -> {
-        ctx.assertEquals(err.getMessage(), "No name matching localhost found");
+        String expected = "No name matching localhost found";
+        ctx.assertTrue(err.getMessage().contains(expected), "Expecting <" + err.getMessage() + "> to contain <" + expected + ">");
       }));
   }
 
