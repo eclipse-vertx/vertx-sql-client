@@ -334,7 +334,7 @@ public abstract class SocketConnectionBase implements Connection {
           ctx.flush();
         }
       } else {
-        if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
+        if (queryCmd.autoCommit() && isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           // We cannot cache this prepared statement because it might be executed with another type
           fireCommandMessage(ctx, prepareCommand(queryCmd, handler, false, true));
