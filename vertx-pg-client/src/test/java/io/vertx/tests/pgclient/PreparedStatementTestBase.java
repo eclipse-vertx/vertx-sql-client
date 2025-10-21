@@ -527,24 +527,25 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   }
 
   private <T> void testInferDataType42P18(TestContext ctx, Class<T> type, T value, String suffix1, String suffix2) {
+    PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT CONCAT('HELLO ', $1)").execute(Tuple.of(value))
+        .map(rows -> rows.iterator().next().getString(0))
+        .eventually(() -> conn.close())
+        .onComplete(ctx.asyncAssertSuccess(str -> {
+          ctx.assertEquals("HELLO " + suffix1, str);
+        }));
+    }));
     Object array = Array.newInstance(type, 1);
     Array.set(array, 0, value);
     PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
-        .preparedQuery("SELECT CONCAT('HELLO ', $1)").execute(Tuple.of(value))
-        .map(result1 -> {
-          Row row1 = result1.iterator().next();
-          ctx.assertEquals("HELLO " + suffix1, row1.getString(0));
-          return "";
-        })
-        .compose(v -> conn.preparedQuery("SELECT CONCAT('HELLO ', $1)").execute(Tuple.of(array)))
-        .map(result2 -> {
-          Row row2 = result2.iterator().next();
-          String v = row2.getString(0);
-          ctx.assertEquals("HELLO " + suffix2, row2.getString(0));
-          return "";
-        })
-        .eventually(() -> conn.close());
+        .preparedQuery("SELECT CONCAT('HELLO ', $1)").execute(Tuple.of(array))
+        .map(rows -> rows.iterator().next().getString(0))
+        .eventually(() -> conn.close())
+        .onComplete(ctx.asyncAssertSuccess(str -> {
+          ctx.assertEquals("HELLO " + suffix2, str);
+        }));
     }));
   }
 
