@@ -76,7 +76,7 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
       .compose(
       cr -> Future.succeededFuture(PreparedStatementImpl.create(conn, context, cr, autoCommit())),
       err -> {
-        if (conn.isIndeterminatePreparedStatementError(err)) {
+        if (autoCommit() && conn.isIndeterminatePreparedStatementError(err)) {
           return Future.succeededFuture(PreparedStatementImpl.create(conn, context, options, sql, autoCommit()));
         } else {
           return Future.failedFuture(err);

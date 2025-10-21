@@ -303,7 +303,7 @@ public abstract class SocketConnectionBase implements Connection {
         }
       } else {
         Throwable cause = ar.cause();
-        if (isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
+        if (queryCmd.autoCommit() && isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
           // We cannot cache this prepared statement because it might be executed with another type
           ctx.write(prepareCommand(queryCmd, false, true), ctx.voidPromise());
