@@ -509,6 +509,14 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
           ctx.assertEquals("HELLO " + suffix2, str);
         }));
     }));
+    PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.begin()
+        .flatMap(tx -> conn.preparedQuery("SELECT CONCAT('HELLO ', $1)").execute(Tuple.of(value))
+          .eventually(() -> conn.close())
+          .onComplete(ctx.asyncAssertFailure(failure -> {
+            ctx.assertTrue(hasSqlstateCode(failure, "42P18"));
+          })));
+    }));
   }
 
   @Test
