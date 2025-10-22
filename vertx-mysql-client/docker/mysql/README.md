@@ -6,8 +6,8 @@ Modify the content in the `docker compose.yml`
 
 ### Run the containers
 
-```
-> docker compose up --build -V
+```shell
+docker compose up --build -V
 ```
 
 ### TLS testing
@@ -21,6 +21,6 @@ The steps to generate these artifacts are quite easy:
 
 ### Run tests
 
-```
-> mvn test -Dconnection.uri=mysql://mysql:password@localhost:3306/testschema -Dtls.connection.uri=mysql://mysql:password@localhost:3307/testschema
+```shell
+mvn test -Dconnection.uri=mysql://mysql:password@localhost:3306/testschema -Dtls.connection.uri=mysql://mysql:password@localhost:3307/testschema
 ```
