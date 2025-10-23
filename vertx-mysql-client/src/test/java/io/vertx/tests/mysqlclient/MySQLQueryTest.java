@@ -14,6 +14,7 @@ package io.vertx.tests.mysqlclient;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLClient;
@@ -468,6 +469,23 @@ public class MySQLQueryTest extends MySQLTestBase {
           }));
         }));
       }));
+    }));
+  }
+
+  @Test
+  public void testColumnDefinitionChangeWithCursor(TestContext ctx) {
+    Async rows = ctx.async(100);
+    Async completion = ctx.async();
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .prepare("SELECT row_number() over () as \"Number\", case when 1 then 1 else 0 end as \"Case\" FROM mysql.help_relation limit 0,100")
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
+          // Make sure to fetch from the database twice
+          RowStream<Row> stream = ps.createStream(50);
+          stream.exceptionHandler(ctx::fail);
+          stream.endHandler(v -> completion.complete());
+          stream.handler(row -> rows.countDown());
+        }));
     }));
   }
 }

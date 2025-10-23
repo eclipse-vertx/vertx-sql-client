@@ -1,3 +1,9 @@
+#allow
+reading mysql schema
+GRANT
+SELECT
+ON mysql.* TO 'mysql';
+
 # testing change schema
 CREATE DATABASE emptyschema;
 GRANT ALL ON emptyschema.* TO 'mysql'@'%';

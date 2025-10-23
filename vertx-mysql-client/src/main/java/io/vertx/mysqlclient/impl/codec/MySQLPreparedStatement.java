@@ -23,9 +23,8 @@ import io.vertx.mysqlclient.impl.MySQLRowDescriptor;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.*;
+import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.internal.PreparedStatement;
-import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.Arrays;
@@ -35,18 +34,17 @@ public class MySQLPreparedStatement implements PreparedStatement {
   final long statementId;
   final String sql;
   final MySQLParamDesc paramDesc;
-  final MySQLRowDescriptor rowDesc;
   final boolean closeAfterUsage;
 
   private boolean sendTypesToServer;
   private final DataType[] bindingTypes;
 
   boolean isCursorOpen;
+  MySQLRowDescriptor cursorRowDescriptor;
 
-  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDescriptor rowDesc, boolean closeAfterUsage) {
+  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, boolean closeAfterUsage) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;
-    this.rowDesc = rowDesc;
     this.sql = sql;
     this.closeAfterUsage = closeAfterUsage;
 
@@ -56,8 +54,8 @@ public class MySQLPreparedStatement implements PreparedStatement {
   }
 
   @Override
-  public RowDescriptorBase rowDesc() {
-    return rowDesc;
+  public MySQLRowDescriptor rowDesc() {
+    throw new UnsupportedOperationException("The client should use the column definitions provided by execute or fetch response instead of prepare response");
   }
 
   @Override
