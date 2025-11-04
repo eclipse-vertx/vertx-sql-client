@@ -29,6 +29,7 @@ class ResetStatementCommandCodec extends CommandCodec<Void, CloseCursorCommand> 
     statement.cleanBindings();
 
     statement.isCursorOpen = false;
+    statement.cursorRowDescriptor = null;
     sendStatementResetCommand(statement.statementId);
   }
 

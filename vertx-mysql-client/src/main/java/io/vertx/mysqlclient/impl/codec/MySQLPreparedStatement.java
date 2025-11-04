@@ -23,7 +23,7 @@ import io.vertx.mysqlclient.impl.MySQLRowDesc;
 import io.vertx.mysqlclient.impl.datatype.DataType;
 import io.vertx.mysqlclient.impl.datatype.DataTypeCodec;
 import io.vertx.sqlclient.Tuple;
-import io.vertx.sqlclient.impl.*;
+import io.vertx.sqlclient.impl.ErrorMessageFactory;
 import io.vertx.sqlclient.internal.ParamDesc;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.RowDesc;
@@ -36,18 +36,17 @@ class MySQLPreparedStatement implements PreparedStatement {
   final long statementId;
   final String sql;
   final MySQLParamDesc paramDesc;
-  final MySQLRowDesc rowDesc;
   final boolean closeAfterUsage;
 
   private boolean sendTypesToServer;
   private final DataType[] bindingTypes;
 
   boolean isCursorOpen;
+  MySQLRowDesc cursorRowDescriptor;
 
-  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, MySQLRowDesc rowDesc, boolean closeAfterUsage) {
+  MySQLPreparedStatement(String sql, long statementId, MySQLParamDesc paramDesc, boolean closeAfterUsage) {
     this.statementId = statementId;
     this.paramDesc = paramDesc;
-    this.rowDesc = rowDesc;
     this.sql = sql;
     this.closeAfterUsage = closeAfterUsage;
 
@@ -63,7 +62,7 @@ class MySQLPreparedStatement implements PreparedStatement {
 
   @Override
   public RowDesc rowDesc() {
-    return rowDesc;
+    throw new UnsupportedOperationException("The client should use the column definitions provided by execute or fetch response instead of prepare response");
   }
 
   @Override
