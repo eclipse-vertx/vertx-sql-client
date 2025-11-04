@@ -23,8 +23,8 @@ import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
 import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.stream.Collector;
@@ -94,7 +94,11 @@ abstract class QueryMySQLCommandBase<T, C extends QueryCommandBase<T>> extends M
   protected void handleResultsetColumnDefinitionsDecodingCompleted() {
     commandHandlerState = CommandHandlerState.HANDLING_ROW_DATA_OR_END_PACKET;
     MySQLRowDescriptor mySQLRowDesc = MySQLRowDescriptor.create(columnDefinitions, format); // use the column definitions if provided by execute or fetch response instead of prepare response
+    handleRowDescriptorCreated(mySQLRowDesc);
     decoder = new RowResultDecoder<>(cmd.collector(), mySQLRowDesc);
+  }
+
+  protected void handleRowDescriptorCreated(MySQLRowDescriptor mySQLRowDesc) {
   }
 
   protected void handleRows(ByteBuf payload, int payloadLength) {
