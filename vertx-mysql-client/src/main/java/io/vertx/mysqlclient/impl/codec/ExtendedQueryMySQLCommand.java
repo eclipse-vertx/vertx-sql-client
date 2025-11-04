@@ -17,6 +17,7 @@
 package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
+import io.vertx.mysqlclient.impl.MySQLRowDescriptor;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.codec.CommandResponse;
@@ -31,7 +32,14 @@ public class ExtendedQueryMySQLCommand<R> extends ExtendedQueryMySQLCommandBase<
     super(cmd, statement);
     if (cmd.fetch() > 0 && statement.isCursorOpen) {
       // restore the state we need for decoding fetch response based on the prepared statement
-      columnDefinitions = statement.rowDesc.columnDefinitions();
+      columnDefinitions = statement.cursorRowDescriptor.columnDefinitions();
+    }
+  }
+
+  @Override
+  protected void handleRowDescriptorCreated(MySQLRowDescriptor mySQLRowDesc) {
+    if (cmd.fetch() > 0) {
+      statement.cursorRowDescriptor = mySQLRowDesc;
     }
   }
 
@@ -42,7 +50,7 @@ public class ExtendedQueryMySQLCommand<R> extends ExtendedQueryMySQLCommandBase<
     if (statement.isCursorOpen) {
       if (decoder == null) {
         // restore the state we need for decoding if column definitions are not included in the fetch response
-        decoder = new RowResultDecoder<>(cmd.collector(), statement.rowDesc);
+        decoder = new RowResultDecoder<>(cmd.collector(), statement.cursorRowDescriptor);
       }
       sendStatementFetchCommand(statement.statementId, cmd.fetch());
     } else {

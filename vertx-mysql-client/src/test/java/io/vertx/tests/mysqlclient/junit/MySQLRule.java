@@ -143,6 +143,10 @@ public class MySQLRule extends ExternalResource {
     return databaseServerInfo.getDatabaseType() == DatabaseType.MariaDB;
   }
 
+  public boolean isUsingMySQL5() {
+    return databaseServerInfo.databaseType == DatabaseType.MySQL && databaseServerInfo.dockerImageTag.startsWith("5.");
+  }
+
   public boolean isUsingMySQL5_6() {
     return databaseServerInfo == DatabaseServerInfo.MySQL_V5_6;
   }

@@ -14,6 +14,7 @@ package io.vertx.tests.mysqlclient;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLClient;
@@ -21,7 +22,6 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.sqlclient.*;
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+
+import static org.junit.Assume.assumeFalse;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLQueryTest extends MySQLTestBase {
@@ -280,7 +282,7 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testEncodePacketSizeMoreThan16MB(TestContext ctx) {
-    Assume.assumeFalse(rule.isUsingMySQL5_6());
+    assumeFalse(rule.isUsingMySQL5_6());
     int dataSize = 20 * 1024 * 1024; // 20MB payload
     byte[] data = new byte[dataSize];
     ThreadLocalRandom.current().nextBytes(data);
@@ -468,6 +470,24 @@ public class MySQLQueryTest extends MySQLTestBase {
           }));
         }));
       }));
+    }));
+  }
+
+  @Test
+  public void testColumnDefinitionChangeWithCursor(TestContext ctx) {
+    assumeFalse("Query syntax not supported on MySQL 5", rule.isUsingMySQL5());
+    Async rows = ctx.async(100);
+    Async completion = ctx.async();
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .prepare("SELECT row_number() over () as \"Number\", case when 1 then 1 else 0 end as \"Case\" FROM mysql.help_relation limit 0,100")
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
+          // Make sure to fetch from the database twice
+          RowStream<Row> stream = ps.createStream(50);
+          stream.exceptionHandler(ctx::fail);
+          stream.endHandler(v -> completion.complete());
+          stream.handler(row -> rows.countDown());
+        }));
     }));
   }
 }
