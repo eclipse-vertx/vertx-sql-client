@@ -18,8 +18,6 @@ package io.vertx.mysqlclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.mysqlclient.impl.MySQLParamDesc;
-import io.vertx.mysqlclient.impl.MySQLRowDesc;
-import io.vertx.mysqlclient.impl.datatype.DataFormat;
 import io.vertx.mysqlclient.impl.protocol.ColumnDefinition;
 import io.vertx.mysqlclient.impl.protocol.CommandType;
 import io.vertx.sqlclient.impl.PreparedStatement;
@@ -135,7 +133,6 @@ class PrepareStatementCodec extends CommandCodec<PreparedStatement, PrepareState
       cmd.sql(),
       this.statementId,
       new MySQLParamDesc(paramDescs),
-      MySQLRowDesc.create(columnDescs, DataFormat.BINARY),
       !cmd.isManaged())));
   }
 
