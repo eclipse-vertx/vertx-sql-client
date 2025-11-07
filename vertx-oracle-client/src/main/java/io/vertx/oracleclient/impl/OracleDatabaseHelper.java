@@ -76,6 +76,8 @@ public class OracleDatabaseHelper {
         url.append("/").append(encodeUrl(database));
         if (options.getServerMode() == ServerMode.SHARED) {
           url.append(":").append(ServerMode.SHARED);
+        } else if (options.getServerMode() == ServerMode.POOLED) {
+          url.append(":").append(ServerMode.POOLED);
         }
       }
     }
