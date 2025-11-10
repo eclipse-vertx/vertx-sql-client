@@ -181,6 +181,27 @@ public class SqlConnectionPool {
     }
   }
 
+  private Object beginMetric() {
+    if (metrics != null) {
+      try {
+        return metrics.begin();
+      } catch (Exception e) {
+        //
+      }
+    }
+    return NO_METRICS;
+  }
+
+  private void endMetric(Object metric) {
+    if (metrics != null && metric != NO_METRICS) {
+      try {
+        metrics.end(metric);
+      } catch (Exception e) {
+        //
+      }
+    }
+  }
+
   // TODO : try optimize without promise
   public <R> void execute(CommandBase<R> cmd, Completable<R> handler) {
     ContextInternal context = vertx.getOrCreateContext();
@@ -191,6 +212,8 @@ public class SqlConnectionPool {
       dequeueMetric(metric);
       PooledConnection pooled = lease.get();
       Connection conn = pooled.conn;
+      Object useMetric = beginMetric();
+
       Future<R> future;
       if (afterAcquire != null) {
         future = afterAcquire.apply(conn)
@@ -202,6 +225,7 @@ public class SqlConnectionPool {
         future = pp;
       }
       return future.andThen(ar -> {
+        endMetric(useMetric);
         pooled.refresh();
         lease.recycle();
       });
@@ -244,6 +268,7 @@ public class SqlConnectionPool {
       private void handle(Lease<PooledConnection> lease) {
         dequeueMetric(metric);
         PooledConnection pooled = lease.get();
+        pooled.usage = beginMetric();
         pooled.lease = lease;
         handler.succeed(pooled);
       }
@@ -303,6 +328,7 @@ public class SqlConnectionPool {
     private Holder holder;
     private Promise<ConnectResult<PooledConnection>> poolCallback;
     private Lease<PooledConnection> lease;
+    private Object usage;
     public long idleEvictionTimestamp;
     public long lifetimeEvictionTimestamp;
 
@@ -443,6 +469,7 @@ public class SqlConnectionPool {
     }
 
     private void cleanup(Completable<Void> promise) {
+      endMetric(usage);
       Lease<PooledConnection> l = this.lease;
       this.lease = null;
       refresh();
