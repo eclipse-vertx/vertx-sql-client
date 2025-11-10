@@ -131,6 +131,9 @@ public abstract class MetricsTestBase {
     AtomicInteger queueSize = new AtomicInteger();
     List<Object> enqueueMetrics = Collections.synchronizedList(new ArrayList<>());
     List<Object> dequeueMetrics = Collections.synchronizedList(new ArrayList<>());
+    AtomicInteger usageSize = new AtomicInteger();
+    List<Object> beginMetrics = Collections.synchronizedList(new ArrayList<>());
+    List<Object> endMetrics = Collections.synchronizedList(new ArrayList<>());
     poolMetrics = new PoolMetrics() {
       @Override
       public Object enqueue() {
@@ -143,6 +146,18 @@ public abstract class MetricsTestBase {
       public void dequeue(Object taskMetric) {
         dequeueMetrics.add(taskMetric);
         queueSize.decrementAndGet();
+      }
+      @Override
+      public Object begin() {
+        Object metric = new Object();
+        beginMetrics.add(metric);
+        usageSize.incrementAndGet();
+        return metric;
+      }
+      @Override
+      public void end(Object usageMetric) {
+        endMetrics.add(usageMetric);
+        usageSize.decrementAndGet();
       }
     };
     PoolOptions poolOptions = new PoolOptions().setMaxSize(1).setName("the-pool");
@@ -161,6 +176,10 @@ public abstract class MetricsTestBase {
     Future.join(futures).otherwiseEmpty().await(20, SECONDS);
     ctx.assertEquals(0, queueSize.get());
     ctx.assertEquals(enqueueMetrics, dequeueMetrics);
+    ctx.assertEquals(0, usageSize.get());
+    ctx.assertEquals(num, beginMetrics.size());
+    ctx.assertEquals(num, endMetrics.size());
+    ctx.assertEquals(beginMetrics, endMetrics);
     ctx.assertEquals("sql", poolType);
     ctx.assertEquals("the-pool", poolName);
   }
