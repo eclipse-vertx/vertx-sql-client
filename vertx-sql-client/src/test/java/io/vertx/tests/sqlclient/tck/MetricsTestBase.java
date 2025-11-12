@@ -177,8 +177,8 @@ public abstract class MetricsTestBase {
     ctx.assertEquals(0, queueSize.get());
     ctx.assertEquals(enqueueMetrics, dequeueMetrics);
     ctx.assertEquals(0, usageSize.get());
-    ctx.assertEquals(num, beginMetrics.size());
-    ctx.assertEquals(num, endMetrics.size());
+    ctx.assertEquals(timeout ? 1 : num + 1, beginMetrics.size());
+    ctx.assertEquals(timeout ? 1 : num + 1, endMetrics.size());
     ctx.assertEquals(beginMetrics, endMetrics);
     ctx.assertEquals("sql", poolType);
     ctx.assertEquals("the-pool", poolName);
