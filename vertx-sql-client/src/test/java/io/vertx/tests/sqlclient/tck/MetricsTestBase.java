@@ -114,7 +114,7 @@ public abstract class MetricsTestBase {
     pool.query("SELECT * FROM immutable WHERE id=1").execute().toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
     ctx.assertEquals(0, closeCount.get());
     pool.close();
-    awaitQueueSize(ctx, closeCount, 1);
+    awaitUntilSizeEquals(ctx, closeCount, 1);
   }
 
   @Test
@@ -171,12 +171,12 @@ public abstract class MetricsTestBase {
     for (int i = 0;i < num;i++) {
       futures.add(pool.withConnection(sqlConn -> sqlConn.query("SELECT * FROM immutable WHERE id=1").execute()));
     }
-    awaitQueueSize(ctx, queueSize, timeout ? 0 : num);
+    awaitUntilSizeEquals(ctx, queueSize, timeout ? 0 : num);
     conn.close();
     Future.join(futures).otherwiseEmpty().await(20, SECONDS);
     ctx.assertEquals(0, queueSize.get());
     ctx.assertEquals(enqueueMetrics, dequeueMetrics);
-    ctx.assertEquals(0, usageSize.get());
+    awaitUntilSizeEquals(ctx, usageSize, 0);
     ctx.assertEquals(timeout ? 1 : num + 1, beginMetrics.size());
     ctx.assertEquals(timeout ? 1 : num + 1, endMetrics.size());
     ctx.assertEquals(beginMetrics, endMetrics);
@@ -184,7 +184,7 @@ public abstract class MetricsTestBase {
     ctx.assertEquals("the-pool", poolName);
   }
 
-  private void awaitQueueSize(TestContext ctx, AtomicInteger queueSize, int num) throws InterruptedException {
+  private void awaitUntilSizeEquals(TestContext ctx, AtomicInteger queueSize, int num) throws InterruptedException {
     long now = System.currentTimeMillis();
     for (; ; ) {
       if (queueSize.get() != num) {
@@ -246,7 +246,7 @@ public abstract class MetricsTestBase {
         .onComplete(ctx.asyncAssertFailure(t -> async.countDown()));
     }
     conn.closeHandler(v -> async.countDown());
-    awaitQueueSize(ctx, queueSize, 16);
+    awaitUntilSizeEquals(ctx, queueSize, 16);
     firstConnection.get().clientSocket().close();
     async.await(20_000);
     ctx.assertEquals(0, queueSize.get());
