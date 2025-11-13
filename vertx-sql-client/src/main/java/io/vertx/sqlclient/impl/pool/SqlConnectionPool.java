@@ -13,24 +13,24 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.netty.channel.EventLoop;
 import io.vertx.core.*;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
+import io.vertx.core.internal.pool.*;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.core.internal.pool.*;
-import io.vertx.core.internal.ContextInternal;
-import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.impl.tracing.QueryReporter;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.connection.ConnectionContext;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
-import io.vertx.sqlclient.impl.tracing.QueryReporter;
-import io.vertx.sqlclient.spi.connection.ConnectionFactory;
-import io.vertx.sqlclient.spi.DatabaseMetadata;
 
 import java.util.List;
 import java.util.function.Function;
@@ -184,6 +184,27 @@ public class SqlConnectionPool {
     }
   }
 
+  private Object beginMetric() {
+    if (metrics != null) {
+      try {
+        return metrics.begin();
+      } catch (Exception e) {
+        //
+      }
+    }
+    return NO_METRICS;
+  }
+
+  private void endMetric(Object metric) {
+    if (metrics != null && metric != NO_METRICS) {
+      try {
+        metrics.end(metric);
+      } catch (Exception e) {
+        //
+      }
+    }
+  }
+
   // TODO : try optimize without promise
   public <R> void execute(CommandBase<R> cmd, Completable<R> handler) {
     ContextInternal context = vertx.getOrCreateContext();
@@ -193,7 +214,9 @@ public class SqlConnectionPool {
     p.future().compose(lease -> {
       dequeueMetric(metric);
       PooledConnection pooled = lease.get();
+      pooled.timerMetric = beginMetric();
       Connection conn = pooled.conn;
+
       Future<R> future;
       if (afterAcquire != null) {
         future = afterAcquire.apply(conn)
@@ -205,6 +228,7 @@ public class SqlConnectionPool {
         future = pp;
       }
       return future.andThen(ar -> {
+        endMetric(pooled.timerMetric);
         pooled.refresh();
         lease.recycle();
       });
@@ -247,6 +271,7 @@ public class SqlConnectionPool {
       private void handle(Lease<PooledConnection> lease) {
         dequeueMetric(metric);
         PooledConnection pooled = lease.get();
+        pooled.timerMetric = beginMetric();
         pooled.lease = lease;
         handler.succeed(pooled);
       }
@@ -306,6 +331,7 @@ public class SqlConnectionPool {
     private ConnectionContext holder;
     private Promise<ConnectResult<PooledConnection>> poolCallback;
     private Lease<PooledConnection> lease;
+    private Object timerMetric;
     public long idleEvictionTimestamp;
     public long lifetimeEvictionTimestamp;
 
@@ -446,6 +472,7 @@ public class SqlConnectionPool {
     }
 
     private void cleanup(Completable<Void> promise) {
+      endMetric(timerMetric);
       Lease<PooledConnection> l = this.lease;
       this.lease = null;
       refresh();
