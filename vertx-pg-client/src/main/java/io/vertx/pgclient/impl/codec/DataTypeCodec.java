@@ -22,12 +22,12 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.pgclient.data.*;
 import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
 import io.vertx.sqlclient.Tuple;
@@ -1086,6 +1086,13 @@ public class DataTypeCodec {
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.US));
 
   private static void binaryEncodeTIMESTAMP(LocalDateTime value, ByteBuf buff) {
+    // Make sure to handle microsecond resolution as PostgreSQL does when it converts textual representation of timestamps.
+    // Over 499 nanos after the microsecond, round up to the next microsecond.
+    // Otherwise, do nothing and the nanos after the microsecond will be truncated below.
+    int nanosAfterMicro = value.getNano() % 1000;
+    if (nanosAfterMicro > 499) {
+      value = value.plusNanos(1000 - nanosAfterMicro);
+    }
     if (value.compareTo(LDT_PLUS_INFINITY) >= 0) {
       value = LDT_PLUS_INFINITY;
     } else if (value.compareTo(LDT_MINUS_INFINITY) <= 0) {
