@@ -79,4 +79,18 @@ public class ProxySQLPreparedQueryTest extends MySQLPreparedQueryTest {
   public void testStreamQueryPauseResume(TestContext ctx) {
     super.testStreamQueryPauseResume(ctx);
   }
+
+  @Test
+  @Ignore("Fetch command not supported by ProxySQL")
+  @Override
+  public void testQueryCursorNoResults(TestContext ctx) {
+    super.testQueryCursorNoResults(ctx);
+  }
+
+  @Test
+  @Ignore("Fetch command not supported by ProxySQL")
+  @Override
+  public void testStreamQueryNoResults(TestContext ctx) {
+    super.testStreamQueryNoResults(ctx);
+  }
 }

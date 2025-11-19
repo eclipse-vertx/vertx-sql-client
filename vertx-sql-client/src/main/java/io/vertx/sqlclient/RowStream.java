@@ -22,12 +22,22 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.streams.ReadStream;
+import io.vertx.sqlclient.desc.RowDescriptor;
 
 /**
  * A row oriented stream.
  */
 @VertxGen
 public interface RowStream<T> extends ReadStream<T> {
+
+  /**
+   * Describes rows emitted by this stream.
+   * <p>
+   * This returns {@code null} until the first set of rows is fetched from the database.
+   */
+  default RowDescriptor rowDescriptor() {
+    return null;
+  }
 
   @Fluent
   @Override

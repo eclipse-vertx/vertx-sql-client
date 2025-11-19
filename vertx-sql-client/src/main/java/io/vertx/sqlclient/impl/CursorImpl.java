@@ -24,8 +24,9 @@ import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.desc.RowDescriptor;
 import io.vertx.sqlclient.internal.TupleBase;
+import io.vertx.sqlclient.spi.connection.Connection;
 
 import java.util.UUID;
 
@@ -42,6 +43,7 @@ public class CursorImpl implements Cursor {
 
   private String id;
   private boolean closed;
+  private RowDescriptor rowDescriptor;
   QueryResultBuilder<RowSet<Row>, RowSetImpl<Row>, RowSet<Row>> result;
 
   CursorImpl(PreparedStatementBase ps, Connection conn, ContextInternal context, boolean autoCommit, TupleBase params) {
@@ -61,6 +63,11 @@ public class CursorImpl implements Cursor {
   }
 
   @Override
+  public synchronized RowDescriptor rowDescriptor() {
+    return rowDescriptor;
+  }
+
+  @Override
   public synchronized Future<RowSet<Row>> read(int count) {
     PromiseInternal<RowSet<Row>> promise = context.promise();
     boolean suspended;
@@ -71,7 +78,13 @@ public class CursorImpl implements Cursor {
       suspended = true;
     }
     ps.readCursor(this, id, suspended, params, count, promise);
-    return promise.future();
+    return promise.future().andThen((rowSet, failure) -> {
+      if (failure == null) {
+        synchronized (this) {
+          rowDescriptor = rowSet.rowDescriptor();
+        }
+      }
+    });
   }
 
   @Override
