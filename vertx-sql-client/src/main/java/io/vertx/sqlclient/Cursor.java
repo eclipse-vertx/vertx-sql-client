@@ -19,12 +19,22 @@ package io.vertx.sqlclient;
 
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
+import io.vertx.sqlclient.desc.RowDescriptor;
 
 /**
  * A cursor that reads progressively rows from the database, it is useful for reading very large result sets.
  */
 @VertxGen
 public interface Cursor {
+
+  /**
+   * Describes rows loaded with {@link #read(int)}.
+   * <p>
+   * This returns {@code null} until the first set of rows is fetched from the database.
+   */
+  default RowDescriptor rowDescriptor() {
+    return null;
+  }
 
   /**
    * Read rows from the cursor, the result is provided asynchronously to the {@code handler}.
