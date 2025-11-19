@@ -143,6 +143,8 @@ The URI format for a connection string is:
 db2://[user[:[password]]@]host[:port][/database][?<key1>=<value1>[&<key2>=<value2>]]
 ----
 
+NOTE: Configuring parameters in connection URI will override the default properties.
+
 Currently, the client supports the following parameter keys:
 
 * `host`
@@ -151,7 +153,9 @@ Currently, the client supports the following parameter keys:
 * `password`
 * `database`
 
-NOTE: Configuring parameters in connection URI will override the default properties.
+Additional parameters will be added to the {@link io.vertx.sqlclient.SqlConnectOptions#getProperties properties}.
+
+NOTE: The connection URI parser transforms all property keys to lower case.
 
 == Connect retries
 

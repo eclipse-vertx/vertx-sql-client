@@ -175,7 +175,7 @@ public class MSSQLConnectionUriParser {
             configuration.put("database", value);
             break;
           default:
-            configuration.put(key, value);
+            properties.put(key, value);
             break;
         }
       }

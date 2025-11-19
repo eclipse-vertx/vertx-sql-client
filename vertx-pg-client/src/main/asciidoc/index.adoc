@@ -181,6 +181,8 @@ Apart from configuring with a `PgConnectOptions` data object, We also provide yo
 {@link examples.PgClientExamples#configureFromUri(io.vertx.core.Vertx)}
 ----
 
+NOTE: Configuring parameters in connection URI will override the default properties.
+
 More information about connection string formats can be found in the https://www.postgresql.org/docs/9.6/static/libpq-connect.html#LIBPQ-CONNSTRING[PostgreSQL Manuals].
 
 Currently, the client supports the following parameter keys:
@@ -192,13 +194,10 @@ Currently, the client supports the following parameter keys:
 * `password`
 * `dbname`
 * `sslmode`
-* additional properties, including:
-** `application_name`
-** `fallback_application_name`
-** `search_path`
-** `options`
 
-NOTE: Configuring parameters in connection URI will override the default properties.
+Additional parameters will be added to the {@link io.vertx.sqlclient.SqlConnectOptions#getProperties properties}.
+
+NOTE: The connection URI parser transforms all property keys to lower case.
 
 === environment variables
 
