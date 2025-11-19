@@ -22,12 +22,12 @@ import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.pgclient.data.*;
 import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
 import io.vertx.sqlclient.Tuple;
@@ -42,18 +42,17 @@ import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.UUID;
 import java.util.function.IntFunction;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_TIME;
+import static java.time.temporal.ChronoUnit.DAYS;
+import static java.time.temporal.ChronoUnit.MICROS;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -91,8 +90,7 @@ public class DataTypeCodec {
   private static final Float[] empty_float_array = new Float[0];
   private static final Double[] empty_double_array = new Double[0];
   private static final LocalDate LOCAL_DATE_EPOCH = LocalDate.of(2000, 1, 1);
-  private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0);
-  private static final OffsetDateTime OFFSET_DATE_TIME_EPOCH = LocalDateTime.of(2000, 1, 1, 0, 0, 0).atOffset(ZoneOffset.UTC);
+  private static final LocalDateTime LOCAL_DATE_TIME_EPOCH = LOCAL_DATE_EPOCH.atStartOfDay();
   private static final Inet[] empty_inet_array = new Inet[0];
   private static final Money[] empty_money_array = new Money[0];
 
@@ -1017,7 +1015,7 @@ public class DataTypeCodec {
     } else if (value == LocalDate.MIN) {
       v = Integer.MIN_VALUE;
     } else {
-      v = (int) -value.until(LOCAL_DATE_EPOCH, ChronoUnit.DAYS);
+      v = (int) -value.until(LOCAL_DATE_EPOCH, DAYS);
     }
     buff.writeInt(v);
   }
@@ -1030,7 +1028,7 @@ public class DataTypeCodec {
       case Integer.MIN_VALUE:
         return LocalDate.MIN;
       default:
-        return LOCAL_DATE_EPOCH.plus(val, ChronoUnit.DAYS);
+        return LOCAL_DATE_EPOCH.plus(val, DAYS);
     }
   }
 
@@ -1079,30 +1077,45 @@ public class DataTypeCodec {
     return OffsetTime.parse(cs, TIMETZ_FORMAT);
   }
 
-  // 294277-01-09 04:00:54.775807
-  public static final LocalDateTime LDT_PLUS_INFINITY = LOCAL_DATE_TIME_EPOCH.plus(Long.MAX_VALUE, ChronoUnit.MICROS);
-  // 4714-11-24 00:00:00 BC
-  public static final LocalDateTime LDT_MINUS_INFINITY = LocalDateTime.parse("4714-11-24 00:00:00 BC",
-      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss G", Locale.US));
+  /*
+   * See limits for dates and timestamps
+   * https://github.com/postgres/postgres/blob/75e82b2f5a6f5de6b42dbd9ea73be5ff36a931b1/src/include/datatype/timestamp.h
+   *
+   * In Pg Client, we define inclusive min and max.
+   */
+  private static final long MIN_TIMESTAMP = -211813488000000000L;
+  private static final LocalDateTime MIN_LDT = LOCAL_DATE_TIME_EPOCH.plus(MIN_TIMESTAMP, MICROS);
+  private static final long MAX_TIMESTAMP = 9223371331200000000L - 1;
+  private static final LocalDateTime MAX_LDT = LOCAL_DATE_TIME_EPOCH.plus(MAX_TIMESTAMP, MICROS);
 
   private static void binaryEncodeTIMESTAMP(LocalDateTime value, ByteBuf buff) {
-    if (value.compareTo(LDT_PLUS_INFINITY) >= 0) {
-      value = LDT_PLUS_INFINITY;
-    } else if (value.compareTo(LDT_MINUS_INFINITY) <= 0) {
-      value = LDT_MINUS_INFINITY;
+    long timestamp;
+    if (MIN_LDT.isAfter(value)) {
+      timestamp = MIN_TIMESTAMP;
+    } else if (value.isAfter(MAX_LDT)) {
+      timestamp = MAX_TIMESTAMP;
+    } else {
+      // Make sure to handle microsecond resolution as PostgreSQL does when it converts textual representation of timestamps.
+      // Over 499 nanos after the microsecond, round up to the next microsecond.
+      // Otherwise, do nothing and the nanos after the microsecond will be truncated below.
+      int nanosAfterMicro = value.getNano() % 1000;
+      if (nanosAfterMicro > 499) {
+        value = value.plusNanos(1000 - nanosAfterMicro);
+      }
+      timestamp = Math.min(MAX_TIMESTAMP, -value.until(LOCAL_DATE_TIME_EPOCH, MICROS));
     }
-    buff.writeLong(-value.until(LOCAL_DATE_TIME_EPOCH, ChronoUnit.MICROS));
+    buff.writeLong(timestamp);
   }
 
   private static LocalDateTime binaryDecodeTIMESTAMP(int index, int len, ByteBuf buff) {
-    LocalDateTime val = LOCAL_DATE_TIME_EPOCH.plus(buff.getLong(index), ChronoUnit.MICROS);
-    if (LDT_PLUS_INFINITY.equals(val)) {
-      return LocalDateTime.MAX;
-    } else if (LDT_MINUS_INFINITY.equals(val)) {
+    long timestamp = buff.getLong(index);
+    if (timestamp <= MIN_TIMESTAMP) {
       return LocalDateTime.MIN;
-    } else {
-      return val;
     }
+    if (timestamp >= MAX_TIMESTAMP) {
+      return LocalDateTime.MAX;
+    }
+    return LOCAL_DATE_TIME_EPOCH.plus(timestamp, MICROS);
   }
 
   private static LocalDateTime textDecodeTIMESTAMP(int index, int len, ByteBuf buff) {
@@ -1132,12 +1145,12 @@ public class DataTypeCodec {
   private static void binaryEncodeTIMESTAMPTZ(OffsetDateTime value, ByteBuf buff) {
     LocalDateTime ldt;
     if (value.getOffset() != ZoneOffset.UTC) {
-      OffsetDateTime max = OffsetDateTime.of(LDT_PLUS_INFINITY, ZoneOffset.UTC);
-      if (value.compareTo(max) >= 0) {
+      OffsetDateTime max = OffsetDateTime.of(MAX_LDT, ZoneOffset.UTC);
+      if (!value.isBefore(max)) {
         ldt = LocalDateTime.MAX;
       } else {
-        OffsetDateTime min = OffsetDateTime.of(LDT_MINUS_INFINITY, ZoneOffset.UTC);
-        if (value.compareTo(min) <= 0) {
+        OffsetDateTime min = OffsetDateTime.of(MIN_LDT, ZoneOffset.UTC);
+        if (!value.isAfter(min)) {
           ldt = LocalDateTime.MIN;
         } else {
           ldt = value.toInstant().atOffset(ZoneOffset.UTC).toLocalDateTime();

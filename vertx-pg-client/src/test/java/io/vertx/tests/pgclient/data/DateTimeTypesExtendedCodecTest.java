@@ -4,9 +4,9 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.data.Interval;
-import io.vertx.tests.sqlclient.ColumnChecker;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.tests.sqlclient.ColumnChecker;
 import org.junit.Test;
 
 import java.time.*;
@@ -625,6 +625,37 @@ public class DateTimeTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTe
             checker.forRow(row);
             async.complete();
           }));
+        }));
+    }));
+  }
+
+  @Test
+  public void testClientHandlesTimestampResolutionLikeServer(TestContext ctx) {
+    // PostgreSQL has microsecond resolution for timestamps.
+    // When converting from text, if the nanoseconds part after microseconds is strictly bigger than 499,
+    // PostgreSQL server rounds up to the next microsecond.
+    Async over499 = ctx.async();
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT '2025-12-31 23:59:59.999999773'::timestamp WHERE '2025-12-31 23:59:59.999999773'::timestamp = $1::timestamp").onComplete(
+        ctx.asyncAssertSuccess(p -> {
+          p.query()
+            .execute(Tuple.of(LocalDateTime.parse("2025-12-31T23:59:59.999999773"))).onComplete(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              ctx.assertEquals(LocalDateTime.parse("2026-01-01T00:00:00.000000"), result.iterator().next().getLocalDateTime(0));
+              over499.complete();
+            }));
+        }));
+    }));
+    Async under499 = ctx.async();
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT '2025-12-31 23:59:59.999999227'::timestamp WHERE '2025-12-31 23:59:59.999999227'::timestamp = $1::timestamp").onComplete(
+        ctx.asyncAssertSuccess(p -> {
+          p.query()
+            .execute(Tuple.of(LocalDateTime.parse("2025-12-31T23:59:59.999999227"))).onComplete(ctx.asyncAssertSuccess(result -> {
+              ctx.assertEquals(1, result.size());
+              ctx.assertEquals(LocalDateTime.parse("2025-12-31T23:59:59.999999"), result.iterator().next().getLocalDateTime(0));
+              under499.complete();
+            }));
         }));
     }));
   }
