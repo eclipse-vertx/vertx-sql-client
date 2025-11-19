@@ -185,20 +185,8 @@ public class PgConnectionUriParser {
           case "sslmode":
             configuration.put("sslMode", SslMode.of(value));
             break;
-          case "application_name":
-            properties.put("application_name", value);
-            break;
-          case "fallback_application_name":
-            properties.put("fallback_application_name", value);
-            break;
-          case "search_path":
-            properties.put("search_path", value);
-            break;
-          case "options":
-            properties.put("options", value);
-            break;
           default:
-            configuration.put(key, value);
+            properties.put(key, value);
             break;
         }
       }

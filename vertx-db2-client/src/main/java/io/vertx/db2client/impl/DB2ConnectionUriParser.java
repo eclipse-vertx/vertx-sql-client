@@ -179,7 +179,7 @@ public class DB2ConnectionUriParser {
           configuration.put("database", value);
           break;
         default:
-          configuration.put(key, value);
+          properties.put(key, value);
           break;
         }
       }

@@ -177,9 +177,8 @@ public class MySQLConnectionUriParser {
           case "useaffectedrows":
             configuration.put("useAffectedRows", Boolean.parseBoolean(value));
             break;
-          //TODO Additional Connection Parameters
           default:
-            configuration.put(key, value);
+            properties.put(key, value);
             break;
         }
       }
