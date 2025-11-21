@@ -11,6 +11,7 @@
 package io.vertx.tests.sqlclient.tck;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
@@ -315,6 +316,19 @@ public abstract class PreparedQueryTestBase {
           }));
         }));
       }));
+    });
+  }
+
+  @Test
+  public void testQueryCloseCursorTwice(TestContext ctx) {
+    Async async = ctx.async();
+    testCursor(ctx, conn -> {
+      conn
+        .prepare("SELECT * FROM immutable")
+        .onComplete(ctx.asyncAssertSuccess(ps -> {
+          Cursor cursor = ps.cursor(Tuple.tuple());
+          Future.all(cursor.close(), cursor.close()).onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+        }));
     });
   }
 
