@@ -118,6 +118,8 @@ public class CursorImpl implements Cursor {
         result = null;
         ps.closeCursor(id, promise);
       }
+    } else {
+      promise.complete();
     }
   }
 }
