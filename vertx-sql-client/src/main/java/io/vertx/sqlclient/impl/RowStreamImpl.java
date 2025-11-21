@@ -203,8 +203,9 @@ public class RowStreamImpl implements RowStreamInternal, Handler<AsyncResult<Row
               break;
             } else {
               cursor.close();
+              final Handler<Void> eh = endHandler;
               handler = v -> {
-                endHandler.handle(null);
+                eh.handle(null);
                 synchronized (RowStreamImpl.this) {
                   cursor = null;
                 }
