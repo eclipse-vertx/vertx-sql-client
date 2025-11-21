@@ -90,6 +90,11 @@ public class ValidOracleConnectionUriParsingTest {
           .put("serviceName", "orcl")
           .put("host", "::1")
           .put("serverMode", "dedicated")},
+      {"uri with service name and server mode pooled", "oracle:thin:@[::1]/orcl:pooled",
+        new JsonObject()
+          .put("serviceName", "orcl")
+          .put("host", "::1")
+          .put("serverMode", "pooled")},
       {"uri with service name with prop", "oracle:thin:@[::1]:1521/orcl?key=val",
         new JsonObject()
           .put("properties", new JsonObject().put("key", "val"))

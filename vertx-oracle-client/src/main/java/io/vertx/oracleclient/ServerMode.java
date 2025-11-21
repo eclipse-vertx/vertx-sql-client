@@ -19,7 +19,7 @@ import io.vertx.codegen.annotations.VertxGen;
 @VertxGen
 public enum ServerMode {
 
-  DEDICATED("dedicated"), SHARED("shared");
+  DEDICATED("dedicated"), SHARED("shared"), POOLED("pooled");
 
   private final String mode;
 
@@ -28,7 +28,7 @@ public enum ServerMode {
   }
 
   public static ServerMode of(String mode) {
-    return DEDICATED.mode.equalsIgnoreCase(mode) ? DEDICATED : SHARED.mode.equalsIgnoreCase(mode) ? SHARED : null;
+    return DEDICATED.mode.equalsIgnoreCase(mode) ? DEDICATED : SHARED.mode.equalsIgnoreCase(mode) ? SHARED : POOLED.mode.equalsIgnoreCase(mode) ? POOLED : null;
   }
 
   @Override
