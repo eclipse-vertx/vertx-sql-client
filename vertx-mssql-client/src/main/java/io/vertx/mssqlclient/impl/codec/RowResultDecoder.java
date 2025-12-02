@@ -68,7 +68,7 @@ public class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
   private boolean decodeMssqlNbcRow(ByteBuf in, Row row) {
     int len = desc.size();
-    int nullBitmapByteCount = ((len - 1) >> 3) + 1;
+    int nullBitmapByteCount = (len - (desc.hasRowStat() ? 0 : 1) >> 3) + 1;
     int nullBitMapStartIdx = in.readerIndex();
     in.skipBytes(nullBitmapByteCount);
 
