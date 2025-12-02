@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collector;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
@@ -612,6 +613,19 @@ public class PgPoolTest extends PgPoolTestBase {
         .getConnection()
         .onComplete(ctx.asyncAssertFailure(conn -> {
         async.countDown();
+      }));
+    }));
+  }
+
+  @Test
+  public void testPooledQueryTimeout(TestContext ctx) {
+    Async async = ctx.async();
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(1).setConnectionTimeout(1).setConnectionTimeoutUnit(SECONDS);
+    Pool pool = createPool(options, poolOptions);
+    pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
+      pool.query("SELECT 1").execute().onComplete(ctx.asyncAssertFailure(t -> {
+        conn.close();
+        async.complete();
       }));
     }));
   }
