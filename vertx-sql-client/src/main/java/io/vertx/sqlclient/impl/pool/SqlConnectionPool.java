@@ -207,28 +207,53 @@ public class SqlConnectionPool {
     return NO_METRICS;
   }
 
-  public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd) {
+  private static final Exception POOL_QUERY_TIMEOUT_EXCEPTION = new VertxException("Timeout waiting for connection", true);
+
+  public <R> Future<R> execute(ContextInternal context, CommandBase<R> cmd, long timeout) {
+    Promise<R> res = context.promise();
+    long timerId;
+    if (timeout > 0) {
+      timerId = context.setTimer(timeout, t -> res.fail(POOL_QUERY_TIMEOUT_EXCEPTION));
+    } else {
+      timerId = -1;
+    }
     Promise<Lease<PooledConnection>> p = context.promise();
     Object queueMetric = enqueueMetric();
     pool.acquire(context, 0, p);
-    return p.future().compose(lease -> {
-      Object useMetric = dequeueAndBeginUse(queueMetric);
+    p.future().compose(lease -> {
       PooledConnection pooled = lease.get();
-      Connection conn = pooled.conn;
+      Object useMetric;
       Future<R> future;
-      if (afterAcquire != null) {
-        future = afterAcquire.apply(conn)
-          .compose(v -> pooled.schedule(context, cmd))
-          .eventually(v -> beforeRecycle.apply(conn));
+      if (timerId != -1 && !vertx.cancelTimer(timerId)) {
+        // We want to make sure the connection is released properly below
+        // But we don't want to record begin/end pool metrics
+        dequeueAndReject(queueMetric);
+        useMetric = NO_METRICS;
+        future = Future.failedFuture(POOL_QUERY_TIMEOUT_EXCEPTION);
       } else {
-        future = pooled.schedule(context, cmd);
+        useMetric = dequeueAndBeginUse(queueMetric);
+        if (afterAcquire != null) {
+          Connection conn = pooled.conn;
+          future = afterAcquire.apply(conn)
+            .compose(v -> pooled.schedule(context, cmd))
+            .eventually(() -> beforeRecycle.apply(conn));
+        } else {
+          future = pooled.schedule(context, cmd);
+        }
       }
       return future.andThen(ar -> {
         endUse(useMetric);
         pooled.refresh();
         lease.recycle();
       });
+    }).onComplete(ar -> {
+      if (ar.succeeded()) {
+        res.complete(ar.result());
+      } else if (!POOL_QUERY_TIMEOUT_EXCEPTION.equals(ar.cause())) {
+        res.fail(ar.cause());
+      }
     });
+    return res.future();
   }
 
   public void acquire(ContextInternal context, long timeout, Handler<AsyncResult<PooledConnection>> handler) {

@@ -34,17 +34,14 @@ import io.vertx.sqlclient.spi.ConnectionFactory;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collector;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.mapping;
 import static java.util.stream.Collectors.toList;
 
@@ -589,6 +586,19 @@ public class PgPoolTest extends PgPoolTestBase {
           ctx.assertEquals(0, pool.size());
           async.complete();
         });
+      }));
+    }));
+  }
+
+  @Test
+  public void testPooledQueryTimeout(TestContext ctx) {
+    Async async = ctx.async();
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(1).setConnectionTimeout(1).setConnectionTimeoutUnit(SECONDS);
+    Pool pool = createPool(options, poolOptions);
+    pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
+      pool.query("SELECT 1").execute().onComplete(ctx.asyncAssertFailure(t -> {
+        conn.close();
+        async.complete();
       }));
     }));
   }
