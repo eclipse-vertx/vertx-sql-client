@@ -310,3 +310,24 @@ VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,wor
 GO
 
 -- TCK usage --
+
+-- Table for testing NBCROW with a cursor
+DROP TABLE IF EXISTS nbcrow_with_rowstat;
+CREATE TABLE nbcrow_with_rowstat
+(
+  test_varchar_1 VARCHAR(20),
+  test_varchar_2 VARCHAR(20),
+  test_varchar_3 VARCHAR(20),
+  test_varchar_4 VARCHAR(20),
+  test_varchar_5 VARCHAR(20),
+  test_varchar_6 VARCHAR(20),
+  test_varchar_7 VARCHAR(20),
+  test_varchar_8 VARCHAR(20),
+);
+
+INSERT INTO nbcrow_with_rowstat
+VALUES ('1', NULL, '3', NULL, '5', NULL, '7', NULL);
+
+GO
+
+-- Table for testing NBCROW with a cursor
