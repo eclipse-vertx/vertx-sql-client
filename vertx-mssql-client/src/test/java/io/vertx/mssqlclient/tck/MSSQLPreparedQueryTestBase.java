@@ -95,5 +95,28 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
       }));
     }));
   }
+
+  @Test
+  public void testNbcRowWithCursor(TestContext ctx) {
+    Async async = ctx.async();
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.prepare("SELECT * FROM nbcrow_with_rowstat").onComplete(ctx.asyncAssertSuccess(ps -> {
+        ps.createStream(50)
+          .exceptionHandler(ctx::fail)
+          .handler(row -> {
+            // Make sure NbcRow handling is correct when the number of columns is a multiple of 8
+            ctx.assertEquals(0, row.size() % 8);
+            for (int i = 1; i <= 8; i++) {
+              if (i % 2 != 0) {
+                ctx.assertEquals(String.valueOf(i), row.getString(i - 1));
+              } else {
+                ctx.assertNull(row.getString(i - 1));
+              }
+            }
+          })
+          .endHandler(v -> async.complete());
+      }));
+    }));
+  }
 }
 
