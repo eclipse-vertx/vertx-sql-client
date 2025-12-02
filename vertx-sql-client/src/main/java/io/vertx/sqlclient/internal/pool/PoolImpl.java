@@ -25,7 +25,10 @@ import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
-import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.TransactionRollbackException;
 import io.vertx.sqlclient.impl.TransactionPropagationLocal;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.internal.Connection;
@@ -171,7 +174,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
 
   @Override
   public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
-    pool.execute(cmd, handler);
+    pool.execute(cmd, handler, connectionTimeout);
   }
 
   private void acquire(ContextInternal context, long timeout, Completable<SqlConnectionPool.PooledConnection> completionHandler) {
