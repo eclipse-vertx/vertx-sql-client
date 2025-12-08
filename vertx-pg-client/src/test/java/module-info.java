@@ -12,5 +12,6 @@ open module io.vertx.tests.sql.client.pg {
   requires junit;
   requires testcontainers;
   requires static org.slf4j;
+  requires org.apache.commons.compress;
 
 }
