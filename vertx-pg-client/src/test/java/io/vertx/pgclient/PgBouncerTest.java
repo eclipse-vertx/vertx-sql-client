@@ -1,10 +1,13 @@
 package io.vertx.pgclient;
 
 
-import io.vertx.core.*;
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Tuple;
+import org.apache.commons.compress.utils.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,13 +15,19 @@ import org.junit.runner.RunWith;
 import org.testcontainers.Testcontainers;
 import org.testcontainers.containers.FixedHostPortGenericContainer;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.images.builder.Transferable;
 
-import java.util.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
+import static org.testcontainers.containers.BindMode.READ_ONLY;
 
 @RunWith(VertxUnitRunner.class)
 public class PgBouncerTest {
@@ -39,21 +48,15 @@ public class PgBouncerTest {
     pgContainer.withNetworkAliases("foo");
     pgContainer.start();
     Integer pgPort = pgContainer.getFirstMappedPort();
-    String pgHost = pgContainer.getHost();
 
     Testcontainers.exposeHostPorts(pgPort);
 
-
-    pgBouncerContainer = new GenericContainer(DockerImageName.parse("bitnamilegacy/pgbouncer:1.20.1-debian-11-r30"));
-    pgBouncerContainer.withEnv("POSTGRESQL_USERNAME", "postgres");
-    pgBouncerContainer.withEnv("POSTGRESQL_PASSWORD", "postgres");
-    pgBouncerContainer.withEnv("POSTGRESQL_DATABASE", "postgres");
-    pgBouncerContainer.withEnv("POSTGRESQL_HOST", "host.testcontainers.internal");
-    pgBouncerContainer.withEnv("POSTGRESQL_PORT", "" + pgPort);
-    pgBouncerContainer.withEnv("PGBOUNCER_IGNORE_STARTUP_PARAMETERS", "extra_float_digits");
-    pgBouncerContainer.withEnv("PGBOUNCER_POOL_MODE", "transaction");
-    pgBouncerContainer.withEnv("PGBOUNCER_MAX_DB_CONNECTIONS", "2");
-    pgBouncerContainer.withExposedPorts(6432);
+    pgBouncerContainer = new GenericContainer<>(
+      new ImageFromDockerfile()
+        .withFileFromTransferable("Dockerfile", resourceTransferable("pgBouncer/Dockerfile")))
+      .withClasspathResourceMapping("pgBouncer/pgbouncer.ini", "/etc/pgbouncer/pgbouncer.ini", READ_ONLY)
+      .withClasspathResourceMapping("pgBouncer/userlist.txt", "/etc/pgbouncer/userlist.txt", READ_ONLY)
+      .withExposedPorts(6432);
     pgBouncerContainer.start();
     Integer bouncerPort = pgBouncerContainer.getFirstMappedPort();
     String bouncerHost = pgBouncerContainer.getHost();
@@ -68,6 +71,15 @@ public class PgBouncerTest {
       .setPipeliningLimit(1);
 
     vertx = Vertx.vertx();
+  }
+
+  private static Transferable resourceTransferable(String resourceName) {
+    try (InputStream stream = PgBouncerTest.class.getClassLoader().getResourceAsStream(resourceName)) {
+      assert stream != null;
+      return Transferable.of(IOUtils.toByteArray(stream));
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @After
