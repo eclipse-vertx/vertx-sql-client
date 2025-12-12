@@ -15,34 +15,36 @@
  *
  */
 
-package io.vertx.pgclient.impl.util;
-
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
+package io.vertx.pgclient.impl.auth.scram;
 
 import com.ongres.scram.client.ScramClient;
-import com.ongres.scram.client.ScramSession;
-import com.ongres.scram.common.exception.ScramException;
+import com.ongres.scram.common.StringPreparation;
 import com.ongres.scram.common.exception.ScramInvalidServerSignatureException;
 import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
-import com.ongres.scram.common.stringprep.StringPreparations;
-
+import com.ongres.scram.common.util.TlsServerEndpoint;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.ssl.SslHandler;
 import io.vertx.pgclient.impl.codec.ScramClientInitialMessage;
+import io.vertx.pgclient.impl.util.Util;
 
-public class ScramAuthentication {
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
-  private static final String SCRAM_SHA_256 = "SCRAM-SHA-256";
+public class ScramSessionImpl implements ScramSession {
 
   private final String username;
-  private final String password;
-  private ScramSession scramSession;
-  private ScramSession.ClientFinalProcessor clientFinalProcessor;
+  private final char[] password;
+  private ScramClient scramClient;
 
-
-  public ScramAuthentication(String username, String password) {
+  public ScramSessionImpl(String username, char[] password) {
     this.username = username;
     this.password = password;
   }
@@ -53,38 +55,30 @@ public class ScramAuthentication {
    * The message includes the name of the selected mechanism, and
    *  an optional Initial Client Response, if the selected mechanism uses that.
    */
-  public ScramClientInitialMessage createInitialSaslMessage(ByteBuf in) {
+  public ScramClientInitialMessage createInitialSaslMessage(ByteBuf in, ChannelHandlerContext ctx) {
     List<String> mechanisms = new ArrayList<>();
 
     while (0 != in.getByte(in.readerIndex())) {
-       String mechanism = Util.readCStringUTF8(in);
-         mechanisms.add(mechanism);
+      String mechanism = Util.readCStringUTF8(in);
+      mechanisms.add(mechanism);
     }
 
     if (mechanisms.isEmpty()) {
       throw new UnsupportedOperationException("SASL Authentication : the server returned no mechanism");
     }
 
-    // SCRAM-SHA-256-PLUS added in postgresql 11 is not supported
-    if (!mechanisms.contains(SCRAM_SHA_256)) {
-        throw new UnsupportedOperationException("SASL Authentication : only SCRAM-SHA-256 is currently supported, server wants " + mechanisms);
-    }
+    byte[] channelBindingData = extractChannelBindingData(ctx);
+    this.scramClient = ScramClient.builder()
+        .advertisedMechanisms(mechanisms)
+        .username(username) // ignored by the server, use startup message
+        .password(password)
+        .stringPreparation(StringPreparation.POSTGRESQL_PREPARATION)
+        .channelBinding(TlsServerEndpoint.TLS_SERVER_END_POINT, channelBindingData)
+        .build();
 
-
-    ScramClient scramClient = ScramClient
-          .channelBinding(ScramClient.ChannelBinding.NO)
-          .stringPreparation(StringPreparations.NO_PREPARATION)
-          .selectMechanismBasedOnServerAdvertised(mechanisms.toArray(new String[0]))
-          .setup();
-
-
-    // this user name will be ignored, the user name that was already sent in the startup message is used instead
-    // see https://www.postgresql.org/docs/11/sasl-authentication.html#SASL-SCRAM-SHA-256 §53.3.1
-    scramSession = scramClient.scramSession(this.username);
-
-    return new ScramClientInitialMessage(scramSession.clientFirstMessage(), scramClient.getScramMechanism().getName());
+    return new ScramClientInitialMessage(scramClient.clientFirstMessage().toString(),
+        scramClient.getScramMechanism().getName());
   }
-
 
   /*
    * One or more server-challenge and client-response message will follow.
@@ -95,16 +89,13 @@ public class ScramAuthentication {
   public String receiveServerFirstMessage(ByteBuf in)  {
     String serverFirstMessage = in.readCharSequence(in.readableBytes(), StandardCharsets.UTF_8).toString();
 
-    ScramSession.ServerFirstProcessor serverFirstProcessor = null;
     try {
-      serverFirstProcessor = scramSession.receiveServerFirstMessage(serverFirstMessage);
-    } catch (ScramException e) {
+      scramClient.serverFirstMessage(serverFirstMessage);
+    } catch (ScramParseException e) {
       throw new UnsupportedOperationException(e);
     }
 
-    clientFinalProcessor = serverFirstProcessor.clientFinalProcessor(password);
-
-    return clientFinalProcessor.clientFinalMessage();
+    return scramClient.clientFinalMessage().toString();
   }
 
   /*
@@ -119,9 +110,33 @@ public class ScramAuthentication {
     String serverFinalMessage = in.readCharSequence(in.readableBytes(), StandardCharsets.UTF_8).toString();
 
     try {
-      clientFinalProcessor.receiveServerFinalMessage(serverFinalMessage);
+      scramClient.serverFinalMessage(serverFinalMessage);
     } catch (ScramParseException | ScramServerErrorException | ScramInvalidServerSignatureException e) {
       throw new UnsupportedOperationException(e);
     }
+  }
+
+  private byte[] extractChannelBindingData(ChannelHandlerContext ctx) {
+    SslHandler sslHandler = ctx.channel().pipeline().get(SslHandler.class);
+    if (sslHandler != null) {
+      SSLSession sslSession = sslHandler.engine().getSession();
+      if (sslSession != null && sslSession.isValid()) {
+        try {
+          // Get the certificate chain from the session
+          Certificate[] certificates = sslSession.getPeerCertificates();
+          if (certificates != null && certificates.length > 0) {
+            Certificate peerCert = certificates[0]; // First certificate is the peer's certificate
+            if (peerCert instanceof X509Certificate) {
+              X509Certificate cert = (X509Certificate) peerCert;
+              return TlsServerEndpoint.getChannelBindingData(cert);
+            }
+          }
+        } catch (CertificateEncodingException | SSLException e) {
+          // Cannot extract X509Certificate from SSL session
+          // handle as no channel binding available
+        }
+      }
+    }
+    return new byte[0]; // handle as no channel binding available
   }
 }
