@@ -15,21 +15,16 @@
  */
 package io.vertx.db2client.impl;
 
-import java.sql.RowId;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.temporal.Temporal;
-import java.util.UUID;
-
 import io.vertx.core.buffer.Buffer;
 import io.vertx.db2client.impl.drda.DB2RowId;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.internal.RowDescriptorBase;
+
+import java.sql.RowId;
+import java.time.*;
+import java.time.temporal.Temporal;
+import java.util.UUID;
 
 public class DB2Row extends RowBase {
 
@@ -146,16 +141,6 @@ public class DB2Row extends RowBase {
   @Override
   public UUID[] getArrayOfUUIDs(String column) {
     throw new UnsupportedOperationException();
-  }
-
-  private Byte getByte(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Byte) {
-      return (Byte) val;
-    } else if (val instanceof Number) {
-      return ((Number) val).byteValue();
-    }
-    return null;
   }
 
   private Duration getDuration(int pos) {

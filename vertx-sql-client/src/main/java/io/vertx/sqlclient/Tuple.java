@@ -16,21 +16,17 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.data.NullValue;
 import io.vertx.sqlclient.data.Numeric;
-import io.vertx.sqlclient.internal.ArrayTuple;
 import io.vertx.sqlclient.impl.ListTuple;
-import io.vertx.core.internal.buffer.BufferInternal;
+import io.vertx.sqlclient.internal.ArrayTuple;
 
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -266,6 +262,27 @@ public interface Tuple {
    */
   default Boolean getBoolean(int pos) {
     return (Boolean) getValue(pos);
+  }
+
+  /**
+   * Get a byte value at {@code pos}.
+   *
+   * @param pos the position
+   * @return the value
+   */
+  default Byte getByte(int pos) {
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof Byte) {
+      return (Byte) val;
+    } else if (val instanceof Number) {
+      return ((Number) val).byteValue();
+    } else if (val instanceof Enum<?>) {
+      return (byte) ((Enum<?>) val).ordinal();
+    } else {
+      return (byte) val; // Throw CCE
+    }
   }
 
   /**
@@ -670,6 +687,63 @@ public interface Tuple {
   }
 
   /**
+   * Get an array of  {@link Byte} value at {@code pos}.
+   *
+   * <p>Target element instance of {@code Number[]} or {@code Object[]} will be
+   * coerced to {@code Byte[]}.
+   *
+   * @param pos the position
+   * @return the value
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Byte[] getArrayOfBytes(int pos) {
+    Object val = getValue(pos);
+    if (val == null) {
+      return null;
+    } else if (val instanceof Byte[]) {
+      return (Byte[]) val;
+    } else if (val instanceof byte[]) {
+      byte[] array = (byte[]) val;
+      Byte[] a = new Byte[array.length];
+      for (int i = 0;i < array.length;i++) {
+        a[i] = array[i];
+      }
+      return a;
+    } else if (val instanceof Number[]) {
+      Number[] a = (Number[]) val;
+      int len = a.length;
+      Byte[] arr = new Byte[len];
+      for (int i = 0; i < len; i++) {
+        Number elt = a[i];
+        if (elt != null) {
+          arr[i] = elt.byteValue();
+        }
+      }
+      return arr;
+    } else if (val instanceof Enum[]) {
+      Enum<?>[] a = (Enum<?>[]) val;
+      int len = a.length;
+      Byte[] arr = new Byte[len];
+      for (int i = 0; i < len; i++) {
+        Enum<?> elt = a[i];
+        if (elt != null) {
+          arr[i] = (byte) elt.ordinal();
+        }
+      }
+      return arr;
+    } else if (val.getClass() == Object[].class) {
+      Object[] array = (Object[]) val;
+      Byte[] byteArray = new Byte[array.length];
+      for (int i = 0;i < array.length;i++) {
+        byteArray[i] = ((Number) array[i]).byteValue();
+      }
+      return byteArray;
+    } else {
+      return (Byte[]) val; // Throw CCE
+    }
+  }
+
+  /**
    * Get an array of  {@link Short} value at {@code pos}.
    *
    * <p>Target element instance of {@code Number[]} or {@code Object[]} will be
@@ -688,7 +762,7 @@ public interface Tuple {
     } else if (val instanceof short[]) {
       short[] array = (short[]) val;
       Short[] a = new Short[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         a[i] = array[i];
       }
       return a;
@@ -710,14 +784,14 @@ public interface Tuple {
       for (int i = 0; i < len; i++) {
         Enum<?> elt = a[i];
         if (elt != null) {
-          arr[i] = (short)elt.ordinal();
+          arr[i] = (short) elt.ordinal();
         }
       }
       return arr;
     } else if (val.getClass() == Object[].class) {
       Object[] array = (Object[]) val;
       Short[] shortArray = new Short[array.length];
-      for (int i = 0;i < array.length;i++) {
+      for (int i = 0; i < array.length; i++) {
         shortArray[i] = ((Number) array[i]).shortValue();
       }
       return shortArray;

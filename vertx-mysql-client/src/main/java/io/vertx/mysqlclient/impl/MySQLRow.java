@@ -139,16 +139,6 @@ public class MySQLRow extends RowBase {
     return null;
   }
 
-  private Byte getByte(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Byte) {
-      return (Byte) val;
-    } else if (val instanceof Number) {
-      return ((Number) val).byteValue();
-    }
-    return null;
-  }
-
   private Duration getDuration(int pos) {
     Object val = getValue(pos);
     if (val instanceof Duration) {
