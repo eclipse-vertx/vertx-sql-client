@@ -117,16 +117,6 @@ public class MSSQLRowImpl extends RowBase {
     throw new UnsupportedOperationException();
   }
 
-  private Byte getByte(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof Byte) {
-      return (Byte) val;
-    } else if (val instanceof Number) {
-      return ((Number) val).byteValue();
-    }
-    return null;
-  }
-
   private Object getEnum(Class enumType, int position) {
     Object val = getValue(position);
     if (val instanceof String) {

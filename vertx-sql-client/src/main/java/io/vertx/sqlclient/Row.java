@@ -83,6 +83,21 @@ public interface Row extends Tuple {
   }
 
   /**
+   * Get a byte value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  default Byte getByte(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getByte(pos);
+  }
+
+  /**
    * Get a short value for the given {@code column}.
    *
    * @param column the column name
@@ -397,6 +412,22 @@ public interface Row extends Tuple {
       throw new NoSuchElementException("Column " + column + " does not exist");
     }
     return getArrayOfBooleans(pos);
+  }
+
+  /**
+   * Get an array of {@link Byte} value for the given {@code column}.
+   *
+   * @param column the column name
+   * @return the {@code column} value
+   * @throws NoSuchElementException when the {@code column} does not exist
+   */
+  @GenIgnore(GenIgnore.PERMITTED_TYPE)
+  default Byte[] getArrayOfBytes(String column) {
+    int pos = getColumnIndex(column);
+    if (pos == -1) {
+      throw new NoSuchElementException("Column " + column + " does not exist");
+    }
+    return getArrayOfBytes(pos);
   }
 
   /**

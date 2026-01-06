@@ -2,15 +2,7 @@ package io.vertx.tests.sqlclient.templates;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.tests.sqlclient.templates.wrappers.BooleanWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.DoubleWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.FloatWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.IntegerWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.JsonArrayWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.JsonObjectWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.LongWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.ShortWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.StringWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.*;
 
 public class DataObjectMapper {
 
@@ -19,6 +11,14 @@ public class DataObjectMapper {
   }
 
   public static Boolean fromBoolean(BooleanWrapper v) {
+    return v.get();
+  }
+
+  public static ByteWrapper toByte(Byte v) {
+    return new ByteWrapper(v);
+  }
+
+  public static Byte fromByte(ByteWrapper v) {
     return v.get();
   }
 
