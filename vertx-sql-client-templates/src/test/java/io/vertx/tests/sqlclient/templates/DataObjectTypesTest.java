@@ -25,28 +25,11 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import io.vertx.sqlclient.templates.TupleMapper;
-import io.vertx.tests.sqlclient.templates.wrappers.BooleanWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.DoubleWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.FloatWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.IntegerWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.JsonArrayWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.JsonObjectWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.LongWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.ShortWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.StringWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.*;
 import org.junit.Test;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
-import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.UUID;
+import java.time.*;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -77,9 +60,15 @@ public class DataObjectTypesTest extends PgTemplateTestBase {
   }
 
   @Test
+  public void testByte(TestContext ctx) {
+    testNumber(ctx, "INT2", (byte) 4);
+    testNumberArray(ctx, "INT2[]", new Byte[]{1, 2, 3});
+  }
+
+  @Test
   public void testShort(TestContext ctx) {
-    testNumber(ctx, "INT2", (short)4);
-    testNumberArray(ctx, "INT2[]", new Short[]{1,2,3});
+    testNumber(ctx, "INT2", (short) 4);
+    testNumberArray(ctx, "INT2[]", new Short[]{1, 2, 3});
   }
 
   @Test
@@ -107,11 +96,13 @@ public class DataObjectTypesTest extends PgTemplateTestBase {
   }
 
   private void testNumber(TestContext ctx, String sqlType, Object value) {
+    testNumber(ctx, sqlType, value, (byte) 4, "primitiveByte", TestDataObject::getPrimitiveByte);
     testNumber(ctx, sqlType, value, (short)4, "primitiveShort", TestDataObject::getPrimitiveShort);
     testNumber(ctx, sqlType,value, 4, "primitiveInt", TestDataObject::getPrimitiveInt);
     testNumber(ctx, sqlType,value, 4L, "primitiveLong", TestDataObject::getPrimitiveLong);
     testNumber(ctx, sqlType,value, 4F, "primitiveFloat", TestDataObject::getPrimitiveFloat);
     testNumber(ctx, sqlType,value, 4D, "primitiveDouble", TestDataObject::getPrimitiveDouble);
+    testNumber(ctx, sqlType, value, (byte) 4, "boxedByte", TestDataObject::getBoxedByte);
     testNumber(ctx, sqlType, value, (short)4, "boxedShort", TestDataObject::getBoxedShort);
     testNumber(ctx, sqlType,value, 4, "boxedInteger", TestDataObject::getBoxedInteger);
     testNumber(ctx, sqlType,value, 4L, "boxedLong", TestDataObject::getBoxedLong);
@@ -120,16 +111,19 @@ public class DataObjectTypesTest extends PgTemplateTestBase {
   }
 
   private void testNumberArray(TestContext ctx, String sqlType, Object value) {
+    testNumber(ctx, sqlType, value, Arrays.asList((byte) 1, (byte) 2, (byte) 3), "byteList", TestDataObject::getByteList);
     testNumber(ctx, sqlType, value, Arrays.asList((short)1,(short)2,(short)3), "shortList", TestDataObject::getShortList);
     testNumber(ctx, sqlType, value, Arrays.asList(1,2,3), "integerList", TestDataObject::getIntegerList);
     testNumber(ctx, sqlType, value, Arrays.asList(1L,2L,3L), "longList", TestDataObject::getLongList);
     testNumber(ctx, sqlType, value, Arrays.asList(1F,2F,3F), "floatList", TestDataObject::getFloatList);
     testNumber(ctx, sqlType, value, Arrays.asList(1D,2D,3D), "doubleList", TestDataObject::getDoubleList);
+    testNumber(ctx, sqlType, value, new HashSet<>(Arrays.asList((byte) 1, (byte) 2, (byte) 3)), "byteSet", TestDataObject::getByteSet);
     testNumber(ctx, sqlType, value, new HashSet<>(Arrays.asList((short)1,(short)2,(short)3)), "shortSet", TestDataObject::getShortSet);
     testNumber(ctx, sqlType, value, new HashSet<>(Arrays.asList(1,2,3)), "integerSet", TestDataObject::getIntegerSet);
     testNumber(ctx, sqlType, value, new HashSet<>(Arrays.asList(1L,2L,3L)), "longSet", TestDataObject::getLongSet);
     testNumber(ctx, sqlType, value, new HashSet<>(Arrays.asList(1F,2F,3F)), "floatSet", TestDataObject::getFloatSet);
     testNumber(ctx, sqlType, value, new HashSet<>(Arrays.asList(1D,2D,3D)), "doubleSet", TestDataObject::getDoubleSet);
+    testNumber(ctx, sqlType, value, Arrays.asList((byte) 1, (byte) 2, (byte) 3), "addedBytes", TestDataObject::getAddedBytes);
     testNumber(ctx, sqlType, value, Arrays.asList((short)1,(short)2,(short)3), "addedShorts", TestDataObject::getAddedShorts);
     testNumber(ctx, sqlType, value, Arrays.asList(1,2,3), "addedIntegers", TestDataObject::getAddedIntegers);
     testNumber(ctx, sqlType, value, Arrays.asList(1L,2L,3L), "addedLongs", TestDataObject::getAddedLongs);
@@ -266,6 +260,18 @@ public class DataObjectTypesTest extends PgTemplateTestBase {
     testGet(ctx, "JSON[]", new Object[] {true}, Collections.singletonList(new BooleanWrapper(true)), "booleanMethodMappedDataObjectList", TestDataObject::getBooleanMethodMappedDataObjectList);
     testGet(ctx, "JSON[]", new Object[] {true}, Collections.singleton(new BooleanWrapper(true)), "booleanMethodMappedDataObjectSet", TestDataObject::getBooleanMethodMappedDataObjectSet);
     testGet(ctx, "JSON[]", new Object[] {true}, Collections.singletonList(new BooleanWrapper(true)), "addedBooleanMethodMappedDataObjects", TestDataObject::getAddedBooleanMethodMappedDataObjects);
+  }
+
+  @Test
+  public void testByteMethodMappedDataObject(TestContext ctx) {
+    testGet(ctx, "INT2", 4, new ByteWrapper((byte) 4), "byteMethodMappedDataObject", TestDataObject::getByteMethodMappedDataObject);
+    testGet(ctx, "INT2[]", new Byte[]{4}, Collections.singletonList(new ByteWrapper((byte) 4)), "byteMethodMappedDataObjectList", TestDataObject::getByteMethodMappedDataObjectList);
+    testGet(ctx, "INT2[]", new Byte[]{4}, Collections.singleton(new ByteWrapper((byte) 4)), "byteMethodMappedDataObjectSet", TestDataObject::getByteMethodMappedDataObjectSet);
+    testGet(ctx, "INT2[]", new Byte[]{4}, Collections.singletonList(new ByteWrapper((byte) 4)), "addedByteMethodMappedDataObjects", TestDataObject::getAddedByteMethodMappedDataObjects);
+    testGet(ctx, "JSON", 4, new ByteWrapper((byte) 4), "byteMethodMappedDataObject", TestDataObject::getByteMethodMappedDataObject);
+    testGet(ctx, "JSON[]", new Object[]{4}, Collections.singletonList(new ByteWrapper((byte) 4)), "byteMethodMappedDataObjectList", TestDataObject::getByteMethodMappedDataObjectList);
+    testGet(ctx, "JSON[]", new Object[]{4}, Collections.singleton(new ByteWrapper((byte) 4)), "byteMethodMappedDataObjectSet", TestDataObject::getByteMethodMappedDataObjectSet);
+    testGet(ctx, "JSON[]", new Object[]{4}, Collections.singletonList(new ByteWrapper((byte) 4)), "addedByteMethodMappedDataObjects", TestDataObject::getAddedByteMethodMappedDataObjects);
   }
 
   @Test

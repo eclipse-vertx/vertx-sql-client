@@ -65,6 +65,8 @@ public class RowImpl extends RowBase {
       Class<?> componentType = type.getComponentType();
       if (componentType == Boolean.class) {
         return type.cast(getArrayOfBooleans(position));
+      } else if (componentType == Byte.class) {
+        return type.cast(getArrayOfBytes(position));
       } else if (componentType == Short.class) {
         return type.cast(getArrayOfShorts(position));
       } else if (componentType == Integer.class) {
@@ -121,6 +123,8 @@ public class RowImpl extends RowBase {
     } else {
       if (type == Boolean.class) {
         return type.cast(getBoolean(position));
+      } else if (type == Byte.class) {
+        return type.cast(getByte(position));
       } else if (type == Short.class) {
         return type.cast(getShort(position));
       } else if (type == Integer.class) {

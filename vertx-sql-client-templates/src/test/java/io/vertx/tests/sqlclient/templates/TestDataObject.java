@@ -7,21 +7,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.templates.annotations.ParametersMapped;
 import io.vertx.sqlclient.templates.annotations.RowMapped;
 import io.vertx.sqlclient.templates.annotations.TemplateParameter;
-import io.vertx.tests.sqlclient.templates.wrappers.BooleanWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.DoubleWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.FloatWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.IntegerWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.JsonArrayWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.JsonObjectWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.LongWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.ShortWrapper;
-import io.vertx.tests.sqlclient.templates.wrappers.StringWrapper;
+import io.vertx.tests.sqlclient.templates.wrappers.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 public class TestDataObject {
 
   private boolean primitiveBoolean;
+  private byte primitiveByte;
   private short primitiveShort;
   private int primitiveInt;
   private long primitiveLong;
@@ -42,6 +31,7 @@ public class TestDataObject {
   private double primitiveDouble;
 
   private boolean boxedBoolean;
+  private byte boxedByte;
   private short boxedShort;
   private int boxedInteger;
   private long boxedLong;
@@ -59,6 +49,7 @@ public class TestDataObject {
   private OffsetDateTime offsetDateTime;
   private Temporal temporal;
   private JsonObjectDataObject jsonObjectDataObject;
+  private ByteWrapper byteMethodMappedDataObject;
   private ShortWrapper shortMethodMappedDataObject;
   private BooleanWrapper booleanMethodMappedDataObject;;
   private IntegerWrapper integerMethodMappedDataObject;
@@ -71,6 +62,7 @@ public class TestDataObject {
   private TimeUnit timeUnit;
 
   private List<Boolean> booleanList;
+  private List<Byte> byteList;
   private List<Short> shortList;
   private List<Integer> integerList;
   private List<Long> longList;
@@ -89,6 +81,7 @@ public class TestDataObject {
   private List<Temporal> temporalList;
   private List<JsonObjectDataObject> jsonObjectDataObjectList;
   private List<BooleanWrapper> booleanMethodMappedDataObjectList;
+  private List<ByteWrapper> byteMethodMappedDataObjectList;
   private List<ShortWrapper> shortMethodMappedDataObjectList;
   private List<IntegerWrapper> integerMethodMappedDataObjectList;
   private List<LongWrapper> longMethodMappedDataObjectList;
@@ -100,6 +93,7 @@ public class TestDataObject {
   private List<TimeUnit> timeUnitList;
 
   private Set<Boolean> booleanSet;
+  private Set<Byte> byteSet;
   private Set<Short> shortSet;
   private Set<Integer> integerSet;
   private Set<Long> longSet;
@@ -118,6 +112,7 @@ public class TestDataObject {
   private Set<Temporal> temporalSet;
   private Set<JsonObjectDataObject> jsonObjectDataObjectSet;
   private Set<BooleanWrapper> booleanMethodMappedDataObjectSet;
+  private Set<ByteWrapper> byteMethodMappedDataObjectSet;
   private Set<ShortWrapper> shortMethodMappedDataObjectSet;
   private Set<IntegerWrapper> integerMethodMappedDataObjectSet;
   private Set<LongWrapper> longMethodMappedDataObjectSet;
@@ -129,6 +124,7 @@ public class TestDataObject {
   private Set<TimeUnit> timeUnitSet;
 
   private List<Boolean> addedBooleans = new ArrayList<>();
+  private List<Byte> addedBytes = new ArrayList<>();
   private List<Short> addedShorts = new ArrayList<>();
   private List<Integer> addedIntegers = new ArrayList<>();
   private List<Long> addedLongs = new ArrayList<>();
@@ -147,6 +143,7 @@ public class TestDataObject {
   private List<Temporal> addedTemporals = new ArrayList<>();
   private List<JsonObjectDataObject> addedJsonObjectDataObjects = new ArrayList<>();
   private List<BooleanWrapper> booleanAddedMethodMappedDataObjects = new ArrayList<>();
+  private List<ByteWrapper> byteAddedMethodMappedDataObjects = new ArrayList<>();
   private List<ShortWrapper> shortAddedMethodMappedDataObjects = new ArrayList<>();
   private List<IntegerWrapper> integerAddedMethodMappedDataObjects = new ArrayList<>();
   private List<LongWrapper> longAddedMethodMappedDataObjects = new ArrayList<>();
@@ -169,6 +166,14 @@ public class TestDataObject {
 
   public void setPrimitiveBoolean(boolean primitiveBoolean) {
     this.primitiveBoolean = primitiveBoolean;
+  }
+
+  public byte getPrimitiveByte() {
+    return primitiveByte;
+  }
+
+  public void setPrimitiveByte(byte primitiveByte) {
+    this.primitiveByte = primitiveByte;
   }
 
   public short getPrimitiveShort() {
@@ -217,6 +222,14 @@ public class TestDataObject {
 
   public void setBoxedBoolean(boolean boxedBoolean) {
     this.boxedBoolean = boxedBoolean;
+  }
+
+  public byte getBoxedByte() {
+    return boxedByte;
+  }
+
+  public void setBoxedByte(byte boxedByte) {
+    this.boxedByte = boxedByte;
   }
 
   public short getBoxedShort() {
@@ -363,6 +376,14 @@ public class TestDataObject {
     this.booleanMethodMappedDataObject = booleanMethodMappedDataObject;
   }
 
+  public ByteWrapper getByteMethodMappedDataObject() {
+    return byteMethodMappedDataObject;
+  }
+
+  public void setByteMethodMappedDataObject(ByteWrapper byteMethodMappedDataObject) {
+    this.byteMethodMappedDataObject = byteMethodMappedDataObject;
+  }
+
   public ShortWrapper getShortMethodMappedDataObject() {
     return shortMethodMappedDataObject;
   }
@@ -441,6 +462,14 @@ public class TestDataObject {
 
   public void setBooleanList(List<Boolean> booleanList) {
     this.booleanList = booleanList;
+  }
+
+  public List<Byte> getByteList() {
+    return byteList;
+  }
+
+  public void setByteList(List<Byte> byteList) {
+    this.byteList = byteList;
   }
 
   public List<Short> getShortList() {
@@ -587,6 +616,14 @@ public class TestDataObject {
     this.booleanMethodMappedDataObjectList = booleanMethodMappedDataObjectList;
   }
 
+  public List<ByteWrapper> getByteMethodMappedDataObjectList() {
+    return byteMethodMappedDataObjectList;
+  }
+
+  public void setByteMethodMappedDataObjectList(List<ByteWrapper> byteMethodMappedDataObjectList) {
+    this.byteMethodMappedDataObjectList = byteMethodMappedDataObjectList;
+  }
+
   public List<ShortWrapper> getShortMethodMappedDataObjectList() {
     return shortMethodMappedDataObjectList;
   }
@@ -665,6 +702,14 @@ public class TestDataObject {
 
   public void setBooleanSet(Set<Boolean> booleanSet) {
     this.booleanSet = booleanSet;
+  }
+
+  public Set<Byte> getByteSet() {
+    return byteSet;
+  }
+
+  public void setByteSet(Set<Byte> byteSet) {
+    this.byteSet = byteSet;
   }
 
   public Set<Short> getShortSet() {
@@ -811,6 +856,14 @@ public class TestDataObject {
     this.booleanMethodMappedDataObjectSet = booleanMethodMappedDataObjectSet;
   }
 
+  public Set<ByteWrapper> getByteMethodMappedDataObjectSet() {
+    return byteMethodMappedDataObjectSet;
+  }
+
+  public void setByteMethodMappedDataObjectSet(Set<ByteWrapper> byteMethodMappedDataObjectSet) {
+    this.byteMethodMappedDataObjectSet = byteMethodMappedDataObjectSet;
+  }
+
   public Set<ShortWrapper> getShortMethodMappedDataObjectSet() {
     return shortMethodMappedDataObjectSet;
   }
@@ -889,6 +942,14 @@ public class TestDataObject {
 
   public List<Boolean> getAddedBooleans() {
     return addedBooleans;
+  }
+
+  public void addAddedByte(Byte value) {
+    addedBytes.add(value);
+  }
+
+  public List<Byte> getAddedBytes() {
+    return addedBytes;
   }
 
   public void addAddedShort(Short value) {
@@ -1033,6 +1094,14 @@ public class TestDataObject {
 
   public List<BooleanWrapper> getAddedBooleanMethodMappedDataObjects() {
     return booleanAddedMethodMappedDataObjects;
+  }
+
+  public void addAddedByteMethodMappedDataObject(ByteWrapper value) {
+    byteAddedMethodMappedDataObjects.add(value);
+  }
+
+  public List<ByteWrapper> getAddedByteMethodMappedDataObjects() {
+    return byteAddedMethodMappedDataObjects;
   }
 
   public void addAddedShortMethodMappedDataObject(ShortWrapper value) {
