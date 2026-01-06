@@ -760,7 +760,7 @@ public class DataTypeCodec {
   private static Point textDecodePOINT(int index, int len, ByteBuf buff) {
     // Point representation: (x,y)
     int idx = ++index;
-    int s = buff.indexOf(idx, idx + len, (byte) ',');
+    int s = buff.indexOf(idx, idx + len - 1, (byte) ',');
     int t = s - idx;
     double x = textDecodeFLOAT8(idx, t, buff);
     double y = textDecodeFLOAT8(s + 1, len - t - 3, buff);
