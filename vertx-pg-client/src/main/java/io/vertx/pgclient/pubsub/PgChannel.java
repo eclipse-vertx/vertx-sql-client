@@ -77,6 +77,11 @@ public interface PgChannel extends ReadStream<String> {
   @Override
   PgChannel endHandler(Handler<Void> endHandler);
 
+  /**
+   * Inherited from {@link ReadStream#exceptionHandler(Handler)} but this one is a no-op.
+   *
+   * @return a reference to this, so the API can be used fluently
+   */
   @Override
   PgChannel exceptionHandler(Handler<Throwable> handler);
 
