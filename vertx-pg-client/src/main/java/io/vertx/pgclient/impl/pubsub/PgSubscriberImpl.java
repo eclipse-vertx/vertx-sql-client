@@ -327,9 +327,9 @@ public class PgSubscriberImpl implements PgSubscriber {
       return this;
     }
 
-    // Since Vert.x 3.6.0 : todo
+    @Override
     public ReadStream<String> fetch(long amount) {
-      throw new UnsupportedOperationException();
+      return resume();
     }
   }
 
