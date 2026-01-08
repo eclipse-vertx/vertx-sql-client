@@ -18,35 +18,25 @@ import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
-import io.vertx.core.internal.tls.SslContextManager;
-import io.vertx.core.net.ClientSSLOptions;
-import io.vertx.core.net.HostAndPort;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.internal.net.SslChannelProvider;
 import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
+import io.vertx.core.internal.tls.SslContextManager;
+import io.vertx.core.net.ClientSSLOptions;
+import io.vertx.core.net.HostAndPort;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
-import io.vertx.mssqlclient.impl.codec.ExtendedQueryMSSQLCommandBaseMessage;
-import io.vertx.mssqlclient.impl.codec.MSSQLCommandMessage;
-import io.vertx.mssqlclient.impl.codec.MSSQLPreparedStatement;
-import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
-import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
-import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
-import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
+import io.vertx.mssqlclient.impl.codec.*;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.codec.CommandMessage;
-import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.QueryResultHandler;
-import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
-import io.vertx.sqlclient.spi.protocol.CommandBase;
-import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
-import io.vertx.sqlclient.spi.protocol.InitCommand;
-import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
-import io.vertx.sqlclient.spi.protocol.TxCommand;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.protocol.*;
 
 import java.util.Map;
 import java.util.function.Predicate;
@@ -123,7 +113,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
       .resolveSslContextProvider(sslOptions, "", null, context)
       .map(provider -> new SslChannelProvider(context.owner(), provider, false));
     return f.compose(provider -> {
-      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, sslOptions.isUseAlpn(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
+      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, sslOptions.getApplicationLayerProtocols(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
 
       // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
       TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
