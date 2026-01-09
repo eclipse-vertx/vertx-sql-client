@@ -322,7 +322,7 @@ public class SqlClientExamples {
       .prepare("SELECT * FROM users WHERE first_name LIKE ?")
       .onComplete(ar0 -> {
       if (ar0.succeeded()) {
-        PreparedStatement pq = ar0.result();
+        PreparedStatement ps = ar0.result();
 
         // Streams require to run within a transaction
         connection
@@ -332,15 +332,17 @@ public class SqlClientExamples {
             Transaction tx = ar1.result();
 
             // Fetch 50 rows at a time
-            RowStream<Row> stream = pq.createStream(50, Tuple.of("julien"));
+            RowStream<Row> stream = ps.createStream(50, Tuple.of("julien"));
 
             // Use the stream
             stream.exceptionHandler(err -> {
               System.out.println("Error: " + err.getMessage());
+              ps.close();
             });
             stream.endHandler(v -> {
               tx.commit();
               System.out.println("End of stream");
+              ps.close();
             });
             stream.handler(row -> {
               System.out.println("User: " + row.getString("last_name"));

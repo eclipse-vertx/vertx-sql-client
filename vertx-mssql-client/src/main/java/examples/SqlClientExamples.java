@@ -341,17 +341,19 @@ public class SqlClientExamples {
       .prepare("SELECT * FROM users WHERE age > @p1")
       .onComplete(ar1 -> {
       if (ar1.succeeded()) {
-        PreparedStatement pq = ar1.result();
+        PreparedStatement ps = ar1.result();
 
         // Fetch 50 rows at a time
-        RowStream<Row> stream = pq.createStream(50, Tuple.of(18));
+        RowStream<Row> stream = ps.createStream(50, Tuple.of(18));
 
         // Use the stream
         stream.exceptionHandler(err -> {
           System.out.println("Error: " + err.getMessage());
+          ps.close();
         });
         stream.endHandler(v -> {
           System.out.println("End of stream");
+          ps.close();
         });
         stream.handler(row -> {
           System.out.println("User: " + row.getString("last_name"));
