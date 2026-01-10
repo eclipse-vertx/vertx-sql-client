@@ -187,39 +187,107 @@ include::tracing.adoc[]
 
 == DB2 type mapping
 
-Currently the client supports the following DB2 types
+Currently the client supports the following DB2 types:
 
-* BOOLEAN (`java.lang.Boolean`) (DB2 LUW only)
-* SMALLINT (`java.lang.Short`)
-* INTEGER (`java.lang.Integer`)
-* BIGINT (`java.lang.Long`)
-* REAL (`java.lang.Float`)
-* DOUBLE (`java.lang.Double`)
-* DECIMAL (`io.vertx.sqlclient.data.Numeric`)
-* CHAR (`java.lang.String`)
-* VARCHAR (`java.lang.String`)
-* ENUM (`java.lang.String`)
-* DATE (`java.time.LocalDate`)
-* TIME (`java.time.LocalTime`)
-* TIMESTAMP (`java.time.LocalDateTime`)
-* BINARY (`byte[]`)
-* VARBINARY (`byte[]`)
-* ROWID (`io.vertx.db2client.impl.drda.DB2RowId` or `java.sql.RowId`) (DB2 z/OS only)
+[cols="<2,<3,<3", options="header"]
+|===
+| DB2 Type | Java Type | Notes
 
-Some types that are currently NOT supported are:
+| `BOOLEAN`
+| `java.lang.Boolean`
+| DB2 LUW only
 
-* XML
-* BLOB
-* CLOB
-* DBCLOB
-* GRAPHIC / VARGRAPHIC
+| `SMALLINT`
+| `java.lang.Short`
+|
 
-For a further documentation on DB2 data types, see the following resources:
+| `INTEGER`
+| `java.lang.Integer`
+|
+
+| `BIGINT`
+| `java.lang.Long`
+|
+
+| `REAL`
+| `java.lang.Float`
+|
+
+| `DOUBLE`
+| `java.lang.Double`
+|
+
+| `DECIMAL`
+| `io.vertx.sqlclient.data.Numeric`
+|
+
+| `CHAR`
+| `java.lang.String`
+|
+
+| `VARCHAR`
+| `java.lang.String`
+|
+
+| `ENUM`
+| `java.lang.String`
+|
+
+| `DATE`
+| `java.time.LocalDate`
+|
+
+| `TIME`
+| `java.time.LocalTime`
+|
+
+| `TIMESTAMP`
+| `java.time.LocalDateTime`
+|
+
+| `BINARY`
+| `byte[]`
+|
+
+| `VARBINARY`
+| `byte[]`
+|
+
+| `ROWID`
+| `io.vertx.db2client.impl.drda.DB2RowId` or `java.sql.RowId`
+| DB2 z/OS only
+|===
+
+=== Unsupported types
+
+The following types are not currently supported:
+
+[cols="<2,<4", options="header"]
+|===
+| Type | Notes
+
+| `XML`
+| Not implemented
+
+| `BLOB`
+| Not implemented
+
+| `CLOB`
+| Not implemented
+
+| `DBCLOB`
+| Not implemented
+
+| `GRAPHIC` / `VARGRAPHIC`
+| Not implemented
+|===
+
+For further documentation on DB2 data types, see:
 
 * https://www.ibm.com/support/knowledgecenter/SSEPGG_11.5.0/com.ibm.db2.luw.sql.ref.doc/doc/r0008483.html[DB2 for LUW 11.5 data types]
 * https://www.ibm.com/support/knowledgecenter/SSEPEK_12.0.0/sqlref/src/tpc/db2z_datatypesintro.html[DB2 for z/OS 12.0 data types]
 
-Tuple decoding uses the above types when storing values, it also performs on the fly conversion of the actual value when possible:
+Tuple decoding uses the above types when storing values. It also performs on the fly conversion of the actual value when possible:
 
 [source,$lang]
 ----

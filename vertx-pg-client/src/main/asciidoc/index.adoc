@@ -277,46 +277,204 @@ include::tracing.adoc[]
 
 == PostgreSQL type mapping
 
-Currently the client supports the following PostgreSQL types
+Currently the client supports the following PostgreSQL types:
 
-* BOOLEAN (`java.lang.Boolean`)
-* INT2 (`java.lang.Short`)
-* INT4 (`java.lang.Integer`)
-* INT8 (`java.lang.Long`)
-* FLOAT4 (`java.lang.Float`)
-* FLOAT8 (`java.lang.Double`)
-* CHAR (`java.lang.String`)
-* VARCHAR (`java.lang.String`)
-* TEXT (`java.lang.String`)
-* ENUM (`java.lang.String`)
-* NAME (`java.lang.String`)
-* SERIAL2 (`java.lang.Short`)
-* SERIAL4 (`java.lang.Integer`)
-* SERIAL8 (`java.lang.Long`)
-* NUMERIC (`io.vertx.sqlclient.data.Numeric`)
-* UUID (`java.util.UUID`)
-* DATE (`java.time.LocalDate`)
-* TIME (`java.time.LocalTime`)
-* TIMETZ (`java.time.OffsetTime`)
-* TIMESTAMP (`java.time.LocalDateTime`)
-* TIMESTAMPTZ (`java.time.OffsetDateTime`)
-* INTERVAL (`io.vertx.pgclient.data.Interval`)
-* BYTEA (`io.vertx.core.buffer.Buffer`)
-* JSON (`io.vertx.core.json.JsonObject`, `io.vertx.core.json.JsonArray`, `Number`, `Boolean`, `String`, `io.vertx.sqlclient.Tuple#JSON_NULL`)
-* JSONB (`io.vertx.core.json.JsonObject`, `io.vertx.core.json.JsonArray`, `Number`, `Boolean`, `String`, `io.vertx.sqlclient.Tuple#JSON_NULL`)
-* POINT (`io.vertx.pgclient.data.Point`)
-* LINE (`io.vertx.pgclient.data.Line`)
-* LSEG (`io.vertx.pgclient.data.LineSegment`)
-* BOX (`io.vertx.pgclient.data.Box`)
-* PATH (`io.vertx.pgclient.data.Path`)
-* POLYGON (`io.vertx.pgclient.data.Polygon`)
-* CIRCLE (`io.vertx.pgclient.data.Circle`)
-* TSVECTOR (`java.lang.String`)
-* TSQUERY (`java.lang.String`)
-* INET (`io.vertx.pgclient.data.Inet`)
-* MONEY (`io.vertx.pgclient.data.Money`)
+[cols="<2,<3,<3,<3", options="header"]
+|===
+| PostgreSQL Type | Java Type | Java Array Type | Notes
 
-Tuple decoding uses the above types when storing values, it also performs on the flu conversion the actual value when possible:
+| `BOOLEAN`
+| `java.lang.Boolean`
+| `java.lang.Boolean[]`
+|
+
+| `INT2`
+| `java.lang.Short`
+| `java.lang.Short[]`
+|
+
+| `INT4`
+| `java.lang.Integer`
+| `java.lang.Integer[]`
+|
+
+| `INT8`
+| `java.lang.Long`
+| `java.lang.Long[]`
+|
+
+| `FLOAT4`
+| `java.lang.Float`
+| `java.lang.Float[]`
+|
+
+| `FLOAT8`
+| `java.lang.Double`
+| `java.lang.Double[]`
+|
+
+| `CHAR`
+| `java.lang.String`
+| `java.lang.Character[]`
+|
+
+| `VARCHAR`
+| `java.lang.String`
+| `java.lang.String[]`
+|
+
+| `TEXT`
+| `java.lang.String`
+| `java.lang.String[]`
+|
+
+| `ENUM`
+| `java.lang.String`
+| `java.lang.String[]`
+|
+
+| `NAME`
+| `java.lang.String`
+| `java.lang.String[]`
+|
+
+| `SERIAL2`
+| `java.lang.Short`
+| -
+|
+
+| `SERIAL4`
+| `java.lang.Integer`
+| -
+|
+
+| `SERIAL8`
+| `java.lang.Long`
+| -
+|
+
+| `NUMERIC`
+| `io.vertx.sqlclient.data.Numeric`
+| `io.vertx.sqlclient.data.Numeric[]`
+|
+
+| `UUID`
+| `java.util.UUID`
+| `java.util.UUID[]`
+|
+
+| `DATE`
+| `java.time.LocalDate`
+| `java.time.LocalDate[]`
+|
+
+| `TIME`
+| `java.time.LocalTime`
+| `java.time.LocalTime[]`
+|
+
+| `TIMETZ`
+| `java.time.OffsetTime`
+| `java.time.OffsetTime[]`
+|
+
+| `TIMESTAMP`
+| `java.time.LocalDateTime`
+| `java.time.LocalDateTime[]`
+|
+
+| `TIMESTAMPTZ`
+| `java.time.OffsetDateTime`
+| `java.time.OffsetDateTime[]`
+|
+
+| `INTERVAL`
+| `io.vertx.pgclient.data.Interval`
+| `io.vertx.pgclient.data.Interval[]`
+|
+
+| `BYTEA`
+| `io.vertx.core.buffer.Buffer`
+| `io.vertx.core.buffer.Buffer[]`
+|
+
+| `JSON`
+| `java.lang.Object`
+| `java.lang.Object[]`
+| See <<handling-json>>
+
+| `JSONB`
+| `java.lang.Object`
+| `java.lang.Object[]`
+| See <<handling-json>>
+
+| `POINT`
+| `io.vertx.pgclient.data.Point`
+| `io.vertx.pgclient.data.Point[]`
+|
+
+| `LINE`
+| `io.vertx.pgclient.data.Line`
+| `io.vertx.pgclient.data.Line[]`
+|
+
+| `LSEG`
+| `io.vertx.pgclient.data.LineSegment`
+| `io.vertx.pgclient.data.LineSegment[]`
+|
+
+| `BOX`
+| `io.vertx.pgclient.data.Box`
+| `io.vertx.pgclient.data.Box[]`
+|
+
+| `PATH`
+| `io.vertx.pgclient.data.Path`
+| `io.vertx.pgclient.data.Path[]`
+|
+
+| `POLYGON`
+| `io.vertx.pgclient.data.Polygon`
+| `io.vertx.pgclient.data.Polygon[]`
+|
+
+| `CIRCLE`
+| `io.vertx.pgclient.data.Circle`
+| `io.vertx.pgclient.data.Circle[]`
+|
+
+| `TSVECTOR`
+| `java.lang.String`
+| `java.lang.String[]`
+|
+
+| `TSQUERY`
+| `java.lang.String`
+| `java.lang.String[]`
+|
+
+| `INET`
+| `io.vertx.pgclient.data.Inet`
+| `io.vertx.pgclient.data.Inet[]`
+|
+
+| `CIDR`
+| `io.vertx.pgclient.data.Cidr`
+| `io.vertx.pgclient.data.Cidr[]`
+|
+
+| `MONEY`
+| `io.vertx.pgclient.data.Money`
+| `io.vertx.pgclient.data.Money[]`
+|
+
+| `UNKNOWN`
+| `java.lang.String`
+| `java.lang.String[]`
+|
+|===
+
+Tuple decoding uses the above types when storing values. It also performs on the fly conversion of the actual value when possible:
 
 [source,$lang]
 ----
@@ -329,8 +487,6 @@ Tuple encoding uses the above type mapping for encoding, unless the type is nume
 ----
 {@link examples.PgClientExamples#typeMapping02}
 ----
-
-Arrays of these types are supported.
 
 === Handling JSON
 
@@ -356,6 +512,39 @@ The {@link io.vertx.sqlclient.data.Numeric} Java type is used to represent the P
 ----
 {@link examples.PgClientExamples#numericExample}
 ----
+
+=== Unsupported types
+
+The following types are not currently supported:
+
+[cols="<2,<4", options="header"]
+|===
+| Type | Notes
+
+| `BIT`
+| Not implemented
+
+| `VARBIT`
+| Not implemented
+
+| `MACADDR`
+| Not implemented
+
+| `MACADDR8`
+| Not implemented
+
+| `XML`
+| Not implemented
+
+| `HSTORE`
+| Not implemented
+
+| `OID`
+| Not implemented
+
+| `VOID`
+| Not implemented
+|===
 
 == Handling arrays
 
@@ -573,262 +762,3 @@ When doing so, prepared statement cannot be cached and therefore
 == Advanced pool configuration
 
 include::pool_config.adoc[]
-
-== Supported data types
-
-The *Reactive Postgres Client* currently supports the following data types
-
-[cols="^,^,^,^,^", options="header"]
-|====
-| _
-2+| Value
-2+| Array
-
-| Postgres | Java | Supported | JAVA | Supported
-
-|`BOOLEAN`
-|`j.l.Boolean`
-|&#10004;
-|`j.l.Boolean[]`
-|&#10004;
-
-|`INT2`
-|`j.l.Short`
-|&#10004;
-|`j.l.Short[]`
-|&#10004;
-
-|`INT4`
-|`j.l.Integer`
-|&#10004;
-|`j.l.Integer[]`
-|&#10004;
-
-|`INT8`
-|`j.l.Long`
-|&#10004;
-|`j.l.Long[]`
-|&#10004;
-
-|`FLOAT4`
-|`j.l.Float`
-|&#10004;
-|`j.l.Float[]`
-|&#10004;
-
-|`FLOAT8`
-|`j.l.Double`
-|&#10004;
-|`j.l.Double[]`
-|&#10004;
-
-|`CHAR`
-|`j.l.Character`
-|&#10004;
-|`j.l.Character[]`
-|&#10004;
-
-|`VARCHAR`
-|`j.l.String`
-|&#10004;
-|`j.l.String[]`
-|&#10004;
-
-|`TEXT`
-|`j.l.String`
-|&#10004;
-|`j.l.String[]`
-|&#10004;
-
-|`ENUM`
-|`j.l.String`
-|&#10004;
-|`j.l.String[]`
-|&#10004;
-
-|`NAME`
-|`j.l.String`
-|&#10004;
-|`j.l.String[]`
-|&#10004;
-
-|`SERIAL2`
-|`j.l.Short`
-|&#10004;
-|`invalid type`
-|&#10005;
-
-|`SERIAL4`
-|`j.l.Integer`
-|&#10004;
-|`invalid type`
-|&#10005;
-
-|`SERIAL8`
-|`j.l.Long`
-|&#10004;
-|`invalid type`
-|&#10005;
-
-|`NUMERIC`
-|`i.r.p.data.Numeric`
-|&#10004;
-|`i.r.p.data.Numeric[]`
-|&#10004;
-
-|`UUID`
-|`j.u.UUID`
-|&#10004;
-|`j.u.UUID[]`
-|&#10004;
-
-|`DATE`
-|`j.t.LocalDate`
-|&#10004;
-|`j.t.LocalDate[]`
-|&#10004;
-
-|`TIME`
-|`j.t.LocalTime`
-|&#10004;
-|`j.t.LocalTime[]`
-|&#10004;
-
-|`TIMETZ`
-|`j.t.OffsetTime`
-|&#10004;
-|`j.t.OffsetTime[]`
-|&#10004;
-
-|`TIMESTAMP`
-|`j.t.LocalDateTime`
-|&#10004;
-|`j.t.LocalDateTime[]`
-|&#10004;
-
-|`TIMESTAMPTZ`
-|`j.t.OffsetDateTime`
-|&#10004;
-|`j.t.OffsetDateTime[]`
-|&#10004;
-
-|`INTERVAL`
-|`i.r.p.data.Interval`
-|&#10004;
-|`i.r.p.data.Interval[]`
-|&#10004;
-
-|`BYTEA`
-|`i.v.c.b.Buffer`
-|&#10004;
-|`i.v.c.b.Buffer[]`
-|&#10004;
-
-|`JSON`
-|`Object`
-|&#10004;
-|`Object[]`
-|&#10004;
-
-|`JSONB`
-|`Object`
-|&#10004;
-|`Object[]`
-|&#10004;
-
-|`POINT`
-|`i.r.p.data.Point`
-|&#10004;
-|`i.r.p.data.Point[]`
-|&#10004;
-
-|`LINE`
-|`i.r.p.data.Line`
-|&#10004;
-|`i.r.p.data.Line[]`
-|&#10004;
-
-|`LSEG`
-|`i.r.p.data.LineSegment`
-|&#10004;
-|`i.r.p.data.LineSegment[]`
-|&#10004;
-
-|`BOX`
-|`i.r.p.data.Box`
-|&#10004;
-|`i.r.p.data.Box[]`
-|&#10004;
-
-|`INET`
-|`io.vertx.pgclient.data.Inet`
-|&#10004;
-|`io.vertx.pgclient.data.Inet[]`
-|&#10004;
-
-|`MONEY`
-|`io.vertx.pgclient.data.Money`
-|&#10004;
-|`io.vertx.pgclient.data.Money[]`
-|&#10004;
-
-|`CIDR`
-|`io.vertx.pgclient.data.Cidr`
-|&#10004;
-|`io.vertx.pgclient.data.Cidr[]`
-|&#10004;
-
-|`PATH`
-|`i.r.p.data.Path`
-|&#10004;
-|`i.r.p.data.Path[]`
-|&#10004;
-
-|`POLYGON`
-|`i.r.p.data.Polygon`
-|&#10004;
-|`i.r.p.data.Polygon[]`
-|&#10004;
-
-|`CIRCLE`
-|`i.r.p.data.Circle`
-|&#10004;
-|`i.r.p.data.Circle[]`
-|&#10004;
-
-|`TSVECTOR`
-|`j.l.String`
-|&#10004;
-|`j.l.String[]`
-|&#10004;
-
-|`TSQUERY`
-|`j.l.String`
-|&#10004;
-|`j.l.String[]`
-|&#10004;
-
-|`UNKNOWN`
-|`j.l.String`
-|&#10004;
-|`j.l.String[]`
-|&#10004;
-
-|====
-
-PostgreSQL JSON and JSONB types are represented by the following Java types:
-
-- `java.lang.String`
-- `java.lang.Number`
-- `java.lang.Boolean`
-- `io.vertx.core.json.JsonObject`
-- `io.vertx.core.json.JsonArray`
-- `io.vertx.sqlclient.Tuple#JSON_NULL` for representing the JSON null literal
-
-The following types
-
-_BIT_, _VARBIT_, _MACADDR_, _MACADDR8_,
-_XML_, _HSTORE_, _OID_,
-_VOID_
-
-are not implemented yet (PR are welcome).
