@@ -162,30 +162,94 @@ include::cursor.adoc[]
 
 include::tracing.adoc[]
 
-== Data types supported
+== MSSQL type mapping
 
-Currently, the client supports the following SQL Server types:
+Currently the client supports the following SQL Server types:
 
-* TINYINT(`java.lang.Short`)
-* SMALLINT(`java.lang.Short`)
-* INT(`java.lang.Integer`)
-* BIGINT(`java.lang.Long`)
-* BIT(`java.lang.Boolean`)
-* REAL(`java.lang.Float`)
-* DOUBLE(`java.lang.Double`)
-* NUMERIC/DECIMAL(`{@link java.math.BigDecimal}`)
-* CHAR/VARCHAR(`java.lang.String`)
-* NCHAR/NVARCHAR(`java.lang.String`)
-* DATE(`java.time.LocalDate`)
-* TIME(`java.time.LocalTime`)
-* SMALLDATETIME(`java.time.LocalDateTime`)
-* DATETIME(`java.time.LocalDateTime`)
-* DATETIME2(`java.time.LocalDateTime`)
-* DATETIMEOFFSET(`java.time.OffsetDateTime`)
-* BINARY/VARBINARY(`io.vertx.core.buffer.Buffer`)
-* MONEY (`{@link java.math.BigDecimal}`)
-* SMALLMONEY (`{@link java.math.BigDecimal}`)
-* GUID (`{@link java.util.UUID}`)
+[cols="<2,<3,<3", options="header"]
+|===
+| SQL Server Type | Java Type | Notes
+
+| `TINYINT`
+| `java.lang.Short`
+|
+
+| `SMALLINT`
+| `java.lang.Short`
+|
+
+| `INT`
+| `java.lang.Integer`
+|
+
+| `BIGINT`
+| `java.lang.Long`
+|
+
+| `BIT`
+| `java.lang.Boolean`
+|
+
+| `REAL`
+| `java.lang.Float`
+|
+
+| `DOUBLE`
+| `java.lang.Double`
+|
+
+| `NUMERIC` / `DECIMAL`
+| `java.math.BigDecimal`
+|
+
+| `CHAR` / `VARCHAR`
+| `java.lang.String`
+|
+
+| `NCHAR` / `NVARCHAR`
+| `java.lang.String`
+| Unicode strings
+
+| `DATE`
+| `java.time.LocalDate`
+|
+
+| `TIME`
+| `java.time.LocalTime`
+|
+
+| `SMALLDATETIME`
+| `java.time.LocalDateTime`
+|
+
+| `DATETIME`
+| `java.time.LocalDateTime`
+|
+
+| `DATETIME2`
+| `java.time.LocalDateTime`
+|
+
+| `DATETIMEOFFSET`
+| `java.time.OffsetDateTime`
+|
+
+| `BINARY` / `VARBINARY`
+| `io.vertx.core.buffer.Buffer`
+|
+
+| `MONEY`
+| `java.math.BigDecimal`
+|
+
+| `SMALLMONEY`
+| `java.math.BigDecimal`
+|
+
+| `GUID`
+| `java.util.UUID`
+|
+|===
 
 Tuple decoding uses the above types when storing values.
 
