@@ -25,7 +25,7 @@
   </parent>
 
   <artifactId>vertx-sql-client-parent</artifactId>
-  <version>4.5.24-SNAPSHOT</version>
+  <version>4.5.24</version>
   <packaging>pom</packaging>
 
   <name>Vert.x SQL Client parent</name>
