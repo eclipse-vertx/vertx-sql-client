@@ -96,10 +96,12 @@ public abstract class PgTemplateTestBase {
                                    Function<T, V> extractor,
                                    String column) {
     Async async = ctx.async();
+    String query = "SELECT %s :: %s \"%s\"";
     SqlTemplate<P, RowSet<T>> template = SqlTemplate
-      .forQuery(connection, "SELECT #{" + paramName + "} :: " + sqlType + " \"" + column + "\"")
+      .forQuery(connection, String.format(query, "#{" + paramName + "}", sqlType, column))
       .mapFrom(paramsMapper)
       .mapTo(rowMapper);
+    ctx.assertEquals(String.format(query, "$1", sqlType, column), template.getSql());
     template
       .execute(params)
       .onComplete(ctx.asyncAssertSuccess(result -> {
