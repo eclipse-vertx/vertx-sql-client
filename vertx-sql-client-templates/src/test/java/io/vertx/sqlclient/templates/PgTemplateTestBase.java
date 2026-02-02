@@ -6,7 +6,6 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -15,7 +14,6 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.util.Map;
 import java.util.function.Function;
 
 @RunWith(VertxUnitRunner.class)
@@ -84,11 +82,15 @@ public abstract class PgTemplateTestBase {
                                    Function<T, V> extractor,
                                    String column) {
     Async async = ctx.async();
+    String query = "SELECT %s :: %s \"%s\"";
     SqlTemplate<P, RowSet<T>> template = SqlTemplate
-      .forQuery(connection, "SELECT #{" + paramName + "} :: " + sqlType + " \"" + column + "\"")
+      .forQuery(connection, String.format(query, "#{" + paramName + "}", sqlType, column))
       .mapFrom(paramsMapper)
       .mapTo(rowMapper);
-    template.execute(params, ctx.asyncAssertSuccess(result -> {
+    ctx.assertEquals(String.format(query, "$1", sqlType, column), template.getSql());
+    template
+      .execute(params)
+      .onComplete(ctx.asyncAssertSuccess(result -> {
       ctx.assertEquals(1, result.size());
       ctx.assertEquals(expected, extractor.apply(result.iterator().next()));
       async.complete();
