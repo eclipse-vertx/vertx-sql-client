@@ -67,6 +67,12 @@ public interface SqlTemplate<I, R> {
     return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.collecting(SqlTemplateImpl.NULL_COLLECTOR), sqlTemplate::mapTuple);
   }
 
+
+  /**
+   * @return the computed SQL for this template
+   */
+  String getSql();
+
   /**
    * Set a parameters user defined mapping function.
    *
