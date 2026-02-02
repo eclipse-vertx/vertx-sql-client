@@ -4,12 +4,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.PreparedQuery;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlResult;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.TupleMapper;
 
@@ -37,6 +32,11 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
     this.sqlTemplate = sqlTemplate;
     this.queryMapper = queryMapper;
     this.tupleMapper = tupleMapper;
+  }
+
+  @Override
+  public String getSql() {
+    return sqlTemplate.getSql();
   }
 
   @Override
