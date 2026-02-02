@@ -33,7 +33,7 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
   }
 
   @Override
-  public String getSql() {
+  public String sql() {
     return sqlTemplate.getSql();
   }
 

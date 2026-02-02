@@ -101,7 +101,7 @@ public abstract class PgTemplateTestBase {
       .forQuery(connection, String.format(query, "#{" + paramName + "}", sqlType, column))
       .mapFrom(paramsMapper)
       .mapTo(rowMapper);
-    ctx.assertEquals(String.format(query, "$1", sqlType, column), template.getSql());
+    ctx.assertEquals(String.format(query, "$1", sqlType, column), template.sql());
     template
       .execute(params)
       .onComplete(ctx.asyncAssertSuccess(result -> {
