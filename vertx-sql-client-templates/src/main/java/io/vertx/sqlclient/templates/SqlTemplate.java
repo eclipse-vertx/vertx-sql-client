@@ -73,7 +73,7 @@ public interface SqlTemplate<I, R> {
   /**
    * @return the computed SQL for this template
    */
-  String getSql();
+  String sql();
 
   /**
    * Set a parameters user defined mapping function.
