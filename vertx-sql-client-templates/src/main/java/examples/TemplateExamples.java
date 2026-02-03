@@ -1,13 +1,12 @@
 package examples;
 
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.format.QualifiedCase;
 import io.vertx.codegen.format.SnakeCase;
-import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import io.vertx.sqlclient.templates.TupleMapper;
@@ -423,5 +422,20 @@ public class TemplateExamples {
     public Tuple map(Function<Integer, String> mapping, int size, UserDataObject params) {
       throw new UnsupportedOperationException();
     }
+  }
+
+  public void templateInTransaction(Pool pool) {
+    SqlTemplate<Map<String, Object>, RowSet<UserDataObject>> template = SqlTemplate
+      .forQuery(pool, "SELECT * FROM users WHERE id=#{id}")
+      .mapTo(UserDataObjectRowMapper.INSTANCE);
+
+    // Store the resolved template instance for reuse (typically in a verticle field).
+
+    // Then create an ephemeral instance for execution inside a transaction
+
+    Future<RowSet<UserDataObject>> future = pool.withTransaction(conn -> {
+      return template.withClient(conn) // Create an ephemeral instance, don't reuse it
+        .execute(Map.of("id", 1));
+    });
   }
 }

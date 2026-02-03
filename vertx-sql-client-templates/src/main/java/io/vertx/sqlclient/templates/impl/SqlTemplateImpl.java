@@ -3,10 +3,12 @@ package io.vertx.sqlclient.templates.impl;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.*;
+import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.TupleMapper;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -16,12 +18,12 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
   //
   public static final Collector<Row, Void, Void> NULL_COLLECTOR = Collector.of(() -> null, (v, row) -> {}, (a, b) -> null);
 
-  protected final SqlClient client;
+  protected final SqlClientInternal client;
   protected final SqlTemplate sqlTemplate;
   protected final Function<I, Tuple> tupleMapper;
   protected Function<PreparedQuery<RowSet<Row>>, PreparedQuery<R>> queryMapper;
 
-  public SqlTemplateImpl(SqlClient client,
+  public SqlTemplateImpl(SqlClientInternal client,
                          SqlTemplate sqlTemplate,
                          Function<PreparedQuery<RowSet<Row>>,
                          PreparedQuery<R>> queryMapper,
@@ -45,6 +47,12 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
   @Override
   public <U> io.vertx.sqlclient.templates.SqlTemplate<I, SqlResult<U>> collecting(Collector<Row, ?, U> collector) {
     return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.collecting(collector), tupleMapper);
+  }
+
+  @Override
+  public io.vertx.sqlclient.templates.SqlTemplate<I, R> withClient(SqlClient client) {
+    SqlClientInternal clientInternal = (SqlClientInternal) Objects.requireNonNull(client, "client is null");
+    return new SqlTemplateImpl<>(clientInternal, sqlTemplate, queryMapper, tupleMapper);
   }
 
   @Override

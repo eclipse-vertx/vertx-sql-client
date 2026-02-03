@@ -6,6 +6,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.templates.SqlTemplate;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -15,15 +16,17 @@ import org.junit.runner.RunWith;
 import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
+import java.util.Collections;
+import java.util.Map;
 
 @RunWith(VertxUnitRunner.class)
 public class MySQLTest {
 
-  private static GenericContainer server;
+  private static GenericContainer<?> server;
 
   @BeforeClass
   public static void startDatabase() {
-    server = new GenericContainer("mysql:8.0")
+    server = new GenericContainer<>("mysql:8.0")
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
       .withEnv("MYSQL_ROOT_PASSWORD", "password")
@@ -75,5 +78,37 @@ public class MySQLTest {
         MySQLDataObject row = rows.iterator().next();
         ctx.assertEquals(duration, row.getDuration());
       }));
+  }
+
+  @Test
+  public void executeWithOtherClient(TestContext ctx) {
+    SqlTemplate<Map<String, Object>, RowSet<World>> template = SqlTemplate
+      .forQuery(pool, "SELECT id, randomnumber FROM tmp_world")
+      .mapTo(World.class);
+
+    pool.withTransaction(conn -> {
+      // Create a table visible only within the current session
+      return conn.query("CREATE TEMPORARY TABLE tmp_world (" +
+          "id int(10) unsigned NOT NULL auto_increment, " +
+          "randomnumber int NOT NULL default 0, " +
+          "PRIMARY KEY (id)) " +
+          "ENGINE=INNODB")
+        .execute()
+        .compose(v -> {
+          return conn.query("INSERT INTO tmp_world (randomnumber) VALUES " +
+              "(floor(0 + (rand() * 10000))), " +
+              "(floor(0 + (rand() * 10000))), " +
+              "(floor(0 + (rand() * 10000)))")
+            .execute();
+        })
+        .compose(v -> {
+          return template.withClient(conn).execute(Collections.emptyMap());
+        });
+    }).onComplete(ctx.asyncAssertSuccess(rows -> {
+      ctx.assertEquals(3, rows.size());
+      for (World world : rows) {
+        ctx.assertNotNull(world.id);
+      }
+    }));
   }
 }

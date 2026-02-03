@@ -51,8 +51,9 @@ public interface SqlTemplate<I, R> {
    * @return the template
    */
   static SqlTemplate<Map<String, Object>, RowSet<Row>> forQuery(SqlClient client, String template) {
-    io.vertx.sqlclient.templates.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.templates.impl.SqlTemplate.create((SqlClientInternal) client, template);
-    return new SqlTemplateImpl<>(client, sqlTemplate, Function.identity(), sqlTemplate::mapTuple);
+    SqlClientInternal clientInternal = (SqlClientInternal) client;
+    io.vertx.sqlclient.templates.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.templates.impl.SqlTemplate.create(clientInternal, template);
+    return new SqlTemplateImpl<>(clientInternal, sqlTemplate, Function.identity(), sqlTemplate::mapTuple);
   }
 
   /**
@@ -63,8 +64,9 @@ public interface SqlTemplate<I, R> {
    * @return the template
    */
   static SqlTemplate<Map<String, Object>, SqlResult<Void>> forUpdate(SqlClient client, String template) {
-    io.vertx.sqlclient.templates.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.templates.impl.SqlTemplate.create((SqlClientInternal) client, template);
-    return new SqlTemplateImpl<>(client, sqlTemplate, query -> query.collecting(SqlTemplateImpl.NULL_COLLECTOR), sqlTemplate::mapTuple);
+    SqlClientInternal clientInternal = (SqlClientInternal) client;
+    io.vertx.sqlclient.templates.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.templates.impl.SqlTemplate.create(clientInternal, template);
+    return new SqlTemplateImpl<>(clientInternal, sqlTemplate, query -> query.collecting(SqlTemplateImpl.NULL_COLLECTOR), sqlTemplate::mapTuple);
   }
 
 
@@ -139,6 +141,28 @@ public interface SqlTemplate<I, R> {
    */
   @GenIgnore
   <U> SqlTemplate<I, SqlResult<U>> collecting(Collector<Row, ?, U> collector);
+
+  /**
+   * Returns a new template, using the specified {@code client}.
+   * <p>
+   * This method does not compute the template query again, so it can be useful to execute a template on a specific {@link io.vertx.sqlclient.SqlConnection}.
+   * For example, after starting a transaction:
+   *
+   * <pre>
+   *   // Typically stored as a verticle field
+   *   // So that heavy computation of the template happens once
+   *   SqlTemplate<Map<String, Object>, RowSet<World>> template = SqlTemplate
+   *     .forQuery(pool, "SELECT id, randomnumber FROM tmp_world")
+   *     .mapTo(World.class);
+   *
+   *   // Executing the template inside a transaction
+   *   Future<RowSet<World>> future = pool.withTransaction(conn -> template.withClient(conn).execute(Map.of()));
+   * </pre>
+   *
+   * @param client the client that will execute requests
+   * @return a new template
+   */
+  SqlTemplate<I, R> withClient(SqlClient client);
 
   /**
    * Execute the query with the {@code parameters}
