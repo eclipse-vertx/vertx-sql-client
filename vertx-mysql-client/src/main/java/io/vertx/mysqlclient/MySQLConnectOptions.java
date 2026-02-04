@@ -16,15 +16,18 @@ import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.*;
+import io.vertx.core.net.ClientSSLOptions;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
 import java.nio.charset.Charset;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 /**
@@ -65,7 +68,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_CHARSET = "utf8mb4";
   public static final boolean DEFAULT_USE_AFFECTED_ROWS = false;
   public static final Map<String, String> DEFAULT_CONNECTION_ATTRIBUTES;
-  public static final SslMode DEFAULT_SSL_MODE = SslMode.DISABLED;
+  public static final SslMode DEFAULT_SSL_MODE = SslMode.PREFERRED;
   public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
   public static final int DEFAULT_PIPELINING_LIMIT = 1;
 

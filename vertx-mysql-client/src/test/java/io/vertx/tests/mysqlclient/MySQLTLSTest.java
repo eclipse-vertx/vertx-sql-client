@@ -22,10 +22,10 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.*;
-import io.vertx.tests.mysqlclient.junit.MySQLRule;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
+import io.vertx.tests.mysqlclient.junit.MySQLRule;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -94,7 +94,7 @@ public class MySQLTLSTest {
 
   @Test
   public void testTlsSuccessWithPreferredSslMode(TestContext ctx) {
-    options.setSslMode(SslMode.PREFERRED);
+    ctx.assertEquals(SslMode.PREFERRED, options.getSslMode(), "SslMode.PREFERRED should be the default");
     options.getSslOptions()
       .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
       .setKeyCertOptions(new PemKeyCertOptions()
@@ -137,12 +137,6 @@ public class MySQLTLSTest {
   @Test
   public void testNonTlsConnWithPreferredSslMode(TestContext ctx) {
     nonTlsOptions.setSslMode(SslMode.PREFERRED);
-    options.getSslOptions()
-      .setTrustOptions(new PemTrustOptions().addCertPath("tls/files/ca.pem"))
-      .setKeyCertOptions(new PemKeyCertOptions()
-        .setCertPath("tls/files/client-cert.pem")
-        .setKeyPath("tls/files/client-key.pem"));
-
     MySQLConnection.connect(vertx, nonTlsOptions).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       conn
