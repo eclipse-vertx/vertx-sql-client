@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -15,9 +15,12 @@ import io.vertx.core.Completable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
+import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.Helper.SQLBlockingCodeHandler;
 import oracle.jdbc.OracleConnection;
 
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.concurrent.Flow;
 
 import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
@@ -85,5 +88,22 @@ public abstract class OracleCommand<T> {
 
   public final void fireResponse() {
     handler.complete(result.result(), result.cause());
+  }
+
+  protected void applyStatementOptions(Statement stmt, OracleConnectOptions connectOptions) throws SQLException {
+    if (connectOptions != null) {
+      if (connectOptions.getQueryTimeout() > 0) {
+        stmt.setQueryTimeout(connectOptions.getQueryTimeout());
+      }
+      if (connectOptions.getMaxRows() > 0) {
+        stmt.setMaxRows(connectOptions.getMaxRows());
+      }
+      if (connectOptions.getFetchDirection() != null) {
+        stmt.setFetchDirection(connectOptions.getFetchDirection().getType());
+      }
+      if (connectOptions.getFetchSize() > 0) {
+        stmt.setFetchSize(connectOptions.getFetchSize());
+      }
+    }
   }
 }

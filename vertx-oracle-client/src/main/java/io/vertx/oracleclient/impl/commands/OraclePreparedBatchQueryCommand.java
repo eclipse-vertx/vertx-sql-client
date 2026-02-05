@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -33,14 +33,14 @@ import java.util.stream.Collector;
 
 import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
 
-public class OraclePreparedBatchQuery<C, R> extends OracleQueryCommand<C, R> {
+public class OraclePreparedBatchQueryCommand<C, R> extends OracleQueryCommand<C, R> {
 
   private final String sql;
   private final List<TupleBase> listParams;
   private final QueryResultHandler<R> resultHandler;
 
-  public OraclePreparedBatchQuery(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<R> cmd, Collector<Row, C, R> collector) {
-    super(oracleConnection, connectionContext, collector);
+  public OraclePreparedBatchQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<R> cmd, Collector<Row, C, R> collector, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
+    super(oracleConnection, connectionContext, collector, connectOptions);
     sql = cmd.sql();
     listParams = cmd.paramsList();
     resultHandler = cmd.resultHandler();

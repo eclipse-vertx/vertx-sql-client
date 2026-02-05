@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -16,6 +16,7 @@ import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.json.JsonArray;
+import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.oracleclient.data.Blob;
 import io.vertx.oracleclient.impl.Helper;
@@ -40,10 +41,12 @@ import static io.vertx.oracleclient.impl.Helper.closeQuietly;
 public abstract class OracleQueryCommand<C, R> extends OracleCommand<Boolean> {
 
   private final Collector<Row, C, R> collector;
+  private final OracleConnectOptions connectOptions;
 
-  protected OracleQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, Collector<Row, C, R> collector) {
+  protected OracleQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, Collector<Row, C, R> collector, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
     super(oracleConnection, connectionContext);
     this.collector = collector;
+    this.connectOptions = connectOptions;
   }
 
   @Override
@@ -126,6 +129,7 @@ public abstract class OracleQueryCommand<C, R> extends OracleCommand<Boolean> {
           ps = conn.prepareStatement(query());
         }
 
+        applyStatementOptions(ps, connectOptions);
         fillStatement(ps, conn);
 
         return ps.unwrap(OraclePreparedStatement.class);
