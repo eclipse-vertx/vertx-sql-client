@@ -562,10 +562,13 @@ More information about the `caching_sha2_password` authentication method can be 
 
 == Using SSL/TLS
 
-To configure the client to use SSL connection, you can configure the {@link io.vertx.mysqlclient.MySQLConnectOptions}
-like a Vert.x `NetClient`.
-All https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode[SSL modes] are supported and you are able to configure `sslmode`. The client is in `DISABLED` SSL mode by default.
-`ssl` parameter is kept as a mere shortcut for setting `sslmode`. `setSsl(true)` is equivalent to `setSslMode(VERIFY_CA)` and `setSsl(false)` is equivalent to `setSslMode(DISABLED)`.
+To configure the client to use SSL connection, you can configure the {@link io.vertx.mysqlclient.MySQLConnectOptions} like a Vert.x `NetClient`.
+
+All https://dev.mysql.com/doc/refman/8.0/en/connection-options.html#option_general_ssl-mode[SSL modes] are supported, and you are able to configure `sslmode`.
+The client is in `PREFERRED` SSL mode by default, which automatically upgrades to SSL when the server supports encryption, falling back to non-SSL connections otherwise.
+This matches the behavior of MySQL Connector/J.
+
+NOTE: To explicitly disable SSL, set the SSL mode to `DISABLED` in your connection options.
 
 [source,$lang]
 ----

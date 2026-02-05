@@ -14,8 +14,8 @@ package io.vertx.tests.mysqlclient.tck;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLConnectOptions;
+import io.vertx.mysqlclient.SslMode;
 import io.vertx.tests.mysqlclient.junit.MySQLRule;
-import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.tests.sqlclient.tck.ConnectionAutoRetryTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -40,9 +40,10 @@ public class MySQLConnectionAutoRetryTest extends ConnectionAutoRetryTestBase {
 
   @Override
   protected void initialConnector(int proxyPort) {
-    SqlConnectOptions proxyOptions = new MySQLConnectOptions(options);
+    MySQLConnectOptions proxyOptions = new MySQLConnectOptions(options);
     proxyOptions.setPort(proxyPort);
     proxyOptions.setHost("localhost");
+    proxyOptions.setSslMode(SslMode.DISABLED);
     connectionConnector = ClientConfig.CONNECT.connect(vertx, proxyOptions);
     poolConnector = ClientConfig.POOLED.connect(vertx, proxyOptions);
   }
