@@ -300,7 +300,7 @@ public abstract class MetricsTestBase {
     AtomicReference<Object> failureMetric = new AtomicReference<>();
     clientMetrics = new ClientMetrics() {
       @Override
-      public Object requestBegin(String uri, Object request) {
+      public Object init() {
         return metric;
       }
       @Override

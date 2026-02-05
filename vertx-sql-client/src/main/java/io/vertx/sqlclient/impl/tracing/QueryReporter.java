@@ -125,7 +125,8 @@ public class QueryReporter {
     }
     if (metrics != null) {
       String sql = cmd.sql();
-      metric = metrics.requestBegin(sql, sql);
+      metric = metrics.init();
+      metrics.requestBegin(metric, sql, sql);
       metrics.requestEnd(metric);
     }
   }
