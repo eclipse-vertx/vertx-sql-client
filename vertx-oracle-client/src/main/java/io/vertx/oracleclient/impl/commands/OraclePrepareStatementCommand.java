@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -13,6 +13,7 @@ package io.vertx.oracleclient.impl.commands;
 import io.vertx.core.Future;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.json.JsonArray;
+import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.OraclePrepareOptions;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.internal.command.PrepareStatementCommand;
@@ -25,11 +26,13 @@ public class OraclePrepareStatementCommand extends OracleCommand<PreparedStateme
 
   private final OraclePrepareOptions options;
   private final String sql;
+  private final OracleConnectOptions connectOptions;
 
-  public OraclePrepareStatementCommand(OracleConnection oracleConnection, ContextInternal connectionContext, PrepareStatementCommand cmd) {
+  public OraclePrepareStatementCommand(OracleConnection oracleConnection, ContextInternal connectionContext, PrepareStatementCommand cmd, OracleConnectOptions connectOptions) {
     super(oracleConnection, connectionContext);
     this.options = OraclePrepareOptions.createFrom(cmd.options());
     this.sql = cmd.sql();
+    this.connectOptions = connectOptions;
   }
 
   @Override
@@ -56,6 +59,7 @@ public class OraclePrepareStatementCommand extends OracleCommand<PreparedStateme
           keys[i] = indexes.getInteger(i);
         }
         try (java.sql.PreparedStatement statement = oracleConnection.prepareStatement(sql, keys)) {
+          applyStatementOptions(statement, connectOptions);
           return new OraclePreparedStatement(sql, statement);
         }
       }
@@ -65,6 +69,7 @@ public class OraclePrepareStatementCommand extends OracleCommand<PreparedStateme
           keys[i] = indexes.getString(i);
         }
         try (java.sql.PreparedStatement statement = oracleConnection.prepareStatement(sql, keys)) {
+          applyStatementOptions(statement, connectOptions);
           return new OraclePreparedStatement(sql, statement);
         }
       }

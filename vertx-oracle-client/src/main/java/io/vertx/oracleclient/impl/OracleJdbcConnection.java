@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -208,9 +208,9 @@ public class OracleJdbcConnection implements Connection {
   private OracleCommand wrap(CommandBase cmd) {
     OracleCommand action;
     if (cmd instanceof SimpleQueryCommand) {
-      action = OracleSimpleQueryCommand.create(connection, context, (SimpleQueryCommand) cmd);
+      action = OracleSimpleQueryCommand.create(connection, context, (SimpleQueryCommand) cmd, options);
     } else if (cmd instanceof PrepareStatementCommand) {
-      action = new OraclePrepareStatementCommand(connection, context, (PrepareStatementCommand) cmd);
+      action = new OraclePrepareStatementCommand(connection, context, (PrepareStatementCommand) cmd, options);
     } else if (cmd instanceof ExtendedQueryCommand) {
       action = forExtendedQuery((ExtendedQueryCommand) cmd);
     } else if (cmd instanceof TxCommand) {
@@ -238,12 +238,12 @@ public class OracleJdbcConnection implements Connection {
       if (rowReader != null) {
         action = OracleCursorFetchCommand.create(connection, context, cmd, rowReader);
       } else {
-        action = OracleCursorQueryCommand.create(connection, context, cmd, cmd.collector(), rr -> cursors.put(cursorId, rr));
+        action = OracleCursorQueryCommand.create(connection, context, cmd, cmd.collector(), rr -> cursors.put(cursorId, rr), options);
       }
     } else if (cmd.isBatch()) {
-      action = new OraclePreparedBatchQuery(connection, context, cmd, cmd.collector());
+      action = new OraclePreparedBatchQueryCommand(connection, context, cmd, cmd.collector(), options);
     } else {
-      action = new OraclePreparedQueryCommand(connection, context, cmd, cmd.collector());
+      action = new OraclePreparedQueryCommand(connection, context, cmd, cmd.collector(), options);
     }
     return action;
   }
