@@ -286,51 +286,172 @@ include::tracing.adoc[]
 
 == MySQL type mapping
 
-Currently the client supports the following MySQL types
+Currently the client supports the following MySQL types:
 
-* BOOL,BOOLEAN (`java.lang.Byte`)
-* TINYINT (`java.lang.Byte`)
-* TINYINT UNSIGNED(`java.lang.Short`)
-* SMALLINT (`java.lang.Short`)
-* SMALLINT UNSIGNED(`java.lang.Integer`)
-* MEDIUMINT (`java.lang.Integer`)
-* MEDIUMINT UNSIGNED(`java.lang.Integer`)
-* INT,INTEGER (`java.lang.Integer`)
-* INTEGER UNSIGNED(`java.lang.Long`)
-* BIGINT (`java.lang.Long`)
-* BIGINT UNSIGNED(`io.vertx.sqlclient.data.Numeric`)
-* FLOAT (`java.lang.Float`)
-* FLOAT UNSIGNED(`java.lang.Float`)
-* DOUBLE (`java.lang.Double`)
-* DOUBLE UNSIGNED(`java.lang.Double`)
-* BIT (`java.lang.Long`)
-* NUMERIC (`io.vertx.sqlclient.data.Numeric`)
-* NUMERIC UNSIGNED(`io.vertx.sqlclient.data.Numeric`)
-* DATE (`java.time.LocalDate`)
-* DATETIME (`java.time.LocalDateTime`)
-* TIME (`java.time.Duration`)
-* TIMESTAMP (`java.time.LocalDateTime`)
-* YEAR (`java.lang.Short`)
-* CHAR (`java.lang.String`)
-* VARCHAR (`java.lang.String`)
-* BINARY (`io.vertx.core.buffer.Buffer`)
-* VARBINARY (`io.vertx.core.buffer.Buffer`)
-* TINYBLOB (`io.vertx.core.buffer.Buffer`)
-* TINYTEXT (`java.lang.String`)
-* BLOB (`io.vertx.core.buffer.Buffer`)
-* TEXT (`java.lang.String`)
-* MEDIUMBLOB (`io.vertx.core.buffer.Buffer`)
-* MEDIUMTEXT (`java.lang.String`)
-* LONGBLOB (`io.vertx.core.buffer.Buffer`)
-* LONGTEXT (`java.lang.String`)
-* ENUM (`java.lang.String`)
-* SET (`java.lang.String`)
-* JSON (`io.vertx.core.json.JsonObject`, `io.vertx.core.json.JsonArray`, `Number`, `Boolean`, `String`, `io.vertx.sqlclient.Tuple#JSON_NULL`)
-* GEOMETRY(`io.vertx.mysqlclient.data.spatial.*`)
+[cols="<2,<3,<3", options="header"]
+|===
+| MySQL Type | Java Type | Notes
 
-Tuple decoding uses the above types when storing values
+| `BOOLEAN` / `BOOL`
+| `java.lang.Byte`
+| Synonym for `TINYINT(1)`
 
-Note: In Java there is no specific representations for unsigned numeric values, so this client will convert an unsigned value to the correlated Java type.
+| `TINYINT`
+| `java.lang.Byte`
+|
+
+| `TINYINT UNSIGNED`
+| `java.lang.Short`
+|
+
+| `SMALLINT`
+| `java.lang.Short`
+|
+
+| `SMALLINT UNSIGNED`
+| `java.lang.Integer`
+|
+
+| `MEDIUMINT`
+| `java.lang.Integer`
+|
+
+| `MEDIUMINT UNSIGNED`
+| `java.lang.Integer`
+|
+
+| `INT` / `INTEGER`
+| `java.lang.Integer`
+|
+
+| `INTEGER UNSIGNED`
+| `java.lang.Long`
+|
+
+| `BIGINT`
+| `java.lang.Long`
+|
+
+| `BIGINT UNSIGNED`
+| `io.vertx.sqlclient.data.Numeric`
+| No unsigned 64-bit in Java
+
+| `FLOAT`
+| `java.lang.Float`
+|
+
+| `FLOAT UNSIGNED`
+| `java.lang.Float`
+|
+
+| `DOUBLE`
+| `java.lang.Double`
+|
+
+| `DOUBLE UNSIGNED`
+| `java.lang.Double`
+|
+
+| `BIT`
+| `java.lang.Long`
+|
+
+| `NUMERIC` / `DECIMAL`
+| `io.vertx.sqlclient.data.Numeric`
+|
+
+| `NUMERIC UNSIGNED`
+| `io.vertx.sqlclient.data.Numeric`
+|
+
+| `DATE`
+| `java.time.LocalDate`
+|
+
+| `DATETIME`
+| `java.time.LocalDateTime`
+|
+
+| `TIME`
+| `java.time.Duration`
+| Also retrievable as `java.time.LocalTime`
+
+| `TIMESTAMP`
+| `java.time.LocalDateTime`
+|
+
+| `YEAR`
+| `java.lang.Short`
+|
+
+| `CHAR`
+| `java.lang.String`
+|
+
+| `VARCHAR`
+| `java.lang.String`
+|
+
+| `BINARY`
+| `io.vertx.core.buffer.Buffer`
+|
+
+| `VARBINARY`
+| `io.vertx.core.buffer.Buffer`
+|
+
+| `TINYBLOB`
+| `io.vertx.core.buffer.Buffer`
+|
+
+| `TINYTEXT`
+| `java.lang.String`
+|
+
+| `BLOB`
+| `io.vertx.core.buffer.Buffer`
+|
+
+| `TEXT`
+| `java.lang.String`
+|
+
+| `MEDIUMBLOB`
+| `io.vertx.core.buffer.Buffer`
+|
+
+| `MEDIUMTEXT`
+| `java.lang.String`
+|
+
+| `LONGBLOB`
+| `io.vertx.core.buffer.Buffer`
+|
+
+| `LONGTEXT`
+| `java.lang.String`
+|
+
+| `ENUM`
+| `java.lang.String`
+|
+
+| `SET`
+| `java.lang.String`
+|
+
+| `JSON`
+| `java.lang.Object`
+| See <<handling-json>>
+
+| `GEOMETRY`
+| `io.vertx.mysqlclient.data.spatial.*`
+| See <<handling-geometry>>
+|===
+
+Tuple decoding uses the above types when storing values.
+
+NOTE: Java has no specific representations for unsigned numeric values. The client converts unsigned values to the corresponding Java type that can hold the value.
 
 === Implicit type conversion
 
