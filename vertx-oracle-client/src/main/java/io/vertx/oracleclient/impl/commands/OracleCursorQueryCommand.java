@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -38,8 +38,8 @@ public class OracleCursorQueryCommand<C, R> extends OracleQueryCommand<C, R> {
   private final Collector<Row, C, R> collector;
   private final QueryResultHandler<R> resultHandler;
 
-  private OracleCursorQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<R> cmd, Collector<Row, C, R> collector, Consumer<RowReader<C, R>> store) {
-    super(oracleConnection, connectionContext, collector);
+  private OracleCursorQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<R> cmd, Collector<Row, C, R> collector, Consumer<RowReader<C, R>> store, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
+    super(oracleConnection, connectionContext, collector, connectOptions);
     sql = cmd.sql();
     fetch = cmd.fetch();
     params = cmd.params();
@@ -49,8 +49,8 @@ public class OracleCursorQueryCommand<C, R> extends OracleQueryCommand<C, R> {
     this.store = store;
   }
 
-  public static <U, V> OracleCursorQueryCommand<U, V> create(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<V> cmd, Collector<Row, U, V> collector, Consumer<RowReader<U, V>> store) {
-    return new OracleCursorQueryCommand<>(oracleConnection, connectionContext, cmd, collector, store);
+  public static <U, V> OracleCursorQueryCommand<U, V> create(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<V> cmd, Collector<Row, U, V> collector, Consumer<RowReader<U, V>> store, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
+    return new OracleCursorQueryCommand<>(oracleConnection, connectionContext, cmd, collector, store, connectOptions);
   }
 
   @Override

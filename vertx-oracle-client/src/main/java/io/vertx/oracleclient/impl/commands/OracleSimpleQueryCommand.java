@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -29,14 +29,14 @@ public class OracleSimpleQueryCommand<C, R> extends OracleQueryCommand<C, R> {
   private final String sql;
   private final QueryResultHandler<R> resultHandler;
 
-  private OracleSimpleQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, SimpleQueryCommand<R> cmd, Collector<Row, C, R> collector) {
-    super(oracleConnection, connectionContext, collector);
+  private OracleSimpleQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, SimpleQueryCommand<R> cmd, Collector<Row, C, R> collector, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
+    super(oracleConnection, connectionContext, collector, connectOptions);
     sql = cmd.sql();
     resultHandler = cmd.resultHandler();
   }
 
-  public static <U> OracleSimpleQueryCommand<?, U> create(OracleConnection oracleConnection, ContextInternal connectionContext, SimpleQueryCommand<U> cmd) {
-    return new OracleSimpleQueryCommand<>(oracleConnection, connectionContext, cmd, cmd.collector());
+  public static <U> OracleSimpleQueryCommand<?, U> create(OracleConnection oracleConnection, ContextInternal connectionContext, SimpleQueryCommand<U> cmd, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
+    return new OracleSimpleQueryCommand<>(oracleConnection, connectionContext, cmd, cmd.collector(), connectOptions);
   }
 
   @Override

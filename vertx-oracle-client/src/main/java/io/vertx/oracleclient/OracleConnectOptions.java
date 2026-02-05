@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -50,6 +50,12 @@ public class OracleConnectOptions extends SqlConnectOptions {
   private String tnsAlias;
   private String tnsAdmin;
 
+  private int queryTimeout;
+  private int maxRows;
+  private FetchDirection fetchDirection;
+  private int fetchSize;
+
+
   public OracleConnectOptions() {
     super();
   }
@@ -66,6 +72,10 @@ public class OracleConnectOptions extends SqlConnectOptions {
     this.instanceName = other.instanceName;
     this.tnsAlias = other.tnsAlias;
     this.tnsAdmin = other.tnsAdmin;
+    this.queryTimeout = other.queryTimeout;
+    this.maxRows = other.maxRows;
+    this.fetchDirection = other.fetchDirection;
+    this.fetchSize = other.fetchSize;
   }
 
   public OracleConnectOptions(SqlConnectOptions options) {
@@ -202,6 +212,54 @@ public class OracleConnectOptions extends SqlConnectOptions {
    */
   public OracleConnectOptions setTnsAdmin(String tnsAdmin) {
     this.tnsAdmin = tnsAdmin;
+    return this;
+  }
+
+  public int getQueryTimeout() {
+    return queryTimeout;
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setQueryTimeout(int)
+   */
+  public OracleConnectOptions setQueryTimeout(int queryTimeout) {
+    this.queryTimeout = queryTimeout;
+    return this;
+  }
+
+  public int getMaxRows() {
+    return maxRows;
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setMaxRows(int)
+   */
+  public OracleConnectOptions setMaxRows(int maxRows) {
+    this.maxRows = maxRows;
+    return this;
+  }
+
+  public FetchDirection getFetchDirection() {
+    return fetchDirection;
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setFetchDirection(int)
+   */
+  public OracleConnectOptions setFetchDirection(FetchDirection fetchDirection) {
+    this.fetchDirection = fetchDirection;
+    return this;
+  }
+
+  public int getFetchSize() {
+    return fetchSize;
+  }
+
+  /**
+   * @see java.sql.PreparedStatement#setFetchSize(int)
+   */
+  public OracleConnectOptions setFetchSize(int fetchSize) {
+    this.fetchSize = fetchSize;
     return this;
   }
 
