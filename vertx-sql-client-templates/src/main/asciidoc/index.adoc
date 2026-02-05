@@ -47,6 +47,24 @@ When you need to perform an insert or update operation, and you do not care of t
 {@link examples.TemplateExamples#insertExample}
 ----
 
+[TIP]
+====
+Creating a template instance with {@link io.vertx.sqlclient.templates.SqlTemplate#forQuery} or {@link io.vertx.sqlclient.templates.SqlTemplate#forUpdate} involves parsing the query, and that doesn't come for free.
+
+To avoid paying the price of computing the actual query repeatedly, consider reusing your template instances.
+Typically, you will store an instance as a verticle field.
+====
+
+[TIP]
+====
+When your template must be executed inside a transaction, you might create a temporary instance using {@link io.vertx.sqlclient.templates.SqlTemplate#withClient}:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#templateInTransaction}
+----
+====
+
 == Template syntax
 
 The template syntax uses `#{XXX}` syntax where `XXX` is a valid https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.8[java identifier] string
