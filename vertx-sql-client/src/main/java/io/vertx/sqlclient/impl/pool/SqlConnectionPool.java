@@ -264,24 +264,25 @@ public class SqlConnectionPool {
 
       @Override
       public void complete(Lease<PooledConnection> lease, Throwable failure) {
-        if (timerID != -1L) {
-          vertx.cancelTimer(timerID);
-        }
-        if (failure == null) {
-          if (afterAcquire != null) {
-            afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
-              if (ar2.succeeded()) {
-                handle(lease);
-              } else {
-                // Should we do some cleanup ?
-                handler.fail(failure);
-              }
-            });
-          } else {
-            handle(lease);
-          }
+        if (timerID != -1L && !vertx.cancelTimer(timerID)) {
+          lease.recycle();
         } else {
-          handler.fail(failure);
+          if (failure == null) {
+            if (afterAcquire != null) {
+              afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
+                if (ar2.succeeded()) {
+                  handle(lease);
+                } else {
+                  // Should we do some cleanup ?
+                  handler.fail(failure);
+                }
+              });
+            } else {
+              handle(lease);
+            }
+          } else {
+            handler.fail(failure);
+          }
         }
       }
 
