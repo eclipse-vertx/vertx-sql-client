@@ -28,9 +28,9 @@ import io.vertx.pgclient.PgNotification;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.TxFailedEvent;
 import io.vertx.pgclient.spi.PgDriver;
-import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
+import io.vertx.sqlclient.spi.connection.Connection;
 
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
@@ -67,10 +67,11 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
       Handler<PgNotification> handler = notificationHandler;
       if (handler != null) {
         Notification notification = (Notification) event;
-        handler.handle(new PgNotification()
+        PgNotification pgNotification = new PgNotification()
           .setChannel(notification.getChannel())
           .setProcessId(notification.getProcessId())
-          .setPayload(notification.getPayload()));
+          .setPayload(notification.getPayload());
+        context.duplicate().emit(pgNotification, handler);
       }
     } else if (event instanceof NoticeResponse) {
       Handler<PgNotice> handler = noticeHandler;
@@ -94,8 +95,7 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
         .setDataType(noticeEvent.getDataType())
         .setConstraint(noticeEvent.getConstraint());
       if (handler != null) {
-        handler.handle(notice
-        );
+        context.duplicate().emit(notice, handler);
       } else {
         notice.log(SocketConnectionBase.logger);
       }

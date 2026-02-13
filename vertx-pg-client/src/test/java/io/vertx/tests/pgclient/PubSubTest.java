@@ -18,6 +18,7 @@ package io.vertx.tests.pgclient;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgConnectOptions;
@@ -32,8 +33,11 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static io.vertx.core.internal.ContextInternal.LOCAL_MAP;
 
 public class PubSubTest extends PgTestBase {
 
@@ -360,5 +364,53 @@ public class PubSubTest extends PgTestBase {
           }));
       }));
     }));
+  }
+
+  @Test
+  public void testSubscriberEmitsOnDuplicatedContext(TestContext ctx) {
+    String channelName = "test_channel";
+    String quotedChannelName = "\"" + channelName + "\"";
+
+    // Create a duplicated context with local data BEFORE creating the subscriber
+    ContextInternal originalContext = (ContextInternal) vertx.getOrCreateContext();
+    ContextInternal duplicatedContext = originalContext.duplicate();
+    duplicatedContext.getLocal(LOCAL_MAP, ConcurrentHashMap::new).put("foo", "bar");
+
+    Async connectLatch = ctx.async();
+
+    duplicatedContext.runOnContext(v -> {
+      ctx.assertEquals("bar", ContextInternal.current().getLocal(LOCAL_MAP, ConcurrentHashMap::new).get("foo"));
+
+      subscriber = PgSubscriber.subscriber(vertx, options);
+      subscriber.connect().onComplete(v2 -> connectLatch.complete());
+    });
+
+    connectLatch.awaitSuccess(10000);
+
+    Async notificationLatch = ctx.async();
+
+    duplicatedContext.runOnContext(v -> {
+      ctx.assertEquals("bar", ContextInternal.current().getLocal(LOCAL_MAP, ConcurrentHashMap::new).get("foo"));
+
+      PgChannel channel = subscriber.channel(channelName);
+      channel.handler(notif -> {
+        ContextInternal currentContext = ContextInternal.current();
+        ctx.assertTrue(currentContext.isDuplicate());
+        ctx.assertNotEquals(duplicatedContext, currentContext);
+        ctx.assertNull(currentContext.getLocal(LOCAL_MAP, ConcurrentHashMap::new).get("foo"));
+        ctx.assertEquals("msg", notif);
+        notificationLatch.countDown();
+      });
+    });
+
+    vertx.setTimer(100, t -> {
+      subscriber
+        .actualConnection()
+        .query("NOTIFY " + quotedChannelName + ", 'msg'")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess());
+    });
+
+    notificationLatch.awaitSuccess(10000);
   }
 }
