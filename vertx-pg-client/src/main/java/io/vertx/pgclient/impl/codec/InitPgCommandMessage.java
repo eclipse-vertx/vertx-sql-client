@@ -23,6 +23,7 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.core.VertxException;
 import io.vertx.pgclient.impl.PgDatabaseMetadata;
 import io.vertx.pgclient.impl.PgSocketConnection;
+import io.vertx.pgclient.impl.ServerType;
 import io.vertx.pgclient.impl.auth.scram.ScramAuthentication;
 import io.vertx.pgclient.impl.auth.scram.ScramSession;
 import io.vertx.sqlclient.spi.connection.Connection;
@@ -94,6 +95,10 @@ class InitPgCommandMessage extends PgCommandMessage<Connection, InitCommand> {
     }
     if(key.equals("server_version")) {
       ((PgSocketConnection)cmd.connection()).dbMetaData = new PgDatabaseMetadata(value);
+    }
+    if(key.equals("in_hot_standby")) {
+      ((PgSocketConnection)cmd.connection()).serverType =
+        "on".equalsIgnoreCase(value) ? ServerType.SECONDARY : ServerType.PRIMARY;
     }
   }
 

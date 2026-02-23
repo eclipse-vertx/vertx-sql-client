@@ -16,18 +16,30 @@
  */
 package io.vertx.pgclient.impl;
 
+import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.TargetServerType;
 import io.vertx.sqlclient.PoolOptions;
+
+import java.util.List;
 
 public class PgPoolOptions extends PoolOptions {
 
-  public PgPoolOptions(PoolOptions other) {
-    super(other);
-  }
+  private boolean pipelined;
+  private TargetServerType targetServerType = TargetServerType.ANY;
+  private List<PgConnectOptions> servers;
 
   public PgPoolOptions() {
   }
 
-  private boolean pipelined;
+  public PgPoolOptions(PoolOptions other) {
+    super(other);
+    if (other instanceof PgPoolOptions) {
+      PgPoolOptions pgOther = (PgPoolOptions) other;
+      this.pipelined = pgOther.pipelined;
+      this.targetServerType = pgOther.targetServerType;
+      this.servers = pgOther.servers;
+    }
+  }
 
   public boolean isPipelined() {
     return pipelined;
@@ -35,6 +47,24 @@ public class PgPoolOptions extends PoolOptions {
 
   public PgPoolOptions setPipelined(boolean pipelined) {
     this.pipelined = pipelined;
+    return this;
+  }
+
+  public TargetServerType getTargetServerType() {
+    return targetServerType;
+  }
+
+  public PgPoolOptions setTargetServerType(TargetServerType targetServerType) {
+    this.targetServerType = targetServerType;
+    return this;
+  }
+
+  public List<PgConnectOptions> getServers() {
+    return servers;
+  }
+
+  public PgPoolOptions setServers(List<PgConnectOptions> servers) {
+    this.servers = servers;
     return this;
   }
 }
