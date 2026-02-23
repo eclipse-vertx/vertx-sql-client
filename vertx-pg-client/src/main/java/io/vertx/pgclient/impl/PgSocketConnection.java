@@ -57,6 +57,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   public int processId;
   public int secretKey;
   public PgDatabaseMetadata dbMetaData;
+  public ServerType serverType = ServerType.UNDEFINED;
   private PgConnectOptions connectOptions;
 
   public PgSocketConnection(NetSocketInternal socket,

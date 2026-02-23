@@ -9,10 +9,12 @@ import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.pgclient.PgConnectOptions;
+import io.vertx.pgclient.TargetServerType;
 import io.vertx.pgclient.impl.PgConnectionFactory;
 import io.vertx.pgclient.impl.PgConnectionImpl;
 import io.vertx.pgclient.impl.PgConnectionUriParser;
 import io.vertx.pgclient.impl.PgPoolOptions;
+import io.vertx.pgclient.impl.ServerTypeAwarePgConnectionFactory;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
@@ -38,9 +40,23 @@ public class PgDriver extends DriverBase<PgConnectOptions> {
   @Override
   protected Pool newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<PgConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
     boolean pipelinedPool = poolOptions instanceof PgPoolOptions && ((PgPoolOptions) poolOptions).isPipelined();
-    ConnectionFactory<PgConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
+    PgConnectionFactory baseFactory = (PgConnectionFactory) createConnectionFactory(vertx, transportOptions);
+    ConnectionFactory<PgConnectOptions> factory = baseFactory;
+    Supplier<Future<PgConnectOptions>> effectiveDatabases = databases;
+
+    if (poolOptions instanceof PgPoolOptions) {
+      PgPoolOptions pgOpts = (PgPoolOptions) poolOptions;
+      if (pgOpts.getTargetServerType() != null
+        && pgOpts.getTargetServerType() != TargetServerType.ANY
+        && pgOpts.getServers() != null && !pgOpts.getServers().isEmpty()) {
+        factory = new ServerTypeAwarePgConnectionFactory(baseFactory, pgOpts.getServers(), pgOpts.getTargetServerType());
+        // The wrapper ignores the supplier; provide a dummy that returns the first server
+        effectiveDatabases = () -> Future.succeededFuture(pgOpts.getServers().get(0));
+      }
+    }
+
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null,
-      factory, databases, connectHandler, this::wrapConnection, closeFuture);
+      factory, effectiveDatabases, connectHandler, this::wrapConnection, closeFuture);
     pool.init();
     closeFuture.add(factory);
     return pool;
@@ -75,6 +91,12 @@ public class PgDriver extends DriverBase<PgConnectOptions> {
 
   @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<PgConnectOptions> factory, Connection connection) {
-    return new PgConnectionImpl((PgConnectionFactory) factory, context, connection);
+    PgConnectionFactory pgFactory;
+    if (factory instanceof ServerTypeAwarePgConnectionFactory) {
+      pgFactory = ((ServerTypeAwarePgConnectionFactory) factory).getDelegate();
+    } else {
+      pgFactory = (PgConnectionFactory) factory;
+    }
+    return new PgConnectionImpl(pgFactory, context, connection);
   }
 }
