@@ -246,6 +246,9 @@ public class SqlConnectionPool {
         pooled.refresh();
         lease.recycle();
       });
+    }, t -> {
+      dequeueAndReject(queueMetric);
+      return Future.failedFuture(t);
     }).onComplete(ar -> {
       if (ar.succeeded()) {
         res.complete(ar.result());
@@ -287,6 +290,7 @@ public class SqlConnectionPool {
             handle(lease);
           }
         } else {
+          dequeueAndReject(queueMetric);
           handler.handle(Future.failedFuture(ar.cause()));
         }
       }
