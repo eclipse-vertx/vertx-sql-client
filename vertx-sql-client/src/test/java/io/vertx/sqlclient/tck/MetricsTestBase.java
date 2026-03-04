@@ -355,4 +355,65 @@ public abstract class MetricsTestBase {
       }));
     });
   }
+
+  @Test
+  public void testGetConnectionFailure(TestContext ctx) throws Exception {
+    testConnectionFailure(ctx, true);
+  }
+
+  @Test
+  public void testPooledConnectionFailure(TestContext ctx) throws Exception {
+    testConnectionFailure(ctx, false);
+  }
+
+  private void testConnectionFailure(TestContext ctx, boolean useGetConnection) throws Exception {
+    AtomicInteger queueSize = new AtomicInteger();
+    List<Object> enqueueMetrics = Collections.synchronizedList(new ArrayList<>());
+    List<Object> dequeueMetrics = Collections.synchronizedList(new ArrayList<>());
+    poolMetrics = new PoolMetrics() {
+      @Override
+      public Object submitted() {
+        Object metric = new Object();
+        enqueueMetrics.add(metric);
+        queueSize.incrementAndGet();
+        return metric;
+      }
+
+      @Override
+      public Object begin(Object queueMetric) {
+        throw new IllegalStateException("Shouldn't be invoked");
+      }
+
+      @Override
+      public void rejected(Object queueMetric) {
+        dequeueMetrics.add(queueMetric);
+        queueSize.decrementAndGet();
+      }
+
+      @Override
+      public void end(Object inUseMetric, boolean succeeded) {
+        throw new IllegalStateException("Shouldn't be invoked");
+      }
+    };
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(1).setName("the-pool");
+    SqlConnectOptions connectOptions = connectOptions().setHost("does.not.exist.com");
+    Pool pool = poolBuilder().with(poolOptions).using(vertx).connectingTo(connectOptions).build();
+    int num = 16;
+    List<Future<?>> futures = new ArrayList<>();
+    for (int i = 0; i < num; i++) {
+      Future<RowSet<Row>> future;
+      if (useGetConnection) {
+        future = pool.withConnection(sqlConn -> sqlConn.query("SELECT * FROM immutable WHERE id=1").execute());
+      } else {
+        future = pool.query("SELECT * FROM immutable WHERE id=1").execute();
+      }
+      futures.add(future);
+    }
+    Future.await(Future.join(futures).otherwiseEmpty(), 20, SECONDS);
+    ctx.assertEquals(0, queueSize.get());
+    ctx.assertEquals(num, enqueueMetrics.size());
+    ctx.assertEquals(enqueueMetrics, dequeueMetrics);
+    ctx.assertEquals("sql", poolType);
+    ctx.assertEquals("the-pool", poolName);
+  }
 }
