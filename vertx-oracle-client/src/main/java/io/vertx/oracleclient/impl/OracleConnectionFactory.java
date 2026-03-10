@@ -13,7 +13,6 @@ package io.vertx.oracleclient.impl;
 import io.vertx.core.Completable;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -36,7 +35,7 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
 
   private final Map<JsonObject, OracleDataSource> datasources;
 
-  public OracleConnectionFactory(VertxInternal vertx) {
+  public OracleConnectionFactory() {
     this.datasources = new HashMap<>();
   }
 

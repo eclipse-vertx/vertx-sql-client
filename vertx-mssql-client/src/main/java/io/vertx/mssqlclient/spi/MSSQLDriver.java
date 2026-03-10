@@ -32,9 +32,9 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.internal.pool.CloseablePool;
 import io.vertx.sqlclient.internal.pool.PoolImpl;
-import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -73,7 +73,7 @@ public class MSSQLDriver implements Driver<MSSQLConnectOptions> {
 
   @Override
   public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx);
+    return new MSSQLConnectionFactory((VertxInternal) vertx, transportOptions);
   }
 
   @Override
