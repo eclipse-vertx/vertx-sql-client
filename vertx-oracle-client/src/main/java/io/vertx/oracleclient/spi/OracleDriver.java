@@ -13,16 +13,18 @@ package io.vertx.oracleclient.spi;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.ContextInternal;
-import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.impl.*;
+import io.vertx.oracleclient.impl.OracleConnectionFactory;
+import io.vertx.oracleclient.impl.OracleConnectionImpl;
+import io.vertx.oracleclient.impl.OracleConnectionUriParser;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
-import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.DriverBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 
 import java.util.function.Function;
 
@@ -57,7 +59,7 @@ public class OracleDriver extends DriverBase<OracleConnectOptions> {
 
   @Override
   public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
-    return new OracleConnectionFactory((VertxInternal) vertx);
+    return new OracleConnectionFactory();
   }
 
   @Override
