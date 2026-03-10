@@ -25,10 +25,10 @@ import io.vertx.mssqlclient.impl.MSSQLConnectionFactory;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
 import io.vertx.mssqlclient.impl.MSSQLConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
-import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
-import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.DriverBase;
+import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 
 public class MSSQLDriver extends DriverBase<MSSQLConnectOptions> {
 
@@ -47,7 +47,7 @@ public class MSSQLDriver extends DriverBase<MSSQLConnectOptions> {
 
   @Override
   public ConnectionFactory<MSSQLConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
-    return new MSSQLConnectionFactory((VertxInternal) vertx);
+    return new MSSQLConnectionFactory((VertxInternal) vertx, transportOptions);
   }
 
   @Override

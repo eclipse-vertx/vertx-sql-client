@@ -17,19 +17,15 @@ import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
-import io.vertx.core.net.ConnectOptions;
-import io.vertx.core.net.ClientSSLOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.SocketAddress;
-import io.vertx.core.net.TrustOptions;
 import io.vertx.core.internal.net.NetSocketInternal;
+import io.vertx.core.net.*;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mysqlclient.MySQLAuthenticationPlugin;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.SslMode;
-import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
+import io.vertx.sqlclient.spi.connection.Connection;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -41,6 +37,10 @@ public class MySQLConnectionFactory extends ConnectionFactoryBase<MySQLConnectOp
 
   public MySQLConnectionFactory(VertxInternal vertx) {
     super(vertx);
+  }
+
+  public MySQLConnectionFactory(VertxInternal vertx, NetClientOptions tranportOptions) {
+    super(vertx, tranportOptions);
   }
 
   @Override

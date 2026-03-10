@@ -35,7 +35,7 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
 
   private final Map<JsonObject, OracleDataSource> datasources;
 
-  public OracleConnectionFactory(VertxInternal vertx) {
+  public OracleConnectionFactory() {
     this.datasources = new HashMap<>();
   }
 
