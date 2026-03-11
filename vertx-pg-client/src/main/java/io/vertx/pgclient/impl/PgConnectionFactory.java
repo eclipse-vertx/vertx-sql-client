@@ -19,18 +19,18 @@ package io.vertx.pgclient.impl;
 
 import io.vertx.core.Context;
 import io.vertx.core.Future;
-import io.vertx.core.net.*;
-import io.vertx.core.spi.metrics.ClientMetrics;
-import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
+import io.vertx.core.net.*;
+import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
+import io.vertx.sqlclient.internal.Connection;
 
 import java.util.Collections;
 import java.util.Map;
@@ -41,8 +41,12 @@ import java.util.function.Predicate;
  */
 public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions> {
 
-  public PgConnectionFactory(VertxInternal context) {
-    super(context);
+  public PgConnectionFactory(VertxInternal vertx) {
+    super(vertx);
+  }
+
+  public PgConnectionFactory(VertxInternal vertx, NetClientOptions transportOptions) {
+    super(vertx, transportOptions);
   }
 
   private void checkSslMode(PgConnectOptions options) {

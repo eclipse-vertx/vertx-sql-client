@@ -19,15 +19,18 @@ import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.oracleclient.OracleConnectOptions;
-import io.vertx.oracleclient.impl.*;
+import io.vertx.oracleclient.impl.OracleConnectionFactory;
+import io.vertx.oracleclient.impl.OracleConnectionImpl;
+import io.vertx.oracleclient.impl.OracleConnectionUriParser;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.internal.pool.CloseablePool;
 import io.vertx.sqlclient.internal.pool.PoolImpl;
-import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -80,7 +83,7 @@ public class OracleDriver implements Driver<OracleConnectOptions> {
 
   @Override
   public ConnectionFactory<OracleConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
-    return new OracleConnectionFactory((VertxInternal) vertx);
+    return new OracleConnectionFactory();
   }
 
   @Override

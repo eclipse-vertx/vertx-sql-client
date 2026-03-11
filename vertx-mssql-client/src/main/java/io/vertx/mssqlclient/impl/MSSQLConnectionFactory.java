@@ -16,17 +16,18 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.internal.tls.SslContextManager;
 import io.vertx.core.net.HostAndPort;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
-import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
-import io.vertx.sqlclient.internal.Connection;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
+import io.vertx.sqlclient.internal.Connection;
 
 import java.util.Map;
 
@@ -37,7 +38,11 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
   private final SslContextManager sslContextManager;
 
   public MSSQLConnectionFactory(VertxInternal vertx) {
-    super(vertx);
+    this(vertx, new NetClientOptions());
+  }
+
+  public MSSQLConnectionFactory(VertxInternal vertx, NetClientOptions transportOptions) {
+    super(vertx, transportOptions);
     sslContextManager = new SslContextManager(SslContextManager.resolveEngineOptions(tcpOptions.getSslEngineOptions(), tcpOptions.isUseAlpn()));
   }
 

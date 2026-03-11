@@ -24,15 +24,18 @@ import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.mysqlclient.MySQLConnectOptions;
-import io.vertx.mysqlclient.impl.*;
+import io.vertx.mysqlclient.impl.MySQLConnectionFactory;
+import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
+import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
+import io.vertx.mysqlclient.impl.MySQLPoolOptions;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.internal.Connection;
+import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.internal.pool.CloseablePool;
 import io.vertx.sqlclient.internal.pool.PoolImpl;
-import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.ConnectionFactory;
 import io.vertx.sqlclient.spi.Driver;
 
@@ -83,7 +86,7 @@ public class MySQLDriver implements Driver<MySQLConnectOptions> {
 
   @Override
   public ConnectionFactory<MySQLConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
-    return new MySQLConnectionFactory((VertxInternal) vertx);
+    return new MySQLConnectionFactory((VertxInternal) vertx, transportOptions);
   }
 
   @Override
