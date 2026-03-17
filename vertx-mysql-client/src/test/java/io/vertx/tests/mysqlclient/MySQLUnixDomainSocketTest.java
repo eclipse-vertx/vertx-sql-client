@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assume.assumeTrue;
 
@@ -51,7 +52,10 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
       options.setHost(rule.domainSocketPath());
     }
     assumeTrue(options.isUsingDomainSocket());
-    vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
+    // Only use native transport for JDK < 16 (Unix domain socket support added in JDK 16)
+    boolean useNativeTransport = Runtime.version().feature() < 16;
+    vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(useNativeTransport));
+    assertEquals(useNativeTransport, vertx.isNativeTransportEnabled());
   }
 
   @After
@@ -93,7 +97,10 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
 
   @Test
   public void connectWithVertxInstance(TestContext context) {
-    Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
+    // Only use native transport for JDK < 16 (Unix domain socket support added in JDK 16)
+    boolean useNativeTransport = Runtime.version().feature() < 16;
+    Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(useNativeTransport));
+    assertEquals(useNativeTransport, vertx.isNativeTransportEnabled());
     try {
       client = MySQLBuilder.pool(builder -> builder.connectingTo(new MySQLConnectOptions(options)).using(vertx));
       Async async = context.async();

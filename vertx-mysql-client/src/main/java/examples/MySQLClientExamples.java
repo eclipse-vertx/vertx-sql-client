@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -286,15 +286,6 @@ public class MySQLClientExamples {
 
     // Create the pooled client
     Pool client = MySQLBuilder.pool()
-      .with(poolOptions)
-      .connectingTo(connectOptions)
-      .using(vertx)
-      .build();
-
-    // Create the pooled client with a vertx instance
-    // Make sure the vertx instance has enabled native transports
-    // vertxOptions.setPreferNativeTransport(true);
-    Pool client2 = MySQLBuilder.pool()
       .with(poolOptions)
       .connectingTo(connectOptions)
       .using(vertx)
