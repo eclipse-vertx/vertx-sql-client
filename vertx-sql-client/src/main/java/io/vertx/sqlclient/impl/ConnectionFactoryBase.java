@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,12 +12,13 @@ package io.vertx.sqlclient.impl;
 
 import io.vertx.core.Completable;
 import io.vertx.core.Future;
-import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.VertxException;
 import io.vertx.core.internal.CloseSequence;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
@@ -27,7 +28,7 @@ import io.vertx.sqlclient.spi.connection.ConnectionFactory;
  */
 public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> implements ConnectionFactory<C> {
 
-  public static final String NATIVE_TRANSPORT_REQUIRED = "The Vertx instance must use a native transport in order to connect to connect through domain sockets";
+  public static final VertxException UDS_NOT_SUPPORTED = new VertxException("Unix Domain Sockets are not supported, use Java 16+ or enable a native transport", true);
 
   protected final VertxInternal vertx;
   protected final NetClient client;

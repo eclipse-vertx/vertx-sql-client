@@ -18,7 +18,7 @@ The client is reactive and non-blocking, allowing to handle many database connec
 * Direct memory to object without unnecessary copies
 * Java 8 Date and Time
 * SSL/TLS
-* Unix domain socket
+* Unix Domain Socket
 * HTTP/1.x CONNECT, SOCKS4a or SOCKS5 proxy support
 * Proxy (level 4 and 7) support
 
@@ -123,18 +123,18 @@ The {@link io.vertx.pgclient.PgBuilder} allows you to create a pool or a pooled 
 
 include::pool_sharing.adoc[]
 
-== Unix domain sockets
+== Unix Domain Socket
 
-Sometimes you want to improve performance via Unix domain socket connection, we achieve this with Vert.x Native transports.
+Sometimes for simplicity, security, or performance reasons, it is required to connect via a Unix Domain Socket.
 
-Make sure you have added the required `netty-transport-native` dependency in your classpath and enabled the Unix domain socket option.
+To do so, set the path to the domain socket in {@link io.vertx.pgclient.PgConnectOptions#setHost PgConnectOptions#setHost}:
 
 [source,$lang]
 ----
 {@link examples.PgClientExamples#unixDomainSockets}
 ----
 
-More information can be found in the https://vertx.io/docs/vertx-core/java/#_native_transports[Vert.x documentation].
+NOTE: Unix Domain Sockets are supported when running on JDK 16+, or using a link:/docs/vertx-core/java/#_native_transports[native transport].
 
 == Connect retries
 

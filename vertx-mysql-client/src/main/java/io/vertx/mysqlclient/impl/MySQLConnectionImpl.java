@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -21,15 +21,17 @@ import io.vertx.mysqlclient.MySQLConnection;
 import io.vertx.mysqlclient.MySQLSetOption;
 import io.vertx.mysqlclient.impl.command.*;
 import io.vertx.mysqlclient.spi.MySQLDriver;
-import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
+
+import static io.vertx.sqlclient.impl.ConnectionFactoryBase.UDS_NOT_SUPPORTED;
 
 public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> implements MySQLConnection {
 
   public static Future<MySQLConnection> connect(ContextInternal ctx, MySQLConnectOptions options) {
-    if (options.isUsingDomainSocket() && !ctx.owner().isNativeTransportEnabled()) {
-      return ctx.failedFuture("Native transport is not available");
+    if (options.isUsingDomainSocket() && !ctx.owner().transport().supportsDomainSockets()) {
+      return ctx.failedFuture(UDS_NOT_SUPPORTED);
     }
     MySQLConnectionFactory client;
     try {
