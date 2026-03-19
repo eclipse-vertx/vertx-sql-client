@@ -24,6 +24,7 @@ import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
 import io.vertx.core.internal.tls.SslContextManager;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.HostAndPort;
+import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLInfo;
@@ -113,7 +114,8 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
       .resolveSslContextProvider(sslOptions, "", null, context)
       .map(provider -> new SslChannelProvider(context.owner(), provider, false));
     return f.compose(provider -> {
-      SslHandler sslHandler = provider.createClientSslHandler(socket.remoteAddress(), null, sslOptions.getApplicationLayerProtocols(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
+      SocketAddress socketAddress = socket.remoteAddress();
+      SslHandler sslHandler = provider.createClientSslHandler(HostAndPort.create(socketAddress.host(), socketAddress.port()), null, sslOptions.getApplicationLayerProtocols(), sslOptions.getSslHandshakeTimeout(), sslOptions.getSslHandshakeTimeoutUnit());
 
       // 3. TdsSslHandshakeCodec manages SSL payload encapsulated in TDS packets
       TdsSslHandshakeCodec tdsSslHandshakeCodec = new TdsSslHandshakeCodec();
