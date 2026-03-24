@@ -3,11 +3,11 @@ on:
   push:
     branches:
       - master
-      - '5.[0-9]+'
   pull_request:
     branches:
       - master
-      - '5.[0-9]+'
+  schedule:
+    - cron: '0 5 * * *'
 jobs:
   CI-CD:
     uses: ./.github/workflows/ci-matrix-5.x.yml
