@@ -1,4 +1,4 @@
-name: vertx-sql-client nightly (4.x)
+name: vertx-sql-client (4.x)
 on:
   schedule:
     - cron: '0 4 * * *'
