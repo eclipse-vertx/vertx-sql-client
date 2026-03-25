@@ -21,6 +21,7 @@ import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.internal.net.SslChannelProvider;
 import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
+import io.vertx.core.internal.tls.ClientSslContextManager;
 import io.vertx.core.internal.tls.SslContextManager;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.HostAndPort;
@@ -47,13 +48,13 @@ import static io.vertx.sqlclient.spi.protocol.TxCommand.Kind.BEGIN;
 public class MSSQLSocketConnection extends SocketConnectionBase {
 
   private final MSSQLConnectOptions connectOptions;
-  private final SslContextManager SslContextManager;
+  private final ClientSslContextManager sslContextManager;
 
   private MSSQLDatabaseMetadata databaseMetadata;
   private HostAndPort alternateServer;
 
   MSSQLSocketConnection(NetSocketInternal socket,
-                        SslContextManager SslContextManager,
+                        ClientSslContextManager SslContextManager,
                         ClientMetrics clientMetrics,
                         MSSQLConnectOptions connectOptions,
                         boolean cachePreparedStatements,
@@ -63,7 +64,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
                         ContextInternal context) {
     super(socket, clientMetrics, cachePreparedStatements, preparedStatementCacheSize, preparedStatementCacheSqlFilter, pipeliningLimit, context);
     this.connectOptions = connectOptions;
-    this.SslContextManager = SslContextManager;
+    this.sslContextManager = SslContextManager;
   }
 
   @Override
@@ -110,8 +111,8 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
 
     // 2. Create and set up an SSLHelper and SSLHandler
     // options.getApplicationLayerProtocols()
-    Future<SslChannelProvider> f = SslContextManager
-      .resolveSslContextProvider(sslOptions, "", null, context)
+    Future<SslChannelProvider> f = sslContextManager
+      .resolveSslContextProvider(sslOptions, context)
       .map(provider -> new SslChannelProvider(context.owner(), provider, false));
     return f.compose(provider -> {
       SocketAddress socketAddress = socket.remoteAddress();

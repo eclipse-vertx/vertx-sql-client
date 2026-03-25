@@ -17,6 +17,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
+import io.vertx.core.internal.tls.ClientSslContextManager;
 import io.vertx.core.internal.tls.SslContextManager;
 import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.NetClientOptions;
@@ -34,7 +35,7 @@ import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOptions> {
 
-  private final SslContextManager sslContextManager;
+  private final ClientSslContextManager sslContextManager;
 
   public MSSQLConnectionFactory(VertxInternal vertx) {
     this(vertx, new NetClientOptions());
@@ -42,7 +43,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
 
   public MSSQLConnectionFactory(VertxInternal vertx, NetClientOptions transportOptions) {
     super(vertx, transportOptions);
-    sslContextManager = new SslContextManager(SslContextManager.resolveEngineOptions(tcpOptions.getSslEngineOptions(), tcpOptions.isUseAlpn()));
+    sslContextManager = new ClientSslContextManager(SslContextManager.resolveEngineOptions(tcpOptions.getSslEngineOptions(), tcpOptions.isUseAlpn()));
   }
 
   @Override
