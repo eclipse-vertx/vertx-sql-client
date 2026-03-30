@@ -18,6 +18,28 @@ Nevertheless, you can force the usage of the standard SQL Server port (1433) wit
 mvn test -DcontainerFixedPort
 ----
 
+==== Testing with different SQL Server versions
+
+You can test with different SQL Server versions by using Maven profiles:
+
+[source,bash]
+----
+mvn test -P MSSQL-2017-latest
+mvn test -P MSSQL-2019-latest
+----
+
+Or by passing the version property directly:
+
+[source,bash]
+----
+mvn test -Dmssql-container.version=2017-latest
+----
+
+The following versions are supported:
+
+* `2017-latest`
+* `2019-latest` (default)
+
 ==== Testing with an external database
 
 You can start external database instances:
