@@ -191,7 +191,4 @@
     <module>vertx-oracle-client</module>
   </modules>
 
-  <profiles>
-  </profiles>
-
 </project>
