@@ -33,6 +33,8 @@
   <description>The Reactive Oracle Client</description>
 
   <properties>
+    <!-- Set to a value for testing with a specific database -->
+    <oracle-container.version/>
     <ojdbc.version>23.4.0.24.05</ojdbc.version>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
   </properties>
@@ -74,19 +76,28 @@
   </dependencies>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <argLine>-Xmx1024M</argLine>
-            <systemPropertyVariables>
-              <target.dir>${project.build.directory}</target.dir>
-            </systemPropertyVariables>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-Xmx1024M</argLine>
+          <systemPropertyVariables>
+            <target.dir>${project.build.directory}</target.dir>
+            <oracle-container.version>${oracle-container.version}</oracle-container.version>
+            <connection.uri>${connection.uri}</connection.uri>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>Oracle-23</id>
+      <properties>
+        <oracle-container.version>23.3-slim-faststart</oracle-container.version>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>

@@ -81,25 +81,21 @@
   </dependencies>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <argLine>-Xmx1024M</argLine>
-            <failIfNoTests>true</failIfNoTests>
-            <trimStackTrace>false</trimStackTrace>
-            <systemPropertyVariables>
-              <target.dir>${project.build.directory}</target.dir>
-              <!-- Copy of java.security that allows TLS 1.1 as the DB2 container will only accept this version
-                   (https://bugs.openjdk.java.net/browse/JDK-8258598) -->
-              <java.security.properties>${project.basedir}/src/test/java.security</java.security.properties>
-            </systemPropertyVariables>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
     <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-Xmx1024M</argLine>
+          <failIfNoTests>true</failIfNoTests>
+          <trimStackTrace>false</trimStackTrace>
+          <systemPropertyVariables>
+            <target.dir>${project.build.directory}</target.dir>
+            <!-- Copy of java.security that allows TLS 1.1 as the DB2 container will only accept this version
+                 (https://bugs.openjdk.java.net/browse/JDK-8258598) -->
+            <java.security.properties>${project.basedir}/src/test/java.security</java.security.properties>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
 <!--
       <plugin>
         <groupId>org.bsc.maven</groupId>
