@@ -20,6 +20,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.DEFAULT_PORT;
 import static io.vertx.mssqlclient.junit.MSSQLRule.Config.STANDARD;
@@ -41,6 +42,42 @@ public class MSSQLRule extends ExternalResource {
     }
   }
 
+  private enum ServerVersion {
+    MSSQL_2017("2017-latest", "/opt/mssql-tools/bin/sqlcmd", false),
+    MSSQL_2019("2019-latest", "/opt/mssql-tools18/bin/sqlcmd", true);
+
+    private final String dockerImageTag;
+    private final String sqlcmdPath;
+    private final boolean supportsTrustServerCertificate;
+
+    ServerVersion(String dockerImageTag, String sqlcmdPath, boolean supportsTrustServerCertificate) {
+      this.dockerImageTag = dockerImageTag;
+      this.sqlcmdPath = sqlcmdPath;
+      this.supportsTrustServerCertificate = supportsTrustServerCertificate;
+    }
+
+    public String getSqlcmdPath() {
+      return sqlcmdPath;
+    }
+
+    public boolean supportsTrustServerCertificate() {
+      return supportsTrustServerCertificate;
+    }
+
+    public static ServerVersion fromDockerTag(String dockerImageTag) {
+      if (dockerImageTag == null || dockerImageTag.isEmpty()) {
+        return MSSQL_2019;
+      }
+      if (dockerImageTag.equals("2017-latest")) {
+        return MSSQL_2017;
+      } else if (dockerImageTag.equals("2019-latest")) {
+        return MSSQL_2019;
+      } else {
+        throw new IllegalArgumentException("Unsupported SQL Server version: " + dockerImageTag);
+      }
+    }
+  }
+
   public static final MSSQLRule SHARED_INSTANCE = new MSSQLRule(STANDARD);
 
   private static final String USER = "SA";
@@ -51,6 +88,7 @@ public class MSSQLRule extends ExternalResource {
 
   private ServerContainer<?> server;
   private MSSQLConnectOptions options;
+  private ServerVersion serverVersion;
 
   public MSSQLRule(Config config) {
     this.config = Objects.requireNonNull(config);
@@ -80,15 +118,15 @@ public class MSSQLRule extends ExternalResource {
 
   private MSSQLConnectOptions startMSSQL() throws IOException {
     String containerVersion = System.getProperty("mssql-container.version");
-    if (isNullOrEmpty(containerVersion)) {
-      containerVersion = "2019-latest";
-    }
-    server = new ServerContainer<>("mcr.microsoft.com/mssql/server:" + containerVersion)
+    serverVersion = ServerVersion.fromDockerTag(containerVersion);
+    String dockerImageTag = serverVersion.dockerImageTag;
+
+    server = new ServerContainer<>("mcr.microsoft.com/mssql/server:" + dockerImageTag)
       .withEnv("ACCEPT_EULA", "Y")
       .withEnv("TZ", "UTC")
       .withEnv("SA_PASSWORD", PASSWORD)
       .withClasspathResourceMapping("init.sql", INIT_SQL, READ_ONLY)
-      .waitingFor(Wait.forLogMessage(".*The tempdb database has \\d+ data file\\(s\\).*\\n", 2));
+      .waitingFor(Wait.forLogMessage(".*SQL Server is now ready for client connections.*\\n", 1));
 
     if (System.getProperties().containsKey("containerFixedPort")) {
       server.withFixedExposedPort(DEFAULT_PORT, DEFAULT_PORT);
@@ -114,14 +152,7 @@ public class MSSQLRule extends ExternalResource {
 
   private void initDb() throws IOException {
     try {
-      ExecResult execResult = server.execInContainer(
-        "/opt/mssql-tools18/bin/sqlcmd",
-        "-S", "localhost",
-        "-U", USER,
-        "-P", PASSWORD,
-        "-i", INIT_SQL,
-        "-C", "-No"
-      );
+      ExecResult execResult = server.execInContainer(cmdArgs());
       if (execResult.getExitCode() != 0) {
         throw new RuntimeException(String.format("Failure while initializing database%nstdout:%s%nstderr:%s%n", execResult.getStdout(), execResult.getStderr()));
       }
@@ -129,6 +160,21 @@ public class MSSQLRule extends ExternalResource {
       Thread.currentThread().interrupt();
       throw new RuntimeException(e);
     }
+  }
+
+  private String[] cmdArgs() {
+    Stream.Builder<String> builder = Stream.builder();
+    builder.add(serverVersion.getSqlcmdPath());
+    builder.add("-S").add("localhost");
+    builder.add("-U").add(USER);
+    builder.add("-P").add(PASSWORD);
+    builder.add("-i").add(INIT_SQL);
+    if (serverVersion.supportsTrustServerCertificate()) {
+      // SQL Server 2019+: use -C (trust certificate) and -No (disable output formatting)
+      builder.add("-C");
+      builder.add("-No");
+    }
+    return builder.build().toArray(String[]::new);
   }
 
   private void stopMSSQL() {

@@ -17,6 +17,9 @@
   <description>The Reactive MSSQL Client</description>
 
   <properties>
+    <!-- Set to a value for testing with a specific database -->
+    <mssql-container.version/>
+    <force.encryption.connection.uri/>
     <doc.skip>false</doc.skip>
     <docs.dir>${project.basedir}/src/main/docs</docs.dir>
     <generated.dir>${project.basedir}/src/main/generated</generated.dir>
@@ -64,6 +67,19 @@
   <build>
     <plugins>
       <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-Xmx1024M</argLine>
+          <systemPropertyVariables>
+            <target.dir>${project.build.directory}</target.dir>
+            <mssql-container.version>${mssql-container.version}</mssql-container.version>
+            <connection.uri>${connection.uri}</connection.uri>
+            <tls.connection.uri>${tls.connection.uri}</tls.connection.uri>
+            <force.encryption.connection.uri>${force.encryption.connection.uri}</force.encryption.connection.uri>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.bsc.maven</groupId>
         <artifactId>maven-processor-plugin</artifactId>
         <executions>
@@ -99,8 +115,18 @@
   </build>
 
   <profiles>
-
+    <profile>
+      <id>MSSQL-2017-latest</id>
+      <properties>
+        <mssql-container.version>2017-latest</mssql-container.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>MSSQL-2019-latest</id>
+      <properties>
+        <mssql-container.version>2019-latest</mssql-container.version>
+      </properties>
+    </profile>
   </profiles>
-
 
 </project>
