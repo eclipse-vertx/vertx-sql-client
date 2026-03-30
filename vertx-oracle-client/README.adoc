@@ -18,6 +18,22 @@ Nevertheless, you can force the usage of the standard Oracle port (1521) with a 
 mvn test -DcontainerFixedPort
 ----
 
+==== Testing with different Oracle versions
+
+You can test with different Oracle container versions by using Maven profiles:
+
+[source,bash]
+----
+mvn test -P Oracle-23
+----
+
+Or by passing the version property directly:
+
+[source,bash]
+----
+mvn test -Doracle-container.version=23.3-slim-faststart
+----
+
 ==== Testing on OSX Mx chips
 
 - stop Docker engine

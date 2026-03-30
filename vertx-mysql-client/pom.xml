@@ -32,6 +32,9 @@
   <description>The Reactive MySQL Client</description>
 
   <properties>
+    <!-- Set to a value for testing with a specific database -->
+    <testing.mysql.database.server/>
+    <testing.mysql.database.version/>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
   </properties>
 
@@ -65,23 +68,52 @@
   </dependencies>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <argLine>-Xmx1024M</argLine>
-            <systemPropertyVariables>
-              <target.dir>${project.build.directory}</target.dir>
-            </systemPropertyVariables>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
+    <plugins>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <argLine>-Xmx1024M</argLine>
+          <systemPropertyVariables>
+            <target.dir>${project.build.directory}</target.dir>
+            <testing.mysql.database.server>${testing.mysql.database.server}</testing.mysql.database.server>
+            <testing.mysql.database.version>${testing.mysql.database.version}</testing.mysql.database.version>
+            <connection.uri>${connection.uri}</connection.uri>
+            <tls.connection.uri>${tls.connection.uri}</tls.connection.uri>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
   <profiles>
-
+    <profile>
+      <id>MySQL-5.6</id>
+      <properties>
+        <testing.mysql.database.server>mysql</testing.mysql.database.server>
+        <testing.mysql.database.version>5.6</testing.mysql.database.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>MySQL-5.7</id>
+      <properties>
+        <testing.mysql.database.server>mysql</testing.mysql.database.server>
+        <testing.mysql.database.version>5.7</testing.mysql.database.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>MySQL-8.0</id>
+      <properties>
+        <testing.mysql.database.server>mysql</testing.mysql.database.server>
+        <testing.mysql.database.version>8.0</testing.mysql.database.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>MariaDB-10.4</id>
+      <properties>
+        <testing.mysql.database.server>mariadb</testing.mysql.database.server>
+        <testing.mysql.database.version>10.4</testing.mysql.database.version>
+      </properties>
+    </profile>
   </profiles>
 
 </project>
