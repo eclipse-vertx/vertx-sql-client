@@ -26,10 +26,7 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.tests.mysqlclient.junit.MySQLRule;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -44,6 +41,12 @@ public class MySQLTLSTest {
   Vertx vertx;
   MySQLConnectOptions options;
   MySQLConnectOptions nonTlsOptions;
+
+  @BeforeClass
+  public static void checkMySQLVersion() {
+    // MySQL 5.6 only supports TLS 1.0/1.1 which are disabled in Java 11+
+    Assume.assumeFalse("TLS tests are not supported on MySQL 5.6 with Java 11+", rule.isUsingMySQL5_6());
+  }
 
   @Before
   public void setup() {
