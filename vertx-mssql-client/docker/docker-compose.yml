@@ -2,6 +2,9 @@ version: "3.9"
 
 services:
   test-mssql:
+    # Set cpus and cpuset untilhttps://github.com/microsoft/mssql-docker/issues/951 is resolved
+    cpus: 1
+    cpuset: "0"
     image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2025-latest}
     ports:
       - "1433:1433"
@@ -10,6 +13,9 @@ services:
       TZ: UTC
       SA_PASSWORD: A_Str0ng_Required_Password
   test-mssql-initdb:
+    # Set cpus and cpuset untilhttps://github.com/microsoft/mssql-docker/issues/951 is resolved
+    cpus: 1
+    cpuset: "0"
     image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2025-latest}
     depends_on:
       - "test-mssql"
@@ -24,6 +30,9 @@ services:
         target: /opt/data/init.sql
         read_only: true
   test-mssql-tls:
+    # Set cpus and cpuset untilhttps://github.com/microsoft/mssql-docker/issues/951 is resolved
+    cpus: 1
+    cpuset: "0"
     image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2025-latest}
     ports:
       - "1435:1433"
@@ -45,6 +54,9 @@ services:
         target: /etc/ssl/certs/mssql.pem
         read_only: true
   test-mssql-force-encryption:
+    # Set cpus and cpuset untilhttps://github.com/microsoft/mssql-docker/issues/951 is resolved
+    cpus: 1
+    cpuset: "0"
     image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2025-latest}
     ports:
       - "1437:1433"
@@ -66,6 +78,9 @@ services:
         target: /etc/ssl/certs/mssql.pem
         read_only: true
   test-mssql-strict-encryption:
+    # Set cpus and cpuset untilhttps://github.com/microsoft/mssql-docker/issues/951 is resolved
+    cpus: 1
+    cpuset: "0"
     image: mcr.microsoft.com/mssql/server:${MSSQL_VERSION:-2025-latest}
     ports:
       - "1439:1433"
