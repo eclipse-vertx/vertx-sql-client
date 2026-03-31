@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -294,5 +294,76 @@ public class MSSQLConnectionUriParserTest {
     uri = "not_sqlserver://username:dddd@127.0.0.1:1234/*dbname";
     actualParsedResult = parse(uri, false);
     assertNull(actualParsedResult);
+  }
+
+  @Test
+  public void testParsingEncryptStrict() {
+    uri = "sqlserver://localhost?encrypt=strict";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("encryptionMode", "STRICT");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingEncryptTrue() {
+    uri = "sqlserver://localhost?encrypt=true";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("encryptionMode", "ON");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingEncryptFalse() {
+    uri = "sqlserver://localhost?encrypt=false";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("encryptionMode", "OFF");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingEncryptStrictCaseInsensitive() {
+    uri = "sqlserver://localhost?encrypt=STRICT";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("encryptionMode", "STRICT");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingEncryptWithOtherParameters() {
+    uri = "sqlserver://user:pass@localhost:1433/testdb?encrypt=strict&other=value";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("user", "user")
+      .put("password", "pass")
+      .put("host", "localhost")
+      .put("port", 1433)
+      .put("database", "testdb")
+      .put("encryptionMode", "STRICT")
+      .put("properties", new JsonObject().put("other", "value"));
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingEncryptInvalidValue() {
+    uri = "sqlserver://localhost?encrypt=invalid";
+    actualParsedResult = parse(uri);
   }
 }

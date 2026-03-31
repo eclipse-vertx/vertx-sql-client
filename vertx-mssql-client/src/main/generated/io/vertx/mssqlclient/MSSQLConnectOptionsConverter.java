@@ -22,6 +22,11 @@ public class MSSQLConnectOptionsConverter {
             obj.setSsl((Boolean)member.getValue());
           }
           break;
+        case "encryptionMode":
+          if (member.getValue() instanceof String) {
+            obj.setEncryptionMode(io.vertx.mssqlclient.EncryptionMode.valueOf((String)member.getValue()));
+          }
+          break;
       }
     }
   }
@@ -33,5 +38,8 @@ public class MSSQLConnectOptionsConverter {
    static void toJson(MSSQLConnectOptions obj, java.util.Map<String, Object> json) {
     json.put("packetSize", obj.getPacketSize());
     json.put("ssl", obj.isSsl());
+    if (obj.getEncryptionMode() != null) {
+      json.put("encryptionMode", obj.getEncryptionMode().name());
+    }
   }
 }

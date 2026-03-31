@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -174,6 +174,9 @@ public class MSSQLConnectionUriParser {
           case "database":
             configuration.put("database", value);
             break;
+          case "encrypt":
+            parseEncryptParameter(value, configuration);
+            break;
           default:
             properties.put(key, value);
             break;
@@ -207,5 +210,28 @@ public class MSSQLConnectionUriParser {
 
   private static boolean occurExactlyOnce(String uri, String character) {
     return uri.contains(character) && uri.indexOf(character) == uri.lastIndexOf(character);
+  }
+
+  private static void parseEncryptParameter(String value, JsonObject configuration) {
+    if (value == null || value.isEmpty()) {
+      return;
+    }
+    String encryptMode;
+    switch (value.toLowerCase()) {
+      case "strict":
+        encryptMode = "STRICT";
+        break;
+      case "true":
+        encryptMode = "ON";
+        break;
+      case "false":
+        encryptMode = "OFF";
+        break;
+      default:
+        throw new IllegalArgumentException(
+          format("Invalid value for 'encrypt' parameter: '%s'. Valid values are: 'strict', 'true', 'false'", value)
+        );
+    }
+    configuration.put("encryptionMode", encryptMode);
   }
 }

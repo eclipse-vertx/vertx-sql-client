@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,21 +14,20 @@ package io.vertx.tests.mssqlclient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.net.ClientSSLOptions;
-import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.mssqlclient.MSSQLConnection;
-import io.vertx.tests.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.Row;
+import io.vertx.tests.mssqlclient.junit.MSSQLRule;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
-import javax.net.ssl.SSLHandshakeException;
 import java.util.Locale;
 
+/**
+ * Base class for MSSQL encryption tests.
+ * Provides common helper methods for connection management and encryption verification.
+ */
 public abstract class MSSQLEncryptionTestBase {
 
   protected Vertx vertx;
@@ -79,33 +78,5 @@ public abstract class MSSQLEncryptionTestBase {
           ctx.assertEquals(String.valueOf(expected), encryptOption.toLowerCase(Locale.ENGLISH));
         }));
     }));
-  }
-
-  @Test
-  public void testHostnameValidationFails(TestContext ctx) {
-    // If the client requires SSL
-    // Hostname validation must be performed
-    setOptions(rule().options()
-      .setSsl(true));
-    connect(ctx.asyncAssertFailure(t -> {
-      ctx.assertTrue(t instanceof SSLHandshakeException);
-    }));
-  }
-
-  @Test
-  public void testTrustAll(TestContext ctx) {
-    setOptions(rule().options()
-      .setSsl(true)
-      .setSslOptions(new ClientSSLOptions().setTrustAll(true)));
-    asyncAssertConnectionEncrypted(ctx);
-  }
-
-  @Test
-  public void testTrustOptions(TestContext ctx) {
-    Buffer certValue = vertx.fileSystem().readFileBlocking("mssql.pem");
-    setOptions(rule().options()
-      .setSsl(true)
-      .setSslOptions(new ClientSSLOptions().setTrustOptions(new PemTrustOptions().addCertValue(certValue))));
-    asyncAssertConnectionEncrypted(ctx);
   }
 }

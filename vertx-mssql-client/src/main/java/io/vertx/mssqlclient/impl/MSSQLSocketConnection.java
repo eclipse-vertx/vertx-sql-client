@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -22,7 +22,6 @@ import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.internal.net.SslChannelProvider;
 import io.vertx.core.internal.net.SslHandshakeCompletionHandler;
 import io.vertx.core.internal.tls.ClientSslContextManager;
-import io.vertx.core.internal.tls.SslContextManager;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.SocketAddress;
@@ -80,7 +79,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     });
   }
 
-  Future<Void> enableSsl(boolean clientConfigSsl, byte encryptionLevel, MSSQLConnectOptions options) {
+  Future<Void> enableSslForTds7x(boolean clientConfigSsl, byte encryptionLevel, MSSQLConnectOptions options) {
     // While handshaking, MS SQL requires to encapsulate SSL traffic in TDS packets
     // So it is not possible to rely on the NetSocket.upgradeToSsl method
     // Instead, we need a custom channel pipeline configuration

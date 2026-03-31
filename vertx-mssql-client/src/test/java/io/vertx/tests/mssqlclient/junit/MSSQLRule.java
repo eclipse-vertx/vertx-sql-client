@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,11 +12,13 @@
 package io.vertx.tests.mssqlclient.junit;
 
 import io.vertx.mssqlclient.MSSQLConnectOptions;
+import org.junit.AssumptionViolatedException;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -31,7 +33,8 @@ public class MSSQLRule extends ExternalResource {
   public enum Config {
     STANDARD("connection.uri", null),
     TLS("tls.connection.uri", "mssql-tls.conf"),
-    FORCE_ENCRYPTION("force.encryption.connection.uri", "mssql-force-encryption.conf");
+    FORCE_ENCRYPTION("force.encryption.connection.uri", "mssql-force-encryption.conf"),
+    STRICT_ENCRYPTION("strict.encryption.connection.uri", "mssql-strict-encryption.conf");
 
     private final String connectionUriSystemProperty;
     private final String mssqlConf;
@@ -43,37 +46,55 @@ public class MSSQLRule extends ExternalResource {
   }
 
   private enum ServerVersion {
-    MSSQL_2017("2017-latest", "/opt/mssql-tools/bin/sqlcmd", false),
-    MSSQL_2019("2019-latest", "/opt/mssql-tools18/bin/sqlcmd", true);
+    MSSQL_2017("2017-latest", "/opt/mssql-tools/bin/sqlcmd", false,
+      Wait.forLogMessage(".*SQL Server is now ready for client connections.*\\n", 1)),
+    MSSQL_2019("2019-latest", "/opt/mssql-tools18/bin/sqlcmd", true,
+      Wait.forLogMessage(".*The tempdb database has \\d+ data file\\(s\\).*\\n", 2)),
+    MSSQL_2025("2025-latest", "/opt/mssql-tools18/bin/sqlcmd", true,
+      Wait.forLogMessage(".*The tempdb database has \\d+ data file\\(s\\).*\\n", 2));
 
     private final String dockerImageTag;
     private final String sqlcmdPath;
     private final boolean supportsTrustServerCertificate;
+    private final WaitStrategy waitStrategy;
 
-    ServerVersion(String dockerImageTag, String sqlcmdPath, boolean supportsTrustServerCertificate) {
+    ServerVersion(String dockerImageTag, String sqlcmdPath, boolean supportsTrustServerCertificate, WaitStrategy waitStrategy) {
       this.dockerImageTag = dockerImageTag;
       this.sqlcmdPath = sqlcmdPath;
       this.supportsTrustServerCertificate = supportsTrustServerCertificate;
+      this.waitStrategy = waitStrategy;
     }
 
-    public String getSqlcmdPath() {
+    String getSqlcmdPath() {
       return sqlcmdPath;
     }
 
-    public boolean supportsTrustServerCertificate() {
+    boolean supportsTrustServerCertificate() {
       return supportsTrustServerCertificate;
     }
 
-    public static ServerVersion fromDockerTag(String dockerImageTag) {
+    WaitStrategy getWaitStrategy() {
+      return waitStrategy;
+    }
+
+    boolean supportsConfig(Config config) {
+      // STRICT_ENCRYPTION (TDS 8.0) is only supported on SQL Server 2025+
+      return config != Config.STRICT_ENCRYPTION || this == MSSQL_2025;
+    }
+
+    static ServerVersion fromDockerTag(String dockerImageTag) {
       if (dockerImageTag == null || dockerImageTag.isEmpty()) {
-        return MSSQL_2019;
+        return MSSQL_2025;
       }
-      if (dockerImageTag.equals("2017-latest")) {
-        return MSSQL_2017;
-      } else if (dockerImageTag.equals("2019-latest")) {
-        return MSSQL_2019;
-      } else {
-        throw new IllegalArgumentException("Unsupported SQL Server version: " + dockerImageTag);
+      switch (dockerImageTag) {
+        case "2017-latest":
+          return MSSQL_2017;
+        case "2019-latest":
+          return MSSQL_2019;
+        case "2025-latest":
+          return MSSQL_2025;
+        default:
+          throw new IllegalArgumentException("Unsupported SQL Server version: " + dockerImageTag);
       }
     }
   }
@@ -85,13 +106,19 @@ public class MSSQLRule extends ExternalResource {
   private static final String INIT_SQL = "/opt/data/init.sql";
 
   private final Config config;
+  private final boolean skipOnUnsupportedConfig;
 
   private ServerContainer<?> server;
   private MSSQLConnectOptions options;
   private ServerVersion serverVersion;
 
   public MSSQLRule(Config config) {
+    this(config, false);
+  }
+
+  public MSSQLRule(Config config, boolean skipOnUnsupportedConfig) {
     this.config = Objects.requireNonNull(config);
+    this.skipOnUnsupportedConfig = skipOnUnsupportedConfig;
   }
 
   @Override
@@ -119,14 +146,21 @@ public class MSSQLRule extends ExternalResource {
   private MSSQLConnectOptions startMSSQL() throws IOException {
     String containerVersion = System.getProperty("mssql-container.version");
     serverVersion = ServerVersion.fromDockerTag(containerVersion);
-    String dockerImageTag = serverVersion.dockerImageTag;
+    if (!serverVersion.supportsConfig(config)) {
+      String message = String.format("SQL Server %s does not support %s configuration.", serverVersion.dockerImageTag, config);
+      if (skipOnUnsupportedConfig) {
+        throw new AssumptionViolatedException(message);
+      } else {
+        throw new IllegalStateException(message);
+      }
+    }
 
-    server = new ServerContainer<>("mcr.microsoft.com/mssql/server:" + dockerImageTag)
+    server = new ServerContainer<>("mcr.microsoft.com/mssql/server:" + serverVersion.dockerImageTag)
       .withEnv("ACCEPT_EULA", "Y")
       .withEnv("TZ", "UTC")
       .withEnv("SA_PASSWORD", PASSWORD)
       .withClasspathResourceMapping("init.sql", INIT_SQL, READ_ONLY)
-      .waitingFor(Wait.forLogMessage(".*SQL Server is now ready for client connections.*\\n", 1));
+      .waitingFor(serverVersion.getWaitStrategy());
 
     if (System.getProperties().containsKey("containerFixedPort")) {
       server.withFixedExposedPort(DEFAULT_PORT, DEFAULT_PORT);
@@ -139,6 +173,17 @@ public class MSSQLRule extends ExternalResource {
         .withClasspathResourceMapping("mssql.key", "/etc/ssl/certs/mssql.key", READ_ONLY)
         .withClasspathResourceMapping("mssql.pem", "/etc/ssl/certs/mssql.pem", READ_ONLY);
     }
+
+    // Workaround for SQL Server 2025 CPU topology bug (microsoft/mssql-docker#954)
+    // SQL Server 2025 crashes when processor count doesn't divide evenly by cores-per-socket
+    // Limit container to a safe CPU count to avoid assertion failure in sosnumap.cpp
+    if (serverVersion == ServerVersion.MSSQL_2025) {
+      int safeCpuCount = calculateSafeCpuCount();
+      server.withCreateContainerCmdModifier(cmd ->
+        cmd.getHostConfig().withCpusetCpus("0-" + (safeCpuCount - 1))
+      );
+    }
+
     server.start();
 
     initDb();
@@ -170,11 +215,41 @@ public class MSSQLRule extends ExternalResource {
     builder.add("-P").add(PASSWORD);
     builder.add("-i").add(INIT_SQL);
     if (serverVersion.supportsTrustServerCertificate()) {
-      // SQL Server 2019+: use -C (trust certificate) and -No (disable output formatting)
-      builder.add("-C");
-      builder.add("-No");
+      if (config == Config.STRICT_ENCRYPTION) {
+        builder.add("-Ns");
+        builder.add("-J").add("/etc/ssl/certs/mssql.pem");
+        builder.add("-F").add("sql1");
+      } else {
+        builder.add("-C");
+        builder.add("-No");
+      }
     }
     return builder.build().toArray(String[]::new);
+  }
+
+  /**
+   * Calculate a safe CPU count for SQL Server 2025 container to avoid CPU topology assertion failure.
+   * Returns the largest power of 2 that is <= available processors.
+   * Powers of 2 are safe because they divide evenly by common core-per-socket configurations.
+   *
+   * @return safe CPU count (minimum 1, maximum available processors if already power of 2)
+   */
+  private static int calculateSafeCpuCount() {
+    int availableProcessors = Runtime.getRuntime().availableProcessors();
+
+    // If already a power of 2, use it as-is
+    if ((availableProcessors & (availableProcessors - 1)) == 0) {
+      return availableProcessors;
+    }
+
+    // Find the largest power of 2 that is less than availableProcessors
+    // This ensures the count divides evenly in most CPU topologies
+    int safeCpuCount = 1;
+    while (safeCpuCount * 2 <= availableProcessors) {
+      safeCpuCount *= 2;
+    }
+
+    return safeCpuCount;
   }
 
   private void stopMSSQL() {

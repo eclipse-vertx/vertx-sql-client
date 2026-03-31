@@ -127,6 +127,7 @@ Currently, the client supports the following parameter keys:
 * `user`
 * `password`
 * `database`
+* `encrypt` - encryption mode: `strict` (TDS 8.0), `true` (TDS 7.x with SSL), `false` (no encryption)
 
 Additional parameters will be added to the {@link io.vertx.sqlclient.SqlConnectOptions#getProperties properties}.
 
@@ -323,9 +324,56 @@ You can set a handler on a connection to catch them and do something useful with
 
 == Using SSL/TLS
 
-=== Encryption level negotiation
+The client supports both TDS 7.x encryption and TDS 8.0 strict encryption.
 
-When a connection is established, the client and the server negotiate the encryption level.
+=== Encryption Modes
+
+The client supports three {@link io.vertx.mssqlclient.EncryptionMode encryption modes}:
+
+* `OFF` - No encryption (the default)
+* `ON` - Optional encryption (equivalent to `ssl=true`)
+* `STRICT` - Strict TDS 8.0 encryption
+
+=== TDS 8.0 and Strict Encryption
+
+Starting with SQL Server 2022, Microsoft introduced TDS 8.0, a new version of the Tabular Data Stream that requires encryption for the entire connection from the start.
+
+To connect to a SQL Server 2022+ instance with strict encryption:
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#strictEncryption}
+----
+
+Using connection URI:
+
+----
+sqlserver://localhost:1433/testdb?user=sa&password=xxx&encrypt=strict
+----
+
+[IMPORTANT]
+====
+TDS 8.0 requires proper certificate validation.
+Therefore, the `trustAll` option is not allowed with `STRICT` encryption mode.
+====
+
+=== TDS 7.x Encryption (Legacy)
+
+==== Encryption level negotiation
+
+When using TDS 7.x (`OFF` or `ON` mode), the client and server negotiate the encryption level.
+
+[NOTE]
+====
+The {@link io.vertx.mssqlclient.MSSQLConnectOptions} class maintains synchronization between the `encryptionMode` and `ssl` properties:
+
+* Setting `encryptionMode` to `OFF` sets `ssl` to `false`
+* Setting `encryptionMode` to `ON` sets `ssl` to `true`
+* Setting `ssl` to `false` sets `encryptionMode` to `OFF`
+* Setting `ssl` to `true` sets `encryptionMode` to `ON`
+
+This ensures consistency between the legacy `ssl` property and the newer `encryptionMode` property.
+====
 
 The negotiated level depends on the client config in {@link io.vertx.mssqlclient.MSSQLConnectOptions} and the server config:
 
@@ -339,7 +387,7 @@ The negotiation fails if `ssl` is set to `true` in client options, and the serve
 In this case, the client terminates the connection.
 ====
 
-=== Configuration
+==== Configuration
 
 To configure `ssl` in client options, use the {@link io.vertx.mssqlclient.MSSQLConnectOptions#setSsl} method.
 By default, `ssl` is set to `false`.
