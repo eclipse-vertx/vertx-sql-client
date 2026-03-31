@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,8 +14,8 @@ package io.vertx.tests.mssqlclient;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.tests.mssqlclient.junit.MSSQLRule;
 import io.vertx.sqlclient.Tuple;
+import io.vertx.tests.mssqlclient.junit.MSSQLRule;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,7 +28,7 @@ import static io.vertx.tests.mssqlclient.junit.MSSQLRule.Config.TLS;
  * Encryption tests for a server that does not force encryption.
  */
 @RunWith(VertxUnitRunner.class)
-public class MSSQLEncryptionTest extends MSSQLEncryptionTestBase {
+public class MSSQLEncryptionTest extends MSSQLTds7EncryptionTestBase {
 
   @ClassRule
   public static MSSQLRule rule = new MSSQLRule(TLS);

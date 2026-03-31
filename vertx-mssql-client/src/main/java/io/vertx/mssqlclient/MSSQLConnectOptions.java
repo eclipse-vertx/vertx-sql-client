@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -65,6 +65,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   public static final int MAX_PACKET_SIZE = 32767;
   public static final int DEFAULT_PACKET_SIZE = 4096;
   public static final boolean DEFAULT_SSL = false;
+  public static final EncryptionMode DEFAULT_ENCRYPTION_MODE = EncryptionMode.OFF;
 
   static {
     Map<String, String> defaultProperties = new HashMap<>();
@@ -75,6 +76,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
 
   private boolean ssl;
   private int packetSize;
+  private EncryptionMode encryptionMode;
 
   public MSSQLConnectOptions() {
     super();
@@ -101,6 +103,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   private void copyFields(MSSQLConnectOptions other) {
     packetSize = other.packetSize;
     ssl = other.ssl;
+    encryptionMode = other.encryptionMode;
   }
 
   @Override
@@ -181,6 +184,41 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
    */
   public MSSQLConnectOptions setSsl(boolean ssl) {
     this.ssl = ssl;
+    // Maintain backward compatibility: ssl=true maps to EncryptionMode.ON
+    if (ssl && encryptionMode == EncryptionMode.OFF) {
+      encryptionMode = EncryptionMode.ON;
+    } else if (!ssl) {
+      encryptionMode = EncryptionMode.OFF;
+    }
+    return this;
+  }
+
+  /**
+   * Get the encryption mode for the connection.
+   *
+   * @return the encryption mode
+   */
+  public EncryptionMode getEncryptionMode() {
+    return encryptionMode;
+  }
+
+  /**
+   * Set the encryption mode for the connection.
+   * <p>
+   * Determines which version of the TDS protocol to use for encryption:
+   * <ul>
+   * <li>{@link EncryptionMode#OFF} - No encryption (TDS 7.x, default)</li>
+   * <li>{@link EncryptionMode#ON} - Optional encryption (TDS 7.x, equivalent to ssl=true)</li>
+   * <li>{@link EncryptionMode#STRICT} - Mandatory TDS 8.0 encryption (required for SQL Server 2022+ with Force Strict Encryption)</li>
+   * </ul>
+   *
+   * @param encryptionMode the encryption mode
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MSSQLConnectOptions setEncryptionMode(EncryptionMode encryptionMode) {
+    this.encryptionMode = encryptionMode;
+    // Update ssl field for backward compatibility
+    this.ssl = (encryptionMode == EncryptionMode.ON || encryptionMode == EncryptionMode.STRICT);
     return this;
   }
 
@@ -235,6 +273,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
     packetSize = DEFAULT_PACKET_SIZE;
     ssl = DEFAULT_SSL;
+    encryptionMode = DEFAULT_ENCRYPTION_MODE;
   }
 
   @Override

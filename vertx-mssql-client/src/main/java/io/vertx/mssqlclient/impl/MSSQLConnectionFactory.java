@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -19,12 +19,10 @@ import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.internal.tls.ClientSslContextManager;
 import io.vertx.core.internal.tls.SslContextManager;
-import io.vertx.core.net.HostAndPort;
-import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.SocketAddress;
+import io.vertx.core.net.*;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
+import io.vertx.mssqlclient.EncryptionMode;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.spi.connection.Connection;
@@ -55,29 +53,75 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
     if (redirections > 1) {
       return context.failedFuture("The client can be redirected only once");
     }
+    EncryptionMode encryptionMode = options.getEncryptionMode();
+    if (encryptionMode == EncryptionMode.STRICT) {
+      return connectWithTds8(options, context, redirections);
+    } else {
+      return connectWithTds7x(options, context, redirections);
+    }
+  }
+
+  private Future<Connection> connectWithTds8(MSSQLConnectOptions options, ContextInternal context, int redirections) {
+    SocketAddress server = options.getSocketAddress();
+
+    ClientSSLOptions sslOptions;
+    if (options.getSslOptions() == null) {
+      sslOptions = new ClientSSLOptions();
+    } else {
+      sslOptions = new ClientSSLOptions(options.getSslOptions());
+    }
+
+    if (sslOptions.isTrustAll()) {
+      return context.failedFuture("Strict encryption mode requires proper certificate validation. Configure SSL options with valid certificates.");
+    }
+
+    sslOptions.setHostnameVerificationAlgorithm("");
+
+    ConnectOptions connectOpts = new ConnectOptions()
+      .setRemoteAddress(server)
+      .setSsl(true)
+      .setSslOptions(sslOptions);
+
+    return client.connect(connectOpts)
+      .map(so -> createSocketConnection(so, options, context))
+      .compose(conn -> conn.sendPreLoginMessage(false)
+        .compose(encryptionLevel -> sendLogin(conn, options)))
+      .compose(connBase -> handleRedirectionToAlternateServer(connBase, options, context, redirections));
+  }
+
+  private Future<Connection> connectWithTds7x(MSSQLConnectOptions options, ContextInternal context, int redirections) {
     SocketAddress server = options.getSocketAddress();
     boolean clientSslConfig = options.isSsl();
     // Always start unencrypted, the connection will be upgraded if client and server agree
     return client.connect(server)
       .map(so -> createSocketConnection(so, options, context))
       .compose(conn -> conn.sendPreLoginMessage(clientSslConfig)
-        .compose(encryptionLevel -> login(conn, options, encryptionLevel, context))
-      )
-      .compose(connBase -> {
-        MSSQLSocketConnection conn = (MSSQLSocketConnection) connBase;
-        HostAndPort alternateServer = conn.getAlternateServer();
-        if (alternateServer == null) {
-          return context.succeededFuture(conn);
-        }
-        Promise<Void> closePromise = context.promise();
-        conn.close(null, closePromise);
-        return closePromise.future().transform(v -> {
-          MSSQLConnectOptions connectOptions = new MSSQLConnectOptions(options)
-            .setHost(alternateServer.host())
-            .setPort(alternateServer.port());
-          return connectOrRedirect(connectOptions, context, redirections + 1);
-        });
-      });
+        .compose(encryptionLevel -> loginTds7x(conn, options, encryptionLevel, context)))
+      .compose(connBase -> handleRedirectionToAlternateServer(connBase, options, context, redirections));
+  }
+
+  private Future<Connection> sendLogin(MSSQLSocketConnection conn, MSSQLConnectOptions options) {
+    String username = options.getUser();
+    String password = options.getPassword();
+    String database = options.getDatabase();
+    Map<String, String> properties = options.getProperties();
+    return conn.sendLoginMessage(username, password, database, properties);
+  }
+
+  private Future<Connection> handleRedirectionToAlternateServer(Connection connBase, MSSQLConnectOptions options, ContextInternal context, int redirections) {
+    MSSQLSocketConnection conn = (MSSQLSocketConnection) connBase;
+    HostAndPort alternateServer = conn.getAlternateServer();
+    if (alternateServer == null) {
+      return context.succeededFuture(conn);
+    }
+    Promise<Void> closePromise = context.promise();
+    conn.close(null, closePromise);
+    return closePromise.future().transform(v -> {
+      MSSQLConnectOptions connectOptions = new MSSQLConnectOptions(options)
+        .setHost(alternateServer.host())
+        .setPort(alternateServer.port());
+      return connectOrRedirect(connectOptions, context, redirections + 1);
+    });
   }
 
   private MSSQLSocketConnection createSocketConnection(NetSocket so, MSSQLConnectOptions options, ContextInternal context) {
@@ -88,7 +132,7 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
     return conn;
   }
 
-  private Future<Connection> login(MSSQLSocketConnection conn, MSSQLConnectOptions options, Byte encryptionLevel, ContextInternal context) {
+  private Future<Connection> loginTds7x(MSSQLSocketConnection conn, MSSQLConnectOptions options, byte encryptionLevel, ContextInternal context) {
     boolean clientSslConfig = options.isSsl();
     if (clientSslConfig && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
       Promise<Void> closePromise = context.promise();
@@ -98,16 +142,12 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
     Future<Void> future;
     if (encryptionLevel != ENCRYPT_NOT_SUP) {
       // Start connection encryption ...
-      future = conn.enableSsl(clientSslConfig, encryptionLevel, options);
+      future = conn.enableSslForTds7x(clientSslConfig, encryptionLevel, options);
     } else {
       // ... unless the client did not require encryption and the server does not support it
       future = context.succeededFuture();
     }
-    String username = options.getUser();
-    String password = options.getPassword();
-    String database = options.getDatabase();
-    Map<String, String> properties = options.getProperties();
-    return future.compose(v -> conn.sendLoginMessage(username, password, database, properties));
+    return future.compose(v -> sendLogin(conn, options));
   }
 
   @Override

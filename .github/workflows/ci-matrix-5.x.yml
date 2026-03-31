@@ -49,6 +49,10 @@ jobs:
             module: 'vertx-mssql-client'
           - os: ubuntu-latest
             jdk: 11
+            profile: 'MSSQL-2025-latest'
+            module: 'vertx-mssql-client'
+          - os: ubuntu-latest
+            jdk: 11
             profile: 'DB2-11.5'
             module: 'vertx-db2-client'
           - os: ubuntu-latest
@@ -69,6 +73,10 @@ jobs:
           - os: ubuntu-latest
             jdk: 25
             profile: 'MSSQL-2019-latest'
+            module: 'vertx-mssql-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'MSSQL-2025-latest'
             module: 'vertx-mssql-client'
           - os: ubuntu-latest
             jdk: 25

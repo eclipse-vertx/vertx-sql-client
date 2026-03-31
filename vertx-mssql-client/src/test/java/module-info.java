@@ -9,5 +9,5 @@ open module io.vertx.tests.sql.client.mssql {
   requires junit;
   requires testcontainers;
   requires hamcrest.core;
-
+  requires com.github.dockerjava.api;
 }
