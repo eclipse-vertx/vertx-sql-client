@@ -26,11 +26,11 @@ jobs:
       PROFILE_ARG: ${{ inputs.profile && format('-P {0}', inputs.profile) || '' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.branch }}
       - name: Install JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ inputs.jdk }}
           distribution: temurin
