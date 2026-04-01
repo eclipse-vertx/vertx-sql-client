@@ -83,6 +83,8 @@ jobs:
             profile: 'Oracle-23'
             module: 'vertx-oracle-client'
     runs-on: ${{ matrix.os }}
+    env:
+      PROFILE_ARG: ${{ matrix.profile && format('-P {0}', matrix.profile) || '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -91,10 +93,12 @@ jobs:
         with:
           java-version: ${{ matrix.jdk }}
           distribution: temurin
-      - name: Run tests
+      - name: Build without tests
         run: |
-          PROFILE_ARG="${{ matrix.profile && format('-P {0}', matrix.profile) || '' }}"
-          mvn -s .github/maven-ci-settings.xml -q clean verify -B $PROFILE_ARG -pl :${{ matrix.module }} -am
+          mvn -s .github/maven-ci-settings.xml -q clean install -B $PROFILE_ARG -pl :${{ matrix.module }} -am -DskipTests
+      - name: Run tests for the target module
+        run: |
+          mvn -s .github/maven-ci-settings.xml -q verify -B $PROFILE_ARG -pl :${{ matrix.module }}
   Deploy:
     name: Deploy to OSSRH
     if: ${{ github.repository_owner == 'eclipse-vertx' && (github.event_name == 'push' || github.event_name == 'schedule') }}
