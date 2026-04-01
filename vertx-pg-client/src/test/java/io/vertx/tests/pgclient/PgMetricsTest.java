@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,17 +12,17 @@
 package io.vertx.tests.pgclient;
 
 import io.vertx.pgclient.PgBuilder;
-import io.vertx.tests.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.tests.pgclient.junit.ContainerPgRule;
 import io.vertx.tests.sqlclient.tck.MetricsTestBase;
 import org.junit.ClassRule;
 
 public class PgMetricsTest extends MetricsTestBase {
 
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule();
+  public static final ContainerPgRule rule = ContainerPgRule.SHARED_INSTANCE;
 
   @Override
   protected SqlConnectOptions connectOptions() {
