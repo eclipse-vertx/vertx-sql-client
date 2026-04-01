@@ -50,9 +50,10 @@ public class PgBouncerTest {
   private GenericContainer<?> pgBouncerContainer;
   private Vertx vertx;
   private PgConnectOptions options;
+  private List<PgConnection> connections = new ArrayList<>();
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     pgContainer = new FixedHostPortGenericContainer<>("postgres:10.10")
       .withFixedExposedPort(5432, 5432);
     pgContainer.withEnv("POSTGRES_PASSWORD", "postgres");
@@ -85,59 +86,53 @@ public class PgBouncerTest {
       .setPipeliningLimit(1);
 
     vertx = Vertx.vertx();
+
+    // Initialize connections for tests
+    int numConn = 2;
+    for (int i = 0; i < numConn; i++) {
+      connections.add(PgConnection.connect(vertx, new PgConnectOptions(options).setUseLayer7Proxy(true)).await(20, TimeUnit.SECONDS));
+    }
   }
 
   @After
   public void tearDown() throws Exception {
+    for (PgConnection conn : connections) {
+      conn.close().await(20, TimeUnit.SECONDS);
+    }
     Testcontainers.exposeHostPorts();
     pgBouncerContainer.stop();
     pgContainer.stop();
-    vertx.close().toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
+    vertx.close().await(20, TimeUnit.SECONDS);
   }
 
   @Test
   public void testPreparedQuery() throws Exception {
-    List<PgConnection> connections = new ArrayList<>();
-    int numConn = 2;
-    for (int i = 0;i < numConn;i++) {
-      connections.add(PgConnection.connect(vertx, new PgConnectOptions(options).setUseLayer7Proxy(true)).toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS));
-    }
     CompositeFuture cf = Future.join(connections.stream()
       .map(conn -> conn.preparedQuery("select 1").execute().map(rows -> rows.iterator().next().getInteger(0)))
       .collect(Collectors.toList()));
-    cf.toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
-    for (int i = 0;i < numConn;i++) {
+    cf.await(20, TimeUnit.SECONDS);
+    for (int i = 0; i < connections.size(); i++) {
       assertEquals(1, (cf.<Object>resultAt(i)));
     }
   }
 
   @Test
   public void testPreparedBatch() throws Exception {
-    List<PgConnection> connections = new ArrayList<>();
-    int numConn = 2;
-    for (int i = 0;i < numConn;i++) {
-      connections.add(PgConnection.connect(vertx, new PgConnectOptions(options).setUseLayer7Proxy(true)).toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS));
-    }
     CompositeFuture cf = Future.join(connections.stream()
       .map(conn -> conn.preparedQuery("select 1")
         .executeBatch(Arrays.asList(Tuple.tuple(), Tuple.tuple()))
         .map(rows -> rows.iterator().next().getInteger(0)))
       .collect(Collectors.toList()));
-    cf.toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
-    for (int i = 0;i < numConn;i++) {
+    cf.await(20, TimeUnit.SECONDS);
+    for (int i = 0; i < connections.size(); i++) {
       assertEquals(1, (cf.<Object>resultAt(i)));
     }
   }
 
   @Test
   public void testCursor() throws Exception {
-    List<PgConnection> connections = new ArrayList<>();
-    int numConn = 2;
-    for (int i = 0;i < numConn;i++) {
-      connections.add(PgConnection.connect(vertx, new PgConnectOptions(options).setUseLayer7Proxy(true)).toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS));
-    }
     List<Future<?>> list = new ArrayList<>();
-    for (int i = 0;i < numConn;i++) {
+    for (int i = 0; i < connections.size(); i++) {
       int val = i;
       PgConnection conn = connections.get(i);
       list.add(conn
@@ -154,8 +149,8 @@ public class PgBouncerTest {
       }).eventually(() -> tx.commit())));
     }
     CompositeFuture cf = Future.join(list);
-    cf.toCompletionStage().toCompletableFuture().get(20, TimeUnit.SECONDS);
-    for (int i = 0;i < numConn;i++) {
+    cf.await(20, TimeUnit.SECONDS);
+    for (int i = 0; i < connections.size(); i++) {
       assertEquals(i, (cf.<Object>resultAt(i)));
     }
   }
