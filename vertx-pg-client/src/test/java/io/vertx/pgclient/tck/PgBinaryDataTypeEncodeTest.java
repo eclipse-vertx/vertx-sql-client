@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -23,7 +23,7 @@ import java.sql.JDBCType;
 @RunWith(VertxUnitRunner.class)
 public class PgBinaryDataTypeEncodeTest extends BinaryDataTypeEncodeTestBase {
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule();
+  public static final ContainerPgRule rule = ContainerPgRule.SHARED_INSTANCE;
 
   @Override
   protected JDBCType getNumericJDBCType() {
