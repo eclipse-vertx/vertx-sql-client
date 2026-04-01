@@ -15,6 +15,7 @@ package io.vertx.tests.pgclient;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.ext.unit.junit.Timeout;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
@@ -22,6 +23,7 @@ import io.vertx.sqlclient.Cursor;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.Testcontainers;
@@ -40,6 +42,9 @@ import static org.testcontainers.containers.BindMode.READ_ONLY;
 
 @RunWith(VertxUnitRunner.class)
 public class PgBouncerTest {
+
+  @Rule
+  public Timeout timeout = new Timeout(5, TimeUnit.MINUTES);
 
   private FixedHostPortGenericContainer<?> pgContainer;
   private GenericContainer<?> pgBouncerContainer;
