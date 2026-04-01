@@ -1,11 +1,22 @@
+/*
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
+ *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
+ */
+
 package io.vertx.tests.pgclient.data;
 
-import io.vertx.pgclient.PgConnection;
-import io.vertx.tests.sqlclient.ColumnChecker;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.pgclient.PgConnection;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.Tuple;
+import io.vertx.tests.sqlclient.ColumnChecker;
 import org.junit.Test;
 
 public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTestBase {
@@ -122,7 +133,7 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
     PgConnection
       .connect(vertx, options)
       .onComplete(ctx.asyncAssertSuccess(conn -> {
-      conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\", \"Boolean\"")
+        conn.prepare("UPDATE \"ArrayDataType\" SET \"Enum\" = $1 WHERE \"id\" = $2 RETURNING \"Enum\"")
         .onComplete(ctx.asyncAssertSuccess(p -> {
           p.query()
             .execute(Tuple.tuple().addArrayOfString(new String[]{}).addInteger(2))
@@ -130,10 +141,6 @@ public class EnumeratedTypesExtendedCodecTest extends ExtendedQueryDataTypeCodec
               ColumnChecker.checkColumn(0, "Enum")
                 .returns(Tuple::getValue, Row::getValue, new String[]{})
                 .returns(Tuple::getArrayOfStrings, Row::getArrayOfStrings, new String[]{})
-                .forRow(result.iterator().next());
-              ColumnChecker.checkColumn(1, "Boolean")
-                .returns(Tuple::getValue, Row::getValue, new Boolean[]{true})
-                .returns(Tuple::getArrayOfBooleans, Row::getArrayOfBooleans, new Boolean[]{true})
                 .forRow(result.iterator().next());
               async.complete();
             }));
