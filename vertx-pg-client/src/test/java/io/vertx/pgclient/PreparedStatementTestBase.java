@@ -1,18 +1,12 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
 package io.vertx.pgclient;
@@ -24,30 +18,17 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.pgclient.data.Box;
-import io.vertx.pgclient.data.Circle;
-import io.vertx.pgclient.data.Interval;
-import io.vertx.pgclient.data.Line;
-import io.vertx.pgclient.data.LineSegment;
-import io.vertx.pgclient.data.Path;
-import io.vertx.pgclient.data.Point;
-import io.vertx.pgclient.data.Polygon;
-import io.vertx.sqlclient.Cursor;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowIterator;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.ext.unit.junit.Repeat;
+import io.vertx.ext.unit.junit.RepeatRule;
+import io.vertx.pgclient.data.*;
+import io.vertx.sqlclient.*;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.lang.reflect.Array;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
@@ -61,6 +42,9 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public abstract class PreparedStatementTestBase extends PgTestBase {
+
+  @Rule
+  public RepeatRule rule = new RepeatRule();
 
   Vertx vertx;
 
@@ -359,47 +343,56 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeString42P18(TestContext ctx) {
     testInferDataType42P18(ctx, String.class, "WORLD", "WORLD");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeBoolean42P18(TestContext ctx) {
     testInferDataType42P18(ctx, Boolean.class, true, "t");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeShort42P18(TestContext ctx) {
     testInferDataType42P18(ctx, Short.class, (short)2, "2");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeInteger42P18(TestContext ctx) {
     testInferDataType42P18(ctx, Integer.class, Integer.MAX_VALUE, "" + Integer.MAX_VALUE);
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeLong42P18(TestContext ctx) {
     testInferDataType42P18(ctx, Long.class, Long.MAX_VALUE, "" + Long.MAX_VALUE);
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeFloat42P18(TestContext ctx) {
     testInferDataType42P18(ctx, Float.class, 0F, "0");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeDouble42P18(TestContext ctx) {
     testInferDataType42P18(ctx, Double.class, 0D, "0");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeLocalDate42P18(TestContext ctx) {
     LocalDate value = LocalDate.now();
     testInferDataType42P18(ctx, LocalDate.class, value, value.toString());
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeLocalDateTime42P18(TestContext ctx) {
     LocalDateTime value = LocalDateTime.of(LocalDate.now(), LocalTime.NOON);
     String suffix = value.toLocalDate() + " " + value.toLocalTime().format(DateTimeFormatter.ISO_LOCAL_TIME);
@@ -407,6 +400,7 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeOffsetDateTime42P18(TestContext ctx) {
     OffsetDateTime value = OffsetDateTime.of(LocalDateTime.of(LocalDate.now(), LocalTime.NOON), ZoneOffset.UTC);
     String suffix = value.toLocalDate() + " " + value.toLocalTime().format(DateTimeFormatter.ISO_LOCAL_TIME) + "+00";
@@ -414,71 +408,83 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeOffsetInterval42P18(TestContext ctx) {
     Interval value = Interval.of(1);
     testInferDataType42P18(ctx, Interval.class, value, "1 year", "{\"1 year\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeBuffer42P18(TestContext ctx) {
     testInferDataType42P18(ctx, Buffer.class, Buffer.buffer("WORLD"), "\\x574f524c44", "{\"\\\\x574f524c44\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeUUID42P18(TestContext ctx) {
     UUID value = UUID.randomUUID();
     testInferDataType42P18(ctx, UUID.class, value, "" + value);
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeJsonObject42P18(TestContext ctx) {
     JsonObject value = new JsonObject().put("foo", "bar");
     testInferDataType42P18(ctx, JsonObject.class, value, "" + value, "{\"{\\\"foo\\\":\\\"bar\\\"}\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeJsonArray42P18(TestContext ctx) {
     JsonArray value = new JsonArray().add(1).add("foo").add(true);
     testInferDataType42P18(ctx, JsonArray.class, value, "" + value, "{\"[1,\\\"foo\\\",true]\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypePoint42P18(TestContext ctx) {
     Point value = new Point();
     testInferDataType42P18(ctx, Point.class, value, "(0,0)", "{\"(0,0)\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeLine42P18(TestContext ctx) {
     Line value = new Line(1.0, 0.0, 0.0);
     testInferDataType42P18(ctx, Line.class, value, "{1,0,0}", "{\"{1,0,0}\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeLineSegment42P18(TestContext ctx) {
     LineSegment value = new LineSegment();
     testInferDataType42P18(ctx, LineSegment.class, value, "[(0,0),(0,0)]", "{\"[(0,0),(0,0)]\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeBox42P18(TestContext ctx) {
     Box value = new Box();
     testInferDataType42P18(ctx, Box.class, value, "(0,0),(0,0)");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypePath42P18(TestContext ctx) {
     Path value = new Path().addPoint(new Point());
     testInferDataType42P18(ctx, Path.class, value, "((0,0))", "{\"((0,0))\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypePolygon42P18(TestContext ctx) {
     Polygon value = new Polygon().addPoint(new Point()).addPoint(new Point()).addPoint(new Point());
     testInferDataType42P18(ctx, Polygon.class, value, "((0,0),(0,0),(0,0))", "{\"((0,0),(0,0),(0,0))\"}");
   }
 
   @Test
+  @Repeat(10)
   public void testInferDataTypeCircle42P18(TestContext ctx) {
     Circle value = new Circle();
     testInferDataType42P18(ctx, Circle.class, value, "<(0,0),0>", "{\"<(0,0),0>\"}");
@@ -510,14 +516,21 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
         }));
     }));
     PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
+      Async async = ctx.async();
       conn.begin()
-        .flatMap(tx -> conn.preparedQuery("SELECT CONCAT('HELLO ', $1)").execute(Tuple.of(value))
-          .eventually(() -> conn.close())
-          .onComplete(ctx.asyncAssertFailure(failure -> {
-            if (!hasSqlstateCode(failure, "42P18")) {
-              ctx.fail(failure);
-            }
-          })));
+        .compose(tx -> conn.preparedQuery("SELECT CONCAT('HELLO ', $1)").execute(Tuple.of(value)))
+        .onComplete(ar -> {
+          if (ar.succeeded()) {
+            conn.close().onComplete(v -> ctx.fail("Expected failure with SQLSTATE 42P18"));
+            return;
+          }
+          Throwable failure = ar.cause();
+          if (!hasSqlstateCode(failure, "42P18")) {
+            conn.close().onComplete(ctx.asyncAssertSuccess(v -> ctx.fail(failure)));
+            return;
+          }
+          conn.close().onComplete(v -> async.complete());
+        });
     }));
   }
 
