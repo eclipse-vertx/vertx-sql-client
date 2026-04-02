@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+    
+    <Loggers>
+        <!-- Root logger: Only warnings and errors by default -->
+        <Root level="warn">
+            <AppenderRef ref="Console"/>
+        </Root>
+        
+        <!-- Testcontainers: Reduce noise -->
+        <Logger name="org.testcontainers" level="warn" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <Logger name="com.github.dockerjava" level="warn" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <!-- DB2 Client: Can be set to debug/trace for troubleshooting -->
+        <Logger name="io.vertx.db2client" level="warn" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <!-- Test logging: INFO level to see test progress -->
+        <Logger name="io.vertx.tests.db2client" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        
+        <!-- Uncomment for detailed DB2 protocol debugging -->
+        <!--
+        <Logger name="io.vertx.db2client.impl.drda" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        -->
+    </Loggers>
+</Configuration>

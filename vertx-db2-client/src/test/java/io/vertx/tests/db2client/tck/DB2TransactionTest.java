@@ -1,40 +1,38 @@
 /*
- * Copyright (C) 2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.tests.db2client.tck;
 
-import static org.junit.Assume.assumeFalse;
-
 import io.vertx.db2client.DB2Builder;
+import io.vertx.db2client.DB2ConnectOptions;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Pool;
+import io.vertx.sqlclient.PoolOptions;
+import io.vertx.tests.db2client.junit.DB2Resource;
+import io.vertx.tests.sqlclient.tck.TransactionTestBase;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import io.vertx.db2client.DB2ConnectOptions;
-import io.vertx.tests.db2client.junit.DB2Resource;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.tests.sqlclient.tck.TransactionTestBase;
+import static org.junit.Assume.assumeFalse;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2TransactionTest extends TransactionTestBase {
+
+  private static final Logger logger = LoggerFactory.getLogger(DB2TransactionTest.class);
 
   @ClassRule
   public static DB2Resource rule = DB2Resource.SHARED_INSTANCE;
@@ -44,7 +42,7 @@ public class DB2TransactionTest extends TransactionTestBase {
 
   @Before
   public void printTestName(TestContext ctx) throws Exception {
-    System.out.println(">>> BEGIN " + getClass().getSimpleName() + "." + testName.getMethodName());
+    logger.info(">>> BEGIN {}.{}", getClass().getSimpleName(), testName.getMethodName());
   }
 
   @Override

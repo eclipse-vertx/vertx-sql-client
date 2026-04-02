@@ -1,30 +1,28 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.db2client.impl.drda;
+
+import io.netty.buffer.ByteBuf;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
+import io.vertx.db2client.DB2Exception;
+import io.vertx.db2client.impl.DB2DatabaseMetadata;
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-
-import io.netty.buffer.ByteBuf;
-import io.vertx.db2client.DB2Exception;
-import io.vertx.db2client.impl.DB2DatabaseMetadata;
 
 public class DRDAConnectResponse extends DRDAResponse {
+
+    private static final Logger logger = LoggerFactory.getLogger(DRDAConnectResponse.class);
 
     public DRDAConnectResponse(ByteBuf buffer, ConnectionMetaData metadata) {
       super(buffer, metadata);
@@ -216,8 +214,9 @@ public class DRDAConnectResponse extends DRDAResponse {
             if (peekCP == CodePoint.SRVDGN) {
                 foundInPass = true;
                 String serverDiagnostics = parseSRVDGN();
-                // TODO: Log this as a warning
-                System.out.println("Server diagnostics: " + serverDiagnostics);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Server diagnostics: " + serverDiagnostics);
+                }
                 peekCP = peekCodePoint();
             }
 
@@ -307,8 +306,7 @@ public class DRDAConnectResponse extends DRDAResponse {
             if (peekCP == CodePoint.SRVDGN) {
                 foundInPass = true;
                 String serverDiagnostics = parseSRVDGN();
-                // TODO: Log this as a warning
-                System.out.println("Server diagnostics: " + serverDiagnostics);
+                logger.debug("Server diagnostics: " + serverDiagnostics);
                 peekCP = peekCodePoint();
             }
 
@@ -1828,7 +1826,7 @@ public class DRDAConnectResponse extends DRDAResponse {
         // the managerCount should be equal to the same number of
         // managers sent on the excsat.
 
-//        System.out.println("Database server attributes:");
+
         // read each of the manager levels returned from the server.
         for (int i = 0; i < managerCount; i++) {
 
@@ -1841,25 +1839,27 @@ public class DRDAConnectResponse extends DRDAResponse {
             // for this driver.  Also make sure unexpected managers are not returned.
             switch (managerCodePoint) {
                 case CodePoint.AGENT:
-//                    System.out.println("  AGENT=" + managerLevel);
+
 //                    break;
                 case CodePoint.SQLAM:
-//                    System.out.println("  SQLAM=" + managerLevel);
+
 //                    break;
                 case CodePoint.UNICODEMGR:
-//                    System.out.println("  UNICODEMGR=" + managerLevel);
+
 //                    break;
                 case CodePoint.RDB:
-//                    System.out.println("  RDB=" + managerLevel);
+
 //                    break;
                 case CodePoint.SECMGR:
-//                    System.out.println("  SECMGR=" + managerLevel);
+
 //                    break;
                 case CodePoint.CMNTCPIP:
-//                    System.out.println("  CMNTCPIP=" + managerLevel);
+
                     break;
                 default:
-                    System.out.println("  WARN: Unknown manager codepoint: 0x" + Integer.toHexString(managerCodePoint));
+                    if (logger.isWarnEnabled()) {
+                        logger.warn("Unknown manager codepoint: 0x" + Integer.toHexString(managerCodePoint));
+                    }
             }
         }
     }

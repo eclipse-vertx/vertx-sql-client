@@ -1,27 +1,26 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.db2client.impl.drda;
+
+import io.netty.buffer.ByteBuf;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import io.netty.buffer.ByteBuf;
-
 public class DRDAQueryResponse extends DRDAConnectResponse {
+
+  private static final Logger logger = LoggerFactory.getLogger(DRDAQueryResponse.class);
 
 //    protected boolean ensuredLengthForDecryption_ = false; // A layer lengths have already been ensured in decrypt method.
 //    protected byte[] longBufferForDecryption_ = null;
@@ -677,7 +676,9 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
             // Currently, commit is not issued even there is no result set.
             // do not externalize sqlcode +100
             if (sqlcode > 0 && sqlcode != 466 && sqlcode != 100) {
-                System.out.println("WARN: sqlcode: " + sqlcode);
+              if (logger.isWarnEnabled()) {
+                logger.warn("SQL warning code: " + sqlcode);
+              }
 //                accumulateWarning(new SqlWarning(agent_.logWriter_, sqlca));
             }
         }
@@ -2217,8 +2218,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
                 ddmLength = adjustDdmLength(ddmLength, length);
                 peekCP = peekCodePoint();
             }
-            
-            if (peekCP == CodePoint.QRYBLKFCT) {
+
+          if (peekCP == CodePoint.QRYBLKFCT) {
                 // @MJS added
                 foundInPass = true;
                 length = peekedLength_;
@@ -2337,8 +2338,8 @@ public class DRDAQueryResponse extends DRDAConnectResponse {
         matchCodePoint(CodePoint.QRYATTISOL);
         return readUnsignedShort();
     }
-    
-    private int parseFastQRYBLKFCT() {
+
+  private int parseFastQRYBLKFCT() {
         //@MJS added
         matchCodePoint(CodePoint.QRYBLKFCT);
         return readFastInt();
