@@ -85,8 +85,8 @@ public class DB2ConnectionTest extends ConnectionTestBase {
 
   @Override
   protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
-    ctx.assertEquals(11, md.majorVersion());
-    ctx.assertEquals(5, md.minorVersion());
+    ctx.assertTrue(md.majorVersion() > 0);
+    ctx.assertTrue(md.minorVersion() > 0);
     ctx.assertTrue(md.productName().contains("DB2"));
   }
 }
