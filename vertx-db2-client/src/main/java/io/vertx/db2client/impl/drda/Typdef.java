@@ -1,17 +1,12 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.db2client.impl.drda;
 
@@ -111,13 +106,13 @@ import java.sql.Types;
 //earlyTTriplets
 //late0Triplets
 public class Typdef implements Cloneable {
-    
-    // @AGG making this static instead of on an Agent class
+
+  // @AGG making this static instead of on an Agent class
     public static final Typdef typdef = new Typdef(1208, "QTDSQLASC", 1200, 1208);
     public static final Typdef targetTypdef = new Typdef();
     public static final Typdef originalTargetTypdef_ = targetTypdef;
-    
-    // double byte character set
+
+  // double byte character set
     private static final short CCSIDDBC = 1;
 
     // multi-byte character set
@@ -143,8 +138,8 @@ public class Typdef implements Cloneable {
 
     // lob length
     public static final short LOBLENGTH = 4;
-    
-    private static final int OVERRIDE_TABLE_SIZE = 0xff;
+
+  private static final int OVERRIDE_TABLE_SIZE = 0xff;
 
     private static final int[] fdocaTypeToRepresentationMap_ = {
         /* 0x00 */ 0,
@@ -1112,7 +1107,7 @@ public class Typdef implements Cloneable {
         netCursor.jdbcTypes_[columnIndex] = protocolToJdbcTypes_[sda.protocolType_];
         if (netCursor.jdbcTypes_[columnIndex] == 0x00) {
           // TODO: Set up logging framework for DRDA codebase
-//          System.out.println("WARN: Found unknown protocol type: " + sda.protocolType_);
+
         }
 
         // 7. Get the number of bytes to read for variable length data.

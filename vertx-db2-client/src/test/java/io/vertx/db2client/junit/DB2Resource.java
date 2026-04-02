@@ -1,19 +1,22 @@
 /*
- * Copyright (C) 2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.db2client.junit;
+
+import io.vertx.core.net.JksOptions;
+import io.vertx.db2client.DB2ConnectOptions;
+import org.junit.rules.ExternalResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Db2Container;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,16 +27,11 @@ import java.sql.SQLSyntaxErrorException;
 import java.time.Duration;
 import java.util.Objects;
 
-import org.junit.rules.ExternalResource;
-import org.testcontainers.containers.Db2Container;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-
-import io.vertx.core.net.JksOptions;
-import io.vertx.db2client.DB2ConnectOptions;
-
 public class DB2Resource extends ExternalResource {
 
-  private static final boolean CUSTOM_DB2 = get("DB2_HOST") != null;
+    private static final Logger logger = LoggerFactory.getLogger(DB2Resource.class);
+
+    private static final boolean CUSTOM_DB2 = get("DB2_HOST") != null;
 
     /**
      * In order for this container to be reused across test runs you need to add the line:
@@ -45,9 +43,9 @@ public class DB2Resource extends ExternalResource {
     private boolean started = false;
     private boolean isDb2OnZ = false;
     private DB2ConnectOptions options;
-    private final Db2Container instance = new Db2Container()
+    private final Db2Container instance = new Db2Container("ibmcom/db2:11.5.0.0a")
             .acceptLicense()
-            .withLogConsumer(out -> System.out.print("[DB2] " + out.getUtf8String()))
+            .withLogConsumer(out -> logger.debug("[DB2] {}", out.getUtf8String()))
             .withUsername("vertx")
             .withPassword("vertx")
             .withDatabaseName("vertx")
@@ -55,8 +53,8 @@ public class DB2Resource extends ExternalResource {
             .withFileSystemBind("src/test/resources/tls/server/", "/certs/")
             .withFileSystemBind("src/test/resources/tls/db2_tls_setup.sh", "/var/custom/db2_tls_setup.sh")
             .waitingFor(new LogMessageWaitStrategy()
-                .withRegEx(".*VERTX SSH SETUP DONE.*")
-                .withStartupTimeout(Duration.ofMinutes(10)))
+                    .withRegEx(".*VERTX SSH SETUP DONE.*")
+                    .withStartupTimeout(Duration.ofMinutes(10)))
             .withReuse(true);
 
     @Override
@@ -73,7 +71,7 @@ public class DB2Resource extends ExternalResource {
                   .setUser(instance.getUsername())
                   .setPassword(instance.getPassword());
       } else {
-          System.out.println("Using custom DB2 instance as requested via DB2_HOST=" + get("DB2_HOST"));
+          logger.info("Using custom DB2 instance as requested via DB2_HOST={}", get("DB2_HOST"));
           Objects.requireNonNull(get("DB2_PORT"), "Must set DB2_PORT to a non-null value if DB2_HOST is set");
           Objects.requireNonNull(get("DB2_NAME"), "Must set DB2_NAME to a non-null value if DB2_HOST is set");
           Objects.requireNonNull(get("DB2_USER"), "Must set DB2_USER to a non-null value if DB2_HOST is set");
@@ -86,7 +84,7 @@ public class DB2Resource extends ExternalResource {
                   .setPassword(get("DB2_PASS"));
       }
       String jdbcUrl = "jdbc:db2://" + options.getHost() + ":" + options.getPort() + "/" + options.getDatabase();
-      System.out.println("Initializing DB2 database at: " + jdbcUrl);
+        logger.info("Initializing DB2 database at: {}", jdbcUrl);
       try (Connection con = DriverManager.getConnection(jdbcUrl, options.getUser(), options.getPassword())) {
         runInitSql(con);
       }
@@ -119,18 +117,18 @@ public class DB2Resource extends ExternalResource {
       isDb2OnZ = con.getMetaData().getDatabaseProductVersion().startsWith("DSN");
       String currentLine = "";
       Path initScript = Paths.get("src", "test", "resources", isDb2OnZ ? "init.zos.sql" : "init.sql");
-      System.out.println("Running init script at: " + initScript);
+        logger.info("Running init script at: {}", initScript);
       for (String sql : Files.readAllLines(initScript)) {
           if (sql.startsWith("--"))
               continue;
           currentLine += sql;
           if (sql.endsWith(";")) {
-              System.out.println("  " + currentLine);
+              logger.debug("  {}", currentLine);
               try {
                 con.createStatement().execute(currentLine);
               } catch (SQLSyntaxErrorException e) {
                 if (sql.startsWith("DROP ") && e.getErrorCode() == -204) {
-                  System.out.println("  ignoring syntax exception: " + e.getMessage());
+                    logger.debug("  ignoring syntax exception: {}", e.getMessage());
                 } else {
                   throw e;
                 }

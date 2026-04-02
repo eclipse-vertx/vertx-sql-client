@@ -1,22 +1,14 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.db2client.impl.codec;
-
-import java.math.BigDecimal;
-import java.util.stream.Collector;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.impl.logging.Logger;
@@ -28,6 +20,9 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.RowDecoder;
 import io.vertx.sqlclient.impl.RowInternal;
+
+import java.math.BigDecimal;
+import java.util.stream.Collector;
 
 class RowResultDecoder<C, R> extends RowDecoder<C, R> {
 
@@ -67,8 +62,10 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
       // TODO: Remove this once all getObject paths are implemented safely
       // or add unit tests for this in the DRDA project
       if (startingIdx != endingIdx) {
-        System.out.println("WARN: Reader index changed while getting data. Changed from " + startingIdx + " to "
+        if (LOG.isWarnEnabled()) {
+          LOG.warn("Reader index changed while getting data. Changed from " + startingIdx + " to "
             + endingIdx + " while obtaining object " + o);
+        }
       }
       if (o instanceof BigDecimal) {
         o = Numeric.create((BigDecimal) o);

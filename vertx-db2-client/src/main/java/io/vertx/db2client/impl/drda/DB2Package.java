@@ -1,24 +1,20 @@
 /*
- * Copyright (C) 2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.db2client.impl.drda;
 
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
+
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * ## Packages
@@ -42,7 +38,7 @@ import java.util.logging.Logger;
  */
 public class DB2Package {
 
-  private static final Logger LOG = Logger.getLogger(DB2Package.class.getName());
+  private static final Logger LOG = LoggerFactory.getLogger(DB2Package.class);
 
     private static final int MAX_SECTIONS_SMALL_PKG = 64;
     private static final int MAX_SECTIONS_LARGE_PKG = 384;
@@ -77,15 +73,17 @@ public class DB2Package {
     Section s = freeSections.poll();
     if (s != null) {
       s.use();
-      if (LOG.isLoggable(Level.FINE))
-        LOG.fine("Using existing section " + s);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Using existing section " + s);
+      }
       return s;
     }
 
     int sectionNumber = nextAvailableSectionNumber.getAndIncrement();
     if (sectionNumber > maxSections) {
-      if (LOG.isLoggable(Level.FINE))
-        LOG.fine("All sections in use for package " + this);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("All sections in use for package " + this);
+      }
       return null;
     }
 

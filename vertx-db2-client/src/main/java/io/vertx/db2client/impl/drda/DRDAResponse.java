@@ -1,28 +1,23 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.db2client.impl.drda;
+
+import io.netty.buffer.ByteBuf;
 
 import java.nio.charset.Charset;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-import io.netty.buffer.ByteBuf;
-
 public abstract class DRDAResponse {
-    
+
     final ByteBuf buffer;
     final ConnectionMetaData metadata;
 
@@ -46,34 +41,34 @@ public abstract class DRDAResponse {
         this.buffer = buffer;
         this.metadata = metadata;
     }
-    
+
     protected final void startSameIdChainParse() {
         // TODO: remove this method once everything is ported
         readDssHeader();
     }
-    
+
     protected final void endOfSameIdChainData() {
         if (!ddmCollectionLenStack.isEmpty()) {
             throw new IllegalStateException("SQLState.NET_COLLECTION_STACK_NOT_EMPTY");
 //            agent_.accumulateChainBreakingReadExceptionAndThrow(
-//                new DisconnectException(agent_, 
+//                new DisconnectException(agent_,
 //                new ClientMessageId(SQLState.NET_COLLECTION_STACK_NOT_EMPTY)));
         }
         if (this.dssLength_ != 0) {
             throw new IllegalStateException("SQLState.NET_DSS_NOT_ZERO " + dssLength_);
 //            agent_.accumulateChainBreakingReadExceptionAndThrow(
-//                new DisconnectException(agent_, 
+//                new DisconnectException(agent_,
 //                new ClientMessageId(SQLState.NET_DSS_NOT_ZERO)));
         }
         if (dssIsChainedWithSameID_ == true) {
             throw new IllegalStateException("SQLState.NET_DSS_CHAINED_WITH_SAME_ID");
 //            agent_.accumulateChainBreakingReadExceptionAndThrow(
-//                new DisconnectException(agent_, 
+//                new DisconnectException(agent_,
 //                new ClientMessageId(SQLState.NET_DSS_CHAINED_WITH_SAME_ID)));
         }
     }
-    
-    // The End Unit of Work Condition (ENDUOWRM) Reply Mesage specifies
+
+  // The End Unit of Work Condition (ENDUOWRM) Reply Mesage specifies
     // that the unit of work has ended as a result of the last command.
     //
     // Returned from Server:
@@ -116,8 +111,8 @@ public abstract class DRDAResponse {
                 rdbnam = parseRDBNAM(true);
                 peekCP = peekCodePoint();
             }
-            
-            if (peekCP == CodePoint.RLSCONV) {
+
+          if (peekCP == CodePoint.RLSCONV) {
               foundInPass = true;
               parseRLSCONV();
               peekCP = peekCodePoint();
@@ -141,11 +136,11 @@ public abstract class DRDAResponse {
 //            connection.completeLocalRollback();
 //        }
         if (uowdsp == CodePoint.UOWDSP_COMMIT) {
-            //System.out.println("@AGG commit completed normally");
+
         }
     }
-    
-    private int parseRLSCONV() {
+
+  private int parseRLSCONV() {
       parseLengthAndMatchCodePoint(CodePoint.RLSCONV);
       int i = readUnsignedByte();
       if (i != 0xF0 && // NO_TERM
@@ -155,8 +150,8 @@ public abstract class DRDAResponse {
       }
       return i;
     }
-    
-    // Relational Database Name specifies the name of a relational
+
+  // Relational Database Name specifies the name of a relational
     // database of the server.  A server can have more than one RDB.
     String parseRDBNAM(boolean skip) {
         parseLengthAndMatchCodePoint(CodePoint.RDBNAM);
@@ -166,8 +161,8 @@ public abstract class DRDAResponse {
         }
         return readString();
     }
-    
-    // Unit of Work Disposition Scalar Object specifies the disposition of the
+
+  // Unit of Work Disposition Scalar Object specifies the disposition of the
     // last unit of work.
     private int parseUOWDSP() {
         parseLengthAndMatchCodePoint(CodePoint.UOWDSP);
@@ -177,8 +172,8 @@ public abstract class DRDAResponse {
         }
         return uowdsp;
     }
-    
-    NetSqlca parseSQLCARD(NetSqlca[] rowsetSqlca) {
+
+  NetSqlca parseSQLCARD(NetSqlca[] rowsetSqlca) {
         parseLengthAndMatchCodePoint(CodePoint.SQLCARD);
         int ddmLength = getDdmLength();
         ensureBLayerDataInBuffer(ddmLength);
@@ -186,8 +181,8 @@ public abstract class DRDAResponse {
         adjustLengths(getDdmLength());
         return netSqlca;
     }
-    
-    // SQLCAGRP : FDOCA EARLY GROUP
+
+  // SQLCAGRP : FDOCA EARLY GROUP
     // SQL Communcations Area Group Description
     // See DRDA V3 Vol 1 pg. 280
     //
@@ -222,8 +217,8 @@ public abstract class DRDAResponse {
 
         return netSqlca;
     }
-    
-    // SQLDIAGGRP : FDOCA EARLY GROUP
+
+  // SQLDIAGGRP : FDOCA EARLY GROUP
     // See DRDA V3 Vol 1 pg. 283
     // SQL Diagnostics Group Description - Identity 0xD1
     // Nullable Group
@@ -241,8 +236,8 @@ public abstract class DRDAResponse {
 
         return row_count;
     }
-    
-    // SQL Diagnostics Connection Array - Identity 0xF6
+
+  // SQL Diagnostics Connection Array - Identity 0xF6
     // SQLNUMROW; ROW LID 0x68; ELEMENT TAKEN 0(all); REP FACTOR 1
     // SQLCNROW;  ROW LID 0xE6; ELEMENT TAKEN 0(all); REP FACTOR 0(all)
     private void parseSQLDIAGCN() {
@@ -254,14 +249,14 @@ public abstract class DRDAResponse {
             parseSQLCNROW();
         }
     }
-    
-    // SQL Diagnostics Connection Row - Identity 0xE6
+
+  // SQL Diagnostics Connection Row - Identity 0xE6
     // SQLCNGRP; GROUP LID 0xD6; ELEMENT TAKEN 0(all); REP FACTOR 1
     private void parseSQLCNROW() {
         parseSQLCNGRP();
     }
-    
-    // SQL Diagnostics Connection Group Description - Identity 0xD6
+
+  // SQL Diagnostics Connection Group Description - Identity 0xD6
     // Nullable
     //
     // SQLCNSTATE; PROTOCOL TYPE I4; ENVLID 0x02; Length Override 4
@@ -278,8 +273,8 @@ public abstract class DRDAResponse {
         String sqlcnClass = parseFastVCS();  // CLASS_NAME
         String sqlcnAuthid = parseFastVCS(); // AUTHID
     }
-    
-    // SQLNUMROW : FDOCA EARLY ROW
+
+  // SQLNUMROW : FDOCA EARLY ROW
     // SQL Number of Elements Row Description
     //
     // FORMAT FOR SQLAM LEVELS
@@ -304,8 +299,8 @@ public abstract class DRDAResponse {
     private int parseFastSQLNUMGRP() {
         return readFastShort();
     }
-    
-    // SQL Diagnostics Statement Group Description - Identity 0xD3
+
+  // SQL Diagnostics Statement Group Description - Identity 0xD3
     // Nullable Group
     // SQLDSFCOD; PROTOCOL TYPE I4; ENVLID 0x02; Length Override 4
     // SQLDSCOST; PROTOCOL TYPE I4; ENVLID 0X02; Length Override 4
@@ -336,14 +331,14 @@ public abstract class DRDAResponse {
         skipFastBytes(16);
 
         long sqldsRowc = readFastLong(); // ROW_COUNT
-        //System.out.println("@AGG row count: " + sqldsRowc);
 
-        skipFastBytes(24);
+
+      skipFastBytes(24);
 
         return sqldsRowc;
     }
-    
-    // SQL Diagnostics Condition Information Array - Identity 0xF5
+
+  // SQL Diagnostics Condition Information Array - Identity 0xF5
     // SQLNUMROW; ROW LID 0x68; ELEMENT TAKEN 0(all); REP FACTOR 1
     // SQLDCIROW; ROW LID 0xE5; ELEMENT TAKEN 0(all); REP FACTOR 0(all)
     private void parseSQLDIAGCI(NetSqlca[] rowsetSqlca) {
@@ -362,22 +357,22 @@ public abstract class DRDAResponse {
         }
         resetRowsetSqlca(rowsetSqlca, lastRow + 1);
     }
-    
-    private void resetRowsetSqlca(NetSqlca[] rowsetSqlca, int row) {
+
+  private void resetRowsetSqlca(NetSqlca[] rowsetSqlca, int row) {
         // rowsetSqlca can be null.
         int count = ((rowsetSqlca == null) ? 0 : rowsetSqlca.length);
         for (int i = row; i < count; i++) {
             rowsetSqlca[i] = null;
         }
     }
-    
-    // SQL Diagnostics Condition Row - Identity 0xE5
+
+  // SQL Diagnostics Condition Row - Identity 0xE5
     // SQLDCGRP; GROUP LID 0xD5; ELEMENT TAKEN 0(all); REP FACTOR 1
     private int parseSQLDCROW(NetSqlca[] rowsetSqlca, int lastRow) {
         return parseSQLDCGRP(rowsetSqlca, lastRow);
     }
-    
-    // SQL Diagnostics Condition Group Description
+
+  // SQL Diagnostics Condition Group Description
     //
     // SQLDCCODE; PROTOCOL TYPE I4; ENVLID 0x02; Length Override 4
     // SQLDCSTATE; PROTOCOL TYPE FCS; ENVLID Ox30; Lengeh Override 5
@@ -449,8 +444,8 @@ public abstract class DRDAResponse {
         parseSQLDCXGRP(); // SQLDCXGRP
         return sqldcRown;
     }
-    
-    // Severity Code is an indicator of the severity of a condition
+
+  // Severity Code is an indicator of the severity of a condition
     // detected during the execution of a command.
     int parseSVRCOD(int minSvrcod, int maxSvrcod) {
         parseLengthAndMatchCodePoint(CodePoint.SVRCOD);
@@ -469,11 +464,11 @@ public abstract class DRDAResponse {
         if (svrcod < minSvrcod || svrcod > maxSvrcod) {
             doValnsprmSemantics(CodePoint.SVRCOD, svrcod);
         }
-        
-        return svrcod;
+
+      return svrcod;
     }
-    
-    // Also called by NetStatementReply
+
+  // Also called by NetStatementReply
     void doValnsprmSemantics(int codePoint, int value) {
         doValnsprmSemantics(codePoint, Integer.toString(value));
     }
@@ -527,8 +522,8 @@ public abstract class DRDAResponse {
 //            new ClientMessageId(SQLState.DRDA_DDM_PARAMVAL_NOT_SUPPORTED),
 //            Integer.toHexString(codePoint)));
     }
-    
-    // SQL Diagnostics Extended Names Group Description - Identity 0xD5
+
+  // SQL Diagnostics Extended Names Group Description - Identity 0xD5
     // Nullable
     //
     // SQLDCXRDB_m ; PROTOCOL TYPE NVCM; ENVLID 0x3F; Length Override 1024
@@ -578,8 +573,8 @@ public abstract class DRDAResponse {
         skipFastNVCMorNVCS();  // TRIGGER_SCHEMA
         skipFastNVCMorNVCS();  // TRIGGER_NAME
     }
-    
-    private String parseFastNVCMorNVCS() {
+
+  private String parseFastNVCMorNVCS() {
         String stringToBeSet = null;
         if (readFastUnsignedByte() != CodePoint.NULLDATA) {
             int vcm_length = readFastUnsignedShort();
@@ -603,8 +598,8 @@ public abstract class DRDAResponse {
         }
         return stringToBeSet;
     }
-    
-    // SQL Diagnostics Condition Token Array - Identity 0xF7
+
+  // SQL Diagnostics Condition Token Array - Identity 0xF7
     // SQLNUMROW; ROW LID 0x68; ELEMENT TAKEN 0(all); REP FACTOR 1
     // SQLTOKROW; ROW LID 0xE7; ELEMENT TAKEN 0(all); REP FACTOR 0(all)
     private void parseSQLDCTOKS() {
@@ -616,8 +611,8 @@ public abstract class DRDAResponse {
             parseSQLTOKROW();
         }
     }
-    
-    // SQL Diagnostics Token Row - Identity 0xE7
+
+  // SQL Diagnostics Token Row - Identity 0xE7
     // SQLTOKGRP; GROUP LID 0xD7; ELEMENT TAKEN 0(all); REP FACTOR 1
     private void parseSQLTOKROW() {
         parseSQLTOKGRP();
@@ -627,8 +622,8 @@ public abstract class DRDAResponse {
     private void parseSQLTOKGRP() {
         skipFastNVCMorNVCS();
     }
-    
-    private void skipFastNVCMorNVCS() {
+
+  private void skipFastNVCMorNVCS() {
         if (readFastUnsignedByte() != CodePoint.NULLDATA) {
             int vcm_length = readFastUnsignedShort();
             if (vcm_length > 0)
@@ -652,8 +647,8 @@ public abstract class DRDAResponse {
             }
         }
     }
-    
-    // SQLCAXGRP : EARLY FDOCA GROUP
+
+  // SQLCAXGRP : EARLY FDOCA GROUP
     // SQL Communications Area Exceptions Group Description
     // See DRDA V3 Vol 1 pg. 281
     //
@@ -705,7 +700,7 @@ public abstract class DRDAResponse {
             netSqlca.setContainsSqlcax(false);
             return;
         }
-        
+
 //        if (DRDAConstants.TARGET_SQL_AM < DRDAConstants.MGRLVL_7) {
 //            // skip over the rdbnam for now
 //            //   SQLRDBNME; PROTOCOL TYPE FCS; ENVLID 0x30; Length Override 18
@@ -734,13 +729,13 @@ public abstract class DRDAResponse {
             sqlerrmc = readFastLDBytes();
             sqlerrmcCcsid = Typdef.targetTypdef.getCcsidSbc();
         }
-        
-        netSqlca.setSqlerrd(sqlerrd);
+
+      netSqlca.setSqlerrd(sqlerrd);
         netSqlca.setSqlwarnBytes(sqlwarn);
         netSqlca.setSqlerrmcBytes(sqlerrmc); // sqlerrmc may be null
     }
-    
-    // this is duplicated in parseColumnMetaData, but different
+
+  // this is duplicated in parseColumnMetaData, but different
     // DAGroup under NETColumnMetaData requires a lot more stuffs including
     // precsion, scale and other stuffs
     String parseFastVCMorVCS() {
@@ -762,8 +757,8 @@ public abstract class DRDAResponse {
 
         return stringToBeSet;
     }
-    
-    // SQLCARD : FDOCA EARLY ROW
+
+  // SQLCARD : FDOCA EARLY ROW
     // SQL Communications Area Row Description
     //
     // FORMAT FOR ALL SQLAM LEVELS
@@ -793,14 +788,14 @@ public abstract class DRDAResponse {
             }
         }
     }
-    
-    void parseTYPDEFNAM() {
+
+  void parseTYPDEFNAM() {
         parseLengthAndMatchCodePoint(CodePoint.TYPDEFNAM);
         String typedef = readString();
         Typdef.targetTypdef.setTypdefnam(typedef);
     }
-    
-    void parseTYPDEFOVR() {
+
+  void parseTYPDEFOVR() {
         parseLengthAndMatchCodePoint(CodePoint.TYPDEFOVR);
         pushLengthOnCollectionStack();
         int peekCP = peekCodePoint();
@@ -826,8 +821,8 @@ public abstract class DRDAResponse {
                 Typdef.targetTypdef.setCcsidMbc(parseCCSIDMBC());
                 peekCP = peekCodePoint();
             }
-            
-            // @AGG added this block
+
+          // @AGG added this block
             if (peekCP == CodePoint.CCSIDXML) {
                 parseLengthAndMatchCodePoint(CodePoint.CCSIDXML);
                 readUnsignedShort();
@@ -842,16 +837,16 @@ public abstract class DRDAResponse {
         }
         popCollectionStack();
     }
-    
-    static void throwUnknownCodepoint(int codepoint) {
+
+  static void throwUnknownCodepoint(int codepoint) {
         throw new IllegalStateException("Found unknown codepoint: 0x" + Integer.toHexString(codepoint) + " / " + codepoint);
     }
-    
-    static void throwMissingRequiredCodepoint(String codepointStr, int expectedCodepoint) {
+
+  static void throwMissingRequiredCodepoint(String codepointStr, int expectedCodepoint) {
         throw new IllegalStateException("Did not find required " + codepointStr + " (" + Integer.toHexString(expectedCodepoint) + ") codepoint");
     }
-    
-    // CCSID for Single-Byte Characters specifies a coded character
+
+  // CCSID for Single-Byte Characters specifies a coded character
     // set identifier for single-byte characters.
     private int parseCCSIDSBC() {
         parseLengthAndMatchCodePoint(CodePoint.CCSIDSBC);
@@ -871,8 +866,8 @@ public abstract class DRDAResponse {
         parseLengthAndMatchCodePoint(CodePoint.CCSIDDBC);
         return readUnsignedShort();
     }
-    
-    private void readDssHeader() {
+
+  private void readDssHeader() {
         int correlationID;
         int nextCorrelationID;
         ensureALayerDataInBuffer(6);
@@ -958,8 +953,8 @@ public abstract class DRDAResponse {
         // get all the data first because decrypt
         // piece by piece doesn't work.
     }
-    
-    // reads a DSS continuation header
+
+  // reads a DSS continuation header
     // prereq: pos_ is positioned on the first byte of the two-byte header
     // post:   dssIsContinued_ is set to true if the continuation bit is on, false otherwise
     //         dssLength_ is set to DssConstants.MAX_DSS_LEN - 2 (don't count the header for the next read)
@@ -985,21 +980,21 @@ public abstract class DRDAResponse {
 
         dssLength_ -= 2;  // avoid consuming the DSS cont header
     }
-    
-    final String readString() {
+
+  final String readString() {
         return readString(metadata.getCCSID());
-//        String result = currentCCSID.decode(buffer); 
+//        String result = currentCCSID.decode(buffer);
 //                netAgent_.getCurrentCcsidManager()
 //                            .convertToJavaString(buffer_, pos_, len);
 //        pos_ += len;
 //        return result;
     }
-    
-    final String readString(Charset encoding) {
+
+  final String readString(Charset encoding) {
         return readString(ddmScalarLen_, encoding);
     }
-    
-    final String readString(int length, Charset encoding) {
+
+  final String readString(int length, Charset encoding) {
         ensureBLayerDataInBuffer(length);
         adjustLengths(length);
         String s = buffer.readCharSequence(length, encoding).toString();
@@ -1007,8 +1002,8 @@ public abstract class DRDAResponse {
         //pos_ += length;
         return s;
     }
-    
-    final short readShort() {
+
+  final short readShort() {
         // should we be checking dss lengths and ddmScalarLengths here
         ensureBLayerDataInBuffer(2);
         adjustLengths(2);
@@ -1029,18 +1024,18 @@ public abstract class DRDAResponse {
         }
         return true;
     }
-    
-    final void doSyntaxrmSemantics(int syntaxErrorCode) {
+
+  final void doSyntaxrmSemantics(int syntaxErrorCode) {
         throw new IllegalStateException("SQLState.DRDA_CONNECTION_TERMINATED CONN_DRDA_DATASTREAM_SYNTAX_ERROR " + syntaxErrorCode);
 //        DisconnectException e = new DisconnectException(agent_,
 //                new ClientMessageId(SQLState.DRDA_CONNECTION_TERMINATED),
 //                SqlException.getMessageUtil().getTextMessage(
 //                    MessageId.CONN_DRDA_DATASTREAM_SYNTAX_ERROR,
 //                    syntaxErrorCode));
-            
-        // if we are communicating to an older server, we may get a SYNTAXRM on
+
+    // if we are communicating to an older server, we may get a SYNTAXRM on
         // ACCSEC (missing codepoint RDBNAM) if we were unable to convert to
-        // EBCDIC.  In that case we should chain 
+    // EBCDIC.  In that case we should chain
         // the original conversion exception, so it is clear to the user what
         // the problem was.
 //        if (netAgent_.exceptionConvertingRdbnam != null) {
@@ -1049,8 +1044,8 @@ public abstract class DRDAResponse {
 //        }
 //        agent_.accumulateChainBreakingReadExceptionAndThrow(e);
     }
-    
-    // Read "length" number of bytes from the buffer into the byte array b starting from offset
+
+  // Read "length" number of bytes from the buffer into the byte array b starting from offset
     // "offset".  The current offset in the buffer does not change.
     protected final int peekFastBytes(byte[] b, int offset, int length) {
         for (int i = 0; i < length; i++) {
@@ -1059,8 +1054,8 @@ public abstract class DRDAResponse {
         }
         return offset + length;
     }
-    
-    protected final int peekFastLength() {
+
+  protected final int peekFastLength() {
         return buffer.getUnsignedShort(buffer.readerIndex());
 //        return (((buffer_[pos_] & 0xff) << 8) +
 //                ((buffer_[pos_ + 1] & 0xff) << 0));
@@ -1104,14 +1099,14 @@ public abstract class DRDAResponse {
         }
         return peekedCodePoint_;
     }
-    
-    protected final void pushLengthOnCollectionStack() {
+
+  protected final void pushLengthOnCollectionStack() {
         ddmCollectionLenStack.push(ddmScalarLen_);
         ddmScalarLen_ = 0;
-//        System.out.println("@AGG pushed length: " + ddmCollectionLenStack);
-    }
-    
-    protected final void parseLengthAndMatchCodePoint(int expectedCodePoint) {
+
+  }
+
+  protected final void parseLengthAndMatchCodePoint(int expectedCodePoint) {
         int actualCodePoint = 0;
         if (peekedCodePoint_ == END_OF_COLLECTION) {
             actualCodePoint = readLengthAndCodePoint();
@@ -1207,10 +1202,10 @@ public abstract class DRDAResponse {
         dssLength_ -= length;
         if (dssLength_ < 0)
           throw new IllegalStateException("DSS length has gone negative: " + dssLength_);
-//        System.out.println("@AGG reduced len by " + length + " stack is now: " + ddmCollectionLenStack);
+
     }
-    
-    protected final void adjustLengths(int length) {
+
+  protected final void adjustLengths(int length) {
         ddmScalarLen_ -= length;
         if (ddmScalarLen_ < 0)
           throw new IllegalStateException("DDM scalar length has gone negative: " + ddmScalarLen_);
@@ -1224,8 +1219,8 @@ public abstract class DRDAResponse {
         }
         return ddmLength;
     }
-    
-    final int getDdmLength() {
+
+  final int getDdmLength() {
         return ddmScalarLen_;
     }
 
@@ -1264,8 +1259,8 @@ public abstract class DRDAResponse {
             // doSyntaxrmSemantics(CodePoint.SYNERRCD_INCORRECT_EXTENDED_LEN);
         }
     }
-    
-    final int[] readUnsignedShortList() {
+
+  final int[] readUnsignedShortList() {
         int len = ddmScalarLen_;
         ensureBLayerDataInBuffer(len);
         adjustLengths(len);
@@ -1281,8 +1276,8 @@ public abstract class DRDAResponse {
 
         return list;
     }
-    
-    final int readUnsignedByte() {
+
+  final int readUnsignedByte() {
         ensureBLayerDataInBuffer(1);
         adjustLengths(1);
         return buffer.readUnsignedByte();
@@ -1296,8 +1291,8 @@ public abstract class DRDAResponse {
 //        return (byte) (buffer_[pos_++] & 0xff);
     }
 
-    
-    final byte[] readBytes(int length) {
+
+  final byte[] readBytes(int length) {
         ensureBLayerDataInBuffer(length);
         adjustLengths(length);
 
@@ -1319,8 +1314,8 @@ public abstract class DRDAResponse {
         //pos_ += len;
         return b;
     }
-    
-    final int readUnsignedShort() {
+
+  final int readUnsignedShort() {
         // should we be checking dss lengths and ddmScalarLengths here
         // if yes, i am not sure this is the correct place if we should be checking
         ensureBLayerDataInBuffer(2);
@@ -1329,8 +1324,8 @@ public abstract class DRDAResponse {
 //        return ((buffer_[pos_++] & 0xff) << 8) +
 //                ((buffer_[pos_++] & 0xff) << 0);
     }
-    
-    // this is duplicated in parseColumnMetaData, but different
+
+  // this is duplicated in parseColumnMetaData, but different
     // DAGroup under NETColumnMetaData requires a lot more stuffs including
     // precsion, scale and other stuffs
     String parseFastVCS() {
@@ -1352,24 +1347,24 @@ public abstract class DRDAResponse {
         buffer.skipBytes(len);
         //pos_ += len;
     }
-    
-    final void skipFastBytes(int length) {
+
+  final void skipFastBytes(int length) {
         buffer.skipBytes(length);
         //pos_ += length;
     }
-    
-    protected final void popCollectionStack() {
+
+  protected final void popCollectionStack() {
         // TODO: remove this after done porting
         ddmCollectionLenStack.pop();
     }
-    
-    final String readFastString(int length, Charset encoding) {
+
+  final String readFastString(int length, Charset encoding) {
 //        String s = new String(buffer_, pos_, length, encoding);
         //pos_ += length;
         return buffer.readCharSequence(length, encoding).toString();
     }
-    
-    final void readFastIntArray(int[] array) {
+
+  final void readFastIntArray(int[] array) {
         for (int i = 0; i < array.length; i++) {
           if (metadata.isZos())
             array[i] = buffer.readInt();
@@ -1378,8 +1373,8 @@ public abstract class DRDAResponse {
             //pos_ += 4;
         }
     }
-    
-    final int readFastUnsignedByte() {
+
+  final int readFastUnsignedByte() {
         //pos_++;
         return buffer.readUnsignedByte();
 //        return (buffer_[pos_++] & 0xff);
@@ -1394,8 +1389,8 @@ public abstract class DRDAResponse {
 //        short s = SignedBinary.getShort(buffer_, pos_);
 //        return s;
     }
-    
-    final long readFastLong() {
+
+  final long readFastLong() {
 //        long l = SignedBinary.getLong(buffer_, pos_);
         //pos_ += 8;
         if (metadata.isZos())
@@ -1434,8 +1429,8 @@ public abstract class DRDAResponse {
         //pos_ += length;
         return b;
     }
-    
-    final byte[] readFastLDBytes() {
+
+  final byte[] readFastLDBytes() {
         int len = buffer.readShort();
 //        int len = ((buffer_[pos_++] & 0xff) << 8) + ((buffer_[pos_++] & 0xff) << 0);
         if (len == 0) {
@@ -1448,8 +1443,8 @@ public abstract class DRDAResponse {
         //pos_ += len;
         return b;
     }
-    
-    void ensureBLayerDataInBuffer(int desiredDataSize) {
+
+  void ensureBLayerDataInBuffer(int desiredDataSize) {
         // TODO: remove this after done porting
         ensureALayerDataInBuffer(desiredDataSize);
     }
@@ -1459,7 +1454,7 @@ public abstract class DRDAResponse {
     void ensureALayerDataInBuffer(int desiredDataSize) {
         if (buffer.readableBytes() < desiredDataSize) {
             throw new IllegalStateException(
-                    "Needed to have " + desiredDataSize + " in buffer but only had " + buffer.readableBytes() + 
+              "Needed to have " + desiredDataSize + " in buffer but only had " + buffer.readableBytes() +
                     ". In JDBC we would normally block here but need to find a non-blocking solution");
         }
     }
