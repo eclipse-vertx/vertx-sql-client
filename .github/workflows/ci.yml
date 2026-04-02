@@ -39,4 +39,4 @@ jobs:
           mvn -s .github/maven-ci-settings.xml -q clean install -B $PROFILE_ARG -pl :${{ inputs.module }} -am -DskipTests
       - name: Run tests for the target module
         run: |
-          mvn -s .github/maven-ci-settings.xml -q verify -B $PROFILE_ARG -pl :${{ inputs.module }}
+          mvn -s .github/maven-ci-settings.xml verify -B $PROFILE_ARG -pl :${{ inputs.module }}
