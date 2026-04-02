@@ -1,19 +1,16 @@
 /*
- * Copyright (C) 2019,2020 IBM Corporation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.db2client.impl.drda;
+
+import io.netty.buffer.ByteBuf;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -23,8 +20,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
-
-import io.netty.buffer.ByteBuf;
 
 // This enumeration of types represents the typing scheme used by our jdbc driver.
 // Once this is finished, we need to review our switches to make sure they are exhaustive
@@ -250,8 +245,6 @@ public class ClientTypes {
         case DRDAConstants.DB2_SQLTYPE_ROWID:
             return ROWID;
         default:
-            // TODO: log a warning here
-            // System.out.println("WARN: Unknown DB2 type encountered: " + sqlType);
             return 0;
         }
     }
