@@ -21,13 +21,10 @@ import io.vertx.sqlclient.tck.TransactionTestBase;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.junit.Assume.assumeFalse;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2TransactionTest extends TransactionTestBase {
@@ -73,17 +70,4 @@ public class DB2TransactionTest extends TransactionTestBase {
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
-
-  @Test
-  public void testDelayedCommit(TestContext ctx) {
-    assumeFalse("DB2 on Z holds write locks on inserted columns with isolation level = 2", rule.isZOS());
-    super.testDelayedCommit(ctx);
-  }
-
-  @Test
-  public void testFailureWithPendingQueries(TestContext ctx) {
-    assumeFalse("DB2 on Z holds write locks on inserted columns with isolation level = 2", rule.isZOS());
-    super.testDelayedCommit(ctx);
-  }
-
 }

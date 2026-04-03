@@ -86,17 +86,4 @@ public class DB2TextDataTypeDecodeTest extends TextDataTypeDecodeTestBase {
       }));
     }));
   }
-
-  @Test
-  @Override
-  public void testDouble(TestContext ctx) {
-    if (!rule.isZOS()) {
-      super.testDouble(ctx);
-      return;
-    }
-
-    // For DB2/z the largest value that can be stored in a DOUBLE column is 7.2E75
-    testDecodeGeneric(ctx, "test_float_8", Double.class, (double) 7.2E75);
-  }
-
 }
