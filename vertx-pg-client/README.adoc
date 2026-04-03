@@ -33,14 +33,14 @@ Out of the box, the test suite uses Docker to run Postgres by default.
 You can change the version of the embedded Postgres by passing a property `embedded.postgres.version` like this:
 
 ```
-> mvn test -Dembedded.postgres.version=9.6
+> mvn test -Dembedded.postgres.version=18
 ```
 
 The following versions of embedded Postgres are supported:
 
-- `9.6`
-- `10.6` (default)
-- `11.x` (Unix Domain Socket Test are ignored)
+- `14`
+- `16` (default)
+- `18`
 
 The embedded Postgres database binds to an arbitrary port by default to avoid conflicts.
 Nevertheless, you can force the usage of the standard PostgreSQL port (5432) with a flag:

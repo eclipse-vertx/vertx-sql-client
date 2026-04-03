@@ -24,8 +24,8 @@ You can test with different SQL Server versions by using Maven profiles:
 
 [source,bash]
 ----
-mvn test -P MSSQL-2017-latest
 mvn test -P MSSQL-2019-latest
+mvn test -P MSSQL-2022-latest
 mvn test -P MSSQL-2025-latest
 ----
 
@@ -33,13 +33,13 @@ Or by passing the version property directly:
 
 [source,bash]
 ----
-mvn test -Dmssql-container.version=2017-latest
+mvn test -Dmssql-container.version=2019-latest
 ----
 
 The following versions are supported:
 
-* `2017-latest`
 * `2019-latest`
+* `2022-latest`
 * `2025-latest` (default)
 
 ==== Testing with an external database

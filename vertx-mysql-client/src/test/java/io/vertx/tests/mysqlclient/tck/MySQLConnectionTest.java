@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -11,11 +11,11 @@
 
 package io.vertx.tests.mysqlclient.tck;
 
-import io.vertx.tests.mysqlclient.junit.MySQLRule;
-import io.vertx.sqlclient.spi.DatabaseMetadata;
-import io.vertx.tests.sqlclient.tck.ConnectionTestBase;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.tests.mysqlclient.junit.MySQLRule;
+import io.vertx.tests.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 
@@ -42,18 +42,9 @@ public class MySQLConnectionTest extends ConnectionTestBase {
     if (rule.isUsingMariaDB()) {
       ctx.assertEquals("MariaDB", md.productName());
       ctx.assertTrue(md.majorVersion() >= 10, "Expected DB major version >= 10 but was " + md.majorVersion());
-    } else if (rule.isUsingMySQL5_6()) {
+    } else {
       ctx.assertEquals("MySQL", md.productName());
-      ctx.assertEquals(5, md.majorVersion());
-      ctx.assertEquals(6, md.minorVersion());
-    }
-    else if (rule.isUsingMySQL8()) {
-      ctx.assertEquals("MySQL", md.productName());
-      ctx.assertEquals(8, md.majorVersion());
-      ctx.assertEquals(0, md.minorVersion());
-    }
-    else {
-      ctx.assertFalse(md.fullVersion().isEmpty());
+      ctx.assertTrue(md.majorVersion() >= 8, "Expected DB major version >= 8 but was " + md.majorVersion());
     }
   }
 }

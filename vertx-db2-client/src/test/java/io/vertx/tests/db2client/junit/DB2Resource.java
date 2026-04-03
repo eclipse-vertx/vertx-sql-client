@@ -30,12 +30,13 @@ public class DB2Resource extends ExternalResource {
   private static final Logger logger = LoggerFactory.getLogger(DB2Resource.class);
 
   private static final boolean CUSTOM_DB2 = get("DB2_HOST") != null;
+  private static final String CONTAINER_VERSION = get("db2-container.version", "12.1.4.0");
 
   public static final DB2Resource SHARED_INSTANCE = new DB2Resource();
 
   private boolean started = false;
   private DB2ConnectOptions options;
-  private final GenericContainer instance = new GenericContainer<>("icr.io/db2_community/db2:12.1.4.0")
+  private final GenericContainer instance = new GenericContainer<>("icr.io/db2_community/db2:" + CONTAINER_VERSION)
     .withCreateContainerCmdModifier(cmd -> cmd
       .withCapAdd(Capability.IPC_LOCK)
       .withCapAdd(Capability.IPC_OWNER))
@@ -112,6 +113,11 @@ public class DB2Resource extends ExternalResource {
 
   private static String get(String name) {
     return System.getProperty(name, System.getenv(name));
+  }
+
+  private static String get(String name, String defaultValue) {
+    String value = System.getProperty(name, System.getenv(name));
+    return value != null && !value.isEmpty() ? value : defaultValue;
   }
 
 }
