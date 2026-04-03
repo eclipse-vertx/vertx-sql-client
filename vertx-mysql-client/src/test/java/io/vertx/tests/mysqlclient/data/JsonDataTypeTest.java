@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -25,8 +25,6 @@ import java.util.function.Consumer;
 public abstract class JsonDataTypeTest extends MySQLDataTypeTestBase {
   @BeforeClass
   public static void beforeAll() {
-    // JSON data type is introduced in MySQL 5.7
-    Assume.assumeFalse(rule.isUsingMySQL5_6());
     // MariaDB JSON data type is different
     Assume.assumeFalse(rule.isUsingMariaDB());
   }

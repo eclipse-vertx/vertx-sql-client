@@ -24,8 +24,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assume.assumeTrue;
-
 @RunWith(VertxUnitRunner.class)
 public class MissingScramTest {
 
@@ -48,7 +46,6 @@ public class MissingScramTest {
 
   @Test
   public void testSaslConnectionFails(TestContext ctx) {
-    assumeTrue(ContainerPgRule.isAtLeastPg10());
     Async async = ctx.async();
     PgConnectOptions options = new PgConnectOptions(options());
     options.setUser("saslscram");

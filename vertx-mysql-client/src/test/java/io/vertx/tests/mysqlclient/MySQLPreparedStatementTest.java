@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -181,7 +181,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
   }
 
   private void testPreparedStatements(TestContext ctx, MySQLConnectOptions options, int num, int expected) {
-    Assume.assumeFalse(MySQLTestBase.rule.isUsingMySQL5_6() || MySQLTestBase.rule.isUsingMariaDB());
+    Assume.assumeFalse(MySQLTestBase.rule.isUsingMariaDB());
     Async async = ctx.async();
     MySQLConnection.connect(vertx, options.setUser("root").setPassword("password")).onComplete( ctx.asyncAssertSuccess(conn -> {
       conn
@@ -218,7 +218,7 @@ public class MySQLPreparedStatementTest extends MySQLTestBase {
 
   @Test
   public void testPreparedStatementCleaned(TestContext ctx) {
-    Assume.assumeFalse(MySQLTestBase.rule.isUsingMySQL5_6() || MySQLTestBase.rule.isUsingMariaDB());
+    Assume.assumeFalse(MySQLTestBase.rule.isUsingMariaDB());
     MySQLConnectOptions connectOptions = new MySQLConnectOptions(options)
       .setUser("root")
       .setPassword("password")
