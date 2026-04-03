@@ -46,7 +46,6 @@ jobs:
             module: 'vertx-mssql-client'
           - os: ubuntu-latest
             jdk: 8
-            profile: 'DB2-11.5'
             module: 'vertx-db2-client'
           - os: ubuntu-latest
             jdk: 8

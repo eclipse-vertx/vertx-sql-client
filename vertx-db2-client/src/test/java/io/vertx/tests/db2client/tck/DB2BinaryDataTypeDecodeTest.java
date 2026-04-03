@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 import java.sql.JDBCType;
 import java.time.LocalTime;
 
-import static org.junit.Assume.assumeFalse;
-
 @RunWith(VertxUnitRunner.class)
 public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
 
@@ -89,18 +87,6 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
     }));
   }
 
-  @Test
-  @Override
-  public void testDouble(TestContext ctx) {
-    if (!rule.isZOS()) {
-      super.testDouble(ctx);
-      return;
-    }
-
-    // For DB2/z the largest value that can be stored in a DOUBLE column is 7.2E75
-    testDecodeGeneric(ctx, "test_float_8", Double.class, JDBCType.DOUBLE, (double) 7.2E75);
-  }
-
   @Override
   public void testChar(TestContext ctx) {
     // Override to expecting JDBCType.CHAR instead of VARCHAR
@@ -111,13 +97,6 @@ public class DB2BinaryDataTypeDecodeTest extends BinaryDataTypeDecodeTestBase {
   public void testTime(TestContext ctx) {
     // Override to expecting JDBCType.TIME instead of DATE
     testDecodeGeneric(ctx, "test_time", LocalTime.class, JDBCType.TIME, LocalTime.of(18, 45, 2));
-  }
-
-  @Test
-  @Override
-  public void testSelectAll(TestContext ctx) {
-    assumeFalse(rule.isZOS());
-    super.testSelectAll(ctx);
   }
 
   @Test
