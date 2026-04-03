@@ -49,15 +49,9 @@
     <!-- Testing purposes -->
     <dependency>
       <groupId>org.testcontainers</groupId>
-      <artifactId>testcontainers-db2</artifactId>
+      <artifactId>testcontainers</artifactId>
       <version>${testcontainers.version}</version>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-        <groupId>com.ibm.db2</groupId>
-        <artifactId>jcc</artifactId>
-        <version>11.1.4.4</version>
-        <scope>test</scope>
     </dependency>
     <!-- SLF4J API for test code and Testcontainers -->
     <dependency>
