@@ -94,18 +94,22 @@ public class MySQLRule extends ExternalResource {
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
     } else {
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
-      StringJoiner cmd = new StringJoiner(" ");
-      cmd.add("--max_allowed_packet=33554432");
-      cmd.add("--max_prepared_stmt_count=1024");
-      cmd.add("--local_infile=true");
-      cmd.add("--character-set-server=utf8mb4");
-      cmd.add("--collation-server=utf8mb4_general_ci");
-      if (databaseServerInfo.databaseType == DatabaseType.MySQL) {
-        cmd.add("--caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem");
-        cmd.add("--caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem");
-      }
-      server.withCommand(cmd.toString());
+      server.withCommand(buildCmd());
     }
+  }
+
+  private String buildCmd() {
+    StringJoiner cmd = new StringJoiner(" ");
+    cmd.add("--max_allowed_packet=33554432");
+    cmd.add("--max_prepared_stmt_count=1024");
+    cmd.add("--local_infile=true");
+    cmd.add("--character-set-server=utf8mb4");
+    cmd.add("--collation-server=utf8mb4_general_ci");
+    if (databaseServerInfo.databaseType == DatabaseType.MySQL) {
+      cmd.add("--caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem");
+      cmd.add("--caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem");
+    }
+    return cmd.toString();
   }
 
   String network() {
