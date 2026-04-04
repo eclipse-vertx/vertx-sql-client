@@ -148,8 +148,8 @@ public class ContainerPgRule extends ExternalResource {
     String specifiedVersion = System.getProperty("embedded.postgres.version");
     String version;
     if (specifiedVersion == null || specifiedVersion.isEmpty()) {
-      // if version is not specified then V10.10 will be used by default
-      version = "10.10";
+      // if version is not specified then V16 will be used by default
+      version = "16";
     } else {
       version = specifiedVersion;
     }
@@ -193,11 +193,6 @@ public class ContainerPgRule extends ExternalResource {
 
     this.databaseVersion =  getPostgresVersion();
     options = startServer(databaseVersion);
-  }
-
-  public static boolean isAtLeastPg10() {
-    // hackish ;-)
-    return !getPostgresVersion().startsWith("9.");
   }
 
   @Override

@@ -11,67 +11,66 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # JDK 11 - Baseline (7 jobs)
           - os: ubuntu-latest
             jdk: 11
-            profile: 'PostgreSQL-9'
+            profile: 'PostgreSQL-14'
             module: 'vertx-pg-client'
           - os: ubuntu-latest
             jdk: 11
-            profile: 'PostgreSQL-10'
-            module: 'vertx-pg-client'
-          - os: ubuntu-latest
-            jdk: 11
-            profile: 'PostgreSQL-11'
-            module: 'vertx-pg-client'
-          - os: ubuntu-latest
-            jdk: 11
-            profile: 'MySQL-8.0'
+            profile: 'MySQL-8.4'
             module: 'vertx-mysql-client'
           - os: ubuntu-latest
             jdk: 11
-            profile: 'MySQL-5.6'
+            profile: 'MariaDB-11.8'
             module: 'vertx-mysql-client'
-          - os: ubuntu-latest
-            jdk: 11
-            profile: 'MySQL-5.7'
-            module: 'vertx-mysql-client'
-          - os: ubuntu-latest
-            jdk: 11
-            profile: 'MariaDB-10.4'
-            module: 'vertx-mysql-client'
-          - os: ubuntu-latest
-            jdk: 11
-            profile: 'MSSQL-2017-latest'
-            module: 'vertx-mssql-client'
           - os: ubuntu-latest
             jdk: 11
             profile: 'MSSQL-2019-latest'
             module: 'vertx-mssql-client'
           - os: ubuntu-latest
             jdk: 11
-            profile: 'MSSQL-2025-latest'
-            module: 'vertx-mssql-client'
-          - os: ubuntu-latest
-            jdk: 11
+            profile: 'DB2-12.1'
             module: 'vertx-db2-client'
           - os: ubuntu-latest
             jdk: 11
+            profile: 'Oracle-23'
+            module: 'vertx-oracle-client'
+          - os: ubuntu-latest
+            jdk: 11
             module: 'vertx-sql-client-templates'
+          # JDK 25 - Comprehensive (11 jobs)
           - os: ubuntu-latest
             jdk: 25
-            profile: 'PostgreSQL-11'
+            profile: 'PostgreSQL-14'
             module: 'vertx-pg-client'
           - os: ubuntu-latest
             jdk: 25
-            profile: 'MySQL-5.7'
+            profile: 'PostgreSQL-16'
+            module: 'vertx-pg-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'PostgreSQL-18'
+            module: 'vertx-pg-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'MySQL-8.4'
             module: 'vertx-mysql-client'
           - os: ubuntu-latest
             jdk: 25
-            profile: 'MariaDB-10.4'
+            profile: 'MySQL-9.6'
+            module: 'vertx-mysql-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'MariaDB-11.8'
             module: 'vertx-mysql-client'
           - os: ubuntu-latest
             jdk: 25
             profile: 'MSSQL-2019-latest'
+            module: 'vertx-mssql-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'MSSQL-2022-latest'
             module: 'vertx-mssql-client'
           - os: ubuntu-latest
             jdk: 25

@@ -2,7 +2,7 @@ version: "3"
 
 services:
   test-postgres:
-    image: healthcheck/postgres:alpine
+    image: postgres:16-alpine
     ports:
       - "5432:5432"
     environment:
@@ -13,7 +13,7 @@ services:
       - /var/run/postgresql:/var/run/postgresql
       - ../../src/test/resources/create-postgres.sql:/docker-entrypoint-initdb.d/create-postgres.sql
   tls-test-postgres:
-    image: healthcheck/postgres:alpine
+    image: postgres:16-alpine
     ports:
       - "5433:5432"
     environment:

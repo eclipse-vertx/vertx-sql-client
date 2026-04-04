@@ -24,8 +24,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assume.assumeTrue;
-
 @RunWith(VertxUnitRunner.class)
 public class PgScramConnectionTest {
 
@@ -47,8 +45,7 @@ public class PgScramConnectionTest {
   }
 
   @Test
-  public void testSaslConnection(TestContext ctx) throws InterruptedException {
-    assumeTrue(ContainerPgRule.isAtLeastPg10());
+  public void testSaslConnection(TestContext ctx) {
     Async async = ctx.async();
     PgConnectOptions options = new PgConnectOptions(options());
     options.setUser("saslscram");

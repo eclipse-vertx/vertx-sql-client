@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -23,7 +23,6 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -140,7 +139,6 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testResetConnection(TestContext ctx) {
-    Assume.assumeFalse(rule.isUsingMySQL5_6());
     MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
         .query("CREATE TEMPORARY TABLE temp (temp INTEGER)")
@@ -167,7 +165,6 @@ public class MySQLUtilityCommandTest extends MySQLTestBase {
 
   @Test
   public void testResetConnectionClearsPreparedStatementCache(TestContext ctx) {
-    Assume.assumeFalse(rule.isUsingMySQL5_6());
     MySQLConnectOptions connectOptions = new MySQLConnectOptions(options).setCachePreparedStatements(true);
     MySQLConnection.connect(vertx, connectOptions).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT 1").execute(Tuple.tuple()).onComplete(ctx.asyncAssertSuccess(res1 -> {

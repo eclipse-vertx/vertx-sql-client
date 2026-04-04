@@ -88,15 +88,15 @@
 
   <profiles>
     <profile>
-      <id>MSSQL-2017-latest</id>
-      <properties>
-        <mssql-container.version>2017-latest</mssql-container.version>
-      </properties>
-    </profile>
-    <profile>
       <id>MSSQL-2019-latest</id>
       <properties>
         <mssql-container.version>2019-latest</mssql-container.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>MSSQL-2022-latest</id>
+      <properties>
+        <mssql-container.version>2022-latest</mssql-container.version>
       </properties>
     </profile>
     <profile>
