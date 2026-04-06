@@ -15,7 +15,9 @@ import io.vertx.mysqlclient.MySQLConnectOptions;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,8 +28,10 @@ public class MySQLRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
 
+  private static final int DEFAULT_PORT = 3306;
+
   private Network network;
-  private GenericContainer<?> server;
+  private ServerContainer<?> server;
   private MySQLConnectOptions options;
   private DatabaseServerInfo databaseServerInfo;
   private File mysqldDir;
@@ -67,7 +71,7 @@ public class MySQLRule extends ExternalResource {
   private void initServer() throws IOException {
     network = Network.builder().driver("bridge").build();
 
-    server = new GenericContainer<>(databaseServerInfo.getDatabaseType().toDockerImageName() + ":" + databaseServerInfo.getDockerImageTag())
+    server = new ServerContainer<>(databaseServerInfo.getDatabaseType().toDockerImageName() + ":" + databaseServerInfo.getDockerImageTag())
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
       .withEnv("MYSQL_ROOT_PASSWORD", "password")
@@ -78,9 +82,15 @@ public class MySQLRule extends ExternalResource {
       })
       .withNetwork(network)
       .withNetworkAliases(networkAlias())
-      .withExposedPorts(3306)
       .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY)
-      .withReuse(true);
+      .waitingFor(Wait.forLogMessage(".*ready for connections.*\\n", databaseServerInfo.getDatabaseType() == DatabaseType.MariaDB ? 2 : 4));
+
+    if (System.getProperties().containsKey("containerFixedPort")) {
+      server.withFixedExposedPort(DEFAULT_PORT, DEFAULT_PORT);
+    } else {
+      server.withExposedPorts(DEFAULT_PORT);
+    }
+
 
     mysqldDir = Files.createTempDirectory("mysqld").toFile();
     mysqldDir.deleteOnExit();
@@ -271,6 +281,18 @@ public class MySQLRule extends ExternalResource {
         default:
           throw new IllegalStateException("Unsupported database type: " + databaseType.toDockerImageName());
       }
+    }
+  }
+
+  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends GenericContainer<SELF> {
+
+    public ServerContainer(String dockerImageName) {
+      super(dockerImageName);
+    }
+
+    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+      super.addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
+      return self();
     }
   }
 }
