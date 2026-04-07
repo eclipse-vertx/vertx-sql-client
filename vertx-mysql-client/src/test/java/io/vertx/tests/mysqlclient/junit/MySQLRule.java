@@ -12,6 +12,7 @@ package io.vertx.tests.mysqlclient.junit;
 
 import com.github.dockerjava.api.model.Ulimit;
 import io.vertx.mysqlclient.MySQLConnectOptions;
+import io.vertx.mysqlclient.SslMode;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -50,12 +51,16 @@ public class MySQLRule extends ExternalResource {
     initServer();
     server.start();
 
-    return new MySQLConnectOptions()
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions()
       .setPort(server.getMappedPort(3306))
       .setHost(server.getHost())
       .setDatabase("testschema")
       .setUser("mysql")
       .setPassword("password");
+    if (!ssl) {
+      connectOptions.setSslMode(SslMode.DISABLED);
+    }
+    return connectOptions;
   }
 
   public synchronized void stopServer() throws Exception {
