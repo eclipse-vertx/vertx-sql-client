@@ -27,11 +27,14 @@ import io.vertx.mssqlclient.MSSQLConnectOptions;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.spi.connection.Connection;
 
+import java.util.List;
 import java.util.Map;
 
 import static io.vertx.mssqlclient.impl.codec.EncryptionLevel.*;
 
 public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOptions> {
+
+  private static final List<String> TDS_PROTOCOLS = List.of("tds/8.0");
 
   private final ClientSslContextManager sslContextManager;
 
@@ -64,18 +67,15 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
   private Future<Connection> connectWithTds8(MSSQLConnectOptions options, ContextInternal context, int redirections) {
     SocketAddress server = options.getSocketAddress();
 
-    ClientSSLOptions sslOptions;
-    if (options.getSslOptions() == null) {
-      sslOptions = new ClientSSLOptions();
-    } else {
-      sslOptions = new ClientSSLOptions(options.getSslOptions());
-    }
-
+    ClientSSLOptions sslOptions = copyClientSSLOptions(options.getSslOptions());
     if (sslOptions.isTrustAll()) {
       return context.failedFuture("Strict encryption mode requires proper certificate validation. Configure SSL options with valid certificates.");
     }
 
-    sslOptions.setHostnameVerificationAlgorithm("");
+    if (sslOptions.getHostnameVerificationAlgorithm() == null) {
+      sslOptions.setHostnameVerificationAlgorithm("");
+    }
+    sslOptions.setUseAlpn(true).setApplicationLayerProtocols(TDS_PROTOCOLS);
 
     ConnectOptions connectOpts = new ConnectOptions()
       .setRemoteAddress(server)
@@ -87,6 +87,10 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase<MSSQLConnectOp
       .compose(conn -> conn.sendPreLoginMessage(false)
         .compose(encryptionLevel -> sendLogin(conn, options)))
       .compose(connBase -> handleRedirectionToAlternateServer(connBase, options, context, redirections));
+  }
+
+  private ClientSSLOptions copyClientSSLOptions(ClientSSLOptions sslOptions) {
+    return sslOptions == null ? new ClientSSLOptions() : sslOptions.copy();
   }
 
   private Future<Connection> connectWithTds7x(MSSQLConnectOptions options, ContextInternal context, int redirections) {
