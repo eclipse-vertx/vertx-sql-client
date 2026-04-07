@@ -162,6 +162,10 @@ public class MySQLRule extends ExternalResource {
     return databaseServerInfo.getDatabaseType() == DatabaseType.MariaDB;
   }
 
+  public boolean isUsingMySQL8() {
+    return databaseServerInfo == DatabaseServerInfo.MySQL_V8_4;
+  }
+
   public MySQLConnectOptions options() {
     return new MySQLConnectOptions(options);
   }
