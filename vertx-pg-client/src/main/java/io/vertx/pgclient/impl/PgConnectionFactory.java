@@ -110,7 +110,7 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
   private Future<Connection> connect(ConnectOptions connectOptions, ContextInternal context, boolean ssl, boolean sendStartupMessage, PgConnectOptions options) {
     Future<Connection> res;
     if (ssl && !connectOptions.getRemoteAddress().isDomainSocket()) {
-      ClientSSLOptions sslOptions = options.getSslOptions().copy();
+      ClientSSLOptions sslOptions = copyClientSSLOptions(options.getSslOptions());
       if (sslOptions.getHostnameVerificationAlgorithm() == null) {
         sslOptions.setHostnameVerificationAlgorithm("");
       }
@@ -131,6 +131,10 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
       res = res.flatMap(conn -> sendStartupMessage(conn, options));
     }
     return res;
+  }
+
+  private ClientSSLOptions copyClientSSLOptions(ClientSSLOptions sslOptions) {
+    return sslOptions == null ? new ClientSSLOptions() : sslOptions.copy();
   }
 
   private Future<Connection> doConnect(ConnectOptions connectOptions, ContextInternal context, PgConnectOptions options) {
