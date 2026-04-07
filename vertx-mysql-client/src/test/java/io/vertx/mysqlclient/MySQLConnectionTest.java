@@ -84,7 +84,7 @@ public class MySQLConnectionTest extends MySQLTestBase {
             Long id = row.getLong("Id");
             String state = row.getString("State");
             String info = row.getString("Info");
-            if ("User sleep".equals(state) || "DO SLEEP(10)".equals(info)) {
+            if ("User sleep".equals(state) || "DO SLEEP(20)".equals(info)) {
               // kill the connection
               conn2.query("KILL CONNECTION " + id).execute(ctx.asyncAssertSuccess(v -> conn2.close()));
               break;

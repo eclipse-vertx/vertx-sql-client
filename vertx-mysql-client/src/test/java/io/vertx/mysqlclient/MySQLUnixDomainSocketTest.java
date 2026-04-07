@@ -10,11 +10,13 @@
  */
 package io.vertx.mysqlclient;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import org.junit.After;
 import org.junit.Before;
@@ -81,16 +83,22 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
   @Test
   public void connectWithVertxInstance(TestContext context) {
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(true));
+    Pool pool = null;
     try {
-      client = MySQLPool.pool(vertx, new MySQLConnectOptions(options), new PoolOptions());
+      pool = MySQLBuilder.pool(builder -> builder.connectingTo(new MySQLConnectOptions(options)).using(vertx));
       Async async = context.async();
-      client.getConnection(context.asyncAssertSuccess(conn -> {
+      pool
+        .getConnection()
+        .onComplete(context.asyncAssertSuccess(conn -> {
         async.complete();
         conn.close();
       }));
       async.await();
     } finally {
-      vertx.close();
+      if (pool != null) {
+        Future.await(pool.close());
+      }
+      Future.await(vertx.close());
     }
   }
 
