@@ -11,16 +11,22 @@
 
 package io.vertx.tests.mssqlclient;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.dns.AddressResolverOptions;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.EncryptionMode;
+import io.vertx.mssqlclient.MSSQLConnection;
 import io.vertx.tests.mssqlclient.junit.MSSQLRule;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.net.ssl.SSLHandshakeException;
 
 import static io.vertx.tests.mssqlclient.junit.MSSQLRule.Config.STRICT_ENCRYPTION;
 
@@ -58,6 +64,51 @@ public class MSSQLStrictEncryptionTest extends MSSQLEncryptionTestBase {
       .setEncryptionMode(EncryptionMode.STRICT)
       .setSslOptions(new ClientSSLOptions().setTrustOptions(new PemTrustOptions().addCertValue(certValue))));
     asyncAssertConnectionEncrypted(ctx);
+  }
+
+  @Test
+  public void testHostnameValidationFailsWithInvalidHostname(TestContext ctx) {
+    // Even with valid certificate, wrong hostname should fail
+    // Certificate has CN=sql1, but we connect to 'localhost'
+    Buffer certValue = vertx.fileSystem().readFileBlocking("mssql.pem");
+    setOptions(rule.options()
+      .setHost("localhost")
+      .setEncryptionMode(EncryptionMode.STRICT)
+      .setSslOptions(new ClientSSLOptions()
+        .setHostnameVerificationAlgorithm("HTTPS")
+        .setTrustOptions(new PemTrustOptions().addCertValue(certValue))));
+    connect(ctx.asyncAssertFailure(t -> {
+      ctx.assertTrue(t instanceof SSLHandshakeException,
+        "Expected SSLHandshakeException due to hostname mismatch (localhost != sql1)");
+    }));
+  }
+
+  @Test
+  public void testHostnameValidationSucceedsWithCorrectHostname(TestContext ctx) {
+    // Use custom DNS resolution to map sql1 -> 127.0.0.1
+    // This allows connecting to 'sql1' (which matches the certificate CN)
+    // while actually reaching localhost
+    Vertx customVertx = Vertx.vertx(
+      new VertxOptions()
+        .setAddressResolverOptions(
+          new AddressResolverOptions()
+            .setHostsValue(Buffer.buffer("127.0.0.1 sql1\n"))
+        )
+    );
+
+    Buffer certValue = vertx.fileSystem().readFileBlocking("mssql.pem");
+    MSSQLConnection.connect(customVertx, rule.options()
+        .setHost("sql1")
+        .setEncryptionMode(EncryptionMode.STRICT)
+        .setSslOptions(new ClientSSLOptions()
+          .setHostnameVerificationAlgorithm("HTTPS")
+          .setTrustOptions(new PemTrustOptions().addCertValue(certValue))))
+      .onComplete(ctx.asyncAssertSuccess(conn -> {
+        ctx.assertTrue(conn.isSSL());
+        conn.close().onComplete(ctx.asyncAssertSuccess(v -> {
+          customVertx.close().onComplete(ctx.asyncAssertSuccess());
+        }));
+      }));
   }
 
   @Test
