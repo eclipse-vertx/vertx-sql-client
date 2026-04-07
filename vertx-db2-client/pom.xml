@@ -30,6 +30,7 @@
     <db2-container.version/>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
     <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
+    <log4j.version>2.25.3</log4j.version>
   </properties>
 
   <dependencies>
@@ -73,14 +74,14 @@
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
-      <version>2.25.3</version>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <!-- Log4j 2 SLF4J Binding -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j2-impl</artifactId>
-      <version>2.20.0</version>
+      <version>${log4j.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
