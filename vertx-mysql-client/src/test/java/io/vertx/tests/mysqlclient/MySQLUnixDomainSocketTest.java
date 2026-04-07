@@ -101,10 +101,11 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
     boolean useNativeTransport = Runtime.version().feature() < 16;
     Vertx vertx = Vertx.vertx(new VertxOptions().setPreferNativeTransport(useNativeTransport));
     assertEquals(useNativeTransport, vertx.isNativeTransportEnabled());
+    Pool pool = null;
     try {
-      client = MySQLBuilder.pool(builder -> builder.connectingTo(new MySQLConnectOptions(options)).using(vertx));
+      pool = MySQLBuilder.pool(builder -> builder.connectingTo(new MySQLConnectOptions(options)).using(vertx));
       Async async = context.async();
-      client
+      pool
         .getConnection()
         .onComplete(context.asyncAssertSuccess(conn -> {
         async.complete();
@@ -112,7 +113,10 @@ public class MySQLUnixDomainSocketTest extends MySQLTestBase {
       }));
       async.await();
     } finally {
-      vertx.close();
+      if (pool != null) {
+        pool.close().await();
+      }
+      vertx.close().await();
     }
   }
 
