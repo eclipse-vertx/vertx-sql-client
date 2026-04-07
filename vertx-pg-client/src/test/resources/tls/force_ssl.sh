@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # force ssl
-cp /tmp/pg_hba.conf /var/lib/postgresql/data/pg_hba.conf
+cp /tmp/pg_hba.conf ${PGDATA}/pg_hba.conf

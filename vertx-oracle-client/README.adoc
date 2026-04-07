@@ -31,7 +31,7 @@ Or by passing the version property directly:
 
 [source,bash]
 ----
-mvn test -Doracle-container.version=23.3-slim-faststart
+mvn test -Doracle-container.version=23-slim-faststart
 ----
 
 ==== Testing on OSX Mx chips

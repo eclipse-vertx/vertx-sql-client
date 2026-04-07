@@ -54,7 +54,7 @@ public class PgBouncerTest {
 
   @Before
   public void setUp() throws Exception {
-    pgContainer = new FixedHostPortGenericContainer<>("postgres:10.10")
+    pgContainer = new FixedHostPortGenericContainer<>("postgres:16")
       .withFixedExposedPort(5432, 5432);
     pgContainer.withEnv("POSTGRES_PASSWORD", "postgres");
     pgContainer.withEnv("POSTGRES_USER", "postgres");

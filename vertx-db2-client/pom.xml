@@ -26,6 +26,8 @@
   <description>The Reactive DB2 client</description>
 
   <properties>
+    <!-- Set to a value for testing with a specific database version -->
+    <db2-container.version/>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
     <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
   </properties>
@@ -100,6 +102,7 @@
           <trimStackTrace>false</trimStackTrace>
           <systemPropertyVariables>
             <target.dir>${project.build.directory}</target.dir>
+            <db2-container.version>${db2-container.version}</db2-container.version>
             <!-- Copy of java.security that allows TLS 1.1 as the DB2 container will only accept this version
                  (https://bugs.openjdk.java.net/browse/JDK-8258598) -->
             <java.security.properties>${project.basedir}/src/test/java.security</java.security.properties>
@@ -124,5 +127,14 @@
 -->
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>DB2-12.1</id>
+      <properties>
+        <db2-container.version>12.1.4.0</db2-container.version>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -26,7 +26,10 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.tests.mysqlclient.junit.MySQLRule;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -42,28 +45,11 @@ public class MySQLTLSTest {
   MySQLConnectOptions options;
   MySQLConnectOptions nonTlsOptions;
 
-  @BeforeClass
-  public static void checkMySQLVersion() {
-    // MySQL 5.6 only supports TLS 1.0/1.1 which are disabled in Java 11+
-    Assume.assumeFalse("TLS tests are not supported on MySQL 5.6 with Java 11+", rule.isUsingMySQL5_6());
-  }
-
   @Before
   public void setup() {
     vertx = Vertx.vertx();
     options = new MySQLConnectOptions(rule.options()).setSslOptions(new ClientSSLOptions());
     nonTlsOptions = new MySQLConnectOptions(nonTlsRule.options());
-    /*
-     * For testing we have to drop using the TLSv1.2.
-     *
-     * MySQL 5.x uses yaSSL by default which does not support TLSv1.2,
-     * and TLSv1.2 is only supported by the OpenSSL-based MySQL server.
-     * see https://mysqlserverteam.com/ssltls-improvements-in-mysql-5-7-10/
-     * and https://dev.mysql.com/doc/refman/5.7/en/encrypted-connection-protocols-ciphers.html for more details.
-     */
-    if (rule.isUsingMySQL5_6()) {
-      options.getSslOptions().removeEnabledSecureTransportProtocol("TLSv1.2");
-    }
   }
 
   @After

@@ -1,38 +1,38 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.tests.mysqlclient.junit;
 
 import com.github.dockerjava.api.model.Ulimit;
 import io.vertx.mysqlclient.MySQLConnectOptions;
+import io.vertx.mysqlclient.SslMode;
 import org.junit.rules.ExternalResource;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.wait.strategy.Wait;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.StringJoiner;
 
 public class MySQLRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
 
+  private static final int DEFAULT_PORT = 3306;
+
   private Network network;
-  private GenericContainer<?> server;
+  private ServerContainer<?> server;
   private MySQLConnectOptions options;
   private DatabaseServerInfo databaseServerInfo;
   private File mysqldDir;
@@ -51,12 +51,16 @@ public class MySQLRule extends ExternalResource {
     initServer();
     server.start();
 
-    return new MySQLConnectOptions()
+    MySQLConnectOptions connectOptions = new MySQLConnectOptions()
       .setPort(server.getMappedPort(3306))
       .setHost(server.getHost())
       .setDatabase("testschema")
       .setUser("mysql")
       .setPassword("password");
+    if (!ssl) {
+      connectOptions.setSslMode(SslMode.DISABLED);
+    }
+    return connectOptions;
   }
 
   public synchronized void stopServer() throws Exception {
@@ -72,7 +76,7 @@ public class MySQLRule extends ExternalResource {
   private void initServer() throws IOException {
     network = Network.builder().driver("bridge").build();
 
-    server = new GenericContainer<>(databaseServerInfo.getDatabaseType().toDockerImageName() + ":" + databaseServerInfo.getDockerImageTag())
+    server = new ServerContainer<>(databaseServerInfo.getDatabaseType().toDockerImageName() + ":" + databaseServerInfo.getDockerImageTag())
       .withEnv("MYSQL_USER", "mysql")
       .withEnv("MYSQL_PASSWORD", "password")
       .withEnv("MYSQL_ROOT_PASSWORD", "password")
@@ -83,9 +87,15 @@ public class MySQLRule extends ExternalResource {
       })
       .withNetwork(network)
       .withNetworkAliases(networkAlias())
-      .withExposedPorts(3306)
       .withClasspathResourceMapping("init.sql", "/docker-entrypoint-initdb.d/init.sql", BindMode.READ_ONLY)
-      .withReuse(true);
+      .waitingFor(Wait.forLogMessage(".*ready for connections.*\\n", databaseServerInfo.getDatabaseType() == DatabaseType.MariaDB ? 2 : 4));
+
+    if (System.getProperties().containsKey("containerFixedPort")) {
+      server.withFixedExposedPort(DEFAULT_PORT, DEFAULT_PORT);
+    } else {
+      server.withExposedPorts(DEFAULT_PORT);
+    }
+
 
     mysqldDir = Files.createTempDirectory("mysqld").toFile();
     mysqldDir.deleteOnExit();
@@ -99,13 +109,22 @@ public class MySQLRule extends ExternalResource {
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
     } else {
       server.withClasspathResourceMapping("tls/files", "/etc/mysql/tls", BindMode.READ_ONLY);
-      String cmd = "--disable-ssl --max_allowed_packet=33554432 --max_prepared_stmt_count=1024 --local_infile=true --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci";
-      if (isUsingMySQL8()) {
-        // introduced in MySQL 8.0.3
-        cmd += " --caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem --caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem";
-      }
-      server.withCommand(cmd);
+      server.withCommand(buildCmd());
     }
+  }
+
+  private String buildCmd() {
+    StringJoiner cmd = new StringJoiner(" ");
+    cmd.add("--max_allowed_packet=33554432");
+    cmd.add("--max_prepared_stmt_count=1024");
+    cmd.add("--local_infile=true");
+    cmd.add("--character-set-server=utf8mb4");
+    cmd.add("--collation-server=utf8mb4_general_ci");
+    if (databaseServerInfo.databaseType == DatabaseType.MySQL) {
+      cmd.add("--caching-sha2-password-public-key-path=/etc/mysql/tls/public_key.pem");
+      cmd.add("--caching-sha2-password-private-key-path=/etc/mysql/tls/private_key.pem");
+    }
+    return cmd.toString();
   }
 
   String network() {
@@ -143,16 +162,8 @@ public class MySQLRule extends ExternalResource {
     return databaseServerInfo.getDatabaseType() == DatabaseType.MariaDB;
   }
 
-  public boolean isUsingMySQL5() {
-    return databaseServerInfo.databaseType == DatabaseType.MySQL && databaseServerInfo.dockerImageTag.startsWith("5.");
-  }
-
-  public boolean isUsingMySQL5_6() {
-    return databaseServerInfo == DatabaseServerInfo.MySQL_V5_6;
-  }
-
   public boolean isUsingMySQL8() {
-    return databaseServerInfo == DatabaseServerInfo.MySQL_V8_0;
+    return databaseServerInfo == DatabaseServerInfo.MySQL_V8_4;
   }
 
   public MySQLConnectOptions options() {
@@ -201,11 +212,9 @@ public class MySQLRule extends ExternalResource {
     } else {
       // use default version for testing servers
       if (databaseType == DatabaseType.MySQL) {
-        // 5.7 by default for MySQL
-        this.databaseServerInfo = DatabaseServerInfo.MySQL_V5_7;
+        this.databaseServerInfo = DatabaseServerInfo.MySQL_V8_4;
       } else if (databaseType == DatabaseType.MariaDB) {
-        // 10.4 by default for MariaDB
-        this.databaseServerInfo = DatabaseServerInfo.MariaDB_V10_4;
+        this.databaseServerInfo = DatabaseServerInfo.MariaDB_V11_8;
       } else {
         throw new IllegalStateException("Unimplemented default version for: " + databaseType);
       }
@@ -237,11 +246,10 @@ public class MySQLRule extends ExternalResource {
   }
 
   private enum DatabaseServerInfo {
-    MySQL_V5_6(DatabaseType.MySQL, "5.6"),
-    MySQL_V5_7(DatabaseType.MySQL, "5.7"),
-    MySQL_V8_0(DatabaseType.MySQL, "8.0"),
+    MySQL_V8_4(DatabaseType.MySQL, "8.4"),
+    MySQL_V9_6(DatabaseType.MySQL, "9.6"),
     MySQL_LATEST(DatabaseType.MySQL, "latest"),
-    MariaDB_V10_4(DatabaseType.MariaDB, "10.4"),
+    MariaDB_V11_8(DatabaseType.MariaDB, "11.8"),
     MariaDB_LATEST(DatabaseType.MariaDB, "latest"),
     EXTERNAL(null, null);
 
@@ -264,26 +272,36 @@ public class MySQLRule extends ExternalResource {
     public static DatabaseServerInfo valueOf(DatabaseType databaseType, String dockerImageTag) {
       switch (databaseType) {
         case MySQL:
-          if (dockerImageTag.startsWith("5.6")) {
-            return MySQL_V5_6;
-          } else if (dockerImageTag.startsWith("5.7")) {
-            return MySQL_V5_7;
-          } else if (dockerImageTag.startsWith("8")) {
-            return MySQL_V8_0;
+          if (dockerImageTag.startsWith("8.4")) {
+            return MySQL_V8_4;
+          } else if (dockerImageTag.startsWith("9")) {
+            return MySQL_V9_6;
           } else if (dockerImageTag.equalsIgnoreCase("latest")) {
             return MySQL_LATEST;
           } else {
             throw new IllegalArgumentException("Unsupported docker image tag for MySQL server, tag: " + dockerImageTag);
           }
         case MariaDB:
-          if (dockerImageTag.startsWith("10.4")) {
-            return MariaDB_V10_4;
+          if (dockerImageTag.startsWith("11.8")) {
+            return MariaDB_V11_8;
           } else if (dockerImageTag.equalsIgnoreCase("latest")) {
             return MariaDB_LATEST;
           }
         default:
           throw new IllegalStateException("Unsupported database type: " + databaseType.toDockerImageName());
       }
+    }
+  }
+
+  private static class ServerContainer<SELF extends ServerContainer<SELF>> extends GenericContainer<SELF> {
+
+    public ServerContainer(String dockerImageName) {
+      super(dockerImageName);
+    }
+
+    public SELF withFixedExposedPort(int hostPort, int containerPort) {
+      super.addFixedExposedPort(hostPort, containerPort, InternetProtocol.TCP);
+      return self();
     }
   }
 }

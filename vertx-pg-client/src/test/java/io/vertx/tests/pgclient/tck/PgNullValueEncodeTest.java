@@ -11,13 +11,10 @@
 
 package io.vertx.tests.pgclient.tck;
 
-import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.tests.pgclient.junit.ContainerPgRule;
 import io.vertx.tests.sqlclient.tck.NullValueEncodeTestBase;
-import org.junit.Assume;
 import org.junit.ClassRule;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -29,62 +26,6 @@ public class PgNullValueEncodeTest extends NullValueEncodeTestBase {
   @Override
   protected void initConnector() {
     connector = ClientConfig.CONNECT.connect(vertx, rule.options());
-  }
-
-  @Test
-  @Override
-  public void testEncodeNullBigDecimal(TestContext ctx) {
-    Assume.assumeTrue("PostgreSQL 9 cannot determine data type for NULL BigDecimal", ContainerPgRule.isAtLeastPg10());
-    super.testEncodeNullBigDecimal(ctx);
-  }
-
-  @Test
-  @Override
-  public void testEncodeNullLocalTime(TestContext ctx) {
-    Assume.assumeTrue("PostgreSQL 9 cannot determine data type for NULL LocalTime", ContainerPgRule.isAtLeastPg10());
-    super.testEncodeNullLocalTime(ctx);
-  }
-
-  @Test
-  @Override
-  public void testEncodeNullOffsetTime(TestContext ctx) {
-    Assume.assumeTrue("PostgreSQL 9 cannot determine data type for NULL OffsetTime", ContainerPgRule.isAtLeastPg10());
-    super.testEncodeNullOffsetTime(ctx);
-  }
-
-  @Test
-  @Override
-  public void testEncodeNullTemporal(TestContext ctx) {
-    Assume.assumeTrue("PostgreSQL 9 cannot determine data type for NULL Temporal", ContainerPgRule.isAtLeastPg10());
-    super.testEncodeNullTemporal(ctx);
-  }
-
-  @Test
-  @Override
-  public void testEncodeNullArrayOfBigDecimal(TestContext ctx) {
-    Assume.assumeTrue("PostgreSQL 9 cannot determine data type for NULL BigDecimal[]", ContainerPgRule.isAtLeastPg10());
-    super.testEncodeNullArrayOfBigDecimal(ctx);
-  }
-
-  @Test
-  @Override
-  public void testEncodeNullArrayOfLocalTime(TestContext ctx) {
-    Assume.assumeTrue("PostgreSQL 9 cannot determine data type for NULL LocalTime[]", ContainerPgRule.isAtLeastPg10());
-    super.testEncodeNullArrayOfLocalTime(ctx);
-  }
-
-  @Test
-  @Override
-  public void testEncodeNullArrayOfOffsetTime(TestContext ctx) {
-    Assume.assumeTrue("PostgreSQL 9 cannot determine data type for NULL OffsetTime[]", ContainerPgRule.isAtLeastPg10());
-    super.testEncodeNullArrayOfOffsetTime(ctx);
-  }
-
-  @Test
-  @Override
-  public void testEncodeNullArrayOfTemporal(TestContext ctx) {
-    Assume.assumeTrue("PostgreSQL 9 cannot determine data type for NULL Temporal[]", ContainerPgRule.isAtLeastPg10());
-    super.testEncodeNullArrayOfTemporal(ctx);
   }
 
   @Override

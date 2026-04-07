@@ -26,10 +26,10 @@ If the database server is not specified, then `MySQL` will be used by default.
 You can also change the version of the database by passing an optional Docker tag named `testing.mysql.database.version` like this:
 
 ```
-> mvn test -Dtesting.mysql.database.version=5.6.45
+> mvn test -Dtesting.mysql.database.version=8.4
 ```
 
-If the database version is not specified, then `5.7` will be used by default for MySQL while `10.4` will be used by default for MariaDB.
+If the database version is not specified, then `8.4` will be used by default for MySQL while `11.8` will be used by default for MariaDB.
 
 === Testing with an external database
 
