@@ -157,6 +157,17 @@ public class ContainerPgRule extends ExternalResource {
     return version;
   }
 
+  public static boolean isAtLeastPg17() {
+    String version = getPostgresVersion();
+    try {
+      int majorVersion = Integer.parseInt(version.split("\\.")[0]);
+      return majorVersion >= 17;
+    } catch (NumberFormatException e) {
+      // If we can't parse, assume it's not 17+
+      return false;
+    }
+  }
+
   public synchronized void stopServer() {
     if (server != null) {
       try {

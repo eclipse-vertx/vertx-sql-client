@@ -1,18 +1,12 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
 package io.vertx.pgclient;
@@ -102,6 +96,9 @@ public class PgConnectOptions extends SqlConnectOptions {
     if (getenv("PGSSLMODE") != null) {
       pgConnectOptions.setSslMode(SslMode.of(getenv("PGSSLMODE")));
     }
+    if (getenv("PGSSLNEGOTIATION") != null) {
+      pgConnectOptions.setSslNegotiation(SslNegotiation.of(getenv("PGSSLNEGOTIATION")));
+    }
     return pgConnectOptions;
   }
 
@@ -112,6 +109,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final String DEFAULT_PASSWORD = "pass";
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
+  public static final SslNegotiation DEFAULT_SSL_NEGOTIATION = SslNegotiation.POSTGRES;
   public static final boolean DEFAULT_USE_LAYER_7_PROXY = false;
   public static final Map<String, String> DEFAULT_PROPERTIES;
 
@@ -126,6 +124,7 @@ public class PgConnectOptions extends SqlConnectOptions {
 
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
   private SslMode sslMode = DEFAULT_SSLMODE;
+  private SslNegotiation sslNegotiation = DEFAULT_SSL_NEGOTIATION;
   private boolean useLayer7Proxy = DEFAULT_USE_LAYER_7_PROXY;
 
   public PgConnectOptions() {
@@ -143,6 +142,7 @@ public class PgConnectOptions extends SqlConnectOptions {
       PgConnectOptions opts = (PgConnectOptions) other;
       pipeliningLimit = opts.pipeliningLimit;
       sslMode = opts.sslMode;
+      sslNegotiation = opts.sslNegotiation;
     }
   }
 
@@ -150,6 +150,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     super(other);
     pipeliningLimit = other.pipeliningLimit;
     sslMode = other.sslMode;
+    sslNegotiation = other.sslNegotiation;
   }
 
   @Override
@@ -240,6 +241,24 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   /**
+   * @return the value of current SSL negotiation mode
+   */
+  public SslNegotiation getSslNegotiation() {
+    return sslNegotiation;
+  }
+
+  /**
+   * Set {@link SslNegotiation} for the client, this option controls how SSL/TLS is negotiated with the server.
+   *
+   * @param sslNegotiation the SSL negotiation mode
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PgConnectOptions setSslNegotiation(SslNegotiation sslNegotiation) {
+    this.sslNegotiation = sslNegotiation;
+    return this;
+  }
+
+  /**
    * @return whether the client interacts with a layer 7 proxy instead of a server
    */
   @Unstable
@@ -322,6 +341,7 @@ public class PgConnectOptions extends SqlConnectOptions {
 
     if (pipeliningLimit != that.pipeliningLimit) return false;
     if (sslMode != that.sslMode) return false;
+    if (sslNegotiation != that.sslNegotiation) return false;
 
     return true;
   }
@@ -331,6 +351,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     int result = super.hashCode();
     result = 31 * result + pipeliningLimit;
     result = 31 * result + sslMode.hashCode();
+    result = 31 * result + sslNegotiation.hashCode();
     return result;
   }
 

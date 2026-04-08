@@ -194,6 +194,7 @@ Currently, the client supports the following parameter keys:
 * `password`
 * `dbname`
 * `sslmode`
+* `sslnegotiation`
 
 Additional parameters will be added to the {@link io.vertx.sqlclient.SqlConnectOptions#getProperties properties}.
 
@@ -212,6 +213,7 @@ for more details. The following parameters are supported:
 * `PGUSER`
 * `PGPASSWORD`
 * `PGSSLMODE`
+* `PGSSLNEGOTIATION`
 
 If you don't specify a data object or a connection URI string to connect, environment variables will take precedence over them.
 
@@ -730,6 +732,38 @@ All https://www.postgresql.org/docs/current/libpq-ssl.html#LIBPQ-SSL-PROTECTION[
 ----
 {@link examples.PgClientExamples#ex10}
 ----
+
+=== SSL Negotiation (PostgreSQL 17+)
+
+PostgreSQL 17 introduced direct SSL negotiation, which allows the client to establish TLS immediately without the traditional protocol handshake.
+This reduces connection latency by one round-trip and enables standard SSL proxies (nginx, haproxy) to terminate TLS for PostgreSQL connections.
+
+The client supports two SSL negotiation modes via {@link io.vertx.pgclient.SslNegotiation}:
+
+- `POSTGRES` (default): Traditional negotiation where the client sends an SSL request and waits for the server's response before establishing TLS
+- `DIRECT`: Direct negotiation where TLS is established immediately (requires PostgreSQL 17+)
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#sslNegotiationDirect}
+----
+
+You can also configure SSL negotiation via connection URI:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#sslNegotiationUri}
+----
+
+Or using the environment variable:
+
+[source,bash]
+----
+export PGSSLNEGOTIATION=direct
+----
+
+NOTE: Direct SSL negotiation requires PostgreSQL 17 or later.
+Attempting to use `DIRECT` mode with older PostgreSQL versions will result in an SSL handshake failure.
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
 

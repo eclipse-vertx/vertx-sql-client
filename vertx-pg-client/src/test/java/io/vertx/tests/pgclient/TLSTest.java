@@ -1,18 +1,12 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 
 package io.vertx.tests.pgclient;
@@ -29,12 +23,10 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.SslMode;
-import io.vertx.tests.pgclient.junit.ContainerPgRule;
+import io.vertx.pgclient.SslNegotiation;
 import io.vertx.sqlclient.Tuple;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import io.vertx.tests.pgclient.junit.ContainerPgRule;
+import org.junit.*;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -220,6 +212,53 @@ public class TLSTest {
     PgConnection.connect(vertxWithHosts, options).onComplete( ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       vertxWithHosts.close();
+    }));
+  }
+
+  @Test
+  public void testSslNegotiationDirect(TestContext ctx) {
+    Assume.assumeTrue("Requires PostgreSQL 17+", ContainerPgRule.isAtLeastPg17());
+
+    Async async = ctx.async();
+    PgConnectOptions options = new PgConnectOptions(ruleOptionalSll.options())
+      .setSslMode(SslMode.REQUIRE)
+      .setSslNegotiation(SslNegotiation.DIRECT)
+      .setSslOptions(new ClientSSLOptions().setTrustAll(true));
+
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
+      async.complete();
+    }));
+  }
+
+  @Test
+  public void testSslNegotiationDirectWithVerifyFull(TestContext ctx) {
+    Assume.assumeTrue("Requires PostgreSQL 17+", ContainerPgRule.isAtLeastPg17());
+
+    Async async = ctx.async();
+
+    Vertx vertxWithHosts = Vertx.vertx(
+      new VertxOptions()
+        .setAddressResolverOptions(
+          new AddressResolverOptions()
+            .setHostsValue(Buffer.buffer("127.0.0.1 thebrain.ca\n"))
+        )
+    );
+
+    PgConnectOptions options = new PgConnectOptions(ruleOptionalSll.options())
+      .setSslMode(SslMode.VERIFY_FULL)
+      .setSslNegotiation(SslNegotiation.DIRECT)
+      .setHost("thebrain.ca")
+      .setSslOptions(
+        new ClientSSLOptions()
+          .setHostnameVerificationAlgorithm("HTTPS")
+          .setTrustOptions(new PemTrustOptions().addCertPath("tls/server.crt"))
+      );
+
+    PgConnection.connect(vertxWithHosts, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
+      vertxWithHosts.close();
+      async.complete();
     }));
   }
 }
