@@ -22,10 +22,12 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
+import io.vertx.pgclient.SslNegotiation;
 import io.vertx.sqlclient.impl.ConnectionFactoryBase;
 import io.vertx.sqlclient.spi.connection.Connection;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -33,6 +35,8 @@ import java.util.function.Predicate;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions> {
+
+  private static final List<String> PG_PROTOCOLS = List.of("postgresql");
 
   public PgConnectionFactory(VertxInternal vertx) {
     super(vertx);
@@ -104,49 +108,66 @@ public class PgConnectionFactory extends ConnectionFactoryBase<PgConnectOptions>
   }
 
   private Future<Connection> connect(ConnectOptions connectOptions, ContextInternal context, boolean ssl, boolean sendStartupMessage, PgConnectOptions options) {
-    Future<Connection> res = doConnect(connectOptions, context, ssl, options);
-    if (sendStartupMessage) {
-      return res.flatMap(conn -> {
-        PgSocketConnection socket = (PgSocketConnection) conn;
-        socket.init();
-        String username = options.getUser();
-        String password = options.getPassword();
-        String database = options.getDatabase();
-        Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
-        return socket.sendStartupMessage(username, password, database, properties);
-      });
+    Future<Connection> res;
+    if (ssl && !connectOptions.getRemoteAddress().isDomainSocket()) {
+      ClientSSLOptions sslOptions = copyClientSSLOptions(options.getSslOptions());
+      if (sslOptions.getHostnameVerificationAlgorithm() == null) {
+        sslOptions.setHostnameVerificationAlgorithm("");
+      }
+      SslNegotiation sslNegotiation = options.getSslNegotiation();
+      if (sslNegotiation == SslNegotiation.DIRECT) {
+        sslOptions.setUseAlpn(true).setApplicationLayerProtocols(PG_PROTOCOLS);
+        ConnectOptions opts = new ConnectOptions(connectOptions)
+          .setSsl(true)
+          .setSslOptions(sslOptions);
+        res = doConnect(opts, context, options);
+      } else {
+        res = doConnect(connectOptions, context, options).flatMap(conn -> upgradeToSSLConnection(conn, sslOptions));
+      }
     } else {
-      return res;
+      res = doConnect(connectOptions, context, options);
     }
+    if (sendStartupMessage) {
+      res = res.flatMap(conn -> sendStartupMessage(conn, options));
+    }
+    return res;
   }
 
-  private Future<Connection> doConnect(ConnectOptions connectOptions, ContextInternal context, boolean ssl, PgConnectOptions options) {
+  private ClientSSLOptions copyClientSSLOptions(ClientSSLOptions sslOptions) {
+    return sslOptions == null ? new ClientSSLOptions() : sslOptions.copy();
+  }
+
+  private Future<Connection> doConnect(ConnectOptions connectOptions, ContextInternal context, PgConnectOptions options) {
     Future<NetSocket> soFut;
     try {
       soFut = client.connect(connectOptions);
     } catch (Exception e) {
-      // Client is closed
       return context.failedFuture(e);
     }
-    Future<Connection> connFut = soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so, options));
-    if (ssl && !connectOptions.getRemoteAddress().isDomainSocket()) {
-      // upgrade connection to SSL if needed
-      connFut = connFut.flatMap(conn -> Future.future(p -> {
-        PgSocketConnection socket = (PgSocketConnection) conn;
-        ClientSSLOptions o = options.getSslOptions().copy();
-        if (o.getHostnameVerificationAlgorithm() == null) {
-          o.setHostnameVerificationAlgorithm("");
+    return soFut.map(so -> newSocketConnection(context, (NetSocketInternal) so, options));
+  }
+
+  private Future<Connection> upgradeToSSLConnection(Connection conn, ClientSSLOptions sslOptions) {
+    PgSocketConnection socketConnection = (PgSocketConnection) conn;
+    return Future.future(p -> {
+      socketConnection.upgradeToSSLConnection(sslOptions, ar -> {
+        if (ar.succeeded()) {
+          p.complete(socketConnection);
+        } else {
+          p.fail(ar.cause());
         }
-        socket.upgradeToSSLConnection(o, ar2 -> {
-          if (ar2.succeeded()) {
-            p.complete(conn);
-          } else {
-            p.fail(ar2.cause());
-          }
-        });
-      }));
-    }
-    return connFut;
+      });
+    });
+  }
+
+  private Future<Connection> sendStartupMessage(Connection conn, PgConnectOptions options) {
+    PgSocketConnection socketConnection = (PgSocketConnection) conn;
+    socketConnection.init();
+    String username = options.getUser();
+    String password = options.getPassword();
+    String database = options.getDatabase();
+    Map<String, String> properties = options.getProperties() != null ? Collections.unmodifiableMap(options.getProperties()) : null;
+    return socketConnection.sendStartupMessage(username, password, database, properties);
   }
 
   @Override

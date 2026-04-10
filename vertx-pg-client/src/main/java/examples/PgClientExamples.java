@@ -17,10 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
-import io.vertx.pgclient.PgBuilder;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgConnection;
-import io.vertx.pgclient.SslMode;
+import io.vertx.pgclient.*;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.data.Numeric;
@@ -513,6 +510,33 @@ public class PgClientExamples {
         System.out.println("Could not connect " + res.cause());
       }
     });
+  }
+
+  public void sslNegotiationDirect(Vertx vertx) {
+    PgConnectOptions options = new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setSslMode(SslMode.REQUIRE)
+      .setSslNegotiation(SslNegotiation.DIRECT)
+      .setSslOptions(new ClientSSLOptions()
+        .setTrustOptions(new PemTrustOptions().addCertPath("/path/to/server.crt")));
+
+    PgConnection.connect(vertx, options)
+      .onComplete(res -> {
+        if (res.succeeded()) {
+          System.out.println("Connected with direct SSL negotiation");
+        } else {
+          System.out.println("Could not connect: " + res.cause().getMessage());
+        }
+      });
+  }
+
+  public void sslNegotiationUri() {
+    String connectionUri = "postgresql://localhost/mydb?sslmode=require&sslnegotiation=direct";
+    PgConnectOptions options = PgConnectOptions.fromUri(connectionUri);
   }
 
   public void jsonExample() {

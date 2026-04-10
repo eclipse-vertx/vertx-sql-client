@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -14,8 +14,8 @@ package io.vertx.tests.pgclient.tck;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.PgBuilder;
-import io.vertx.tests.pgclient.junit.ContainerPgRule;
 import io.vertx.sqlclient.Pool;
+import io.vertx.tests.pgclient.junit.ContainerPgRule;
 import io.vertx.tests.sqlclient.tck.TracingTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -23,7 +23,7 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class PgTracingTest extends TracingTestBase {
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule();
+  public static final ContainerPgRule rule = ContainerPgRule.SHARED_INSTANCE;
 
   @Override
   protected Pool createPool(Vertx vertx) {

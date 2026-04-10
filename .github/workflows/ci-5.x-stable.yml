@@ -9,8 +9,88 @@ on:
   schedule:
     - cron: '0 6 * * *'
 jobs:
-  CI-CD:
-    uses: ./.github/workflows/ci-matrix-5.x.yml
-    secrets: inherit
+  CI:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'PostgreSQL-9'
+            module: 'vertx-pg-client'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'PostgreSQL-10'
+            module: 'vertx-pg-client'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'PostgreSQL-11'
+            module: 'vertx-pg-client'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MySQL-8.0'
+            module: 'vertx-mysql-client'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MySQL-5.6'
+            module: 'vertx-mysql-client'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MySQL-5.7'
+            module: 'vertx-mysql-client'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MariaDB-10.4'
+            module: 'vertx-mysql-client'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MSSQL-2017-latest'
+            module: 'vertx-mssql-client'
+          - os: ubuntu-latest
+            jdk: 11
+            profile: 'MSSQL-2019-latest'
+            module: 'vertx-mssql-client'
+          - os: ubuntu-latest
+            jdk: 11
+            module: 'vertx-db2-client'
+          - os: ubuntu-latest
+            jdk: 11
+            module: 'vertx-sql-client-templates'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'PostgreSQL-11'
+            module: 'vertx-pg-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'MySQL-5.7'
+            module: 'vertx-mysql-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'MariaDB-10.4'
+            module: 'vertx-mysql-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'MSSQL-2019-latest'
+            module: 'vertx-mssql-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'Oracle-23'
+            module: 'vertx-oracle-client'
+    uses: ./.github/workflows/ci.yml
     with:
       branch: ${{ github.event_name == 'schedule' && vars.VERTX_5_STABLE_BRANCH || github.event.pull_request.head.sha || github.ref_name }}
+      jdk: ${{ matrix.jdk }}
+      os: ${{ matrix.os }}
+      profile: ${{ matrix.profile }}
+      module: ${{ matrix.module }}
+      deploy: ${{ matrix.jdk == '8' && matrix.os == 'ubuntu-latest' }}
+    secrets: inherit
+  Deploy:
+    name: Deploy to OSSRH
+    if: ${{ github.repository_owner == 'eclipse-vertx' && (github.event_name == 'push' || github.event_name == 'schedule') }}
+    needs: CI
+    uses: ./.github/workflows/deploy.yml
+    with:
+      branch: ${{ github.event_name == 'schedule' && vars.VERTX_5_STABLE_BRANCH || github.event.pull_request.head.sha || github.ref_name }}
+      jdk: 11
+    secrets: inherit

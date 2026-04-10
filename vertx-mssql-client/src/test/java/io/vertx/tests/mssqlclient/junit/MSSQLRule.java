@@ -18,7 +18,6 @@ import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.InternetProtocol;
 import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.containers.wait.strategy.WaitStrategy;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -46,35 +45,14 @@ public class MSSQLRule extends ExternalResource {
   }
 
   private enum ServerVersion {
-    MSSQL_2017("2017-latest", "/opt/mssql-tools/bin/sqlcmd", false,
-      Wait.forLogMessage(".*SQL Server is now ready for client connections.*\\n", 1)),
-    MSSQL_2019("2019-latest", "/opt/mssql-tools18/bin/sqlcmd", true,
-      Wait.forLogMessage(".*The tempdb database has \\d+ data file\\(s\\).*\\n", 2)),
-    MSSQL_2025("2025-latest", "/opt/mssql-tools18/bin/sqlcmd", true,
-      Wait.forLogMessage(".*The tempdb database has \\d+ data file\\(s\\).*\\n", 2));
+    MSSQL_2019("2019-latest"),
+    MSSQL_2022("2022-latest"),
+    MSSQL_2025("2025-latest");
 
     private final String dockerImageTag;
-    private final String sqlcmdPath;
-    private final boolean supportsTrustServerCertificate;
-    private final WaitStrategy waitStrategy;
 
-    ServerVersion(String dockerImageTag, String sqlcmdPath, boolean supportsTrustServerCertificate, WaitStrategy waitStrategy) {
+    ServerVersion(String dockerImageTag) {
       this.dockerImageTag = dockerImageTag;
-      this.sqlcmdPath = sqlcmdPath;
-      this.supportsTrustServerCertificate = supportsTrustServerCertificate;
-      this.waitStrategy = waitStrategy;
-    }
-
-    String getSqlcmdPath() {
-      return sqlcmdPath;
-    }
-
-    boolean supportsTrustServerCertificate() {
-      return supportsTrustServerCertificate;
-    }
-
-    WaitStrategy getWaitStrategy() {
-      return waitStrategy;
     }
 
     boolean supportsConfig(Config config) {
@@ -87,10 +65,10 @@ public class MSSQLRule extends ExternalResource {
         return MSSQL_2025;
       }
       switch (dockerImageTag) {
-        case "2017-latest":
-          return MSSQL_2017;
         case "2019-latest":
           return MSSQL_2019;
+        case "2022-latest":
+          return MSSQL_2022;
         case "2025-latest":
           return MSSQL_2025;
         default:
@@ -160,7 +138,7 @@ public class MSSQLRule extends ExternalResource {
       .withEnv("TZ", "UTC")
       .withEnv("SA_PASSWORD", PASSWORD)
       .withClasspathResourceMapping("init.sql", INIT_SQL, READ_ONLY)
-      .waitingFor(serverVersion.getWaitStrategy());
+      .waitingFor(Wait.forLogMessage(".*The tempdb database has \\d+ data file\\(s\\).*\\n", 2));
 
     if (System.getProperties().containsKey("containerFixedPort")) {
       server.withFixedExposedPort(DEFAULT_PORT, DEFAULT_PORT);
@@ -209,20 +187,18 @@ public class MSSQLRule extends ExternalResource {
 
   private String[] cmdArgs() {
     Stream.Builder<String> builder = Stream.builder();
-    builder.add(serverVersion.getSqlcmdPath());
+    builder.add("/opt/mssql-tools18/bin/sqlcmd");
     builder.add("-S").add("localhost");
     builder.add("-U").add(USER);
     builder.add("-P").add(PASSWORD);
     builder.add("-i").add(INIT_SQL);
-    if (serverVersion.supportsTrustServerCertificate()) {
-      if (config == Config.STRICT_ENCRYPTION) {
-        builder.add("-Ns");
-        builder.add("-J").add("/etc/ssl/certs/mssql.pem");
-        builder.add("-F").add("sql1");
-      } else {
-        builder.add("-C");
-        builder.add("-No");
-      }
+    if (config == Config.STRICT_ENCRYPTION) {
+      builder.add("-Ns");
+      builder.add("-J").add("/etc/ssl/certs/mssql.pem");
+      builder.add("-F").add("sql1");
+    } else {
+      builder.add("-C");
+      builder.add("-No");
     }
     return builder.build().toArray(String[]::new);
   }

@@ -22,17 +22,21 @@ jobs:
   Test:
     name: Run tests
     runs-on: ${{ inputs.os }}
+    env:
+      PROFILE_ARG: ${{ inputs.profile && format('-P {0}', inputs.profile) || '' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           ref: ${{ inputs.branch }}
       - name: Install JDK
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v5
         with:
           java-version: ${{ inputs.jdk }}
           distribution: temurin
-      - name: Run tests
+      - name: Build without tests
         run: |
-          PROFILE_ARG="${{ inputs.profile && format('-P {0}', inputs.profile) || '' }}"
-          mvn -s .github/maven-ci-settings.xml -q clean verify -B $PROFILE_ARG -pl :${{ inputs.module }} -am
+          mvn -s .github/maven-ci-settings.xml -q clean install -B $PROFILE_ARG -pl :${{ inputs.module }} -am -DskipTests
+      - name: Run tests for the target module
+        run: |
+          mvn -s .github/maven-ci-settings.xml verify -B $PROFILE_ARG -pl :${{ inputs.module }}

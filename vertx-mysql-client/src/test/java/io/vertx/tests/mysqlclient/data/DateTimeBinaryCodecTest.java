@@ -26,6 +26,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.function.Consumer;
 
+import static org.junit.Assume.assumeTrue;
+
 @RunWith(VertxUnitRunner.class)
 public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
   @Test
@@ -63,11 +65,15 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
 
   @Test
   public void testEncodeMaxTimeOverflow(TestContext ctx) {
+    // Starting with MySQL 9.5, overflow is reported as an error
+    assumeTrue(rule.isUsingMariaDB() || rule.isUsingMySQL8());
     testEncodeTime(ctx, Duration.ofDays(120).plusHours(19).plusMinutes(27).plusSeconds(30), Duration.ofHours(838).plusMinutes(59).plusSeconds(59));
   }
 
   @Test
   public void testEncodeMinTimeOverflow(TestContext ctx) {
+    // Starting with MySQL 9.5, overflow is reported as an error
+    assumeTrue(rule.isUsingMariaDB() || rule.isUsingMySQL8());
     testEncodeTime(ctx, Duration.ofDays(-120).plusHours(-19).plusMinutes(-27).plusSeconds(-30), Duration.ofHours(-838).plusMinutes(-59).plusSeconds(-59));
   }
 

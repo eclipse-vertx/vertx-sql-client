@@ -1,18 +1,12 @@
 /*
- * Copyright (C) 2017 Julien Viet
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0, or the Apache License, Version 2.0
+ * which is available at https://www.apache.org/licenses/LICENSE-2.0.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
+ * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
 package io.vertx.tests.pgclient.junit;
 
@@ -28,11 +22,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
 
 import static io.vertx.pgclient.PgConnectOptions.DEFAULT_PORT;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Postgresql test database based on https://www.testcontainers.org
@@ -46,6 +37,8 @@ public class ContainerPgRule extends ExternalResource {
   private static final String connectionUri = System.getProperty("connection.uri");
   private static final String tlsConnectionUri = System.getProperty("tls.connection.uri");
   private static final String tlsForceConnectionUri = System.getProperty("tls.force.connection.uri");
+
+  public static final ContainerPgRule SHARED_INSTANCE = new ContainerPgRule();
 
   private ServerContainer<?> server;
   private PgConnectOptions options;
@@ -155,13 +148,24 @@ public class ContainerPgRule extends ExternalResource {
     String specifiedVersion = System.getProperty("embedded.postgres.version");
     String version;
     if (specifiedVersion == null || specifiedVersion.isEmpty()) {
-      // if version is not specified then V10.10 will be used by default
-      version = "10.10";
+      // if version is not specified then V16 will be used by default
+      version = "16";
     } else {
       version = specifiedVersion;
     }
 
     return version;
+  }
+
+  public static boolean isAtLeastPg17() {
+    String version = getPostgresVersion();
+    try {
+      int majorVersion = Integer.parseInt(version.split("\\.")[0]);
+      return majorVersion >= 17;
+    } catch (NumberFormatException e) {
+      // If we can't parse, assume it's not 17+
+      return false;
+    }
   }
 
   public synchronized void stopServer() {
@@ -202,14 +206,9 @@ public class ContainerPgRule extends ExternalResource {
     options = startServer(databaseVersion);
   }
 
-  public static boolean isAtLeastPg10() {
-    // hackish ;-)
-    return !getPostgresVersion().startsWith("9.");
-  }
-
   @Override
   protected void after() {
-    if (!isTestingWithExternalDatabase()) {
+    if (!isTestingWithExternalDatabase() && this != SHARED_INSTANCE) {
       try {
         stopServer();
       } catch (Exception e) {

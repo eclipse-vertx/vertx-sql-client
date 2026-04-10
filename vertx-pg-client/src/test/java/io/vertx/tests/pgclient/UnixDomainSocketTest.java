@@ -33,7 +33,7 @@ import static org.junit.Assume.assumeTrue;
 public class UnixDomainSocketTest {
 
   @ClassRule
-  public static ContainerPgRule rule = new ContainerPgRule();
+  public static final ContainerPgRule rule = ContainerPgRule.SHARED_INSTANCE;
   private Pool client;
   private PgConnectOptions options;
   private Vertx vertx;
