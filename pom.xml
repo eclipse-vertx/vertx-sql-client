@@ -189,6 +189,7 @@
     <module>vertx-db2-client</module>
     <module>vertx-sql-client-templates</module>
     <module>vertx-oracle-client</module>
+    <module>vertx-pg-savepoints-example</module>
   </modules>
 
 </project>
