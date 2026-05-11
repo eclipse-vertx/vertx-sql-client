@@ -55,7 +55,9 @@ public class TransactionImpl implements Transaction {
   }
 
   public void status(TransactionState state) {
-    this.state = state;
+    synchronized (this) {
+      this.state = state;
+    }
   }
 
   <T> Future<T> failedFuture(String message) {
