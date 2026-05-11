@@ -31,7 +31,7 @@ import io.vertx.pgclient.impl.codec.ExtendedQueryPgCommandMessage;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.PgCodec;
 import io.vertx.pgclient.impl.codec.PgCommandMessage;
-import io.vertx.pgclient.impl.codec.TxFailedEvent;
+import io.vertx.pgclient.impl.codec.TxStatusEvent;
 import io.vertx.sqlclient.codec.CommandMessage;
 import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.spi.connection.Connection;
@@ -41,6 +41,7 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 import io.vertx.sqlclient.spi.protocol.InitCommand;
+import io.vertx.sqlclient.spi.protocol.SavepointCommand;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import io.vertx.sqlclient.spi.protocol.TxCommand;
 
@@ -116,7 +117,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   protected void handleMessage(Object msg) {
     super.handleMessage(msg);
-    if (msg instanceof Notification || msg instanceof TxFailedEvent || msg instanceof NoticeResponse) {
+    if (msg instanceof Notification || msg instanceof TxStatusEvent || msg instanceof NoticeResponse) {
       handleEvent(msg);
     }
   }
@@ -172,6 +173,15 @@ public class PgSocketConnection extends SocketConnectionBase {
         SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
       super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
+    } else if (cmd instanceof SavepointCommand) {
+      SavepointCommand<R> savepoint = (SavepointCommand<R>) cmd;
+      SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
+        savepoint.sql(),
+        false,
+        false,
+        SocketConnectionBase.NULL_COLLECTOR,
+        QueryResultHandler.NOOP_HANDLER);
+      super.doSchedule(cmd2, (res, err) -> handler.complete(savepoint.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }

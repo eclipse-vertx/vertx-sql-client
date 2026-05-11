@@ -137,4 +137,11 @@ public interface Driver<C extends SqlConnectOptions> {
     queryBuilder.append("?");
     return current;
   }
+
+  /**
+   * @return {@code true} when the driver supports savepoints.
+   */
+  default boolean supportsSavepoints() {
+    return false;
+  }
 }

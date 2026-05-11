@@ -26,7 +26,7 @@ import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotice;
 import io.vertx.pgclient.PgNotification;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
-import io.vertx.pgclient.impl.codec.TxFailedEvent;
+import io.vertx.pgclient.impl.codec.TxStatusEvent;
 import io.vertx.pgclient.spi.PgDriver;
 import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
@@ -99,9 +99,9 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
       } else {
         notice.log(SocketConnectionBase.logger);
       }
-    } else if (event instanceof TxFailedEvent) {
+    } else if (event instanceof TxStatusEvent) {
       if (tx != null) {
-        tx.fail();
+        tx.status(((TxStatusEvent) event).status());
       }
     }
   }
