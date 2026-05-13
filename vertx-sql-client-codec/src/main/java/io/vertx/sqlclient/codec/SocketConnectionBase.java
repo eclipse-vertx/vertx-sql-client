@@ -115,6 +115,10 @@ public abstract class SocketConnectionBase implements Connection {
     return pipeliningLimit;
   }
 
+  public int inflight() {
+    return inflight;
+  }
+
   @Override
   public TracingPolicy tracingPolicy() {
     return connectOptions().getTracingPolicy();
