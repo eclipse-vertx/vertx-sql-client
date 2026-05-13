@@ -66,7 +66,7 @@ public class PreparedStatementReprepareTest extends PgTestBase {
 
           return rows;
         })
-        .eventually(() -> conn.close())
+        .eventually(conn::close)
         .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
     }));
   }
