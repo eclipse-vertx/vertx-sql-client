@@ -30,7 +30,7 @@
     <db2-container.version/>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
     <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
-    <log4j.version>2.25.3</log4j.version>
+    <log4j.version>2.25.4</log4j.version>
   </properties>
 
   <dependencies>
