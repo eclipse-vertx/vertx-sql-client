@@ -99,7 +99,7 @@ public class ContainerPgRule extends ExternalResource {
       .withClasspathResourceMapping("create-postgres.sql", "/docker-entrypoint-initdb.d/create-postgres.sql", BindMode.READ_ONLY);
 
     if (domainSocketMount != null) {
-      server = server.withFileSystemBind(domainSocketMount.getAbsolutePath(), "/var/run/postgresql");
+      server = server.withFileSystemBind(domainSocketMount.getAbsolutePath(), "/run/postgresql");
     }
 
     if (ssl) {
