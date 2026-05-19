@@ -100,6 +100,11 @@ public abstract class SocketConnectionBase implements Connection {
     return pipeliningLimit;
   }
 
+  // Visible for testing
+  public int inflight() {
+    return inflight;
+  }
+
   @Override
   public TracingPolicy tracingPolicy() {
     return connectOptions().getTracingPolicy();
@@ -297,6 +302,8 @@ public abstract class SocketConnectionBase implements Connection {
       } else {
         if (queryCmd.autoCommit() && isIndeterminatePreparedStatementError(cause) && !sendParameterTypes) {
           ChannelHandlerContext ctx = socket.channelHandlerContext();
+          // We need to increment inflight because a new prepare command will be submitted
+          inflight++;
           // We cannot cache this prepared statement because it might be executed with another type
           ctx.write(prepareCommand(queryCmd, false, true), ctx.voidPromise());
           ctx.flush();
