@@ -115,6 +115,7 @@ public abstract class SocketConnectionBase implements Connection {
     return pipeliningLimit;
   }
 
+  // Visible for testing
   public int inflight() {
     return inflight;
   }
