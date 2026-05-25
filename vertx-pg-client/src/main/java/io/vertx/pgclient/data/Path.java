@@ -1,7 +1,5 @@
 package io.vertx.pgclient.data;
 
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;

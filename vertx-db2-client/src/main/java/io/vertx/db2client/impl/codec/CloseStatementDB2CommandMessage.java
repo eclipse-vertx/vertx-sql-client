@@ -17,7 +17,6 @@ package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
-import io.vertx.sqlclient.codec.CommandResponse;
 
 class CloseStatementDB2CommandMessage extends DB2CommandMessage<Void, CloseStatementCommand> {
 

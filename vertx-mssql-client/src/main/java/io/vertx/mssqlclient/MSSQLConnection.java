@@ -17,7 +17,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.mssqlclient.impl.MSSQLConnectionImpl;
-import io.vertx.sqlclient.PreparedStatement;
 import io.vertx.sqlclient.SqlConnection;
 
 import static io.vertx.mssqlclient.MSSQLConnectOptions.fromUri;

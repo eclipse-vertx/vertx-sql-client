@@ -1,7 +1,5 @@
 package io.vertx.pgclient.data;
 
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Finite line segment data type in Postgres represented by pairs of {@link Point}s that are the endpoints of the segment.

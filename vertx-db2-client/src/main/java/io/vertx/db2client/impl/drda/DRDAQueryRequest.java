@@ -30,7 +30,6 @@ import java.util.Hashtable;
 import java.util.UUID;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
 
 public class DRDAQueryRequest extends DRDAConnectRequest {
 

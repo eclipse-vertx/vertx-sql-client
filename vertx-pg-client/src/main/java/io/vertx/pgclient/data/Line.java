@@ -1,7 +1,5 @@
 package io.vertx.pgclient.data;
 
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Line data type in Postgres represented by the linear equation Ax + By + C = 0, where A and B are not both zero.

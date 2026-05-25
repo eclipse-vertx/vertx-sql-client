@@ -54,4 +54,3 @@ public class OraclePreparedQueryTest extends PreparedQueryTestBase {
     super.testPreparedQueryParamCoercionQuantityError(ctx);
   }
 }
-

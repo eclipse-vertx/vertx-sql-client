@@ -23,12 +23,12 @@ class FloatingPoint {
     // Hide the default constructor, this is a static class.
     private FloatingPoint() {
     }
-    
+
     /**
      * Supported Unix Big Endian IEEE 754 floating point representation.
      */
     public final static int IEEE_754_FLOATING_POINT = 0x48;
-    
+
     public final static int myVal = 0xFF7FFFFF;
 
     //--------------------------private helper methods----------------------------
@@ -76,7 +76,7 @@ class FloatingPoint {
     static float getFloat_IEEE(byte[] buffer, int offset) {
         return Float.intBitsToFloat(convertFromByteToInt(buffer, offset));
     }
-    
+
     /**
      * Builds a Java float from a 4-byte hex floating point representation.
      * See: https://en.wikipedia.org/wiki/IBM_hexadecimal_floating_point
@@ -99,14 +99,14 @@ class FloatingPoint {
               break;
             }
           }
-  
+
           if (exp > 127) {
             if ((intVal & Integer.MIN_VALUE) == 0) {
               return Float.POSITIVE_INFINITY;
             }
             return Float.NEGATIVE_INFINITY;
           }
-  
+
           if (exp == -127) {
             exp = 0;
             fraction >>= 1;
@@ -122,7 +122,7 @@ class FloatingPoint {
           exp = 0;
           fraction >>= 1;
         }
-  
+
         int result = intVal & Integer.MIN_VALUE;
         exp <<= 23;
         result |= exp;
@@ -130,7 +130,7 @@ class FloatingPoint {
         return Float.intBitsToFloat(result);
       }
     }
-    
+
     /**
      * Build a Java double from an 8-byte floating point representation.
      * <p/>
@@ -142,7 +142,7 @@ class FloatingPoint {
     static double getDouble_IEEE(byte[] buffer, int offset) {
         return Double.longBitsToDouble(convertFromByteToLong(buffer, offset));
     }
-    
+
     /**
      * Builds a Java float from an 8-byte hex floating point representation.
      * See: https://en.wikipedia.org/wiki/IBM_hexadecimal_floating_point

@@ -22,7 +22,6 @@ import io.vertx.db2client.impl.drda.DRDAConnectRequest;
 import io.vertx.db2client.impl.drda.DRDAConnectResponse;
 import io.vertx.db2client.impl.drda.DRDAConstants;
 import io.vertx.db2client.impl.drda.ConnectionMetaData;
-import io.vertx.sqlclient.codec.CommandResponse;
 
 class PingDB2CommandMessage extends DB2CommandMessage<Void, PingCommand> {
 

@@ -18,16 +18,15 @@ package io.vertx.db2client.impl.drda;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.Objects;
 
 import io.netty.buffer.ByteBuf;
 
 public class DRDAConnectRequest extends DRDARequest {
-  
+
     public DRDAConnectRequest(ByteBuf buffer, ConnectionMetaData metadata) {
         super(buffer, metadata);
     }
-    
+
     // The Access RDB (ACCRDB) command makes a named relational database (RDB)
     // available to a requester by creating an instance of an SQL application
     // manager.  The access RDB command then binds the created instance to the target
@@ -109,7 +108,7 @@ public class DRDAConnectRequest extends DRDARequest {
         // the request object.
         updateLengthBytes();
     }
-    
+
     private byte[] getProductData() {
         ByteBuffer prddta_ = ByteBuffer.allocate(DRDAConstants.PRDDTA_MAXSIZE);
 
@@ -154,10 +153,10 @@ public class DRDAConnectRequest extends DRDARequest {
 
         // the length byte value does not include itself.
         prddta_.put(DRDAConstants.PRDDTA_LEN_BYTE, (byte) (prddtaLen - 1));
-        
+
         return prddta_.array();
     }
-    
+
     // Construct the correlation token.
     // The crrtkn has the following format.
     //
@@ -198,7 +197,7 @@ public class DRDAConnectRequest extends DRDARequest {
             // the characters 'G' thro 'P'(in order to use the crrtkn as the LUWID when using
             // SNA in a hop site). For example, 0 is mapped to G, 1 is mapped H,etc.
             if (i == 0) {
-                crrtkn_[j] = metadata.getCCSID().encode("" + (char) (halfByte + 'G')).get(); 
+                crrtkn_[j] = metadata.getCCSID().encode("" + (char) (halfByte + 'G')).get();
                         //ccsidManager.getCCSID().numToSnaRequiredCrrtknChar_[halfByte];
             } else {
                 crrtkn_[j] = metadata.getCCSID().encode("" + halfByte).get();
@@ -221,7 +220,7 @@ public class DRDAConnectRequest extends DRDARequest {
         //int num = netAgent_.socket_.getLocalPort();
 
         int halfByte = (num >> 12) & 0x0f;
-        crrtkn_[9] = metadata.getCCSID().encode("" + halfByte).get(); 
+        crrtkn_[9] = metadata.getCCSID().encode("" + halfByte).get();
                 //netAgent_.getCurrentCcsidManager().numToSnaRequiredCrrtknChar_[halfByte];
         halfByte = (num >> 8) & 0x0f;
         crrtkn_[10] = metadata.getCCSID().encode("" + halfByte).get();
@@ -245,7 +244,7 @@ public class DRDAConnectRequest extends DRDARequest {
         }
         return crrtkn_;
     }
-    
+
     public void buildSECCHK(int secmec, String rdbnam, String user, String password, byte[] sectkn, byte[] sectkn2){
         createCommand();
         markLengthBytes(CodePoint.SECCHK);
@@ -273,7 +272,7 @@ public class DRDAConnectRequest extends DRDARequest {
         updateLengthBytes();
 
     }
-    
+
     public void buildACCSEC(int secmec, String rdbnam, byte[] sectkn) {
         createCommand();
 
@@ -300,11 +299,11 @@ public class DRDAConnectRequest extends DRDARequest {
         // update the ddm length and the dss header length.
         updateLengthBytes();
     }
-    
-    /** 
+
+    /**
      * RDB Commit Unit of Work (RDBCMM) Command commits all work performed
      for the current unit of work.
-    
+
      The Relational Database Name (RDBNAM) is an optional parameter
      which will not be sent by this command to reduce size, building,
      and parsing.
@@ -313,14 +312,14 @@ public class DRDAConnectRequest extends DRDARequest {
         createCommand();
         writeLengthCodePoint(0x04, CodePoint.RDBCMM);
     }
-    
+
     private void buildRDBALWUPD(boolean readOnly) {
         // TODO: @AGG collapse
         if (readOnly) {
             writeScalar1Byte(CodePoint.RDBALWUPD, CodePoint.FALSE);
         }
     }
-    
+
     private void buildTYPDEFOVR(boolean sendCcsidSbc, int ccsidSbc, boolean sendCcsidDbc, int ccsidDbc,
             boolean sendCcsidMbc, int ccsidMbc) {
         // TODO: @AGG collapse
@@ -339,7 +338,7 @@ public class DRDAConnectRequest extends DRDARequest {
         if (sendCcsidMbc) {
             writeScalar2Bytes(CodePoint.CCSIDMBC, ccsidMbc);
         }
-        
+
 //        if (metadata.isZos()) {
 //          writeScalar2Bytes(CodePoint.CCSIDXML, ccsidMbc);
 //        }
@@ -347,39 +346,39 @@ public class DRDAConnectRequest extends DRDARequest {
         updateLengthBytes();
 
     }
-    
+
     private void buildCRRTKN(byte[] crrtkn) {
         // TODO: @AGG collapse
         writeScalarBytes(CodePoint.CRRTKN, crrtkn);
     }
-    
+
     private void buildTYPDEFNAM(String typdefnam) {
         // TODO: @AGG collapse
         writeScalarString(CodePoint.TYPDEFNAM, typdefnam);
     }
-    
+
     private void buildPRDDTA() {
         // TODO: @AGG collapse
         byte[] prddta = getProductData();
         int prddtaLength = (prddta[DRDAConstants.PRDDTA_LEN_BYTE] & 0xff) + 1;
         writeScalarBytes(CodePoint.PRDDTA, prddta, 0, prddtaLength);
     }
-    
+
     private void buildPRDID() {
         // TODO: @AGG collapse this
         writeScalarString(CodePoint.PRDID, DRDAConstants.PRDID);  // product id is hard-coded to DNC01000 for dnc 1.0.
     }
-    
+
     private void buildRDBACCCL() {
         // TODO: @AGG collapse this method after porting
         writeScalar2Bytes(CodePoint.RDBACCCL, CodePoint.SQLAM);
     }
-    
+
     private void buildUSRID(String usrid) {
         writeScalarString(CodePoint.USRID, usrid,0,DRDAConstants.USRID_MAXSIZE,
                 SQLState.NET_USERID_TOO_LONG);
     }
-    
+
     private void buildPASSWORD(String password) {
         int passwordLength = password.length();
         if ((passwordLength == 0) ) {
@@ -388,16 +387,16 @@ public class DRDAConnectRequest extends DRDARequest {
         writeScalarString(CodePoint.PASSWORD, password, 0, DRDAConstants.PASSWORD_MAXSIZE,
                 SQLState.NET_PASSWORD_TOO_LONG);
     }
-    
+
     private void buildSECTKN(byte[] sectkn) {
         if (sectkn.length > 32763) {
             throw new IllegalArgumentException("SQLState.NET_SECTKN_TOO_LONG");
         }
         writeScalarBytes(CodePoint.SECTKN, sectkn);
     }
-    
+
     /**
-     * 
+     *
      * Relational Database Name specifies the name of a relational database
      * of the server.
      * if length of RDB name &lt;= 18 characters, there is not change to the format
@@ -425,11 +424,11 @@ public class DRDAConnectRequest extends DRDARequest {
         int maxRDBlength = 1024;
         writeScalarString(CodePoint.RDBNAM, rdbnam,
                 18, //minimum RDBNAM length in bytes
-                maxRDBlength,  
+                maxRDBlength,
                 SQLState.NET_DBNAME_TOO_LONG);
-                
+
     }
-    
+
     // Precondition: valid secmec is assumed.
     private void buildSECMEC(int secmec) {
 //        writeScalar2Bytes(CodePoint.SECMEC, secmec);
@@ -439,7 +438,7 @@ public class DRDAConnectRequest extends DRDARequest {
         buffer.writeShort(CodePoint.SECMEC);
         buffer.writeShort(secmec);
     }
-    
+
     // build the Exchange Server Attributes Command.
     // This command sends the following information to the server.
     // - this driver's server class name
@@ -507,11 +506,11 @@ public class DRDAConnectRequest extends DRDARequest {
         // it into the buffer
         updateLengthBytes();
     }
-    
+
     private void buildSRVCLSNM() {
         writeScalarString(CodePoint.SRVCLSNM, "QDB2/JVM");
     }
-    
+
     private void buildMGRLVLLS(int agent, int sqlam, int rdb, int secmgr, int xamgr, int syncptmgr, int rsyncmgr,
             int unicodemgr) {
         markLengthBytes(CodePoint.MGRLVLLS);
@@ -544,7 +543,7 @@ public class DRDAConnectRequest extends DRDARequest {
         // }
         updateLengthBytes();
     }
-    
+
     // The External Name is the name of the job, task, or process on a
     // system for which a DDM server is active.
     private void buildEXTNAM(String extnam) {
@@ -555,17 +554,17 @@ public class DRDAConnectRequest extends DRDARequest {
         writeScalarString(CodePoint.EXTNAM, extnam.substring(0, extnamTruncateLength), 141, // @AGG changed min byte len 0->141
                 MAX_SIZE, "NET_EXTNAM_TOO_LONG");
     }
-    
+
     // Server Name is the name of the DDM server.
     private void buildSRVNAM(String srvnam) {
         final int MAX_SIZE = 255;
         int srvnamTruncateLength = Math.min(srvnam.length(),MAX_SIZE);
-        
+
         // Writing the truncated string as to preserve previous behavior
         writeScalarString(CodePoint.SRVNAM,srvnam.substring(0, srvnamTruncateLength),
                 0, MAX_SIZE, "SQLState.NET_SRVNAM_TOO_LONG");
     }
-    
+
     // Server Product Release Level String specifies the product
     // release level of a DDM server.
     private void buildSRVRLSLV() {

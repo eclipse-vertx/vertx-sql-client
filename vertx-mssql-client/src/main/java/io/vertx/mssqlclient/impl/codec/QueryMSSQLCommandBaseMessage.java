@@ -74,4 +74,3 @@ abstract class QueryMSSQLCommandBaseMessage<T, C extends QueryCommandBase<T>> ex
     cmd.resultHandler().handleResult(rowCount, size, rowDescriptor, result, failure);
   }
 }
-

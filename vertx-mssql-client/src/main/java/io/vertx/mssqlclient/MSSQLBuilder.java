@@ -22,8 +22,6 @@ import io.vertx.core.Handler;
 import io.vertx.mssqlclient.spi.MSSQLDriver;
 import io.vertx.sqlclient.ClientBuilder;
 import io.vertx.sqlclient.Pool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.impl.ClientBuilderBase;
 
 /**
  * Entry point for building MSSQL clients.

@@ -1,7 +1,5 @@
 package io.vertx.pgclient.data;
 
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Circle data type in Postgres represented by a center {@link Point} and radius.

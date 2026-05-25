@@ -39,7 +39,7 @@ public class DB2DatabaseMetadata implements DatabaseMetadata {
   public String productName() {
     return productName;
   }
-  
+
   @Override
   public String fullVersion() {
     return fullVersion;

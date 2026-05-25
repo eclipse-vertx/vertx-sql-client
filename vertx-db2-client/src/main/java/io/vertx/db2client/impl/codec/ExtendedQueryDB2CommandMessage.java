@@ -19,7 +19,6 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.db2client.impl.codec.DB2PreparedStatement.QueryInstance;
 import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
-import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 public class ExtendedQueryDB2CommandMessage<R> extends ExtendedQueryDB2CommandBaseMessage<R, ExtendedQueryCommand<R>> {

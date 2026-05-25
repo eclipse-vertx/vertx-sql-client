@@ -29,7 +29,6 @@ import io.vertx.db2client.impl.drda.DRDAQueryRequest;
 import io.vertx.db2client.impl.drda.DRDAQueryResponse;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.internal.TupleBase;
-import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
 public class ExtendedBatchQueryDB2CommandMessage<R> extends ExtendedQueryDB2CommandBaseMessage<R, ExtendedQueryCommand<R>> {

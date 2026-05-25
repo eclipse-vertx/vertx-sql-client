@@ -16,7 +16,7 @@
 package io.vertx.db2client.impl.drda;
 
 /**
- * Constants for FD:OCA (Formatted Data: Object Content Architecture) 
+ * Constants for FD:OCA (Formatted Data: Object Content Architecture)
  */
 class FdocaConstants {
 

@@ -20,9 +20,9 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class DB2RowId implements RowId {
-  
+
   private final byte[] bytes;
-  
+
   public DB2RowId(byte[] bytes) {
     Objects.requireNonNull(bytes);
     this.bytes = bytes;
@@ -32,12 +32,12 @@ public class DB2RowId implements RowId {
   public byte[] getBytes() {
     return bytes;
   }
-  
+
   @Override
   public String toString() {
     return Arrays.toString(bytes);
   }
-  
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -47,7 +47,7 @@ public class DB2RowId implements RowId {
     DB2RowId other = (DB2RowId) obj;
     return Arrays.equals(bytes, other.bytes);
   }
-  
+
   @Override
   public int hashCode() {
     return Arrays.hashCode(bytes);

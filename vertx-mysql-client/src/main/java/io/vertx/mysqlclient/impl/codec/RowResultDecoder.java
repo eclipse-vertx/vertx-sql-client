@@ -84,4 +84,3 @@ class RowResultDecoder<C, R> extends RowDecoder<C, R> {
     return true;
   }
 }
-

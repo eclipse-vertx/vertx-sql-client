@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ColumnMetaData {
-  
+
     public int columns_;
 
     public boolean[] nullable_;
@@ -106,7 +106,7 @@ public class ColumnMetaData {
         this.types_ = new int[numColumns];
         this.clientParamtertype_ = new int[numColumns];
     }
-    
+
     public List<JDBCType> getJdbcTypes() {
       List<JDBCType> jdbcTypes = new ArrayList<>(columns_);
       for (int i = 0; i < columns_; i++) {

@@ -16,13 +16,10 @@
  */
 package io.vertx.mysqlclient.impl.codec;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
 import io.vertx.mysqlclient.impl.MySQLSocketConnection;
-import io.vertx.sqlclient.ClosedConnectionException;
 
 import java.util.ArrayDeque;
-import java.util.Iterator;
 
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 

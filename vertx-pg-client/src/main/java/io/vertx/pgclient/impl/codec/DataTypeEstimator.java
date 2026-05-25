@@ -1,6 +1,5 @@
 package io.vertx.pgclient.impl.codec;
 
-import io.netty.handler.codec.DecoderException;
 import io.netty.util.CharsetUtil;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.pgclient.data.Cidr;

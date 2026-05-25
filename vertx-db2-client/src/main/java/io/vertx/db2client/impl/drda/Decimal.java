@@ -29,7 +29,7 @@ public class Decimal {
      * Packed Decimal representation
      */
     public final static int PACKED_DECIMAL = 0x30;
-    
+
     //--------------------------private constants---------------------------------
 
     private static final int[][] tenRadixMagnitude = {
@@ -37,7 +37,7 @@ public class Decimal {
         {0x0de0b6b3, 0xa7640000}, // 10^18
         {0x033b2e3c, 0x9fd0803c, 0xe8000000}, // 10^27
     };
-    
+
     // Used only by computeBigDecimalPrecision()
     // byte array of 1, 10, 100, 1000, 10000, ..., 10^31 for
     // fast computing the length a BigDecimal.
@@ -169,7 +169,7 @@ public class Decimal {
         }
         return mag;
     }
-    
+
     static public int computeBigDecimalPrecision(BigDecimal decimal) {
         byte[] bBytes = decimal.unscaledValue().abs().toByteArray();
 
@@ -193,7 +193,7 @@ public class Decimal {
 
         return (mi + 1);
     }
-    
+
     // Used only by computeBigDecimalPrecision()
     private static int byteArrayCmp(byte[] arg1, byte[] arg2) {
         int arg1Offset = 0;

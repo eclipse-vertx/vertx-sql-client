@@ -18,15 +18,9 @@
 package io.vertx.pgclient.impl.util;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.util.CharsetUtil;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.sqlclient.Tuple;
 
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.nio.charset.StandardCharsets.*;
 

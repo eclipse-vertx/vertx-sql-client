@@ -16,7 +16,6 @@
 package io.vertx.db2client.impl.codec;
 
 import io.netty.buffer.ByteBuf;
-import io.vertx.core.Handler;
 import io.vertx.db2client.impl.command.InitialHandshakeCommand;
 import io.vertx.db2client.impl.command.PingCommand;
 import io.vertx.sqlclient.codec.CommandMessage;
@@ -24,7 +23,6 @@ import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 import io.vertx.sqlclient.spi.protocol.CloseCursorCommand;
 import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
-import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 

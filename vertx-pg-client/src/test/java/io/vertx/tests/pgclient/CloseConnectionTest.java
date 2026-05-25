@@ -12,7 +12,6 @@ import io.vertx.sqlclient.PoolOptions;
 import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class CloseConnectionTest extends PgTestBase {

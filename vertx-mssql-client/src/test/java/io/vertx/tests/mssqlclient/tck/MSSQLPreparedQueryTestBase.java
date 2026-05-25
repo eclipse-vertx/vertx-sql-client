@@ -125,4 +125,3 @@ public abstract class MSSQLPreparedQueryTestBase extends PreparedQueryTestBase {
     }));
   }
 }
-

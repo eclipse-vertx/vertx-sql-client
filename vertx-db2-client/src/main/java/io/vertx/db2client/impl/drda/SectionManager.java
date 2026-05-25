@@ -49,7 +49,7 @@ public class SectionManager {
     public int sectionsInUse() {
       return pkgs.stream().mapToInt(DB2Package::sectionsInUse).sum();
     }
-    
+
     public Section getSection(String sql) {
       return getDynamicSection();
     }
@@ -64,4 +64,3 @@ public class SectionManager {
     }
 
 }
-

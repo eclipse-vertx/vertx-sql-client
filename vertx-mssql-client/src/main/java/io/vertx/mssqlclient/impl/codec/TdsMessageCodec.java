@@ -14,11 +14,9 @@ package io.vertx.mssqlclient.impl.codec;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
-import io.vertx.sqlclient.ClosedConnectionException;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDecoder, TdsMessageEncoder> {
