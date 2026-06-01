@@ -136,25 +136,21 @@ public class PgConnectionTest extends PgConnectionTestBase {
   public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
     connector.accept(ctx.asyncAssertSuccess(conn1 -> {
       conn1
-        .query("SELECT pg_sleep(20)")
+        .query("SELECT pg_backend_pid()")
         .execute()
-        .onComplete(ctx.asyncAssertFailure(t -> {
-        ctx.assertTrue(t instanceof ClosedConnectionException);
-      }));
-      connector.accept(ctx.asyncAssertSuccess(conn2 -> {
-        conn2
-          .query("SELECT * FROM pg_stat_activity WHERE state = 'active' AND query = 'SELECT pg_sleep(20)'")
-          .execute()
-          .onComplete(ctx.asyncAssertSuccess(statRes -> {
-          for (Row row : statRes) {
-            Integer id = row.getInteger("pid");
-            // kill the connection
+        .onComplete(ctx.asyncAssertSuccess(pidRes -> {
+          int pid = pidRes.iterator().next().getInteger(0);
+          conn1
+            .query("SELECT pg_sleep(20)")
+            .execute()
+            .onComplete(ctx.asyncAssertFailure(t -> {
+              ctx.assertTrue(t instanceof ClosedConnectionException);
+            }));
+          connector.accept(ctx.asyncAssertSuccess(conn2 -> {
             conn2
-              .query(String.format("SELECT pg_terminate_backend(%d);", id))
+              .query(String.format("SELECT pg_terminate_backend(%d)", pid))
               .execute()
               .onComplete(ctx.asyncAssertSuccess(v -> conn2.close()));
-            break;
-          }
         }));
       }));
     }));
