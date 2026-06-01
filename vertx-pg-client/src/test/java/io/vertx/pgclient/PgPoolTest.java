@@ -204,6 +204,8 @@ public class PgPoolTest extends PgPoolTestBase {
 
   @Test
   public void testUseAvailableResources(TestContext ctx) {
+    String appName = "test-" + UUID.randomUUID();
+    options.addProperty("application_name", appName);
     int poolSize = 10;
     Async async = ctx.async(poolSize + 1);
     PgPool pool = PgPool.pool(options, new PoolOptions().setMaxSize(poolSize));
@@ -216,7 +218,10 @@ public class PgPoolTest extends PgPoolTestBase {
         });
       }
       vertx.setTimer(10 * poolSize + 50, event -> {
-        ctrlConn.query("select count(*) as cnt from pg_stat_activity where application_name like '%vertx%'").execute(ctx.asyncAssertSuccess(rows -> {
+        ctrlConn
+                .query("select count(*) as cnt from pg_stat_activity where application_name = '" + appName + "'")
+                .execute()
+                .onComplete(ctx.asyncAssertSuccess(rows -> {
           Integer count = rows.iterator().next().getInteger("cnt");
           ctx.assertEquals(poolSize + 1, count);
           async.countDown();
@@ -304,32 +309,6 @@ public class PgPoolTest extends PgPoolTestBase {
     PgPool pool = (PgPool) PgPool.client(options, new PoolOptions().setMaxSize(1));
     pool.getConnection(ctx.asyncAssertFailure());
   }
-
-  /*  @Test
-  public void testPipeliningDistribution(TestContext ctx) {
-    int num = 10;
-    SqlClient pool = PgPool.client(options.setPipeliningLimit(512), new PoolOptions().setMaxSize(num));
-    Async async = ctx.async(num);
-    for (int i = 0;i < num;i++) {
-      pool.query("select 1").execute(ctx.asyncAssertSuccess(res1 -> {
-        async.countDown();
-      }));
-    }
-    async.awaitSuccess(20_000);
-    int s = ((PoolBase)pool).size();
-    System.out.println("s = " + s);
-    int count = 1000;
-    Async async2 = ctx.async(num * count);
-    for (int i = 0;i < count * num;i++) {
-      pool.query("select 1").execute(ctx.asyncAssertSuccess(res1 -> {
-        async2.countDown();
-      }));
-    }
-    async2.awaitSuccess(20_000);
-    ((PoolBase)pool).check(ctx.asyncAssertSuccess(list -> {
-      System.out.println("list = " + list);
-    }));
-  }*/
 
   @Test
   public void testPoolIdleTimeout(TestContext ctx) {
@@ -455,6 +434,8 @@ public class PgPoolTest extends PgPoolTestBase {
   @Test
   @Repeat(50)
   public void testNoConnectionLeaks(TestContext ctx) {
+    String appName = "test-" + UUID.randomUUID();
+    options.addProperty("application_name", appName);
     Async killConnections = ctx.async();
     PgConnection.connect(vertx, options, ctx.asyncAssertSuccess(conn -> {
       Collector<Row, ?, List<Boolean>> collector = mapping(row -> row.getBoolean(0), toList());
@@ -465,7 +446,7 @@ public class PgPoolTest extends PgPoolTestBase {
     }));
     killConnections.awaitSuccess();
 
-    String sql = "SELECT pg_backend_pid() AS pid, (SELECT count(*) FROM pg_stat_activity WHERE application_name LIKE '%vertx%') AS cnt";
+    String sql = "SELECT pg_backend_pid() AS pid, (SELECT count(*) FROM pg_stat_activity WHERE application_name = '" + appName + "') AS cnt";
 
     int idleTimeout = 50;
     poolOptions

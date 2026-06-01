@@ -20,10 +20,8 @@ package io.vertx.pgclient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.ClosedConnectionException;
-import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlResult;
 import io.vertx.sqlclient.Tuple;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -125,17 +123,22 @@ public class PgConnectionTest extends PgConnectionTestBase {
   @Test
   public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
     connector.accept(ctx.asyncAssertSuccess(conn1 -> {
-      conn1.query("SELECT pg_sleep(20)").execute(ctx.asyncAssertFailure(t -> {
-        ctx.assertTrue(t instanceof ClosedConnectionException);
-      }));
-      connector.accept(ctx.asyncAssertSuccess(conn2 -> {
-        conn2.query("SELECT * FROM pg_stat_activity WHERE state = 'active' AND query = 'SELECT pg_sleep(20)'").execute(ctx.asyncAssertSuccess(statRes -> {
-          for (Row row : statRes) {
-            Integer id = row.getInteger("pid");
-            // kill the connection
-            conn2.query(String.format("SELECT pg_terminate_backend(%d);", id)).execute(ctx.asyncAssertSuccess(v -> conn2.close()));
-            break;
-          }
+      conn1
+        .query("SELECT pg_backend_pid()")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(pidRes -> {
+          int pid = pidRes.iterator().next().getInteger(0);
+          conn1
+            .query("SELECT pg_sleep(20)")
+            .execute()
+            .onComplete(ctx.asyncAssertFailure(t -> {
+              ctx.assertTrue(t instanceof ClosedConnectionException);
+            }));
+          connector.accept(ctx.asyncAssertSuccess(conn2 -> {
+            conn2
+              .query(String.format("SELECT pg_terminate_backend(%d)", pid))
+              .execute()
+              .onComplete(ctx.asyncAssertSuccess(v -> conn2.close()));
         }));
       }));
     }));
