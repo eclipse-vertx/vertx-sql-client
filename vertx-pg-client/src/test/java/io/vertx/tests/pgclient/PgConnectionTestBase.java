@@ -66,7 +66,6 @@ public abstract class PgConnectionTestBase extends PgClientTestBase<SqlConnectio
     CompletableFuture<Void> connected = new CompletableFuture<>();
     proxy.proxyHandler(conn -> {
       connected.thenAccept(v -> {
-        System.out.println("send bogus");
         Buffer bogusMsg = Buffer.buffer();
         bogusMsg.appendByte((byte) 'R'); // Authentication
         bogusMsg.appendInt(0);
