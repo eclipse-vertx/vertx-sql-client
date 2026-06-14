@@ -20,10 +20,12 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.pgclient.ChannelBinding;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.SslMode;
 import io.vertx.pgclient.SslNegotiation;
+import io.vertx.sqlclient.ClosedConnectionException;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.tests.pgclient.junit.ContainerPgRule;
 import org.junit.*;
@@ -258,6 +260,35 @@ public class TLSTest {
     PgConnection.connect(vertxWithHosts, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertTrue(conn.isSSL());
       vertxWithHosts.close();
+      async.complete();
+    }));
+  }
+
+  @Test
+  public void testChannelBindingRequireWithSsl(TestContext ctx) {
+    Async async = ctx.async();
+    PgConnectOptions options = new PgConnectOptions(ruleOptionalSll.options())
+      .setSslMode(SslMode.REQUIRE)
+      .setChannelBinding(ChannelBinding.REQUIRE)
+      .setSslOptions(new ClientSSLOptions().setTrustAll(true));
+
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      ctx.assertTrue(conn.isSSL());
+      async.complete();
+    }));
+  }
+
+  @Test
+  public void testChannelBindingRequireWithoutSsl(TestContext ctx) {
+    Async async = ctx.async();
+    PgConnectOptions options = new PgConnectOptions(ruleOptionalSll.options())
+      .setSslMode(SslMode.DISABLE)
+      .setChannelBinding(ChannelBinding.REQUIRE)
+      .setSslOptions(new ClientSSLOptions().setTrustAll(true));
+
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(err -> {
+      // ctx.assertEquals("Channel bindins is required", err.getMessage());
+      ctx.assertTrue(err instanceof ClosedConnectionException); // TODO: handle ChannelBindingException
       async.complete();
     }));
   }

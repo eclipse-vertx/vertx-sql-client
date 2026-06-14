@@ -99,6 +99,9 @@ public class PgConnectOptions extends SqlConnectOptions {
     if (getenv("PGSSLNEGOTIATION") != null) {
       pgConnectOptions.setSslNegotiation(SslNegotiation.of(getenv("PGSSLNEGOTIATION")));
     }
+    if (getenv("PGCHANNELBINDING") != null) {
+      pgConnectOptions.setChannelBinding(ChannelBinding.of(getenv("PGCHANNELBINDING")));
+    }
     return pgConnectOptions;
   }
 
@@ -110,6 +113,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final int DEFAULT_PIPELINING_LIMIT = 256;
   public static final SslMode DEFAULT_SSLMODE = SslMode.DISABLE;
   public static final SslNegotiation DEFAULT_SSL_NEGOTIATION = SslNegotiation.POSTGRES;
+  public static final ChannelBinding DEFAULT_CHANNEL_BINDING = ChannelBinding.PREFER;
   public static final boolean DEFAULT_USE_LAYER_7_PROXY = false;
   public static final Map<String, String> DEFAULT_PROPERTIES;
 
@@ -125,6 +129,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
   private SslMode sslMode = DEFAULT_SSLMODE;
   private SslNegotiation sslNegotiation = DEFAULT_SSL_NEGOTIATION;
+  private ChannelBinding channelBinding = DEFAULT_CHANNEL_BINDING;
   private boolean useLayer7Proxy = DEFAULT_USE_LAYER_7_PROXY;
 
   public PgConnectOptions() {
@@ -143,6 +148,7 @@ public class PgConnectOptions extends SqlConnectOptions {
       pipeliningLimit = opts.pipeliningLimit;
       sslMode = opts.sslMode;
       sslNegotiation = opts.sslNegotiation;
+      channelBinding = opts.channelBinding;
     }
   }
 
@@ -151,6 +157,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     pipeliningLimit = other.pipeliningLimit;
     sslMode = other.sslMode;
     sslNegotiation = other.sslNegotiation;
+    channelBinding = other.channelBinding;
   }
 
   @Override
@@ -259,6 +266,24 @@ public class PgConnectOptions extends SqlConnectOptions {
   }
 
   /**
+   * @return the value of current Channel Binding mode
+   */
+  public ChannelBinding getChannelBinding() {
+    return channelBinding;
+  }
+
+  /**
+   * Set {@link ChannelBinding} for the client, this option controls the client's use of channel binding.
+   *
+   * @param channelBinding the channel binding mode
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PgConnectOptions setChannelBinding(ChannelBinding channelBinding) {
+    this.channelBinding = channelBinding;
+    return this;
+  }
+
+  /**
    * @return whether the client interacts with a layer 7 proxy instead of a server
    */
   @Unstable
@@ -342,6 +367,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     if (pipeliningLimit != that.pipeliningLimit) return false;
     if (sslMode != that.sslMode) return false;
     if (sslNegotiation != that.sslNegotiation) return false;
+    if (channelBinding != that.channelBinding) return false;
 
     return true;
   }
@@ -352,6 +378,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     result = 31 * result + pipeliningLimit;
     result = 31 * result + sslMode.hashCode();
     result = 31 * result + sslNegotiation.hashCode();
+    result = 31 * result + channelBinding.hashCode();
     return result;
   }
 

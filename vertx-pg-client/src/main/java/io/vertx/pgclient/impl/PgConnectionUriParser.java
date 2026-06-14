@@ -11,6 +11,7 @@
 package io.vertx.pgclient.impl;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.pgclient.ChannelBinding;
 import io.vertx.pgclient.SslMode;
 import io.vertx.pgclient.SslNegotiation;
 
@@ -182,6 +183,9 @@ public class PgConnectionUriParser {
             break;
           case "sslnegotiation":
             configuration.put("sslNegotiation", SslNegotiation.of(value));
+            break;
+          case "channel_binding":
+            configuration.put("channelBinding", ChannelBinding.of(value));
             break;
           default:
             properties.put(key, value);

@@ -1,8 +1,8 @@
 package io.vertx.pgclient.impl.auth.scram;
 
-import com.ongres.scram.client.ScramClient;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
+import io.vertx.pgclient.ChannelBinding;
 
 public class ScramAuthentication {
 
@@ -13,10 +13,10 @@ public class ScramAuthentication {
   static {
     ScramAuthentication instance;
     try {
-      ScramClient.MechanismsBuildStage builder = ScramClient.builder();
-      logger.debug("Scram authentication is available " + builder);
+      Class.forName("com.ongres.scram.client.ScramClient");
       instance = new ScramAuthentication();
     } catch (Throwable notFound) {
+      logger.debug("SCRAM authentication is NOT available");
       instance = null;
     }
     INSTANCE = instance;
@@ -25,7 +25,7 @@ public class ScramAuthentication {
   private ScramAuthentication() {
   }
 
-  public ScramSession session(String username, char[] password) {
-    return new ScramSessionImpl(username, password);
+  public ScramSession session(String username, char[] password, ChannelBinding channelBinding) {
+    return new ScramSessionImpl(username, password, channelBinding);
   }
 }

@@ -539,6 +539,33 @@ public class PgClientExamples {
     PgConnectOptions options = PgConnectOptions.fromUri(connectionUri);
   }
 
+  public void channelBinding(Vertx vertx) {
+    PgConnectOptions options = new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret")
+      .setSslMode(SslMode.REQUIRE)
+      .setChannelBinding(ChannelBinding.REQUIRE)
+      .setSslOptions(new ClientSSLOptions()
+        .setTrustOptions(new PemTrustOptions().addCertPath("/path/to/server.crt")));
+
+    PgConnection.connect(vertx, options)
+      .onComplete(res -> {
+        if (res.succeeded()) {
+          System.out.println("Connected with channel binding enforcement");
+        } else {
+          System.out.println("Could not connect: " + res.cause().getMessage());
+        }
+      });
+  }
+
+  public void channelBindingUri() {
+    String connectionUri = "postgresql://localhost/mydb?sslmode=require&channel_binding=require";
+    PgConnectOptions options = PgConnectOptions.fromUri(connectionUri);
+  }
+
   public void jsonExample() {
 
     // Create a tuple

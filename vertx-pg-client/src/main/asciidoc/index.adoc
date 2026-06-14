@@ -195,6 +195,7 @@ Currently, the client supports the following parameter keys:
 * `dbname`
 * `sslmode`
 * `sslnegotiation`
+* `channel_binding`
 
 Additional parameters will be added to the {@link io.vertx.sqlclient.SqlConnectOptions#getProperties properties}.
 
@@ -214,6 +215,7 @@ for more details. The following parameters are supported:
 * `PGPASSWORD`
 * `PGSSLMODE`
 * `PGSSLNEGOTIATION`
+* `PGCHANNELBINDING`
 
 If you don't specify a data object or a connection URI string to connect, environment variables will take precedence over them.
 
@@ -224,7 +226,8 @@ $ PGUSER=user \
   PGPASSWORD=secret \
   PGDATABASE=the-db \
   PGPORT=5432 \
-  PGSSLMODE=DISABLE
+  PGSSLMODE=DISABLE \
+  PGCHANNELBINDING=prefer
 ----
 
 [source,$lang]
@@ -766,6 +769,36 @@ NOTE: Direct SSL negotiation requires PostgreSQL 17 or later.
 Attempting to use `DIRECT` mode with older PostgreSQL versions will result in an SSL handshake failure.
 
 More information can be found in the http://vertx.io/docs/vertx-core/java/#ssl[Vert.x documentation].
+
+=== Channel Binding (SCRAM authentication)
+
+Channel binding is a method for the server to authenticate itself to the client.
+It is only supported over SSL connections with PostgreSQL 11 or later servers using the `SCRAM authentication` method.
+
+The client supports three channel binding modes via {@link io.vertx.pgclient.ChannelBinding}:
+
+- `DISABLE`: Prevents the use of channel binding
+- `PREFER` (default):  Means that the client will choose channel binding if available
+- `REQUIRE`: Means that the connection must employ channel binding
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#channelBinding}
+----
+
+You can also configure Channel binding via connection URI:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#channelBindingUri}
+----
+
+Or using the environment variable:
+
+[source,bash]
+----
+export PGCHANNELBINDING=require
+----
 
 == Using a level 4 proxy
 
