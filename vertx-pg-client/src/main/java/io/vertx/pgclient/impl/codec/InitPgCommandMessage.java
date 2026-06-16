@@ -64,7 +64,8 @@ class InitPgCommandMessage extends PgCommandMessage<Connection, InitCommand> {
       // This will close the connection
       throw new VertxException("Scram authentication not supported, missing com.ongres.scram:scram-client on the class/module path");
     }
-    scramSession = scramAuth.session(cmd.username(), cmd.password().toCharArray());
+    PgSocketConnection pgSocketConn = (PgSocketConnection) cmd.connection().unwrap();
+    scramSession = scramAuth.session(cmd.username(), cmd.password().toCharArray(), pgSocketConn.channelBinding());
     encoder.writeScramClientInitialMessage(
         scramSession.createInitialSaslMessage(in, encoder.channelHandlerContext()));
     encoder.flush();

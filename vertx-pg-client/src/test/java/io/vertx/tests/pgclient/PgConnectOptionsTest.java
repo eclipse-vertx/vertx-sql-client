@@ -11,6 +11,7 @@
 package io.vertx.tests.pgclient;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.pgclient.ChannelBinding;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.pgclient.SslNegotiation;
@@ -163,6 +164,19 @@ public class PgConnectOptionsTest {
       .setHost("myhost")
       .setUser("user")
       .setSslNegotiation(SslNegotiation.DIRECT);
+
+    assertEquals(expectedConfiguration, actualConfiguration);
+  }
+
+  @Test
+  public void testValidUriChannelBindingRequire() {
+    connectionUri = "postgresql://user@myhost?channel_binding=require";
+    actualConfiguration = PgConnectOptions.fromUri(connectionUri);
+
+    expectedConfiguration = new PgConnectOptions()
+      .setHost("myhost")
+      .setUser("user")
+      .setChannelBinding(ChannelBinding.REQUIRE);
 
     assertEquals(expectedConfiguration, actualConfiguration);
   }

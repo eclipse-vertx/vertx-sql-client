@@ -25,6 +25,7 @@ import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
+import io.vertx.pgclient.ChannelBinding;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgException;
 import io.vertx.pgclient.impl.codec.ExtendedQueryPgCommandMessage;
@@ -136,6 +137,10 @@ public class PgSocketConnection extends SocketConnectionBase {
 
   public int getSecretKey() {
     return secretKey;
+  }
+
+  public ChannelBinding channelBinding() {
+    return connectOptions.getChannelBinding();
   }
 
   @Override
