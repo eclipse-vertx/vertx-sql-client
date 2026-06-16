@@ -17,17 +17,6 @@
 
 package io.vertx.pgclient.impl.auth.scram;
 
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.net.ssl.SSLException;
-import javax.net.ssl.SSLSession;
-
 import com.ongres.scram.client.ChannelBindingException;
 import com.ongres.scram.client.ChannelBindingPolicy;
 import com.ongres.scram.client.ScramClient;
@@ -37,19 +26,24 @@ import com.ongres.scram.common.exception.ScramParseException;
 import com.ongres.scram.common.exception.ScramRuntimeException;
 import com.ongres.scram.common.exception.ScramServerErrorException;
 import com.ongres.scram.common.util.TlsServerEndpoint;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.ssl.SslHandler;
-import io.vertx.core.internal.logging.Logger;
-import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.pgclient.ChannelBinding;
 import io.vertx.pgclient.impl.codec.ScramClientInitialMessage;
 import io.vertx.pgclient.impl.util.Util;
 
-public class ScramSessionImpl implements ScramSession {
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
 
-  private static final Logger logger = LoggerFactory.getLogger(ScramSessionImpl.class);
+public class ScramSessionImpl implements ScramSession {
 
   private final String username;
   private final char[] password;
@@ -77,8 +71,6 @@ public class ScramSessionImpl implements ScramSession {
       mechanisms.add(mechanism);
     }
 
-    logger.debug("Advertised SCRAM mechanisms: " + mechanisms);
-
     this.scramClient = ScramClient.builder()
         .advertisedMechanisms(mechanisms)
         .username(username) // ignored by the server, use startup message
@@ -88,10 +80,7 @@ public class ScramSessionImpl implements ScramSession {
         .channelBinding(TlsServerEndpoint.TLS_SERVER_END_POINT, extractChannelBindingData(ctx))
         .build();
 
-    logger.debug("Selected SCRAM mechanism: " + scramClient.getScramMechanism().getName());
-
     String clientFirstMessage = scramClient.clientFirstMessage().toString();
-    logger.trace("SASLInitialResponse: " + clientFirstMessage);
 
     return new ScramClientInitialMessage(clientFirstMessage,
         scramClient.getScramMechanism().getName());
@@ -105,18 +94,12 @@ public class ScramSessionImpl implements ScramSession {
    */
   public String receiveServerFirstMessage(ByteBuf in) {
     String serverFirstMessage = in.readCharSequence(in.readableBytes(), StandardCharsets.UTF_8).toString();
-    logger.trace("AuthenticationSASLContinue: " + serverFirstMessage);
-
     try {
       scramClient.serverFirstMessage(serverFirstMessage);
     } catch (ScramParseException e) {
       throw new ScramRuntimeException(e.getMessage(), e);
     }
-
-    String clientFinalMessage = scramClient.clientFinalMessage().toString();
-    logger.trace("SASLResponse: " + clientFinalMessage);
-
-    return clientFinalMessage;
+    return scramClient.clientFinalMessage().toString();
   }
 
   /*
@@ -129,8 +112,6 @@ public class ScramSessionImpl implements ScramSession {
    */
   public void checkServerFinalMessage(ByteBuf in) {
     String serverFinalMessage = in.readCharSequence(in.readableBytes(), StandardCharsets.UTF_8).toString();
-    logger.trace("AuthenticationSASLFinal: " + serverFinalMessage);
-
     try {
       scramClient.serverFinalMessage(serverFinalMessage);
     } catch (ScramParseException | ScramServerErrorException | ScramInvalidServerSignatureException e) {
@@ -154,7 +135,6 @@ public class ScramSessionImpl implements ScramSession {
             }
           }
         } catch (CertificateEncodingException | SSLException | NoSuchAlgorithmException e) {
-          logger.debug("Error extracting channel binding data", e);
           if (channelBinding == ChannelBindingPolicy.REQUIRE) {
             throw new ChannelBindingException(e.getMessage());
           }
@@ -165,7 +145,6 @@ public class ScramSessionImpl implements ScramSession {
   }
 
   private static ChannelBindingPolicy getChannelBindingPolicy(ChannelBinding channelBinding) {
-    logger.debug("ChannelBinding: " + channelBinding);
     switch (channelBinding) {
       case DISABLE:
         return ChannelBindingPolicy.DISABLE;
