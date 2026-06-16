@@ -74,6 +74,7 @@ Use Vert.x `Future<T>` and `Promise<T>` throughout. Do not use raw callbacks or 
 
 `module-info.java` governs exports.
 Internal packages are exported only to their corresponding test modules, do not widen exports without discussion.
+Test module descriptors (`src/test/java/module-info.java`) can be modified freely, e.g. to add a `requires` for a new dependency used in tests.
 
 ### Copyright Header
 
@@ -135,6 +136,10 @@ public class MyTest {
 mvn test                           # Run all tests (requires Docker)
 mvn test -Dtest=MyTest             # Run specific test class
 mvn test -Dtest=MyTest#testMethod  # Run specific test method
+
+# When your change spans modules (e.g. modifying vertx-sql-client-codec and
+# testing in vertx-pg-client), use -am to rebuild dependencies:
+mvn test -pl vertx-pg-client -am -Dtest=MyTest
 ```
 
 ### Test Requirements
