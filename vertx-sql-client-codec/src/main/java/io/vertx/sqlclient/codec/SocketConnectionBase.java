@@ -87,6 +87,8 @@ public abstract class SocketConnectionBase implements Connection {
   protected final NetSocketInternal socket;
   protected Status status = Status.CONNECTED;
 
+  private Throwable exceptionReport;
+
   public SocketConnectionBase(NetSocketInternal socket,
                               ClientMetrics metrics,
                               boolean cachePreparedStatements,
@@ -147,13 +149,7 @@ public abstract class SocketConnectionBase implements Connection {
   public void init() {
     socket.closeHandler(this::handleClosed);
     socket.exceptionHandler(this::handleException);
-    socket.messageHandler(msg -> {
-      try {
-        handleMessage(msg);
-      } catch (Exception e) {
-        handleException(e);
-      }
-    });
+    socket.messageHandler(this::handleMessage);
     socket.readCompletionHandler(this::handleReadComplete);
   }
 
@@ -413,18 +409,18 @@ public abstract class SocketConnectionBase implements Connection {
   }
 
   private void handleClosed(Void v) {
-    handleClose(null);
+    handleClose(exceptionReport);
   }
 
-  protected void handleException(Throwable t) {
+  private void handleException(Throwable t) {
     if (t instanceof DecoderException) {
       DecoderException err = (DecoderException) t;
       t = err.getCause();
     }
-    handleClose(t);
+    exceptionReport = t;
   }
 
-  protected void reportException(Throwable t) {
+  private void reportException(Throwable t) {
     synchronized (this) {
       if (holder != null) {
         holder.handleException(t);
@@ -432,7 +428,7 @@ public abstract class SocketConnectionBase implements Connection {
     }
   }
 
-  protected void handleClose(Throwable t) {
+  private void handleClose(Throwable t) {
     if (status != Status.CLOSED) {
       status = Status.CLOSED;
       if (metrics != null) {

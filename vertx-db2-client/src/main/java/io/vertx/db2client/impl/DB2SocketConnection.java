@@ -12,7 +12,6 @@ package io.vertx.db2client.impl;
 
 import io.netty.channel.ChannelPipeline;
 import io.vertx.core.Completable;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.net.NetSocketInternal;
@@ -43,7 +42,6 @@ public class DB2SocketConnection extends SocketConnectionBase {
 
   private final DB2ConnectOptions connectOptions;
   private DB2Codec codec;
-  private Handler<Void> closeHandler;
   public final ConnectionMetaData connMetadata = new ConnectionMetaData();
   public ConnectionState status = ConnectionState.CONNECTING;
 
@@ -129,14 +127,6 @@ public class DB2SocketConnection extends SocketConnectionBase {
   }
 
   @Override
-  public void handleClose(Throwable t) {
-    super.handleClose(t);
-    if (closeHandler != null) {
-      context().runOnContext(closeHandler);
-    }
-  }
-
-  @Override
   public String system() {
     return "db2";
   }
@@ -146,8 +136,4 @@ public class DB2SocketConnection extends SocketConnectionBase {
     return connMetadata.getDbMetadata();
   }
 
-  public DB2SocketConnection closeHandler(Handler<Void> handler) {
-    closeHandler = handler;
-    return this;
-  }
 }
