@@ -134,7 +134,11 @@ public class PgConnectionTest extends PgConnectionTestBase {
 
   @Test
   public void testInflightCommandsFailWhenConnectionClosed(TestContext ctx) {
+    Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(conn1 -> {
+      conn1.exceptionHandler(err -> {
+        async.complete();
+      });
       conn1
         .query("SELECT pg_backend_pid()")
         .execute()
