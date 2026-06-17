@@ -121,15 +121,6 @@ public class PgSocketConnection extends SocketConnectionBase {
     }
   }
 
-  @Override
-  protected void handleException(Throwable t) {
-    if (t instanceof PgException) {
-      reportException(t);
-    } else {
-      super.handleException(t);
-    }
-  }
-
   public int getProcessId() {
     return processId;
   }
