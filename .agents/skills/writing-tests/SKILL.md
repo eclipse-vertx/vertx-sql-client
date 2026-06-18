@@ -18,21 +18,60 @@ Vert.x SQL Client uses JUnit 4 with Vert.x-specific test utilities. Tests and do
 
 ## Test Annotations and Extensions
 
-### Standard Test Pattern
+### Standard Test Patterns
+
+#### Pattern 1: Using Async with Simple Callback
 
 ```java
 @RunWith(VertxUnitRunner.class)
 public class MyTest {
 
   @Test
-  public void testAsyncOperation(TestContext ctx) {
+  public void testWithAsync(TestContext ctx) {
     Async async = ctx.async();
+    vertx.runOnContext(v -> async.complete());
+  }
+}
+```
+
+#### Pattern 2: Using asyncAssertSuccess Directly
+
+When using `asyncAssertSuccess`, do not call `async.complete()` as it creates an async internally:
+
+```java
+@RunWith(VertxUnitRunner.class)
+public class MyTest {
+
+  @Test
+  public void testAsyncAssertSuccess(TestContext ctx) {
     client.query("SELECT 1")
       .execute()
       .onComplete(ctx.asyncAssertSuccess(result -> {
         ctx.assertEquals(1, result.size());
-        async.complete();
       }));
+  }
+}
+```
+
+#### Pattern 3: Using asyncAssertSuccess from runOnContext
+
+When calling `asyncAssertSuccess` from `runOnContext`, you need an explicit async:
+
+```java
+@RunWith(VertxUnitRunner.class)
+public class MyTest {
+
+  @Test
+  public void testAsyncAssertSuccessFromRunOnContext(TestContext ctx) {
+    Async async = ctx.async();
+    vertx.runOnContext(v -> {
+      client.query("SELECT 1")
+        .execute()
+        .onComplete(ctx.asyncAssertSuccess(result -> {
+          ctx.assertEquals(1, result.size());
+          async.complete();
+        }));
+    });
   }
 }
 ```
