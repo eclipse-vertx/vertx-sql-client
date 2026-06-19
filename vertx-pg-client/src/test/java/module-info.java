@@ -2,6 +2,7 @@ open module io.vertx.tests.sql.client.pg {
 
   requires io.netty.buffer;
   requires io.netty.transport;
+  requires com.ongres.scram.client;
   requires io.vertx.core;
   requires io.vertx.sql.client;
   requires io.vertx.sql.client.pg;

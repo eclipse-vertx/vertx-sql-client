@@ -11,6 +11,7 @@
 
 package io.vertx.tests.pgclient;
 
+import com.ongres.scram.client.ChannelBindingException;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.buffer.Buffer;
@@ -20,12 +21,7 @@ import io.vertx.core.net.PemTrustOptions;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.pgclient.ChannelBinding;
-import io.vertx.pgclient.PgConnectOptions;
-import io.vertx.pgclient.PgConnection;
-import io.vertx.pgclient.SslMode;
-import io.vertx.pgclient.SslNegotiation;
-import io.vertx.sqlclient.ClosedConnectionException;
+import io.vertx.pgclient.*;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.tests.pgclient.junit.ContainerPgRule;
 import org.junit.*;
@@ -281,14 +277,12 @@ public class TLSTest {
   @Test
   public void testChannelBindingRequireWithoutSsl(TestContext ctx) {
     Async async = ctx.async();
-    PgConnectOptions options = new PgConnectOptions(ruleOptionalSll.options())
-      .setSslMode(SslMode.DISABLE)
+    PgConnectOptions options = new PgConnectOptions(ruleSllOff.options())
       .setChannelBinding(ChannelBinding.REQUIRE)
       .setSslOptions(new ClientSSLOptions().setTrustAll(true));
 
     PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(err -> {
-      // ctx.assertEquals("Channel bindins is required", err.getMessage());
-      ctx.assertTrue(err instanceof ClosedConnectionException); // TODO: handle ChannelBindingException
+      ctx.assertTrue(err instanceof ChannelBindingException);
       async.complete();
     }));
   }
