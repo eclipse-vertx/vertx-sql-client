@@ -16,18 +16,18 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
 import io.netty.buffer.ByteBuf;
 import io.vertx.core.VertxException;
 import io.vertx.pgclient.impl.PgDatabaseMetadata;
 import io.vertx.pgclient.impl.PgSocketConnection;
 import io.vertx.pgclient.impl.auth.scram.ScramAuthentication;
 import io.vertx.pgclient.impl.auth.scram.ScramSession;
-import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.codec.CommandResponse;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.protocol.InitCommand;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 class InitPgCommandMessage extends PgCommandMessage<Connection, InitCommand> {
 
@@ -65,9 +65,17 @@ class InitPgCommandMessage extends PgCommandMessage<Connection, InitCommand> {
       throw new VertxException("Scram authentication not supported, missing com.ongres.scram:scram-client on the class/module path");
     }
     scramSession = scramAuth.session(cmd.username(), cmd.password().toCharArray());
-    encoder.writeScramClientInitialMessage(
+    try {
+      encoder.writeScramClientInitialMessage(
         scramSession.createInitialSaslMessage(in, encoder.channelHandlerContext()));
-    encoder.flush();
+      encoder.flush();
+    } catch (RuntimeException e) {
+      decoder.fireCommandResponse(CommandResponse.failure(e));
+      // If the frontend does not support the authentication method requested by the server,
+      // then it should immediately close the connection.
+      // See https://www.postgresql.org/docs/current/protocol-flow.html
+      encoder.close();
+    }
   }
 
   @Override
