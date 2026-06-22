@@ -40,8 +40,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(VertxUnitRunner.class)
@@ -205,5 +204,23 @@ public class MSSQLQueriesTest extends MSSQLTestBase {
           }
         }));
     }));
+  }
+
+  @Test
+  public void testUnsupportedXmlTypeErrorPropagation(TestContext ctx) {
+    connection
+      .query("CREATE TABLE #TempXmlTest (id INT, xmlData XML)")
+      .execute()
+      .onComplete(ctx.asyncAssertSuccess(create -> {
+        connection
+          .query("SELECT * FROM #TempXmlTest")
+          .execute()
+          .onComplete(ctx.asyncAssertFailure(t -> {
+            ctx.verify(v -> {
+              assertThat(t, instanceOf(UnsupportedOperationException.class));
+              assertThat(t.getMessage(), containsString("XML"));
+            });
+          }));
+      }));
   }
 }

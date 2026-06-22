@@ -20,7 +20,7 @@ package io.vertx.tests.pgclient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgConnection;
-import io.vertx.sqlclient.ClosedConnectionException;
+import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
@@ -148,7 +148,12 @@ public class PgConnectionTest extends PgConnectionTestBase {
             .query("SELECT pg_sleep(20)")
             .execute()
             .onComplete(ctx.asyncAssertFailure(t -> {
-              ctx.assertTrue(t instanceof ClosedConnectionException);
+              if (t instanceof PgException) {
+                PgException pge = (PgException) t;
+                ctx.assertEquals("57P01", pge.getSqlState()); // ADMIN SHUTDOWN
+              } else {
+                ctx.fail(t);
+              }
             }));
           connector.accept(ctx.asyncAssertSuccess(conn2 -> {
             conn2
