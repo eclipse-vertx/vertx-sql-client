@@ -21,28 +21,25 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.DecoderException;
-import io.vertx.core.*;
+import io.vertx.core.Completable;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
+import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.tracing.TracingPolicy;
-import io.vertx.core.internal.ContextInternal;
-import io.vertx.core.internal.net.NetSocketInternal;
 import io.vertx.sqlclient.ClosedConnectionException;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.codec.impl.PreparedStatementCache;
-import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.internal.PreparedStatement;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
+import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.connection.ConnectionContext;
-import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
-import io.vertx.sqlclient.spi.protocol.CloseStatementCommand;
-import io.vertx.sqlclient.spi.protocol.CommandBase;
-import io.vertx.sqlclient.spi.protocol.CompositeCommand;
-import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
-import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
+import io.vertx.sqlclient.spi.protocol.*;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -437,11 +434,12 @@ public abstract class SocketConnectionBase implements Connection {
       if (t != null) {
         reportException(t);
       }
+      Throwable inflightCause = t != null ? t : ClosedConnectionException.INSTANCE;
       CommandMessage<?, ?> msg;
       while ((msg = inflights.poll()) != null) {
-        fail(msg, ClosedConnectionException.INSTANCE);
+        fail(msg, inflightCause);
       }
-      Throwable cause = t == null ? VertxException.noStackTrace(PENDING_CMD_CONNECTION_CORRUPT_MSG) : new VertxException(PENDING_CMD_CONNECTION_CORRUPT_MSG, t);
+      Throwable cause = t == null ? VertxException.noStackTrace(PENDING_CMD_CONNECTION_CORRUPT_MSG) : VertxException.noStackTrace(PENDING_CMD_CONNECTION_CORRUPT_MSG, t);
       CommandBase<?> cmd;
       while ((cmd = pending.poll()) != null) {
         CommandBase c = cmd;
