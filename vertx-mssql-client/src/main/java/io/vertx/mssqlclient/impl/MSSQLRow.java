@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -12,6 +12,8 @@
 package io.vertx.mssqlclient.impl;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.internal.RowDescriptorBase;
 
@@ -59,6 +61,10 @@ public class MSSQLRow extends RowBase {
       return type.cast(getOffsetDateTime(position));
     } else if (type == Buffer.class) {
       return type.cast(getBuffer(position));
+    } else if (type == JsonObject.class) {
+      return type.cast(getJsonObject(position));
+    } else if (type == JsonArray.class) {
+      return type.cast(getJsonArray(position));
     } else if (type == UUID.class) {
       return type.cast(getValue(position));
     } else if (type == Object.class) {

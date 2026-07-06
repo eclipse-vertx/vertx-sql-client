@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -73,6 +73,9 @@ public abstract class MSSQLCommandMessage<R, C extends CommandBase<R>> extends C
           payload.skipBytes(payload.readUnsignedShortLE());
           handleLoginAck();
           break;
+        case FEATUREEXTACK:
+          handleFeatureExtAck(payload);
+          break;
         case COLMETADATA:
           handleColumnMetadata(payload);
           break;
@@ -127,6 +130,17 @@ public abstract class MSSQLCommandMessage<R, C extends CommandBase<R>> extends C
       .setLineNumber(payload.readIntLE());
 
     tdsMessageCodec.chctx().fireChannelRead(info);
+  }
+
+  private void handleFeatureExtAck(ByteBuf payload) {
+    while (payload.isReadable()) {
+      short featureId = payload.readUnsignedByte();
+      if (featureId == (0xFF)) { // no more features
+        break;
+      }
+      // We don't keep track of supported features (e.g. JSON)
+      payload.skipBytes((int) payload.readUnsignedIntLE());
+    }
   }
 
   protected void handleLoginAck() {

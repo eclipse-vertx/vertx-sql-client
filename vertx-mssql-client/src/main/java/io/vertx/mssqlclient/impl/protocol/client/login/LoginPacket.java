@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -90,6 +90,7 @@ public final class LoginPacket {
       3FRESERVEDBIT
    */
   public static final byte DEFAULT_OPTION_FLAGS3 = 0x00;
+  public static final byte OPTION_FLAGS3_EXTENSION = 0x10;
 
 
   private byte typeFlags = 0x00;

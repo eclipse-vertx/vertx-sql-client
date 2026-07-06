@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -18,6 +18,9 @@ import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -969,6 +972,40 @@ public enum DataType {
       return result;
     }
   },
+  JSON(0xF4) {
+    @Override
+    public TypeInfo decodeTypeInfo(ByteBuf byteBuf) {
+      return new TypeInfo().maxLength(0xFFFF);
+    }
+
+    @Override
+    public JDBCType jdbcType(TypeInfo typeInfo) {
+      return JDBCType.OTHER;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, TypeInfo typeInfo) {
+      long payloadLength = byteBuf.readLongLE();
+      if (isPLPNull(payloadLength)) {
+        return null;
+      }
+      String jsonString = readPLP(byteBuf).toString(StandardCharsets.UTF_16LE);
+      return Json.decodeValue(jsonString);
+    }
+
+    @Override
+    public String paramDefinition(Object value) {
+      // SQL Server expects text for JSON params
+      return NVARCHAR.paramDefinition(value);
+    }
+
+    @Override
+    public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
+      // SQL Server expects text for JSON params
+      NVARCHAR.encodeParam(byteBuf, name, out, value);
+    }
+  },
+
   SSVARIANT(0x62) {
     @Override
     public TypeInfo decodeTypeInfo(ByteBuf byteBuf) {
@@ -1108,6 +1145,8 @@ public enum DataType {
     typesByValueClass.put(OffsetDateTime.class, DATETIMEOFFSETN);
     typesByValueClass.put(UUID.class, GUID);
     typesByValueClass.put(Buffer.class, BIGVARBINARY);
+    typesByValueClass.put(JsonObject.class, JSON);
+    typesByValueClass.put(JsonArray.class, JSON);
   }
 
   public static DataType forId(int id) {
