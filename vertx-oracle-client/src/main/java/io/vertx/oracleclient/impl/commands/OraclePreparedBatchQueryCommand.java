@@ -63,10 +63,10 @@ public class OraclePreparedBatchQueryCommand<C, R> extends OracleQueryCommand<C,
 
   @Override
   protected void fillStatement(PreparedStatement ps, Connection conn) throws SQLException {
+    java.sql.ParameterMetaData meta = parameterMetaData(ps);
     for (Tuple params : listParams) {
       for (int i = 0; i < params.size(); i++) {
-        // we must convert types (to comply to JDBC)
-        Object value = adaptType(conn, params.getValue(i));
+        Object value = adaptType(conn, params.getValue(i), isJsonParameter(meta, i + 1));
         ps.setObject(i + 1, value);
       }
       ps.addBatch();

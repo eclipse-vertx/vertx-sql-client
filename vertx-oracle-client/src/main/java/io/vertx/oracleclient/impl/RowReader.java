@@ -20,6 +20,7 @@ import io.vertx.oracleclient.impl.commands.OracleResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.RowDescriptorBase;
 import oracle.jdbc.OracleResultSet;
+import oracle.sql.json.OracleJsonValue;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -64,7 +65,11 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
     int cols = metaData.getColumnCount();
     classes = new ArrayList<>(cols);
     for (int i = 1; i <= cols; i++) {
-      classes.add(getType(metaData.getColumnClassName(i)));
+      if ("JSON".equals(metaData.getColumnTypeName(i))) {
+        classes.add(OracleJsonValue.class);
+      } else {
+        classes.add(getType(metaData.getColumnClassName(i)));
+      }
     }
     Flow.Publisher<Row> publisher = ors.publisherOracle(this);
     description = OracleRowDescriptor.create(metaData);

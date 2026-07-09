@@ -138,20 +138,6 @@ public class OracleRow extends RowBase {
     return null;
   }
 
-  /**
-   * Get a {@link JsonObject} or {@link JsonArray} value.
-   */
-  public Object getJson(int pos) {
-    Object val = getValue(pos);
-    if (val instanceof JsonObject) {
-      return val;
-    } else if (val instanceof JsonArray) {
-      return val;
-    } else {
-      return null;
-    }
-  }
-
   public Character[] getArrayOfChars(int pos) {
     Object val = getValue(pos);
     if (val instanceof Character[]) {

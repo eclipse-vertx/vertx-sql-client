@@ -287,23 +287,40 @@ public class OracleClientExamples {
       });
   }
 
-  public void jsonExample() {
+  public void jsonExample(Pool pool) {
+    JsonObject json = new JsonObject()
+      .put("name", "Alice")
+      .put("age", 30);
 
-    // Create a tuple
-    Tuple tuple = Tuple.of(
-      Tuple.JSON_NULL,
-      new JsonObject().put("foo", "bar"),
-      3);
+    pool
+      .preparedQuery("INSERT INTO users (id, data) VALUES (?, ?)")
+      .execute(Tuple.of(1, json))
+      .compose(v -> pool
+        .preparedQuery("SELECT data FROM users WHERE id = ?")
+        .execute(Tuple.of(1)))
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          Row row = ar.result().iterator().next();
+          JsonObject data = row.getJsonObject(0);
+          System.out.println("Received: " + data.getString("name"));
+        }
+      });
+  }
 
-    // Retrieving json
-    Object value = tuple.getValue(0); // Expect JSON_NULL
-
-    //
-    value = tuple.get(JsonObject.class, 1); // Expect JSON object
-
-    //
-    value = tuple.get(Integer.class, 2); // Expect 3
-    value = tuple.getInteger(2); // Expect 3
+  public void jsonNullExample(Pool pool) {
+    pool
+      .preparedQuery("INSERT INTO users (id, data) VALUES (?, ?)")
+      .execute(Tuple.of(2, Tuple.JSON_NULL))
+      .compose(v -> pool
+        .preparedQuery("SELECT data FROM users WHERE id = ?")
+        .execute(Tuple.of(2)))
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          Row row = ar.result().iterator().next();
+          Object value = row.getJson(0);
+          System.out.println("Is JSON null: " + (value == Tuple.JSON_NULL));
+        }
+      });
   }
 
   public void numericExample(Row row) {
