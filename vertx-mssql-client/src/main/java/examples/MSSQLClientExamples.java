@@ -12,6 +12,8 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
@@ -352,5 +354,43 @@ public class MSSQLClientExamples {
     connection.infoHandler(info -> {
       System.out.println("Received info " + info.getSeverity() + "" + info.getMessage());
     });
+  }
+
+  public void jsonExample(SqlClient client) {
+    JsonObject json = new JsonObject()
+      .put("name", "Alice")
+      .put("age", 30);
+
+    client
+      .preparedQuery("INSERT INTO users (id, data) VALUES (@p1, @p2)")
+      .execute(Tuple.of(1, json))
+      .compose(v -> client
+        .preparedQuery("SELECT data FROM users WHERE id = @p1")
+        .execute(Tuple.of(1)))
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          Row row = ar.result().iterator().next();
+          JsonObject data = row.getJsonObject(0);
+          System.out.println("Received: " + data.getString("name"));
+        }
+      });
+  }
+
+  public void jsonArrayExample(SqlClient client) {
+    JsonArray tags = new JsonArray().add("admin").add("user");
+
+    client
+      .preparedQuery("INSERT INTO users (id, data) VALUES (@p1, @p2)")
+      .execute(Tuple.of(2, tags))
+      .compose(v -> client
+        .preparedQuery("SELECT data FROM users WHERE id = @p1")
+        .execute(Tuple.of(2)))
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          Row row = ar.result().iterator().next();
+          JsonArray data = row.getJsonArray(0);
+          System.out.println("Received: " + data);
+        }
+      });
   }
 }

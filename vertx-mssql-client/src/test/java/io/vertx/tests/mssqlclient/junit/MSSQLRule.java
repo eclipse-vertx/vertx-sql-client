@@ -242,6 +242,10 @@ public class MSSQLRule extends ExternalResource {
     return new MSSQLConnectOptions(options);
   }
 
+  public boolean supportsJsonType() {
+    return serverVersion == null || serverVersion == ServerVersion.MSSQL_2025;
+  }
+
   private static class ServerContainer<SELF extends ServerContainer<SELF>> extends GenericContainer<SELF> {
 
     public ServerContainer(String dockerImageName) {

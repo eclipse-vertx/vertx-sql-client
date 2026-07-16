@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -18,6 +18,9 @@ import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -870,11 +873,6 @@ public enum DataType {
         byteBuf.writeCharSequence(val, StandardCharsets.UTF_16LE);
       }
     }
-
-    private void writeCollation(ByteBuf byteBuf) {
-      byteBuf.writeInt(0x0904d000);
-      byteBuf.writeByte(0x34);
-    }
   },
   NCHAR(0xEF) {
     @Override
@@ -969,6 +967,45 @@ public enum DataType {
       return result;
     }
   },
+  JSON(0xF4) {
+    @Override
+    public TypeInfo decodeTypeInfo(ByteBuf byteBuf) {
+      return new TypeInfo().maxLength(0xFFFF);
+    }
+
+    @Override
+    public JDBCType jdbcType(TypeInfo typeInfo) {
+      return JDBCType.OTHER;
+    }
+
+    @Override
+    public Object decodeValue(ByteBuf byteBuf, TypeInfo typeInfo) {
+      long payloadLength = byteBuf.readLongLE();
+      if (isPLPNull(payloadLength)) {
+        return null;
+      }
+      String jsonString = readPLP(byteBuf).toString(StandardCharsets.UTF_16LE);
+      return Json.decodeValue(jsonString);
+    }
+
+    @Override
+    public String paramDefinition(Object value) {
+      return "nvarchar(max)";
+    }
+
+    @Override
+    public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
+      writeParamDescription(byteBuf, name, out, NVARCHAR.id);
+      String val = value.toString();
+      byteBuf.writeShortLE(0xFFFF);
+      writeCollation(byteBuf);
+      byteBuf.writeLongLE(val.length() * 2L);
+      byteBuf.writeIntLE(val.length() * 2);
+      byteBuf.writeCharSequence(val, StandardCharsets.UTF_16LE);
+      byteBuf.writeIntLE(0);
+    }
+  },
+
   SSVARIANT(0x62) {
     @Override
     public TypeInfo decodeTypeInfo(ByteBuf byteBuf) {
@@ -1108,6 +1145,8 @@ public enum DataType {
     typesByValueClass.put(OffsetDateTime.class, DATETIMEOFFSETN);
     typesByValueClass.put(UUID.class, GUID);
     typesByValueClass.put(Buffer.class, BIGVARBINARY);
+    typesByValueClass.put(JsonObject.class, JSON);
+    typesByValueClass.put(JsonArray.class, JSON);
   }
 
   public static DataType forId(int id) {
@@ -1172,5 +1211,10 @@ public enum DataType {
 
   private static long hundredsOfNanos(LocalTime localTime) {
     return localTime.toNanoOfDay() / 100;
+  }
+
+  private static void writeCollation(ByteBuf byteBuf) {
+    byteBuf.writeInt(0x0904d000);
+    byteBuf.writeByte(0x34);
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -56,7 +56,7 @@ class InitMSSQLCommandMessage extends MSSQLCommandMessage<Connection, InitComman
       LoginPacket.OPTION_FLAGS2_ODBC_ON
     ); // OptionFlags2
     content.writeByte(LoginPacket.DEFAULT_TYPE_FLAGS); // TypeFlags
-    content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS3); // OptionFlags3
+    content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS3 | LoginPacket.OPTION_FLAGS3_EXTENSION); // OptionFlags3
     content.writeZero(8); // ClientTimeZone + ClientLCID
 
     /*
@@ -98,9 +98,10 @@ class InitMSSQLCommandMessage extends MSSQLCommandMessage<Connection, InitComman
     content.writeZero(2); // offset
     content.writeShortLE(serverName.length());
 
-    // Unused or Extension
-    int unusedOffsetLengthIdx = content.writerIndex();
-    content.writeZero(4);
+    // Extension
+    int extensionOffsetLengthIdx = content.writerIndex();
+    content.writeZero(2); // offset
+    content.writeShortLE(4);
 
     // CltIntName
     CharSequence interfaceLibraryName = properties.get("clientInterfaceName");
@@ -158,7 +159,9 @@ class InitMSSQLCommandMessage extends MSSQLCommandMessage<Connection, InitComman
     content.setShortLE(serverNameOffsetLengthIdx, content.writerIndex() - startIdx);
     content.writeCharSequence(serverName, UTF_16LE);
 
-    content.setShortLE(unusedOffsetLengthIdx, content.writerIndex() - startIdx);
+    content.setShortLE(extensionOffsetLengthIdx, content.writerIndex() - startIdx);
+    int featureExtOffsetIdx = content.writerIndex();
+    content.writeIntLE(0);
 
     content.setShortLE(cltIntNameOffsetLengthIdx, content.writerIndex() - startIdx);
     content.writeCharSequence(interfaceLibraryName, UTF_16LE);
@@ -173,6 +176,14 @@ class InitMSSQLCommandMessage extends MSSQLCommandMessage<Connection, InitComman
     content.setShortLE(atchDbFileOffsetLengthIdx, content.writerIndex() - startIdx);
 
     content.setShortLE(changePasswordOffsetLengthIdx, content.writerIndex() - startIdx);
+
+    content.setIntLE(featureExtOffsetIdx, content.writerIndex() - startIdx);
+    // TDS_FEATURE_EXT_JSONSUPPORT
+    content.writeByte(0x0D); // feature ID
+    content.writeIntLE(1); // data length
+    content.writeByte(0x01); // JSON support version 1
+    // FEATUREEXT terminator
+    content.writeByte(0xFF);
 
     // set length
     content.setIntLE(startIdx, content.writerIndex() - startIdx);

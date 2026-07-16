@@ -250,6 +250,10 @@ Currently the client supports the following SQL Server types:
 | `GUID`
 | `java.util.UUID`
 |
+
+| `json`
+| `io.vertx.core.json.JsonObject` / `io.vertx.core.json.JsonArray`
+| Native JSON type (SQL Server 2025+). See <<handling-json>>
 |===
 
 Tuple decoding uses the above types when storing values.
@@ -289,6 +293,31 @@ Otherwise, you should declare the type explicitly using one of the {@link io.ver
 ----
 {@link examples.MSSQLClientExamples#explicitNullHandling}
 ----
+
+[[handling-json]]
+=== Handling JSON
+
+SQL Server 2025 introduces a native `json` data type for storing JSON documents.
+
+IMPORTANT: The native `json` type requires SQL Server 2025 or later and only supports JSON objects and arrays.
+Scalars, booleans, and the JSON null literal are not supported.
+
+The `json` data type is represented by the following Java types:
+
+- `io.vertx.core.json.JsonObject`
+- `io.vertx.core.json.JsonArray`
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#jsonExample(io.vertx.sqlclient.SqlClient)}
+----
+
+[source,$lang]
+----
+{@link examples.MSSQLClientExamples#jsonArrayExample(io.vertx.sqlclient.SqlClient)}
+----
+
+NOTE: Attempting to insert scalar values, booleans, or {@link io.vertx.sqlclient.Tuple#JSON_NULL} will result in an error.
 
 == Collector queries
 
