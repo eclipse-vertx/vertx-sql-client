@@ -873,11 +873,6 @@ public enum DataType {
         byteBuf.writeCharSequence(val, StandardCharsets.UTF_16LE);
       }
     }
-
-    private void writeCollation(ByteBuf byteBuf) {
-      byteBuf.writeInt(0x0904d000);
-      byteBuf.writeByte(0x34);
-    }
   },
   NCHAR(0xEF) {
     @Override
@@ -995,14 +990,19 @@ public enum DataType {
 
     @Override
     public String paramDefinition(Object value) {
-      // SQL Server expects text for JSON params
-      return NVARCHAR.paramDefinition(value);
+      return "nvarchar(max)";
     }
 
     @Override
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
-      // SQL Server expects text for JSON params
-      NVARCHAR.encodeParam(byteBuf, name, out, value);
+      writeParamDescription(byteBuf, name, out, NVARCHAR.id);
+      String val = value.toString();
+      byteBuf.writeShortLE(0xFFFF);
+      writeCollation(byteBuf);
+      byteBuf.writeLongLE(val.length() * 2L);
+      byteBuf.writeIntLE(val.length() * 2);
+      byteBuf.writeCharSequence(val, StandardCharsets.UTF_16LE);
+      byteBuf.writeIntLE(0);
     }
   },
 
@@ -1211,5 +1211,10 @@ public enum DataType {
 
   private static long hundredsOfNanos(LocalTime localTime) {
     return localTime.toNanoOfDay() / 100;
+  }
+
+  private static void writeCollation(ByteBuf byteBuf) {
+    byteBuf.writeInt(0x0904d000);
+    byteBuf.writeByte(0x34);
   }
 }
