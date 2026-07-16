@@ -200,6 +200,10 @@ Currently the client supports the following Oracle data types:
 | `BLOB`
 | `io.vertx.core.buffer.Buffer`
 | See <<handling-blob>>
+
+| `JSON`
+| `java.lang.Object`
+| Native JSON type (Oracle 21c+). See <<handling-json>>
 |===
 
 Tuple decoding uses the above types when storing values.
@@ -213,6 +217,35 @@ However, when reading `BLOB` data, the client returns an {@link io.vertx.core.bu
 [source,$lang]
 ----
 {@link examples.OracleClientExamples#blobUsage}
+----
+
+[[handling-json]]
+=== Handling JSON
+
+Oracle Database 21c and later provide native JSON type support.
+
+IMPORTANT: Requires Oracle Database 21c or later and Oracle JDBC driver 21.1 or later.
+
+The `JSON` data type is represented by the following Java types:
+
+- `io.vertx.core.json.JsonObject`
+- `io.vertx.core.json.JsonArray`
+- `java.lang.String` (for JSON string scalars)
+- `java.math.BigDecimal` (for JSON decimal numbers)
+- `java.lang.Double` (for JSON double-precision numbers)
+- `java.lang.Boolean`
+- `io.vertx.sqlclient.Tuple#JSON_NULL` for the JSON null literal
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#jsonExample(io.vertx.sqlclient.Pool)}
+----
+
+Oracle distinguishes between SQL NULL and the JSON null literal:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#jsonNullExample(io.vertx.sqlclient.Pool)}
 ----
 
 == Tracing queries
