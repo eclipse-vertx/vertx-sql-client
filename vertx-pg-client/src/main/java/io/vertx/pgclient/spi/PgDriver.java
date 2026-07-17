@@ -74,6 +74,11 @@ public class PgDriver extends DriverBase<PgConnectOptions> {
   }
 
   @Override
+  public boolean supportsSavepoints() {
+    return true;
+  }
+
+  @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<PgConnectOptions> factory, Connection connection) {
     return new PgConnectionImpl((PgConnectionFactory) factory, context, connection);
   }

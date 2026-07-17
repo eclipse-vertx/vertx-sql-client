@@ -176,7 +176,7 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
     if (tx != null) {
       throw new IllegalStateException();
     }
-    tx = new TransactionImpl(context, v -> tx = null, conn);
+    tx = new TransactionImpl(context, v -> tx = null, conn, driver());
     return tx.begin();
   }
 
