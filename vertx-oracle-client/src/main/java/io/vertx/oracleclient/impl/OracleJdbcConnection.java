@@ -64,6 +64,14 @@ public class OracleJdbcConnection implements Connection {
     this.metadata = metadata;
   }
 
+  public Object createArray(String typeName, Object elements) {
+    try {
+      return connection.createARRAY(typeName, elements);
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   @Override
   public ClientMetrics metrics() {
     return metrics;

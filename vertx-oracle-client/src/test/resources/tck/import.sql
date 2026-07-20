@@ -170,5 +170,16 @@ CREATE TABLE passenger
   address_id     NUMBER
 );
 
+
+CREATE OR REPLACE TYPE STRING_ARRAY AS VARYING ARRAY(127) of VARCHAR2(255 char);
+/
+
+CREATE TABLE test_collections
+(
+  id                   number(10, 0),
+  string_array_element STRING_ARRAY,
+  primary key (id)
+);
+
 -- Don't forget to commit...
 COMMIT;

@@ -45,6 +45,8 @@ public interface OracleConnection extends SqlConnection {
     return connect(vertx, fromUri(connectionUri));
   }
 
+  Object createArray(String typeName, Object elements);
+
   /**
    * {@inheritDoc}
    */
