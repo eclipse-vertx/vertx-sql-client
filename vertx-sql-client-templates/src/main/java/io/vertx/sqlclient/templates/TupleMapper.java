@@ -15,6 +15,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.templates.impl.JsonTuple;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -42,6 +43,26 @@ public interface TupleMapper<T> {
       }
       return Tuple.wrap(array);
     };
+  }
+
+  /**
+   * Create a mapper that converts a parameters object of the given {@code type} to a map of named parameters.
+   *
+   * <p>This feature relies on {@link io.vertx.core.json.JsonObject#mapFrom} feature. This likely requires
+   * to use Jackson databind in the project.
+   *
+   * @param type the parameters class
+   * @return the mapper
+   */
+  static <T> TupleMapper<T> mapper(Class<T> type) {
+    return mapper(params -> {
+      JsonObject jsonObject = JsonObject.mapFrom(params);
+      Map<String, Object> map = new LinkedHashMap<>(jsonObject.size());
+      for (String fieldName : jsonObject.fieldNames()) {
+        map.put(fieldName, jsonObject.getValue(fieldName));
+      }
+      return map;
+    });
   }
 
   /**

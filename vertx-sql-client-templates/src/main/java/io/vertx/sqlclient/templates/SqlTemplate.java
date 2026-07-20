@@ -14,15 +14,11 @@ package io.vertx.sqlclient.templates;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.SqlClient;
-import io.vertx.sqlclient.SqlResult;
+import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlClientInternal;
+import io.vertx.sqlclient.templates.impl.CursorSqlTemplateImpl;
 import io.vertx.sqlclient.templates.impl.SqlTemplateImpl;
 
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -69,6 +65,32 @@ public interface SqlTemplate<I, R> {
     return new SqlTemplateImpl<>(clientInternal, sqlTemplate, query -> query.collecting(SqlTemplateImpl.NULL_COLLECTOR), sqlTemplate::mapTuple);
   }
 
+  /**
+   * Create an SQL template for streaming query results consuming map parameters and returning {@link Row}.
+   *
+   * <p>Delegates to {@link SqlTemplateStream#forStream(SqlConnection, String, int)}.
+   *
+   * @param client the wrapped SQL connection
+   * @param template the template query string
+   * @param fetchSize the cursor fetch size
+   * @return the template
+   */
+  static SqlTemplateStream<Map<String, Object>, Row> forStream(SqlConnection client, String template, int fetchSize) {
+    return SqlTemplateStream.forStream(client, template, fetchSize);
+  }
+
+  /**
+   * Create an SQL template for cursor-based query execution consuming map parameters and returning a {@link Cursor}.
+   *
+   * @param client the wrapped SQL connection
+   * @param template the template query string
+   * @return the template
+   */
+  static SqlTemplate<Map<String, Object>, Cursor> forCursor(SqlConnection client, String template) {
+    SqlClientInternal clientInternal = (SqlClientInternal) client;
+    io.vertx.sqlclient.templates.impl.SqlTemplate sqlTemplate = io.vertx.sqlclient.templates.impl.SqlTemplate.create(clientInternal, template);
+    return new CursorSqlTemplateImpl<>(client, sqlTemplate, sqlTemplate::mapTuple);
+  }
 
   /**
    * @return the computed SQL for this template
@@ -99,14 +121,7 @@ public interface SqlTemplate<I, R> {
    * @return a new template
    */
   default <T> SqlTemplate<T, R> mapFrom(Class<T> type) {
-    return mapFrom(TupleMapper.mapper(params -> {
-      JsonObject jsonObject = JsonObject.mapFrom(params);
-      Map<String, Object> map = new LinkedHashMap<>(jsonObject.size());
-      for (String fieldName : jsonObject.fieldNames()) {
-        map.put(fieldName, jsonObject.getValue(fieldName));
-      }
-      return map;
-    }));
+    return mapFrom(TupleMapper.mapper(type));
   }
 
   /**

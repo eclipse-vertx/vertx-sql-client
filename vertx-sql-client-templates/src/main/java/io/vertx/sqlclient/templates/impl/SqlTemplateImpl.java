@@ -1,7 +1,6 @@
 package io.vertx.sqlclient.templates.impl;
 
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.templates.RowMapper;
@@ -15,7 +14,6 @@ import java.util.stream.Collectors;
 
 public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTemplate<I, R> {
 
-  //
   public static final Collector<Row, Void, Void> NULL_COLLECTOR = Collector.of(() -> null, (v, row) -> {}, (a, b) -> null);
 
   protected final SqlClientInternal client;
@@ -57,13 +55,7 @@ public class SqlTemplateImpl<I, R> implements io.vertx.sqlclient.templates.SqlTe
 
   @Override
   public <U> io.vertx.sqlclient.templates.SqlTemplate<I, RowSet<U>> mapTo(Class<U> type) {
-    return mapTo(row -> {
-      JsonObject json = new JsonObject();
-      for (int i = 0;i < row.size();i++) {
-        json.getMap().put(row.getColumnName(i), row.getValue(i));
-      }
-      return json.mapTo(type);
-    });
+    return mapTo(RowMapper.mapper(type));
   }
 
   @Override
