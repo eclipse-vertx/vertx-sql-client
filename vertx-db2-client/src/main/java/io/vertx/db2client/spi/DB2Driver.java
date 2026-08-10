@@ -18,17 +18,16 @@ package io.vertx.db2client.spi;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.db2client.DB2ConnectOptions;
 import io.vertx.db2client.impl.*;
-import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.internal.PoolInternal;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
@@ -53,13 +52,17 @@ public class DB2Driver extends DriverBase<DB2ConnectOptions> {
   }
 
   @Override
-  protected Pool newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  protected PoolInternal newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<DB2ConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions) {
     boolean pipelinedPool = poolOptions instanceof Db2PoolOptions && ((Db2PoolOptions) poolOptions).isPipelined();
     ConnectionFactory<DB2ConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null,
-      factory, databases, connectHandler, this::wrapConnection, closeFuture);
+      factory, databases, connectHandler, this::wrapConnection) {
+      @Override
+      protected Future<Void> closeImpl() {
+        return super.closeImpl().eventually(factory::close);
+      }
+    };
     pool.init();
-    closeFuture.add(factory);
     return pool;
   }
 

@@ -38,15 +38,18 @@ public class DB2ConnectionImpl extends SqlConnectionBase<DB2ConnectionImpl> impl
       return ctx.failedFuture(e);
     }
     return client.connect((Context)ctx, options).map(conn -> {
-      DB2ConnectionImpl impl = new DB2ConnectionImpl(ctx, client, conn);
+      DB2ConnectionImpl impl = new DB2ConnectionImpl(ctx, client, conn, true);
       conn.init(impl);
-      prepareForClose(ctx, impl);
       return impl;
     });
   }
 
   public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
     super(context, factory, conn, DB2Driver.INSTANCE);
+  }
+
+  public DB2ConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, boolean registerCleanup) {
+    super(context, factory, conn, DB2Driver.INSTANCE, registerCleanup);
   }
 
   @Override

@@ -24,7 +24,6 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
-import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.PreparedStatementBase;
 import io.vertx.sqlclient.impl.TransactionImpl;
@@ -42,21 +41,59 @@ import io.vertx.sqlclient.spi.Driver;
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
-public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, Closeable, ConnectionContext {
+public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClientBase implements SqlConnectionInternal, ConnectionContext {
 
   private volatile Handler<Throwable> exceptionHandler;
   private volatile Handler<Void> closeHandler;
-  private volatile boolean closeFactoryAfterUsage;
   protected TransactionImpl tx;
   protected final ContextInternal context;
   protected final ConnectionFactory factory;
   protected final Connection conn;
+  private final io.vertx.core.internal.Closeable close;
 
-  public SqlConnectionBase(ContextInternal context, ConnectionFactory factory, Connection conn, Driver driver) {
+  public SqlConnectionBase(ContextInternal context,
+                           ConnectionFactory factory,
+                           Connection conn,
+                           Driver driver) {
+    this(context, factory, conn, driver,  false);
+
+  }
+  public SqlConnectionBase(ContextInternal context,
+                           ConnectionFactory factory,
+                           Connection conn,
+                           Driver driver,
+                           boolean registerCleanup) {
     super(driver);
+
+    // Register hook
+    io.vertx.core.internal.Closeable close;
+    if (registerCleanup) {
+      close = context.registerResource(timeout -> actualClose(true));
+    } else {
+      close = timeout -> actualClose(false);
+    }
+
     this.context = context;
     this.factory = factory;
     this.conn = conn;
+    this.close = close;
+  }
+
+  private Future<Void> actualClose(boolean closeFactory) {
+    Promise<Void> promise = context.promise();
+    context.execute(promise, p -> {
+      if (tx != null) {
+        tx.rollback(ar -> conn.close(SqlConnectionBase.this, p));
+        tx = null;
+      } else {
+        conn.close(SqlConnectionBase.this, p);
+      }
+    });
+    Future<Void> f = promise.future();
+    if (closeFactory) {
+      f = f.eventually(factory::close);
+    }
+    return f;
   }
 
   public ConnectionFactory factory() {
@@ -195,50 +232,6 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
 
   @Override
   public Future<Void> close() {
-    Promise<Void> promise = promise();
-    close(promise);
-    return promise.future();
-  }
-
-  @Override
-  public void close(Completable<Void> completion) {
-    if (closeFactoryAfterUsage) {
-      Completable<Void> next = completion;
-      completion = (res, err) -> {
-        try {
-          next.complete(res, err);
-        } finally {
-          factory.close((res2, err2) -> {});
-        }
-      };
-    }
-    doClose(completion);
-    if (closeFactoryAfterUsage) {
-      context.removeCloseHook(this);
-    }
-  }
-
-  private void doClose(Completable<Void> promise) {
-    context.execute(promise, p -> {
-      if (tx != null) {
-        tx.rollback(ar -> conn.close(this, p));
-        tx = null;
-      } else {
-        conn.close(this, p);
-      }
-    });
-  }
-
-  protected static Future<SqlConnection> prepareForClose(ContextInternal ctx, Future<SqlConnection> future) {
-    return future.andThen(ar -> {
-      if (ar.succeeded()) {
-        prepareForClose(ctx, (SqlConnectionBase<?>) ar.result());
-      }
-    });
-  }
-
-  protected static void prepareForClose(ContextInternal ctx, SqlConnectionBase<?> base) {
-    base.closeFactoryAfterUsage = true;
-    ctx.addCloseHook(base);
+    return close.close();
   }
 }

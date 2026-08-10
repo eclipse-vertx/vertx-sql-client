@@ -65,8 +65,8 @@ public abstract class ConnectionFactoryBase<C extends SqlConnectOptions> impleme
   }
 
   @Override
-  public void close(Completable<Void> promise) {
-    clientCloseFuture.close(promise);
+  public Future<Void> close() {
+    return clientCloseFuture.close();
   }
 
   private void doConnectWithRetry(C options, PromiseInternal<Connection> promise, int remainingAttempts) {

@@ -1,6 +1,5 @@
 package io.vertx.sqlclient.spi.connection;
 
-import io.vertx.core.Closeable;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.*;
@@ -11,7 +10,7 @@ import io.vertx.sqlclient.spi.Driver;
 /**
  * A connection factory, can be obtained from {@link Driver#createConnectionFactory}
  */
-public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeable {
+public interface ConnectionFactory<C extends SqlConnectOptions> {
 
   default Future<Connection> connect(Context context, Future<C> fut) {
     // The future might be on any context or context-less
@@ -31,5 +30,7 @@ public interface ConnectionFactory<C extends SqlConnectOptions> extends Closeabl
    * @return the future connection
    */
   Future<Connection> connect(Context context, C options);
+
+  Future<Void> close();
 
 }

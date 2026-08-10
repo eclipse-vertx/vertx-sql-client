@@ -19,7 +19,6 @@ package io.vertx.sqlclient.impl.pool;
 
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
-import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
 import io.vertx.core.internal.VertxInternal;
@@ -27,6 +26,7 @@ import io.vertx.core.spi.metrics.PoolMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.TransactionPropagationLocal;
+import io.vertx.sqlclient.internal.PoolInternal;
 import io.vertx.sqlclient.internal.SqlClientBase;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.Driver;
@@ -35,6 +35,7 @@ import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 
+import java.time.Duration;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -44,11 +45,10 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  * @author <a href="mailto:emad.albloushi@gmail.com">Emad Alblueshi</a>
  */
-public class PoolImpl extends SqlClientBase implements Pool, Closeable {
+public class PoolImpl extends SqlClientBase implements PoolInternal {
 
   private final VertxInternal vertx;
   private final SqlConnectionPool pool;
-  private final CloseFuture closeFuture;
   private final long idleTimeout;
   private final long connectionTimeout;
   private final long maxLifetime;
@@ -56,6 +56,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   private final boolean pipelined;
   private final Handler<SqlConnection> connectionInitializer;
   private final ConnectionWrapper<?> connectionWrapper;
+  private boolean closed;
   private long timerID;
 
   public <O extends SqlConnectOptions> PoolImpl(VertxInternal vertx,
@@ -67,8 +68,7 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
                   ConnectionFactory<O> connectionFactory,
                   Supplier<Future<O>> connectionProvider,
                   Handler<SqlConnection> connectionInitializer,
-                  ConnectionWrapper connectionWrapper,
-                  CloseFuture closeFuture) {
+                  ConnectionWrapper connectionWrapper) {
     super(driver);
 
     Handler<SqlConnectionPool.PooledConnection> hook = connectionInitializer != null ? this::initializeConnection : null;
@@ -92,7 +92,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     this.pool = new SqlConnectionPool(connectionProvider, connectionFactory, poolMetrics, hook, afterAcquire,
       beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined,
       poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
-    this.closeFuture = closeFuture;
     this.connectionInitializer = connectionInitializer;
   }
 
@@ -106,7 +105,6 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
   }
 
   public Pool init() {
-    closeFuture.add(this);
     if ((idleTimeout > 0 || maxLifetime > 0) && cleanerPeriod > 0) {
       synchronized (this) {
         timerID = vertx.setTimer(cleanerPeriod, id -> {
@@ -182,29 +180,26 @@ public class PoolImpl extends SqlClientBase implements Pool, Closeable {
     pool.execute(cmd, handler, connectionTimeout);
   }
 
-  private void acquire(ContextInternal context, long timeout, Completable<SqlConnectionPool.PooledConnection> completionHandler) {
+  private void acquire(ContextInternal context, long timeout, Promise<SqlConnectionPool.PooledConnection> completionHandler) {
     pool.acquire(context, timeout, completionHandler);
   }
 
   @Override
-  public void close(Completable<Void> completion) {
-    doClose().onComplete(completion);
-  }
-
-  @Override
-  public Future<Void> close() {
-    Promise<Void> promise = vertx.promise();
-    closeFuture.close(promise);
-    return promise.future();
-  }
-
-  private Future<Void> doClose() {
+  public Future<Void> shutdown(Duration timeout) {
     synchronized (this) {
+      if (closed) {
+        return Future.failedFuture("Already closed");
+      }
       if (timerID >= 0) {
         vertx.cancelTimer(timerID);
         timerID = -1;
       }
+      closed = true;
     }
+    return closeImpl();
+  }
+
+  protected Future<Void> closeImpl() {
     return pool.close();
   }
 

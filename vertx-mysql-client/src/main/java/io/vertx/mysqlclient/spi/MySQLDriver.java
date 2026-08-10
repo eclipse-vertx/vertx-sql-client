@@ -18,7 +18,6 @@ package io.vertx.mysqlclient.spi;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.json.JsonObject;
@@ -28,11 +27,11 @@ import io.vertx.mysqlclient.impl.MySQLConnectionFactory;
 import io.vertx.mysqlclient.impl.MySQLConnectionImpl;
 import io.vertx.mysqlclient.impl.MySQLConnectionUriParser;
 import io.vertx.mysqlclient.impl.MySQLPoolOptions;
-import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.pool.PoolImpl;
+import io.vertx.sqlclient.internal.PoolInternal;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
 import io.vertx.sqlclient.spi.DriverBase;
 import io.vertx.sqlclient.spi.connection.Connection;
@@ -56,13 +55,17 @@ public class MySQLDriver extends DriverBase<MySQLConnectOptions> {
   }
 
   @Override
-  protected Pool newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  protected PoolInternal newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<MySQLConnectOptions>> databases, PoolOptions poolOptions, NetClientOptions transportOptions) {
     boolean pipelinedPool = poolOptions instanceof MySQLPoolOptions && ((MySQLPoolOptions) poolOptions).isPipelined();
     ConnectionFactory<MySQLConnectOptions> factory = createConnectionFactory(vertx, transportOptions);
     PoolImpl pool = new PoolImpl(vertx, this, pipelinedPool, poolOptions, null, null, factory,
-      databases, connectHandler, this::wrapConnection, closeFuture);
+      databases, connectHandler, this::wrapConnection) {
+      @Override
+      protected Future<Void> closeImpl() {
+        return super.closeImpl().eventually(factory::close);
+      }
+    };
     pool.init();
-    closeFuture.add(factory);
     return pool;
   }
 
