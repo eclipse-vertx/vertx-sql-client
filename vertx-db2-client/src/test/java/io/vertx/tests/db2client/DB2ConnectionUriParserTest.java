@@ -275,4 +275,78 @@ public class DB2ConnectionUriParserTest {
     actualParsedResult = parse(uri, false);
     assertNull(actualParsedResult);
   }
+
+  @Test
+  public void testParsingJdbcStyleAttributes() {
+    uri = "db2://localhost:50000/hreact:user=hreact;password=hreact;";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("port", 50000)
+      .put("database", "hreact")
+      .put("user", "hreact")
+      .put("password", "hreact");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingJdbcStyleAttributesWithoutTrailingSemicolon() {
+    uri = "db2://localhost/hreact:user=hreact;password=hreact";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("database", "hreact")
+      .put("user", "hreact")
+      .put("password", "hreact");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingJdbcStyleSingleAttribute() {
+    uri = "db2://localhost/mydb:user=other;";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("database", "mydb")
+      .put("user", "other");
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingJdbcStyleCustomProperties() {
+    uri = "db2://localhost/mydb:user=hreact;securityMechanism=9;";
+    actualParsedResult = parse(uri);
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("database", "mydb")
+      .put("user", "hreact")
+      .put("properties", new JsonObject().put("securitymechanism", "9"));
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingJdbcStyleAttributesWithAmpersandSeparator() {
+    uri = "db2://localhost:4444/hreact:user=hreact&password=hreact";
+    actualParsedResult = parse(uri);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingJdbcStyleAttributesWithoutDatabase() {
+    uri = "db2://localhost:user=hreact;password=hreact;";
+    actualParsedResult = parse(uri);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingJdbcStyleAttributeWithoutValueDelimiter() {
+    uri = "db2://localhost/mydb:user;";
+    actualParsedResult = parse(uri);
+  }
 }
