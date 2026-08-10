@@ -1,18 +1,14 @@
 package io.vertx.sqlclient.spi;
 
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.internal.CloseFuture;
+import io.vertx.core.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.internal.PoolInternal;
 import io.vertx.sqlclient.spi.connection.Connection;
-import io.vertx.sqlclient.impl.pool.CloseablePool;
 import io.vertx.sqlclient.impl.pool.PoolImpl;
 import io.vertx.sqlclient.internal.SqlConnectionBase;
 import io.vertx.sqlclient.internal.SqlConnectionInternal;
@@ -46,6 +42,11 @@ public abstract class DriverBase<O extends SqlConnectOptions> implements Driver<
     this.sharedClientKey = SHARED_CLIENT_KEY_PREFIX + "." + discriminant;
   }
 
+  @Override
+  public String sharedClientKey() {
+    return sharedClientKey;
+  }
+
   /**
    * Create a connection factory to the given {@code database}.
    *
@@ -69,23 +70,20 @@ public abstract class DriverBase<O extends SqlConnectOptions> implements Driver<
   }
 
   @Override
-  public Pool newPool(Vertx vertx, Supplier<Future<O>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
-    VertxInternal vx = (VertxInternal) vertx;
-    Pool pool;
-    if (options.isShared()) {
-      pool = vx.createSharedResource(sharedClientKey, options.getName(), closeFuture, cf -> newPool(vx, connectHandler, databases, options, transportOptions, cf));
-    } else {
-      pool = newPool(vx, connectHandler, databases, options, transportOptions, closeFuture);
-    }
-    return new CloseablePool(vx, closeFuture, pool);
+  public PoolInternal newPool(Vertx vertx, Supplier<Future<O>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler) {
+    return newPool((VertxInternal) vertx, connectHandler, databases, options, transportOptions);
   }
 
-  protected Pool newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<O>> databases, PoolOptions poolOptions, NetClientOptions transportOptions, CloseFuture closeFuture) {
+  protected PoolInternal newPool(VertxInternal vertx, Handler<SqlConnection> connectHandler, Supplier<Future<O>> databases, PoolOptions poolOptions, NetClientOptions transportOptions) {
     ConnectionFactory<O> factory = createConnectionFactory(vertx, transportOptions);
     PoolImpl pool = new PoolImpl(vertx, this, false, poolOptions, afterAcquire, beforeRecycle,
-      factory, databases, connectHandler, this::wrapConnection, closeFuture);
+      factory, databases, connectHandler, this::wrapConnection) {
+      @Override
+      protected Future<Void> closeImpl() {
+        return super.closeImpl().eventually(factory::close);
+      }
+    };
     pool.init();
-    closeFuture.add(factory);
     return pool;
   }
 }

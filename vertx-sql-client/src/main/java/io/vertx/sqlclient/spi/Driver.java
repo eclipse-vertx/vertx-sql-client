@@ -20,14 +20,15 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
+import io.vertx.core.internal.CloseableResource;
 import io.vertx.core.net.NetClientOptions;
-import io.vertx.core.internal.CloseFuture;
-import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
+import io.vertx.sqlclient.impl.pool.CloseablePool;
+import io.vertx.sqlclient.internal.PoolInternal;
 
 import java.util.function.Supplier;
 
@@ -36,6 +37,11 @@ import java.util.function.Supplier;
  * Every driver must implement this interface.
  */
 public interface Driver<C extends SqlConnectOptions> {
+
+  /**
+   * @return the client key for shared pool
+   */
+  String sharedClientKey();
 
   /**
    * Create a connection pool to the database configured with the given {@code connectOptions} and {@code poolOptions}.
@@ -60,27 +66,29 @@ public interface Driver<C extends SqlConnectOptions> {
     } else {
       vx = (VertxInternal) vertx;
     }
-    CloseFuture closeFuture = new CloseFuture();
-    Pool pool;
+    CloseableResource<PoolInternal> pool;
     try {
-      pool = newPool(vx, databases, poolOptions, transportOptions, connectHandler, closeFuture);
+      if (poolOptions.isShared()) {
+        String sharedClientKey = sharedClientKey();
+        pool = vx.createSharedResource(
+          sharedClientKey,
+          poolOptions.getName(),
+          () -> newPool(vx, databases, poolOptions, transportOptions, connectHandler)
+        );
+      } else {
+        PoolInternal pi = newPool(vx, databases, poolOptions, transportOptions, connectHandler);
+        pool = CloseableResource.of(pi);
+      }
     } catch (Exception e) {
       if (vertx == null) {
         vx.close();
       }
       throw e;
     }
-    if (vertx == null) {
-      closeFuture.future().onComplete(ar -> vx.close());
-    } else {
-      ContextInternal ctx = vx.getContext();
-      if (ctx != null) {
-        ctx.addCloseHook(closeFuture);
-      } else {
-        vx.addCloseHook(closeFuture);
-      }
+    if (vertx != null) {
+      pool = vx.registerResource(pool);
     }
-    return pool;
+    return new CloseablePool(vx, pool);
   }
 
   /**
@@ -93,10 +101,9 @@ public interface Driver<C extends SqlConnectOptions> {
    * @param options          the options for creating the pool
    * @param transportOptions the options to configure the TCP client
    * @param connectHandler   the connect handler
-   * @param closeFuture      the close future
    * @return the connection pool
    */
-  Pool newPool(Vertx vertx, Supplier<Future<C>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture);
+  PoolInternal newPool(Vertx vertx, Supplier<Future<C>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler);
 
   /**
    * @return {@code true} if the driver accepts the {@code connectOptions}, {@code false} otherwise

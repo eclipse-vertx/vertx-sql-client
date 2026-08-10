@@ -27,13 +27,16 @@ public class OracleConnectionImpl extends SqlConnectionBase<OracleConnectionImpl
     super(context, factory, conn, OracleDriver.INSTANCE);
   }
 
+  public OracleConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, boolean registerCleanup) {
+    super(context, factory, conn, OracleDriver.INSTANCE, registerCleanup);
+  }
+
   public static Future<OracleConnection> connect(Vertx vertx, OracleConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     OracleConnectionFactory client = new OracleConnectionFactory();
     return client.connect(ctx, options).map(conn -> {
-      OracleConnectionImpl impl = new OracleConnectionImpl(ctx, client, conn);
+      OracleConnectionImpl impl = new OracleConnectionImpl(ctx, client, conn, true);
       conn.init(impl);
-      prepareForClose(ctx, impl);
       return impl;
     });
   }

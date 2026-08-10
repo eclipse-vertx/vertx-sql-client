@@ -18,31 +18,27 @@ package io.vertx.sqlclient.impl.pool;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.internal.CloseFuture;
-import io.vertx.core.internal.ContextInternal;
-import io.vertx.core.internal.PromiseInternal;
-import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.internal.*;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlClientInternal;
 import io.vertx.sqlclient.spi.Driver;
 
+import java.time.Duration;
 import java.util.function.Function;
 
 public class CloseablePool implements Pool, SqlClientInternal {
 
   private final VertxInternal vertx;
-  private final CloseFuture closeFuture;
-  private final Pool delegate;
+  private final CloseableResource<? extends Pool> delegate;
 
-  public CloseablePool(VertxInternal vertx, CloseFuture closeFuture, Pool delegate) {
+  public CloseablePool(VertxInternal vertx, CloseableResource<? extends Pool> delegate) {
     this.vertx = vertx;
-    this.closeFuture = closeFuture;
     this.delegate = delegate;
   }
 
   @Override
   public Driver driver() {
-    return ((SqlClientInternal)delegate).driver();
+    return ((SqlClientInternal)delegate.get()).driver();
   }
 
   @Override
@@ -52,40 +48,37 @@ public class CloseablePool implements Pool, SqlClientInternal {
 
   @Override
   public Future<SqlConnection> getConnection() {
-    return delegate.getConnection();
+    return delegate.get().getConnection();
   }
 
   @Override
   public Query<RowSet<Row>> query(String sql) {
-    return delegate.query(sql);
+    return delegate.get().query(sql);
   }
 
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql) {
-    return delegate.preparedQuery(sql);
+    return delegate.get().preparedQuery(sql);
   }
 
   @Override
   public <T> Future<@Nullable T> withTransaction(TransactionPropagation txPropagation,
                                                  Function<SqlConnection, Future<@Nullable T>> function) {
-    return delegate.withTransaction(txPropagation, function);
+    return delegate.get().withTransaction(txPropagation, function);
   }
 
   @Override
   public int size() {
-    return delegate.size();
+    return delegate.get().size();
   }
 
   @Override
   public PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options) {
-    return delegate.preparedQuery(sql, options);
+    return delegate.get().preparedQuery(sql, options);
   }
 
   @Override
   public Future<Void> close() {
-    ContextInternal closingCtx = vertx.getOrCreateContext();
-    PromiseInternal<Void> promise = closingCtx.promise();
-    closeFuture.close(promise);
-    return promise.future();
+    return delegate.shutdown(Duration.ZERO);
   }
 }

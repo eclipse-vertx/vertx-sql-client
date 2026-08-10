@@ -40,15 +40,18 @@ public class MySQLConnectionImpl extends SqlConnectionBase<MySQLConnectionImpl> 
       return ctx.failedFuture(e);
     }
     return client.connect((Context)ctx, options).map(conn -> {
-      MySQLConnectionImpl impl = new MySQLConnectionImpl(ctx, client, conn);
+      MySQLConnectionImpl impl = new MySQLConnectionImpl(ctx, client, conn, true);
       conn.init(impl);
-      prepareForClose(ctx, impl);
       return impl;
     });
   }
 
   public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn) {
     super(context, factory, conn, MySQLDriver.INSTANCE);
+  }
+
+  public MySQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, boolean registerCleanup) {
+    super(context, factory, conn, MySQLDriver.INSTANCE, registerCleanup);
   }
 
   @Override
