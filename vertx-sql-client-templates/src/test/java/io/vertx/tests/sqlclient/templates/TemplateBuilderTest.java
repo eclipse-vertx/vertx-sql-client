@@ -3,10 +3,10 @@ package io.vertx.tests.sqlclient.templates;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.internal.CloseFuture;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.impl.SqlClientInternal;
+import io.vertx.sqlclient.internal.PoolInternal;
 import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.templates.impl.SqlTemplate;
 import org.junit.Assert;
@@ -37,7 +37,11 @@ public class TemplateBuilderTest {
           return FakeClient.this.appendQueryPlaceholder(queryBuilder, index, current);
         }
         @Override
-        public Pool newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler, CloseFuture closeFuture) {
+        public String sharedClientKey() {
+          throw new UnsupportedOperationException();
+        }
+        @Override
+        public PoolInternal newPool(Vertx vertx, Supplier<Future<SqlConnectOptions>> databases, PoolOptions options, NetClientOptions transportOptions, Handler<SqlConnection> connectHandler) {
           throw new UnsupportedOperationException();
         }
         @Override

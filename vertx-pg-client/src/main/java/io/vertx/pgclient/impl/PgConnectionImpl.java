@@ -16,10 +16,7 @@
  */
 package io.vertx.pgclient.impl;
 
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
@@ -42,9 +39,8 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
       return context.failedFuture(e);
     }
     return client.connect((Context)context, options).map(conn -> {
-      PgConnectionImpl impl = new PgConnectionImpl(client, context, conn);
+      PgConnectionImpl impl = new PgConnectionImpl(client, context, conn, true);
       conn.init(impl);
-      prepareForClose(context, impl);
       return impl;
     });
   }
@@ -54,6 +50,10 @@ public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implem
 
   public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn) {
     super(context, factory, conn, PgDriver.INSTANCE);
+  }
+
+  public PgConnectionImpl(PgConnectionFactory factory, ContextInternal context, Connection conn, boolean registerCleanup) {
+    super(context, factory, conn, PgDriver.INSTANCE, registerCleanup);
   }
 
   @Override

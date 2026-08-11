@@ -33,13 +33,16 @@ public class MSSQLConnectionImpl extends SqlConnectionBase<MSSQLConnectionImpl> 
     super(context, factory, conn, MSSQLDriver.INSTANCE);
   }
 
+  public MSSQLConnectionImpl(ContextInternal context, ConnectionFactory factory, Connection conn, boolean registerCleanup) {
+    super(context, factory, conn, MSSQLDriver.INSTANCE, registerCleanup);
+  }
+
   public static Future<MSSQLConnection> connect(Vertx vertx, MSSQLConnectOptions options) {
     ContextInternal ctx = (ContextInternal) vertx.getOrCreateContext();
     MSSQLConnectionFactory client = new MSSQLConnectionFactory(ctx.owner());
     return client.connect((Context)ctx, options).map(conn -> {
-      MSSQLConnectionImpl impl = new MSSQLConnectionImpl(ctx, client, conn);
+      MSSQLConnectionImpl impl = new MSSQLConnectionImpl(ctx, client, conn, true);
       conn.init(impl);
-      prepareForClose(ctx, impl);
       return impl;
     });
   }

@@ -258,7 +258,7 @@ public class SqlConnectionPool {
     });
   }
 
-  public void acquire(ContextInternal context, long timeout, Completable<PooledConnection> handler) {
+  public void acquire(ContextInternal context, long timeout, Promise<PooledConnection> handler) {
     class PoolRequest implements PoolWaiter.Listener<PooledConnection>, Completable<Lease<PooledConnection>> {
 
       private final Object metric;
@@ -270,10 +270,10 @@ public class SqlConnectionPool {
 
       @Override
       public void complete(Lease<PooledConnection> lease, Throwable failure) {
-        if (timerID != -1L && !vertx.cancelTimer(timerID)) {
-          lease.recycle();
-        } else {
-          if (failure == null) {
+        if (failure == null) {
+          if (timerID != -1L && !vertx.cancelTimer(timerID)) {
+            lease.recycle();
+          } else {
             if (afterAcquire != null) {
               afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
                 if (ar2.succeeded()) {
@@ -286,10 +286,10 @@ public class SqlConnectionPool {
             } else {
               handle(lease);
             }
-          } else {
-            dequeueMetric(metric);
-            handler.fail(failure);
           }
+        } else {
+          dequeueMetric(metric);
+          handler.tryFail(failure);
         }
       }
 

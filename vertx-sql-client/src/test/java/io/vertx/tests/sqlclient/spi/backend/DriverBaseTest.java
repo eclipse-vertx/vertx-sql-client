@@ -139,9 +139,10 @@ public class DriverBaseTest {
               }
             });
           }
+
           @Override
-          public void close(Completable<Void> completable) {
-            completable.succeed();
+          public Future<Void> close() {
+            return Future.succeededFuture();
           }
         };
       }
