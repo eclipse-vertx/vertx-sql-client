@@ -40,3 +40,4 @@ artifacts/
 *.suo
 *.nupkg
 *.snupkg
+dependency-reduced-pom.xml
