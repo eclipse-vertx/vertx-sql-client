@@ -1,0 +1,121 @@
+name: .NET CI
+
+on:
+  pull_request:
+    paths:
+      - "dotnet/**"
+      - "global.json"
+      - ".github/workflows/dotnet-ci.yml"
+  push:
+    branches:
+      - master
+    paths:
+      - "dotnet/**"
+      - "global.json"
+      - ".github/workflows/dotnet-ci.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * 1"
+
+permissions:
+  contents: read
+
+env:
+  NUGET_SOURCE: ${{ vars.NUGET_SOURCE }}
+
+jobs:
+  unit:
+    name: Build and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Require package feed
+        shell: bash
+        run: test -n "$NUGET_SOURCE"
+      - name: Restore
+        run: dotnet restore dotnet/Apex.SqlClient.slnx --source "$NUGET_SOURCE" --locked-mode
+      - name: Build
+        run: dotnet build dotnet/Apex.SqlClient.slnx -c Release --no-restore
+      - name: Unit tests
+        run: |
+          dotnet test dotnet/tests/Apex.SqlClient.Tests/Apex.SqlClient.Tests.csproj -c Release --no-build --no-restore
+          dotnet test dotnet/tests/Apex.PgClient.Tests/Apex.PgClient.Tests.csproj -c Release --no-build --no-restore
+      - name: Verify formatting
+        run: dotnet format dotnet/Apex.SqlClient.slnx --no-restore --verify-no-changes
+      - name: NativeAOT smoke
+        run: |
+          dotnet publish dotnet/tests/Apex.AotSmoke/Apex.AotSmoke.csproj -c Release -r linux-x64 --no-restore -o artifacts/aot
+          ./artifacts/aot/Apex.AotSmoke
+      - name: Validate packages
+        run: |
+          dotnet pack dotnet/src/Apex.SqlClient/Apex.SqlClient.csproj -c Release --no-build --no-restore -o artifacts/packages
+          dotnet pack dotnet/src/Apex.PgClient/Apex.PgClient.csproj -c Release --no-build --no-restore -o artifacts/packages
+          strings dotnet/src/Apex.SqlClient/bin/Release/net10.0/Apex.SqlClient.pdb | grep raw.githubusercontent.com
+          strings dotnet/src/Apex.PgClient/bin/Release/net10.0/Apex.PgClient.pdb | grep raw.githubusercontent.com
+      - name: Upload packages
+        uses: actions/upload-artifact@v6
+        with:
+          name: apex-sql-client-packages
+          path: artifacts/packages
+          if-no-files-found: error
+
+  postgresql:
+    name: PostgreSQL ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["14", "16", "18"]
+    env:
+      POSTGRES_IMAGE: postgres:${{ matrix.version }}-alpine
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Require package feed
+        shell: bash
+        run: test -n "$NUGET_SOURCE"
+      - name: Restore
+        run: >
+          dotnet restore
+          dotnet/tests/Apex.PgClient.IntegrationTests/Apex.PgClient.IntegrationTests.csproj
+          --source "$NUGET_SOURCE"
+          --locked-mode
+      - name: Integration tests
+        run: >
+          dotnet test
+          dotnet/tests/Apex.PgClient.IntegrationTests/Apex.PgClient.IntegrationTests.csproj
+          -c Release
+          --no-restore
+
+  full:
+    name: Scheduled stress and benchmark compile
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Require package feed
+        shell: bash
+        run: test -n "$NUGET_SOURCE"
+      - name: Restore
+        run: dotnet restore dotnet/Apex.SqlClient.slnx --source "$NUGET_SOURCE" --locked-mode
+      - name: Repeated protocol and pool stress
+        shell: bash
+        run: |
+          for iteration in $(seq 1 10); do
+            dotnet test dotnet/tests/Apex.SqlClient.Tests/Apex.SqlClient.Tests.csproj -c Release --no-restore
+            dotnet test dotnet/tests/Apex.PgClient.Tests/Apex.PgClient.Tests.csproj -c Release --no-restore
+          done
+      - name: Compile benchmark harnesses
+        run: |
+          dotnet build dotnet/benchmarks/Apex.DriverBenchmarks/Apex.DriverBenchmarks.csproj -c Release --no-restore
+          mvn -q -DskipTests install -pl vertx-pg-client -am
+          mvn -q -f dotnet/benchmarks/java/pom.xml -DskipTests package

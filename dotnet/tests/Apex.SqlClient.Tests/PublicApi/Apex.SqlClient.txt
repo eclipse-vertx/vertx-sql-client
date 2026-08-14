@@ -1,0 +1,267 @@
+class Apex.SqlClient.DatabaseMetadata : System.IEquatable`1[Apex.SqlClient.DatabaseMetadata]
+  Constructor: Void .ctor(System.String, System.String, Int32, Int32)
+  Method: Apex.SqlClient.DatabaseMetadata <Clone>$()
+  Method: Boolean Equals(Apex.SqlClient.DatabaseMetadata)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.SqlClient.DatabaseMetadata, Apex.SqlClient.DatabaseMetadata)
+  Method: Boolean op_Inequality(Apex.SqlClient.DatabaseMetadata, Apex.SqlClient.DatabaseMetadata)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_MajorVersion()
+  Method: Int32 get_MinorVersion()
+  Method: System.String ToString()
+  Method: System.String get_FullVersion()
+  Method: System.String get_ProductName()
+  Method: Void Deconstruct(System.String ByRef, System.String ByRef, Int32 ByRef, Int32 ByRef)
+  Method: Void set_FullVersion(System.String)
+  Method: Void set_MajorVersion(Int32)
+  Method: Void set_MinorVersion(Int32)
+  Method: Void set_ProductName(System.String)
+  Property: Int32 MajorVersion
+  Property: Int32 MinorVersion
+  Property: System.String FullVersion
+  Property: System.String ProductName
+interface Apex.SqlClient.ISqlClient : System.IAsyncDisposable
+  Method: System.Collections.Generic.IAsyncEnumerable`1[Apex.SqlClient.SqlRow] StreamAsync(System.String, Apex.SqlClient.SqlParameters, Int32, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlCommandResult] ExecuteAsync(System.String, Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlCommandResult] ExecuteAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlRowSet] QueryAsync(System.String, Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlRowSet] QueryAsync(System.String, System.Threading.CancellationToken)
+interface Apex.SqlClient.ISqlConnection : Apex.SqlClient.ISqlClient, System.IAsyncDisposable
+  Method: Apex.SqlClient.DatabaseMetadata get_DatabaseMetadata()
+  Method: Boolean get_IsSecure()
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.ISqlPreparedStatement] PrepareAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.ISqlTransaction] BeginTransactionAsync(System.Threading.CancellationToken)
+  Property: Apex.SqlClient.DatabaseMetadata DatabaseMetadata
+  Property: Boolean IsSecure
+interface Apex.SqlClient.ISqlCursor : System.IAsyncDisposable
+  Method: Boolean get_HasMore()
+  Method: System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlColumn] get_Columns()
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlRowSet] ReadAsync(Int32, System.Threading.CancellationToken)
+  Property: Boolean HasMore
+  Property: System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlColumn] Columns
+interface Apex.SqlClient.ISqlPool : Apex.SqlClient.ISqlClient, System.IAsyncDisposable
+  Method: Int32 get_Size()
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.ISqlConnection] GetConnectionAsync(System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[TResult] WithConnectionAsync[TResult](System.Func`3[Apex.SqlClient.ISqlConnection,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask`1[TResult]], System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[TResult] WithTransactionAsync[TResult](System.Func`3[Apex.SqlClient.ISqlConnection,System.Threading.CancellationToken,System.Threading.Tasks.ValueTask`1[TResult]], System.Threading.CancellationToken)
+  Property: Int32 Size
+interface Apex.SqlClient.ISqlPreparedStatement : System.IAsyncDisposable
+  Method: System.Collections.Generic.IAsyncEnumerable`1[Apex.SqlClient.SqlRow] StreamAsync(Apex.SqlClient.SqlParameters, Int32, System.Threading.CancellationToken)
+  Method: System.String get_Sql()
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.ISqlCursor] OpenCursorAsync(Apex.SqlClient.SqlParameters, Int32, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlCommandResult] ExecuteAsync(Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlRowSet] QueryAsync(Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlCommandResult]] ExecuteBatchAsync(System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlParameters], System.Threading.CancellationToken)
+  Property: System.String Sql
+interface Apex.SqlClient.ISqlTransaction : System.IAsyncDisposable
+  Method: Boolean get_IsCompleted()
+  Method: System.Threading.Tasks.ValueTask CommitAsync(System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask RollbackAsync(System.Threading.CancellationToken)
+  Property: Boolean IsCompleted
+class Apex.SqlClient.SqlClientException : System.Exception, System.Runtime.Serialization.ISerializable
+  Constructor: Void .ctor(System.String)
+  Constructor: Void .ctor(System.String, System.Exception)
+class Apex.SqlClient.SqlClientExtensions
+  Method: System.Collections.Generic.IAsyncEnumerable`1[T] StreamMappedAsync[T](Apex.SqlClient.ISqlClient, System.String, System.Func`2[Apex.SqlClient.SqlRow,T], Apex.SqlClient.SqlParameters, Int32, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[System.Collections.Generic.IReadOnlyList`1[T]] QueryMappedAsync[T](Apex.SqlClient.ISqlClient, System.String, System.Func`2[Apex.SqlClient.SqlRow,T], Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[T] QueryCollectedAsync[T](Apex.SqlClient.ISqlClient, System.String, System.Func`2[System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlRow],T], Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+class Apex.SqlClient.SqlColumn : System.IEquatable`1[Apex.SqlClient.SqlColumn]
+  Constructor: Void .ctor(System.String, UInt32, Int16, Int32, Apex.SqlClient.SqlDataFormat)
+  Method: Apex.SqlClient.SqlColumn <Clone>$()
+  Method: Apex.SqlClient.SqlDataFormat get_Format()
+  Method: Boolean Equals(Apex.SqlClient.SqlColumn)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.SqlClient.SqlColumn, Apex.SqlClient.SqlColumn)
+  Method: Boolean op_Inequality(Apex.SqlClient.SqlColumn, Apex.SqlClient.SqlColumn)
+  Method: Int16 get_TypeSize()
+  Method: Int32 GetHashCode()
+  Method: Int32 get_TypeModifier()
+  Method: System.String ToString()
+  Method: System.String get_Name()
+  Method: UInt32 get_TypeId()
+  Method: Void Deconstruct(System.String ByRef, UInt32 ByRef, Int16 ByRef, Int32 ByRef, Apex.SqlClient.SqlDataFormat ByRef)
+  Method: Void set_Format(Apex.SqlClient.SqlDataFormat)
+  Method: Void set_Name(System.String)
+  Method: Void set_TypeId(UInt32)
+  Method: Void set_TypeModifier(Int32)
+  Method: Void set_TypeSize(Int16)
+  Property: Apex.SqlClient.SqlDataFormat Format
+  Property: Int16 TypeSize
+  Property: Int32 TypeModifier
+  Property: System.String Name
+  Property: UInt32 TypeId
+struct Apex.SqlClient.SqlCommandResult : System.IEquatable`1[Apex.SqlClient.SqlCommandResult]
+  Constructor: Void .ctor(Int64, System.String)
+  Method: Boolean Equals(Apex.SqlClient.SqlCommandResult)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.SqlClient.SqlCommandResult, Apex.SqlClient.SqlCommandResult)
+  Method: Boolean op_Inequality(Apex.SqlClient.SqlCommandResult, Apex.SqlClient.SqlCommandResult)
+  Method: Int32 GetHashCode()
+  Method: Int64 get_AffectedRows()
+  Method: System.String ToString()
+  Method: System.String get_CommandTag()
+  Method: Void Deconstruct(Int64 ByRef, System.String ByRef)
+  Method: Void set_AffectedRows(Int64)
+  Method: Void set_CommandTag(System.String)
+  Property: Int64 AffectedRows
+  Property: System.String CommandTag
+class Apex.SqlClient.SqlConnectOptions : System.IEquatable`1[Apex.SqlClient.SqlConnectOptions]
+  Method: Apex.SqlClient.SqlConnectOptions <Clone>$()
+  Method: Boolean Equals(Apex.SqlClient.SqlConnectOptions)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean get_CachePreparedStatements()
+  Method: Boolean op_Equality(Apex.SqlClient.SqlConnectOptions, Apex.SqlClient.SqlConnectOptions)
+  Method: Boolean op_Inequality(Apex.SqlClient.SqlConnectOptions, Apex.SqlClient.SqlConnectOptions)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_Port()
+  Method: Int32 get_PreparedStatementCacheSize()
+  Method: Int32 get_PreparedStatementCacheSqlLengthLimit()
+  Method: Int32 get_ReconnectAttempts()
+  Method: System.String ToString()
+  Method: System.String get_Database()
+  Method: System.String get_Host()
+  Method: System.String get_Password()
+  Method: System.String get_Username()
+  Method: System.TimeSpan get_ConnectTimeout()
+  Method: System.TimeSpan get_ReconnectInterval()
+  Method: Void set_CachePreparedStatements(Boolean)
+  Method: Void set_ConnectTimeout(System.TimeSpan)
+  Method: Void set_Database(System.String)
+  Method: Void set_Host(System.String)
+  Method: Void set_Password(System.String)
+  Method: Void set_Port(Int32)
+  Method: Void set_PreparedStatementCacheSize(Int32)
+  Method: Void set_PreparedStatementCacheSqlLengthLimit(Int32)
+  Method: Void set_ReconnectAttempts(Int32)
+  Method: Void set_ReconnectInterval(System.TimeSpan)
+  Method: Void set_Username(System.String)
+  Property: Boolean CachePreparedStatements
+  Property: Int32 Port
+  Property: Int32 PreparedStatementCacheSize
+  Property: Int32 PreparedStatementCacheSqlLengthLimit
+  Property: Int32 ReconnectAttempts
+  Property: System.String Database
+  Property: System.String Host
+  Property: System.String Password
+  Property: System.String Username
+  Property: System.TimeSpan ConnectTimeout
+  Property: System.TimeSpan ReconnectInterval
+enum Apex.SqlClient.SqlDataFormat : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Field: Apex.SqlClient.SqlDataFormat Binary
+  Field: Apex.SqlClient.SqlDataFormat Text
+  Field: Int16 value__
+struct Apex.SqlClient.SqlParameters : System.Collections.Generic.IEnumerable`1[Apex.SqlClient.SqlValue], System.Collections.Generic.IReadOnlyCollection`1[Apex.SqlClient.SqlValue], System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlValue], System.Collections.IEnumerable
+  Method: Apex.SqlClient.SqlParameters Create(Apex.SqlClient.SqlValue[])
+  Method: Apex.SqlClient.SqlParameters From(System.ReadOnlySpan`1[Apex.SqlClient.SqlValue])
+  Method: Apex.SqlClient.SqlParameters FromObjects(System.ReadOnlySpan`1[System.Object])
+  Method: Apex.SqlClient.SqlParameters get_Empty()
+  Method: Apex.SqlClient.SqlValue get_Item(Int32)
+  Method: Int32 get_Count()
+  Method: System.Collections.Generic.IEnumerator`1[Apex.SqlClient.SqlValue] GetEnumerator()
+  Property: Apex.SqlClient.SqlParameters Empty
+  Property: Apex.SqlClient.SqlValue Item [Int32]
+  Property: Int32 Count
+class Apex.SqlClient.SqlPoolOptions : System.IEquatable`1[Apex.SqlClient.SqlPoolOptions]
+  Constructor: Void .ctor()
+  Method: Apex.SqlClient.SqlPoolOptions <Clone>$()
+  Method: Boolean Equals(Apex.SqlClient.SqlPoolOptions)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.SqlClient.SqlPoolOptions, Apex.SqlClient.SqlPoolOptions)
+  Method: Boolean op_Inequality(Apex.SqlClient.SqlPoolOptions, Apex.SqlClient.SqlPoolOptions)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_MaximumSize()
+  Method: Int32 get_MaximumWaitQueueSize()
+  Method: System.String ToString()
+  Method: System.TimeSpan get_AcquisitionTimeout()
+  Method: System.TimeSpan get_CleanerPeriod()
+  Method: System.TimeSpan get_IdleTimeout()
+  Method: System.TimeSpan get_MaximumLifetime()
+  Method: Void set_AcquisitionTimeout(System.TimeSpan)
+  Method: Void set_CleanerPeriod(System.TimeSpan)
+  Method: Void set_IdleTimeout(System.TimeSpan)
+  Method: Void set_MaximumLifetime(System.TimeSpan)
+  Method: Void set_MaximumSize(Int32)
+  Method: Void set_MaximumWaitQueueSize(Int32)
+  Property: Int32 MaximumSize
+  Property: Int32 MaximumWaitQueueSize
+  Property: System.TimeSpan AcquisitionTimeout
+  Property: System.TimeSpan CleanerPeriod
+  Property: System.TimeSpan IdleTimeout
+  Property: System.TimeSpan MaximumLifetime
+class Apex.SqlClient.SqlRow
+  Method: Boolean IsNull(Int32)
+  Method: Boolean TryGet[T](Int32, T ByRef)
+  Method: Int32 GetOrdinal(System.String)
+  Method: Int32 get_Count()
+  Method: System.Object get_Item(Int32)
+  Method: System.Object get_Item(System.String)
+  Method: T Get[T](Int32)
+  Method: T Get[T](System.String)
+  Property: Int32 Count
+  Property: System.Object Item [Int32]
+  Property: System.Object Item [System.String]
+class Apex.SqlClient.SqlRowSet : System.Collections.Generic.IEnumerable`1[Apex.SqlClient.SqlRow], System.Collections.Generic.IReadOnlyCollection`1[Apex.SqlClient.SqlRow], System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlRow], System.Collections.IEnumerable
+  Method: Apex.SqlClient.SqlRow get_Item(Int32)
+  Method: Apex.SqlClient.SqlRowSet get_Empty()
+  Method: Apex.SqlClient.SqlRowSet get_Next()
+  Method: Int32 get_Count()
+  Method: Int64 get_AffectedRows()
+  Method: System.Collections.Generic.IEnumerator`1[Apex.SqlClient.SqlRow] GetEnumerator()
+  Method: System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlColumn] get_Columns()
+  Method: System.String get_CommandTag()
+  Property: Apex.SqlClient.SqlRow Item [Int32]
+  Property: Apex.SqlClient.SqlRowSet Empty
+  Property: Apex.SqlClient.SqlRowSet Next
+  Property: Int32 Count
+  Property: Int64 AffectedRows
+  Property: System.Collections.Generic.IReadOnlyList`1[Apex.SqlClient.SqlColumn] Columns
+  Property: System.String CommandTag
+struct Apex.SqlClient.SqlValue
+  Method: Apex.SqlClient.SqlValue From(System.Object)
+  Method: Apex.SqlClient.SqlValue get_Null()
+  Method: Apex.SqlClient.SqlValue op_Implicit(Boolean)
+  Method: Apex.SqlClient.SqlValue op_Implicit(Byte[])
+  Method: Apex.SqlClient.SqlValue op_Implicit(Double)
+  Method: Apex.SqlClient.SqlValue op_Implicit(Int16)
+  Method: Apex.SqlClient.SqlValue op_Implicit(Int32)
+  Method: Apex.SqlClient.SqlValue op_Implicit(Int64)
+  Method: Apex.SqlClient.SqlValue op_Implicit(Single)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.DateOnly)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.DateTime)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.DateTimeOffset)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.Decimal)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.Guid)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.ReadOnlyMemory`1[System.Byte])
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.String)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.Text.Json.JsonDocument)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.Text.Json.JsonElement)
+  Method: Apex.SqlClient.SqlValue op_Implicit(System.TimeOnly)
+  Method: Apex.SqlClient.SqlValueKind get_Kind()
+  Method: Boolean get_IsNull()
+  Method: System.Object ToObject()
+  Method: T GetRequired[T]()
+  Method: T Get[T]()
+  Property: Apex.SqlClient.SqlValue Null
+  Property: Apex.SqlClient.SqlValueKind Kind
+  Property: Boolean IsNull
+enum Apex.SqlClient.SqlValueKind : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Field: Apex.SqlClient.SqlValueKind Boolean
+  Field: Apex.SqlClient.SqlValueKind Bytes
+  Field: Apex.SqlClient.SqlValueKind DateOnly
+  Field: Apex.SqlClient.SqlValueKind DateTime
+  Field: Apex.SqlClient.SqlValueKind DateTimeOffset
+  Field: Apex.SqlClient.SqlValueKind Decimal
+  Field: Apex.SqlClient.SqlValueKind Double
+  Field: Apex.SqlClient.SqlValueKind Guid
+  Field: Apex.SqlClient.SqlValueKind Int16
+  Field: Apex.SqlClient.SqlValueKind Int32
+  Field: Apex.SqlClient.SqlValueKind Int64
+  Field: Apex.SqlClient.SqlValueKind JsonDocument
+  Field: Apex.SqlClient.SqlValueKind JsonElement
+  Field: Apex.SqlClient.SqlValueKind Null
+  Field: Apex.SqlClient.SqlValueKind Object
+  Field: Apex.SqlClient.SqlValueKind ReadOnlyMemory
+  Field: Apex.SqlClient.SqlValueKind Single
+  Field: Apex.SqlClient.SqlValueKind String
+  Field: Apex.SqlClient.SqlValueKind TimeOnly
+  Field: Byte value__

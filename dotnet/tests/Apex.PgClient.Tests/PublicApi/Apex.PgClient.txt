@@ -1,0 +1,428 @@
+interface Apex.PgClient.IPgSubscriber : System.IAsyncDisposable
+  Method: System.Collections.Generic.IAsyncEnumerable`1[Apex.PgClient.PgNotification] get_Notifications()
+  Method: System.Collections.Generic.IReadOnlyCollection`1[System.String] get_Channels()
+  Method: System.Threading.Tasks.ValueTask SubscribeAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask UnsubscribeAsync(System.String, System.Threading.CancellationToken)
+  Property: System.Collections.Generic.IAsyncEnumerable`1[Apex.PgClient.PgNotification] Notifications
+  Property: System.Collections.Generic.IReadOnlyCollection`1[System.String] Channels
+struct Apex.PgClient.PgBox : System.IEquatable`1[Apex.PgClient.PgBox]
+  Constructor: Void .ctor(Apex.PgClient.PgPoint, Apex.PgClient.PgPoint)
+  Method: Apex.PgClient.PgPoint get_LowerLeft()
+  Method: Apex.PgClient.PgPoint get_UpperRight()
+  Method: Boolean Equals(Apex.PgClient.PgBox)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgBox, Apex.PgClient.PgBox)
+  Method: Boolean op_Inequality(Apex.PgClient.PgBox, Apex.PgClient.PgBox)
+  Method: Int32 GetHashCode()
+  Method: System.String ToString()
+  Method: Void Deconstruct(Apex.PgClient.PgPoint ByRef, Apex.PgClient.PgPoint ByRef)
+  Method: Void set_LowerLeft(Apex.PgClient.PgPoint)
+  Method: Void set_UpperRight(Apex.PgClient.PgPoint)
+  Property: Apex.PgClient.PgPoint LowerLeft
+  Property: Apex.PgClient.PgPoint UpperRight
+enum Apex.PgClient.PgChannelBinding : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Field: Apex.PgClient.PgChannelBinding Disable
+  Field: Apex.PgClient.PgChannelBinding Prefer
+  Field: Apex.PgClient.PgChannelBinding Require
+  Field: Int32 value__
+struct Apex.PgClient.PgCidr : System.IEquatable`1[Apex.PgClient.PgCidr]
+  Constructor: Void .ctor(System.Net.IPAddress, Int32)
+  Method: Boolean Equals(Apex.PgClient.PgCidr)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgCidr, Apex.PgClient.PgCidr)
+  Method: Boolean op_Inequality(Apex.PgClient.PgCidr, Apex.PgClient.PgCidr)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_PrefixLength()
+  Method: System.Net.IPAddress get_Address()
+  Method: System.String ToString()
+  Property: Int32 PrefixLength
+  Property: System.Net.IPAddress Address
+struct Apex.PgClient.PgCircle : System.IEquatable`1[Apex.PgClient.PgCircle]
+  Constructor: Void .ctor(Apex.PgClient.PgPoint, Double)
+  Method: Apex.PgClient.PgPoint get_Center()
+  Method: Boolean Equals(Apex.PgClient.PgCircle)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgCircle, Apex.PgClient.PgCircle)
+  Method: Boolean op_Inequality(Apex.PgClient.PgCircle, Apex.PgClient.PgCircle)
+  Method: Double get_Radius()
+  Method: Int32 GetHashCode()
+  Method: System.String ToString()
+  Method: Void Deconstruct(Apex.PgClient.PgPoint ByRef, Double ByRef)
+  Method: Void set_Center(Apex.PgClient.PgPoint)
+  Method: Void set_Radius(Double)
+  Property: Apex.PgClient.PgPoint Center
+  Property: Double Radius
+class Apex.PgClient.PgClient
+  Method: System.Threading.Tasks.ValueTask`1[Apex.PgClient.PgConnection] ConnectAsync(Apex.PgClient.PgConnectOptions, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.PgClient.PgConnection] ConnectAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.PgClient.PgSubscriber] SubscribeAsync(Apex.PgClient.PgConnectOptions, System.Func`2[System.Int32,System.Nullable`1[System.TimeSpan]], System.Threading.CancellationToken)
+class Apex.PgClient.PgConnectOptions : Apex.SqlClient.SqlConnectOptions, System.IEquatable`1[Apex.PgClient.PgConnectOptions], System.IEquatable`1[Apex.SqlClient.SqlConnectOptions]
+  Constructor: Void .ctor()
+  Method: Apex.PgClient.PgChannelBinding get_ChannelBinding()
+  Method: Apex.PgClient.PgConnectOptions <Clone>$()
+  Method: Apex.PgClient.PgConnectOptions FromEnvironment()
+  Method: Apex.PgClient.PgConnectOptions Parse(System.String)
+  Method: Apex.PgClient.PgProxyOptions get_Proxy()
+  Method: Apex.PgClient.PgSslMode get_SslMode()
+  Method: Apex.PgClient.PgSslNegotiation get_SslNegotiation()
+  Method: Boolean Equals(Apex.PgClient.PgConnectOptions)
+  Method: Boolean Equals(Apex.SqlClient.SqlConnectOptions)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean get_UseLayer7Proxy()
+  Method: Boolean op_Equality(Apex.PgClient.PgConnectOptions, Apex.PgClient.PgConnectOptions)
+  Method: Boolean op_Inequality(Apex.PgClient.PgConnectOptions, Apex.PgClient.PgConnectOptions)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_PipeliningLimit()
+  Method: System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.String] get_Properties()
+  Method: System.Collections.Generic.IReadOnlyList`1[System.Security.Cryptography.X509Certificates.X509Certificate2] get_ClientCertificates()
+  Method: System.Net.Security.RemoteCertificateValidationCallback get_CertificateValidationCallback()
+  Method: System.Security.Cryptography.X509Certificates.X509RevocationMode get_CertificateRevocationCheckMode()
+  Method: System.String ToString()
+  Method: Void set_CertificateRevocationCheckMode(System.Security.Cryptography.X509Certificates.X509RevocationMode)
+  Method: Void set_CertificateValidationCallback(System.Net.Security.RemoteCertificateValidationCallback)
+  Method: Void set_ChannelBinding(Apex.PgClient.PgChannelBinding)
+  Method: Void set_ClientCertificates(System.Collections.Generic.IReadOnlyList`1[System.Security.Cryptography.X509Certificates.X509Certificate2])
+  Method: Void set_PipeliningLimit(Int32)
+  Method: Void set_Properties(System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.String])
+  Method: Void set_Proxy(Apex.PgClient.PgProxyOptions)
+  Method: Void set_SslMode(Apex.PgClient.PgSslMode)
+  Method: Void set_SslNegotiation(Apex.PgClient.PgSslNegotiation)
+  Method: Void set_UseLayer7Proxy(Boolean)
+  Property: Apex.PgClient.PgChannelBinding ChannelBinding
+  Property: Apex.PgClient.PgProxyOptions Proxy
+  Property: Apex.PgClient.PgSslMode SslMode
+  Property: Apex.PgClient.PgSslNegotiation SslNegotiation
+  Property: Boolean UseLayer7Proxy
+  Property: Int32 PipeliningLimit
+  Property: System.Collections.Generic.IReadOnlyDictionary`2[System.String,System.String] Properties
+  Property: System.Collections.Generic.IReadOnlyList`1[System.Security.Cryptography.X509Certificates.X509Certificate2] ClientCertificates
+  Property: System.Net.Security.RemoteCertificateValidationCallback CertificateValidationCallback
+  Property: System.Security.Cryptography.X509Certificates.X509RevocationMode CertificateRevocationCheckMode
+class Apex.PgClient.PgConnection : Apex.SqlClient.ISqlClient, Apex.SqlClient.ISqlConnection, System.IAsyncDisposable
+  Event: System.Action`1[Apex.PgClient.PgNotice] Notice
+  Event: System.Action`1[Apex.PgClient.PgNotification] Notification
+  Method: Apex.SqlClient.DatabaseMetadata get_DatabaseMetadata()
+  Method: Boolean get_IsSecure()
+  Method: Int32 get_ProcessId()
+  Method: Int32 get_SecretKey()
+  Method: System.Collections.Generic.IAsyncEnumerable`1[Apex.SqlClient.SqlRow] StreamAsync(System.String, Apex.SqlClient.SqlParameters, Int32, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask CancelRequestAsync(System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask DisposeAsync()
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.ISqlPreparedStatement] PrepareAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.ISqlTransaction] BeginTransactionAsync(System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlCommandResult] ExecuteAsync(System.String, Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlCommandResult] ExecuteAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlRowSet] QueryAsync(System.String, Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlRowSet] QueryAsync(System.String, System.Threading.CancellationToken)
+  Method: Void add_Notice(System.Action`1[Apex.PgClient.PgNotice])
+  Method: Void add_Notification(System.Action`1[Apex.PgClient.PgNotification])
+  Method: Void remove_Notice(System.Action`1[Apex.PgClient.PgNotice])
+  Method: Void remove_Notification(System.Action`1[Apex.PgClient.PgNotification])
+  Property: Apex.SqlClient.DatabaseMetadata DatabaseMetadata
+  Property: Boolean IsSecure
+  Property: Int32 ProcessId
+  Property: Int32 SecretKey
+class Apex.PgClient.PgException : Apex.SqlClient.SqlClientException, System.Runtime.Serialization.ISerializable
+  Method: System.Nullable`1[System.Int32] get_Position()
+  Method: System.String get_ColumnName()
+  Method: System.String get_ConstraintName()
+  Method: System.String get_Detail()
+  Method: System.String get_Hint()
+  Method: System.String get_SchemaName()
+  Method: System.String get_Severity()
+  Method: System.String get_SqlState()
+  Method: System.String get_TableName()
+  Property: System.Nullable`1[System.Int32] Position
+  Property: System.String ColumnName
+  Property: System.String ConstraintName
+  Property: System.String Detail
+  Property: System.String Hint
+  Property: System.String SchemaName
+  Property: System.String Severity
+  Property: System.String SqlState
+  Property: System.String TableName
+struct Apex.PgClient.PgInet : System.IEquatable`1[Apex.PgClient.PgInet]
+  Constructor: Void .ctor(System.Net.IPAddress, System.Nullable`1[System.Int32])
+  Method: Boolean Equals(Apex.PgClient.PgInet)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgInet, Apex.PgClient.PgInet)
+  Method: Boolean op_Inequality(Apex.PgClient.PgInet, Apex.PgClient.PgInet)
+  Method: Int32 GetHashCode()
+  Method: System.Net.IPAddress get_Address()
+  Method: System.Nullable`1[System.Int32] get_PrefixLength()
+  Method: System.String ToString()
+  Property: System.Net.IPAddress Address
+  Property: System.Nullable`1[System.Int32] PrefixLength
+struct Apex.PgClient.PgInterval : System.IEquatable`1[Apex.PgClient.PgInterval]
+  Constructor: Void .ctor(Int32, Int32, Int32, Int32, Int32, Int32, Int32)
+  Method: Boolean Equals(Apex.PgClient.PgInterval)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgInterval, Apex.PgClient.PgInterval)
+  Method: Boolean op_Inequality(Apex.PgClient.PgInterval, Apex.PgClient.PgInterval)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_Days()
+  Method: Int32 get_Hours()
+  Method: Int32 get_Microseconds()
+  Method: Int32 get_Minutes()
+  Method: Int32 get_Months()
+  Method: Int32 get_Seconds()
+  Method: Int32 get_Years()
+  Method: System.String ToString()
+  Method: Void Deconstruct(Int32 ByRef, Int32 ByRef, Int32 ByRef, Int32 ByRef, Int32 ByRef, Int32 ByRef, Int32 ByRef)
+  Method: Void set_Days(Int32)
+  Method: Void set_Hours(Int32)
+  Method: Void set_Microseconds(Int32)
+  Method: Void set_Minutes(Int32)
+  Method: Void set_Months(Int32)
+  Method: Void set_Seconds(Int32)
+  Method: Void set_Years(Int32)
+  Property: Int32 Days
+  Property: Int32 Hours
+  Property: Int32 Microseconds
+  Property: Int32 Minutes
+  Property: Int32 Months
+  Property: Int32 Seconds
+  Property: Int32 Years
+struct Apex.PgClient.PgLine : System.IEquatable`1[Apex.PgClient.PgLine]
+  Constructor: Void .ctor(Double, Double, Double)
+  Method: Boolean Equals(Apex.PgClient.PgLine)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgLine, Apex.PgClient.PgLine)
+  Method: Boolean op_Inequality(Apex.PgClient.PgLine, Apex.PgClient.PgLine)
+  Method: Double get_A()
+  Method: Double get_B()
+  Method: Double get_C()
+  Method: Int32 GetHashCode()
+  Method: System.String ToString()
+  Method: Void Deconstruct(Double ByRef, Double ByRef, Double ByRef)
+  Method: Void set_A(Double)
+  Method: Void set_B(Double)
+  Method: Void set_C(Double)
+  Property: Double A
+  Property: Double B
+  Property: Double C
+struct Apex.PgClient.PgLineSegment : System.IEquatable`1[Apex.PgClient.PgLineSegment]
+  Constructor: Void .ctor(Apex.PgClient.PgPoint, Apex.PgClient.PgPoint)
+  Method: Apex.PgClient.PgPoint get_End()
+  Method: Apex.PgClient.PgPoint get_Start()
+  Method: Boolean Equals(Apex.PgClient.PgLineSegment)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgLineSegment, Apex.PgClient.PgLineSegment)
+  Method: Boolean op_Inequality(Apex.PgClient.PgLineSegment, Apex.PgClient.PgLineSegment)
+  Method: Int32 GetHashCode()
+  Method: System.String ToString()
+  Method: Void Deconstruct(Apex.PgClient.PgPoint ByRef, Apex.PgClient.PgPoint ByRef)
+  Method: Void set_End(Apex.PgClient.PgPoint)
+  Method: Void set_Start(Apex.PgClient.PgPoint)
+  Property: Apex.PgClient.PgPoint End
+  Property: Apex.PgClient.PgPoint Start
+struct Apex.PgClient.PgMoney : System.IEquatable`1[Apex.PgClient.PgMoney]
+  Constructor: Void .ctor(System.Decimal)
+  Method: Boolean Equals(Apex.PgClient.PgMoney)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgMoney, Apex.PgClient.PgMoney)
+  Method: Boolean op_Inequality(Apex.PgClient.PgMoney, Apex.PgClient.PgMoney)
+  Method: Int32 GetHashCode()
+  Method: System.Decimal get_Value()
+  Method: System.String ToString()
+  Property: System.Decimal Value
+class Apex.PgClient.PgNotice : System.IEquatable`1[Apex.PgClient.PgNotice]
+  Constructor: Void .ctor(System.String, System.String, System.String, System.String, System.String)
+  Method: Apex.PgClient.PgNotice <Clone>$()
+  Method: Boolean Equals(Apex.PgClient.PgNotice)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgNotice, Apex.PgClient.PgNotice)
+  Method: Boolean op_Inequality(Apex.PgClient.PgNotice, Apex.PgClient.PgNotice)
+  Method: Int32 GetHashCode()
+  Method: System.String ToString()
+  Method: System.String get_Detail()
+  Method: System.String get_Hint()
+  Method: System.String get_Message()
+  Method: System.String get_Severity()
+  Method: System.String get_SqlState()
+  Method: Void Deconstruct(System.String ByRef, System.String ByRef, System.String ByRef, System.String ByRef, System.String ByRef)
+  Method: Void set_Detail(System.String)
+  Method: Void set_Hint(System.String)
+  Method: Void set_Message(System.String)
+  Method: Void set_Severity(System.String)
+  Method: Void set_SqlState(System.String)
+  Property: System.String Detail
+  Property: System.String Hint
+  Property: System.String Message
+  Property: System.String Severity
+  Property: System.String SqlState
+class Apex.PgClient.PgNotification : System.IEquatable`1[Apex.PgClient.PgNotification]
+  Constructor: Void .ctor(Int32, System.String, System.String)
+  Method: Apex.PgClient.PgNotification <Clone>$()
+  Method: Boolean Equals(Apex.PgClient.PgNotification)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgNotification, Apex.PgClient.PgNotification)
+  Method: Boolean op_Inequality(Apex.PgClient.PgNotification, Apex.PgClient.PgNotification)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_ProcessId()
+  Method: System.String ToString()
+  Method: System.String get_Channel()
+  Method: System.String get_Payload()
+  Method: Void Deconstruct(Int32 ByRef, System.String ByRef, System.String ByRef)
+  Method: Void set_Channel(System.String)
+  Method: Void set_Payload(System.String)
+  Method: Void set_ProcessId(Int32)
+  Property: Int32 ProcessId
+  Property: System.String Channel
+  Property: System.String Payload
+struct Apex.PgClient.PgNumeric : System.IEquatable`1[Apex.PgClient.PgNumeric]
+  Method: Apex.PgClient.PgNumeric Create(System.Numerics.BigInteger, Int32)
+  Method: Apex.PgClient.PgNumeric Parse(System.String)
+  Method: Apex.PgClient.PgNumeric get_NaN()
+  Method: Apex.PgClient.PgNumeric get_NegativeInfinity()
+  Method: Apex.PgClient.PgNumeric get_PositiveInfinity()
+  Method: Apex.PgClient.PgNumericSpecialValue get_SpecialValue()
+  Method: Boolean Equals(Apex.PgClient.PgNumeric)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean get_IsFinite()
+  Method: Boolean op_Equality(Apex.PgClient.PgNumeric, Apex.PgClient.PgNumeric)
+  Method: Boolean op_Inequality(Apex.PgClient.PgNumeric, Apex.PgClient.PgNumeric)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_Scale()
+  Method: System.Decimal ToDecimal()
+  Method: System.Numerics.BigInteger get_UnscaledValue()
+  Method: System.String ToString()
+  Property: Apex.PgClient.PgNumeric NaN
+  Property: Apex.PgClient.PgNumeric NegativeInfinity
+  Property: Apex.PgClient.PgNumeric PositiveInfinity
+  Property: Apex.PgClient.PgNumericSpecialValue SpecialValue
+  Property: Boolean IsFinite
+  Property: Int32 Scale
+  Property: System.Numerics.BigInteger UnscaledValue
+enum Apex.PgClient.PgNumericSpecialValue : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Field: Apex.PgClient.PgNumericSpecialValue Finite
+  Field: Apex.PgClient.PgNumericSpecialValue NaN
+  Field: Apex.PgClient.PgNumericSpecialValue NegativeInfinity
+  Field: Apex.PgClient.PgNumericSpecialValue PositiveInfinity
+  Field: Byte value__
+class Apex.PgClient.PgPath : System.IEquatable`1[Apex.PgClient.PgPath]
+  Constructor: Void .ctor(System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint], Boolean)
+  Method: Apex.PgClient.PgPath <Clone>$()
+  Method: Boolean Equals(Apex.PgClient.PgPath)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean get_Closed()
+  Method: Boolean op_Equality(Apex.PgClient.PgPath, Apex.PgClient.PgPath)
+  Method: Boolean op_Inequality(Apex.PgClient.PgPath, Apex.PgClient.PgPath)
+  Method: Int32 GetHashCode()
+  Method: System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint] get_Points()
+  Method: System.String ToString()
+  Method: Void Deconstruct(System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint] ByRef, Boolean ByRef)
+  Method: Void set_Closed(Boolean)
+  Method: Void set_Points(System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint])
+  Property: Boolean Closed
+  Property: System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint] Points
+struct Apex.PgClient.PgPoint : System.IEquatable`1[Apex.PgClient.PgPoint]
+  Constructor: Void .ctor(Double, Double)
+  Method: Boolean Equals(Apex.PgClient.PgPoint)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgPoint, Apex.PgClient.PgPoint)
+  Method: Boolean op_Inequality(Apex.PgClient.PgPoint, Apex.PgClient.PgPoint)
+  Method: Double get_X()
+  Method: Double get_Y()
+  Method: Int32 GetHashCode()
+  Method: System.String ToString()
+  Method: Void Deconstruct(Double ByRef, Double ByRef)
+  Method: Void set_X(Double)
+  Method: Void set_Y(Double)
+  Property: Double X
+  Property: Double Y
+class Apex.PgClient.PgPolygon : System.IEquatable`1[Apex.PgClient.PgPolygon]
+  Constructor: Void .ctor(System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint])
+  Method: Apex.PgClient.PgPolygon <Clone>$()
+  Method: Boolean Equals(Apex.PgClient.PgPolygon)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgPolygon, Apex.PgClient.PgPolygon)
+  Method: Boolean op_Inequality(Apex.PgClient.PgPolygon, Apex.PgClient.PgPolygon)
+  Method: Int32 GetHashCode()
+  Method: System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint] get_Points()
+  Method: System.String ToString()
+  Method: Void Deconstruct(System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint] ByRef)
+  Method: Void set_Points(System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint])
+  Property: System.Collections.Generic.IReadOnlyList`1[Apex.PgClient.PgPoint] Points
+class Apex.PgClient.PgPool : Apex.SqlClient.ISqlClient, Apex.SqlClient.ISqlPool, System.IAsyncDisposable
+  Method: Apex.PgClient.PgPool Create(Apex.PgClient.PgConnectOptions, Apex.SqlClient.SqlPoolOptions)
+  Method: Int32 get_Size()
+  Method: System.Collections.Generic.IAsyncEnumerable`1[Apex.SqlClient.SqlRow] StreamAsync(System.String, Apex.SqlClient.SqlParameters, Int32, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask DisposeAsync()
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.ISqlConnection] GetConnectionAsync(System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlCommandResult] ExecuteAsync(System.String, Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlCommandResult] ExecuteAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlRowSet] QueryAsync(System.String, Apex.SqlClient.SqlParameters, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.SqlClient.SqlRowSet] QueryAsync(System.String, System.Threading.CancellationToken)
+  Property: Int32 Size
+class Apex.PgClient.PgProxyOptions : System.IEquatable`1[Apex.PgClient.PgProxyOptions]
+  Constructor: Void .ctor()
+  Method: Apex.PgClient.PgProxyOptions <Clone>$()
+  Method: Apex.PgClient.PgProxyType get_Type()
+  Method: Boolean Equals(Apex.PgClient.PgProxyOptions)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgProxyOptions, Apex.PgClient.PgProxyOptions)
+  Method: Boolean op_Inequality(Apex.PgClient.PgProxyOptions, Apex.PgClient.PgProxyOptions)
+  Method: Int32 GetHashCode()
+  Method: Int32 get_Port()
+  Method: System.String ToString()
+  Method: System.String get_Host()
+  Method: System.String get_Password()
+  Method: System.String get_Username()
+  Method: Void set_Host(System.String)
+  Method: Void set_Password(System.String)
+  Method: Void set_Port(Int32)
+  Method: Void set_Type(Apex.PgClient.PgProxyType)
+  Method: Void set_Username(System.String)
+  Property: Apex.PgClient.PgProxyType Type
+  Property: Int32 Port
+  Property: System.String Host
+  Property: System.String Password
+  Property: System.String Username
+enum Apex.PgClient.PgProxyType : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Field: Apex.PgClient.PgProxyType HttpConnect
+  Field: Apex.PgClient.PgProxyType Socks4a
+  Field: Apex.PgClient.PgProxyType Socks5
+  Field: Int32 value__
+enum Apex.PgClient.PgSslMode : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Field: Apex.PgClient.PgSslMode Allow
+  Field: Apex.PgClient.PgSslMode Disable
+  Field: Apex.PgClient.PgSslMode Prefer
+  Field: Apex.PgClient.PgSslMode Require
+  Field: Apex.PgClient.PgSslMode VerifyCa
+  Field: Apex.PgClient.PgSslMode VerifyFull
+  Field: Int32 value__
+enum Apex.PgClient.PgSslNegotiation : System.IComparable, System.IConvertible, System.IFormattable, System.ISpanFormattable
+  Field: Apex.PgClient.PgSslNegotiation Direct
+  Field: Apex.PgClient.PgSslNegotiation Postgres
+  Field: Int32 value__
+class Apex.PgClient.PgSubscriber : Apex.PgClient.IPgSubscriber, System.IAsyncDisposable
+  Method: Int32 get_ProcessId()
+  Method: System.Collections.Generic.IAsyncEnumerable`1[Apex.PgClient.PgNotification] get_Notifications()
+  Method: System.Collections.Generic.IReadOnlyCollection`1[System.String] get_Channels()
+  Method: System.Threading.Tasks.ValueTask DisposeAsync()
+  Method: System.Threading.Tasks.ValueTask SubscribeAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask UnsubscribeAsync(System.String, System.Threading.CancellationToken)
+  Method: System.Threading.Tasks.ValueTask`1[Apex.PgClient.PgSubscriber] ConnectAsync(Apex.PgClient.PgConnectOptions, System.Func`2[System.Int32,System.Nullable`1[System.TimeSpan]], System.Threading.CancellationToken)
+  Property: Int32 ProcessId
+  Property: System.Collections.Generic.IAsyncEnumerable`1[Apex.PgClient.PgNotification] Notifications
+  Property: System.Collections.Generic.IReadOnlyCollection`1[System.String] Channels
+struct Apex.PgClient.PgTimeWithTimeZone : System.IEquatable`1[Apex.PgClient.PgTimeWithTimeZone]
+  Constructor: Void .ctor(System.TimeOnly, System.TimeSpan)
+  Method: Boolean Equals(Apex.PgClient.PgTimeWithTimeZone)
+  Method: Boolean Equals(System.Object)
+  Method: Boolean op_Equality(Apex.PgClient.PgTimeWithTimeZone, Apex.PgClient.PgTimeWithTimeZone)
+  Method: Boolean op_Inequality(Apex.PgClient.PgTimeWithTimeZone, Apex.PgClient.PgTimeWithTimeZone)
+  Method: Int32 GetHashCode()
+  Method: System.String ToString()
+  Method: System.TimeOnly get_Time()
+  Method: System.TimeSpan get_Offset()
+  Method: Void Deconstruct(System.TimeOnly ByRef, System.TimeSpan ByRef)
+  Method: Void set_Offset(System.TimeSpan)
+  Method: Void set_Time(System.TimeOnly)
+  Property: System.TimeOnly Time
+  Property: System.TimeSpan Offset
+class Apex.PgClient.PgUnsupportedTypeException : Apex.SqlClient.SqlClientException, System.Runtime.Serialization.ISerializable
+  Constructor: Void .ctor(UInt32)
+  Method: UInt32 get_TypeId()
+  Property: UInt32 TypeId

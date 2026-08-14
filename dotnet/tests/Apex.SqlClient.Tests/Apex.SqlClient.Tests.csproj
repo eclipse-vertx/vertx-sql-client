@@ -1,0 +1,21 @@
+﻿<Project Sdk="MSTest.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Apex.SqlClient\Apex.SqlClient.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\PublicApiSnapshot.cs" Link="PublicApiSnapshot.cs" />
+    <None Include="PublicApi\Apex.SqlClient.txt"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="Never" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/benchmarks/">
+    <Project Path="benchmarks/Apex.ComparisonHarness/Apex.ComparisonHarness.csproj" />
+    <Project Path="benchmarks/Apex.DriverBenchmarks/Apex.DriverBenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Apex.PgClient/Apex.PgClient.csproj" />
+    <Project Path="src/Apex.SqlClient/Apex.SqlClient.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Apex.AotSmoke/Apex.AotSmoke.csproj" />
+    <Project Path="tests/Apex.PgClient.IntegrationTests/Apex.PgClient.IntegrationTests.csproj" />
+    <Project Path="tests/Apex.PgClient.Tests/Apex.PgClient.Tests.csproj" />
+    <Project Path="tests/Apex.SqlClient.SpecificationTests/Apex.SqlClient.SpecificationTests.csproj" />
+    <Project Path="tests/Apex.SqlClient.Tests/Apex.SqlClient.Tests.csproj" />
+  </Folder>
+</Solution>

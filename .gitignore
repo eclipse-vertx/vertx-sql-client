@@ -34,3 +34,9 @@ src/main/java/io/vertx/java/**/*.java
 *.swp
 generated/
 bin/
+obj/
+artifacts/
+*.user
+*.suo
+*.nupkg
+*.snupkg
