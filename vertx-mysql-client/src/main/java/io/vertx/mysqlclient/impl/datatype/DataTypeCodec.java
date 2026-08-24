@@ -12,23 +12,24 @@
 package io.vertx.mysqlclient.impl.datatype;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.mysqlclient.data.spatial.*;
+import io.vertx.mysqlclient.data.spatial.Geometry;
 import io.vertx.mysqlclient.impl.MySQLCollation;
 import io.vertx.mysqlclient.impl.util.BufferUtils;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.Utils;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -95,7 +96,7 @@ public class DataTypeCodec {
         case TIMESTAMP:
           return textDecodeDateTime(collationId, buffer, index, length);
         case JSON:
-          return textDecodeJson(collationId, buffer, index, length);
+          return textDecodeJson(buffer, index, length);
         case GEOMETRY:
           return textDecodeGeometry(buffer, index, length);
         case BINARY:
@@ -178,7 +179,7 @@ public class DataTypeCodec {
       case VARSTRING:
       default:
         if (value instanceof JsonObject || value instanceof JsonArray) {
-          binaryEncodeJson(value, buffer, charset);
+          binaryEncodeJson(value, buffer);
           return;
         } else if (value == Tuple.JSON_NULL) {
           // we have to make JSON literal null send as a STRING data type
@@ -231,7 +232,7 @@ public class DataTypeCodec {
       case TIMESTAMP:
         return binaryDecodeDatetime(buffer);
       case JSON:
-        return binaryDecodeJson(collationId, buffer);
+        return binaryDecodeJson(buffer);
       case GEOMETRY:
         return binaryDecodeGeometry(buffer);
       case BINARY:
@@ -466,8 +467,15 @@ public class DataTypeCodec {
     }
   }
 
-  private static void binaryEncodeJson(Object value, ByteBuf buffer, Charset charset) {
-    BufferUtils.writeLengthEncodedString(buffer, Json.encode(value), charset);
+  private static void binaryEncodeJson(Object value, ByteBuf buffer) {
+    ByteBuf tmp = buffer.alloc().buffer();
+    try {
+      Json.encodeTo(value, new ByteBufOutputStream(tmp));
+      BufferUtils.writeLengthEncodedInteger(buffer, tmp.readableBytes());
+      buffer.writeBytes(tmp);
+    } finally {
+      tmp.release();
+    }
   }
 
   private static Byte binaryDecodeInt8(ByteBuf buffer) {
@@ -629,9 +637,9 @@ public class DataTypeCodec {
     }
   }
 
-  private static Object binaryDecodeJson(int collationId, ByteBuf buffer) {
+  private static Object binaryDecodeJson(ByteBuf buffer) {
     int length = (int) BufferUtils.readLengthEncodedInteger(buffer);
-    Object result = textDecodeJson(collationId, buffer, buffer.readerIndex(), length);
+    Object result = textDecodeJson(buffer, buffer.readerIndex(), length);
     buffer.skipBytes(length);
     return result;
   }
@@ -743,33 +751,12 @@ public class DataTypeCodec {
     return LocalDateTime.parse(cs, DATETIME_FORMAT);
   }
 
-  private static Object textDecodeJson(int collationId, ByteBuf buffer, int index, int length) {
-    Charset charset = StandardCharsets.UTF_8; // MySQL JSON data type will only be UTF-8 string
-    // Try to do without the intermediary String (?)
-    CharSequence cs = buffer.getCharSequence(index, length, charset);
-    Object value = null;
-    String s = cs.toString();
-    int pos = 0;
-    while (pos < s.length() && Character.isWhitespace(s.charAt(pos))) {
-      pos++;
+  private static Object textDecodeJson(ByteBuf buffer, int index, int length) {
+    Object o = Json.decodeValue(new ByteBufInputStream(buffer.slice(index, length)));
+    if (o == null) {
+      return Tuple.JSON_NULL;
     }
-    if (pos == s.length()) {
-      return null;
-    } else if (s.charAt(pos) == '{') {
-      value = new JsonObject(s);
-    } else if (s.charAt(pos) == '[') {
-      value = new JsonArray(s);
-    } else {
-      Object o = Json.decodeValue(s);
-      if (o == null) {
-        return Tuple.JSON_NULL;
-      }
-      if (o instanceof Number || o instanceof Boolean || o instanceof String) {
-        return o;
-      }
-      return null;
-    }
-    return value;
+    return o;
   }
 
   private static Long decodeBit(ByteBuf buffer, int index, int length) {

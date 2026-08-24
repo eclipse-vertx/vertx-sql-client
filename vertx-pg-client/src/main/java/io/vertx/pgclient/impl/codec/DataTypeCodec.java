@@ -17,17 +17,13 @@
 
 package io.vertx.pgclient.impl.codec;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.*;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.pgclient.data.*;
 import io.vertx.pgclient.impl.util.UTF8StringEndDetector;
 import io.vertx.sqlclient.Tuple;
@@ -279,13 +275,13 @@ public class DataTypeCodec {
         binaryEncodeArray((UUID[]) value, DataType.UUID, buff);
         break;
       case JSON:
-        binaryEncodeJSON((CharSequence) value, buff);
+        binaryEncodeJSON(value, buff);
         break;
       case JSON_ARRAY:
         binaryEncodeArray((Object[]) value, DataType.JSON, buff);
         break;
       case JSONB:
-        binaryEncodeJSONB((CharSequence) value, buff);
+        binaryEncodeJSONB(value, buff);
         break;
       case JSONB_ARRAY:
         binaryEncodeArray((Object[]) value, DataType.JSONB, buff);
@@ -1378,37 +1374,20 @@ public class DataTypeCodec {
     return textDecodeJSONB(index, len, buff);
   }
 
-  private static void binaryEncodeJSON(CharSequence value, ByteBuf buff) {
-    buff.writeCharSequence(value, StandardCharsets.UTF_8);
+  private static void binaryEncodeJSON(Object value, ByteBuf buff) {
+    if (value == Tuple.JSON_NULL) {
+      buff.writeCharSequence("null", StandardCharsets.UTF_8);
+    } else {
+      Json.encodeTo(value, new ByteBufOutputStream(buff));
+    }
   }
 
   private static Object textDecodeJSONB(int index, int len, ByteBuf buff) {
-
-    // Try to do without the intermediary String (?)
-    CharSequence cs = buff.getCharSequence(index, len, StandardCharsets.UTF_8);
-    Object value = null;
-    String s = cs.toString();
-    int pos = 0;
-    while (pos < s.length() && Character.isWhitespace(s.charAt(pos))) {
-      pos++;
+    Object o = Json.decodeValue(new ByteBufInputStream(buff.slice(index, len)));
+    if (o == null) {
+      return Tuple.JSON_NULL;
     }
-    if (pos == s.length()) {
-      return null;
-    } else if (s.charAt(pos) == '{') {
-      value = new JsonObject(s);
-    } else if (s.charAt(pos) == '[') {
-      value = new JsonArray(s);
-    } else {
-      Object o = Json.decodeValue(s);
-      if (o == null) {
-        return Tuple.JSON_NULL;
-      }
-      if (o instanceof Number || o instanceof Boolean || o instanceof String) {
-        return o;
-      }
-      return null;
-    }
-    return value;
+    return o;
   }
 
   private static Object binaryDecodeJSONB(int index, int len, ByteBuf buff) {
@@ -1416,7 +1395,7 @@ public class DataTypeCodec {
     return textDecodeJSONB(index + 1, len - 1, buff);
   }
 
-  private static void binaryEncodeJSONB(CharSequence value, ByteBuf buff) {
+  private static void binaryEncodeJSONB(Object value, ByteBuf buff) {
     buff.writeByte(1); // version
     binaryEncodeJSON(value, buff);
   }

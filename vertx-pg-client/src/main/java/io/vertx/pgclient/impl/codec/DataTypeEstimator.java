@@ -82,8 +82,11 @@ class DataTypeEstimator {
     return estimateUTF8(value);
   }
 
-  private static int estimateJSONB(String value) {
-    return 1 + estimateUTF8(value);
+  private static int estimateJSONB(Object value) {
+    if (value instanceof String) {
+      return 1 + estimateUTF8((String) value);
+    }
+    return 256;
   }
 
   private static int estimateNumeric(String value) {
@@ -144,7 +147,7 @@ class DataTypeEstimator {
         case DataTypeEstimator.INET:
           return estimateInetOrCidr((Inet) o);
         case DataTypeEstimator.JSONB:
-          return estimateJSONB((String) o);
+          return estimateJSONB(o);
         case DataTypeEstimator.UNKNOWN:
           return estimateUnknown((String) o);
         case DataTypeEstimator.NUMERIC:
@@ -152,7 +155,7 @@ class DataTypeEstimator {
         case DataTypeEstimator.NUMERIC_ARRAY:
           return estimateNumericArray((Object[]) o);
         case DataTypeEstimator.UTF8:
-          return estimateUTF8((String) o);
+          return o instanceof String ? estimateUTF8((String) o) : 256;
         case DataTypeEstimator.BUFFER:
           return estimateBuffer((Buffer) o);
         case DataTypeEstimator.POLYGON:

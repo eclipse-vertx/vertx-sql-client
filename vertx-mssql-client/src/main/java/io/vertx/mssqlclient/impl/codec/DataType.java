@@ -11,9 +11,8 @@
 
 package io.vertx.mssqlclient.impl.codec;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
+import io.netty.buffer.*;
+import io.netty.handler.codec.EncoderException;
 import io.netty.util.collection.IntObjectHashMap;
 import io.netty.util.collection.IntObjectMap;
 import io.vertx.core.buffer.Buffer;
@@ -22,6 +21,7 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -984,8 +984,9 @@ public enum DataType {
       if (isPLPNull(payloadLength)) {
         return null;
       }
-      String jsonString = readPLP(byteBuf).toString(StandardCharsets.UTF_16LE);
-      return Json.decodeValue(jsonString);
+      ByteBuf heapBuf = readPLP(byteBuf);
+      Reader reader = new InputStreamReader(new ByteBufInputStream(heapBuf), StandardCharsets.UTF_16LE);
+      return Json.decodeValue(reader);
     }
 
     @Override
@@ -995,14 +996,24 @@ public enum DataType {
 
     @Override
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
-      writeParamDescription(byteBuf, name, out, NVARCHAR.id);
-      String val = value.toString();
-      byteBuf.writeShortLE(0xFFFF);
-      writeCollation(byteBuf);
-      byteBuf.writeLongLE(val.length() * 2L);
-      byteBuf.writeIntLE(val.length() * 2);
-      byteBuf.writeCharSequence(val, StandardCharsets.UTF_16LE);
-      byteBuf.writeIntLE(0);
+      ByteBuf tmp = byteBuf.alloc().buffer();
+      try {
+        Writer writer = new OutputStreamWriter(new ByteBufOutputStream(tmp), StandardCharsets.UTF_16LE);
+        Json.encodeTo(value, writer);
+        writer.flush();
+        int byteLen = tmp.readableBytes();
+        writeParamDescription(byteBuf, name, out, NVARCHAR.id);
+        byteBuf.writeShortLE(0xFFFF);
+        writeCollation(byteBuf);
+        byteBuf.writeLongLE(byteLen);
+        byteBuf.writeIntLE(byteLen);
+        byteBuf.writeBytes(tmp);
+        byteBuf.writeIntLE(0);
+      } catch (IOException e) {
+        throw new EncoderException(e);
+      } finally {
+        tmp.release();
+      }
     }
   },
 

@@ -10,8 +10,6 @@
  */
 package io.vertx.pgclient.impl.codec;
 
-import io.vertx.core.json.Json;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.internal.TupleBase;
 
 import java.util.Arrays;
@@ -31,20 +29,8 @@ interface ParamExtractor<T> {
 
   T get(TupleBase tuple, int idx);
 
-  private static String encodeJsonToString(Object value) {
-    if (value == Tuple.JSON_NULL) {
-      return "null";
-    } else {
-      return Json.encode(value);
-    }
-  }
-
   static Object prepareUnknown(Object value) {
     return String.valueOf(value);
-  }
-
-  static Object prepareJson(Object value) {
-    return encodeJsonToString(value);
   }
 
   static Object prepareNumeric(Object value) {
