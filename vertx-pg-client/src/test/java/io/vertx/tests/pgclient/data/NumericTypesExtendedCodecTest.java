@@ -536,6 +536,16 @@ public class NumericTypesExtendedCodecTest extends ExtendedQueryDataTypeCodecTes
   }
 
   @Test
+  public void testNumericArrayToBigDecimalArrayRowConverterWithNullElement(TestContext ctx) {
+    BigDecimal[] expected = {new BigDecimal("2.22"), null, new BigDecimal("3.33")};
+    testGetter(ctx,
+      "SELECT c FROM (VALUES ($1 :: NUMERIC[])) AS t (c)",
+      Collections.singletonList(Tuple.tuple().addValue(expected)),
+      new BigDecimal[][]{expected},
+      (row, index) -> row.get(BigDecimal[].class, index));
+  }
+
+  @Test
   public void testShortArray(TestContext ctx) {
     testGeneric(ctx,
       "SELECT c FROM (VALUES ($1 :: INT2[])) AS t (c)",
