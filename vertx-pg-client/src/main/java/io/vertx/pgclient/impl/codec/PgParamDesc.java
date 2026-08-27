@@ -69,7 +69,7 @@ class PgParamDesc {
             Object[] array = (Object[]) val;
             Object[] tmp = new Object[array.length];
             for (int j = 0;j < array.length;j++) {
-              tmp[j] = preparator.apply(array[j]);
+              tmp[j] = array[j] == null ? null : preparator.apply(array[j]);
             }
             val = tmp;
           } else {
