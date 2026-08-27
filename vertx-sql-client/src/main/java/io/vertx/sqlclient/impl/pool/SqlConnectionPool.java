@@ -279,8 +279,10 @@ public class SqlConnectionPool {
                 if (ar2.succeeded()) {
                   handle(lease);
                 } else {
-                  // Should we do some cleanup ?
-                  handler.fail(failure);
+                  // return the lease to the pool, otherwise its slot leaks forever
+                  lease.recycle();
+                  dequeueMetric(metric);
+                  handler.fail(ar2.cause());
                 }
               });
             } else {
