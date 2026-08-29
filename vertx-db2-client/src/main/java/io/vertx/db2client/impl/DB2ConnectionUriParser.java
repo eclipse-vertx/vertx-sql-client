@@ -40,7 +40,8 @@ public class DB2ConnectionUriParser {
   private static final String USER_INFO_REGEX = "((?<userinfo>[a-zA-Z0-9\\-._~%!*]+(:[a-zA-Z0-9\\-._~%!*]*)?)@)?"; // username and password
   private static final String NET_LOCATION_REGEX = "(?<host>[0-9.]+|\\[[a-zA-Z0-9:]+]|[a-zA-Z0-9\\-._~%]+)"; // ip v4/v6 address or host name
   private static final String PORT_REGEX = "(:(?<port>\\d+))?"; // port
-  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+))?"; // database name
+  private static final String DATABASE_REGEX = "(/(?<database>[a-zA-Z0-9\\-._~%!*]+)"
+    + "(:(?<jdbcattributes>[^?&]*))?)?"; // database name, optionally followed by IBM JDBC style attributes
   private static final String ATTRIBUTES_REGEX = "(\\?(?<attributes>.*))?"; // attributes
 
   private static final Pattern SCHEME_DESIGNATOR_PATTERN = Pattern.compile("^" + SCHEME_DESIGNATOR_REGEX);
@@ -84,8 +85,11 @@ public class DB2ConnectionUriParser {
       // parse the database name
       parseDatabaseName(matcher.group("database"), configuration);
 
+      // parse the IBM JDBC style attributes, e.g. db2://localhost:50000/mydb:user=app;password=secret;
+      parseAttributes(matcher.group("jdbcattributes"), configuration, ";");
+
       // parse the attributes
-      parseAttributes(matcher.group("attributes"), configuration);
+      parseAttributes(matcher.group("attributes"), configuration, "&");
 
     } else {
       throw new IllegalArgumentException("Wrong syntax of connection URI. Must match pattern: " + FULL_URI_PATTERN);
@@ -142,12 +146,12 @@ public class DB2ConnectionUriParser {
     configuration.put("database", decodeUrl(schemaInfo));
   }
 
-  private static void parseAttributes(String attributesInfo, JsonObject configuration) {
+  private static void parseAttributes(String attributesInfo, JsonObject configuration, String separator) {
     if (attributesInfo == null || attributesInfo.isEmpty()) {
       return;
     }
     Map<String, String> properties = new HashMap<>();
-    for (String parameterPair : attributesInfo.split("&")) {
+    for (String parameterPair : attributesInfo.split(separator)) {
       if (parameterPair.isEmpty()) {
         continue;
       }
@@ -185,7 +189,9 @@ public class DB2ConnectionUriParser {
       }
     }
     if (!properties.isEmpty()) {
-      configuration.put("properties", properties);
+      JsonObject props = configuration.getJsonObject("properties", new JsonObject());
+      properties.forEach(props::put);
+      configuration.put("properties", props);
     }
   }
 
