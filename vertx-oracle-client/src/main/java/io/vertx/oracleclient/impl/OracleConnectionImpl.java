@@ -40,4 +40,9 @@ public class OracleConnectionImpl extends SqlConnectionBase<OracleConnectionImpl
       return impl;
     });
   }
+
+  @Override
+  public Object createArray(String typeName, Object elements) {
+    return ((OracleJdbcConnection) conn.unwrap()).createArray(typeName, elements);
+  }
 }
