@@ -22,7 +22,7 @@ import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 
 public class CCSIDConstants {
-	
+
 	// Log errors and warnings to the log file
 	private static final Logger LOG = LoggerFactory.getLogger(CCSIDConstants.class);
 
@@ -32,30 +32,30 @@ public class CCSIDConstants {
 
     public static final Charset EBCDIC = Charset.forName("CP1047");
     public static final Charset UTF8 = StandardCharsets.UTF_8;
-    
+
     // Western European / Latin
     public static final Charset ISO_8859_1 = StandardCharsets.ISO_8859_1;
     // International Unicode
     public static final Charset UTF16BE = StandardCharsets.UTF_16BE;
-    
+
     // Simplified Chinese
     public static final Charset GBK = Charset.forName("GBK");
     // Simplified Chinese IBM Host
     public static final Charset CP935 = Charset.forName("Cp935");
 
     private CCSIDConstants() {}
-    
+
     //A method to convert the CCSID number sent by DB2 into a Java Charset.
     public static Charset getCharsetForCCSID(int ccsid) {
         switch (ccsid) {
             case CCSID_UTF8:
                 return UTF8;
-            case 1386: 
+            case 1386:
             case 5488:
             case 1114:
-                return GBK;
-            case 935:  
-                return CP935;
+            	return  GBK;
+            case 935:
+            	return CP935;
             case 819:
                 return ISO_8859_1;
             case 1200:

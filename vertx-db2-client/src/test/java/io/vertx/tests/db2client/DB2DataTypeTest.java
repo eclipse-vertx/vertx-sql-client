@@ -10,15 +10,8 @@
  */
 package io.vertx.tests.db2client;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Tuple;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
+import java.nio.charset.Charset;
 import java.sql.RowId;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
@@ -26,6 +19,17 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import io.vertx.core.buffer.Buffer;
+import io.vertx.db2client.impl.drda.CCSIDConstants;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.sqlclient.Row;
+import io.vertx.sqlclient.RowSet;
+import io.vertx.sqlclient.Tuple;
 
 @RunWith(VertxUnitRunner.class)
 public class DB2DataTypeTest extends DB2TestBase {
@@ -264,5 +268,16 @@ public class DB2DataTypeTest extends DB2TestBase {
   @Override
   protected List<String> tablesToClean() {
     return Collections.singletonList("db2_types");
+  }
+
+  @Test
+  public void testNonAsciiCCSIDMapping(TestContext ctx) {
+    // Chinese GBK mappings
+	  ctx.assertEquals(Charset.forName("GBK"), CCSIDConstants.getCharsetForCCSID(1386));
+	  ctx.assertEquals(Charset.forName("GBK"), CCSIDConstants.getCharsetForCCSID(5488));
+	  ctx.assertEquals(Charset.forName("GBK"), CCSIDConstants.getCharsetForCCSID(1114));
+
+    // Chinese CP935 mapping
+	  ctx.assertEquals(Charset.forName("Cp935"), CCSIDConstants.getCharsetForCCSID(935));
   }
 }
