@@ -30,7 +30,9 @@ import io.vertx.mssqlclient.impl.codec.TdsLoginSentCompletionHandler;
 import io.vertx.mssqlclient.impl.codec.TdsMessageCodec;
 import io.vertx.mssqlclient.impl.codec.TdsPacketDecoder;
 import io.vertx.mssqlclient.impl.codec.TdsSslHandshakeCodec;
+import io.vertx.mssqlclient.impl.command.MSSQLInitCommand;
 import io.vertx.mssqlclient.impl.command.PreLoginCommand;
+import io.vertx.mssqlclient.impl.command.PreLoginResponse;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.impl.Connection;
 import io.vertx.sqlclient.impl.QueryResultHandler;
@@ -67,11 +69,11 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     return connectOptions;
   }
 
-  Future<Byte> sendPreLoginMessage(boolean clientConfigSsl) {
-    PreLoginCommand cmd = new PreLoginCommand(clientConfigSsl);
+  Future<PreLoginResponse> sendPreLoginMessage(boolean clientConfigSsl, boolean fedAuth) {
+    PreLoginCommand cmd = new PreLoginCommand(clientConfigSsl, fedAuth);
     return schedule(context, cmd).map(resp -> {
       setDatabaseMetadata(resp.metadata());
-      return resp.encryptionLevel();
+      return resp;
     });
   }
 
@@ -123,8 +125,9 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     });
   }
 
-  Future<Connection> sendLoginMessage(String username, String password, String database, Map<String, String> properties) {
-    InitCommand cmd = new InitCommand(this, username, password, database, properties);
+  Future<Connection> sendLoginMessage(String username, String password, String database, Map<String, String> properties,
+                                      String accessToken, boolean fedAuthEcho) {
+    InitCommand cmd = new MSSQLInitCommand(this, username, password, database, properties, accessToken, fedAuthEcho);
     return schedule(context, cmd);
   }
 

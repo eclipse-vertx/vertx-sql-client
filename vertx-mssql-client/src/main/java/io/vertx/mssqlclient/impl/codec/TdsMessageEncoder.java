@@ -105,6 +105,10 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
 
   void writeTdsMessage(short messageType, ByteBuf tdsMessageContent) {
     int remaining = tdsMessageContent.writerIndex();
+    // PacketID numbers the packets within one message, starting at 1 and wrapping at 256
+    // (MS-TDS 2.2.3.1.3). SQL Server tolerates a constant zero, but the spec and the Microsoft
+    // JDBC driver both increment it, so do the same.
+    int packetId = 1;
     while (remaining > 0) {
       int payloadLength = Math.min(remaining, payloadMaxLength);
       tdsMessageContent.writerIndex(tdsMessageContent.readerIndex() + payloadLength);
@@ -116,22 +120,26 @@ public class TdsMessageEncoder extends ChannelOutboundHandlerAdapter {
       } else {
         payload = tdsMessageContent.readRetainedSlice(payloadLength);
       }
-      writeTdsPacket(messageType, status, payloadLength, payload);
+      writeTdsPacket(messageType, status, payloadLength, payload, packetId);
+      packetId = packetId % 255 + 1;
       remaining -= payloadLength;
     }
   }
 
-  private void writeTdsPacket(short messageType, short status, int length, ByteBuf payload) {
+  private void writeTdsPacket(short messageType, short status, int length, ByteBuf payload, int packetId) {
     ByteBuf header = chctx.alloc().ioBuffer(PACKET_HEADER_SIZE);
     header.writeByte(messageType);
     header.writeByte(status);
     header.writeShort(PACKET_HEADER_SIZE + length);
-    header.writeZero(4);
+    header.writeShort(0); // SPID
+    header.writeByte(packetId);
+    header.writeByte(0); // Window
     chctx.write(header, chctx.voidPromise());
-    if (status == END_OF_MESSAGE) {
-      chctx.writeAndFlush(payload, chctx.voidPromise());
-    } else {
-      chctx.write(payload, chctx.voidPromise());
-    }
+    // Flush every packet, not just the last one of a message. Batching a whole multi-packet
+    // message into a single flush makes SQL Server reset the connection during login: it wants
+    // each TDS packet delivered as its own write. This only shows up once a message spans more
+    // than one packet, which before Entra ID token support no LOGIN7 ever did - every other
+    // LOGIN7 field is capped at 128 characters.
+    chctx.writeAndFlush(payload, chctx.voidPromise());
   }
 }

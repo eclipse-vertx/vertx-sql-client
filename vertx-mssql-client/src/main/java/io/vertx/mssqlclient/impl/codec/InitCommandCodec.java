@@ -18,6 +18,7 @@ import io.vertx.mssqlclient.impl.MSSQLSocketConnection;
 import io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket;
 import io.vertx.mssqlclient.impl.utils.Utils;
 import io.vertx.sqlclient.impl.Connection;
+import io.vertx.mssqlclient.impl.command.MSSQLInitCommand;
 import io.vertx.sqlclient.impl.command.InitCommand;
 
 import java.util.Map;
@@ -39,6 +40,10 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
   void encode() {
     ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
+    String accessToken = cmd instanceof MSSQLInitCommand ? ((MSSQLInitCommand) cmd).accessToken() : null;
+    boolean fedAuthEcho = cmd instanceof MSSQLInitCommand && ((MSSQLInitCommand) cmd).fedAuthEcho();
+    boolean fedAuth = accessToken != null;
+
     int startIdx = content.writerIndex(); // Length
     content.writeZero(4); // set length later by calculating
     content.writeInt(LoginPacket.SQL_SERVER_2017_VERSION); // TDSVersion
@@ -56,7 +61,9 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
       LoginPacket.OPTION_FLAGS2_ODBC_ON
     ); // OptionFlags2
     content.writeByte(LoginPacket.DEFAULT_TYPE_FLAGS); // TypeFlags
-    content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS3); // OptionFlags3
+    content.writeByte(LoginPacket.DEFAULT_OPTION_FLAGS3 |
+      (fedAuth ? LoginPacket.OPTION_FLAGS3_EXTENSION : 0)
+    ); // OptionFlags3
     content.writeZero(8); // ClientTimeZone + ClientLCID
 
     /*
@@ -71,14 +78,14 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     content.writeZero(2); // offset
     content.writeShortLE(hostName.length());
 
-    // UserName
-    String userName = cmd.username();
+    // UserName - empty when a federated authentication token is used
+    String userName = cmd.username() == null ? "" : cmd.username();
     int userNameOffsetLengthIdx = content.writerIndex();
     content.writeZero(2); // offset
     content.writeShortLE(userName.length());
 
-    // Password
-    String password = cmd.password();
+    // Password - empty when a federated authentication token is used
+    String password = cmd.password() == null ? "" : cmd.password();
     int passwordOffsetLengthIdx = content.writerIndex();
     content.writeZero(2); // offset
     content.writeShortLE(password.length());
@@ -158,7 +165,15 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     content.setShortLE(serverNameOffsetLengthIdx, content.writerIndex() - startIdx);
     content.writeCharSequence(serverName, UTF_16LE);
 
+    // When fExtension is set this entry is ibExtension/cbExtension. cbExtension is always 4:
+    // the 4 bytes it points at hold a DWORD which is itself the offset of the FeatureExt block.
     content.setShortLE(unusedOffsetLengthIdx, content.writerIndex() - startIdx);
+    int featureExtOffsetIdx = -1;
+    if (fedAuth) {
+      content.setShortLE(unusedOffsetLengthIdx + 2, 4); // cbExtension
+      featureExtOffsetIdx = content.writerIndex();
+      content.writeZero(4); // DWORD FeatureExtOffset, patched once the block is written
+    }
 
     content.setShortLE(cltIntNameOffsetLengthIdx, content.writerIndex() - startIdx);
     content.writeCharSequence(interfaceLibraryName, UTF_16LE);
@@ -173,6 +188,11 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     content.setShortLE(atchDbFileOffsetLengthIdx, content.writerIndex() - startIdx);
 
     content.setShortLE(changePasswordOffsetLengthIdx, content.writerIndex() - startIdx);
+
+    if (fedAuth) {
+      content.setIntLE(featureExtOffsetIdx, content.writerIndex() - startIdx);
+      writeFedAuthFeatureExt(content, accessToken, fedAuthEcho);
+    }
 
     // set length
     content.setIntLE(startIdx, content.writerIndex() - startIdx);
@@ -189,6 +209,22 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     After reading a submitted password, for every byte in the password buffer starting with the position pointed to by ibPassword or ibChangePassword,
     the server SHOULD first do a bit-XOR with 0xA5 (10100101) and then swap the four high bits with the four low bits.
    */
+  /**
+   * Writes the FEDAUTH feature extension for {@code bFedAuthLibrary = SECURITYTOKEN}, see MS-TDS 2.2.6.4.
+   * <p>
+   * The token is carried as UTF-16LE bytes and {@code TokenLength} counts bytes, not characters.
+   * No nonce applies here: that belongs to the ADAL/FEDAUTHINFO flow, which this driver does not implement.
+   */
+  private void writeFedAuthFeatureExt(ByteBuf content, String accessToken, boolean fedAuthEcho) {
+    byte[] token = accessToken.getBytes(UTF_16LE);
+    content.writeByte(LoginPacket.FEATURE_ID_FEDAUTH);
+    content.writeIntLE(1 + 4 + token.length); // FeatureDataLen
+    content.writeByte((LoginPacket.FEDAUTH_LIBRARY_SECURITYTOKEN << 1) | (fedAuthEcho ? 0x01 : 0x00));
+    content.writeIntLE(token.length);
+    content.writeBytes(token);
+    content.writeByte(LoginPacket.FEATURE_TERMINATOR);
+  }
+
   private void writePassword(ByteBuf payload, String password) {
     byte[] bytes = password.getBytes(UTF_16LE);
     for (int i = 0; i < bytes.length; i++) {
