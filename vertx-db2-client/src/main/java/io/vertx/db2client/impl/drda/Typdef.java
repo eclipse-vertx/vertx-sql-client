@@ -961,7 +961,8 @@ public class Typdef implements Cloneable {
     // analyze exception handling some more here
     Charset getCcsidSbcEncoding() {
         if (ccsidSbcEncoding_ == null) {
-            ccsidSbcEncoding_ = CCSIDConstants.UTF8;
+            ccsidSbcEncoding_ = isCcsidSbcSet() && ccsidSbc_ != 0 ? CCSIDConstants.getCharsetForCCSID(ccsidSbc_)
+					: CCSIDConstants.UTF8;
         }
         return ccsidSbcEncoding_;
     }
@@ -983,7 +984,8 @@ public class Typdef implements Cloneable {
     // analyze exception handling some more here
     private Charset getCcsidDbcEncoding() {
         if (ccsidDbcEncoding_ == null) {
-            ccsidDbcEncoding_ = CCSIDConstants.UTF8;
+        	ccsidDbcEncoding_ = isCcsidDbcSet() && ccsidDbc_ != 0 ? CCSIDConstants.getCharsetForCCSID(ccsidDbc_)
+					: CCSIDConstants.UTF8;
         }
         return ccsidDbcEncoding_;
     }
@@ -1005,7 +1007,8 @@ public class Typdef implements Cloneable {
     // analyze exception handling some more here
     Charset getCcsidMbcEncoding() {
         if (ccsidMbcEncoding_ == null) {
-            ccsidMbcEncoding_ = CCSIDConstants.UTF8;
+        	ccsidMbcEncoding_ = isCcsidMbcSet() && ccsidMbc_ != 0 ? CCSIDConstants.getCharsetForCCSID(ccsidMbc_)
+					: CCSIDConstants.UTF8;
         }
         return ccsidMbcEncoding_;
     }
@@ -1079,8 +1082,14 @@ public class Typdef implements Cloneable {
             // otherwise the sda.ccsid_ is a placeholder:
             //  CCSIDMBC, CCSIDDDBC, CCSIDSBC to indicate that
             // the actual ccsid is the connection's ccsid (in protocol lingo the connection's typdef ccsid).
-            netCursor.charset_[columnIndex] = metadata.isZos() ? CCSIDConstants.EBCDIC : CCSIDConstants.UTF8;
-            netCursor.ccsid_[columnIndex] = sda.ccsid_;
+        	if (sda.ccsid_ != 0) {
+                netCursor.charset_[columnIndex] = CCSIDConstants.getCharsetForCCSID(sda.ccsid_);
+                netCursor.ccsid_[columnIndex] = sda.ccsid_;
+            } else {
+                //If Server 0 is sent, use connection-level typedef encoding.
+                netCursor.charset_[columnIndex] = getCcsidMbcEncoding();
+                netCursor.ccsid_[columnIndex] = getCcsidMbc();
+            }
             break;
         }
 

@@ -22,4 +22,18 @@ public class DB2QueriesTest extends DB2TestBase {
         }));
     }));
   }
+
+  @Test
+  public void testNonAsciiChineseEncoding(TestContext ctx) {
+    String expected = "你好世界";
+    connect(ctx.asyncAssertSuccess(conn -> {
+      conn.preparedQuery("VALUES (?)").execute(Tuple.of(expected))
+        .onComplete(ctx.asyncAssertSuccess(rows -> {
+          ctx.assertEquals(1, rows.size());
+          ctx.assertEquals(expected, rows.iterator().next().getString(0));
+          conn.close();
+        }));
+    }));
+  }
+
 }
