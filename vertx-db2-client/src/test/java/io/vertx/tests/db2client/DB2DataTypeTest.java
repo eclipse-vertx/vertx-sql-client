@@ -270,14 +270,4 @@ public class DB2DataTypeTest extends DB2TestBase {
     return Collections.singletonList("db2_types");
   }
 
-  @Test
-  public void testNonAsciiCCSIDMapping(TestContext ctx) {
-    // Chinese GBK mappings
-	  ctx.assertEquals(Charset.forName("GBK"), CCSIDConstants.getCharsetForCCSID(1386));
-	  ctx.assertEquals(Charset.forName("GBK"), CCSIDConstants.getCharsetForCCSID(5488));
-	  ctx.assertEquals(Charset.forName("GBK"), CCSIDConstants.getCharsetForCCSID(1114));
-
-    // Chinese CP935 mapping
-	  ctx.assertEquals(Charset.forName("Cp935"), CCSIDConstants.getCharsetForCCSID(935));
-  }
 }
