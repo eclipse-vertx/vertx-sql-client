@@ -21,6 +21,7 @@ import io.vertx.sqlclient.impl.command.CommandResponse;
 
 import static io.vertx.mssqlclient.impl.codec.EnvChange.*;
 import static io.vertx.mssqlclient.impl.codec.TokenType.*;
+import static io.vertx.mssqlclient.impl.protocol.client.login.LoginPacket.FEATURE_TERMINATOR;
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedByteLengthString;
 import static io.vertx.mssqlclient.impl.utils.ByteBufUtils.readUnsignedShortLengthString;
 
@@ -46,6 +47,9 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
         case LOGINACK:
           payload.skipBytes(payload.readUnsignedShortLE());
           handleLoginAck();
+          break;
+        case FEATUREEXTACK:
+          handleFeatureExtAck(payload);
           break;
         case COLMETADATA:
           handleColumnMetadata(payload);
@@ -86,6 +90,25 @@ abstract class MSSQLCommandCodec<R, C extends CommandBase<R>> {
       }
     }
     handleDecodingComplete();
+  }
+
+  /**
+   * Consumes a FEATUREEXTACK token, see MS-TDS 2.2.7.11. The server sends it before LOGINACK to
+   * acknowledge the features requested in the LOGIN7 feature extension.
+   * <p>
+   * Note the per-feature length is a DWORD here, unlike most TDS tokens which use a USHORT.
+   * Every feature is skipped generically so that an ack for a feature we did not request cannot
+   * desynchronise the stream. For FEDAUTH with a security token the ack data is empty.
+   */
+  protected void handleFeatureExtAck(ByteBuf payload) {
+    while (true) {
+      short featureId = payload.readUnsignedByte();
+      if (featureId == FEATURE_TERMINATOR) {
+        break;
+      }
+      int length = payload.readIntLE();
+      payload.skipBytes(length);
+    }
   }
 
   protected void handleInfo(ByteBuf payload) {

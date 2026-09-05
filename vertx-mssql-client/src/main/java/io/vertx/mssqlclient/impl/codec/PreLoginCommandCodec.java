@@ -25,6 +25,7 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
 
   private static final int VERSION = 0x00;
   private static final int ENCRYPTION = 0x01;
+  private static final int FEDAUTHREQUIRED = 0x06;
   private static final int TERMINATOR = 0xFF;
 
   PreLoginCommandCodec(TdsMessageCodec tdsMessageCodec, PreLoginCommand cmd) {
@@ -35,8 +36,12 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
   void encode() {
     ByteBuf content = tdsMessageCodec.alloc().ioBuffer();
 
+    boolean fedAuth = cmd.fedAuthRequested();
+
+    // Options must be written in increasing token order.
     int versionOptionIndex = encodeOption(content, VERSION);
     int encryptionOptionIndex = encodeOption(content, ENCRYPTION);
+    int fedAuthOptionIndex = fedAuth ? encodeOption(content, FEDAUTHREQUIRED) : -1;
     content.writeByte(TERMINATOR);
 
     encodeOptionOffset(content, versionOptionIndex, content.writerIndex());
@@ -46,6 +51,12 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
     encodeOptionOffset(content, encryptionOptionIndex, content.writerIndex());
     encodeOptionLength(content, encryptionOptionIndex, 1);
     content.writeByte(cmd.sslRequired() ? ENCRYPT_ON : ENCRYPT_OFF);
+
+    if (fedAuth) {
+      encodeOptionOffset(content, fedAuthOptionIndex, content.writerIndex());
+      encodeOptionLength(content, fedAuthOptionIndex, 1);
+      content.writeByte(0x01); // the client is capable of federated authentication
+    }
 
     tdsMessageCodec.encoder().writeTdsMessage(PRE_LOGIN, content);
   }
@@ -70,6 +81,7 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
     int startOfMessage = payload.readerIndex();
     MSSQLDatabaseMetadata metadata = null;
     Byte encryptionLevel = null;
+    Boolean fedAuthRequired = null;
     while (true) {
       short optionType = payload.readUnsignedByte();
       if (optionType == TERMINATOR) {
@@ -86,9 +98,15 @@ class PreLoginCommandCodec extends MSSQLCommandCodec<PreLoginResponse, PreLoginC
         metadata = new MSSQLDatabaseMetadata(String.format("%d.%d.%d", major, minor, build), major, minor);
       } else if (optionType == ENCRYPTION) {
         encryptionLevel = payload.readByte();
+      } else if (optionType == FEDAUTHREQUIRED) {
+        short value = payload.readUnsignedByte();
+        if (value != 0x00 && value != 0x01) {
+          throw new IllegalStateException("Invalid value of the FEDAUTHREQUIRED option in the PRELOGIN response: " + value);
+        }
+        fedAuthRequired = value == 0x01;
       }
       payload.resetReaderIndex();
     }
-    tdsMessageCodec.decoder().fireCommandResponse(CommandResponse.success(new PreLoginResponse(metadata, encryptionLevel)));
+    tdsMessageCodec.decoder().fireCommandResponse(CommandResponse.success(new PreLoginResponse(metadata, encryptionLevel, fedAuthRequired)));
   }
 }
