@@ -202,13 +202,6 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     tdsMessageCodec.chctx().pipeline().fireUserEventTriggered(LOGIN_SENT);
   }
 
-  /*
-    Before submitting a password from the client to the server,
-    for every byte in the password buffer starting with the position pointed to by ibPassword or ibChangePassword,
-    the client SHOULD first swap the four high bits with the four low bits and then do a bit-XOR with 0xA5 (10100101).
-    After reading a submitted password, for every byte in the password buffer starting with the position pointed to by ibPassword or ibChangePassword,
-    the server SHOULD first do a bit-XOR with 0xA5 (10100101) and then swap the four high bits with the four low bits.
-   */
   /**
    * Writes the FEDAUTH feature extension for {@code bFedAuthLibrary = SECURITYTOKEN}, see MS-TDS 2.2.6.4.
    * <p>
@@ -225,6 +218,13 @@ class InitCommandCodec extends MSSQLCommandCodec<Connection, InitCommand> {
     content.writeByte(LoginPacket.FEATURE_TERMINATOR);
   }
 
+  /*
+    Before submitting a password from the client to the server,
+    for every byte in the password buffer starting with the position pointed to by ibPassword or ibChangePassword,
+    the client SHOULD first swap the four high bits with the four low bits and then do a bit-XOR with 0xA5 (10100101).
+    After reading a submitted password, for every byte in the password buffer starting with the position pointed to by ibPassword or ibChangePassword,
+    the server SHOULD first do a bit-XOR with 0xA5 (10100101) and then swap the four high bits with the four low bits.
+   */
   private void writePassword(ByteBuf payload, String password) {
     byte[] bytes = password.getBytes(UTF_16LE);
     for (int i = 0; i < bytes.length; i++) {
