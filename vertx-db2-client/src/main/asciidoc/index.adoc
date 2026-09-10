@@ -143,6 +143,12 @@ The URI format for a connection string is:
 db2://[user[:[password]]@]host[:port][/database][?<key1>=<value1>[&<key2>=<value2>]]
 ----
 
+The IBM JDBC URL syntax is supported as well, using `:` to separate the database from the parameters and `;` between parameter key/value pairs:
+
+----
+db2://[user[:[password]]@]host[:port]/database:<key1>=<value1>;[<key2>=<value2>;]
+----
+
 NOTE: Configuring parameters in connection URI will override the default properties.
 
 Currently, the client supports the following parameter keys:
