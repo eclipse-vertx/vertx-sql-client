@@ -40,6 +40,7 @@ INSERT INTO immutable (id, message) VALUES (9, 'Feature: A bug with seniority.')
 INSERT INTO immutable (id, message) VALUES (10, 'Computers make very fast, very accurate mistakes.');
 INSERT INTO immutable (id, message) VALUES (11, '<script>alert("This should not be displayed in a browser alert box.");</script>');
 INSERT INTO immutable (id, message) VALUES (12, 'フレームワークのベンチマーク');
+INSERT INTO immutable (id, message) VALUES (13, '你好世界');
 
 -- mutable for insert,update,delete query testing --
 -- used by TCK
