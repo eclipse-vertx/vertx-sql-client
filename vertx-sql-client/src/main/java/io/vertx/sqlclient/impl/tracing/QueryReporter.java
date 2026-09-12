@@ -10,8 +10,9 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.QueryResultBuilder;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
-import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SqlCommand;
 
 import java.util.Collections;
 import java.util.List;
@@ -66,7 +67,7 @@ public class QueryReporter {
     }
   };
 
-  private final QueryCommandBase<?> cmd;
+  private final CommandBase<?> cmd;
   private final VertxTracer tracer;
   private final ClientMetrics metrics;
   private final ContextInternal context;
@@ -78,7 +79,7 @@ public class QueryReporter {
   private Object payload;
   private Object metric;
 
-  public QueryReporter(VertxTracer tracer, ClientMetrics metrics, ContextInternal context, QueryCommandBase<?> queryCmd, Connection conn) {
+  public QueryReporter(VertxTracer tracer, ClientMetrics metrics, ContextInternal context, CommandBase<?> queryCmd, Connection conn) {
     this.tracer = tracer;
     this.metrics = metrics;
     this.context = context;
@@ -109,22 +110,27 @@ public class QueryReporter {
     tracer.receiveResponse(context, result, payload, failure, TagExtractor.empty());
   }
 
+  private String sql() {
+    return ((SqlCommand) cmd).sql();
+  }
+
   public void before() {
     if (tracer != null) {
-      String sql = cmd.sql();
-      if (cmd instanceof SimpleQueryCommand) {
-        payload = sendRequest(context, sql);
-      } else {
+      String sql = sql();
+      if (cmd instanceof ExtendedQueryCommand) {
         ExtendedQueryCommand<?> extendedQueryCmd = (ExtendedQueryCommand<?>) cmd;
         if (extendedQueryCmd.params() != null) {
-          payload = sendRequest(context, sql, ((ExtendedQueryCommand<?>) cmd).params());
+          payload = sendRequest(context, sql, extendedQueryCmd.params());
         } else {
           payload = sendRequest(context, sql, ((ExtendedQueryCommand) cmd).paramsList());
         }
+      } else {
+        // simple queries and statements that carry no parameters, such as COPY
+        payload = sendRequest(context, sql);
       }
     }
     if (metrics != null) {
-      String sql = cmd.sql();
+      String sql = sql();
       metric = metrics.init();
       metrics.requestBegin(metric, sql, sql);
       metrics.requestEnd(metric);
@@ -133,8 +139,12 @@ public class QueryReporter {
 
   public void after(Object res, Throwable err) {
     if (tracer != null) {
-      QueryResultBuilder<?, ?, ?> qbr = (QueryResultBuilder) cmd.resultHandler();
-      receiveResponse(context, payload, err == null ? qbr.first : null, err);
+      Object result = null;
+      if (err == null && cmd instanceof QueryCommandBase) {
+        QueryResultBuilder<?, ?, ?> qbr = (QueryResultBuilder) ((QueryCommandBase<?>) cmd).resultHandler();
+        result = qbr.first;
+      }
+      receiveResponse(context, payload, result, err);
     }
     if (metrics != null) {
       if (err == null) {

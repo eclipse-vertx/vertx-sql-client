@@ -29,6 +29,7 @@ import io.vertx.sqlclient.impl.HexSequence;
 import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static io.vertx.pgclient.impl.util.Util.writeCString;
@@ -51,6 +52,9 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   private static final byte EXECUTE = 'E';
   private static final byte CLOSE = 'C';
   private static final byte SYNC = 'S';
+  private static final byte COPY_DATA = 'd';
+  private static final byte COPY_DONE = 'c';
+  private static final byte COPY_FAIL = 'f';
 
   private final PgCodec codec;
   final boolean useLayer7Proxy;
@@ -64,6 +68,14 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
   PgEncoder(boolean useLayer7Proxy, PgCodec codec) {
     this.useLayer7Proxy = useLayer7Proxy;
     this.codec = codec;
+  }
+
+  void suspendCommandPipeline() {
+    codec.suspendCommandPipeline();
+  }
+
+  void resumeCommandPipeline() {
+    codec.resumeCommandPipeline();
   }
 
   private void enqueueMessage(Object msg, int estimate) {
@@ -641,6 +653,30 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
    */
   void writeBind(BindMessage bind, String portal, Tuple paramValues) {
     enqueueMessage(bind, portal, paramValues, estimateBind(bind, portal, paramValues));
+  }
+
+  void writeCopyData(ByteBuf payload) {
+    ByteBuf header = ctx.alloc().buffer(5, 5);
+    header.writeByte(COPY_DATA);
+    header.writeInt(payload.readableBytes() + 4);
+    ctx.write(Unpooled.wrappedBuffer(header, payload), ctx.voidPromise());
+  }
+
+  void writeCopyDone() {
+    ByteBuf msg = ctx.alloc().buffer(5, 5);
+    msg.writeByte(COPY_DONE);
+    msg.writeInt(4);
+    ctx.write(msg, ctx.voidPromise());
+  }
+
+  void writeCopyFail(String message) {
+    byte[] msgBytes = message != null ? message.getBytes(StandardCharsets.UTF_8) : new byte[0];
+    ByteBuf msg = ctx.alloc().buffer(1 + 4 + msgBytes.length + 1);
+    msg.writeByte(COPY_FAIL);
+    msg.writeInt(4 + msgBytes.length + 1);
+    msg.writeBytes(msgBytes);
+    msg.writeByte(0);
+    ctx.write(msg, ctx.voidPromise());
   }
 
   byte[] nextStatementName() {
