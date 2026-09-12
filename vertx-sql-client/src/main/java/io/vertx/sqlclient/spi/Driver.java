@@ -144,4 +144,26 @@ public interface Driver<C extends SqlConnectOptions> {
     queryBuilder.append("?");
     return current;
   }
+
+  /**
+   * @return {@code true} when the driver supports savepoints.
+   */
+  default boolean supportsSavepoints() {
+    return false;
+  }
+
+  /**
+   * Whether a savepoint can be released without rolling back to it.
+   *
+   * <p>Some databases, such as Microsoft SQL Server and Oracle, create savepoints
+   * but offer no statement to discard one. Releasing a savepoint on those drivers
+   * fails with an {@link UnsupportedOperationException}.
+   *
+   * <p>Only meaningful when {@link #supportsSavepoints()} returns {@code true}.
+   *
+   * @return {@code true} when the driver supports releasing a savepoint.
+   */
+  default boolean supportsSavepointRelease() {
+    return true;
+  }
 }
