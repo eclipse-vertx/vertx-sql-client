@@ -438,6 +438,18 @@ public abstract class TransactionTestBase {
   }
 
   /**
+   * Whether a failed statement also fails the surrounding transaction.
+   *
+   * <p>PostgreSQL puts the transaction in a failed state, every later statement is
+   * rejected until the transaction is rolled back or rolled back to a savepoint.
+   * The other databases roll back the failed statement only and leave the
+   * transaction usable.
+   */
+  protected boolean statementErrorFailsTransaction() {
+    return false;
+  }
+
+  /**
    * Overridden by the drivers that drop a savepoint once it has been rolled back to.
    * Microsoft SQL Server reports "No transaction or savepoint of that name was found"
    * on the second rollback.
@@ -645,6 +657,76 @@ public abstract class TransactionTestBase {
       res.tx.createSavepoint()
         .compose(sp -> res.tx.commit().compose(v -> sp.rollback()))
         .onComplete(ctx.asyncAssertFailure(err -> async.complete()));
+    }));
+  }
+
+  /**
+   * A statement that fails rolls back that statement only, the transaction carries on
+   * and the work around the failure is committed.
+   */
+  @Test
+  public void testStatementErrorLeavesTransactionUsable(TestContext ctx) {
+    Assume.assumeFalse("driver fails the transaction", statementErrorFailsTransaction());
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before")
+        .compose(v -> insertMutable(res.client, 1, "duplicate"))
+        .transform(ar -> {
+          ctx.assertTrue(ar.failed(), "the duplicate key should have failed");
+          return insertMutable(res.client, 2, "after");
+        })
+        .compose(v -> res.tx.commit())
+        .compose(v -> assertMutableIds(ctx, 1, 2))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  /**
+   * The counterpart: a failed statement leaves the transaction unusable, so the next
+   * statement is rejected too and nothing is committed.
+   */
+  @Test
+  public void testStatementErrorFailsTransaction(TestContext ctx) {
+    Assume.assumeTrue("driver keeps the transaction usable", statementErrorFailsTransaction());
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before")
+        .compose(v -> insertMutable(res.client, 1, "duplicate"))
+        .transform(ar -> {
+          ctx.assertTrue(ar.failed(), "the duplicate key should have failed");
+          return insertMutable(res.client, 2, "after");
+        })
+        .transform(ar -> {
+          ctx.assertTrue(ar.failed(), "the transaction should have rejected the next statement");
+          return res.tx.rollback();
+        })
+        .compose(v -> assertMutableIds(ctx))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  /**
+   * Rolling back to a savepoint after a failed statement discards the work that followed
+   * the savepoint and lets the transaction commit, whichever of the two behaviours above
+   * the database has.
+   */
+  @Test
+  public void testRollbackToSavepointAfterStatementError(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before")
+        .compose(v -> res.tx.createSavepoint())
+        .compose(sp -> insertMutable(res.client, 2, "rolled-back")
+          .compose(v -> insertMutable(res.client, 1, "duplicate"))
+          .transform(ar -> {
+            ctx.assertTrue(ar.failed(), "the duplicate key should have failed");
+            return sp.rollback();
+          })
+          .compose(v -> insertMutable(res.client, 3, "after"))
+          .compose(v -> res.tx.commit()))
+        .compose(v -> assertMutableIds(ctx, 1, 3))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
     }));
   }
 }
