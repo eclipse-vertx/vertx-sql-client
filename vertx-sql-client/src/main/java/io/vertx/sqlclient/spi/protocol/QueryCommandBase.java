@@ -26,7 +26,7 @@ import java.util.stream.Collector;
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
 
-public abstract class QueryCommandBase<T> extends CommandBase<Boolean> {
+public abstract class QueryCommandBase<T> extends CommandBase<Boolean> implements SqlCommand {
 
   private final QueryResultHandler<T> resultHandler;
   private final Collector<Row, ?, T> collector;
