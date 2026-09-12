@@ -156,54 +156,8 @@ public class PgTransactionTest extends TransactionTestBase {
     }));
   }
 
-  @Test
-  public void testRollbackInnerThenOuterSavepointKeepsOnlyWorkBeforeOuter(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(res -> {
-      insertMutable(res.client, 1, "before-sp1")
-        .compose(v -> res.tx.createSavepoint())
-        .compose(sp1 -> insertMutable(res.client, 2, "between-sp1-sp2")
-          .compose(v -> res.tx.createSavepoint())
-          .compose(sp2 -> insertMutable(res.client, 3, "after-sp2")
-            .compose(v -> sp2.rollback())
-            .compose(v -> insertMutable(res.client, 4, "after-sp2-rollback"))
-            .compose(v -> sp1.rollback())
-            .compose(v -> insertMutable(res.client, 5, "after-sp1-rollback"))
-            .compose(v -> res.tx.commit())))
-        .compose(v -> assertMutableIds(ctx, 1, 5))
-        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
-    }));
-  }
 
-  @Test
-  public void testRollbackToSameSavepointTwice(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.tx.createSavepoint()
-        .compose(sp -> insertMutable(res.client, 1, "first")
-          .compose(v -> sp.rollback())
-          .compose(v -> insertMutable(res.client, 2, "second"))
-          .compose(v -> sp.rollback())
-          .compose(v -> insertMutable(res.client, 3, "third"))
-          .compose(v -> res.tx.commit()))
-        .compose(v -> assertMutableIds(ctx, 3))
-        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
-    }));
-  }
 
-  @Test
-  public void testReleaseSavepointKeepsWork(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.tx.createSavepoint()
-        .compose(sp -> insertMutable(res.client, 1, "released-scope")
-          .compose(v -> sp.release())
-          .compose(v -> insertMutable(res.client, 2, "after-release"))
-          .compose(v -> res.tx.commit()))
-        .compose(v -> assertMutableIds(ctx, 1, 2))
-        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
-    }));
-  }
 
   @Test
   public void testCommitCleansUpUnreleasedSavepoint(TestContext ctx) {
@@ -347,26 +301,6 @@ public class PgTransactionTest extends TransactionTestBase {
     }));
   }
 
-  @Test
-  public void testCanCreateNewSavepointAfterRollbackToSavepoint(TestContext ctx) {
-    Async async = ctx.async();
-    connector.accept(ctx.asyncAssertSuccess(res -> {
-      res.tx.createSavepoint()
-        .compose(sp1 -> insertMutable(res.client, 1, "before-failure")
-          .compose(v -> insertMutable(res.client, 1, "duplicate"))
-          .compose(v -> Future.<Void>failedFuture("Expected duplicate key failure"))
-          .recover(err -> {
-            assertSqlState(ctx, err, "23505");
-            return sp1.rollback()
-              .compose(v -> res.tx.createSavepoint())
-              .compose(sp2 -> insertMutable(res.client, 2, "after-recovery")
-                .compose(x -> sp2.release()))
-              .compose(v -> res.tx.commit());
-          }))
-        .compose(v -> assertMutableIds(ctx, 2))
-        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
-    }));
-  }
 
   @Test
   public void testRollbackToSavepointAfterRepeatedFailedTransactionStatusRestoresTransaction(TestContext ctx) {
@@ -676,23 +610,7 @@ public class PgTransactionTest extends TransactionTestBase {
     }));
   }
 
-  private Future<RowSet<Row>> insertMutable(SqlConnection client, int id, String val) {
-    return client.query("INSERT INTO mutable (id, val) VALUES (" + id + ", '" + val + "')").execute();
-  }
 
-  private Future<Void> assertMutableIds(TestContext ctx, int... expectedIds) {
-    return getPool()
-      .query("SELECT id FROM mutable ORDER BY id")
-      .execute()
-      .map(rows -> {
-        ctx.assertEquals(expectedIds.length, rows.size());
-        int index = 0;
-        for (Row row : rows) {
-          ctx.assertEquals(expectedIds[index++], row.getInteger("id").intValue());
-        }
-        return null;
-      });
-  }
 
   private void assertSqlState(TestContext ctx, Throwable err, String sqlState) {
     ctx.assertTrue(err instanceof PgException);
@@ -701,5 +619,10 @@ public class PgTransactionTest extends TransactionTestBase {
 
   private void assertTransactionRollback(TestContext ctx, Throwable err) {
     ctx.assertTrue(err instanceof TransactionRollbackException);
+  }
+
+  @Override
+  protected boolean supportsSavepoints() {
+    return true;
   }
 }

@@ -19,6 +19,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.sqlclient.*;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -411,5 +412,229 @@ public abstract class TransactionTestBase {
           async.complete();
         }))));
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Savepoints
+  //
+  // Only the behaviour every database agrees on lives here. Whether a failed
+  // statement also fails the surrounding transaction is database specific and is
+  // covered by the driver test classes.
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Overridden by the drivers that implement savepoints.
+   */
+  protected boolean supportsSavepoints() {
+    return false;
+  }
+
+  /**
+   * Overridden by the drivers that create savepoints but cannot release one,
+   * such as Microsoft SQL Server and Oracle.
+   */
+  protected boolean supportsSavepointRelease() {
+    return true;
+  }
+
+  private void assumeSavepoints() {
+    Assume.assumeTrue("driver does not support savepoints", supportsSavepoints());
+  }
+
+  private void assumeSavepointRelease() {
+    assumeSavepoints();
+    Assume.assumeTrue("driver cannot release a savepoint", supportsSavepointRelease());
+  }
+
+  protected Future<RowSet<Row>> insertMutable(SqlConnection client, int id, String val) {
+    return client.query("INSERT INTO mutable (id, val) VALUES (" + id + ", '" + val + "')").execute();
+  }
+
+  protected Future<Void> assertMutableIds(TestContext ctx, int... expectedIds) {
+    return getPool()
+      .query("SELECT id FROM mutable ORDER BY id")
+      .execute()
+      .map(rows -> {
+        ctx.assertEquals(expectedIds.length, rows.size());
+        int index = 0;
+        for (Row row : rows) {
+          ctx.assertEquals(expectedIds[index++], row.getInteger("id").intValue());
+        }
+        return null;
+      });
+  }
+
+  @Test
+  public void testRollbackToSavepointUndoesWorkAfterIt(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before")
+        .compose(v -> res.tx.createSavepoint())
+        .compose(sp -> insertMutable(res.client, 2, "rolled-back")
+          .compose(v -> sp.rollback())
+          .compose(v -> insertMutable(res.client, 3, "after"))
+          .compose(v -> res.tx.commit()))
+        .compose(v -> assertMutableIds(ctx, 1, 3))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  @Test
+  public void testRollbackInnerThenOuterSavepointKeepsOnlyWorkBeforeOuter(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before-sp1")
+        .compose(v -> res.tx.createSavepoint())
+        .compose(sp1 -> insertMutable(res.client, 2, "between-sp1-sp2")
+          .compose(v -> res.tx.createSavepoint())
+          .compose(sp2 -> insertMutable(res.client, 3, "after-sp2")
+            .compose(v -> sp2.rollback())
+            .compose(v -> insertMutable(res.client, 4, "after-sp2-rollback"))
+            .compose(v -> sp1.rollback())
+            .compose(v -> insertMutable(res.client, 5, "after-sp1-rollback"))
+            .compose(v -> res.tx.commit())))
+        .compose(v -> assertMutableIds(ctx, 1, 5))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  @Test
+  public void testRollbackToSameSavepointTwice(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.tx.createSavepoint()
+        .compose(sp -> insertMutable(res.client, 1, "first")
+          .compose(v -> sp.rollback())
+          .compose(v -> insertMutable(res.client, 2, "second"))
+          .compose(v -> sp.rollback())
+          .compose(v -> insertMutable(res.client, 3, "third"))
+          .compose(v -> res.tx.commit()))
+        .compose(v -> assertMutableIds(ctx, 3))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  @Test
+  public void testCanCreateNewSavepointAfterRollbackToSavepoint(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.tx.createSavepoint()
+        .compose(sp1 -> insertMutable(res.client, 1, "first")
+          .compose(v -> sp1.rollback())
+          .compose(v -> res.tx.createSavepoint())
+          .compose(sp2 -> insertMutable(res.client, 2, "second")
+            .compose(v -> sp2.rollback())
+            .compose(v -> insertMutable(res.client, 3, "third"))
+            .compose(v -> res.tx.commit())))
+        .compose(v -> assertMutableIds(ctx, 3))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  @Test
+  public void testWholeTransactionRollbackDiscardsSavepointWork(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before")
+        .compose(v -> res.tx.createSavepoint())
+        .compose(sp -> insertMutable(res.client, 2, "after")
+          .compose(v -> res.tx.rollback()))
+        .compose(v -> assertMutableIds(ctx))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  @Test
+  public void testReleaseSavepointKeepsWork(TestContext ctx) {
+    assumeSavepointRelease();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.tx.createSavepoint()
+        .compose(sp -> insertMutable(res.client, 1, "released-scope")
+          .compose(v -> sp.release())
+          .compose(v -> res.tx.commit()))
+        .compose(v -> assertMutableIds(ctx, 1))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  @Test
+  public void testReleaseReleasedSavepointFails(TestContext ctx) {
+    assumeSavepointRelease();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.tx.createSavepoint()
+        .compose(sp -> sp.release().compose(v -> sp.release()))
+        .onComplete(ctx.asyncAssertFailure(err -> {
+          res.tx.commit().onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+        }));
+    }));
+  }
+
+  /**
+   * A driver that cannot release a savepoint rejects the call rather than pretending
+   * it worked, and the savepoint stays usable for a rollback.
+   */
+  @Test
+  public void testReleaseIsRejectedWhenUnsupported(TestContext ctx) {
+    assumeSavepoints();
+    Assume.assumeFalse("driver releases savepoints", supportsSavepointRelease());
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.tx.createSavepoint()
+        .compose(sp -> insertMutable(res.client, 1, "kept")
+          .compose(v -> sp.release())
+          .transform(ar -> {
+            ctx.assertTrue(ar.failed(), "release should have been rejected");
+            ctx.assertTrue(ar.cause() instanceof UnsupportedOperationException,
+              "expected an UnsupportedOperationException but got " + ar.cause());
+            return insertMutable(res.client, 2, "also-kept").compose(v -> sp.rollback());
+          })
+          .compose(v -> insertMutable(res.client, 3, "after-rollback"))
+          .compose(v -> res.tx.commit()))
+        .compose(v -> assertMutableIds(ctx, 3))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  @Test
+  public void testCreateSavepointIsRejectedWhenUnsupported(TestContext ctx) {
+    Assume.assumeFalse("driver supports savepoints", supportsSavepoints());
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.tx.createSavepoint()
+        .onComplete(ctx.asyncAssertFailure(err -> {
+          ctx.assertTrue(err instanceof UnsupportedOperationException,
+            "expected an UnsupportedOperationException but got " + err);
+          async.complete();
+        }));
+    }));
+  }
+
+  @Test
+  public void testCreateSavepointAfterCommitFails(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.tx.commit()
+        .compose(v -> res.tx.createSavepoint())
+        .onComplete(ctx.asyncAssertFailure(err -> async.complete()));
+    }));
+  }
+
+  @Test
+  public void testRollbackSavepointAfterCommitFails(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      res.tx.createSavepoint()
+        .compose(sp -> res.tx.commit().compose(v -> sp.rollback()))
+        .onComplete(ctx.asyncAssertFailure(err -> async.complete()));
+    }));
   }
 }

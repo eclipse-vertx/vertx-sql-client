@@ -55,4 +55,14 @@ public class MSSQLTransactionTest extends TransactionTestBase {
   public void testDelayedCommit(TestContext ctx) {
     throw new AssumptionViolatedException("MSSQL holds write locks on inserted row with isolation level = 2");
   }
+
+  @Override
+  protected boolean supportsSavepoints() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsSavepointRelease() {
+    return false;
+  }
 }

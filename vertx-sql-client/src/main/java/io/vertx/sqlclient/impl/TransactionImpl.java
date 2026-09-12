@@ -73,7 +73,7 @@ public class TransactionImpl implements Transaction {
 
     String name;
     synchronized (this) {
-      name = "__vx_sp_" + (++savepointSeq);
+      name = "VX_SP_" + (++savepointSeq);
     }
     SavepointImpl savepoint = new SavepointImpl(this, name);
     return submit(new SavepointCommand<>(SavepointCommand.Kind.CREATE, name, savepoint));
@@ -84,6 +84,10 @@ public class TransactionImpl implements Transaction {
   }
 
   Future<Void> releaseSavepoint(String name) {
+    if (!driver.supportsSavepointRelease()) {
+      return context.failedFuture(new UnsupportedOperationException(
+        "Releasing a savepoint is not supported by this driver"));
+    }
     return submit(new SavepointCommand<>(SavepointCommand.Kind.RELEASE, name, null));
   }
 
