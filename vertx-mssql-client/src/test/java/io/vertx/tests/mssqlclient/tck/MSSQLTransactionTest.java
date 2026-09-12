@@ -65,4 +65,12 @@ public class MSSQLTransactionTest extends TransactionTestBase {
   protected boolean supportsSavepointRelease() {
     return false;
   }
+
+  /**
+   * SQL Server drops the savepoint once the transaction has been rolled back to it.
+   */
+  @Override
+  protected boolean supportsRepeatedRollbackToSavepoint() {
+    return false;
+  }
 }

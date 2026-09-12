@@ -437,6 +437,15 @@ public abstract class TransactionTestBase {
     return true;
   }
 
+  /**
+   * Overridden by the drivers that drop a savepoint once it has been rolled back to.
+   * Microsoft SQL Server reports "No transaction or savepoint of that name was found"
+   * on the second rollback.
+   */
+  protected boolean supportsRepeatedRollbackToSavepoint() {
+    return true;
+  }
+
   private void assumeSavepoints() {
     Assume.assumeTrue("driver does not support savepoints", supportsSavepoints());
   }
@@ -503,6 +512,7 @@ public abstract class TransactionTestBase {
   @Test
   public void testRollbackToSameSavepointTwice(TestContext ctx) {
     assumeSavepoints();
+    Assume.assumeTrue("driver drops the savepoint after a rollback", supportsRepeatedRollbackToSavepoint());
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
       res.tx.createSavepoint()
