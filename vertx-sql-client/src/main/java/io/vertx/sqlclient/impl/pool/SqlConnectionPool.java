@@ -30,7 +30,7 @@ import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
-import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
+import io.vertx.sqlclient.spi.protocol.SqlCommand;
 
 import java.util.List;
 import java.util.function.Function;
@@ -428,8 +428,8 @@ public class SqlConnectionPool {
       QueryReporter queryReporter;
       VertxTracer tracer = vertx.tracer();
       ClientMetrics metrics = conn.metrics();
-      if (cmd instanceof QueryCommandBase && (tracer != null || metrics != null)) {
-        queryReporter = new QueryReporter(tracer, metrics, context, (QueryCommandBase<?>) cmd, conn);
+      if (cmd instanceof SqlCommand && (tracer != null || metrics != null)) {
+        queryReporter = new QueryReporter(tracer, metrics, context, cmd, conn);
         queryReporter.before();
       } else {
         queryReporter = null;
