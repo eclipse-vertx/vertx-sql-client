@@ -63,6 +63,19 @@ public class OracleDriver extends DriverBase<OracleConnectOptions> {
   }
 
   @Override
+  public boolean supportsSavepoints() {
+    return true;
+  }
+
+  /**
+   * Oracle has no statement that discards a savepoint without rolling back to it.
+   */
+  @Override
+  public boolean supportsSavepointRelease() {
+    return false;
+  }
+
+  @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<OracleConnectOptions> factory, Connection connection) {
     return new OracleConnectionImpl(context, factory, connection);
   }

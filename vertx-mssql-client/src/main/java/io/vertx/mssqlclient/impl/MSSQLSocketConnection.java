@@ -42,6 +42,8 @@ import io.vertx.sqlclient.spi.protocol.*;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import io.vertx.sqlclient.spi.protocol.SavepointCommand;
+
 import static io.vertx.sqlclient.spi.protocol.TxCommand.Kind.BEGIN;
 
 public class MSSQLSocketConnection extends SocketConnectionBase {
@@ -158,6 +160,20 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
     return MSSQLCommandMessage.wrap(command);
   }
 
+  /**
+   * Transact-SQL names the savepoint statements differently and has no statement to
+   * release one, {@link io.vertx.sqlclient.spi.Driver#supportsSavepointRelease()}
+   * reports that.
+   */
+  private static String savepointSql(SavepointCommand<?> savepoint) {
+    switch (savepoint.kind()) {
+      case CREATE:
+        return "SAVE TRANSACTION " + savepoint.name();
+      default:
+        return "ROLLBACK TRANSACTION " + savepoint.name();
+    }
+  }
+
   @Override
   protected <R> void doSchedule(CommandBase<R> cmd, Completable<R> handler) {
     if (cmd instanceof TxCommand) {
@@ -170,6 +186,21 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
         SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
       super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
+    } else if (cmd instanceof SavepointCommand) {
+      SavepointCommand<R> savepoint = (SavepointCommand<R>) cmd;
+      if (savepoint.kind() == SavepointCommand.Kind.RELEASE) {
+        // Guarded by MSSQLDriver#supportsSavepointRelease, fail rather than throw on the event loop
+        handler.fail(new UnsupportedOperationException(
+          "Releasing a savepoint is not supported by Microsoft SQL Server"));
+        return;
+      }
+      SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
+        savepointSql(savepoint),
+        false,
+        false,
+        SocketConnectionBase.NULL_COLLECTOR,
+        QueryResultHandler.NOOP_HANDLER);
+      super.doSchedule(cmd2, (res, err) -> handler.complete(savepoint.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }

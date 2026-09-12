@@ -43,6 +43,7 @@ import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.codec.SocketConnectionBase;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SavepointCommand;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import io.vertx.sqlclient.spi.protocol.TxCommand;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
@@ -127,6 +128,15 @@ public class MySQLSocketConnection extends SocketConnectionBase {
         SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
       super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
+    } else if (cmd instanceof SavepointCommand) {
+      SavepointCommand<R> savepoint = (SavepointCommand<R>) cmd;
+      SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
+        savepoint.sql(),
+        false,
+        false,
+        SocketConnectionBase.NULL_COLLECTOR,
+        QueryResultHandler.NOOP_HANDLER);
+      super.doSchedule(cmd2, (res, err) -> handler.complete(savepoint.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }

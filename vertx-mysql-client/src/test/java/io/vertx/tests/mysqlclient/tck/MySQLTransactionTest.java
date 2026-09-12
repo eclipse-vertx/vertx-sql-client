@@ -15,6 +15,9 @@
  */
 package io.vertx.tests.mysqlclient.tck;
 
+import io.vertx.core.Future;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.tests.mysqlclient.junit.MySQLRule;
@@ -22,6 +25,7 @@ import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.tests.sqlclient.tck.TransactionTestBase;
 import org.junit.ClassRule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(VertxUnitRunner.class)
@@ -43,5 +47,55 @@ public class MySQLTransactionTest extends TransactionTestBase {
   @Override
   protected String statement(String... parts) {
     return String.join("?", parts);
+  }
+
+  @Override
+  protected boolean supportsSavepoints() {
+    return true;
+  }
+
+  /**
+   * MySQL does not put a transaction into a failed state when a statement fails, so
+   * the transaction stays usable and the work before the failure is still committed.
+   * PostgreSQL fails the whole transaction instead, {@code PgTransactionTest} covers that.
+   */
+  @Test
+  public void testStatementErrorLeavesTransactionUsable(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before")
+        .compose(v -> insertMutable(res.client, 1, "duplicate"))
+        .transform(ar -> {
+          ctx.assertTrue(ar.failed(), "the duplicate key should have failed");
+          // no rollback to a savepoint needed, the transaction is still alive
+          return insertMutable(res.client, 2, "after");
+        })
+        .compose(v -> res.tx.commit())
+        .compose(v -> assertMutableIds(ctx, 1, 2))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  /**
+   * Rolling back to a savepoint after a failed statement still discards the work that
+   * followed the savepoint, even though the transaction was never in a failed state.
+   */
+  @Test
+  public void testRollbackToSavepointAfterStatementError(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before")
+        .compose(v -> res.tx.createSavepoint())
+        .compose(sp -> insertMutable(res.client, 2, "rolled-back")
+          .compose(v -> insertMutable(res.client, 1, "duplicate"))
+          .transform(ar -> {
+            ctx.assertTrue(ar.failed(), "the duplicate key should have failed");
+            return sp.rollback();
+          })
+          .compose(v -> insertMutable(res.client, 3, "after"))
+          .compose(v -> res.tx.commit()))
+        .compose(v -> assertMutableIds(ctx, 1, 3))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
   }
 }

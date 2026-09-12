@@ -33,6 +33,10 @@ public interface Savepoint {
    * Release this savepoint.
    *
    * <p>After release, this savepoint can no longer be used.
+   *
+   * <p>Fails with {@link UnsupportedOperationException} when the driver creates
+   * savepoints but has no statement that releases one, such as Microsoft SQL Server
+   * and Oracle. The savepoint remains usable for a {@link #rollback()} in that case.
    */
   Future<Void> release();
 }
