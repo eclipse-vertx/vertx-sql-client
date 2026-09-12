@@ -622,4 +622,12 @@ public class PgTransactionTest extends TransactionTestBase {
   protected boolean supportsSavepoints() {
     return true;
   }
+
+  /**
+   * PostgreSQL fails the whole transaction when a statement fails.
+   */
+  @Override
+  protected boolean statementErrorFailsTransaction() {
+    return true;
+  }
 }
