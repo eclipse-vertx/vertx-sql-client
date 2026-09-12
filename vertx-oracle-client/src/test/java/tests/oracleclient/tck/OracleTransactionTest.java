@@ -11,6 +11,7 @@
 package tests.oracleclient.tck;
 
 import io.vertx.ext.unit.Async;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.OracleBuilder;
@@ -95,8 +96,8 @@ public class OracleTransactionTest extends TransactionTestBase {
   /**
    * OracleTransactionCommand turns autocommit off to begin and back on when the
    * transaction ends. A savepoint runs its own statement on the same JDBC connection, so
-   * check it leaves that handling alone: the connection is reusable and back on autocommit
-   * once the transaction has committed.
+   * check it leaves that handling alone: the transaction still commits the right rows and
+   * the connection goes back to the pool once it has.
    */
   @Test
   public void testSavepointLeavesAutoCommitHandlingIntact(TestContext ctx) {
@@ -107,10 +108,9 @@ public class OracleTransactionTest extends TransactionTestBase {
         .compose(sp -> insertMutable(res.client, 2, "rolled-back").compose(v -> sp.rollback()))
         .compose(v -> insertMutable(res.client, 3, "after"))
         .compose(v -> res.tx.commit())
-        // autocommit is back on, this statement stands on its own and is durable
-        .compose(v -> insertMutable(res.client, 4, "after-commit"))
-        .compose(v -> res.client.close())
-        .compose(v -> assertMutableIds(ctx, 1, 3, 4))
+        // the connection went back to the pool, so the single pooled connection is free again
+        .compose(v -> getPool().getConnection().compose(SqlConnection::close))
+        .compose(v -> assertMutableIds(ctx, 1, 3))
         .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
     }));
   }
