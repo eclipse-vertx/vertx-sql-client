@@ -13,6 +13,7 @@ package examples;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.ClientSSLOptions;
 import io.vertx.core.net.PemTrustOptions;
@@ -823,5 +824,90 @@ public class PgClientExamples {
 
   public void pgBouncer(PgConnectOptions connectOptions) {
     connectOptions.setUseLayer7Proxy(true);
+  }
+
+  public void copyOut(PgConnection connection) {
+    connection
+      .copyOut("COPY users TO STDOUT (FORMAT csv)")
+      .onSuccess(stream -> {
+        stream.handler(buffer -> {
+          System.out.println("Received " + buffer.length() + " bytes");
+        });
+        stream.completion().onSuccess(rows -> {
+          System.out.println("Copied " + rows + " rows");
+        });
+      });
+  }
+
+  public void copyOutPaused(PgConnection connection) {
+    connection
+      .copyOut("COPY users TO STDOUT (FORMAT csv)")
+      .onSuccess(stream -> {
+
+        // Take control of the demand before any data is emitted
+        stream.pause();
+
+        stream.handler(buffer -> {
+          System.out.println("Received " + buffer.length() + " bytes");
+        });
+
+        // Ask for the next chunk when you are ready for it
+        stream.fetch(1);
+      });
+  }
+
+  public void copyOutWithOptions(PgConnection connection) {
+    PgCopyOutOptions options = new PgCopyOutOptions()
+      .setAggregationThreshold(64 * 1024);
+
+    connection
+      .copyOut("COPY users TO STDOUT (FORMAT csv)", options)
+      .onSuccess(stream -> {
+        stream.handler(buffer -> {
+          System.out.println("Received " + buffer.length() + " bytes");
+        });
+      });
+  }
+
+  public void copyIn(PgConnection connection) {
+    connection
+      .copyIn("COPY users FROM STDIN (FORMAT csv)")
+      .onSuccess(stream -> {
+
+        stream.write(Buffer.buffer("1,Julien\n"));
+        stream.write(Buffer.buffer("2,Emad\n"));
+
+        // Sends CopyDone, the future is notified when the COPY command completes
+        stream.end().onSuccess(v -> {
+          System.out.println("Copy completed");
+        });
+
+        stream.completion().onSuccess(rows -> {
+          System.out.println("Copied " + rows + " rows");
+        });
+      });
+  }
+
+  public void copyInWithOptions(PgConnection connection) {
+    PgCopyInOptions options = new PgCopyInOptions()
+      .setChunkSize(512 * 1024);
+
+    connection
+      .copyIn("COPY users FROM STDIN (FORMAT csv)", options)
+      .onSuccess(stream -> {
+        stream.write(Buffer.buffer("1,Julien\n"));
+        stream.end();
+      });
+  }
+
+  public void copyInAbort(PgConnection connection) {
+    connection
+      .copyIn("COPY users FROM STDIN (FORMAT csv)")
+      .onSuccess(stream -> {
+        stream.write(Buffer.buffer("1,Julien\n"));
+
+        // Sends CopyFail, the server rolls the COPY back
+        stream.abort("aborted by the application");
+      });
   }
 }

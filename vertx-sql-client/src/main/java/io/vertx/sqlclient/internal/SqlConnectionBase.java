@@ -31,7 +31,7 @@ import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.protocol.PrepareStatementCommand;
-import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
+import io.vertx.sqlclient.spi.protocol.SqlCommand;
 import io.vertx.sqlclient.impl.pool.SqlConnectionPool;
 import io.vertx.sqlclient.impl.tracing.QueryReporter;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
@@ -162,8 +162,8 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
       QueryReporter queryReporter;
       VertxTracer tracer = context.owner().tracer();
       ClientMetrics metrics = conn.metrics();
-      if (!(conn instanceof SqlConnectionPool.PooledConnection) && cmd instanceof QueryCommandBase && (tracer != null || metrics != null)) {
-        queryReporter = new QueryReporter(tracer, metrics, context, (QueryCommandBase<?>) cmd, conn);
+      if (!(conn instanceof SqlConnectionPool.PooledConnection) && cmd instanceof SqlCommand && (tracer != null || metrics != null)) {
+        queryReporter = new QueryReporter(tracer, metrics, context, cmd, conn);
         queryReporter.before();
         conn
           .schedule(cmd, (res, err) -> {
