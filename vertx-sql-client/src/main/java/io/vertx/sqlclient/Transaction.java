@@ -26,6 +26,16 @@ import io.vertx.core.Future;
 public interface Transaction {
 
   /**
+   * Create a savepoint in this transaction.
+   *
+   * <p>Fails with {@link UnsupportedOperationException} when the driver does not
+   * support savepoints.
+   *
+   * @return a future notified with the created savepoint
+   */
+  Future<Savepoint> createSavepoint();
+
+  /**
    * Commit the current transaction.
    */
   Future<Void> commit();

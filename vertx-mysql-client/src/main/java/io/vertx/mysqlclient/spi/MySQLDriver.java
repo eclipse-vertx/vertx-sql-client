@@ -86,6 +86,11 @@ public class MySQLDriver extends DriverBase<MySQLConnectOptions> {
   }
 
   @Override
+  public boolean supportsSavepoints() {
+    return true;
+  }
+
+  @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MySQLConnectOptions> factory, Connection connection) {
     return new MySQLConnectionImpl(context, factory, connection);
   }

@@ -206,6 +206,8 @@ public class OracleJdbcConnection implements Connection {
       action = forExtendedQuery((ExtendedQueryCommand) cmd);
     } else if (cmd instanceof TxCommand) {
       action = OracleTransactionCommand.create(connection, context, ((TxCommand) cmd));
+    } else if (cmd instanceof SavepointCommand) {
+      action = OracleSavepointCommand.create(connection, context, ((SavepointCommand) cmd));
     } else if (cmd instanceof CloseStatementCommand) {
       action = new OracleCloseStatementCommand(connection, context);
     } else if (cmd instanceof CloseCursorCommand) {

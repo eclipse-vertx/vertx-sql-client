@@ -68,6 +68,19 @@ public class MSSQLDriver extends DriverBase<MSSQLConnectOptions> {
   }
 
   @Override
+  public boolean supportsSavepoints() {
+    return true;
+  }
+
+  /**
+   * Transact-SQL has no statement that discards a savepoint without rolling back to it.
+   */
+  @Override
+  public boolean supportsSavepointRelease() {
+    return false;
+  }
+
+  @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<MSSQLConnectOptions> factory, Connection connection) {
     return new MSSQLConnectionImpl(context, factory, connection);
   }

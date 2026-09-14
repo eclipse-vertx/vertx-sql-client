@@ -44,4 +44,11 @@ public class MySQLTransactionTest extends TransactionTestBase {
   protected String statement(String... parts) {
     return String.join("?", parts);
   }
+
+  @Override
+  protected boolean supportsSavepoints() {
+    return true;
+  }
+
+
 }
