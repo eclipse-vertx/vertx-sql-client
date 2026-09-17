@@ -270,27 +270,33 @@ public class SqlConnectionPool {
 
       @Override
       public void complete(Lease<PooledConnection> lease, Throwable failure) {
-        if (timerID != -1L && !vertx.cancelTimer(timerID)) {
-          lease.recycle();
-        } else {
-          if (failure == null) {
+        if (failure == null) {
+          if (timerID != -1L && !vertx.cancelTimer(timerID)) {
+            lease.recycle();
+          } else {
             if (afterAcquire != null) {
               afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
                 if (ar2.succeeded()) {
                   handle(lease);
                 } else {
-                  // Should we do some cleanup ?
-                  handler.fail(failure);
+                  fail(lease, ar2.cause());
                 }
               });
             } else {
               handle(lease);
             }
-          } else {
-            dequeueMetric(metric);
-            handler.fail(failure);
           }
+        } else {
+          fail(null, failure);
         }
+      }
+
+      private void fail(Lease<PooledConnection> lease, Throwable cause) {
+        if (lease != null) {
+          lease.recycle();
+        }
+        dequeueMetric(metric);
+        handler.fail(cause);
       }
 
       private void handle(Lease<PooledConnection> lease) {
