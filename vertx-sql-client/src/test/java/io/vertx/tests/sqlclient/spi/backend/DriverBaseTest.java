@@ -14,6 +14,7 @@ import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowIterator;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.SqlConnectOptions;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.spi.connection.Connection;
@@ -28,6 +29,8 @@ import io.vertx.sqlclient.spi.DriverBase;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
@@ -61,83 +64,87 @@ public class DriverBaseTest {
     }
   }
 
-  @Test
-  public void testSimple() {
+  private static Connection fakeConnection() {
+    return new Connection() {
+      @Override
+      public TracingPolicy tracingPolicy() {
+        return null;
+      }
+      @Override
+      public SocketAddress server() {
+        return null;
+      }
+      @Override
+      public String database() {
+        return "";
+      }
+      @Override
+      public String user() {
+        return "";
+      }
+      @Override
+      public ClientMetrics metrics() {
+        return null;
+      }
+      @Override
+      public void init(ConnectionContext context) {
+      }
+      @Override
+      public boolean isSsl() {
+        return false;
+      }
+      @Override
+      public boolean isValid() {
+        return true;
+      }
+      @Override
+      public int pipeliningLimit() {
+        return 1;
+      }
+      @Override
+      public DatabaseMetadata databaseMetadata() {
+        throw new UnsupportedOperationException();
+      }
+      @Override
+      public void close(ConnectionContext holder, Completable<Void> promise) {
+        promise.succeed();
+      }
+      @Override
+      public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
+        if (cmd instanceof SimpleQueryCommand) {
+          SimpleQueryCommand simpleQueryCmd = (SimpleQueryCommand) cmd;
+          scheduleQueryCommand(simpleQueryCmd, (Completable) handler);
+        } else {
+          handler.fail(new UnsupportedOperationException());
+        }
+      }
+      private <T, A> void scheduleQueryCommand(SimpleQueryCommand<T> simpleQuery, Completable<Boolean> handler) {
+        QueryResultHandler<T> qrh = simpleQuery.resultHandler();
+        Collector<Row, A, T> collector = (Collector<Row, A, T>) simpleQuery.collector();
+        A container = collector.supplier().get();
+        BiConsumer<A, Row> accumulator = collector.accumulator();
+        RowDescriptorBase rowDescriptor = new RowDescriptorBase(new ColumnDescriptor[]{new VarcharColumnDescriptor("value")});
+        Row row = new RowBase(rowDescriptor);
+        row.addValue("Hello " + simpleQuery.sql());
+        accumulator.accept(container, row);
+        T result = collector.finisher().apply(container);
+        qrh.handleResult(0, 1, rowDescriptor
+          , result, null);
+        handler.succeed(true);
+      }
+    };
+  }
 
-    DriverBase<SqlConnectOptions> driver = new DriverBase<SqlConnectOptions>("generic") {
+  private static DriverBase<SqlConnectOptions> createDriver(
+    java.util.function.Function<Connection, Future<Void>> afterAcquire,
+    java.util.function.Function<Connection, Future<Void>> beforeRecycle) {
+    return new DriverBase<>("generic", afterAcquire, beforeRecycle) {
       @Override
       public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
         return new ConnectionFactory<>() {
           @Override
           public Future<Connection> connect(Context context, SqlConnectOptions options) {
-            return Future.succeededFuture(new Connection() {
-              @Override
-              public TracingPolicy tracingPolicy() {
-                return null;
-              }
-              @Override
-              public SocketAddress server() {
-                return null;
-              }
-              @Override
-              public String database() {
-                return "";
-              }
-              @Override
-              public String user() {
-                return "";
-              }
-              @Override
-              public ClientMetrics metrics() {
-                return null;
-              }
-              @Override
-              public void init(ConnectionContext context) {
-              }
-              @Override
-              public boolean isSsl() {
-                return false;
-              }
-              @Override
-              public boolean isValid() {
-                return true;
-              }
-              @Override
-              public int pipeliningLimit() {
-                return 1;
-              }
-              @Override
-              public DatabaseMetadata databaseMetadata() {
-                throw new UnsupportedOperationException();
-              }
-              @Override
-              public void close(ConnectionContext holder, Completable<Void> promise) {
-                promise.succeed();
-              }
-              @Override
-              public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
-                if (cmd instanceof SimpleQueryCommand) {
-                  SimpleQueryCommand simpleQueryCmd = (SimpleQueryCommand) cmd;
-                  scheduleQueryCommand(simpleQueryCmd, (Completable) handler);
-                } else {
-                  handler.fail(new UnsupportedOperationException());
-                }
-              }
-              private <T, A> void scheduleQueryCommand(SimpleQueryCommand<T> simpleQuery, Completable<Boolean> handler) {
-                QueryResultHandler<T> qrh = simpleQuery.resultHandler();
-                Collector<Row, A, T> collector = (Collector<Row, A, T>) simpleQuery.collector();
-                A container = collector.supplier().get();
-                BiConsumer<A, Row> accumulator = collector.accumulator();
-                RowDescriptorBase rowDescriptor = new RowDescriptorBase(new ColumnDescriptor[]{new VarcharColumnDescriptor("value")});
-                Row row = new RowBase(rowDescriptor);
-                row.addValue("Hello " + simpleQuery.sql());
-                accumulator.accept(container, row);
-                T result = collector.finisher().apply(container);
-                qrh.handleResult(0, 1, rowDescriptor
-                  , result, null);
-                handler.succeed(true);
-              }
-            });
+            return Future.succeededFuture(fakeConnection());
           }
           @Override
           public void close(Completable<Void> completable) {
@@ -145,19 +152,27 @@ public class DriverBaseTest {
           }
         };
       }
+
       @Override
       public SqlConnectOptions parseConnectionUri(String uri) {
         throw new UnsupportedOperationException();
       }
+
       @Override
       public boolean acceptsOptions(SqlConnectOptions connectOptions) {
         return true;
       }
+
       @Override
       public SqlConnectOptions downcast(SqlConnectOptions connectOptions) {
         return connectOptions;
       }
     };
+  }
+
+  @Test
+  public void testSimple() {
+    DriverBase<SqlConnectOptions> driver = createDriver(null, null);
 
     Vertx vertx = Vertx.vertx();
 
@@ -173,6 +188,47 @@ public class DriverBaseTest {
       assertEquals(1, row.size());
       assertEquals("Hello Julien", row.getString(0));
       assertFalse(iterator.hasNext());
+    } finally {
+      vertx.close().await();
+    }
+  }
+
+  @Test
+  public void testAfterAcquireFailureReleasesConnection() {
+    AtomicBoolean shouldFail = new AtomicBoolean(true);
+    AtomicInteger beforeRecycleCount = new AtomicInteger();
+    RuntimeException hookError = new RuntimeException("afterAcquire failed");
+
+    DriverBase<SqlConnectOptions> driver = createDriver(
+      conn -> {
+        if (shouldFail.get()) {
+          return Future.failedFuture(hookError);
+        }
+        return Future.succeededFuture();
+      },
+      conn -> {
+        beforeRecycleCount.incrementAndGet();
+        return Future.succeededFuture();
+      });
+
+    Vertx vertx = Vertx.vertx();
+
+    try {
+      Pool pool = driver.createPool(vertx, () -> Future.succeededFuture(new SqlConnectOptions()),
+        new PoolOptions().setMaxSize(1), new NetClientOptions(), null);
+
+      try {
+        pool.getConnection().await();
+        fail("Should have failed");
+      } catch (Exception e) {
+        assertEquals(hookError, e);
+      }
+
+      shouldFail.set(false);
+      SqlConnection conn = pool.getConnection().await();
+      assertNotNull(conn);
+      conn.close().await();
+      assertEquals(1, beforeRecycleCount.get());
     } finally {
       vertx.close().await();
     }
