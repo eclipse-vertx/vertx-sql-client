@@ -282,17 +282,23 @@ public class SqlConnectionPool {
               if (ar2.succeeded()) {
                 handle(lease);
               } else {
-                // Should we do some cleanup ?
-                handler.handle(Future.failedFuture(ar.cause()));
+                fail(lease, ar2.cause());
               }
             });
           } else {
             handle(lease);
           }
         } else {
-          dequeueAndReject(queueMetric);
-          handler.handle(Future.failedFuture(ar.cause()));
+          fail(null, ar.cause());
         }
+      }
+
+      private void fail(Lease<PooledConnection> lease, Throwable cause) {
+        if (lease != null) {
+          lease.recycle();
+        }
+        dequeueAndReject(queueMetric);
+        handler.handle(Future.failedFuture(cause));
       }
 
       private void handle(Lease<PooledConnection> lease) {
