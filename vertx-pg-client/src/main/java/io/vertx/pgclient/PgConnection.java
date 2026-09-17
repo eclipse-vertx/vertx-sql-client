@@ -135,4 +135,48 @@ public interface PgConnection extends SqlConnection {
   static PgConnection cast(SqlConnection sqlConnection) {
     return (PgConnection) sqlConnection;
   }
+
+  /**
+   * Execute a {@code COPY ... TO STDOUT} statement and stream the raw data produced by the server.
+   * <p/>
+   * The returned future is notified when PostgreSQL has entered COPY OUT mode, with a
+   * {@link PgCopyOut} emitting the copy data as {@link io.vertx.core.buffer.Buffer} chunks.
+   * A connection can have a single COPY operation in progress at a time.
+   *
+   * @param sql a single {@code COPY ... TO STDOUT} statement
+   * @return a future notified with the stream or the failure
+   */
+  Future<PgCopyOut> copyOut(String sql);
+
+  /**
+   * Like {@link #copyOut(String)} but with the given {@code options}.
+   *
+   * @param sql a single {@code COPY ... TO STDOUT} statement
+   * @param options the copy out options
+   * @return a future notified with the stream or the failure
+   */
+  Future<PgCopyOut> copyOut(String sql, PgCopyOutOptions options);
+
+  /**
+   * Execute a {@code COPY ... FROM STDIN} statement and stream raw data to the server.
+   * <p/>
+   * The returned future is notified when PostgreSQL has entered COPY IN mode, with a
+   * {@link PgCopyIn} accepting the copy data as {@link io.vertx.core.buffer.Buffer} chunks.
+   * Call {@link PgCopyIn#end()} to signal the end of the data, or
+   * {@link PgCopyIn#abort(String)} to roll the copy back. A connection can have a single
+   * COPY operation in progress at a time.
+   *
+   * @param sql a single {@code COPY ... FROM STDIN} statement
+   * @return a future notified with the stream or the failure
+   */
+  Future<PgCopyIn> copyIn(String sql);
+
+  /**
+   * Like {@link #copyIn(String)} but with the given {@code options}.
+   *
+   * @param sql a single {@code COPY ... FROM STDIN} statement
+   * @param options the copy in options
+   * @return a future notified with the stream or the failure
+   */
+  Future<PgCopyIn> copyIn(String sql, PgCopyInOptions options);
 }

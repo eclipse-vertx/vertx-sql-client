@@ -117,6 +117,22 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
             decodeBindComplete();
             break;
           }
+          case PgProtocolConstants.MESSAGE_TYPE_COPY_OUT_RESPONSE: {
+            decodeCopyOutResponse(in);
+            break;
+          }
+          case PgProtocolConstants.MESSAGE_TYPE_COPY_IN_RESPONSE: {
+            decodeCopyInResponse(in);
+            break;
+          }
+          case PgProtocolConstants.MESSAGE_TYPE_COPY_DATA: {
+            decodeCopyData(in);
+            break;
+          }
+          case PgProtocolConstants.MESSAGE_TYPE_COPY_DONE: {
+            decodeCopyDone();
+            break;
+          }
           default: {
             decodeMessage(ctx, id, in);
           }
@@ -193,6 +209,64 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
 
   private void decodePortalSuspended() {
     codec.peek().handlePortalSuspended();
+  }
+
+  private void decodeCopyOutResponse(ByteBuf in) {
+    PgCommandMessage<?, ?> msg = codec.peek();
+    if (!(msg instanceof CopyOutHandler)) {
+      throw unexpectedCopyMessage("CopyOutResponse", msg);
+    }
+
+    final int overall = in.readUnsignedByte();
+    final int cols = in.readUnsignedShort();
+    short[] fmts = new short[cols];
+    for (int i = 0; i < cols; i++) {
+      fmts[i] = in.readShort();
+    }
+
+    ((CopyOutHandler) msg).handleCopyOutResponse(overall, fmts);
+  }
+
+  private void decodeCopyData(ByteBuf in) {
+    PgCommandMessage<?, ?> msg = codec.peek();
+    if (!(msg instanceof CopyOutHandler)) {
+      throw unexpectedCopyMessage("CopyData", msg);
+    }
+
+    ByteBuf slice = in.readRetainedSlice(in.readableBytes());
+    ((CopyOutHandler) msg).handleCopyData(slice);
+  }
+
+  private void decodeCopyDone() {
+    PgCommandMessage<?, ?> msg = codec.peek();
+    if (!(msg instanceof CopyOutHandler)) {
+      throw unexpectedCopyMessage("CopyDone", msg);
+    }
+
+    ((CopyOutHandler) msg).handleCopyDone();
+  }
+
+  private void decodeCopyInResponse(ByteBuf in) {
+    PgCommandMessage<?, ?> msg = codec.peek();
+    if (!(msg instanceof CopyInHandler)) {
+      throw unexpectedCopyMessage("CopyInResponse", msg);
+    }
+
+    final int overall = in.readUnsignedByte();
+    final int cols = in.readUnsignedShort();
+    short[] fmts = new short[cols];
+    for (int i = 0; i < cols; i++) {
+      fmts[i] = in.readShort();
+    }
+
+    ((CopyInHandler) msg).handleCopyInResponse(overall, fmts);
+  }
+
+  private RuntimeException unexpectedCopyMessage(String message, PgCommandMessage<?, ?> msg) {
+    return new IllegalStateException(
+      "Unexpected PostgreSQL " + message + " message for " +
+        (msg != null ? msg.getClass().getName() : "no current command")
+    );
   }
 
   private void decodeCommandComplete(ByteBuf in) {
