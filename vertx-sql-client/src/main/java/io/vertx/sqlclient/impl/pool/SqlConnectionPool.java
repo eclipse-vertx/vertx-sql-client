@@ -279,8 +279,7 @@ public class SqlConnectionPool {
                 if (ar2.succeeded()) {
                   handle(lease);
                 } else {
-                  // Should we do some cleanup ?
-                  handler.fail(failure);
+                  fail(lease, ar2.cause());
                 }
               });
             } else {
@@ -288,9 +287,16 @@ public class SqlConnectionPool {
             }
           }
         } else {
-          dequeueMetric(metric);
-          handler.tryFail(failure);
+          fail(null, failure);
         }
+      }
+
+      private void fail(Lease<PooledConnection> lease, Throwable cause) {
+        if (lease != null) {
+          lease.recycle();
+        }
+        dequeueMetric(metric);
+        handler.tryFail(cause);
       }
 
       private void handle(Lease<PooledConnection> lease) {
