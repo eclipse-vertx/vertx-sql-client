@@ -115,6 +115,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   public static final SslNegotiation DEFAULT_SSL_NEGOTIATION = SslNegotiation.POSTGRES;
   public static final ChannelBinding DEFAULT_CHANNEL_BINDING = ChannelBinding.PREFER;
   public static final boolean DEFAULT_USE_LAYER_7_PROXY = false;
+  public static final String DEFAULT_KEEP_ALIVE_QUERY = "SELECT 1";
   public static final Map<String, String> DEFAULT_PROPERTIES;
 
   static {
@@ -131,6 +132,7 @@ public class PgConnectOptions extends SqlConnectOptions {
   private SslNegotiation sslNegotiation = DEFAULT_SSL_NEGOTIATION;
   private ChannelBinding channelBinding = DEFAULT_CHANNEL_BINDING;
   private boolean useLayer7Proxy = DEFAULT_USE_LAYER_7_PROXY;
+  private String keepAliveQuery = DEFAULT_KEEP_ALIVE_QUERY;
 
   public PgConnectOptions() {
     super();
@@ -149,6 +151,7 @@ public class PgConnectOptions extends SqlConnectOptions {
       sslMode = opts.sslMode;
       sslNegotiation = opts.sslNegotiation;
       channelBinding = opts.channelBinding;
+      keepAliveQuery = opts.keepAliveQuery;
     }
   }
 
@@ -158,6 +161,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     sslMode = other.sslMode;
     sslNegotiation = other.sslNegotiation;
     channelBinding = other.channelBinding;
+    keepAliveQuery = other.keepAliveQuery;
   }
 
   @Override
@@ -304,6 +308,26 @@ public class PgConnectOptions extends SqlConnectOptions {
     return this;
   }
 
+  /**
+   * @return the SQL query used by the pool idle keep-alive probe
+   */
+  public String getKeepAliveQuery() {
+    return keepAliveQuery;
+  }
+
+  /**
+   * Establish the query used by the pool to probe the liveness of an idle pooled connection. The
+   * query must be a lightweight no-op that succeeds whenever the connection is still usable, e.g.
+   * {@code SELECT 1}. It is only used when the pool {@code idleKeepAlive} option is enabled.
+   *
+   * @param keepAliveQuery the keep-alive probe query
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PgConnectOptions setKeepAliveQuery(String keepAliveQuery) {
+    this.keepAliveQuery = keepAliveQuery;
+    return this;
+  }
+
   @Override
   public PgConnectOptions setReconnectAttempts(int attempts) {
     return (PgConnectOptions)super.setReconnectAttempts(attempts);
@@ -368,6 +392,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     if (sslMode != that.sslMode) return false;
     if (sslNegotiation != that.sslNegotiation) return false;
     if (channelBinding != that.channelBinding) return false;
+    if (keepAliveQuery != null ? !keepAliveQuery.equals(that.keepAliveQuery) : that.keepAliveQuery != null) return false;
 
     return true;
   }
@@ -379,6 +404,7 @@ public class PgConnectOptions extends SqlConnectOptions {
     result = 31 * result + sslMode.hashCode();
     result = 31 * result + sslNegotiation.hashCode();
     result = 31 * result + channelBinding.hashCode();
+    result = 31 * result + (keepAliveQuery != null ? keepAliveQuery.hashCode() : 0);
     return result;
   }
 

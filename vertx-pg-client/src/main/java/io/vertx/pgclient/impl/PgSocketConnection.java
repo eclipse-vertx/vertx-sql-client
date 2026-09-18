@@ -42,6 +42,7 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 import io.vertx.sqlclient.spi.protocol.InitCommand;
+import io.vertx.sqlclient.spi.protocol.PingCommand;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import io.vertx.sqlclient.spi.protocol.TxCommand;
 
@@ -77,6 +78,11 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   protected PgConnectOptions connectOptions() {
     return connectOptions;
+  }
+
+  @Override
+  public String keepAliveQuery() {
+    return connectOptions.getKeepAliveQuery();
   }
 
   @Override
@@ -168,6 +174,15 @@ public class PgSocketConnection extends SocketConnectionBase {
         SocketConnectionBase.NULL_COLLECTOR,
         QueryResultHandler.NOOP_HANDLER);
       super.doSchedule(cmd2, (res, err) -> handler.complete(tx.result(), err));
+    } else if (cmd instanceof PingCommand) {
+      PingCommand ping = (PingCommand) cmd;
+      SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(
+        ping.sql(),
+        false,
+        false,
+        SocketConnectionBase.NULL_COLLECTOR,
+        QueryResultHandler.NOOP_HANDLER);
+      super.doSchedule(cmd2, (res, err) -> handler.complete(null, err));
     } else {
       super.doSchedule(cmd, handler);
     }

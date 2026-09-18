@@ -52,6 +52,7 @@ public class PoolImpl extends SqlClientBase implements PoolInternal {
   private final long idleTimeout;
   private final long connectionTimeout;
   private final long maxLifetime;
+  private final long idleKeepAlive;
   private final long cleanerPeriod;
   private final boolean pipelined;
   private final Handler<SqlConnection> connectionInitializer;
@@ -85,12 +86,13 @@ public class PoolImpl extends SqlClientBase implements PoolInternal {
     this.idleTimeout = MILLISECONDS.convert(poolOptions.getIdleTimeout(), poolOptions.getIdleTimeoutUnit());
     this.connectionTimeout = MILLISECONDS.convert(poolOptions.getConnectionTimeout(), poolOptions.getConnectionTimeoutUnit());
     this.maxLifetime = MILLISECONDS.convert(poolOptions.getMaxLifetime(), poolOptions.getMaxLifetimeUnit());
+    this.idleKeepAlive = MILLISECONDS.convert(poolOptions.getIdleKeepAlive(), poolOptions.getIdleKeepAliveUnit());
     this.cleanerPeriod = poolOptions.getPoolCleanerPeriod();
     this.timerID = -1L;
     this.pipelined = pipelined;
     this.vertx = vertx;
     this.pool = new SqlConnectionPool(connectionProvider, connectionFactory, poolMetrics, hook, afterAcquire,
-      beforeRecycle, vertx, idleTimeout, maxLifetime, poolOptions.getMaxSize(), pipelined,
+      beforeRecycle, vertx, idleTimeout, maxLifetime, idleKeepAlive, poolOptions.getMaxSize(), pipelined,
       poolOptions.getMaxWaitQueueSize(), poolOptions.getEventLoopSize());
     this.connectionInitializer = connectionInitializer;
   }

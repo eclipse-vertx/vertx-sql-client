@@ -30,9 +30,11 @@ import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.PingCommand;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -59,6 +61,7 @@ public class SqlConnectionPool {
   private final boolean pipelined;
   private final long idleTimeout;
   private final long maxLifetime;
+  private final long idleKeepAlive;
   private final int maxSize;
 
   // TODO : use connection provider with Connection instead of SqlConnection
@@ -71,6 +74,7 @@ public class SqlConnectionPool {
                            VertxInternal vertx,
                            long idleTimeout,
                            long maxLifetime,
+                           long idleKeepAlive,
                            int maxSize,
                            boolean pipelined,
                            int maxWaitQueueSize,
@@ -88,6 +92,7 @@ public class SqlConnectionPool {
     this.pipelined = pipelined;
     this.idleTimeout = idleTimeout;
     this.maxLifetime = maxLifetime;
+    this.idleKeepAlive = idleKeepAlive;
     this.maxSize = maxSize;
     this.hook = hook;
     this.connectionProvider = context -> connectionFactory.connect(context, optionsProvider.get());
@@ -209,6 +214,16 @@ public class SqlConnectionPool {
 
   // TODO : try optimize without promise
   public <R> void execute(CommandBase<R> cmd, Completable<R> handler, long timeout) {
+    executeInternal(cmd, handler, timeout, 0);
+  }
+
+  /**
+   * Maximum number of times a command is retried after a stale connection is detected by the
+   * keep-alive probe (each retry uses a fresh connection).
+   */
+  private static final int MAX_KEEPALIVE_RETRIES = 3;
+
+  private <R> void executeInternal(CommandBase<R> cmd, Completable<R> handler, long timeout, int retries) {
     ContextInternal context = vertx.getOrCreateContext();
     Promise<Lease<PooledConnection>> p = context.promise();
     long timerId;
@@ -218,10 +233,13 @@ public class SqlConnectionPool {
       timerId = -1;
     }
     Object metric = enqueueMetric();
+    AtomicReference<PooledConnection> acquired = new AtomicReference<>();
     pool.acquire(context, 0, p);
     p.future().compose(lease -> {
       dequeueMetric(metric);
       PooledConnection pooled = lease.get();
+      pooled.probeFailed = false;
+      acquired.set(pooled);
       Future<R> future;
       if (timerId != -1 && !vertx.cancelTimer(timerId)) {
         // We want to make sure the connection is released properly below
@@ -230,16 +248,18 @@ public class SqlConnectionPool {
         future = Future.failedFuture(POOL_QUERY_TIMEOUT_EXCEPTION);
       } else {
         pooled.timerMetric = beginMetric();
-        if (afterAcquire != null) {
-          Connection conn = pooled.conn;
-          future = afterAcquire.apply(conn)
-            .compose(v -> Future.<R>future(d -> pooled.schedule(cmd, d)))
-            .eventually(() -> beforeRecycle.apply(conn));
-        } else {
+        Connection conn = pooled.conn;
+        Future<R> afterKeepAlive = probeIfNeeded(pooled).compose(v -> {
+          if (afterAcquire != null) {
+            return afterAcquire.apply(conn)
+              .compose(ignored -> Future.<R>future(d -> pooled.schedule(cmd, d)))
+              .eventually(() -> beforeRecycle.apply(conn));
+          }
           PromiseInternal<R> pp = context.promise();
           pooled.schedule(cmd, pp);
-          future = pp;
-        }
+          return pp;
+        });
+        future = afterKeepAlive;
       }
       return future.andThen(ar -> {
         endMetric(pooled.timerMetric);
@@ -252,6 +272,11 @@ public class SqlConnectionPool {
     }).onComplete(ar -> {
       if (ar.succeeded()) {
         handler.succeed(ar.result());
+      } else if (ar.cause() != null && retries < MAX_KEEPALIVE_RETRIES
+        && acquired.get() != null && acquired.get().probeFailed) {
+        // The keep-alive probe detected a stale connection which has been closed and removed from
+        // the pool; retry the command once on a fresh connection.
+        executeInternal(cmd, handler, timeout, retries + 1);
       } else if (!POOL_QUERY_TIMEOUT_EXCEPTION.equals(ar.cause())) {
         handler.fail(ar.cause());
       }
@@ -274,17 +299,23 @@ public class SqlConnectionPool {
           if (timerID != -1L && !vertx.cancelTimer(timerID)) {
             lease.recycle();
           } else {
-            if (afterAcquire != null) {
-              afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
-                if (ar2.succeeded()) {
-                  handle(lease);
-                } else {
-                  fail(lease, ar2.cause());
-                }
-              });
-            } else {
-              handle(lease);
-            }
+            probeIfNeeded(lease.get()).onComplete(ar -> {
+              if (ar.failed()) {
+                fail(lease, ar.cause());
+                return;
+              }
+              if (afterAcquire != null) {
+                afterAcquire.apply(lease.get().conn).onComplete(ar2 -> {
+                  if (ar2.succeeded()) {
+                    handle(lease);
+                  } else {
+                    fail(lease, ar2.cause());
+                  }
+                });
+              } else {
+                handle(lease);
+              }
+            });
           }
         } else {
           fail(null, failure);
@@ -335,6 +366,44 @@ public class SqlConnectionPool {
     pool.acquire(context, request, 0, request);
   }
 
+  /**
+   * Probe an idle pooled connection when it has been idle for at least the keep-alive duration.
+   *
+   * <p>When the keep-alive is disabled ({@code idleKeepAlive == 0}) or the connection has not been
+   * idle long enough, the returned future completes successfully without doing anything. Otherwise
+   * a lightweight {@link PingCommand} is scheduled on the connection to verify it is still usable.
+   * A connection that fails the probe must not be returned to a caller: the pool will close it and
+   * open a fresh one instead.</p>
+   *
+   * @param pooled the pooled connection about to be handed to a caller
+   * @return a future that succeeds when the connection is safe to use or fails when it must be discarded
+   */
+  private Future<Void> probeIfNeeded(PooledConnection pooled) {
+    if (idleKeepAlive <= 0) {
+      return Future.succeededFuture();
+    }
+    long now = System.currentTimeMillis();
+    long idle = now - pooled.keepAliveProbeTimestamp;
+    if (idle < idleKeepAlive) {
+      return Future.succeededFuture();
+    }
+    pooled.keepAliveProbeTimestamp = now;
+    PromiseInternal<Void> p = vertx.promise();
+    String sql = pooled.conn.keepAliveQuery() != null ? pooled.conn.keepAliveQuery() : "SELECT 1";
+    pooled.schedule(new PingCommand(sql), p);
+    return p.future().recover(err -> {
+      // The probe failed: the connection is stale. Close it so the pool removes it via onRemove;
+      // a leased connection cannot be evicted through ConnectionPool.evict (only unused ones can).
+      pooled.probeFailed = true;
+      Promise<Void> closePromise = vertx.promise();
+      pooled.conn.close(pooled, closePromise);
+      return closePromise.future().transform(v -> Future.failedFuture(err));
+    }).eventually(() -> {
+      pooled.keepAliveProbeTimestamp = System.currentTimeMillis();
+      return Future.succeededFuture();
+    });
+  }
+
   public Future<Void> close() {
     Promise<Void> promise = vertx.promise();
     pool.close((res, err) -> {
@@ -365,6 +434,8 @@ public class SqlConnectionPool {
     private Object timerMetric;
     public long idleEvictionTimestamp;
     public long lifetimeEvictionTimestamp;
+    public long keepAliveProbeTimestamp;
+    public boolean probeFailed;
 
     PooledConnection(ConnectionFactory factory, Connection conn, PoolConnector.Listener listener) {
       this.factory = factory;
@@ -460,6 +531,7 @@ public class SqlConnectionPool {
 
     private void refresh() {
       this.idleEvictionTimestamp = idleTimeout > 0 ? System.currentTimeMillis() + idleTimeout : Long.MAX_VALUE;
+      this.keepAliveProbeTimestamp = System.currentTimeMillis();
     }
 
     @Override
