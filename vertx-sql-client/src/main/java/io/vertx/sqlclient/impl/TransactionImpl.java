@@ -66,17 +66,51 @@ public class TransactionImpl implements Transaction {
 
   @Override
   public Future<Savepoint> createSavepoint() {
-    if (!driver.supportsSavepoints()) {
-      return context.failedFuture(new UnsupportedOperationException(
-        "Savepoints are not supported by this driver"));
-    }
-
     String name;
     synchronized (this) {
       name = "VX_SP_" + (++savepointSeq);
     }
+    return createSavepoint(name, false);
+  }
+
+  @Override
+  public Future<Savepoint> createSavepoint(String name) {
+    return createSavepoint(name, true);
+  }
+
+  private Future<Savepoint> createSavepoint(String name, boolean validate) {
+    if (!driver.supportsSavepoints()) {
+      return context.failedFuture(new UnsupportedOperationException(
+        "Savepoints are not supported by this driver"));
+    }
+    if (validate && !isValidSavepointName(name)) {
+      return context.failedFuture(new IllegalArgumentException(
+        "Invalid savepoint name: " + name
+          + ", a name must start with a letter and continue with letters, digits or underscores"));
+    }
     SavepointImpl savepoint = new SavepointImpl(this, name);
     return submit(new SavepointCommand<>(SavepointCommand.Kind.CREATE, name, savepoint));
+  }
+
+  /**
+   * The name goes into the statement as an unquoted identifier. Quoting would have to be
+   * done per database and would make the name case sensitive, so names are restricted to
+   * what every supported database accepts unquoted instead.
+   */
+  private static boolean isValidSavepointName(String name) {
+    if (name == null || name.isEmpty()) {
+      return false;
+    }
+    if (!Character.isLetter(name.charAt(0)) || name.charAt(0) > 127) {
+      return false;
+    }
+    for (int i = 1; i < name.length(); i++) {
+      char c = name.charAt(i);
+      if (c > 127 || (!Character.isLetterOrDigit(c) && c != '_')) {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<Void> rollbackToSavepoint(String name) {

@@ -62,6 +62,15 @@ since it was created. The savepoint cannot be used afterwards:
 {@link examples.SqlClientExamples#savepoint02(io.vertx.sqlclient.Pool)}
 ----
 
+You can also name a savepoint yourself, which makes it easier to recognise in a database error message.
+The name is written to the statement unquoted, so it must start with a letter and continue with letters,
+digits or underscores, anything else is rejected with an `IllegalArgumentException`:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#savepoint03(io.vertx.sqlclient.Pool)}
+----
+
 Not every database supports savepoints, and some support only part of the API. When an operation is not
 supported the call fails with an `UnsupportedOperationException` rather than pretending to succeed.
 

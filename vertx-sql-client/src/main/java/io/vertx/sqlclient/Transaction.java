@@ -36,6 +36,22 @@ public interface Transaction {
   Future<Savepoint> createSavepoint();
 
   /**
+   * Create a savepoint named {@code name} in this transaction.
+   *
+   * <p>The name is written to the statement as an unquoted identifier, so it must start
+   * with a letter and continue with letters, digits or underscores. Any other name is
+   * rejected with an {@link IllegalArgumentException}. Names are scoped to the
+   * transaction, creating a savepoint with the name of an existing one replaces it.
+   *
+   * <p>Fails with {@link UnsupportedOperationException} when the driver does not
+   * support savepoints.
+   *
+   * @param name the savepoint name
+   * @return a future notified with the created savepoint
+   */
+  Future<Savepoint> createSavepoint(String name);
+
+  /**
    * Commit the current transaction.
    */
   Future<Void> commit();
