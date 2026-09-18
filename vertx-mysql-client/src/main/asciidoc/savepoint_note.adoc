@@ -1,0 +1,4 @@
+MySQL supports savepoints fully.
+
+A failed statement does not fail the transaction, only the statement is rolled back and the transaction
+stays usable. A savepoint is still useful to discard a group of statements as a whole.

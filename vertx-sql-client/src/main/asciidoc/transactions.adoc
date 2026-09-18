@@ -40,3 +40,40 @@ After the transaction completes, the connection is returned to the pool and the 
 ----
 {@link examples.SqlClientExamples#transaction03(io.vertx.sqlclient.Pool)}
 ----
+
+=== Savepoints
+
+Within a transaction you can set a savepoint with {@link io.vertx.sqlclient.Transaction#createSavepoint},
+a mark you can later come back to without giving up the whole transaction.
+
+{@link io.vertx.sqlclient.Savepoint#rollback} undoes everything done since the savepoint was created and
+leaves the transaction open, so it can carry on and still commit the work done before:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#savepoint01(io.vertx.sqlclient.Pool)}
+----
+
+{@link io.vertx.sqlclient.Savepoint#release} drops a savepoint you no longer need, keeping the work done
+since it was created. The savepoint cannot be used afterwards:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#savepoint02(io.vertx.sqlclient.Pool)}
+----
+
+You can also name a savepoint yourself, which makes it easier to recognise in a database error message.
+The name is written to the statement as a delimited identifier, so it is taken literally and may hold
+characters an ordinary identifier could not. It is rejected with an `IllegalArgumentException` when it is
+empty, when it holds a double quote, which Oracle refuses inside a savepoint identifier, or when it is
+longer than 32 characters, the shortest limit across the supported databases:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#savepoint03(io.vertx.sqlclient.Pool)}
+----
+
+Not every database supports savepoints, and some support only part of the API. When an operation is not
+supported the call fails with an `UnsupportedOperationException` rather than pretending to succeed.
+
+include::savepoint_note.adoc[opts=optional]

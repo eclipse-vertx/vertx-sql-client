@@ -19,46 +19,114 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
+import io.vertx.sqlclient.Savepoint;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.TransactionRollbackException;
+import io.vertx.sqlclient.spi.Driver;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.SavepointCommand;
 import io.vertx.sqlclient.spi.protocol.TxCommand;
 
 public class TransactionImpl implements Transaction {
 
   private final ContextInternal context;
   private final Connection connection;
+  private final Driver<?> driver;
   private final Promise<TxCommand.Kind> completion;
   private final Handler<Void> endHandler;
   private int pendingQueries;
   private boolean ended;
-  private boolean failed;
-  private TxCommand<?> endCommand;
+  private boolean rollbackRequested;
+  private static final int MAX_SAVEPOINT_NAME_LENGTH = 32;
 
-  public TransactionImpl(ContextInternal context, Handler<Void> endHandler, Connection connection) {
+  private long savepointSeq;
+  private TxCommand<?> endCommand;
+  private TransactionState state = TransactionState.ACTIVE;
+
+  public TransactionImpl(ContextInternal context, Handler<Void> endHandler, Connection connection, Driver<?> driver) {
     this.context = context;
     this.connection = connection;
+    this.driver = driver;
     this.completion = context.promise();
     this.endHandler = endHandler;
   }
 
   public Future<Transaction> begin() {
-    PromiseInternal<Transaction> promise = context.promise();
-    TxCommand<Transaction> begin = new TxCommand<>(TxCommand.Kind.BEGIN, this);
-    scheduleInternal(begin, wrap(begin, promise));
-    return promise.future();
+    return submit(new TxCommand<>(TxCommand.Kind.BEGIN, this));
   }
 
-  public void fail() {
-    failed = true;
+  public void status(TransactionState state) {
+    synchronized (this) {
+      this.state = state;
+    }
+  }
+
+  <T> Future<T> failedFuture(String message) {
+    return context.failedFuture(message);
+  }
+
+  @Override
+  public Future<Savepoint> createSavepoint() {
+    long seq;
+    synchronized (this) {
+      seq = ++savepointSeq;
+    }
+    return createSavepoint("VX_SP_" + seq);
+  }
+
+  @Override
+  public Future<Savepoint> createSavepoint(String name) {
+    if (!driver.supportsSavepoints()) {
+      return context.failedFuture(new UnsupportedOperationException(
+        "Savepoints are not supported by this driver"));
+    }
+    if (name == null || name.isEmpty()) {
+      return context.failedFuture(new IllegalArgumentException("Savepoint name cannot be null or empty"));
+    }
+    if (name.indexOf('"') >= 0) {
+      // Oracle rejects a savepoint identifier holding a double quote even when it is escaped,
+      // ORA-25716, so the name is refused everywhere rather than on Oracle alone
+      return context.failedFuture(new IllegalArgumentException(
+        "Savepoint name cannot contain a double quote: " + name));
+    }
+    if (name.length() > MAX_SAVEPOINT_NAME_LENGTH) {
+      // Microsoft SQL Server keeps the first 32 characters of a savepoint name, longer names
+      // would silently collide there
+      return context.failedFuture(new IllegalArgumentException(
+        "Savepoint name cannot be longer than " + MAX_SAVEPOINT_NAME_LENGTH + " characters: " + name));
+    }
+    // Delimited, so the name is taken literally and the checks above are all it needs
+    String quoted = driver.appendQuotedIdentifier(new StringBuilder(), name).toString();
+    SavepointImpl savepoint = new SavepointImpl(this, quoted);
+    return submit(new SavepointCommand<>(SavepointCommand.Kind.CREATE, quoted, savepoint));
+  }
+
+  Future<Void> rollbackToSavepoint(String name) {
+    return submit(new SavepointCommand<>(SavepointCommand.Kind.ROLLBACK_TO, name, null));
+  }
+
+  Future<Void> releaseSavepoint(String name) {
+    if (!driver.supportsSavepointRelease()) {
+      return context.failedFuture(new UnsupportedOperationException(
+        "Releasing a savepoint is not supported by this driver"));
+    }
+    return submit(new SavepointCommand<>(SavepointCommand.Kind.RELEASE, name, null));
+  }
+
+  private <R> Future<R> submit(CommandBase<R> cmd) {
+    PromiseInternal<R> promise = context.promise();
+    if (!scheduleInternal(cmd, wrap(promise))) {
+      promise.fail("Transaction already completed");
+    }
+    return promise.future();
   }
 
   private <R> void execute(CommandBase<R> cmd, Completable<R> handler) {
     connection.schedule(cmd, handler);
   }
 
-  private <T> Completable<T> wrap(CommandBase<?> cmd, Completable<T> handler) {
+  private <T> Completable<T> wrap(Completable<T> handler) {
     return (res, err) -> {
       synchronized (TransactionImpl.this) {
         pendingQueries--;
@@ -69,7 +137,7 @@ public class TransactionImpl implements Transaction {
   }
 
   public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
-    if (!scheduleInternal(cmd, wrap(cmd, handler))) {
+    if (!scheduleInternal(cmd, wrap(handler))) {
       handler.fail("Transaction already completed");
     }
   }
@@ -92,7 +160,7 @@ public class TransactionImpl implements Transaction {
       if (pendingQueries > 0 || !ended || endCommand != null) {
         return;
       }
-      TxCommand.Kind kind = failed ? TxCommand.Kind.ROLLBACK : TxCommand.Kind.COMMIT;
+      TxCommand.Kind kind = rollbackRequested || state == TransactionState.FAILED ? TxCommand.Kind.ROLLBACK : TxCommand.Kind.COMMIT;
       cmd = new TxCommand<>(kind, null);
       handler = (res, err) -> {
         if (err == null) {
@@ -113,7 +181,7 @@ public class TransactionImpl implements Transaction {
         return context.failedFuture("Transaction already complete");
       }
       ended = true;
-      failed |= rollback;
+      rollbackRequested |= rollback;
     }
     checkEnd();
     return completion.future();

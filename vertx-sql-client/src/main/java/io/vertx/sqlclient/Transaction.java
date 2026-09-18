@@ -26,6 +26,35 @@ import io.vertx.core.Future;
 public interface Transaction {
 
   /**
+   * Create a savepoint in this transaction.
+   *
+   * <p>Fails with {@link UnsupportedOperationException} when the driver does not
+   * support savepoints.
+   *
+   * @return a future notified with the created savepoint
+   */
+  Future<Savepoint> createSavepoint();
+
+  /**
+   * Create a savepoint named {@code name} in this transaction.
+   *
+   * <p>The name is written to the statement as a delimited identifier, so it is taken
+   * literally, it is not folded to upper or lower case and may hold characters an ordinary
+   * identifier could not. A name is rejected with an {@link IllegalArgumentException} when
+   * it is empty, when it holds a double quote, which Oracle refuses inside a savepoint
+   * identifier, or when it is longer than 32 characters, the shortest limit across the
+   * supported databases. Names are scoped to the transaction, creating a
+   * savepoint with the name of an existing one replaces it.
+   *
+   * <p>Fails with {@link UnsupportedOperationException} when the driver does not
+   * support savepoints.
+   *
+   * @param name the savepoint name
+   * @return a future notified with the created savepoint
+   */
+  Future<Savepoint> createSavepoint(String name);
+
+  /**
    * Commit the current transaction.
    */
   Future<Void> commit();

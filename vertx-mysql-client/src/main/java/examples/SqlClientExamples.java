@@ -266,6 +266,51 @@ public class SqlClientExamples {
       .onFailure(err -> System.out.println("Transaction failed: " + err.getMessage()));
   }
 
+  public void savepoint01(Pool pool) {
+
+    pool.withTransaction(client -> client
+      .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+      .execute()
+      .flatMap(v -> client.transaction().createSavepoint())
+      .flatMap(savepoint -> client
+        .query("INSERT INTO Users (first_name,last_name) VALUES ('Emad','Alblueshi')")
+        .execute()
+        // Undo the second insert, the first one is still part of the transaction
+        .flatMap(v -> savepoint.rollback())))
+      .onSuccess(v -> System.out.println("Transaction committed with a single user"))
+      .onFailure(err -> System.out.println("Transaction failed: " + err.getMessage()));
+  }
+
+  public void savepoint02(Pool pool) {
+
+    pool.withTransaction(client -> client
+      .transaction()
+      .createSavepoint()
+      .flatMap(savepoint -> client
+        .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+        .execute()
+        // The insert is kept, the savepoint cannot be used anymore
+        .flatMap(v -> savepoint.release())))
+      .onSuccess(v -> System.out.println("Transaction committed"))
+      .onFailure(err -> System.out.println("Transaction failed: " + err.getMessage()));
+  }
+
+  public void savepoint03(Pool pool) {
+
+    pool.withTransaction(client -> client
+      .transaction()
+      // The name shows up in database error messages
+      .createSavepoint("before_users")
+      .flatMap(savepoint -> client
+        .query("INSERT INTO Users (first_name,last_name) VALUES ('Julien','Viet')")
+        .execute()
+        .flatMap(v -> savepoint.rollback())))
+      .onSuccess(v -> System.out.println("Transaction committed without the user"))
+      .onFailure(err -> System.out.println("Transaction failed: " + err.getMessage()));
+  }
+
+
+
   public void usingCursors01(SqlConnection connection) {
     connection
       .prepare("SELECT * FROM users WHERE age > ?")

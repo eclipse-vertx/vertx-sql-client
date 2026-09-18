@@ -12,6 +12,9 @@ package io.vertx.tests.db2client.tck;
 
 import io.vertx.db2client.DB2Builder;
 import io.vertx.db2client.DB2ConnectOptions;
+import io.vertx.ext.unit.Async;
+import io.vertx.sqlclient.Cursor;
+import org.junit.Test;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.sqlclient.Pool;
@@ -72,5 +75,44 @@ public class DB2TransactionTest extends TransactionTestBase {
   @Override
   protected String statement(String... parts) {
     return String.join("?", parts);
+  }
+
+  @Override
+  protected boolean supportsSavepoints() {
+    return true;
+  }
+
+  /**
+   * DB2 creates savepoints with ON ROLLBACK RETAIN CURSORS, so a cursor opened before the
+   * rollback keeps returning the rows it was already positioned on.
+   */
+  @Test
+  public void testCursorSurvivesRollbackToSavepoint(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "one")
+        .compose(v -> insertMutable(res.client, 2, "two"))
+        .compose(v -> res.client.prepare("SELECT id FROM mutable ORDER BY id"))
+        .compose(ps -> {
+          Cursor cursor = ps.cursor();
+          return cursor.read(1)
+            .compose(first -> {
+              ctx.assertEquals(1, first.size());
+              ctx.assertEquals(1, first.iterator().next().getInteger("id"));
+              return res.tx.createSavepoint();
+            })
+            .compose(sp -> insertMutable(res.client, 3, "three").compose(v -> sp.rollback()))
+            // the cursor was opened before the savepoint, it must still be readable
+            .compose(v -> cursor.read(1))
+            .compose(second -> {
+              ctx.assertEquals(1, second.size());
+              ctx.assertEquals(2, second.iterator().next().getInteger("id"));
+              return cursor.close();
+            });
+        })
+        .compose(v -> res.tx.commit())
+        .compose(v -> assertMutableIds(ctx, 1, 2))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
   }
 }
