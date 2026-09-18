@@ -33,6 +33,8 @@ import static io.vertx.mysqlclient.impl.protocol.Packets.*;
 
 abstract class QueryMySQLCommandBase<T, C extends QueryCommandBase<T>> extends MySQLCommand<Boolean, C> {
 
+  private static final int MAX_COLUMN_COUNT = 65535;
+
   private final DataFormat format;
 
   protected CommandHandlerState commandHandlerState = CommandHandlerState.INIT;
@@ -72,6 +74,9 @@ abstract class QueryMySQLCommandBase<T, C extends QueryCommandBase<T>> extends M
 
   protected void handleResultsetColumnCountPacketBody(ByteBuf payload) {
     int columnCount = decodeColumnCountPacketPayload(payload);
+    if (columnCount < 0) {
+      return;
+    }
     commandHandlerState = CommandHandlerState.HANDLING_COLUMN_DEFINITION;
     columnDefinitions = new ColumnDefinition[columnCount];
   }
@@ -181,6 +186,12 @@ abstract class QueryMySQLCommandBase<T, C extends QueryCommandBase<T>> extends M
 
   private int decodeColumnCountPacketPayload(ByteBuf payload) {
     long columnCount = BufferUtils.readLengthEncodedInteger(payload);
+    if (columnCount < 0 || columnCount > MAX_COLUMN_COUNT) {
+      String msg = "Invalid column count: " + columnCount + " (maximum is " + MAX_COLUMN_COUNT + ")";
+      encoder.fireCommandResponse(CommandResponse.failure(msg));
+      encoder.chctx.close();
+      return -1;
+    }
     return (int) columnCount;
   }
 
