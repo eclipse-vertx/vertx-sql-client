@@ -85,6 +85,14 @@ public class MySQLDriver extends DriverBase<MySQLConnectOptions> {
     return new MySQLConnectionFactory((VertxInternal) vertx, transportOptions);
   }
 
+  /**
+   * MySQL delimits identifiers with backticks.
+   */
+  @Override
+  public StringBuilder appendQuotedIdentifier(StringBuilder sql, String identifier) {
+    return sql.append('`').append(identifier.replace("`", "``")).append('`');
+  }
+
   @Override
   public boolean supportsSavepoints() {
     return true;

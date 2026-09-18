@@ -63,8 +63,10 @@ since it was created. The savepoint cannot be used afterwards:
 ----
 
 You can also name a savepoint yourself, which makes it easier to recognise in a database error message.
-The name is written to the statement unquoted, so it must start with a letter and continue with letters,
-digits or underscores, anything else is rejected with an `IllegalArgumentException`:
+The name is written to the statement as a delimited identifier, so it is taken literally and may hold
+characters an ordinary identifier could not. It must not be empty and cannot be longer than 32 characters,
+the shortest limit across the supported databases, otherwise it is rejected with an
+`IllegalArgumentException`:
 
 [source,$lang]
 ----

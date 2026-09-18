@@ -67,6 +67,14 @@ public class MSSQLDriver extends DriverBase<MSSQLConnectOptions> {
     return index;
   }
 
+  /**
+   * Transact-SQL delimits identifiers with square brackets.
+   */
+  @Override
+  public StringBuilder appendQuotedIdentifier(StringBuilder sql, String identifier) {
+    return sql.append('[').append(identifier.replace("]", "]]")).append(']');
+  }
+
   @Override
   public boolean supportsSavepoints() {
     return true;

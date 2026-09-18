@@ -747,15 +747,35 @@ public abstract class TransactionTestBase {
   }
 
   /**
-   * The name is written to the statement unquoted, so anything that is not a plain
-   * identifier is rejected before the statement is built and the transaction is untouched.
+   * The name is written as a delimited identifier, so characters an ordinary identifier
+   * could not hold are fine, including the delimiter of every supported database.
+   */
+  @Test
+  public void testSavepointNameWithSpecialCharacters(TestContext ctx) {
+    assumeSavepoints();
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      insertMutable(res.client, 1, "before")
+        .compose(v -> res.tx.createSavepoint("sp \"a\" `b` [c]"))
+        .compose(sp -> insertMutable(res.client, 2, "rolled-back")
+          .compose(v -> sp.rollback())
+          .compose(v -> insertMutable(res.client, 3, "after"))
+          .compose(v -> res.tx.commit()))
+        .compose(v -> assertMutableIds(ctx, 1, 3))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  /**
+   * Only an empty name and one longer than the shortest limit across the supported
+   * databases are rejected, and the transaction is untouched when they are.
    */
   @Test
   public void testInvalidSavepointNameIsRejected(TestContext ctx) {
     assumeSavepoints();
     Async async = ctx.async();
-    String[] invalid = {"", "1_starts_with_a_digit", "_starts_with_underscore", "has space",
-      "has-dash", "quo'te", "drop; DROP TABLE mutable", "café"};
+    String tooLong = "s".repeat(33);
+    String[] invalid = {"", tooLong};
     connector.accept(ctx.asyncAssertSuccess(res -> {
       Future<Void> chain = Future.succeededFuture();
       for (String name : invalid) {
@@ -767,7 +787,6 @@ public abstract class TransactionTestBase {
             return Future.succeededFuture();
           }));
       }
-      // the transaction was never touched, it still works
       chain
         .compose(v -> insertMutable(res.client, 1, "still-usable"))
         .compose(v -> res.tx.commit())
@@ -775,4 +794,5 @@ public abstract class TransactionTestBase {
         .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
     }));
   }
+
 }

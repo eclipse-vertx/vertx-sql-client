@@ -38,10 +38,12 @@ public interface Transaction {
   /**
    * Create a savepoint named {@code name} in this transaction.
    *
-   * <p>The name is written to the statement as an unquoted identifier, so it must start
-   * with a letter and continue with letters, digits or underscores. Any other name is
-   * rejected with an {@link IllegalArgumentException}. Names are scoped to the
-   * transaction, creating a savepoint with the name of an existing one replaces it.
+   * <p>The name is written to the statement as a delimited identifier, so it is taken
+   * literally, it is not folded to upper or lower case and may hold characters an ordinary
+   * identifier could not. An empty name, or one longer than 32 characters, the shortest
+   * limit across the supported databases, is rejected with an
+   * {@link IllegalArgumentException}. Names are scoped to the transaction, creating a
+   * savepoint with the name of an existing one replaces it.
    *
    * <p>Fails with {@link UnsupportedOperationException} when the driver does not
    * support savepoints.

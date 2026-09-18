@@ -146,6 +146,24 @@ public interface Driver<C extends SqlConnectOptions> {
   }
 
   /**
+   * Append {@code identifier} to {@code sql} as a delimited identifier.
+   *
+   * <p>The default implementation uses the SQL standard double quote, which PostgreSQL,
+   * Oracle and DB2 accept. MySQL and Microsoft SQL Server delimit identifiers differently
+   * and override this.
+   *
+   * <p>A delimited identifier is taken literally: it is not folded to upper or lower case
+   * and may hold characters an ordinary identifier cannot.
+   *
+   * @param sql the builder to append to
+   * @param identifier the identifier to append
+   * @return the builder
+   */
+  default StringBuilder appendQuotedIdentifier(StringBuilder sql, String identifier) {
+    return sql.append('"').append(identifier.replace("\"", "\"\"")).append('"');
+  }
+
+  /**
    * @return {@code true} when the driver supports savepoints.
    */
   default boolean supportsSavepoints() {

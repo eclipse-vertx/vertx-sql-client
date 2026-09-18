@@ -38,6 +38,8 @@ public class TransactionImpl implements Transaction {
   private int pendingQueries;
   private boolean ended;
   private boolean rollbackRequested;
+  private static final int MAX_SAVEPOINT_NAME_LENGTH = 32;
+
   private long savepointSeq;
   private TxCommand<?> endCommand;
   private TransactionState state = TransactionState.ACTIVE;
@@ -66,51 +68,33 @@ public class TransactionImpl implements Transaction {
 
   @Override
   public Future<Savepoint> createSavepoint() {
-    String name;
+    long seq;
     synchronized (this) {
-      name = "VX_SP_" + (++savepointSeq);
+      seq = ++savepointSeq;
     }
-    return createSavepoint(name, false);
+    return createSavepoint("VX_SP_" + seq);
   }
 
   @Override
   public Future<Savepoint> createSavepoint(String name) {
-    return createSavepoint(name, true);
-  }
-
-  private Future<Savepoint> createSavepoint(String name, boolean validate) {
     if (!driver.supportsSavepoints()) {
       return context.failedFuture(new UnsupportedOperationException(
         "Savepoints are not supported by this driver"));
     }
-    if (validate && !isValidSavepointName(name)) {
-      return context.failedFuture(new IllegalArgumentException(
-        "Invalid savepoint name: " + name
-          + ", a name must start with a letter and continue with letters, digits or underscores"));
-    }
-    SavepointImpl savepoint = new SavepointImpl(this, name);
-    return submit(new SavepointCommand<>(SavepointCommand.Kind.CREATE, name, savepoint));
-  }
-
-  /**
-   * The name goes into the statement as an unquoted identifier. Quoting would have to be
-   * done per database and would make the name case sensitive, so names are restricted to
-   * what every supported database accepts unquoted instead.
-   */
-  private static boolean isValidSavepointName(String name) {
     if (name == null || name.isEmpty()) {
-      return false;
+      return context.failedFuture(new IllegalArgumentException("Savepoint name cannot be null or empty"));
     }
-    if (!Character.isLetter(name.charAt(0)) || name.charAt(0) > 127) {
-      return false;
+    if (name.length() > MAX_SAVEPOINT_NAME_LENGTH) {
+      // Microsoft SQL Server keeps the first 32 characters of a savepoint name, longer names
+      // would silently collide there
+      return context.failedFuture(new IllegalArgumentException(
+        "Savepoint name cannot be longer than " + MAX_SAVEPOINT_NAME_LENGTH + " characters: " + name));
     }
-    for (int i = 1; i < name.length(); i++) {
-      char c = name.charAt(i);
-      if (c > 127 || (!Character.isLetterOrDigit(c) && c != '_')) {
-        return false;
-      }
-    }
-    return true;
+    // The name is written to the statement as a delimited identifier, so it is taken literally
+    // and needs no restriction beyond the length
+    String quoted = driver.appendQuotedIdentifier(new StringBuilder(), name).toString();
+    SavepointImpl savepoint = new SavepointImpl(this, quoted);
+    return submit(new SavepointCommand<>(SavepointCommand.Kind.CREATE, quoted, savepoint));
   }
 
   Future<Void> rollbackToSavepoint(String name) {
