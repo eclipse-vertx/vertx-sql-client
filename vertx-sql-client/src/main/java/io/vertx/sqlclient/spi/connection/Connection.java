@@ -107,4 +107,12 @@ public interface Connection extends CommandScheduler {
     return this;
   }
 
+  /**
+   * @return the SQL statement used by the pool idle keep-alive probe, or {@code null} to use the
+   *         driver default probe statement
+   */
+  default String keepAliveQuery() {
+    return null;
+  }
+
 }

@@ -64,6 +64,16 @@ public class PoolOptions {
   public static final TimeUnit DEFAULT_MAXIMUM_LIFETIME_TIME_UNIT = TimeUnit.SECONDS;
 
   /**
+   * Default idle keep alive = 0 (disabled)
+   */
+  public static final int DEFAULT_IDLE_KEEPALIVE = 0;
+
+  /**
+   * Default idle keep alive time unit = seconds
+   */
+  public static final TimeUnit DEFAULT_IDLE_KEEPALIVE_TIME_UNIT = TimeUnit.SECONDS;
+
+  /**
    * Default pool cleaner period = 1000 ms (1 second)
    */
   public static final int DEFAULT_POOL_CLEANER_PERIOD = 1000;
@@ -99,6 +109,8 @@ public class PoolOptions {
   private TimeUnit idleTimeoutUnit = DEFAULT_IDLE_TIMEOUT_TIME_UNIT;
   private int maxLifetime = DEFAULT_MAXIMUM_LIFETIME;
   private TimeUnit maxLifetimeUnit = DEFAULT_MAXIMUM_LIFETIME_TIME_UNIT;
+  private int idleKeepAlive = DEFAULT_IDLE_KEEPALIVE;
+  private TimeUnit idleKeepAliveUnit = DEFAULT_IDLE_KEEPALIVE_TIME_UNIT;
   private int poolCleanerPeriod = DEFAULT_POOL_CLEANER_PERIOD;
   private int connectionTimeout = DEFAULT_CONNECTION_TIMEOUT;
   private TimeUnit connectionTimeoutUnit = DEFAULT_CONNECTION_TIMEOUT_TIME_UNIT;
@@ -120,6 +132,8 @@ public class PoolOptions {
     idleTimeoutUnit = other.idleTimeoutUnit;
     maxLifetime = other.maxLifetime;
     maxLifetimeUnit = other.maxLifetimeUnit;
+    idleKeepAlive = other.idleKeepAlive;
+    idleKeepAliveUnit = other.idleKeepAliveUnit;
     poolCleanerPeriod = other.poolCleanerPeriod;
     connectionTimeout = other.connectionTimeout;
     connectionTimeoutUnit = other.connectionTimeoutUnit;
@@ -243,6 +257,48 @@ public class PoolOptions {
       throw new IllegalArgumentException("maxLifetime must be >= 0");
     }
     this.maxLifetime = maxLifetime;
+    return this;
+  }
+
+  /**
+   * @return the pooled connection idle keep alive time unit
+   */
+  public TimeUnit getIdleKeepAliveUnit() {
+    return idleKeepAliveUnit;
+  }
+
+  /**
+   * Establish the time unit for the pooled connection idle keep alive.
+   *
+   * @param idleKeepAliveUnit pooled connection idle keep alive time unit
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setIdleKeepAliveUnit(TimeUnit idleKeepAliveUnit) {
+    this.idleKeepAliveUnit = idleKeepAliveUnit;
+    return this;
+  }
+
+  /**
+   * @return pooled connection idle keep alive
+   */
+  public int getIdleKeepAlive() {
+    return idleKeepAlive;
+  }
+
+  /**
+   * Establish an idle keep alive for pooled connections. When a pooled connection has been idle
+   * for at least this duration, the pool issues a lightweight probe (e.g. a {@code SELECT 1}) to
+   * verify the connection is still usable; a connection whose probe fails is evicted. A value of
+   * zero disables the idle keep alive probe.
+   *
+   * @param idleKeepAlive the pool connection idle keep alive
+   * @return a reference to this, so the API can be used fluently
+   */
+  public PoolOptions setIdleKeepAlive(int idleKeepAlive) {
+    if (idleKeepAlive < 0) {
+      throw new IllegalArgumentException("idleKeepAlive must be >= 0");
+    }
+    this.idleKeepAlive = idleKeepAlive;
     return this;
   }
 
