@@ -96,8 +96,7 @@ public class TransactionImpl implements Transaction {
       return context.failedFuture(new IllegalArgumentException(
         "Savepoint name cannot be longer than " + MAX_SAVEPOINT_NAME_LENGTH + " characters: " + name));
     }
-    // The name is written to the statement as a delimited identifier, so it is taken literally
-    // and needs no restriction beyond the length
+    // Delimited, so the name is taken literally and the checks above are all it needs
     String quoted = driver.appendQuotedIdentifier(new StringBuilder(), name).toString();
     SavepointImpl savepoint = new SavepointImpl(this, quoted);
     return submit(new SavepointCommand<>(SavepointCommand.Kind.CREATE, quoted, savepoint));
