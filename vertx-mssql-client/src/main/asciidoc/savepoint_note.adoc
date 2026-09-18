@@ -1,0 +1,6 @@
+Microsoft SQL Server has no statement that releases a savepoint, so
+{@link io.vertx.sqlclient.Savepoint#release} fails with an `UnsupportedOperationException`. The savepoint
+remains usable for a rollback.
+
+A savepoint is also dropped once the transaction has been rolled back to it, so it cannot be rolled back
+to a second time.
