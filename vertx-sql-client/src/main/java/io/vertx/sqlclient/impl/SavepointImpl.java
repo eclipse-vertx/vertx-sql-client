@@ -13,6 +13,8 @@ package io.vertx.sqlclient.impl;
 import io.vertx.core.Future;
 import io.vertx.sqlclient.Savepoint;
 
+import java.util.function.BiFunction;
+
 public class SavepointImpl implements Savepoint {
 
   private enum State {
@@ -33,15 +35,15 @@ public class SavepointImpl implements Savepoint {
 
   @Override
   public Future<Void> rollback() {
-    return execute(false, () -> transaction.rollbackToSavepoint(name));
+    return execute(false, TransactionImpl::rollbackToSavepoint);
   }
 
   @Override
   public Future<Void> release() {
-    return execute(true, () -> transaction.releaseSavepoint(name));
+    return execute(true, TransactionImpl::releaseSavepoint);
   }
 
-  private Future<Void> execute(boolean release, Action action) {
+  private Future<Void> execute(boolean release, BiFunction<TransactionImpl, String, Future<Void>> action) {
     synchronized (this) {
       if (state == State.RELEASED) {
         return transaction.failedFuture("Savepoint already released");
@@ -51,7 +53,7 @@ public class SavepointImpl implements Savepoint {
       }
       state = State.PENDING;
     }
-    return action.execute().andThen(ar -> {
+    return action.apply(transaction, name).andThen(ar -> {
       synchronized (SavepointImpl.this) {
         if (ar.succeeded()) {
           state = release ? State.RELEASED : State.ACTIVE;
@@ -62,8 +64,4 @@ public class SavepointImpl implements Savepoint {
     });
   }
 
-  @FunctionalInterface
-  private interface Action {
-    Future<Void> execute();
-  }
 }

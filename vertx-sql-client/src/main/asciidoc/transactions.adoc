@@ -40,3 +40,32 @@ After the transaction completes, the connection is returned to the pool and the 
 ----
 {@link examples.SqlClientExamples#transaction03(io.vertx.sqlclient.Pool)}
 ----
+
+=== Savepoints
+
+Within a transaction you can set a savepoint with {@link io.vertx.sqlclient.Transaction#createSavepoint},
+a mark you can later come back to without giving up the whole transaction.
+
+{@link io.vertx.sqlclient.Savepoint#rollback} undoes everything done since the savepoint was created and
+leaves the transaction open, so it can carry on and still commit the work done before:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#savepoint01(io.vertx.sqlclient.Pool)}
+----
+
+On PostgreSQL a failed statement also fails the transaction, every later statement is rejected until the
+transaction ends. Rolling back to a savepoint taken before the failure recovers it. The other databases
+roll back the failed statement only, and there the savepoint simply discards the work that followed it.
+
+{@link io.vertx.sqlclient.Savepoint#release} drops a savepoint you no longer need, keeping the work done
+since it was created. The savepoint cannot be used afterwards:
+
+[source,$lang]
+----
+{@link examples.SqlClientExamples#savepoint02(io.vertx.sqlclient.Pool)}
+----
+
+Savepoints are not supported by every database, and Microsoft SQL Server and Oracle create them but have
+no statement that releases one. Both calls report that: they fail with an `UnsupportedOperationException`
+rather than pretending to succeed, and a savepoint that could not be released stays usable for a rollback.
