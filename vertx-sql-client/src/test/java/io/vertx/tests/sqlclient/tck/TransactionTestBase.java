@@ -748,7 +748,7 @@ public abstract class TransactionTestBase {
 
   /**
    * The name is written as a delimited identifier, so characters an ordinary identifier
-   * could not hold are fine, including the delimiter of every supported database.
+   * could not hold are fine, including the delimiters MySQL and SQL Server use.
    */
   @Test
   public void testSavepointNameWithSpecialCharacters(TestContext ctx) {
@@ -756,7 +756,7 @@ public abstract class TransactionTestBase {
     Async async = ctx.async();
     connector.accept(ctx.asyncAssertSuccess(res -> {
       insertMutable(res.client, 1, "before")
-        .compose(v -> res.tx.createSavepoint("sp \"a\" `b` [c]"))
+        .compose(v -> res.tx.createSavepoint("sp 'a' `b` [c]"))
         .compose(sp -> insertMutable(res.client, 2, "rolled-back")
           .compose(v -> sp.rollback())
           .compose(v -> insertMutable(res.client, 3, "after"))
@@ -775,7 +775,7 @@ public abstract class TransactionTestBase {
     assumeSavepoints();
     Async async = ctx.async();
     String tooLong = "s".repeat(33);
-    String[] invalid = {"", tooLong};
+    String[] invalid = {"", tooLong, "has a \" quote"};
     connector.accept(ctx.asyncAssertSuccess(res -> {
       Future<Void> chain = Future.succeededFuture();
       for (String name : invalid) {

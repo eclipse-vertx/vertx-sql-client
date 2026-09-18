@@ -64,9 +64,9 @@ since it was created. The savepoint cannot be used afterwards:
 
 You can also name a savepoint yourself, which makes it easier to recognise in a database error message.
 The name is written to the statement as a delimited identifier, so it is taken literally and may hold
-characters an ordinary identifier could not. It must not be empty and cannot be longer than 32 characters,
-the shortest limit across the supported databases, otherwise it is rejected with an
-`IllegalArgumentException`:
+characters an ordinary identifier could not. It is rejected with an `IllegalArgumentException` when it is
+empty, when it holds a double quote, which Oracle refuses inside a savepoint identifier, or when it is
+longer than 32 characters, the shortest limit across the supported databases:
 
 [source,$lang]
 ----

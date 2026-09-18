@@ -84,6 +84,12 @@ public class TransactionImpl implements Transaction {
     if (name == null || name.isEmpty()) {
       return context.failedFuture(new IllegalArgumentException("Savepoint name cannot be null or empty"));
     }
+    if (name.indexOf('"') >= 0) {
+      // Oracle rejects a savepoint identifier holding a double quote even when it is escaped,
+      // ORA-25716, so the name is refused everywhere rather than on Oracle alone
+      return context.failedFuture(new IllegalArgumentException(
+        "Savepoint name cannot contain a double quote: " + name));
+    }
     if (name.length() > MAX_SAVEPOINT_NAME_LENGTH) {
       // Microsoft SQL Server keeps the first 32 characters of a savepoint name, longer names
       // would silently collide there
