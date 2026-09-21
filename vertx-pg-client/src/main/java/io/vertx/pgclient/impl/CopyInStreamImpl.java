@@ -339,8 +339,12 @@ public final class CopyInStreamImpl implements CopyInStreamInternal, WriteStream
     wasFull = writeQueueFull();
   }
 
-  private void failNow(Throwable t, boolean sendCopyFail) {
-    failLocally(t, sendCopyFail);
+  /**
+   * Fail the COPY for an error detected on the client, while writing to the transport. Unlike
+   * {@link #failFromServer}, the server does not know yet, so it is told with {@code CopyFail}.
+   */
+  private void failNow(Throwable t) {
+    failLocally(t, true);
     completion.tryFail(t);
   }
 
@@ -436,7 +440,7 @@ public final class CopyInStreamImpl implements CopyInStreamInternal, WriteStream
       }
 
     } catch (Throwable t) {
-      failNow(t, true);
+      failNow(t);
     } finally {
       draining = false;
     }
@@ -463,7 +467,7 @@ public final class CopyInStreamImpl implements CopyInStreamInternal, WriteStream
       }
 
       frame.failWrites(t);
-      failNow(t, true);
+      failNow(t);
     }
   }
 
@@ -491,7 +495,7 @@ public final class CopyInStreamImpl implements CopyInStreamInternal, WriteStream
     pending.addLast(new PendingFrame(payload, sz, writePromises));
     pendingBytes += sz;
 
-    wasFull = writeQueueFull();
+    syncFullState();
   }
 
   private void failAllPendingPromises(Throwable t) {

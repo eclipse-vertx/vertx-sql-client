@@ -99,9 +99,9 @@ public final class CopyOutStreamImpl implements PgCopyOut {
   }
 
   public void discard(Throwable t) {
+    // The codec drops incoming CopyData while this is set. fail() sets it as well, but returns early
+    // once the end was reached, so it is set here regardless.
     discarding = true;
-    queue.clear();
-    resumeUpstream();
     fail(t);
   }
 
