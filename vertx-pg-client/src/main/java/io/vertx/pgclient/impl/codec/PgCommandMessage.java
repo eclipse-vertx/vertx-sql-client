@@ -20,6 +20,8 @@ import io.netty.buffer.ByteBuf;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.pgclient.PgException;
+import io.vertx.pgclient.impl.CopyInStreamCommand;
+import io.vertx.pgclient.impl.CopyOutStreamCommand;
 import io.vertx.sqlclient.codec.CommandMessage;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
@@ -57,6 +59,10 @@ public abstract class PgCommandMessage<R, C extends CommandBase<R>> extends Comm
       return new ClosePortalPgCommandMessage((CloseCursorCommand) cmd);
     } else if (cmd instanceof CloseStatementCommand) {
       return new CloseStatementPgCommandMessage((CloseStatementCommand) cmd);
+    } else if (cmd instanceof CopyOutStreamCommand) {
+      return new CopyOutStreamPgCommandMessage((CopyOutStreamCommand) cmd);
+    } else if (cmd instanceof CopyInStreamCommand) {
+      return new CopyInStreamPgCommandMessage((CopyInStreamCommand) cmd);
     }
     throw new AssertionError("Invalid command " + cmd);
   }

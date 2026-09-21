@@ -16,11 +16,16 @@
  */
 package io.vertx.pgclient.impl.codec;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.CombinedChannelDuplexHandler;
+import io.vertx.sqlclient.codec.SocketConnectionBase;
 
 import java.util.ArrayDeque;
 
 public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> {
+
+  private SocketConnectionBase connection;
+  private boolean commandPipelineSuspended;
 
   private final ArrayDeque<PgCommandMessage<?, ?>> inflight;
   private final PgDecoder decoder;
@@ -31,6 +36,45 @@ public class PgCodec extends CombinedChannelDuplexHandler<PgDecoder, PgEncoder> 
     decoder = new PgDecoder(this);
     encoder = new PgEncoder(useLayer7Proxy, this);
     init(decoder, encoder);
+  }
+
+  public void setConnection(SocketConnectionBase connection) {
+    this.connection = connection;
+  }
+
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    clearConnectionReference();
+    super.channelInactive(ctx);
+  }
+
+  @Override
+  public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+    clearConnectionReference();
+    super.handlerRemoved(ctx);
+  }
+
+  private void clearConnectionReference() {
+    connection = null;
+    commandPipelineSuspended = false;
+  }
+
+  void suspendCommandPipeline() {
+    if (!commandPipelineSuspended) {
+      commandPipelineSuspended = true;
+      if (connection != null) {
+        connection.suspendPipeline();
+      }
+    }
+  }
+
+  void resumeCommandPipeline() {
+    if (commandPipelineSuspended) {
+      commandPipelineSuspended = false;
+      if (connection != null) {
+        connection.resumePipeline();
+      }
+    }
   }
 
   void add(PgCommandMessage<?, ?> codec) {

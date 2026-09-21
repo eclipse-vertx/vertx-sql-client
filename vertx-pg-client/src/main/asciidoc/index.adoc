@@ -13,6 +13,7 @@ The client is reactive and non-blocking, allowing to handle many database connec
 * Publish / subscribe using PostgreSQL `NOTIFY/LISTEN`
 * Batch and cursor
 * Row streaming
+* `COPY` streaming
 * Command pipelining
 * RxJava API
 * Direct memory to object without unnecessary copies
@@ -654,6 +655,84 @@ create easily create a string directly from the row set:
 [source,$lang]
 ----
 {@link examples.PgClientExamples#collector02Example}
+----
+
+== Streaming COPY
+
+PostgreSQL `COPY` transfers bulk data between a table and a stream, without going through
+the extended query protocol. The client exposes both directions as raw byte streams, so the
+data never has to be materialized in memory.
+
+Each call accepts exactly one `COPY` statement, and a connection can have a single COPY
+operation in progress at a time.
+
+=== COPY TO STDOUT
+
+{@link io.vertx.pgclient.PgConnection#copyOut(java.lang.String)} executes a
+`COPY ... TO STDOUT` statement and returns a {@link io.vertx.pgclient.PgCopyOut}, a
+`ReadStream` of `Buffer`. The future is notified once the server has entered COPY OUT mode.
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#copyOut(io.vertx.pgclient.PgConnection)}
+----
+
+{@link io.vertx.pgclient.PgCopyOut#completion()} is notified with the number of rows
+reported by PostgreSQL.
+
+The stream is _hot_: like other Vert.x read streams it starts in flowing mode. Consuming it
+is what advances the connection, so `completion()` remains pending for as long as the stream
+is paused or has no data handler. Call `pause()` before installing a handler when you need
+explicit demand control:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#copyOutPaused(io.vertx.pgclient.PgConnection)}
+----
+
+By default each PostgreSQL `CopyData` message is emitted as one buffer. When message
+boundaries do not matter and throughput does, use
+{@link io.vertx.pgclient.PgCopyOutOptions#setAggregationThreshold(int)} to combine small
+messages into larger buffers:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#copyOutWithOptions(io.vertx.pgclient.PgConnection)}
+----
+
+=== COPY FROM STDIN
+
+{@link io.vertx.pgclient.PgConnection#copyIn(java.lang.String)} executes a
+`COPY ... FROM STDIN` statement and returns a {@link io.vertx.pgclient.PgCopyIn}, a
+`WriteStream` of `Buffer`. Write the data, then call `end()` to send `CopyDone`:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#copyIn(io.vertx.pgclient.PgConnection)}
+----
+
+The future returned by `end()` is notified when the COPY command itself completes, not
+merely when the last buffer has been written. The row count is available from
+{@link io.vertx.pgclient.PgCopyIn#completion()}.
+
+The stream honours `writeQueueFull()` and `drainHandler()` like any other `WriteStream`, so
+it can be fed with a `Pipe` or with manual flow control.
+
+Small writes are combined so that they do not become many small messages on the wire. Use
+{@link io.vertx.pgclient.PgCopyInOptions#setChunkSize(int)} to change how much is combined
+before a payload is sent; a write larger than that is sent on its own:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#copyInWithOptions(io.vertx.pgclient.PgConnection)}
+----
+
+To give up on a copy in progress, call {@link io.vertx.pgclient.PgCopyIn#abort(java.lang.String)}.
+It sends a `CopyFail` message and PostgreSQL rolls the copy back:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#copyInAbort(io.vertx.pgclient.PgConnection)}
 ----
 
 == Pub/sub
