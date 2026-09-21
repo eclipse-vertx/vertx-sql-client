@@ -16,12 +16,25 @@ import io.vertx.sqlclient.impl.command.CommandBase;
 public class PreLoginCommand extends CommandBase<PreLoginResponse> {
 
   private final boolean ssl;
+  private final boolean fedAuth;
 
   public PreLoginCommand(boolean ssl) {
+    this(ssl, false);
+  }
+
+  public PreLoginCommand(boolean ssl, boolean fedAuth) {
     this.ssl = ssl;
+    this.fedAuth = fedAuth;
   }
 
   public boolean sslRequired() {
     return ssl;
+  }
+
+  /**
+   * @return {@code true} if the client should advertise the {@code FEDAUTHREQUIRED} PRELOGIN option
+   */
+  public boolean fedAuthRequested() {
+    return fedAuth;
   }
 }
