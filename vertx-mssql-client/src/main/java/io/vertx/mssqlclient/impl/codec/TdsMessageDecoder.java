@@ -19,13 +19,15 @@ import io.vertx.sqlclient.codec.CommandResponse;
 public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
 
   private final TdsMessageCodec tdsMessageCodec;
+  private final int maxMessageSize;
 
   private ChannelHandlerContext chctx;
   private ByteBufAllocator alloc;
   private TdsMessage message;
 
-  public TdsMessageDecoder(TdsMessageCodec tdsMessageCodec) {
+  public TdsMessageDecoder(TdsMessageCodec tdsMessageCodec, int maxMessageSize) {
     this.tdsMessageCodec = tdsMessageCodec;
+    this.maxMessageSize = maxMessageSize;
   }
 
   @Override
@@ -41,6 +43,12 @@ public class TdsMessageDecoder extends ChannelInboundHandlerAdapter {
       message = TdsMessage.createForDecoding(alloc, tdsPacket);
     } else {
       message.aggregate(tdsPacket);
+    }
+    if (message.content().readableBytes() > maxMessageSize) {
+      releaseMessage();
+      fireCommandResponse(CommandResponse.failure("TDS message size exceeds limit of " + maxMessageSize + " bytes"));
+      ctx.close();
+      return;
     }
     if (tdsPacket.status() == MessageStatus.END_OF_MESSAGE) {
       decodeMessage();

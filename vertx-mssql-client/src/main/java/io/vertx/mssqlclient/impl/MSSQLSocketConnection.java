@@ -143,7 +143,7 @@ public class MSSQLSocketConnection extends SocketConnectionBase {
   @Override
   public void init() {
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
-    pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec(connectOptions.getPacketSize()));
+    pipeline.addBefore("handler", "messageCodec", new TdsMessageCodec(connectOptions.getPacketSize(), connectOptions.getMaxMessageSize()));
     pipeline.addBefore("messageCodec", "packetDecoder", new TdsPacketDecoder());
     super.init();
   }
