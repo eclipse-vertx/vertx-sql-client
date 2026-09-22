@@ -17,6 +17,11 @@ public class MSSQLConnectOptionsConverter {
             obj.setPacketSize(((Number)member.getValue()).intValue());
           }
           break;
+        case "maxMessageSize":
+          if (member.getValue() instanceof Number) {
+            obj.setMaxMessageSize(((Number)member.getValue()).intValue());
+          }
+          break;
         case "ssl":
           if (member.getValue() instanceof Boolean) {
             obj.setSsl((Boolean)member.getValue());
@@ -37,6 +42,7 @@ public class MSSQLConnectOptionsConverter {
 
    static void toJson(MSSQLConnectOptions obj, java.util.Map<String, Object> json) {
     json.put("packetSize", obj.getPacketSize());
+    json.put("maxMessageSize", obj.getMaxMessageSize());
     json.put("ssl", obj.isSsl());
     if (obj.getEncryptionMode() != null) {
       json.put("encryptionMode", obj.getEncryptionMode().name());
