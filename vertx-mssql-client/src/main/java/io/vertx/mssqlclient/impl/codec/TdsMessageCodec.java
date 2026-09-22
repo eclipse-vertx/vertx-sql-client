@@ -30,8 +30,8 @@ public class TdsMessageCodec extends CombinedChannelDuplexHandler<TdsMessageDeco
   private long transactionDescriptor;
   private Map<String, CursorData> cursorDataMap;
 
-  public TdsMessageCodec(int desiredPacketSize) {
-    decoder = new TdsMessageDecoder(this);
+  public TdsMessageCodec(int desiredPacketSize, int maxMessageSize) {
+    decoder = new TdsMessageDecoder(this, maxMessageSize);
     encoder = new TdsMessageEncoder(this, desiredPacketSize);
     init(decoder, encoder);
   }
