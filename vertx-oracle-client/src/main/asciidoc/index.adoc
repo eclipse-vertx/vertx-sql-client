@@ -3,6 +3,8 @@
 
 The Reactive Oracle Client is a client for Oracle with a straightforward API focusing on scalability and low overhead.
 
+The client is reactive and non-blocking, allowing to handle many database connections with a few threads.
+
 *Features*
 
 * Event driven
@@ -109,19 +111,30 @@ A simple way to configure the client is to specify a {@link io.vertx.oracleclien
 
 Apart from configuring with a {@link io.vertx.oracleclient.OracleConnectOptions} data object, we also provide you with an alternative way to connect when you want to configure with a connection URI.
 
-Using the EZConnect format:
+Using the https://docs.oracle.com/en/database/oracle/oracle-database/26/netag/support-easy-connect-plus.html[Easy Connect Plus] format (removing the `jdbc:` prefix):
 
 [source,$lang]
 ----
 {@link examples.OracleClientExamples#configureFromUri(io.vertx.core.Vertx)}
 ----
 
-Or, using the TNS Alias format:
+TIP: Easy Connect Plus allows connecting using multiple hosts and ports for load balancing. This is useful when connecting to advanced database configurations sur as: Oracle Real Application Cluster (enabling connection load balancing) or Active Standby Database (for read-replica access).
+
+Or, using the TNS alias format:
 
 [source,$lang]
 ----
 {@link examples.OracleClientExamples#configureFromTnsAliasUri(io.vertx.core.Vertx)}
 ----
+
+Or, using the https://docs.oracle.com/en/database/oracle/oracle-database/26/netag/connecting-database-service.html#GUID-8D28E91B-CB72-4DC8-AEFC-F5D583626CF6[Oracle Net Connect Descriptor] format:
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#configureFromOracleNetConnectDescriptorUri(io.vertx.core.Vertx)}
+----
+
+TIP: This format also supports advanced features, you can find more information comparing Connect Descriptors and Easy Connect Plus formats https://docs.oracle.com/en/database/oracle/oracle-database/26/netag/examples-easy-connect-naming-method.html[here].
 
 == Connect retries
 

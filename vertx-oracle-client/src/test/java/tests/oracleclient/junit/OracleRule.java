@@ -37,6 +37,11 @@ public class OracleRule extends ExternalResource {
     if (!isNullOrEmpty(connectionUri)) {
       // use an external database for testing
       options = OracleConnectOptions.fromUri(connectionUri);
+      // we need to fix the database and services properties when passing the connection string
+      // using the java system property to keep the same behavior as without it
+      // see startOracle() where we explicitly use setDatabase() and not setServiceName()
+      options.setDatabase(options.getServiceName());
+      options.setServiceName(null);
     } else if (server == null) {
       options = startOracle();
     }

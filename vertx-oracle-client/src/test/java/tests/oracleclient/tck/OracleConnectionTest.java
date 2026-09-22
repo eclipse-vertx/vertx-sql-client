@@ -10,13 +10,19 @@
  */
 package tests.oracleclient.tck;
 
+import io.vertx.core.net.HostAndPort;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.oracleclient.OracleConnectOptions;
+import org.junit.Test;
 import tests.oracleclient.junit.OracleRule;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.tests.sqlclient.tck.ConnectionTestBase;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class OracleConnectionTest extends ConnectionTestBase {
@@ -40,5 +46,18 @@ public class OracleConnectionTest extends ConnectionTestBase {
   protected void validateDatabaseMetaData(TestContext ctx, DatabaseMetadata md) {
     ctx.assertTrue(md.fullVersion().contains("Oracle"));
     ctx.assertTrue(md.productName().contains("Oracle"));
+  }
+
+  @Test
+  public void testConnectUsingMultipleHostsAndPorts(TestContext ctx) {
+    // Multiply the hosts and ports
+    final List<HostAndPort> addresses = new ArrayList<>();
+    addresses.add(HostAndPort.create(options.getHost(), options.getPort()));
+    addresses.add(HostAndPort.create(options.getHost(), options.getPort()));
+    addresses.add(HostAndPort.create(options.getHost(), options.getPort()));
+
+    ((OracleConnectOptions)options).setAddresses(addresses);
+
+    connect(ctx.asyncAssertSuccess());
   }
 }
