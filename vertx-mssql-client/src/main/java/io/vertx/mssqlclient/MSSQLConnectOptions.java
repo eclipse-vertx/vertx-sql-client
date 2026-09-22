@@ -64,6 +64,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   public static final int MIN_PACKET_SIZE = 512;
   public static final int MAX_PACKET_SIZE = 32767;
   public static final int DEFAULT_PACKET_SIZE = 4096;
+  public static final int DEFAULT_MAX_MESSAGE_SIZE = 32 * 1024 * 1024;
   public static final boolean DEFAULT_SSL = false;
   public static final EncryptionMode DEFAULT_ENCRYPTION_MODE = EncryptionMode.OFF;
 
@@ -76,6 +77,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
 
   private boolean ssl;
   private int packetSize;
+  private int maxMessageSize;
   private EncryptionMode encryptionMode;
 
   public MSSQLConnectOptions() {
@@ -92,6 +94,11 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     if (other instanceof MSSQLConnectOptions) {
       MSSQLConnectOptions opts = (MSSQLConnectOptions) other;
       copyFields(opts);
+    } else {
+      packetSize = DEFAULT_PACKET_SIZE;
+      maxMessageSize = DEFAULT_MAX_MESSAGE_SIZE;
+      ssl = DEFAULT_SSL;
+      encryptionMode = DEFAULT_ENCRYPTION_MODE;
     }
   }
 
@@ -102,6 +109,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
 
   private void copyFields(MSSQLConnectOptions other) {
     packetSize = other.packetSize;
+    maxMessageSize = other.maxMessageSize;
     ssl = other.ssl;
     encryptionMode = other.encryptionMode;
   }
@@ -165,6 +173,33 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
       throw new IllegalArgumentException("Packet size: " + packetSize);
     }
     this.packetSize = packetSize;
+    return this;
+  }
+
+  /**
+   * Get the maximum size (in bytes) for a TDS message before the decoder rejects it.
+   *
+   * @return the maximum message size
+   */
+  public int getMaxMessageSize() {
+    return maxMessageSize;
+  }
+
+  /**
+   * Set the maximum size (in bytes) for a TDS message before the decoder rejects it.
+   * <p>
+   * This limit prevents unbounded memory allocation when a malicious server sends TDS packets
+   * without setting the END_OF_MESSAGE status flag.
+   *
+   * @param maxMessageSize the maximum message size (in bytes), must be positive
+   * @return a reference to this, so the API can be used fluently
+   * @throws IllegalArgumentException if {@code maxMessageSize} is not positive
+   */
+  public MSSQLConnectOptions setMaxMessageSize(int maxMessageSize) {
+    if (maxMessageSize <= 0) {
+      throw new IllegalArgumentException("Max message size must be positive: " + maxMessageSize);
+    }
+    this.maxMessageSize = maxMessageSize;
     return this;
   }
 
@@ -272,6 +307,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
     this.setMetricsName(DEFAULT_METRICS_NAME);
     this.setProperties(new HashMap<>(DEFAULT_PROPERTIES));
     packetSize = DEFAULT_PACKET_SIZE;
+    maxMessageSize = DEFAULT_MAX_MESSAGE_SIZE;
     ssl = DEFAULT_SSL;
     encryptionMode = DEFAULT_ENCRYPTION_MODE;
   }
