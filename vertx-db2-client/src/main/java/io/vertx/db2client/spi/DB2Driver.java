@@ -83,6 +83,11 @@ public class DB2Driver extends DriverBase<DB2ConnectOptions> {
   }
 
   @Override
+  public boolean supportsSavepoints() {
+    return true;
+  }
+
+  @Override
   public SqlConnectionInternal wrapConnection(ContextInternal context, ConnectionFactory<DB2ConnectOptions> factory, Connection connection) {
     return new DB2ConnectionImpl(context, factory, connection);
   }

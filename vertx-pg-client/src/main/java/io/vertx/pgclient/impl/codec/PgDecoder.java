@@ -236,12 +236,11 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
   private void decodeReadyForQuery(ChannelHandlerContext ctx, ByteBuf in) {
     byte id = in.readByte();
     if (id == I) {
-      // IDLE
+      ctx.fireChannelRead(TxStatusEvent.IDLE);
     } else if (id == T) {
-      // ACTIVE
+      ctx.fireChannelRead(TxStatusEvent.ACTIVE);
     } else {
-      // FAILED
-      ctx.fireChannelRead(TxFailedEvent.INSTANCE);
+      ctx.fireChannelRead(TxStatusEvent.FAILED);
     }
     codec.peek().handleReadyForQuery();
   }

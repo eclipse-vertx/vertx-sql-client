@@ -32,6 +32,7 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.connection.Connection;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
+import io.vertx.sqlclient.spi.protocol.SavepointCommand;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import io.vertx.sqlclient.spi.protocol.TxCommand;
 
@@ -121,9 +122,25 @@ public class DB2SocketConnection extends SocketConnectionBase {
         super.doSchedule(cmd2, (res, err) -> handler.complete(txCmd.result(), err));
 
       }
+    } else if (cmd instanceof SavepointCommand) {
+      SavepointCommand<R> savepoint = (SavepointCommand<R>) cmd;
+      SimpleQueryCommand<Void> cmd2 = new SimpleQueryCommand<>(savepointSql(savepoint), false, false,
+          SocketConnectionBase.NULL_COLLECTOR, QueryResultHandler.NOOP_HANDLER);
+      super.doSchedule(cmd2, (res, err) -> handler.complete(savepoint.result(), err));
     } else {
       super.doSchedule(cmd, handler);
     }
+  }
+
+  /**
+   * DB2 requires the {@code ON ROLLBACK RETAIN CURSORS} clause when a savepoint is
+   * created, the other statements follow the standard syntax.
+   */
+  private static String savepointSql(SavepointCommand<?> savepoint) {
+    if (savepoint.kind() == SavepointCommand.Kind.CREATE) {
+      return "SAVEPOINT " + savepoint.name() + " ON ROLLBACK RETAIN CURSORS";
+    }
+    return savepoint.sql();
   }
 
   @Override

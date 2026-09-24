@@ -10,7 +10,10 @@
  */
 package io.vertx.tests.mssqlclient.tck;
 
+import io.vertx.core.Future;
+import io.vertx.sqlclient.SqlConnection;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mssqlclient.MSSQLBuilder;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
@@ -54,5 +57,57 @@ public class MSSQLTransactionTest extends TransactionTestBase {
   @Test
   public void testDelayedCommit(TestContext ctx) {
     throw new AssumptionViolatedException("MSSQL holds write locks on inserted row with isolation level = 2");
+  }
+
+  @Override
+  protected boolean supportsSavepoints() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportsSavepointRelease() {
+    return false;
+  }
+
+  /**
+   * SQL Server drops the savepoint once the transaction has been rolled back to it.
+   */
+  @Override
+  protected boolean supportsRepeatedRollbackToSavepoint() {
+    return false;
+  }
+
+  /**
+   * A savepoint is a mark inside the current transaction, it must not open a nested one:
+   * @@TRANCOUNT stays at 1 after SAVE TRANSACTION and after rolling back to it.
+   */
+  @Test
+  public void testSavepointDoesNotNestTheTransaction(TestContext ctx) {
+    Async async = ctx.async();
+    connector.accept(ctx.asyncAssertSuccess(res -> {
+      trancount(res.client)
+        .compose(before -> {
+          ctx.assertEquals(1, before, "the transaction should be the only one open");
+          return res.tx.createSavepoint();
+        })
+        .compose(sp -> trancount(res.client)
+          .compose(afterSave -> {
+            ctx.assertEquals(1, afterSave, "SAVE TRANSACTION must not nest a transaction");
+            return insertMutable(res.client, 1, "rolled-back");
+          })
+          .compose(v -> sp.rollback())
+          .compose(v -> trancount(res.client))
+          .compose(afterRollback -> {
+            ctx.assertEquals(1, afterRollback, "rolling back to a savepoint must keep the transaction open");
+            return insertMutable(res.client, 2, "kept");
+          })
+          .compose(v -> res.tx.commit()))
+        .compose(v -> assertMutableIds(ctx, 2))
+        .onComplete(ctx.asyncAssertSuccess(v -> async.complete()));
+    }));
+  }
+
+  private Future<Integer> trancount(SqlConnection client) {
+    return client.query("SELECT @@TRANCOUNT AS c").execute().map(rows -> rows.iterator().next().getInteger("c"));
   }
 }

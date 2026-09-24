@@ -1,0 +1,2 @@
+Oracle has no statement that releases a savepoint, so {@link io.vertx.sqlclient.Savepoint#release} fails
+with an `UnsupportedOperationException`. The savepoint remains usable for a rollback.

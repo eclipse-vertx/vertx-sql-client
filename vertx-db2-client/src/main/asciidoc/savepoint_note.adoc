@@ -1,0 +1,4 @@
+DB2 supports savepoints fully.
+
+Savepoints are created with the `ON ROLLBACK RETAIN CURSORS` clause, so a cursor opened before the
+savepoint stays usable after a rollback.

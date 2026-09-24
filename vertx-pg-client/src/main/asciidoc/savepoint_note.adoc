@@ -1,0 +1,5 @@
+PostgreSQL supports savepoints fully.
+
+A failed statement also fails the transaction: every later statement is rejected with _current transaction
+is aborted, commands ignored until end of transaction block_ until the transaction ends. Rolling back to a
+savepoint taken before the failure clears that state and lets the transaction carry on.

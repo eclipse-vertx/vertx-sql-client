@@ -8,13 +8,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR Apache-2.0
  */
-package io.vertx.pgclient.impl.codec;
+package io.vertx.sqlclient.impl;
 
-/**
- * Event to signal a transaction is failed.
- */
-public class TxFailedEvent {
-
-  public static final TxFailedEvent INSTANCE = new TxFailedEvent();
-
+public enum TransactionState {
+  IDLE,
+  ACTIVE,
+  FAILED
 }
