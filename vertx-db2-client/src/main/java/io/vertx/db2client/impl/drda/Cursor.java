@@ -16,10 +16,8 @@
 package io.vertx.db2client.impl.drda;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
@@ -609,26 +607,6 @@ public class Cursor {
 //        System.arraycopy(dataBuffer_, columnDataPosition_[column - 1] + 2, bytes, 0, bytes.length);
         dataBuffer_.getBytes(columnDataPosition_[column - 1] + 2, bytes);
         return bytes;
-    }
-
-    // Deserialize a UDT from a database Types.JAVA_OBJECT field.
-    // This is used for user defined types.
-    private Object get_UDT(int column) {
-        byte[] bytes;
-        int columnLength =
-            (maxFieldSize_ == 0) ? columnDataComputedLength_[column - 1] - 2 :
-            Math.min(maxFieldSize_, columnDataComputedLength_[column - 1] - 2);
-        bytes = new byte[columnLength];
-        //System.arraycopy(dataBuffer_, columnDataPosition_[column - 1] + 2, bytes, 0, bytes.length);
-        dataBuffer_.getBytes(columnDataPosition_[column - 1] + 2, bytes);
-
-        try {
-            ByteArrayInputStream bais = new ByteArrayInputStream( bytes );
-            ObjectInputStream ois = new ObjectInputStream( bais );
-            return ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            throw new IllegalStateException("SQLState.NET_MARSHALLING_UDT_ERROR", e);
-        }
     }
 
     private DB2RowId get_ROWID(int column) {
@@ -1237,7 +1215,7 @@ public class Cursor {
         case Types.LONGVARBINARY:
             return get_VARCHAR_FOR_BIT_DATA(column);
         case Types.JAVA_OBJECT:
-            return get_UDT( column );
+            throw new IllegalStateException("Types.JAVA_OBJECT is not supported by DB2");
         case Types.ROWID:
             return get_ROWID(column);
 //        case Types.BLOB:
