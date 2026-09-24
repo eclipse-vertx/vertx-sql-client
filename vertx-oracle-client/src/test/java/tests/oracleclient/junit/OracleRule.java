@@ -25,6 +25,7 @@ public class OracleRule extends ExternalResource {
   public static final OracleRule SHARED_INSTANCE = new OracleRule();
 
   private static final String IMAGE = "gvenzl/oracle-free";
+  private static final String USER = "vertx";
   private static final String PASSWORD = "vertx";
   private static final int PORT = 1521;
 
@@ -61,6 +62,8 @@ public class OracleRule extends ExternalResource {
 
     server = new ServerContainer<>(image)
       .withEnv("ORACLE_PASSWORD", PASSWORD)
+      .withEnv("APP_USER", USER)
+      .withEnv("APP_USER_PASSWORD", PASSWORD)
       .withExposedPorts(PORT)
       .withClasspathResourceMapping("tck/import.sql", "/container-entrypoint-initdb.d/import.sql", BindMode.READ_ONLY)
       .withLogConsumer(of -> System.out.print("[ORACLE] " + of.getUtf8String()))
@@ -77,9 +80,9 @@ public class OracleRule extends ExternalResource {
     return new OracleConnectOptions()
       .setHost(server.getHost())
       .setPort(server.getMappedPort(PORT))
-      .setUser("sys as sysdba")
+      .setUser(USER)
       .setPassword(PASSWORD)
-      .setDatabase("FREEPDB1");
+      .setDatabase("freepdb1");
   }
 
   private void stopOracle() {

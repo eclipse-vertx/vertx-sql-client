@@ -180,9 +180,7 @@ public abstract class OracleQueryCommand<C, R> extends OracleCommand<Boolean> {
     } else if (value instanceof Blob) {
       // -> java.sql.Blob
       Blob blob = (Blob) value;
-      java.sql.Blob javaBlob = conn.createBlob();
-      javaBlob.setBytes(1, blob.bytes);
-      return javaBlob;
+      return blob.bytes;
     } else if (value instanceof Buffer) {
       // -> RAW
       Buffer buffer = (Buffer) value;

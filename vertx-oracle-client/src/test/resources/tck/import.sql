@@ -1,4 +1,7 @@
+-- Run by: SYS as SYSDBA
 ALTER SESSION SET CONTAINER=FREEPDB1;
+
+ALTER SESSION SET CURRENT_SCHEMA = vertx;
 
 CREATE TABLE World
 (
@@ -44,6 +47,8 @@ VALUES ('<script>alert("This should not be displayed in a browser alert box.");<
 INSERT INTO Fortune (message)
 VALUES ('フレームワークのベンチマーク');
 
+COMMIT;
+
 -- immutable table for select query testing --
 -- used by TCK
 
@@ -78,6 +83,8 @@ VALUES (11, '<script>alert("This should not be displayed in a browser alert box.
 INSERT INTO immutable (id, message)
 VALUES (12, 'フレームワークのベンチマーク');
 
+COMMIT;
+
 -- mutable for insert,update,delete query testing --
 -- used by TCK
 CREATE TABLE mutable
@@ -104,6 +111,8 @@ VALUES (1, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'HELLO,WOR
 INSERT INTO test_collector
 VALUES (2, 32767, 2147483647, 9223372036854775807, 123.456, 1.234567, 'hello,world');
 
+COMMIT;
+
 CREATE TABLE basicdatatype
 (
   id           INT,
@@ -129,6 +138,8 @@ INSERT INTO basicdatatype(id, test_int_2, test_int_4, test_int_8, test_float_4, 
                           test_decimal, test_char, test_varchar, test_date)
 VALUES (3, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
+COMMIT;
+
 CREATE TABLE binary_data_types
 (
   id        INT,
@@ -141,6 +152,8 @@ INSERT INTO binary_data_types(id, test_raw, test_blob)
 VALUES (2, UTL_RAW.CAST_TO_RAW('See you space cowboy...'), UTL_RAW.CAST_TO_RAW('See you space cowboy...'));
 INSERT INTO binary_data_types(id, test_raw, test_blob)
 VALUES (3, NULL, NULL);
+
+COMMIT;
 
 CREATE TABLE temporal_data_types
 (
@@ -156,6 +169,8 @@ VALUES (2, date '2019-11-04', timestamp '2018-11-04 15:13:28', timestamp '2019-1
 INSERT INTO temporal_data_types(id, test_date, test_timestamp, test_timestamp_with_timezone)
 VALUES (3, NULL, NULL, NULL);
 
+COMMIT;
+
 -- No response reproducer
 
 CREATE TABLE passenger
@@ -170,5 +185,3 @@ CREATE TABLE passenger
   address_id     NUMBER
 );
 
--- Don't forget to commit...
-COMMIT;

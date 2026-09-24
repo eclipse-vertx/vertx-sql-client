@@ -29,7 +29,7 @@
   <properties>
     <!-- Set to a value for testing with a specific database -->
     <oracle-container.version/>
-    <ojdbc.version>23.4.0.24.05</ojdbc.version>
+    <ojdbc.version>23.26.3.0.0</ojdbc.version>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
   </properties>
 
