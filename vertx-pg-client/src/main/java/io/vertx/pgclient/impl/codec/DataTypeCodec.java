@@ -1624,6 +1624,7 @@ public class DataTypeCodec {
     if (len == 12) {
       return supplier.apply(0);
     }
+    int end = index + len;
     int dim = buff.getInt(index);    // read ndim
     index += 4;
     index += 4;                      // skip dataoffset
@@ -1635,11 +1636,17 @@ public class DataTypeCodec {
       logger.warn("Only arrays of dimension 1 are supported");
       return null;
     }
+    if (length < 0 || length > (len - 20) / 4) {
+      throw new DecoderException("Invalid array length: " + length);
+    }
     T[] array = supplier.apply(length);
     for (int i = 0; i < array.length; i++) {
       int l = buff.getInt(index);
       index += 4;
       if (l != -1) {
+        if (l < 0 || l > end - index) {
+          throw new DecoderException("Invalid array element length: " + l);
+        }
         array[i] = (T) decodeBinary(type, index, l, buff);
         index += l;
       }
