@@ -248,6 +248,10 @@ public class SqlConnectionPool {
       });
     }, t -> {
       dequeueMetric(metric);
+      if (timerId != -1 && !vertx.cancelTimer(timerId)) {
+        // The timer already failed the handler
+        return Future.failedFuture(POOL_QUERY_TIMEOUT_EXCEPTION);
+      }
       return Future.failedFuture(t);
     }).onComplete(ar -> {
       if (ar.succeeded()) {

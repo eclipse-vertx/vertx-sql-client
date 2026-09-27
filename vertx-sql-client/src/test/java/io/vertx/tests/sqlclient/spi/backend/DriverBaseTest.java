@@ -3,6 +3,7 @@ package io.vertx.tests.sqlclient.spi.backend;
 import io.vertx.core.Completable;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
@@ -18,10 +19,12 @@ import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.desc.ColumnDescriptor;
 import io.vertx.sqlclient.impl.RowBase;
 import io.vertx.sqlclient.spi.connection.Connection;
+import io.vertx.sqlclient.internal.PoolInternal;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.spi.connection.ConnectionContext;
 import io.vertx.sqlclient.spi.protocol.CommandBase;
+import io.vertx.sqlclient.spi.protocol.CommandScheduler;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
@@ -29,11 +32,18 @@ import io.vertx.sqlclient.spi.DriverBase;
 import org.junit.Test;
 
 import java.sql.JDBCType;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.stream.Collector;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.junit.Assert.*;
 
 public class DriverBaseTest {
@@ -138,13 +148,20 @@ public class DriverBaseTest {
   private static DriverBase<SqlConnectOptions> createDriver(
     java.util.function.Function<Connection, Future<Void>> afterAcquire,
     java.util.function.Function<Connection, Future<Void>> beforeRecycle) {
+    return createDriver(context -> Future.succeededFuture(fakeConnection()), afterAcquire, beforeRecycle);
+  }
+
+  private static DriverBase<SqlConnectOptions> createDriver(
+    java.util.function.Function<Context, Future<Connection>> connector,
+    java.util.function.Function<Connection, Future<Void>> afterAcquire,
+    java.util.function.Function<Connection, Future<Void>> beforeRecycle) {
     return new DriverBase<>("generic", afterAcquire, beforeRecycle) {
       @Override
       public ConnectionFactory<SqlConnectOptions> createConnectionFactory(Vertx vertx, NetClientOptions transportOptions) {
         return new ConnectionFactory<>() {
           @Override
           public Future<Connection> connect(Context context, SqlConnectOptions options) {
-            return Future.succeededFuture(fakeConnection());
+            return connector.apply(context);
           }
 
           @Override
@@ -230,6 +247,69 @@ public class DriverBaseTest {
       assertNotNull(conn);
       conn.close().await();
       assertEquals(1, beforeRecycleCount.get());
+    } finally {
+      vertx.close().await();
+    }
+  }
+
+  @Test
+  public void testConnectFailureCancelsPoolConnectionTimeout() throws Exception {
+    RuntimeException connectError = new RuntimeException("connect failed");
+    DriverBase<SqlConnectOptions> driver = createDriver(context -> Future.failedFuture(connectError), null, null);
+
+    Vertx vertx = Vertx.vertx();
+
+    try {
+      PoolInternal pool = driver.newPool(vertx, () -> Future.succeededFuture(new SqlConnectOptions()),
+        new PoolOptions().setMaxSize(1).setConnectionTimeout(1000).setConnectionTimeoutUnit(MILLISECONDS), new NetClientOptions(), null);
+
+      List<Throwable> failures = new CopyOnWriteArrayList<>();
+      CountDownLatch latch = new CountDownLatch(1);
+      // The public query path completes its promise with tryFail, which hides a double completion
+      ((CommandScheduler) pool).schedule(new CommandBase<Void>() {}, (res, err) -> {
+        failures.add(err);
+        latch.countDown();
+      });
+      assertTrue(latch.await(10, SECONDS));
+
+      // Let the connection timeout elapse
+      Thread.sleep(1500);
+      assertEquals(Collections.singletonList(connectError), failures);
+    } finally {
+      vertx.close().await();
+    }
+  }
+
+  @Test
+  public void testConnectFailureAfterPoolConnectionTimeout() throws Exception {
+    RuntimeException connectError = new RuntimeException("connect failed");
+    Promise<Connection> connectPromise = Promise.promise();
+    AtomicReference<Context> connectContext = new AtomicReference<>();
+    DriverBase<SqlConnectOptions> driver = createDriver(context -> {
+      connectContext.set(context);
+      return connectPromise.future();
+    }, null, null);
+
+    Vertx vertx = Vertx.vertx();
+
+    try {
+      PoolInternal pool = driver.newPool(vertx, () -> Future.succeededFuture(new SqlConnectOptions()),
+        new PoolOptions().setMaxSize(1).setConnectionTimeout(100).setConnectionTimeoutUnit(MILLISECONDS), new NetClientOptions(), null);
+
+      List<Throwable> failures = new CopyOnWriteArrayList<>();
+      CountDownLatch latch = new CountDownLatch(1);
+      // The public query path completes its promise with tryFail, which hides a double completion
+      ((CommandScheduler) pool).schedule(new CommandBase<Void>() {}, (res, err) -> {
+        failures.add(err);
+        latch.countDown();
+      });
+      assertTrue(latch.await(10, SECONDS));
+      assertEquals(1, failures.size());
+      assertEquals("Timeout waiting for connection", failures.get(0).getMessage());
+
+      connectContext.get().runOnContext(v -> connectPromise.fail(connectError));
+      Thread.sleep(300);
+      assertEquals(1, failures.size());
     } finally {
       vertx.close().await();
     }
