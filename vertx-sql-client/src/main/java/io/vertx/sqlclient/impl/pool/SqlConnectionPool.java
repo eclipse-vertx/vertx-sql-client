@@ -251,8 +251,9 @@ public class SqlConnectionPool {
       if (timerId != -1 && !vertx.cancelTimer(timerId)) {
         // The timer already failed the handler
         return Future.failedFuture(POOL_QUERY_TIMEOUT_EXCEPTION);
+      } else {
+        return Future.failedFuture(t);
       }
-      return Future.failedFuture(t);
     }).onComplete(ar -> {
       if (ar.succeeded()) {
         handler.succeed(ar.result());
