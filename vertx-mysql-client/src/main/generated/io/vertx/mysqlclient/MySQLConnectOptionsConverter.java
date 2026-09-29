@@ -57,6 +57,11 @@ public class MySQLConnectOptionsConverter {
             obj.setPipeliningLimit(((Number)member.getValue()).intValue());
           }
           break;
+        case "maxAllowedPacket":
+          if (member.getValue() instanceof Number) {
+            obj.setMaxAllowedPacket(((Number)member.getValue()).intValue());
+          }
+          break;
       }
     }
   }
@@ -89,5 +94,6 @@ public class MySQLConnectOptionsConverter {
       json.put("serverRsaPublicKeyValue", obj.getServerRsaPublicKeyValue().toJson());
     }
     json.put("pipeliningLimit", obj.getPipeliningLimit());
+    json.put("maxAllowedPacket", obj.getMaxAllowedPacket());
   }
 }
