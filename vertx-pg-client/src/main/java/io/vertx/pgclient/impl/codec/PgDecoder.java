@@ -36,6 +36,10 @@ import io.vertx.sqlclient.codec.CommandResponse;
 
 class PgDecoder extends ChannelInboundHandlerAdapter {
 
+  static final int MAX_MESSAGE_LENGTH = 0x3FFFFFFF;
+  static final int MAX_SMALL_MESSAGE_LENGTH = 10_000;
+  static final int MAX_PRE_AUTH_MESSAGE_LENGTH = 30_000;
+
   private final PgCodec codec;
   private ChannelHandlerContext chctx;
   private ByteBufAllocator alloc;
@@ -79,7 +83,7 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
       if (in instanceof CompositeByteBuf) {
         composite = (CompositeByteBuf) in;
       } else {
-        composite = alloc.compositeBuffer();
+        composite = alloc.compositeDirectBuffer();
         composite.addComponent(true, in);
         in = composite;
       }
@@ -91,11 +95,19 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
         break;
       }
       int beginIdx = in.readerIndex();
+      byte id = in.getByte(beginIdx);
       int length = in.getInt(beginIdx + 1);
+      int maxLength = maxLengthForType(id);
+      if (length < 4 || length > maxLength) {
+        in.release();
+        in = null;
+        fireCommandResponse(CommandResponse.failure("PG message type " + (char) id + " length " + length + " exceeds maximum allowed " + maxLength));
+        ctx.close();
+        return;
+      }
       if (length + 1 > available) {
         break;
       }
-      byte id = in.getByte(beginIdx);
       int endIdx = beginIdx + length + 1;
       final int writerIndex = in.writerIndex();
       try {
@@ -128,6 +140,22 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
     if (in != null && !in.isReadable()) {
       in.release();
       in = null;
+    }
+  }
+
+  private int maxLengthForType(byte id) {
+    switch (id) {
+      case PgProtocolConstants.MESSAGE_TYPE_DATA_ROW:
+      case PgProtocolConstants.MESSAGE_TYPE_ROW_DESCRIPTION:
+      case PgProtocolConstants.MESSAGE_TYPE_ERROR_RESPONSE:
+      case PgProtocolConstants.MESSAGE_TYPE_NOTICE_RESPONSE:
+      case PgProtocolConstants.MESSAGE_TYPE_FUNCTION_RESULT:
+      case PgProtocolConstants.MESSAGE_TYPE_PARAMETER_DESCRIPTION:
+        return MAX_MESSAGE_LENGTH;
+      case PgProtocolConstants.MESSAGE_TYPE_AUTHENTICATION:
+        return MAX_PRE_AUTH_MESSAGE_LENGTH;
+      default:
+        return MAX_SMALL_MESSAGE_LENGTH;
     }
   }
 
