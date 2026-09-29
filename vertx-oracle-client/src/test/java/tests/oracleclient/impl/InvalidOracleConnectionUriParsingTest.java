@@ -33,8 +33,8 @@ public class InvalidOracleConnectionUriParsingTest {
   public static Object[][] testData() {
     Object[][] params = {
       testData("null uri", null),
+      testData("null uri", ""),
       testData("uri with invalid scheme", "postgresql://user@?host=localhost&port=1234"),
-      testData("uri with no separated user/password", "oracle:thin:scott@myhost:1521:orcl"),
       testData("uri with no separated user/password", "oracle:thin:scott@myhost:1521:orcl"),
       testData("uri without password", "oracle:thin:scott/@myhost:1521:orcl"),
       testData("uri without user", "oracle:thin:/tiger@myhost:1521:orcl"),
@@ -49,8 +49,6 @@ public class InvalidOracleConnectionUriParsingTest {
       testData("uri with empty IPv6 address", "oracle:thin:@[]:1521:orcl"),
       testData("uri with empty port", "oracle:thin:@myhost::orcl"),
       testData("uri with invalid port", "oracle:thin:@myhost:7654645:orcl"),
-      testData("uri with multiple hosts and ports", "oracle:thin:scott/tiger@myhost1:1521,myhost2:1521:orcl"),
-      testData("uri with multiple hosts", "oracle:thin:scott/tiger@myhost1,myhost2:1521:orcl"),
       testData("uri with empty props", "oracle:thin:scott/tiger@myhost:1521:orcl?"),
       testData("uri with empty service name", "oracle:thin:scott/tiger@myhost:1521/"),
       testData("uri with empty server mode", "oracle:thin:scott/tiger@myhost:1521/orcl:?prop=val"),
@@ -64,16 +62,6 @@ public class InvalidOracleConnectionUriParsingTest {
         (s, e) -> {
           assertNotNull(e.getCause());
           assertTrue(e.getCause().getMessage().toLowerCase(ENGLISH).contains("ldap"));
-        }),
-      testData("uri with Oracle Net connection descriptor", "oracle:thin:@(DESCRIPTION=\n" +
-          "  (LOAD_BALANCE=on)\n" +
-          "(ADDRESS_LIST=\n" +
-          "  (ADDRESS=(PROTOCOL=TCP)(HOST=host1) (PORT=1521))\n" +
-          " (ADDRESS=(PROTOCOL=TCP)(HOST=host2)(PORT=1521)))\n" +
-          " (CONNECT_DATA=(SERVICE_NAME=service_name)))",
-        (s, e) -> {
-          assertNotNull(e.getCause());
-          assertTrue(e.getCause().getMessage().toLowerCase(ENGLISH).contains("tns url"));
         }),
       testData("uri with empty TNSNames alias", "oracle:thin:@?key=val"),
     };

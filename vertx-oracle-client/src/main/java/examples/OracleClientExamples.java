@@ -137,6 +137,32 @@ public class OracleClientExamples {
       .build();
   }
 
+  public void configureFromOracleNetConnectDescriptorUri(Vertx vertx) {
+
+    // Connection URI
+    String connectionUri = "oracle:thin:@" +
+      "(description=(load_balance=on)" +
+      "(address_list=" +
+      "(address=(protocol=TCP)(host=mydbhost1)(port=1521))" +
+      "(address=(protocol=TCP)(host=mydbhost2)(port=1521)))" +
+      "(connect_data=(service_name=mydbservice)))?connect_timeout=10sec";
+
+    // Connect options
+    OracleConnectOptions connectOptions = OracleConnectOptions.fromUri(connectionUri)
+      .setUser("user")
+      .setPassword("secret");
+
+    // Pool Options
+    PoolOptions poolOptions = new PoolOptions().setMaxSize(5);
+
+    // Create the pool from the connection URI
+    Pool pool = OracleBuilder.pool()
+      .with(poolOptions)
+      .connectingTo(connectOptions)
+      .using(vertx)
+      .build();
+  }
+
   public void connecting01(Vertx vertx) {
 
     // Connect options
@@ -173,6 +199,7 @@ public class OracleClientExamples {
     // Pool options
     PoolOptions poolOptions = new PoolOptions()
       .setMaxSize(5);
+
     // Create the pooled client
     Pool client = OracleBuilder.pool()
       .with(poolOptions)
@@ -225,7 +252,6 @@ public class OracleClientExamples {
         });
     }).onComplete(ar -> {
       if (ar.succeeded()) {
-
         System.out.println("Done");
       } else {
         System.out.println("Something went wrong " + ar.cause().getMessage());

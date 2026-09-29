@@ -14,11 +14,14 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.oracleclient.impl.OracleConnectionUriParser;
 import io.vertx.sqlclient.SqlConnectOptions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -57,13 +60,17 @@ public class OracleConnectOptions extends SqlConnectOptions {
   private FetchDirection fetchDirection;
   private int fetchSize;
 
+  private List<HostAndPort> addresses;
 
   public OracleConnectOptions() {
     super();
+    this.addresses = new ArrayList<>();
+    this.addresses.add(HostAndPort.create( DEFAULT_HOST, DEFAULT_PORT));
   }
 
   public OracleConnectOptions(OracleConnectOptions other) {
     super(other);
+    this.addresses = new ArrayList<>();
     copyFields(other);
   }
 
@@ -79,10 +86,12 @@ public class OracleConnectOptions extends SqlConnectOptions {
     this.maxRows = other.maxRows;
     this.fetchDirection = other.fetchDirection;
     this.fetchSize = other.fetchSize;
+    this.setAddresses(other.addresses);
   }
 
   public OracleConnectOptions(SqlConnectOptions options) {
     super(options);
+    this.addresses = new ArrayList<>();
     if (options instanceof OracleConnectOptions) {
       OracleConnectOptions opts = (OracleConnectOptions) options;
       copyFields(opts);
@@ -91,6 +100,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
 
   public OracleConnectOptions(JsonObject json) {
     super(json);
+    this.addresses = new ArrayList<>();
     OracleConnectOptionsConverter.fromJson(json, this);
   }
 
@@ -107,6 +117,32 @@ public class OracleConnectOptions extends SqlConnectOptions {
   }
 
   // Oracle-specific options
+
+  /**
+   * @return the Oracle addresses which can contain several {"host": "", "port": XXXX} entries
+   */
+  public List<HostAndPort> getAddresses() {
+    return addresses;
+  }
+
+  /**
+   * Set the list of addresses.
+   * If set, the client will build an Oracle connection URL using multiple hosts and ports.
+   *
+   * @param addresses the list of addresses to connect to
+   * @return a reference to this, so the API can be used fluently
+   */
+  public OracleConnectOptions setAddresses(List<HostAndPort> addresses) {
+    this.addresses = new ArrayList<>();
+    for(HostAndPort hostAndPort : addresses) {
+      this.addresses.add(HostAndPort.create(hostAndPort.host(), hostAndPort.port()));
+    }
+    // ensure we still have at least one entry!
+    if(addresses.isEmpty()) {
+      this.addresses.add(HostAndPort.create(getHost(), getPort()));
+    }
+    return this;
+  }
 
   /**
    * @return the Oracle service identifier (SID)
@@ -275,6 +311,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
 
   @Override
   public OracleConnectOptions setHost(String host) {
+    addresses.set(0, HostAndPort.create(host,addresses.get(0).port()));
     return (OracleConnectOptions) super.setHost(host);
   }
 
@@ -285,6 +322,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
 
   @Override
   public OracleConnectOptions setPort(int port) {
+    addresses.set(0, HostAndPort.create(addresses.get(0).host(), port));
     return (OracleConnectOptions) super.setPort(port);
   }
 
@@ -421,6 +459,8 @@ public class OracleConnectOptions extends SqlConnectOptions {
   @Override
   protected void init() {
     super.init();
+    this.addresses = new ArrayList<>();
+    this.addresses.add(HostAndPort.create( DEFAULT_HOST, DEFAULT_PORT));
     this.setHost(DEFAULT_HOST);
     this.setPort(DEFAULT_PORT);
     this.setUser(DEFAULT_USER);

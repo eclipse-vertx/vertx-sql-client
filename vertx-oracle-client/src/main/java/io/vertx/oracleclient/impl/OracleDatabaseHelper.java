@@ -10,6 +10,9 @@
  */
 package io.vertx.oracleclient.impl;
 
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
+import io.vertx.core.net.HostAndPort;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.ServerMode;
 import oracle.jdbc.OracleConnection;
@@ -25,6 +28,7 @@ import static io.vertx.oracleclient.impl.Helper.runOrHandleSQLException;
 import static oracle.jdbc.OracleConnection.CONNECTION_PROPERTY_TNS_ADMIN;
 
 public class OracleDatabaseHelper {
+  private static final Logger logger = LoggerFactory.getLogger(OracleDatabaseHelper.class);
 
   public static OracleDataSource createDataSource(OracleConnectOptions options) {
     OracleDataSource oracleDataSource =
@@ -49,7 +53,7 @@ public class OracleDatabaseHelper {
    * @return An Oracle Connection JDBC URL
    */
   private static String composeJdbcUrl(OracleConnectOptions options) {
-    StringBuilder url = new StringBuilder("jdbc:oracle:thin:@");
+    final StringBuilder url = new StringBuilder("jdbc:oracle:thin:@");
     String tnsAlias = options.getTnsAlias();
     if (tnsAlias != null) {
       return url.append(tnsAlias).toString();
@@ -57,28 +61,69 @@ public class OracleDatabaseHelper {
     if (options.isSsl()) {
       url.append("tcps://");
     }
-    String host = options.getHost();
-    if (host.indexOf(':') >= 0) { // IPv6 address
-      url.append("[").append(host).append("]");
-    } else {
-      url.append(encodeUrl(host));
-    }
-    int port = options.getPort();
-    if (port > 0) {
-      url.append(":").append(port);
-    }
     String serviceId = options.getServiceId();
     if (serviceId != null) {
+      // Service ID don't support multiple addresses (hosts and ports)
+      // Hence takes the first address
+      String host = options.getHost();
+      if (host.indexOf(':') >= 0) { // IPv6 address
+        url.append("[").append(host).append("]");
+      } else {
+        url.append(encodeUrl(host));
+      }
+      int port = options.getPort();
+      if (port > 0) {
+        url.append(":").append(port);
+      }
+
       url.append(":").append(encodeUrl(serviceId));
     } else {
+      if (options.getAddresses().size() <= 1) {
+        String host = options.getHost();
+        if (host.indexOf(':') >= 0) { // IPv6 address
+          url.append("[").append(host).append("]");
+        } else {
+          url.append(encodeUrl(host));
+        }
+        int port = options.getPort();
+        if (port > 0) {
+          url.append(":").append(port);
+        }
+      } else {
+        boolean notFirst = false;
+        for (HostAndPort hostAndPort : options.getAddresses()) {
+          if (notFirst) {
+            url.append(',');
+          }
+          if (hostAndPort.host().indexOf(':') >= 0) { // IPv6 address
+            url.append("[").append(hostAndPort.host()).append("]");
+          } else {
+            url.append(encodeUrl(hostAndPort.host()));
+          }
+          int port = hostAndPort.port();
+          if (port > 0) {
+            url.append(":").append(port);
+          }
+          notFirst = true;
+        }
+      }
+
       String database = Optional.ofNullable(options.getServiceName()).orElse(options.getDatabase());
       if (database != null) {
         url.append("/").append(encodeUrl(database));
         if (options.getServerMode() == ServerMode.SHARED) {
           url.append(":").append(ServerMode.SHARED);
         }
+        if (options.getInstanceName() != null) {
+          url.append("/").append(options.getInstanceName());
+        }
       }
     }
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Connecting with Oracle database URL: " + url);
+    }
+
     return url.toString();
   }
 
