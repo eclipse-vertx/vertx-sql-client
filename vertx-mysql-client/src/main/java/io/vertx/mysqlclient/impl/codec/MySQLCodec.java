@@ -29,13 +29,14 @@ import java.util.Iterator;
 public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQLEncoder> {
 
   private final ArrayDeque<CommandCodec<?, ?>> inflight;
+  private final MySQLEncoder encoder;
   private ChannelHandlerContext chctx;
   private Throwable failure;
 
-  public MySQLCodec(MySQLSocketConnection mySQLSocketConnection) {
+  public MySQLCodec(MySQLSocketConnection mySQLSocketConnection, int maxAllowedPacket) {
     inflight = new ArrayDeque<>();
-    MySQLEncoder encoder = new MySQLEncoder(this, mySQLSocketConnection);
-    MySQLDecoder decoder = new MySQLDecoder(this);
+    encoder = new MySQLEncoder(this, mySQLSocketConnection);
+    MySQLDecoder decoder = new MySQLDecoder(this, maxAllowedPacket);
     init(decoder, encoder);
   }
 
@@ -67,6 +68,12 @@ public class MySQLCodec extends CombinedChannelDuplexHandler<MySQLDecoder, MySQL
 
   public CommandCodec<?, ?> peek() {
     return inflight.peek();
+  }
+
+  void failAndClose(Throwable cause) {
+    failure = cause;
+    encoder.fireCommandResponse(CommandResponse.failure(cause));
+    chctx.close();
   }
 
   private void clearInflightCommands(Throwable cause) {
