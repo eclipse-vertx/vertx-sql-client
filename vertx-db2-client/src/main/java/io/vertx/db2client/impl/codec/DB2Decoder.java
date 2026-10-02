@@ -62,10 +62,16 @@ class DB2Decoder extends ByteToMessageDecoder {
         dssContinues &= (in.getByte(ridx + index + 3) & 0x40) == 0x40;
       else
         dssContinues = false;
-      short dssLen = 11; // minimum length of DRDA message
-      if (readableBytes >= index + 2) // julien: is this correct ? thtis checks more space than necessary
-        dssLen = in.getShort(ridx + index);
+      int dssLen = 11; // minimum length of DRDA message
+      if (readableBytes >= index + 2)
+        dssLen = in.getUnsignedShort(ridx + index);
       index += dssLen;
+    }
+    if (dssContinues) {
+      // Chain bit was set on the last DSS we could fully read, but the next
+      // chained DSS has not arrived yet. Signal "need more data" so that
+      // decode() waits instead of processing a partial response.
+      return readableBytes + 1;
     }
     return index;
   }
