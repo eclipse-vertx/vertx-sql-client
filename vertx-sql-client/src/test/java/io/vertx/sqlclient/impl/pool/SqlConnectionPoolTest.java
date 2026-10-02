@@ -30,6 +30,9 @@ import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.Driver;
 import org.junit.Test;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -213,5 +216,89 @@ public class SqlConnectionPoolTest {
     } finally {
       vertx.close();
     }
+  }
+
+  @Test
+  public void testConnectFailureCancelsConnectionTimeout() throws Exception {
+    RuntimeException connectError = new RuntimeException("connect failed");
+
+    VertxInternal vertx = (VertxInternal) Vertx.vertx();
+    List<Throwable> uncaught = new CopyOnWriteArrayList<>();
+    vertx.exceptionHandler(uncaught::add);
+
+    try {
+      SqlConnectionPool pool = createPool(vertx, ctx -> Future.failedFuture(connectError));
+
+      ContextInternal ctx = vertx.getOrCreateContext();
+      CountDownLatch latch = new CountDownLatch(1);
+      AtomicReference<Throwable> failure = new AtomicReference<>();
+      ctx.runOnContext(v -> {
+        pool.execute(ctx, new CommandBase<Void>() {}, 1000).onComplete(ar -> {
+          failure.set(ar.cause());
+          latch.countDown();
+        });
+      });
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertEquals(connectError, failure.get());
+
+      // Let the connection timeout elapse
+      Thread.sleep(1500);
+      assertEquals(Collections.emptyList(), uncaught);
+
+      pool.close();
+    } finally {
+      vertx.close();
+    }
+  }
+
+  @Test
+  public void testConnectFailureAfterConnectionTimeout() throws Exception {
+    RuntimeException connectError = new RuntimeException("connect failed");
+    Promise<SqlConnection> connectPromise = Promise.promise();
+
+    VertxInternal vertx = (VertxInternal) Vertx.vertx();
+    List<Throwable> uncaught = new CopyOnWriteArrayList<>();
+    vertx.exceptionHandler(uncaught::add);
+
+    try {
+      SqlConnectionPool pool = createPool(vertx, ctx -> connectPromise.future());
+
+      ContextInternal ctx = vertx.getOrCreateContext();
+      CountDownLatch latch = new CountDownLatch(1);
+      AtomicReference<Throwable> failure = new AtomicReference<>();
+      ctx.runOnContext(v -> {
+        pool.execute(ctx, new CommandBase<Void>() {}, 100).onComplete(ar -> {
+          failure.set(ar.cause());
+          latch.countDown();
+        });
+      });
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      assertEquals("Timeout waiting for connection", failure.get().getMessage());
+
+      ctx.runOnContext(v -> connectPromise.fail(connectError));
+      Thread.sleep(300);
+      assertEquals(Collections.emptyList(), uncaught);
+
+      pool.close();
+    } finally {
+      vertx.close();
+    }
+  }
+
+  private static SqlConnectionPool createPool(VertxInternal vertx, java.util.function.Function<Context, Future<SqlConnection>> connectionProvider) {
+    return new SqlConnectionPool(
+      connectionProvider,
+      () -> null,
+      null,
+      null,
+      null,
+      vertx,
+      0,
+      0,
+      1,
+      false,
+      -1,
+      0
+    );
   }
 }
