@@ -145,6 +145,22 @@ You can configure the client to retry when a connection fails to be established.
 {@link examples.OracleClientExamples#reconnectAttempts}
 ----
 
+== Virtual threads
+
+The Reactive Oracle Client wraps the Oracle JDBC driver, and by default executes blocking driver operations on platform worker threads.
+
+You can configure the client to execute blocking operations on virtual threads instead when running on a JVM supporting virtual threads (Java 21+):
+
+[source,$lang]
+----
+{@link examples.OracleClientExamples#configureVirtualThreads}
+----
+
+Having virtual threads handle blocking JDBC calls eliminates the need to size the worker pool according to the connection pool, improving overall scalability.
+Besides, this frees worker pool threads from internal driver operations, so they can focus on executing user code tasks.
+
+NOTE: If virtual threads are not available on the runtime JVM, execution automatically falls back to platform worker threads.
+
 include::queries.adoc[leveloffset=1]
 
 == Retrieving generated key values

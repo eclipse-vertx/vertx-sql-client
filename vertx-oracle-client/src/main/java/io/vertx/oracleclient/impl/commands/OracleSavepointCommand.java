@@ -11,9 +11,8 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
-import io.vertx.core.internal.ContextInternal;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import io.vertx.sqlclient.spi.protocol.SavepointCommand;
-import oracle.jdbc.OracleConnection;
 
 import java.sql.Statement;
 
@@ -27,13 +26,13 @@ public class OracleSavepointCommand<R> extends OracleCommand<R> {
 
   private final SavepointCommand<R> op;
 
-  private OracleSavepointCommand(OracleConnection oracleConnection, ContextInternal connectionContext, SavepointCommand<R> op) {
-    super(oracleConnection, connectionContext);
+  private OracleSavepointCommand(OracleJdbcConnection oracleJdbcConnection, SavepointCommand<R> op) {
+    super(oracleJdbcConnection);
     this.op = op;
   }
 
-  public static <U> OracleSavepointCommand<U> create(OracleConnection oracleConnection, ContextInternal connectionContext, SavepointCommand<U> cmd) {
-    return new OracleSavepointCommand<>(oracleConnection, connectionContext, cmd);
+  public static <U> OracleSavepointCommand<U> create(OracleJdbcConnection oracleJdbcConnection, SavepointCommand<U> cmd) {
+    return new OracleSavepointCommand<>(oracleJdbcConnection, cmd);
   }
 
   @Override

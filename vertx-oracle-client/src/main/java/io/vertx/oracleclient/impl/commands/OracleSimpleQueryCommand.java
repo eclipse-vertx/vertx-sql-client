@@ -11,12 +11,11 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
-import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.OraclePrepareOptions;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.spi.protocol.SimpleQueryCommand;
-import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 
 import java.sql.Connection;
@@ -29,14 +28,14 @@ public class OracleSimpleQueryCommand<C, R> extends OracleQueryCommand<C, R> {
   private final String sql;
   private final QueryResultHandler<R> resultHandler;
 
-  private OracleSimpleQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, SimpleQueryCommand<R> cmd, Collector<Row, C, R> collector, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
-    super(oracleConnection, connectionContext, collector, connectOptions);
+  private OracleSimpleQueryCommand(OracleJdbcConnection jdbcConnection, SimpleQueryCommand<R> cmd, Collector<Row, C, R> collector) {
+    super(jdbcConnection, collector);
     sql = cmd.sql();
     resultHandler = cmd.resultHandler();
   }
 
-  public static <U> OracleSimpleQueryCommand<?, U> create(OracleConnection oracleConnection, ContextInternal connectionContext, SimpleQueryCommand<U> cmd, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
-    return new OracleSimpleQueryCommand<>(oracleConnection, connectionContext, cmd, cmd.collector(), connectOptions);
+  public static <U> OracleSimpleQueryCommand<?, U> create(OracleJdbcConnection jdbcConnection, SimpleQueryCommand<U> cmd) {
+    return new OracleSimpleQueryCommand<>(jdbcConnection, cmd, cmd.collector());
   }
 
   @Override

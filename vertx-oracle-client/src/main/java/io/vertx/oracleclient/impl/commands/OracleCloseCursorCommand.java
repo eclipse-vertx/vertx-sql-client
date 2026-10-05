@@ -12,16 +12,15 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
-import io.vertx.core.internal.ContextInternal;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import io.vertx.oracleclient.impl.RowReader;
-import oracle.jdbc.OracleConnection;
 
 public class OracleCloseCursorCommand extends OracleCommand<Void> {
 
   private final RowReader<?, ?> reader;
 
-  public OracleCloseCursorCommand(OracleConnection oracleConnection, ContextInternal connectionContext, RowReader<?, ?> reader) {
-    super(oracleConnection, connectionContext);
+  public OracleCloseCursorCommand(OracleJdbcConnection jdbcConnection, RowReader<?, ?> reader) {
+    super(jdbcConnection);
     this.reader = reader;
   }
 

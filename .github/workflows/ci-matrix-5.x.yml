@@ -80,6 +80,10 @@ jobs:
             jdk: 25
             profile: 'Oracle-23'
             module: 'vertx-oracle-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'Oracle-23-virtual-threads'
+            module: 'vertx-oracle-client'
     uses: ./.github/workflows/ci.yml
     with:
       branch: ${{ inputs.branch }}

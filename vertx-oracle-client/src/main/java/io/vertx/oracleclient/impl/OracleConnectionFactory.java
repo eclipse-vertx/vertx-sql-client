@@ -14,6 +14,8 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.VertxInternal;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
@@ -27,10 +29,12 @@ import oracle.jdbc.datasource.OracleDataSource;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.vertx.oracleclient.impl.Helper.executeBlocking;
+import static io.vertx.core.internal.ContextInternal.EXECUTE_BLOCKING_PREFER_VIRTUAL_THREAD;
 import static io.vertx.oracleclient.impl.OracleDatabaseHelper.createDataSource;
 
 public class OracleConnectionFactory implements ConnectionFactory<OracleConnectOptions> {
+
+  private static final Logger log = LoggerFactory.getLogger(OracleConnectionFactory.class);
 
   private final Map<JsonObject, OracleDataSource> datasources;
 
@@ -58,15 +62,27 @@ public class OracleConnectionFactory implements ConnectionFactory<OracleConnectO
 
   @Override
   public Future<Connection> connect(Context context, OracleConnectOptions options) {
-    OracleDataSource datasource = getDatasource(options);
-    VertxMetrics vertxMetrics = ((VertxInternal)context.owner()).metrics();
-    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
     ContextInternal ctx = (ContextInternal) context;
-    return executeBlocking(context, () -> {
+    OracleDataSource datasource = getDatasource(options);
+    VertxInternal vertx = ctx.owner();
+    VertxMetrics vertxMetrics = vertx.metrics();
+    ClientMetrics metrics = vertxMetrics != null ? vertxMetrics.createClientMetrics(options.getSocketAddress(), "sql", options.getMetricsName()) : null;
+    int executeBlockingFlags = computeExecuteBlockingFlags(vertx, options);
+    return ctx.executeBlocking(() -> {
       OracleConnection orac = datasource.createConnectionBuilder().build();
       OracleMetadata metadata = new OracleMetadata(orac.getMetaData());
-      OracleJdbcConnection conn = new OracleJdbcConnection(ctx, metrics, options, orac, metadata);
-      return conn;
-    });
+      return new OracleJdbcConnection(ctx, metrics, options, orac, metadata, executeBlockingFlags);
+    }, executeBlockingFlags);
+  }
+
+  private static int computeExecuteBlockingFlags(VertxInternal vertx, OracleConnectOptions options) {
+    boolean useVirtualThreads = options.getUseVirtualThreads();
+    if (useVirtualThreads) {
+      if (vertx.isVirtualThreadAvailable()) {
+        return EXECUTE_BLOCKING_PREFER_VIRTUAL_THREAD;
+      }
+      log.warn("Virtual threads requested but not available on this JVM, falling back to platform threads");
+    }
+    return 0;
   }
 }

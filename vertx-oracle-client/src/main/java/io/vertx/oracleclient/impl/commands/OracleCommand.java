@@ -17,6 +17,8 @@ import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.OracleConnectOptions;
 import io.vertx.oracleclient.impl.Helper.SQLBlockingCodeHandler;
+import io.vertx.oracleclient.impl.Helper.SQLBlockingTaskHandler;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import oracle.jdbc.OracleConnection;
 
 import java.sql.SQLException;
@@ -24,18 +26,19 @@ import java.sql.Statement;
 import java.util.concurrent.Flow;
 
 import static io.vertx.oracleclient.impl.FailureUtil.sanitize;
-import static io.vertx.oracleclient.impl.Helper.SQLBlockingTaskHandler;
 
 public abstract class OracleCommand<T> {
 
+  protected final OracleJdbcConnection jdbcConnection;
   protected final OracleConnection oracleConnection;
   protected final ContextInternal connectionContext;
   private Completable<T> handler;
   private AsyncResult<T> result;
 
-  protected OracleCommand(OracleConnection oracleConnection, ContextInternal connectionContext) {
-    this.oracleConnection = oracleConnection;
-    this.connectionContext = connectionContext;
+  protected OracleCommand(OracleJdbcConnection jdbcConnection) {
+    this.jdbcConnection = jdbcConnection;
+    this.oracleConnection = jdbcConnection.oracleConnection();
+    this.connectionContext = jdbcConnection.context();
   }
 
   public final Future<?> processCommand(Completable<T> handler) {
@@ -48,11 +51,11 @@ public abstract class OracleCommand<T> {
   protected abstract Future<T> execute();
 
   public final <U> Future<U> executeBlocking(SQLBlockingCodeHandler<U> blockingCodeHandler) {
-    return connectionContext.executeBlocking(blockingCodeHandler, false);
+    return jdbcConnection.executeBlocking(blockingCodeHandler);
   }
 
   public final Future<Void> executeBlocking(SQLBlockingTaskHandler blockingTaskHandler) {
-    return connectionContext.executeBlocking(blockingTaskHandler, false);
+    return jdbcConnection.executeBlocking(blockingTaskHandler);
   }
 
   public final <U> Future<U> first(Flow.Publisher<U> publisher) {

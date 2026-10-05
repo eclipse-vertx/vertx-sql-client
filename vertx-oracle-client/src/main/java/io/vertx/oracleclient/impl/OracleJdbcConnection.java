@@ -45,6 +45,7 @@ public class OracleJdbcConnection implements Connection {
   private final OracleMetadata metadata;
   private final ContextInternal context;
   private final OracleConnectOptions options;
+  private final int executeBlockingFlags;
   @SuppressWarnings("rawtypes")
   private final ConcurrentMap<String, RowReader> cursors = new ConcurrentHashMap<>();
   private ConnectionContext holder;
@@ -56,12 +57,13 @@ public class OracleJdbcConnection implements Connection {
   private Promise<Void> closePromise;
   private boolean inflight, executing;
 
-  public OracleJdbcConnection(ContextInternal ctx, ClientMetrics metrics, OracleConnectOptions options, OracleConnection oc, OracleMetadata metadata) {
+  public OracleJdbcConnection(ContextInternal ctx, ClientMetrics metrics, OracleConnectOptions options, OracleConnection oc, OracleMetadata metadata, int executeBlockingFlags) {
     this.context = ctx;
     this.metrics = metrics;
     this.options = options;
     this.connection = oc;
     this.metadata = metadata;
+    this.executeBlockingFlags = executeBlockingFlags;
   }
 
   @Override
@@ -138,21 +140,35 @@ public class OracleJdbcConnection implements Connection {
     }
   }
 
+  public OracleConnection oracleConnection() {
+    return connection;
+  }
+
+  public ContextInternal context() {
+    return context;
+  }
+
+  public OracleConnectOptions connectOptions() {
+    return options;
+  }
+
+  public <U> Future<U> executeBlocking(Helper.SQLBlockingCodeHandler<U> blockingCodeHandler) {
+    return context.executeBlocking(blockingCodeHandler, executeBlockingFlags);
+  }
+
+  public Future<Void> executeBlocking(Helper.SQLBlockingTaskHandler blockingTaskHandler) {
+    return context.executeBlocking(blockingTaskHandler, executeBlockingFlags);
+  }
+
   public Future<Void> afterAcquire() {
     PromiseInternal<Void> promise = context.owner().promise();
-    context.<Void>executeBlocking(() -> {
-      connection.beginRequest();
-      return null;
-    }, false).onComplete(promise);
+    executeBlocking(connection::beginRequest).onComplete(promise);
     return promise.future();
   }
 
   public Future<Void> beforeRecycle() {
     PromiseInternal<Void> promise = context.owner().promise();
-    context.<Void>executeBlocking(() -> {
-      connection.endRequest();
-      return null;
-    }, false).onComplete(promise);
+    executeBlocking(connection::endRequest).onComplete(promise);
     return promise.future();
   }
 
@@ -199,23 +215,23 @@ public class OracleJdbcConnection implements Connection {
   private OracleCommand wrap(CommandBase cmd) {
     OracleCommand action;
     if (cmd instanceof SimpleQueryCommand) {
-      action = OracleSimpleQueryCommand.create(connection, context, (SimpleQueryCommand) cmd, options);
+      action = OracleSimpleQueryCommand.create(this, (SimpleQueryCommand) cmd);
     } else if (cmd instanceof PrepareStatementCommand) {
-      action = new OraclePrepareStatementCommand(connection, context, (PrepareStatementCommand) cmd, options);
+      action = new OraclePrepareStatementCommand(this, (PrepareStatementCommand) cmd);
     } else if (cmd instanceof ExtendedQueryCommand) {
       action = forExtendedQuery((ExtendedQueryCommand) cmd);
     } else if (cmd instanceof TxCommand) {
-      action = OracleTransactionCommand.create(connection, context, ((TxCommand) cmd));
+      action = OracleTransactionCommand.create(this, ((TxCommand) cmd));
     } else if (cmd instanceof SavepointCommand) {
-      action = OracleSavepointCommand.create(connection, context, ((SavepointCommand) cmd));
+      action = OracleSavepointCommand.create(this, ((SavepointCommand) cmd));
     } else if (cmd instanceof CloseStatementCommand) {
-      action = new OracleCloseStatementCommand(connection, context);
+      action = new OracleCloseStatementCommand(this);
     } else if (cmd instanceof CloseCursorCommand) {
       CloseCursorCommand closeCursorCommand = (CloseCursorCommand) cmd;
       RowReader reader = cursors.remove(closeCursorCommand.id());
-      action = new OracleCloseCursorCommand(connection, context, reader);
+      action = new OracleCloseCursorCommand(this, reader);
     } else if (cmd instanceof CloseConnectionCommand) {
-      action = new OracleCloseConnectionCommand(connection, context, closePromise);
+      action = new OracleCloseConnectionCommand(this, closePromise);
     } else {
       throw new UnsupportedOperationException(cmd.getClass().getName());
     }
@@ -229,14 +245,14 @@ public class OracleJdbcConnection implements Connection {
     if (cursorId != null) {
       RowReader rowReader = cursors.get(cursorId);
       if (rowReader != null) {
-        action = OracleCursorFetchCommand.create(connection, context, cmd, rowReader);
+        action = OracleCursorFetchCommand.create(this, cmd, rowReader);
       } else {
-        action = OracleCursorQueryCommand.create(connection, context, cmd, cmd.collector(), rr -> cursors.put(cursorId, rr), options);
+        action = OracleCursorQueryCommand.create(this, cmd, cmd.collector(), rr -> cursors.put(cursorId, rr));
       }
     } else if (cmd.isBatch()) {
-      action = new OraclePreparedBatchQueryCommand(connection, context, cmd, cmd.collector(), options);
+      action = new OraclePreparedBatchQueryCommand(this, cmd, cmd.collector());
     } else {
-      action = new OraclePreparedQueryCommand(connection, context, cmd, cmd.collector(), options);
+      action = new OraclePreparedQueryCommand(this, cmd, cmd.collector());
     }
     return action;
   }

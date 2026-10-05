@@ -10,7 +10,6 @@
  */
 package io.vertx.oracleclient.impl;
 
-import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
@@ -22,8 +21,8 @@ import oracle.sql.TIMESTAMPTZ;
 import oracle.sql.json.*;
 
 import java.sql.*;
-import java.util.LinkedHashMap;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -389,13 +388,5 @@ public class Helper {
         return Future.failedFuture(new OracleException(e));
       }
     }
-  }
-
-  public static <T> Future<T> executeBlocking(Context context, SQLBlockingCodeHandler<T> blockingCodeHandler) {
-    return context.executeBlocking(blockingCodeHandler, false);
-  }
-
-  public static Future<Void> executeBlocking(Context context, SQLBlockingTaskHandler blockingTaskHandler) {
-    return context.executeBlocking(blockingTaskHandler, false);
   }
 }

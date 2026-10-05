@@ -59,6 +59,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
   private int maxRows;
   private FetchDirection fetchDirection;
   private int fetchSize;
+  private boolean useVirtualThreads;
 
   private List<HostAndPort> addresses;
 
@@ -87,6 +88,7 @@ public class OracleConnectOptions extends SqlConnectOptions {
     this.fetchDirection = other.fetchDirection;
     this.fetchSize = other.fetchSize;
     this.setAddresses(other.addresses);
+    this.useVirtualThreads = other.useVirtualThreads;
   }
 
   public OracleConnectOptions(SqlConnectOptions options) {
@@ -299,6 +301,27 @@ public class OracleConnectOptions extends SqlConnectOptions {
    */
   public OracleConnectOptions setFetchSize(int fetchSize) {
     this.fetchSize = fetchSize;
+    return this;
+  }
+
+  /**
+   * @return {@code true} if blocking calls for the Oracle JDBC driver should be executed on virtual threads when available, {@code false} otherwise.
+   */
+  public boolean getUseVirtualThreads() {
+    return useVirtualThreads;
+  }
+
+  /**
+   * Set whether blocking calls for the Oracle JDBC driver should be executed on virtual threads when available.
+   * <p>
+   * When enabled and the current JVM supports virtual threads (Java 21+), blocking driver operations run on virtual threads
+   * instead of platform worker threads. If virtual threads are not available on the runtime JVM, execution falls back to platform threads.
+   *
+   * @param useVirtualThreads {@code true} to prefer virtual threads, {@code false} otherwise
+   * @return a reference to this, so the API can be used fluently
+   */
+  public OracleConnectOptions setUseVirtualThreads(boolean useVirtualThreads) {
+    this.useVirtualThreads = useVirtualThreads;
     return this;
   }
 
