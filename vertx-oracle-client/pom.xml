@@ -131,7 +131,7 @@
             <id>generate-sources</id>
             <configuration>
               <optionMap>
-                <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/connections.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/cursor.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/queries.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/tracing.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/transactions.adoc,${asciidoc.dir}/*.adoc</docgen.source>
+                <docgen.source>${project.basedir}/../vertx-sql-client/src/main/asciidoc/connections.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/cursor.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/pool_sharing.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/queries.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/tracing.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/transactions.adoc,${asciidoc.dir}/*.adoc</docgen.source>
               </optionMap>
             </configuration>
           </execution>

@@ -16,6 +16,8 @@
  */
 package examples;
 
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.tracing.TracingPolicy;
@@ -349,5 +351,51 @@ public class SqlClientExamples {
 
   private Future<SqlConnectOptions> retrieveOptions() {
     return null;
+  }
+
+  public void poolSharing1(Vertx vertx, OracleConnectOptions database, int maxSize) {
+    Pool pool = OracleBuilder.pool()
+      .with(new PoolOptions().setMaxSize(maxSize))
+      .connectingTo(database)
+      .using(vertx)
+      .build();
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      @Override
+      public void start() throws Exception {
+        // Use the pool
+      }
+    }, new DeploymentOptions().setInstances(4));
+  }
+
+  public void poolSharing2(Vertx vertx, OracleConnectOptions database, int maxSize) {
+    vertx.deployVerticle(() -> new AbstractVerticle() {
+      Pool pool;
+      @Override
+      public void start() {
+        // Get or create a shared pool
+        // this actually creates a lease to the pool
+        // when the verticle is undeployed, the lease will be released automatically
+        pool = OracleBuilder.pool()
+          .with(new PoolOptions()
+            .setMaxSize(maxSize)
+            .setShared(true)
+            .setName("my-pool"))
+          .connectingTo(database)
+          .using(vertx)
+          .build();
+      }
+    }, new DeploymentOptions().setInstances(4));
+  }
+
+  public static void poolSharing3(Vertx vertx, OracleConnectOptions database, int maxSize) {
+    Pool pool = OracleBuilder.pool()
+      .with(new PoolOptions()
+        .setMaxSize(maxSize)
+        .setShared(true)
+        .setName("my-pool")
+        .setEventLoopSize(4))
+      .connectingTo(database)
+      .using(vertx)
+      .build();
   }
 }
