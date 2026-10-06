@@ -101,7 +101,11 @@ public class OracleRule extends ExternalResource {
   }
 
   public OracleConnectOptions options() {
-    return new OracleConnectOptions(options);
+    OracleConnectOptions opts = new OracleConnectOptions(options);
+    if (Boolean.getBoolean("oracle.useVirtualThreads")) {
+      opts.setUseVirtualThreads(true);
+    }
+    return opts;
   }
 
   private static class ServerContainer<SELF extends ServerContainer<SELF>> extends GenericContainer<SELF> {

@@ -11,10 +11,9 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
-import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.impl.Helper.SQLFutureMapper;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import io.vertx.sqlclient.spi.protocol.TxCommand;
-import oracle.jdbc.OracleConnection;
 
 import static io.vertx.sqlclient.spi.protocol.TxCommand.Kind.BEGIN;
 import static io.vertx.sqlclient.spi.protocol.TxCommand.Kind.COMMIT;
@@ -23,13 +22,13 @@ public class OracleTransactionCommand<R> extends OracleCommand<R> {
 
   private final TxCommand<R> op;
 
-  private OracleTransactionCommand(OracleConnection oracleConnection, ContextInternal connectionContext, TxCommand<R> op) {
-    super(oracleConnection, connectionContext);
+  private OracleTransactionCommand(OracleJdbcConnection jdbcConnection, TxCommand<R> op) {
+    super(jdbcConnection);
     this.op = op;
   }
 
-  public static <U> OracleTransactionCommand<U> create(OracleConnection oracleConnection, ContextInternal connectionContext, TxCommand<U> cmd) {
-    return new OracleTransactionCommand<>(oracleConnection, connectionContext, cmd);
+  public static <U> OracleTransactionCommand<U> create(OracleJdbcConnection jdbcConnection, TxCommand<U> cmd) {
+    return new OracleTransactionCommand<>(jdbcConnection, cmd);
   }
 
   @Override

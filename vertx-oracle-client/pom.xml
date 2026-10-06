@@ -29,6 +29,7 @@
   <properties>
     <!-- Set to a value for testing with a specific database -->
     <oracle-container.version/>
+    <oracle.useVirtualThreads/>
     <ojdbc.version>23.26.3.0.0</ojdbc.version>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
   </properties>
@@ -79,6 +80,7 @@
             <target.dir>${project.build.directory}</target.dir>
             <oracle-container.version>${oracle-container.version}</oracle-container.version>
             <connection.uri>${connection.uri}</connection.uri>
+            <oracle.useVirtualThreads>${oracle.useVirtualThreads}</oracle.useVirtualThreads>
           </systemPropertyVariables>
         </configuration>
       </plugin>
@@ -90,6 +92,13 @@
       <id>Oracle-23</id>
       <properties>
         <oracle-container.version>23-slim-faststart</oracle-container.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>Oracle-23-virtual-threads</id>
+      <properties>
+        <oracle-container.version>23-slim-faststart</oracle-container.version>
+        <oracle.useVirtualThreads>true</oracle.useVirtualThreads>
       </properties>
     </profile>
   </profiles>

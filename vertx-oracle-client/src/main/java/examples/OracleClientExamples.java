@@ -267,6 +267,11 @@ public class OracleClientExamples {
       .setReconnectInterval(1000);
   }
 
+  public void configureVirtualThreads(OracleConnectOptions options) {
+    // Execute blocking JDBC calls on virtual threads when available (Java 21+)
+    options.setUseVirtualThreads(true);
+  }
+
   public void implicitTypeConversionExample(SqlClient client) {
     client
       .preparedQuery("SELECT * FROM students WHERE updated_time = ?")

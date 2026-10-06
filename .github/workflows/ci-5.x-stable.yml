@@ -76,6 +76,10 @@ jobs:
             jdk: 25
             profile: 'Oracle-23'
             module: 'vertx-oracle-client'
+          - os: ubuntu-latest
+            jdk: 25
+            profile: 'Oracle-23-virtual-threads'
+            module: 'vertx-oracle-client'
     uses: ./.github/workflows/ci.yml
     with:
       branch: ${{ github.event_name == 'schedule' && vars.VERTX_5_STABLE_BRANCH || github.event.pull_request.head.sha || github.ref_name }}

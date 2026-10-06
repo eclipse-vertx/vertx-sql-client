@@ -16,6 +16,7 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.oracleclient.OracleException;
+import io.vertx.oracleclient.impl.Helper.SQLBlockingTaskHandler;
 import io.vertx.oracleclient.impl.commands.OracleResponse;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.internal.RowDescriptorBase;
@@ -33,12 +34,14 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collector;
 
-import static io.vertx.oracleclient.impl.Helper.*;
+import static io.vertx.oracleclient.impl.Helper.closeQuietly;
+import static io.vertx.oracleclient.impl.Helper.convertSqlValue;
 
 public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jdbc.OracleRow, Row> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RowReader.class);
 
+  private final OracleJdbcConnection jdbcConnection;
   private final ContextInternal context;
   private final List<Class<?>> classes;
   private final RowDescriptorBase description;
@@ -57,8 +60,9 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
   private int fetchSize;
   private Promise<Void> closePromise;
 
-  public RowReader(ContextInternal context, Collector<Row, C, R> collector, OracleResultSet ors) throws SQLException {
-    this.context = context;
+  public RowReader(OracleJdbcConnection jdbcConnection, Collector<Row, C, R> collector, OracleResultSet ors) throws SQLException {
+    this.jdbcConnection = jdbcConnection;
+    this.context = jdbcConnection.context();
     this.collector = collector;
     resultSetStatement = ors.getStatement();
     ResultSetMetaData metaData = ors.getMetaData();
@@ -106,9 +110,9 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
       readPromise = context.promise();
       if (queue == null) {
         queue = new ArrayDeque<>(fetchSize + 1);
-        executeBlocking(context, () -> subscription.request(fetchSize + 1));
+        executeBlocking(() -> subscription.request(fetchSize + 1));
       } else {
-        executeBlocking(context, () -> subscription.request(fetchSize));
+        executeBlocking(() -> subscription.request(fetchSize));
       }
       readPromise.future().onComplete(promise);
     });
@@ -138,7 +142,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
         return;
       }
       closePromise = context.promise();
-      executeBlocking(context, () -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
+      executeBlocking(() -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
       readPromise.fail(throwable);
     });
   }
@@ -150,7 +154,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
         return;
       }
       closePromise = context.promise();
-      executeBlocking(context, () -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
+      executeBlocking(() -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
       OracleResponse<R> response = createResponse();
       queue = null;
       readPromise.complete(response);
@@ -212,7 +216,7 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
       if (readPromise != null) {
         readPromise.fail("Subscription has been canceled");
       }
-      executeBlocking(context, () -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
+      executeBlocking(() -> closeQuietly(resultSetStatement)).otherwiseEmpty().onComplete(closePromise);
     });
     return promise.future();
   }
@@ -223,5 +227,9 @@ public class RowReader<C, R> implements Flow.Subscriber<Row>, Function<oracle.jd
       promise.complete(queue != null && !queue.isEmpty());
     });
     return promise.future();
+  }
+
+  private Future<Void> executeBlocking(SQLBlockingTaskHandler blockingTaskHandler) {
+    return jdbcConnection.executeBlocking(blockingTaskHandler);
   }
 }

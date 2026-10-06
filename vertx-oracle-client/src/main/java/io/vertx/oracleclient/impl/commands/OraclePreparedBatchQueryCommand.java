@@ -12,14 +12,13 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.internal.ContextInternal;
 import io.vertx.oracleclient.OraclePrepareOptions;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.internal.TupleBase;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
-import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 
 import java.sql.Connection;
@@ -39,8 +38,8 @@ public class OraclePreparedBatchQueryCommand<C, R> extends OracleQueryCommand<C,
   private final List<TupleBase> listParams;
   private final QueryResultHandler<R> resultHandler;
 
-  public OraclePreparedBatchQueryCommand(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<R> cmd, Collector<Row, C, R> collector, io.vertx.oracleclient.OracleConnectOptions connectOptions) {
-    super(oracleConnection, connectionContext, collector, connectOptions);
+  public OraclePreparedBatchQueryCommand(OracleJdbcConnection jdbcConnection, ExtendedQueryCommand<R> cmd, Collector<Row, C, R> collector) {
+    super(jdbcConnection, collector);
     sql = cmd.sql();
     listParams = cmd.paramsList();
     resultHandler = cmd.resultHandler();

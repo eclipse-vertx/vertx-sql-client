@@ -13,8 +13,7 @@ package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.internal.ContextInternal;
-import oracle.jdbc.OracleConnection;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 
 import java.util.Objects;
 
@@ -22,8 +21,8 @@ public class OracleCloseConnectionCommand extends OracleCommand<Void> {
 
   private final Promise<Void> closePromise;
 
-  public OracleCloseConnectionCommand(OracleConnection oracleConnection, ContextInternal connectionContext, Promise<Void> closePromise) {
-    super(oracleConnection, connectionContext);
+  public OracleCloseConnectionCommand(OracleJdbcConnection jdbcConnection, Promise<Void> closePromise) {
+    super(jdbcConnection);
     this.closePromise = Objects.requireNonNull(closePromise);
   }
 

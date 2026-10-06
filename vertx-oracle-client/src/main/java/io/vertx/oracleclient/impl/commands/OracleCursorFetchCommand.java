@@ -12,11 +12,10 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
-import io.vertx.core.internal.ContextInternal;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 import io.vertx.oracleclient.impl.RowReader;
 import io.vertx.sqlclient.internal.QueryResultHandler;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
-import oracle.jdbc.OracleConnection;
 
 public class OracleCursorFetchCommand<C, R> extends OracleCommand<Boolean> {
 
@@ -24,15 +23,15 @@ public class OracleCursorFetchCommand<C, R> extends OracleCommand<Boolean> {
   private final int fetch;
   private final RowReader<C, R> rowReader;
 
-  private OracleCursorFetchCommand(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<R> cmd, RowReader<C, R> rowReader) {
-    super(oracleConnection, connectionContext);
+  private OracleCursorFetchCommand(OracleJdbcConnection jdbcConnection, ExtendedQueryCommand<R> cmd, RowReader<C, R> rowReader) {
+    super(jdbcConnection);
     resultHandler = cmd.resultHandler();
     fetch = cmd.fetch();
     this.rowReader = rowReader;
   }
 
-  public static <U, V> OracleCursorFetchCommand<U, V> create(OracleConnection oracleConnection, ContextInternal connectionContext, ExtendedQueryCommand<V> cmd, RowReader<U, V> rowReader) {
-    return new OracleCursorFetchCommand<>(oracleConnection, connectionContext, cmd, rowReader);
+  public static <U, V> OracleCursorFetchCommand<U, V> create(OracleJdbcConnection jdbcConnection, ExtendedQueryCommand<V> cmd, RowReader<U, V> rowReader) {
+    return new OracleCursorFetchCommand<>(jdbcConnection, cmd, rowReader);
   }
 
   @Override

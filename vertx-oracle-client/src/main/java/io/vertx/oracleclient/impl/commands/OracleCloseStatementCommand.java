@@ -12,13 +12,12 @@
 package io.vertx.oracleclient.impl.commands;
 
 import io.vertx.core.Future;
-import io.vertx.core.internal.ContextInternal;
-import oracle.jdbc.OracleConnection;
+import io.vertx.oracleclient.impl.OracleJdbcConnection;
 
 public class OracleCloseStatementCommand extends OracleCommand<Void> {
 
-  public OracleCloseStatementCommand(OracleConnection oracleConnection, ContextInternal connectionContext) {
-    super(oracleConnection, connectionContext);
+  public OracleCloseStatementCommand(OracleJdbcConnection jdbcConnection) {
+    super(jdbcConnection);
   }
 
   @Override
