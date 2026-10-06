@@ -22,7 +22,6 @@ import oracle.jdbc.OracleConnection;
 import oracle.jdbc.OraclePreparedStatement;
 
 import java.sql.Connection;
-import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.stream.Collector;
@@ -54,9 +53,8 @@ public class OraclePreparedQueryCommand<C, R> extends OracleQueryCommand<C, R> {
 
   @Override
   protected void fillStatement(PreparedStatement ps, Connection conn) throws SQLException {
-    ParameterMetaData meta = parameterMetaData(ps);
     for (int i = 0; i < params.size(); i++) {
-      Object value = adaptType(conn, params.getValue(i), isJsonParameter(meta, i + 1));
+      Object value = adaptType(conn, params.getValue(i));
       ps.setObject(i + 1, value);
     }
   }
