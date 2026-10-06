@@ -10,23 +10,22 @@
  */
 package tests.oracleclient;
 
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import java.math.BigDecimal;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.oracleclient.OracleBuilder;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.Tuple;
-import java.util.ArrayList;
-import java.util.List;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import tests.oracleclient.junit.OracleRule;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(VertxUnitRunner.class)
 public class OracleJsonDataTypeTest extends OracleTestBase {
@@ -125,6 +124,7 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
       }));
   }
 
+  @Ignore("Disabled until Oracle JDBC driver bug 40076713 is fixed")
   @Test
   public void testDecodeJsonString(TestContext ctx) {
     pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, ?)")
@@ -136,6 +136,7 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
       }));
   }
 
+  @Ignore("Disabled until Oracle JDBC driver bug 40076713 is fixed")
   @Test
   public void testDecodeJsonNumber(TestContext ctx) {
     pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, ?)")
@@ -147,6 +148,7 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
       }));
   }
 
+  @Ignore("Disabled until Oracle JDBC driver bug 40076713 is fixed")
   @Test
   public void testDecodeJsonBooleanTrue(TestContext ctx) {
     pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, ?)")
@@ -158,6 +160,7 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
       }));
   }
 
+  @Ignore("Disabled until Oracle JDBC driver bug 40076713 is fixed")
   @Test
   public void testDecodeJsonBooleanFalse(TestContext ctx) {
     pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, ?)")
@@ -226,6 +229,7 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
       }));
   }
 
+  @Ignore("Disabled until Oracle JDBC driver bug 40076713 is fixed")
   @Test
   public void testBatchInsertJsonScalars(TestContext ctx) {
     List<Tuple> batch = new ArrayList<>();
@@ -247,6 +251,7 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
       }));
   }
 
+  @Ignore("Disabled until Oracle JDBC driver bug 40076713 is fixed")
   @Test
   public void testCursorInsertJsonScalar(TestContext ctx) {
     pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, ?)")
@@ -261,6 +266,39 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
               conn.close();
             }));
           }));
+      }));
+  }
+
+  @Test
+  public void testInsertJsonStringWithSqlWorkaround(TestContext ctx) {
+    pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, JSON(?))")
+      .execute(Tuple.of(40, Json.encode("hello")))
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(40)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        ctx.assertEquals("hello", rows.iterator().next().getJson(0));
+      }));
+  }
+
+  @Test
+  public void testInsertJsonNumberWithSqlWorkaround(TestContext ctx) {
+    pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, JSON(?))")
+      .execute(Tuple.of(41, Json.encode(42)))
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(41)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        ctx.assertEquals(new BigDecimal("42"), rows.iterator().next().getJson(0));
+      }));
+  }
+
+  @Test
+  public void testInsertJsonBooleanWithSqlWorkaround(TestContext ctx) {
+    pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, JSON(?))")
+      .execute(Tuple.of(42, Json.encode(true)))
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(42)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        ctx.assertEquals(Boolean.TRUE, rows.iterator().next().getJson(0));
       }));
   }
 }
