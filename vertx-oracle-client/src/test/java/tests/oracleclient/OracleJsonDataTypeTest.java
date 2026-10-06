@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import tests.oracleclient.junit.OracleRule;
 
 import java.math.BigDecimal;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -299,6 +300,86 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
       .onComplete(ctx.asyncAssertSuccess(rows -> {
         ctx.assertEquals(1, rows.size());
         ctx.assertEquals(Boolean.TRUE, rows.iterator().next().getJson(0));
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonTimestamp(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (50, JSON_OBJECT('ts' VALUE TIMESTAMP '2023-09-21 10:00:00' RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(50)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject obj = row.getJsonObject(0);
+        ctx.assertNotNull(obj);
+        Object ts = obj.getValue("ts");
+        ctx.assertNotNull(ts);
+        ctx.assertTrue(ts instanceof LocalDateTime, "Expected LocalDateTime but got: " + (ts == null ? "null" : ts.getClass().getName()));
+        ctx.assertEquals(LocalDateTime.of(2023, 9, 21, 10, 0, 0), ts);
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonTimestampTZ(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (51, JSON_OBJECT('ts' VALUE TIMESTAMP '2023-09-21 10:00:00 +02:00' RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(51)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject obj = row.getJsonObject(0);
+        ctx.assertNotNull(obj);
+        Object ts = obj.getValue("ts");
+        ctx.assertNotNull(ts);
+        ctx.assertTrue(ts instanceof OffsetDateTime, "Expected OffsetDateTime or LocalDateTime but got: " + (ts == null ? "null" : ts.getClass().getName()));
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonDate(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (52, JSON_OBJECT('d' VALUE DATE '2023-09-21' RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(52)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject obj = row.getJsonObject(0);
+        ctx.assertNotNull(obj);
+        Object d = obj.getValue("d");
+        ctx.assertNotNull(d);
+        ctx.assertTrue(d instanceof LocalDateTime, "Expected LocalDateTime but got: " + (d == null ? "null" : d.getClass().getName()));
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonIntervalYearToMonth(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (53, JSON_OBJECT('iv' VALUE INTERVAL '2-3' YEAR TO MONTH RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(53)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        JsonObject obj = rows.iterator().next().getJsonObject(0);
+        ctx.assertNotNull(obj);
+        Object iv = obj.getValue("iv");
+        ctx.assertTrue(iv instanceof Period, "Expected Period but got: " + (iv == null ? "null" : iv.getClass().getName()));
+        ctx.assertEquals(Period.of(2, 3, 0), iv);
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonIntervalDayToSecond(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (54, JSON_OBJECT('iv' VALUE INTERVAL '1 02:03:04.5' DAY TO SECOND RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(54)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        JsonObject obj = rows.iterator().next().getJsonObject(0);
+        ctx.assertNotNull(obj);
+        Object iv = obj.getValue("iv");
+        ctx.assertTrue(iv instanceof Duration, "Expected Duration but got: " + (iv == null ? "null" : iv.getClass().getName()));
+        Duration expected = Duration.ofDays(1).plusHours(2).plusMinutes(3).plusSeconds(4).plusMillis(500);
+        ctx.assertEquals(expected, iv);
       }));
   }
 }
