@@ -13,6 +13,7 @@ package examples;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.docgen.Source;
@@ -345,6 +346,18 @@ public class OracleClientExamples {
           Row row = ar.result().iterator().next();
           Object value = row.getJson(0);
           System.out.println("Is JSON null: " + (value == Tuple.JSON_NULL));
+        }
+      });
+  }
+
+  public void jsonScalarWorkaround(Pool pool) {
+    String value = "hello";
+    pool
+      .preparedQuery("INSERT INTO users (id, data) VALUES (?, JSON(?))")
+      .execute(Tuple.of(3, Json.encode(value)))
+      .onComplete(ar -> {
+        if (ar.succeeded()) {
+          System.out.println("Inserted scalar JSON string");
         }
       });
   }
