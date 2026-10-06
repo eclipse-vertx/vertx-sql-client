@@ -76,6 +76,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   }
 
   private int packetSize;
+  private String accessToken;
 
   public MSSQLConnectOptions() {
     super();
@@ -101,6 +102,7 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
 
   private void copyFields(MSSQLConnectOptions other) {
     packetSize = other.packetSize;
+    accessToken = other.accessToken;
   }
 
   @Override
@@ -143,6 +145,31 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
    *
    * @return the desired packet size
    */
+  /**
+   * @return the Microsoft Entra ID (Azure AD) access token used to authenticate, or {@code null}
+   */
+  public String getAccessToken() {
+    return accessToken;
+  }
+
+  /**
+   * Set a Microsoft Entra ID (Azure AD) access token to authenticate with, instead of a user and password.
+   * <p>
+   * The token is sent to the server in the {@code FEDAUTH} feature extension of the TDS {@code LOGIN7}
+   * packet. It is mutually exclusive with {@link #setPassword(String)}, and requires
+   * {@link #setSsl(boolean) setSsl(true)} so that the token is not exposed to an unauthenticated peer.
+   *
+   * @param accessToken the access token, or {@code null} to use user/password authentication
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MSSQLConnectOptions setAccessToken(String accessToken) {
+    if (accessToken != null && accessToken.trim().isEmpty()) {
+      throw new IllegalArgumentException("accessToken must not be empty");
+    }
+    this.accessToken = accessToken;
+    return this;
+  }
+
   public int getPacketSize() {
     return packetSize;
   }

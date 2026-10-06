@@ -90,6 +90,28 @@ public final class LoginPacket {
       3FRESERVEDBIT
    */
   public static final byte DEFAULT_OPTION_FLAGS3 = 0x00;
+  public static final byte OPTION_FLAGS3_CHANGE_PASSWORD = 0x01;
+  public static final byte OPTION_FLAGS3_USER_INSTANCE = 0x02;
+  public static final byte OPTION_FLAGS3_SEND_YUKON_BINARY_XML = 0x04;
+  public static final byte OPTION_FLAGS3_UNKNOWN_COLLATION_HANDLING = 0x08;
+  /**
+   * When set, the "Unused" entry of the OffsetLength block is interpreted as
+   * ibExtension/cbExtension and points at the FeatureExt block.
+   */
+  public static final byte OPTION_FLAGS3_EXTENSION = 0x10;
+
+  /**
+   * FeatureExt block, see MS-TDS 2.2.6.4.
+   */
+  public static final int FEATURE_ID_FEDAUTH = 0x02;
+  public static final int FEATURE_TERMINATOR = 0xFF;
+
+  /**
+   * Values of bFedAuthLibrary in the FEDAUTH feature extension.
+   */
+  public static final int FEDAUTH_LIBRARY_LIVEIDCOMPACT = 0x00;
+  public static final int FEDAUTH_LIBRARY_SECURITYTOKEN = 0x01;
+  public static final int FEDAUTH_LIBRARY_ADAL = 0x02;
 
 
   private byte typeFlags = 0x00;

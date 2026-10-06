@@ -21,6 +21,7 @@ import io.vertx.core.net.impl.NetSocketInternal;
 import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.metrics.VertxMetrics;
 import io.vertx.mssqlclient.MSSQLConnectOptions;
+import io.vertx.mssqlclient.impl.command.PreLoginResponse;
 import io.vertx.sqlclient.SqlConnectOptions;
 import io.vertx.sqlclient.SqlConnection;
 import io.vertx.sqlclient.impl.Connection;
@@ -52,8 +53,8 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     NetClient netClient = netClient(new NetClientOptions(options).setSsl(false));
     return netClient.connect(server)
       .map(so -> createSocketConnection(so, options, context))
-      .compose(conn -> conn.sendPreLoginMessage(clientSslConfig)
-        .compose(encryptionLevel -> login(conn, options, encryptionLevel, context))
+      .compose(conn -> conn.sendPreLoginMessage(clientSslConfig, options.getAccessToken() != null)
+        .compose(preLoginResponse -> login(conn, options, preLoginResponse, context))
       )
       .compose(connBase -> {
         MSSQLSocketConnection conn = (MSSQLSocketConnection) connBase;
@@ -80,8 +81,20 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
     return conn;
   }
 
-  private Future<Connection> login(MSSQLSocketConnection conn, MSSQLConnectOptions options, Byte encryptionLevel, ContextInternal context) {
+  private Future<Connection> login(MSSQLSocketConnection conn, MSSQLConnectOptions options, PreLoginResponse preLoginResponse, ContextInternal context) {
+    Byte encryptionLevel = preLoginResponse.encryptionLevel();
     boolean clientSslConfig = options.isSsl();
+    String accessToken = options.getAccessToken();
+
+    if (accessToken != null) {
+      String failure = validateFedAuth(options, encryptionLevel);
+      if (failure != null) {
+        Promise<Void> closePromise = context.promise();
+        conn.close(null, closePromise);
+        return closePromise.future().transform(v -> context.failedFuture(failure));
+      }
+    }
+
     if (clientSslConfig && encryptionLevel != ENCRYPT_ON && encryptionLevel != ENCRYPT_REQ) {
       Promise<Void> closePromise = context.promise();
       conn.close(null, closePromise);
@@ -95,11 +108,36 @@ public class MSSQLConnectionFactory extends ConnectionFactoryBase {
       // ... unless the client did not require encryption and the server does not support it
       future = context.succeededFuture();
     }
-    String username = options.getUser();
-    String password = options.getPassword();
+    // With federated authentication the token replaces the credentials: the user and password
+    // fields must go on the wire empty, and MSSQLConnectOptions defaults the user to "sa".
+    String username = accessToken == null ? options.getUser() : "";
+    String password = accessToken == null ? options.getPassword() : "";
     String database = options.getDatabase();
     Map<String, String> properties = options.getProperties();
-    return future.compose(v -> conn.sendLoginMessage(username, password, database, properties));
+    boolean fedAuthEcho = accessToken != null && Boolean.TRUE.equals(preLoginResponse.fedAuthRequired());
+    return future.compose(v -> conn.sendLoginMessage(username, password, database, properties, accessToken, fedAuthEcho));
+  }
+
+  /**
+   * @return a description of why federated authentication cannot proceed, or {@code null} if it can
+   */
+  private static String validateFedAuth(MSSQLConnectOptions options, Byte encryptionLevel) {
+    String password = options.getPassword();
+    if (password != null && !password.isEmpty()) {
+      return "Cannot set both a password and an accessToken on MSSQLConnectOptions: " +
+        "Microsoft Entra ID token authentication does not use a password";
+    }
+    if (!options.isSsl()) {
+      // enableSsl() turns on trustAll when the client did not ask for encryption, which would
+      // hand the bearer token to whoever answers on the other end.
+      return "Microsoft Entra ID token authentication requires setSsl(true): without it the driver " +
+        "does not validate the server certificate, which would expose the access token to a man-in-the-middle";
+    }
+    if (encryptionLevel != null && encryptionLevel == ENCRYPT_NOT_SUP) {
+      return "Microsoft Entra ID token authentication requires an encrypted login, " +
+        "but the server reported that it does not support encryption";
+    }
+    return null;
   }
 
   @Override
