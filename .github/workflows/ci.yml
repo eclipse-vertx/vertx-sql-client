@@ -40,3 +40,10 @@ jobs:
       - name: Run tests for the target module
         run: |
           mvn -s .github/maven-ci-settings.xml verify -B -Pcheckstyle $PROFILE_ARG -pl :${{ inputs.module }}
+      - name: Upload jstack dumps
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jstack-${{ inputs.module }}-jdk${{ inputs.jdk }}${{ inputs.profile && format('-{0}', inputs.profile) || '' }}
+          path: '**/target/surefire-reports/surefire-timeout-jstack*.txt'
+          if-no-files-found: ignore
