@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2011-2026 Contributors to the Eclipse Foundation
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
@@ -15,17 +15,20 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.CompositeByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.vertx.sqlclient.codec.CommandResponse;
 
 import static io.vertx.mysqlclient.impl.protocol.Packets.PACKET_PAYLOAD_LENGTH_LIMIT;
 
 class MySQLDecoder extends ChannelInboundHandlerAdapter {
 
   private final MySQLCodec codec;
+  private final int maxAllowedPacket;
   private ByteBuf payload;
   private short sequenceId;
 
-  MySQLDecoder(MySQLCodec codec) {
+  MySQLDecoder(MySQLCodec codec, int maxAllowedPacket) {
     this.codec = codec;
+    this.maxAllowedPacket = maxAllowedPacket;
   }
 
   @Override
@@ -36,6 +39,13 @@ class MySQLDecoder extends ChannelInboundHandlerAdapter {
     if (payload != null) {
       CompositeByteBuf compositeByteBuf = (CompositeByteBuf) payload;
       compositeByteBuf.addComponent(true, packet);
+      if (compositeByteBuf.readableBytes() > maxAllowedPacket) {
+        releaseMessage();
+        codec.poll();
+        ctx.fireChannelRead(CommandResponse.failure("MySQL reassembled message size exceeds limit of " + maxAllowedPacket + " bytes"));
+        ctx.close();
+        return;
+      }
     } else if (payloadLength >= PACKET_PAYLOAD_LENGTH_LIMIT) {
       payload = ctx.alloc().compositeDirectBuffer().addComponent(true, packet);
     } else {

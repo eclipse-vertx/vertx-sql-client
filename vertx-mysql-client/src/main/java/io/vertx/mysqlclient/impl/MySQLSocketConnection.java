@@ -95,7 +95,7 @@ public class MySQLSocketConnection extends SocketConnectionBase {
 
   @Override
   public void init() {
-    codec = new MySQLCodec(this);
+    codec = new MySQLCodec(this, connectOptions.getMaxAllowedPacket());
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
     pipeline.addBefore("codec", "packetDecoder", new MySQLPacketDecoder());
