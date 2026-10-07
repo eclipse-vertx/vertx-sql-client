@@ -71,6 +71,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   public static final SslMode DEFAULT_SSL_MODE = SslMode.PREFERRED;
   public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
   public static final int DEFAULT_PIPELINING_LIMIT = 1;
+  public static final int DEFAULT_MAX_ALLOWED_PACKET = 32 * 1024 * 1024;
 
   static {
     Map<String, String> defaultAttributes = new HashMap<>();
@@ -86,6 +87,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
   private Buffer serverRsaPublicKeyValue;
   private String characterEncoding = DEFAULT_CHARACTER_ENCODING;
   private int pipeliningLimit = DEFAULT_PIPELINING_LIMIT;
+  private int maxAllowedPacket = DEFAULT_MAX_ALLOWED_PACKET;
   private MySQLAuthenticationPlugin authenticationPlugin = MySQLAuthenticationPlugin.DEFAULT;
 
   public MySQLConnectOptions() {
@@ -109,6 +111,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
       this.serverRsaPublicKeyValue = opts.serverRsaPublicKeyValue != null ? opts.serverRsaPublicKeyValue.copy() : null;
       this.characterEncoding = opts.characterEncoding;
       this.pipeliningLimit = opts.pipeliningLimit;
+      this.maxAllowedPacket = opts.maxAllowedPacket;
       this.authenticationPlugin = opts.authenticationPlugin;
     }
   }
@@ -123,6 +126,7 @@ public class MySQLConnectOptions extends SqlConnectOptions {
     this.serverRsaPublicKeyValue = other.serverRsaPublicKeyValue != null ? other.serverRsaPublicKeyValue.copy() : null;
     this.characterEncoding = other.characterEncoding;
     this.pipeliningLimit = other.pipeliningLimit;
+    this.maxAllowedPacket = other.maxAllowedPacket;
     this.authenticationPlugin = other.authenticationPlugin;
   }
 
@@ -320,6 +324,30 @@ public class MySQLConnectOptions extends SqlConnectOptions {
       throw new IllegalArgumentException("pipelining limit can not be less than 1");
     }
     this.pipeliningLimit = pipeliningLimit;
+    return this;
+  }
+
+  /**
+   * Get the maximum size of a cumulative reassembled MySQL message, in bytes.
+   *
+   * @return the max allowed packet size
+   */
+  public int getMaxAllowedPacket() {
+    return maxAllowedPacket;
+  }
+
+  /**
+   * Set the maximum size of a cumulative reassembled MySQL message, in bytes.
+   * This limits how much memory the client will allocate when reassembling multi-packet messages.
+   *
+   * @param maxAllowedPacket the max allowed packet size, must be positive
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MySQLConnectOptions setMaxAllowedPacket(int maxAllowedPacket) {
+    if (maxAllowedPacket <= 0) {
+      throw new IllegalArgumentException("maxAllowedPacket must be positive");
+    }
+    this.maxAllowedPacket = maxAllowedPacket;
     return this;
   }
 
