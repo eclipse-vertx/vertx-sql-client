@@ -17,8 +17,11 @@
 
 package io.vertx.sqlclient;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
+
+import java.util.function.Function;
 
 /**
  * Defines common SQL client operations with a database server.
@@ -50,6 +53,20 @@ public interface SqlClient {
    * @return the prepared query
    */
   PreparedQuery<RowSet<Row>> preparedQuery(String sql, PrepareOptions options);
+
+  /**
+   * Execute the given {@code function} within a batch.
+   *
+   * <p>The {@code function} is passed a client that holds the queries it executes and sends them all to the
+   * database at once when the {@code function} returns. Each query still completes with its own result, unlike
+   * {@link PreparedQuery#executeBatch} which executes a single statement with several sets of parameters.
+   *
+   * <p>The client must only be used within the {@code function}, queries executed on it afterwards fail.
+   *
+   * @param function the code to execute
+   * @return a future notified with the result of the {@code function}
+   */
+  <T> Future<@Nullable T> withBatch(Function<SqlClient, Future<@Nullable T>> function);
 
   /**
    * Close the client and release the associated resources.

@@ -189,6 +189,19 @@ public interface Pool extends SqlClient {
   }
 
   /**
+   * Like {@link SqlClient#withBatch(Function)}, the queries are executed on a connection acquired from the pool.
+   *
+   * <p> When the future returned by the {@code function} completes, the connection is returned to the pool.
+   *
+   * @param function the code to execute
+   * @return a future notified with the result
+   */
+  @Override
+  default <T> Future<@Nullable T> withBatch(Function<SqlClient, Future<@Nullable T>> function) {
+    return withConnection(conn -> conn.withBatch(function));
+  }
+
+  /**
    * @return the current pool size approximation
    */
   int size();
