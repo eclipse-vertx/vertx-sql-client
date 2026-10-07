@@ -120,9 +120,9 @@ public class PgConnectionTest extends PgConnectionTestBase {
         ctx.assertTrue(hasSqlstateCode(error, ERRCODE_QUERY_CANCELED), error.getMessage());
         async.countDown();
       }));
-      ((PgConnection)conn)
+      vertx.setTimer(1000, id -> ((PgConnection)conn)
         .cancelRequest()
-        .onComplete(ctx.asyncAssertSuccess());
+        .onComplete(ctx.asyncAssertSuccess()));
 
       conn.closeHandler(v -> {
         ctx.assertEquals(1, async.count());
