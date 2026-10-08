@@ -301,4 +301,31 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
         ctx.assertEquals(Boolean.TRUE, rows.iterator().next().getJson(0));
       }));
   }
+
+  @Test
+  public void testDecodeNestedJsonNull(TestContext ctx) {
+    JsonObject expected = new JsonObject().put("key", (String) null);
+    pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, ?)")
+      .execute(Tuple.of(50, expected))
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(50)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject result = row.getJsonObject(0);
+        ctx.assertTrue(result.containsKey("key"));
+        ctx.assertNull(result.getValue("key"));
+      }));
+  }
+
+  @Test
+  public void testDecodeTopLevelJsonNull(TestContext ctx) {
+    pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, ?)")
+      .execute(Tuple.of(51, Tuple.JSON_NULL))
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(51)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        ctx.assertEquals(Tuple.JSON_NULL, row.getJson(0));
+      }));
+  }
 }
