@@ -13,6 +13,8 @@ package io.vertx.oracleclient.impl;
 import io.vertx.core.Future;
 import io.vertx.core.VertxException;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.oracleclient.OracleException;
@@ -29,6 +31,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Helper {
+
+  private static final Logger logger = LoggerFactory.getLogger(Helper.class);
 
   public static void closeQuietly(AutoCloseable autoCloseable) {
     if (autoCloseable != null) {
@@ -175,39 +179,54 @@ public class Helper {
   }
 
   private static Object convertOracleJsonValue(OracleJsonValue oracleJson, boolean topLevel) {
-    if (oracleJson instanceof OracleJsonObject) {
-      OracleJsonObject obj = (OracleJsonObject) oracleJson;
-      Map<String, Object> map = new LinkedHashMap<>(obj.size());
-      for (Map.Entry<String, OracleJsonValue> entry : obj.entrySet()) {
-        map.put(entry.getKey(), convertOracleJsonValue(entry.getValue(), false));
+    switch (oracleJson.getOracleJsonType()) {
+      case OBJECT: {
+        OracleJsonObject obj = (OracleJsonObject) oracleJson;
+        Map<String, Object> map = new LinkedHashMap<>(obj.size());
+        for (Map.Entry<String, OracleJsonValue> entry : obj.entrySet()) {
+          map.put(entry.getKey(), convertOracleJsonValue(entry.getValue(), false));
+        }
+        return new JsonObject(map);
       }
-      return new JsonObject(map);
-    } else if (oracleJson instanceof OracleJsonArray) {
-      OracleJsonArray arr = (OracleJsonArray) oracleJson;
-      List<Object> list = new ArrayList<>(arr.size());
-      for (OracleJsonValue element : arr) {
-        list.add(convertOracleJsonValue(element, false));
+      case ARRAY: {
+        OracleJsonArray arr = (OracleJsonArray) oracleJson;
+        List<Object> list = new ArrayList<>(arr.size());
+        for (OracleJsonValue element : arr) {
+          list.add(convertOracleJsonValue(element, false));
+        }
+        return new JsonArray(list);
       }
-      return new JsonArray(list);
-    } else if (oracleJson instanceof OracleJsonString) {
-      return ((OracleJsonString) oracleJson).getString();
-    } else if (oracleJson instanceof OracleJsonDecimal) {
-      return ((OracleJsonDecimal) oracleJson).bigDecimalValue();
-    } else if (oracleJson instanceof OracleJsonDouble) {
-      return ((OracleJsonDouble) oracleJson).doubleValue();
-    } else if (oracleJson instanceof OracleJsonFloat) {
-      return ((OracleJsonFloat) oracleJson).floatValue();
-    } else {
-      switch (oracleJson.getOracleJsonType()) {
-        case TRUE:
-          return Boolean.TRUE;
-        case FALSE:
-          return Boolean.FALSE;
-        case NULL:
-          return topLevel ? Tuple.JSON_NULL : null;
-        default:
-          return null;
-      }
+      case STRING:
+        return ((OracleJsonString) oracleJson).getString();
+      case DECIMAL:
+        return ((OracleJsonDecimal) oracleJson).bigDecimalValue();
+      case DOUBLE:
+        return ((OracleJsonDouble) oracleJson).doubleValue();
+      case FLOAT:
+        return ((OracleJsonFloat) oracleJson).floatValue();
+      case TIMESTAMP:
+        return ((OracleJsonTimestamp) oracleJson).getLocalDateTime().toString();
+      case TIMESTAMPTZ:
+        return ((OracleJsonTimestampTZ) oracleJson).getOffsetDateTime().toString();
+      case DATE:
+        return ((OracleJsonDate) oracleJson).getLocalDateTime().toString();
+      case BINARY:
+        return Buffer.buffer(((OracleJsonBinary) oracleJson).getBytes());
+      case INTERVALDS:
+        return ((OracleJsonIntervalDS) oracleJson).getDuration().toString();
+      case INTERVALYM:
+        return ((OracleJsonIntervalYM) oracleJson).getPeriod().toString();
+      case TRUE:
+        return Boolean.TRUE;
+      case FALSE:
+        return Boolean.FALSE;
+      case NULL:
+        return topLevel ? Tuple.JSON_NULL : null;
+      default:
+        if (logger.isWarnEnabled()) {
+          logger.warn("Unsupported Oracle JSON type: " + oracleJson.getOracleJsonType());
+        }
+        return null;
     }
   }
 
