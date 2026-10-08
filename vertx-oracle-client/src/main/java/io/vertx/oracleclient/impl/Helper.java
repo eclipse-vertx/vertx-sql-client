@@ -168,26 +168,26 @@ public class Helper {
     }
 
     if (value instanceof OracleJsonValue) {
-      return convertOracleJsonValue((OracleJsonValue) value);
+      return convertOracleJsonValue((OracleJsonValue) value, true);
     }
 
     // fallback to String
     return value.toString();
   }
 
-  private static Object convertOracleJsonValue(OracleJsonValue oracleJson) {
+  private static Object convertOracleJsonValue(OracleJsonValue oracleJson, boolean topLevel) {
     if (oracleJson instanceof OracleJsonObject) {
       OracleJsonObject obj = (OracleJsonObject) oracleJson;
       Map<String, Object> map = new LinkedHashMap<>(obj.size());
       for (Map.Entry<String, OracleJsonValue> entry : obj.entrySet()) {
-        map.put(entry.getKey(), convertOracleJsonValue(entry.getValue()));
+        map.put(entry.getKey(), convertOracleJsonValue(entry.getValue(), false));
       }
       return new JsonObject(map);
     } else if (oracleJson instanceof OracleJsonArray) {
       OracleJsonArray arr = (OracleJsonArray) oracleJson;
       List<Object> list = new ArrayList<>(arr.size());
       for (OracleJsonValue element : arr) {
-        list.add(convertOracleJsonValue(element));
+        list.add(convertOracleJsonValue(element, false));
       }
       return new JsonArray(list);
     } else if (oracleJson instanceof OracleJsonString) {
@@ -205,7 +205,7 @@ public class Helper {
         case FALSE:
           return Boolean.FALSE;
         case NULL:
-          return Tuple.JSON_NULL;
+          return topLevel ? Tuple.JSON_NULL : null;
         default:
           return null;
       }
