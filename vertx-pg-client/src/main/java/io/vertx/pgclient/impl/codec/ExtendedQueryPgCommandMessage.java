@@ -27,7 +27,7 @@ public class ExtendedQueryPgCommandMessage<R, C extends ExtendedQueryCommand<R>>
 
   private PgEncoder encoder;
 
-  private static final String TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN = "bind message has \\d result formats but query has \\d columns";
+  private static final String TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN = "bind message has \\d+ result formats but query has \\d+ columns";
 
   private PgPreparedStatement ps;
 

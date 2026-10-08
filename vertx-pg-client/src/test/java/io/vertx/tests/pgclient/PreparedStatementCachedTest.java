@@ -21,6 +21,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
+import io.vertx.pgclient.PgException;
 import io.vertx.sqlclient.Tuple;
 import org.junit.Test;
 
@@ -72,6 +73,40 @@ public class PreparedStatementCachedTest extends PreparedStatementTestBase {
           }));
         }));
       }));
+    }));
+  }
+
+  @Test
+  public void testPreparedQueryCacheRefreshOnWideTableSchemaChangeAfterReparse(TestContext ctx) {
+    // A proxy such as RDS Proxy parses the cached statement again on its backend connection, so after a schema change
+    // the bind fails with "bind message has 10 result formats but query has 11 columns" instead of
+    // "cached plan must not change result type". Simulate that by re-preparing the statement under the same name.
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
+      String select = "SELECT * FROM unstable_wide WHERE id=$1";
+      conn.query("DROP TABLE IF EXISTS unstable_wide").execute()
+        .compose(v -> conn.query("CREATE TABLE unstable_wide (id integer PRIMARY KEY, c1 integer, c2 integer, c3 integer, " +
+          "c4 integer, c5 integer, c6 integer, c7 integer, c8 integer, c9 integer)").execute())
+        .compose(v -> conn.query("INSERT INTO unstable_wide (id) VALUES (1)").execute())
+        .compose(v -> conn.preparedQuery(select).execute(Tuple.of(1)))
+        .compose(res1 -> {
+          ctx.assertEquals(10, res1.columnsNames().size());
+          return conn.query("ALTER TABLE unstable_wide ADD COLUMN c10 integer").execute();
+        })
+        .compose(v -> conn.query("SELECT name FROM pg_prepared_statements WHERE statement = '" + select + "'").execute())
+        .compose(names -> {
+          String name = names.iterator().next().getString(0);
+          return conn.query("DEALLOCATE \"" + name + "\"; PREPARE \"" + name + "\" (int4) AS " + select).execute();
+        })
+        .compose(v -> conn.preparedQuery(select).execute(Tuple.of(1)))
+        .onComplete(ctx.asyncAssertFailure(failure -> {
+          ctx.assertEquals("bind message has 10 result formats but query has 11 columns", ((PgException) failure).getErrorMessage());
+          conn.preparedQuery(select).execute(Tuple.of(1)).onComplete(ctx.asyncAssertSuccess(res2 -> {
+            ctx.assertEquals(11, res2.columnsNames().size());
+            conn.close();
+            async.complete();
+          }));
+        }));
     }));
   }
 
