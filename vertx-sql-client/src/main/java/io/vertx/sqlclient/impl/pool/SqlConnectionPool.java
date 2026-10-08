@@ -248,7 +248,12 @@ public class SqlConnectionPool {
       });
     }, t -> {
       dequeueAndReject(queueMetric);
-      return Future.failedFuture(t);
+      if (timerId != -1 && !vertx.cancelTimer(timerId)) {
+        // The timer already failed the result
+        return Future.failedFuture(POOL_QUERY_TIMEOUT_EXCEPTION);
+      } else {
+        return Future.failedFuture(t);
+      }
     }).onComplete(ar -> {
       if (ar.succeeded()) {
         res.complete(ar.result());
