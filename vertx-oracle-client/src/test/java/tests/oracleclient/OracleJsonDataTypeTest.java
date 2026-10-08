@@ -24,6 +24,7 @@ import org.junit.runner.RunWith;
 import tests.oracleclient.junit.OracleRule;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -326,6 +327,112 @@ public class OracleJsonDataTypeTest extends OracleTestBase {
         ctx.assertEquals(1, rows.size());
         Row row = rows.iterator().next();
         ctx.assertEquals(Tuple.JSON_NULL, row.getJson(0));
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonTimestamp(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (52, JSON_OBJECT('ts' VALUE TIMESTAMP '2023-09-21 10:00:00' RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(52)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject obj = row.getJsonObject(0);
+        ctx.assertTrue(obj.getValue("ts") instanceof String);
+        ctx.assertEquals("2023-09-21T10:00", obj.getString("ts"));
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonTimestampTZ(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (53, JSON_OBJECT('ts' VALUE TIMESTAMP '2023-09-21 10:00:00 +02:00' RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(53)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject obj = row.getJsonObject(0);
+        ctx.assertTrue(obj.getValue("ts") instanceof String);
+        java.time.OffsetDateTime expected = java.time.OffsetDateTime.parse("2023-09-21T10:00:00+02:00");
+        java.time.OffsetDateTime actual = java.time.OffsetDateTime.parse(obj.getString("ts"));
+        ctx.assertEquals(expected, actual);
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonDate(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (54, JSON_OBJECT('d' VALUE DATE '2023-09-21' RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(54)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject obj = row.getJsonObject(0);
+        ctx.assertTrue(obj.getValue("d") instanceof String);
+        java.time.LocalDateTime expected = java.time.LocalDateTime.parse("2023-09-21T00:00");
+        java.time.LocalDateTime actual = java.time.LocalDateTime.parse(obj.getString("d"));
+        ctx.assertEquals(expected, actual);
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonIntervalYearToMonth(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (55, JSON_OBJECT('iv' VALUE TO_YMINTERVAL('P2Y3M') RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(55)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject obj = row.getJsonObject(0);
+        ctx.assertTrue(obj.getValue("iv") instanceof String);
+        java.time.Period expected = java.time.Period.parse("P2Y3M");
+        java.time.Period actual = java.time.Period.parse(obj.getString("iv"));
+        ctx.assertEquals(expected, actual);
+      }));
+  }
+
+  @Test
+  public void testDecodeOsonIntervalDayToSecond(TestContext ctx) {
+    pool.query("INSERT INTO json_test (id, data) VALUES (56, JSON_OBJECT('iv' VALUE TO_DSINTERVAL('P1DT2H3M4.5S') RETURNING JSON))")
+      .execute()
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(56)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject obj = row.getJsonObject(0);
+        ctx.assertTrue(obj.getValue("iv") instanceof String);
+        Duration expected = Duration.parse("P1DT2H3M4.5S");
+        Duration actual = Duration.parse(obj.getString("iv"));
+        ctx.assertEquals(expected, actual);
+      }));
+  }
+
+  @Test
+  public void testJsonObjectRoundTrip(TestContext ctx) {
+    JsonObject expected = new JsonObject()
+      .put("str", "hello")
+      .put("num", 42)
+      .put("dbl", 3.14)
+      .put("bool", true)
+      .putNull("nil")
+      .put("nested", new JsonObject().put("key", "value"))
+      .put("arr", new JsonArray().add(1).add("two").add(false));
+    pool.preparedQuery("INSERT INTO json_test (id, data) VALUES (?, ?)")
+      .execute(Tuple.of(57, expected))
+      .compose(v -> pool.preparedQuery("SELECT data FROM json_test WHERE id = ?").execute(Tuple.of(57)))
+      .onComplete(ctx.asyncAssertSuccess(rows -> {
+        ctx.assertEquals(1, rows.size());
+        Row row = rows.iterator().next();
+        JsonObject actual = row.getJsonObject(0);
+        ctx.assertEquals(expected.getString("str"), actual.getString("str"));
+        ctx.assertEquals(expected.getBoolean("bool"), actual.getBoolean("bool"));
+        ctx.assertNull(actual.getValue("nil"));
+        ctx.assertEquals(expected.getJsonObject("nested"), actual.getJsonObject("nested"));
+        ctx.assertEquals(expected.getJsonArray("arr").getString(1), actual.getJsonArray("arr").getString(1));
+        // Verify encode() works without exception
+        String encoded = actual.encode();
+        ctx.assertNotNull(encoded);
       }));
   }
 }
