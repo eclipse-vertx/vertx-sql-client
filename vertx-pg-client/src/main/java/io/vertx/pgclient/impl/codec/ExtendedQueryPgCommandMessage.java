@@ -23,11 +23,13 @@ import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.codec.CommandResponse;
 import io.vertx.sqlclient.spi.protocol.ExtendedQueryCommand;
 
+import java.util.regex.Pattern;
+
 public class ExtendedQueryPgCommandMessage<R, C extends ExtendedQueryCommand<R>> extends QueryBasePgCommandMessage<R, C> {
 
   private PgEncoder encoder;
 
-  private static final String TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN = "bind message has \\d result formats but query has \\d columns";
+  private static final Pattern TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN = Pattern.compile("bind message has \\d+ result formats but query has \\d+ columns");
 
   private PgPreparedStatement ps;
 
@@ -100,6 +102,6 @@ public class ExtendedQueryPgCommandMessage<R, C extends ExtendedQueryCommand<R>>
   }
 
   private boolean isTableSchemaErrorMessage(ErrorResponse errorResponse) {
-    return errorResponse.getMessage().matches(TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN) || errorResponse.getMessage().equals("cached plan must not change result type");
+    return TABLE_SCHEMA_CHANGE_ERROR_MESSAGE_PATTERN.matcher(errorResponse.getMessage()).matches() || errorResponse.getMessage().equals("cached plan must not change result type");
   }
 }
