@@ -11,6 +11,7 @@
 package io.vertx.sqlclient.templates;
 
 import io.vertx.codegen.annotations.VertxGen;
+import io.vertx.core.json.JsonObject;
 import io.vertx.sqlclient.Row;
 
 /**
@@ -19,6 +20,25 @@ import io.vertx.sqlclient.Row;
 @VertxGen
 @FunctionalInterface
 public interface RowMapper<T> {
+
+  /**
+   * Create a mapper that converts a {@link Row} to an instance of the given {@code type}.
+   *
+   * <p>This feature relies on {@link io.vertx.core.json.JsonObject#mapTo} feature. This likely requires
+   * to use Jackson databind in the project.
+   *
+   * @param type the target class
+   * @return the mapper
+   */
+  static <T> RowMapper<T> mapper(Class<T> type) {
+    return row -> {
+      JsonObject json = new JsonObject();
+      for (int i = 0; i < row.size(); i++) {
+        json.getMap().put(row.getColumnName(i), row.getValue(i));
+      }
+      return json.mapTo(type);
+    };
+  }
 
   /**
    * Build a {@code T} representation of the given {@code row}

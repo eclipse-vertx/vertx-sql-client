@@ -65,6 +65,35 @@ When your template must be executed inside a transaction, you might create a tem
 ----
 ====
 
+== Streaming
+
+When dealing with large result sets, you can use {@link io.vertx.sqlclient.templates.SqlTemplateStream} to read rows progressively using a cursor with a configurable fetch size, instead of loading all rows in memory at once.
+
+NOTE: Streaming requires a {@link io.vertx.sqlclient.SqlConnection}. Some databases (e.g. PostgreSQL) also require an active transaction for cursors.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#streamExample}
+----
+
+You can use `mapTo` to map each row emitted by the stream to a custom type:
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#streamWithMapToExample}
+----
+
+== Cursor
+
+If you need finer control over row fetching, you can use a cursor-based template with {@link io.vertx.sqlclient.templates.SqlTemplate#forCursor}. This gives you a {@link io.vertx.sqlclient.Cursor} that allows you to read rows in batches.
+
+NOTE: Cursors require a {@link io.vertx.sqlclient.SqlConnection}. Some databases (e.g. PostgreSQL) also require an active transaction for cursors.
+
+[source,$lang]
+----
+{@link examples.TemplateExamples#cursorExample}
+----
+
 == Template syntax
 
 The template syntax uses `#{XXX}` syntax where `XXX` is a valid https://docs.oracle.com/javase/specs/jls/se8/html/jls-3.html#jls-3.8[java identifier] string
