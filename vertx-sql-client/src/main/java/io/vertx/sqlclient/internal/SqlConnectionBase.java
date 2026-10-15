@@ -22,8 +22,10 @@ import io.vertx.core.spi.metrics.ClientMetrics;
 import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.PromiseInternal;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.sqlclient.PrepareOptions;
 import io.vertx.sqlclient.PreparedStatement;
+import io.vertx.sqlclient.SqlClient;
 import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.impl.PreparedStatementBase;
 import io.vertx.sqlclient.impl.TransactionImpl;
@@ -37,6 +39,8 @@ import io.vertx.sqlclient.impl.tracing.QueryReporter;
 import io.vertx.sqlclient.spi.connection.ConnectionFactory;
 import io.vertx.sqlclient.spi.DatabaseMetadata;
 import io.vertx.sqlclient.spi.Driver;
+
+import java.util.function.Function;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -174,6 +178,11 @@ public class SqlConnectionBase<C extends SqlConnectionBase<C>> extends SqlClient
         conn.schedule(cmd, handler);
       }
     }
+  }
+
+  @Override
+  public <T> Future<@Nullable T> withBatch(Function<SqlClient, Future<@Nullable T>> function) {
+    return context.failedFuture(new UnsupportedOperationException("Not yet implemented"));
   }
 
   @Override
