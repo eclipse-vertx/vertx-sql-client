@@ -131,6 +131,10 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     }
   }
 
+  public boolean isUsingDomainSocket() {
+    return socket.remoteAddress().isDomainSocket();
+  }
+
   @Override
   public String system() {
     return metaData.system();

@@ -47,7 +47,7 @@ abstract class AuthenticationCommandBaseCodec<R, C extends AuthenticationCommand
     } else {
       byte flag = payload.readByte();
       if (flag == FULL_AUTHENTICATION_STATUS_FLAG) {
-        if (encoder.socketConnection.isSsl()) {
+        if (encoder.socketConnection.isSsl() || encoder.socketConnection.isUsingDomainSocket()) {
           // send the non-scrambled password directly since it's on a secure connection
           int nonScrambledPasswordPacketLength = password.length + 1;
           ByteBuf nonScrambledPasswordPacket = allocateBuffer(nonScrambledPasswordPacketLength + 4);
