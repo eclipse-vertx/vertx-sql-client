@@ -18,18 +18,17 @@ package io.vertx.pgclient.impl.codec;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.socket.SocketChannel;
-import io.vertx.sqlclient.Tuple;
 import io.vertx.pgclient.impl.util.Util;
+import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.impl.HexSequence;
 import io.vertx.sqlclient.internal.RowDescriptorBase;
 import io.vertx.sqlclient.spi.protocol.CloseConnectionCommand;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Map;
 
 import static io.vertx.pgclient.impl.util.Util.writeCString;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -99,6 +98,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
       PgCommandMessage<?, ?> codec = PgCommandMessage.wrap(cmd);
       codec.encode(this);
     }
+    ctx.close(promise);
   }
 
   @Override
@@ -495,13 +495,7 @@ final class PgEncoder extends ChannelOutboundHandlerAdapter {
 
   void close() {
     ByteBuf buff = renderPendingMessages();
-    ctx.writeAndFlush(buff).addListener(v -> {
-      Channel ch = channelHandlerContext().channel();
-      if (ch instanceof SocketChannel) {
-        SocketChannel channel = (SocketChannel) ch;
-        channel.shutdownOutput();
-      }
-    });
+    ctx.writeAndFlush(buff).addListener(v -> ctx.close());
   }
 
   void flush() {
