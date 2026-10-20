@@ -151,6 +151,10 @@ public class MySQLSocketConnection extends SocketConnectionBase {
     }
   }
 
+  public boolean isUsingDomainSocket() {
+    return socket.remoteAddress().isDomainSocket();
+  }
+
   public Future<Void> upgradeToSsl(ClientSSLOptions sslOptions) {
     return socket.upgradeToSsl(sslOptions);
   }
