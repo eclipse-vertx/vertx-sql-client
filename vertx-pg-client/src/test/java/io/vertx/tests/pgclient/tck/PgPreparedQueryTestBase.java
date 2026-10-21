@@ -52,10 +52,9 @@ public abstract class PgPreparedQueryTestBase extends PreparedQueryTestBase {
     connect(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery(query)
         .execute(tuple)
-        .onComplete(ar -> {
-          ctx.assertTrue(ar.failed());
-          ctx.assertTrue(ar.cause().getMessage().contains("exceeds the maximum of 65535"));
-        });
+        .onComplete(ctx.asyncAssertFailure(t -> {
+          ctx.assertTrue(t.getMessage().contains("exceeds the maximum of 65535"));
+        }));
     }));
   }
 }
