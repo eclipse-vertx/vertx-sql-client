@@ -30,6 +30,7 @@
     <!-- Set to a value for testing with a specific database -->
     <oracle-container.version/>
     <oracle.useVirtualThreads/>
+    <test.threadDump.timeoutSeconds/>
     <ojdbc.version>23.26.3.0.0</ojdbc.version>
     <vertx.asciidoc.sources.dir>${project.basedir}/src/main/asciidoc/*.adoc,${project.basedir}/../vertx-sql-client/src/main/asciidoc/*.adoc</vertx.asciidoc.sources.dir>
   </properties>
@@ -82,11 +83,9 @@
             <oracle-container.version>${oracle-container.version}</oracle-container.version>
             <connection.uri>${connection.uri}</connection.uri>
             <oracle.useVirtualThreads>${oracle.useVirtualThreads}</oracle.useVirtualThreads>
+            <test.threadDump.timeoutSeconds>${test.threadDump.timeoutSeconds}</test.threadDump.timeoutSeconds>
           </systemPropertyVariables>
           <forkedProcessTimeoutInSeconds>1500</forkedProcessTimeoutInSeconds>
-          <forkedProcessTimeoutExtensionContext>
-            <jstack.enabled>true</jstack.enabled>
-          </forkedProcessTimeoutExtensionContext>
         </configuration>
       </plugin>
     </plugins>
@@ -104,6 +103,7 @@
       <properties>
         <oracle-container.version>23-slim-faststart</oracle-container.version>
         <oracle.useVirtualThreads>true</oracle.useVirtualThreads>
+        <test.threadDump.timeoutSeconds>600</test.threadDump.timeoutSeconds>
       </properties>
     </profile>
   </profiles>
