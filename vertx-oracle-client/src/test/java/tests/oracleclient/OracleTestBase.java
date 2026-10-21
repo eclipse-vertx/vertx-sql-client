@@ -14,12 +14,17 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
+import tests.oracleclient.junit.ThreadDumpOnTimeoutRule;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class OracleTestBase {
+
+  @Rule
+  public ThreadDumpOnTimeoutRule threadDumpRule = new ThreadDumpOnTimeoutRule();
 
   public static Vertx vertx;
 
