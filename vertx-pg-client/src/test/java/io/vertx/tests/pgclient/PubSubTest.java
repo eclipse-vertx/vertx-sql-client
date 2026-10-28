@@ -133,6 +133,19 @@ public class PubSubTest extends PgTestBase {
   }
 
   @Test
+  public void testSecondChannelWithSameNameIsNotifiedOfSubscription(TestContext ctx) {
+    subscriber = PgSubscriber.subscriber(vertx, options);
+    Async connected = ctx.async();
+    subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connected.complete()));
+    connected.awaitSuccess(10000);
+    Async first = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> first.complete()).handler(notification -> { });
+    first.awaitSuccess(10000);
+    Async second = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> second.complete()).handler(notification -> { });
+  }
+
+  @Test
   public void testSubscribe(TestContext ctx) {
     testSubscribe(ctx, "the_channel");
   }

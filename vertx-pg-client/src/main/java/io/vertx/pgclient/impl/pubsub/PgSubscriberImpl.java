@@ -99,6 +99,7 @@ public class PgSubscriberImpl implements PgSubscriber {
 
   private synchronized void handleClose(Void v) {
     conn = null;
+    channels.values().forEach(channel -> channel.listening = false);
     checkReconnect(0);
   }
 
@@ -190,6 +191,9 @@ public class PgSubscriberImpl implements PgSubscriber {
             log.error("Cannot LISTEN to channels", ar2.cause());
             conn.close();
           } else {
+            synchronized (PgSubscriberImpl.this) {
+              channels.values().forEach(channel -> channel.listening = true);
+            }
             handlers.forEach(vertx::runOnContext);
           }
           completionHandler.complete(null, ar2.cause());
@@ -206,6 +210,7 @@ public class PgSubscriberImpl implements PgSubscriber {
   final String quotedName;
     final ArrayList<ChannelImpl> subs = new ArrayList<>();
     boolean subscribed;
+    boolean listening;
 
     ChannelList(String name) {
       this.name = name;
@@ -220,15 +225,23 @@ public class PgSubscriberImpl implements PgSubscriber {
           String sql = "LISTEN " + quotedName;
           conn.query(sql).execute().onComplete(ar -> {
             if (ar.succeeded()) {
-              Handler<Void> handler = sub.subscribeHandler;
-              if (handler != null) {
-                handler.handle(null);
+              // Notify every channel that joined while the LISTEN was in flight
+              List<Handler<Void>> handlers;
+              synchronized (PgSubscriberImpl.this) {
+                listening = true;
+                handlers = subs.stream()
+                  .map(s -> s.subscribeHandler)
+                  .filter(Objects::nonNull)
+                  .collect(Collectors.toList());
               }
+              handlers.forEach(handler -> handler.handle(null));
             } else {
               log.error("Cannot LISTEN to channel " + name, ar.cause());
             }
           });
         }
+      } else if (listening && sub.subscribeHandler != null) {
+        vertx.runOnContext(sub.subscribeHandler);
       }
     }
 
