@@ -384,6 +384,25 @@ public abstract class PreparedQueryTestBase {
   }
 
   @Test
+  public void testStreamQueryWithoutEndHandler(TestContext ctx) {
+    vertx.exceptionHandler(ctx::fail);
+    Async async = ctx.async();
+    testCursor(ctx, conn -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(ps -> {
+        RowStream<Row> stream = ps.createStream(4, Tuple.tuple());
+        AtomicInteger rows = new AtomicInteger();
+        stream.exceptionHandler(ctx::fail);
+        stream.handler(row -> {
+          if (rows.incrementAndGet() == 12) {
+            // The stream ends after the last row: give it time to do so without an end handler
+            vertx.setTimer(100, id -> async.complete());
+          }
+        });
+      }));
+    });
+  }
+
+  @Test
   public void testStreamQueryNoResults(TestContext ctx) {
     Async async = ctx.async();
     testCursor(ctx, conn -> {
