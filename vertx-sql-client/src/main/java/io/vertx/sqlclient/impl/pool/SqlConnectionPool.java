@@ -33,6 +33,7 @@ import io.vertx.sqlclient.spi.protocol.CommandBase;
 import io.vertx.sqlclient.spi.protocol.QueryCommandBase;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -211,14 +212,38 @@ public class SqlConnectionPool {
   public <R> void execute(CommandBase<R> cmd, Completable<R> handler, long timeout) {
     ContextInternal context = vertx.getOrCreateContext();
     Promise<Lease<PooledConnection>> p = context.promise();
+    Object metric = enqueueMetric();
+    AtomicReference<PoolWaiter<PooledConnection>> waiter = new AtomicReference<>();
     long timerId;
     if (timeout > 0) {
-      timerId = vertx.setTimer(timeout, t -> handler.fail(POOL_QUERY_TIMEOUT_EXCEPTION));
+      timerId = vertx.setTimer(timeout, t -> {
+        PoolWaiter<PooledConnection> w = waiter.get();
+        if (w == null) {
+          handler.fail(POOL_QUERY_TIMEOUT_EXCEPTION);
+          return;
+        }
+        // Leave the wait queue before failing, the request must no longer count against its size
+        pool.cancel(w, (removed, err) -> {
+          if (err == null && removed) {
+            dequeueMetric(metric);
+          }
+          handler.fail(POOL_QUERY_TIMEOUT_EXCEPTION);
+        });
+      });
     } else {
       timerId = -1;
     }
-    Object metric = enqueueMetric();
-    pool.acquire(context, 0, p);
+    pool.acquire(context, new PoolWaiter.Listener<>() {
+      @Override
+      public void onEnqueue(PoolWaiter<PooledConnection> w) {
+        waiter.set(w);
+      }
+
+      @Override
+      public void onConnect(PoolWaiter<PooledConnection> w) {
+        waiter.set(w);
+      }
+    }, 0, p);
     p.future().compose(lease -> {
       dequeueMetric(metric);
       PooledConnection pooled = lease.get();

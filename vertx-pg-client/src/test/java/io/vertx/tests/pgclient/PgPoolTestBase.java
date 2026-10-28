@@ -277,4 +277,20 @@ public abstract class PgPoolTestBase extends PgTestBase {
           .onComplete(ctx.asyncAssertSuccess());
       }));
   }
+
+  @Test
+  public void testPoolQueryTimeoutLeavesWaitQueue(TestContext ctx) {
+    Pool pool = createPool(options, new PoolOptions()
+      .setMaxSize(1)
+      .setMaxWaitQueueSize(1)
+      .setConnectionTimeout(1)
+      .setConnectionTimeoutUnit(TimeUnit.SECONDS));
+    pool.getConnection().onComplete(ctx.asyncAssertSuccess(conn -> {
+      pool.query("SELECT 1").execute().onComplete(ctx.asyncAssertFailure(timeout -> {
+        // The timed out query must not keep its place in the wait queue
+        pool.query("SELECT 1").execute().onComplete(ctx.asyncAssertSuccess());
+        vertx.setTimer(100, id -> conn.close());
+      }));
+    }));
+  }
 }
