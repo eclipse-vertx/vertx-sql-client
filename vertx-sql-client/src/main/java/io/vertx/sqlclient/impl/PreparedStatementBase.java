@@ -134,6 +134,10 @@ public abstract class PreparedStatementBase implements PreparedStatement {
               promise.fail(ar.cause());
             }
           });
+        } else {
+          // Never executed, so never prepared: nothing to close, and it must not be prepared afterwards
+          future = context.failedFuture("Prepared statement closed");
+          promise.complete();
         }
       }
       @Override
