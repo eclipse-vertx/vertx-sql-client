@@ -731,8 +731,7 @@ public class DataTypeCodec {
     int second = Integer.parseInt(timeElements[2].substring(0, 2));
     long nanos = 0;
     if (timeElements[2].length() > 2) {
-      double fractionalSecondsPart = Double.parseDouble("0." + timeElements[2].substring(3));
-      nanos = (long) (1000000000 * fractionalSecondsPart);
+      nanos = Long.parseLong((timeElements[2].substring(3) + "00000000").substring(0, 9));
     }
     if (isNegative) {
       return Duration.ofHours(-hour).minusMinutes(minute).minusSeconds(second).minusNanos(nanos);
