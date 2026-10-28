@@ -24,8 +24,11 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.pgclient.*;
 import io.vertx.sqlclient.Tuple;
 import io.vertx.tests.pgclient.junit.ContainerPgRule;
+import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.*;
 import org.junit.runner.RunWith;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(VertxUnitRunner.class)
 public class TLSTest {
@@ -147,6 +150,32 @@ public class TLSTest {
     PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertFalse(conn.isSSL());
       async.complete();
+    }));
+  }
+
+  @Test
+  public void testSslModeRequireClosesRefusedSocket(TestContext ctx) {
+    PgConnectOptions options = ruleSllOff.options()
+      .setSslMode(SslMode.REQUIRE)
+      .setSslOptions(new ClientSSLOptions().setTrustAll(true));
+    AtomicInteger openSockets = new AtomicInteger();
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    proxy.proxyHandler(conn -> {
+      openSockets.incrementAndGet();
+      conn.clientCloseHandler(v -> openSockets.decrementAndGet());
+      conn.connect();
+    });
+    Async listen = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v -> listen.complete()));
+    listen.awaitSuccess(10000);
+    options.setPort(8080).setHost("localhost");
+    Async async = ctx.async();
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(err -> {
+      // The server refused SSL: the client must not keep the socket it opened to ask for it
+      vertx.setTimer(2000, id -> {
+        ctx.assertEquals(0, openSockets.get());
+        async.complete();
+      });
     }));
   }
 

@@ -75,10 +75,13 @@ public class InitiateSslHandler extends ChannelInboundHandlerAdapter {
       }
       case PgProtocolConstants.MESSAGE_TYPE_SSL_NO: {
         upgradePromise.fail(new Exception("Postgres Server does not handle SSL connection"));
+        // The server waits for a startup message on this socket: close it, PREFER reconnects without SSL
+        ctx.close();
         break;
       }
       default:
         upgradePromise.fail(new Exception("Invalid SSL connection message"));
+        ctx.close();
         break;
     }
   }
