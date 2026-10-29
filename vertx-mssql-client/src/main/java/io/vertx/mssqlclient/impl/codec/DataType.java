@@ -413,11 +413,14 @@ public enum DataType {
     @Override
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
       BigDecimal bigDecimal = (BigDecimal) value;
+      if (bigDecimal.scale() < 0) {
+        bigDecimal = bigDecimal.setScale(0);
+      }
       writeParamDescription(byteBuf, name, out, id);
       writeParamSize(byteBuf, 17, 38);
       int sign = bigDecimal.signum() < 0 ? 0 : 1;
       byte[] bytes = (sign == 0 ? bigDecimal.negate() : bigDecimal).unscaledValue().toByteArray();
-      byteBuf.writeByte(Math.max(0, bigDecimal.scale()));
+      byteBuf.writeByte(bigDecimal.scale());
       byteBuf.writeByte(1 + bytes.length);
       byteBuf.writeByte(sign);
       for (int i = bytes.length - 1; i >= 0; i--) byteBuf.writeByte(bytes[i]);
