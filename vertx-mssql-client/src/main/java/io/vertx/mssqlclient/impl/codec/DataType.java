@@ -219,7 +219,7 @@ public enum DataType {
 
     @Override
     public Object decodeValue(ByteBuf byteBuf, TypeInfo typeInfo) {
-      return new BigDecimal(byteBuf.readIntLE()).divide(new BigDecimal("10000"), 2, RoundingMode.UP);
+      return new BigDecimal(byteBuf.readIntLE()).divide(new BigDecimal("10000"), 4, RoundingMode.UP);
     }
 
     @Override
