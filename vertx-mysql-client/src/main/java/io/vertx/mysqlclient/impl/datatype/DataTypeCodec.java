@@ -30,6 +30,7 @@ import io.vertx.sqlclient.impl.Utils;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -179,7 +180,7 @@ public class DataTypeCodec {
       case VARSTRING:
       default:
         if (value instanceof JsonObject || value instanceof JsonArray) {
-          binaryEncodeJson(value, buffer);
+          binaryEncodeJson(value, buffer, charset);
           return;
         } else if (value == Tuple.JSON_NULL) {
           // we have to make JSON literal null send as a STRING data type
@@ -467,7 +468,11 @@ public class DataTypeCodec {
     }
   }
 
-  private static void binaryEncodeJson(Object value, ByteBuf buffer) {
+  private static void binaryEncodeJson(Object value, ByteBuf buffer, Charset charset) {
+    if (!StandardCharsets.UTF_8.equals(charset)) {
+      BufferUtils.writeLengthEncodedString(buffer, Json.encode(value), charset);
+      return;
+    }
     ByteBuf tmp = buffer.alloc().buffer();
     try {
       Json.encodeTo(value, new ByteBufOutputStream(tmp));

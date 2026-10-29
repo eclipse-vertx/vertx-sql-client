@@ -12,6 +12,7 @@
 package io.vertx.tests.mysqlclient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLConnectOptions;
@@ -91,6 +92,20 @@ public class MySQLCollationTest extends MySQLTestBase {
           ctx.assertEquals("gbk", res2.iterator().next().getString("Value"));
           conn.close();
         }));
+      }));
+    }));
+  }
+
+  @Test
+  public void testJsonParameterWithConnectionCollation(TestContext ctx) {
+    MySQLConnectOptions connectOptions = options.setCollation("gbk_chinese_ci");
+    MySQLConnection.connect(vertx, connectOptions).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .preparedQuery("SELECT JSON_UNQUOTE(JSON_EXTRACT(CAST(? AS JSON), '$.city')) AS city")
+        .execute(Tuple.of(new JsonObject().put("city", "\u5317\u4EAC")))
+        .onComplete(ctx.asyncAssertSuccess(res -> {
+        ctx.assertEquals("\u5317\u4EAC", res.iterator().next().getString("city"));
+        conn.close();
       }));
     }));
   }
