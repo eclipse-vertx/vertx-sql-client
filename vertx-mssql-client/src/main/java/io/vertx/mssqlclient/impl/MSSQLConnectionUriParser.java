@@ -177,6 +177,9 @@ public class MSSQLConnectionUriParser {
           case "encrypt":
             parseEncryptParameter(value, configuration);
             break;
+          case "trustservercertificate":
+            parseTrustServerCertificateParameter(value, configuration);
+            break;
           default:
             properties.put(key, value);
             break;
@@ -233,5 +236,23 @@ public class MSSQLConnectionUriParser {
         );
     }
     configuration.put("encryptionMode", encryptMode);
+  }
+
+  private static void parseTrustServerCertificateParameter(String value, JsonObject configuration) {
+    if (value == null || value.isEmpty()) {
+      return;
+    }
+    switch (value.toLowerCase()) {
+      case "true":
+        configuration.put("trustServerCertificate", true);
+        break;
+      case "false":
+        configuration.put("trustServerCertificate", false);
+        break;
+      default:
+        throw new IllegalArgumentException(
+          format("Invalid value for 'trustServerCertificate' parameter: '%s'. Valid values are: 'true', 'false'", value)
+        );
+    }
   }
 }

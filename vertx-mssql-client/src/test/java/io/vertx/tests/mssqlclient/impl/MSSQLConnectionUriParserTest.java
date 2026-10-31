@@ -12,11 +12,13 @@
 package io.vertx.tests.mssqlclient.impl;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.mssqlclient.MSSQLConnectOptions;
 import org.junit.Test;
 
 import static io.vertx.mssqlclient.impl.MSSQLConnectionUriParser.parse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class MSSQLConnectionUriParserTest {
   private String uri;
@@ -294,6 +296,42 @@ public class MSSQLConnectionUriParserTest {
     uri = "not_sqlserver://username:dddd@127.0.0.1:1234/*dbname";
     actualParsedResult = parse(uri, false);
     assertNull(actualParsedResult);
+  }
+
+  @Test
+  public void testParsingTrustServerCertificate() {
+    actualParsedResult = parse("sqlserver://localhost/mydb1?encrypt=true&trustServerCertificate=true&authenticationscheme=NTLM");
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("database", "mydb1")
+      .put("encryptionMode", "ON")
+      .put("trustServerCertificate", true)
+      .put("properties", new JsonObject().put("authenticationscheme", "NTLM").getMap());
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test
+  public void testParsingTrustServerCertificateFalse() {
+    actualParsedResult = parse("sqlserver://localhost?trustServerCertificate=false");
+
+    expectedParsedResult = new JsonObject()
+      .put("host", "localhost")
+      .put("trustServerCertificate", false);
+
+    assertEquals(expectedParsedResult, actualParsedResult);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testParsingTrustServerCertificateInvalid() {
+    parse("sqlserver://localhost?trustServerCertificate=maybe");
+  }
+
+  @Test
+  public void testTrustServerCertificateSetsTrustAll() {
+    assertTrue(MSSQLConnectOptions.fromUri("sqlserver://localhost?encrypt=true&trustServerCertificate=true").getSslOptions().isTrustAll());
+    assertNull(MSSQLConnectOptions.fromUri("sqlserver://localhost?encrypt=true").getSslOptions());
   }
 
   @Test
