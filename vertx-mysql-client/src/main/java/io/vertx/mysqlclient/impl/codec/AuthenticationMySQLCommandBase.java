@@ -39,6 +39,17 @@ abstract class AuthenticationMySQLCommandBase<R, C extends AuthenticationCommand
     super(cmd);
   }
 
+  protected static byte[] readNonce(ByteBuf payload) {
+    byte[] nonce = new byte[NONCE_LENGTH];
+    payload.readBytes(nonce);
+    return nonce;
+  }
+
+  protected final void sendClearPassword(byte[] password) {
+    byte[] response = Arrays.copyOf(password, password.length + 1); // end with a 0x00
+    sendBytesAsPacket(response);
+  }
+
   protected final void handleAuthMoreData(byte[] password, ByteBuf payload) {
     payload.skipBytes(1); // skip the status flag
     if (isWaitingForRsaPublicKey){

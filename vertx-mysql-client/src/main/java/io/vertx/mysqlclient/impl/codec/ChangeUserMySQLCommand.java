@@ -60,19 +60,17 @@ class ChangeUserMySQLCommand extends AuthenticationMySQLCommandBase<Void, Change
     // Protocol::AuthSwitchRequest
     payload.skipBytes(1); // status flag, always 0xFE
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
-    authPluginData = new byte[NONCE_LENGTH];
-    payload.readBytes(authPluginData);
     switch (pluginName) {
       case "mysql_native_password":
+        authPluginData = readNonce(payload);
         sendBytesAsPacket(Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), authPluginData));
         break;
       case "caching_sha2_password":
+        authPluginData = readNonce(payload);
         sendBytesAsPacket(CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), authPluginData));
         break;
       case "mysql_clear_password":
-        ByteBuf buffer = encoder.chctx.alloc().buffer();
-        BufferUtils.writeNullTerminatedString(buffer, password, StandardCharsets.UTF_8);
-        sendNonSplitPacket(buffer);
+        sendClearPassword(password.getBytes(StandardCharsets.UTF_8));
         break;
       default:
         encoder.fireCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));

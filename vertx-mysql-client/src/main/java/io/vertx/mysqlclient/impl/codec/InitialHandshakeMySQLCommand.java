@@ -187,19 +187,15 @@ class InitialHandshakeMySQLCommand extends AuthenticationMySQLCommandBase<Connec
     // Protocol::AuthSwitchRequest
     payload.skipBytes(1); // status flag, always 0xFE
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
-    byte[] nonce = new byte[NONCE_LENGTH];
-    payload.readBytes(nonce);
     switch (pluginName) {
       case "mysql_native_password":
-        sendBytesAsPacket(Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce));
+        sendBytesAsPacket(Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), readNonce(payload)));
         break;
       case "caching_sha2_password":
-        sendBytesAsPacket(CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), nonce));
+        sendBytesAsPacket(CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), readNonce(payload)));
         break;
       case "mysql_clear_password":
-        ByteBuf buffer = encoder.chctx.alloc().buffer();
-        BufferUtils.writeNullTerminatedString(buffer, password, StandardCharsets.UTF_8);
-        sendNonSplitPacket(buffer);
+        sendClearPassword(password.getBytes(StandardCharsets.UTF_8));
         break;
       default:
         encoder.fireCommandResponse(CommandResponse.failure(new UnsupportedOperationException("Unsupported authentication method: " + pluginName)));
