@@ -189,10 +189,16 @@ class InitialHandshakeMySQLCommand extends AuthenticationMySQLCommandBase<Connec
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     switch (pluginName) {
       case "mysql_native_password":
-        sendBytesAsPacket(Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), readNonce(payload)));
+        if (!readAuthSwitchNonce(payload)) {
+          return;
+        }
+        sendBytesAsPacket(Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), authPluginData));
         break;
       case "caching_sha2_password":
-        sendBytesAsPacket(CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), readNonce(payload)));
+        if (!readAuthSwitchNonce(payload)) {
+          return;
+        }
+        sendBytesAsPacket(CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), authPluginData));
         break;
       case "mysql_clear_password":
         sendClearPassword(password.getBytes(StandardCharsets.UTF_8));

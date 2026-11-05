@@ -62,11 +62,15 @@ class ChangeUserMySQLCommand extends AuthenticationMySQLCommandBase<Void, Change
     String pluginName = BufferUtils.readNullTerminatedString(payload, StandardCharsets.UTF_8);
     switch (pluginName) {
       case "mysql_native_password":
-        authPluginData = readNonce(payload);
+        if (!readAuthSwitchNonce(payload)) {
+          return;
+        }
         sendBytesAsPacket(Native41Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), authPluginData));
         break;
       case "caching_sha2_password":
-        authPluginData = readNonce(payload);
+        if (!readAuthSwitchNonce(payload)) {
+          return;
+        }
         sendBytesAsPacket(CachingSha2Authenticator.encode(password.getBytes(StandardCharsets.UTF_8), authPluginData));
         break;
       case "mysql_clear_password":

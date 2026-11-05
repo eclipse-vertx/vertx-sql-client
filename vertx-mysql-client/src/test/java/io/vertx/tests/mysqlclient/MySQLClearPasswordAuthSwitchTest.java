@@ -28,13 +28,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * A server that answers with an AuthSwitchRequest to {@code mysql_clear_password}, this plugin does not use a nonce
- * so the request has no plugin data. A real MySQL server does not do that without an external authentication plugin,
- * hence the fake server.
+ * A server that answers with an AuthSwitchRequest, the plugin data that follows the plugin name depends on the plugin:
+ * {@code mysql_clear_password} does not use a nonce so the data is empty or ignored, while the other plugins expect a
+ * nonce. A real MySQL server does not switch to {@code mysql_clear_password} without an external authentication
+ * plugin, hence the fake server.
  */
 @RunWith(VertxUnitRunner.class)
 public class MySQLClearPasswordAuthSwitchTest {
@@ -46,7 +47,9 @@ public class MySQLClearPasswordAuthSwitchTest {
 
   private Vertx vertx;
   private NetServer server;
-  private final List<Buffer> clearPasswordResponses = new ArrayList<>();
+  private final List<Buffer> clearPasswordResponses = new CopyOnWriteArrayList<>();
+  private volatile String switchPlugin = "mysql_clear_password";
+  private volatile byte[] switchPluginData = new byte[0];
 
   @Before
   public void setup(TestContext ctx) {
@@ -60,7 +63,7 @@ public class MySQLClearPasswordAuthSwitchTest {
     vertx.close().onComplete(ctx.asyncAssertSuccess());
   }
 
-  @Test
+  @Test(timeout = 30_000)
   public void testConnect(TestContext ctx) {
     connect().onComplete(ctx.asyncAssertSuccess(conn -> {
       ctx.assertEquals(1, clearPasswordResponses.size());
@@ -69,16 +72,57 @@ public class MySQLClearPasswordAuthSwitchTest {
     }));
   }
 
-  @Test
+  @Test(timeout = 30_000)
+  public void testConnectWithPluginData(TestContext ctx) {
+    switchPluginData = "some trailing plugin data".getBytes(StandardCharsets.UTF_8);
+    connect().onComplete(ctx.asyncAssertSuccess(conn -> {
+      ctx.assertEquals(1, clearPasswordResponses.size());
+      assertClearPassword(ctx, clearPasswordResponses.get(0), "secret");
+      conn.close().onComplete(ctx.asyncAssertSuccess());
+    }));
+  }
+
+  @Test(timeout = 30_000)
   public void testChangeUser(TestContext ctx) {
     connect().onComplete(ctx.asyncAssertSuccess(conn -> {
-      MySQLAuthOptions authOptions = new MySQLAuthOptions().setUser("other").setPassword("other-secret");
-      conn.changeUser(authOptions).onComplete(ctx.asyncAssertSuccess(v -> {
+      conn.changeUser(otherUser()).onComplete(ctx.asyncAssertSuccess(v -> {
         ctx.assertEquals(2, clearPasswordResponses.size());
         assertClearPassword(ctx, clearPasswordResponses.get(1), "other-secret");
         conn.close().onComplete(ctx.asyncAssertSuccess());
       }));
     }));
+  }
+
+  @Test(timeout = 30_000)
+  public void testChangeUserWithPluginData(TestContext ctx) {
+    switchPluginData = "some trailing plugin data".getBytes(StandardCharsets.UTF_8);
+    connect().onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn.changeUser(otherUser()).onComplete(ctx.asyncAssertSuccess(v -> {
+        ctx.assertEquals(2, clearPasswordResponses.size());
+        assertClearPassword(ctx, clearPasswordResponses.get(1), "other-secret");
+        conn.close().onComplete(ctx.asyncAssertSuccess());
+      }));
+    }));
+  }
+
+  @Test(timeout = 30_000)
+  public void testConnectWithShortNonce(TestContext ctx) {
+    switchPlugin = "mysql_native_password";
+    switchPluginData = new byte[5];
+    connect().onComplete(ctx.asyncAssertFailure(failure -> assertShortNonce(ctx, failure, 5)));
+  }
+
+  @Test(timeout = 30_000)
+  public void testChangeUserWithShortNonce(TestContext ctx) {
+    connect().onComplete(ctx.asyncAssertSuccess(conn -> {
+      switchPlugin = "caching_sha2_password";
+      switchPluginData = new byte[7];
+      conn.changeUser(otherUser()).onComplete(ctx.asyncAssertFailure(failure -> assertShortNonce(ctx, failure, 7)));
+    }));
+  }
+
+  private MySQLAuthOptions otherUser() {
+    return new MySQLAuthOptions().setUser("other").setPassword("other-secret");
   }
 
   private Future<MySQLConnection> connect() {
@@ -97,9 +141,15 @@ public class MySQLClearPasswordAuthSwitchTest {
     ctx.assertEquals(Buffer.buffer(password.getBytes(StandardCharsets.UTF_8)).appendByte((byte) 0), payload);
   }
 
+  private void assertShortNonce(TestContext ctx, Throwable failure, int received) {
+    ctx.assertTrue(failure.getMessage().contains("expected 20 bytes of plugin data but received " + received), failure.getMessage());
+  }
+
   private void handleConnection(NetSocket so) {
     so.write(handshake());
-    int[] step = {0};
+    // the server first waits for a client request (the handshake response or COM_CHANGE_USER), answers it with an auth
+    // switch request, then waits for the response to the auth switch request
+    boolean[] awaitingAuthSwitchResponse = {false};
     Buffer[] pending = {Buffer.buffer()};
     so.handler(chunk -> {
       pending[0].appendBuffer(chunk);
@@ -115,16 +165,13 @@ public class MySQLClearPasswordAuthSwitchTest {
           so.close();
           return;
         }
-        switch (step[0]++ % 4) {
-          case 0: // handshake response or COM_CHANGE_USER, switch to the clear password plugin
-          case 2:
-            so.write(authSwitchRequest(sequenceId + 1));
-            break;
-          case 1: // the clear password
-          case 3:
-            clearPasswordResponses.add(payload);
-            so.write(packet(sequenceId + 1, Buffer.buffer().appendByte((byte) 0).appendBytes(new byte[]{0, 0, 2, 0, 0, 0})));
-            break;
+        if (awaitingAuthSwitchResponse[0]) {
+          awaitingAuthSwitchResponse[0] = false;
+          clearPasswordResponses.add(payload);
+          so.write(packet(sequenceId + 1, Buffer.buffer().appendByte((byte) 0).appendBytes(new byte[]{0, 0, 2, 0, 0, 0})));
+        } else {
+          awaitingAuthSwitchResponse[0] = true;
+          so.write(authSwitchRequest(sequenceId + 1));
         }
       }
     });
@@ -150,10 +197,11 @@ public class MySQLClearPasswordAuthSwitchTest {
     return packet(0, payload);
   }
 
-  private static Buffer authSwitchRequest(int sequenceId) {
+  private Buffer authSwitchRequest(int sequenceId) {
     Buffer payload = Buffer.buffer();
     payload.appendByte((byte) 0xFE);
-    payload.appendString("mysql_clear_password").appendByte((byte) 0);
+    payload.appendString(switchPlugin).appendByte((byte) 0);
+    payload.appendBytes(switchPluginData);
     return packet(sequenceId, payload);
   }
 
