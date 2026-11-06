@@ -40,8 +40,8 @@ abstract class AuthenticationMySQLCommandBase<R, C extends AuthenticationCommand
   }
 
   /**
-   * Read the nonce of an auth switch request in {@link #authPluginData}, the command fails when the server sent less
-   * plugin data than a nonce.
+   * Reads the nonce of an auth switch request into {@link #authPluginData}. Fails the command when the server sent
+   * less plugin data than a nonce.
    *
    * @return whether the nonce has been read
    */
