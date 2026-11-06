@@ -38,7 +38,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * plugin, hence the fake server.
  */
 @RunWith(VertxUnitRunner.class)
-public class MySQLClearPasswordAuthSwitchTest {
+public class MySQLAuthSwitchTest {
 
   private static final int COM_QUIT = 0x01;
   private static final int CLIENT_PROTOCOL_41 = 0x0200;
