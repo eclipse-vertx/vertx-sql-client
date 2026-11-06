@@ -30,11 +30,17 @@ import org.junit.runner.RunWith;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @RunWith(VertxUnitRunner.class)
 public class OraclePoolTest extends OracleTestBase {
+
+  // An idle Oracle Free instance already uses about half of the 200 server processes it allows.
+  // Keep concurrency moderate so that the database does not run out of handlers and start
+  // rejecting connections with ORA-12516, which would break the rest of the test suite too.
+  private static final int MAX_POOL_SIZE = 16;
 
   @ClassRule
   public static OracleRule oracle = OracleRule.SHARED_INSTANCE;
@@ -87,7 +93,7 @@ public class OraclePoolTest extends OracleTestBase {
   public void testPool(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    Pool pool = createPool(options, 40);
+    Pool pool = createPool(options, MAX_POOL_SIZE);
     for (int i = 0; i < num; i++) {
       pool
         .getConnection()
@@ -108,7 +114,7 @@ public class OraclePoolTest extends OracleTestBase {
   public void testQuery(TestContext ctx) {
     int num = 1000;
     Async async = ctx.async(num);
-    Pool pool = createPool(options, 40);
+    Pool pool = createPool(options, MAX_POOL_SIZE);
     for (int i = 0; i < num; i++) {
       pool
         .query("SELECT id, randomnumber FROM WORLD")
@@ -157,6 +163,9 @@ public class OraclePoolTest extends OracleTestBase {
     int num = 1000;
     Async async = ctx.async(num);
     Pool pool = createPool(options, 4);
+    // Requests still in flight when the pool is closed fail too: report the first unexpected
+    // failure only, instead of flooding the build log with a thousand identical stack traces
+    AtomicBoolean failureReported = new AtomicBoolean();
     for (int i = 0; i < num; i++) {
       pool
         .preparedQuery("UPDATE Fortune SET message = 'Whatever' WHERE id = ?")
@@ -165,8 +174,8 @@ public class OraclePoolTest extends OracleTestBase {
         if (ar.succeeded()) {
           RowSet<Row> result = ar.result();
           ctx.assertEquals(1, result.rowCount());
-        } else {
-          ctx.assertEquals("closed", ar.cause().getMessage());
+        } else if (!"closed".equals(ar.cause().getMessage()) && failureReported.compareAndSet(false, true)) {
+          ctx.fail(ar.cause());
         }
         async.countDown();
       });
