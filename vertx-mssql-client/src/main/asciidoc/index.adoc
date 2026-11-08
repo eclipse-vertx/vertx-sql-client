@@ -128,6 +128,7 @@ Currently, the client supports the following parameter keys:
 * `password`
 * `database`
 * `encrypt` - encryption mode: `strict` (TDS 8.0), `true` (TDS 7.x with SSL), `false` (no encryption)
+* `trustServerCertificate` - when `true`, the server certificate is not validated (equivalent to {@link io.vertx.core.net.ClientSSLOptions#setTrustAll(boolean) trustAll}), not allowed with `encrypt=strict`
 
 Additional parameters will be added to the {@link io.vertx.sqlclient.SqlConnectOptions#getProperties properties}.
 
