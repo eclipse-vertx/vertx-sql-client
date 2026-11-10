@@ -17,6 +17,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.vertx.core.impl.NoStackTraceThrowable;
 
+import static io.vertx.mysqlclient.impl.protocol.Packets.ERROR_PACKET_HEADER;
 import static io.vertx.mysqlclient.impl.protocol.Packets.PACKET_PAYLOAD_LENGTH_LIMIT;
 
 class MySQLDecoder extends ChannelInboundHandlerAdapter {
@@ -71,6 +72,11 @@ class MySQLDecoder extends ChannelInboundHandlerAdapter {
       codec.checkFireAndForgetCommands();
       CommandCodec<?, ?> ctx = codec.peek();
       if (ctx == null) {
+        // The server can send an unsolicited ERR packet before closing the connection,
+        // e.g. ER_CLIENT_INTERACTION_TIMEOUT (4031) when wait_timeout expires
+        if (payload.isReadable() && payload.getUnsignedByte(payload.readerIndex()) == ERROR_PACKET_HEADER) {
+          throw CommandCodec.decodeErrorPacketPayload(payload);
+        }
         throw new IllegalStateException("No command codec for packet");
       }
       ctx.sequenceId = sequenceId + 1;

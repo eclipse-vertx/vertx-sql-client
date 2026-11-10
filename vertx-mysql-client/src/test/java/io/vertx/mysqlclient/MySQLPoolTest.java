@@ -119,6 +119,15 @@ public class MySQLPoolTest extends MySQLTestBase {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(1);
     MySQLPool pool = MySQLPool.pool(vertx, new MySQLConnectOptions(this.options).setCachePreparedStatements(false), poolOptions);
     pool.getConnection(ctx.asyncAssertSuccess(conn -> {
+      // MySQL sends an ERR packet before closing the connection, MariaDB / MySQL5 closes it silently
+      if (!MySQLTestBase.rule.isUsingMariaDB() && !MySQLTestBase.rule.isUsingMySQL5()) {
+        Async exception = ctx.async();
+        conn.exceptionHandler(failure -> {
+          ctx.assertTrue(failure instanceof MySQLException);
+          ctx.assertEquals(4031, ((MySQLException) failure).getErrorCode());
+          exception.complete();
+        });
+      }
       conn.query("SET SESSION wait_timeout=3;").execute(ctx.asyncAssertSuccess(wait -> {
         vertx.setTimer(5000, id -> {
           conn.query("SELECT 'vertx'").execute(ctx.asyncAssertFailure(err -> {
