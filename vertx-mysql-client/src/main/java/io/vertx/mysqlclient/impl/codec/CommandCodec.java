@@ -124,7 +124,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     encoder.fireCommandResponse(CommandResponse.failure(mySQLException));
   }
 
-  final MySQLException decodeErrorPacketPayload(ByteBuf payload) {
+  static MySQLException decodeErrorPacketPayload(ByteBuf payload) {
     payload.skipBytes(1); // skip ERR packet header
     int errorCode = payload.readUnsignedShortLE();
     // CLIENT_PROTOCOL_41 capability flag will always be set
@@ -150,7 +150,7 @@ abstract class CommandCodec<R, C extends CommandBase<R>> {
     return new EofPacket(numberOfWarnings, serverStatusFlags);
   }
 
-  String readRestOfPacketString(ByteBuf payload, Charset charset) {
+  static String readRestOfPacketString(ByteBuf payload, Charset charset) {
     return BufferUtils.readFixedLengthString(payload, payload.readableBytes(), charset);
   }
 
