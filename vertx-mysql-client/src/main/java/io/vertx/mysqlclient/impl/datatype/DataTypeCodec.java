@@ -387,17 +387,17 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeTime(Duration value, ByteBuf buffer) {
-    long secondsOfDuration = value.getSeconds();
-    int nanosOfDuration = value.getNano();
-    if (secondsOfDuration == 0 && nanosOfDuration == 0) {
+    if (value.isZero()) {
       buffer.writeByte(0);
       return;
     }
     byte isNegative = 0;
-    if (secondsOfDuration < 0) {
+    if (value.isNegative()) {
       isNegative = 1;
-      secondsOfDuration = -secondsOfDuration;
+      value = value.negated();
     }
+    long secondsOfDuration = value.getSeconds();
+    int nanosOfDuration = value.getNano();
 
     int days = (int) (secondsOfDuration / 86400);
     int secondsOfADay = (int) (secondsOfDuration % 86400);
@@ -415,13 +415,7 @@ public class DataTypeCodec {
       return;
     }
 
-    int microSecond;
-    if (isNegative == 1 && nanosOfDuration > 0) {
-      second = second - 1;
-      microSecond = (1000_000_000 - nanosOfDuration) / 1000;
-    } else {
-      microSecond = nanosOfDuration / 1000;
-    }
+    int microSecond = nanosOfDuration / 1000;
 
     buffer.writeByte(12);
     buffer.writeByte(isNegative);
