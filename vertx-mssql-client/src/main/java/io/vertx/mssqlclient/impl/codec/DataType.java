@@ -407,20 +407,18 @@ public enum DataType {
 
     @Override
     public String paramDefinition(Object value) {
-      return "numeric(38," + (value == null ? 0 : Math.max(0, ((BigDecimal) value).scale())) + ")";
+      return "numeric(38," + (value == null ? 0 : paramScale((BigDecimal) value)) + ")";
     }
 
     @Override
     public void encodeParam(ByteBuf byteBuf, String name, boolean out, Object value) {
-      BigDecimal bigDecimal = (BigDecimal) value;
-      if (bigDecimal.scale() < 0) {
-        bigDecimal = bigDecimal.setScale(0);
-      }
+      int scale = paramScale((BigDecimal) value);
+      BigDecimal bigDecimal = ((BigDecimal) value).setScale(scale);
       writeParamDescription(byteBuf, name, out, id);
       writeParamSize(byteBuf, 17, 38);
       int sign = bigDecimal.signum() < 0 ? 0 : 1;
       byte[] bytes = (sign == 0 ? bigDecimal.negate() : bigDecimal).unscaledValue().toByteArray();
-      byteBuf.writeByte(bigDecimal.scale());
+      byteBuf.writeByte(scale);
       byteBuf.writeByte(1 + bytes.length);
       byteBuf.writeByte(sign);
       for (int i = bytes.length - 1; i >= 0; i--) byteBuf.writeByte(bytes[i]);
@@ -1051,6 +1049,13 @@ public enum DataType {
 
   DataType(int id) {
     this.id = id;
+  }
+
+  /**
+   * @return the scale of a numeric parameter: the server does not accept a negative scale
+   */
+  private static int paramScale(BigDecimal value) {
+    return Math.max(0, value.scale());
   }
 
   private static void skipMultipartTableName(ByteBuf byteBuf) {

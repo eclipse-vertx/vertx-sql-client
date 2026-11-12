@@ -82,6 +82,13 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   }
 
   @Test
+  public void testEncodeNegativeDecimalWithNegativeScale(TestContext ctx) {
+    testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_decimal", new BigDecimal("-1500").stripTrailingZeros(), row -> {
+      checkNumber(row, "test_decimal", new BigDecimal("-1500"));
+    });
+  }
+
+  @Test
   public void testEncodeBit(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_boolean", false, row -> {
       ColumnChecker.checkColumn(0, "test_boolean")
