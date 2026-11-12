@@ -133,6 +133,31 @@ public class PubSubTest extends PgTestBase {
   }
 
   @Test
+  public void testCloseWhileConnecting(TestContext ctx) {
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> pending = new AtomicReference<>();
+    Async accepted = ctx.async();
+    // Hold the connection until the subscriber is closed
+    proxy.proxyHandler(conn -> {
+      pending.set(conn);
+      accepted.complete();
+    });
+    Async listening = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v -> listening.complete()));
+    listening.awaitSuccess(10000);
+    subscriber = PgSubscriber.subscriber(vertx, new PgConnectOptions(options).setPort(8080).setHost("localhost"));
+    subscriber.channel("the_channel").handler(notification -> ctx.fail("Notification after close: " + notification));
+    Async connected = ctx.async();
+    subscriber.connect().onComplete(ar -> connected.complete());
+    accepted.awaitSuccess(10000);
+    subscriber.close();
+    pending.get().connect();
+    connected.awaitSuccess(10000);
+    ctx.assertTrue(subscriber.closed());
+    ctx.assertNull(subscriber.actualConnection());
+  }
+
+  @Test
   public void testSubscribe(TestContext ctx) {
     testSubscribe(ctx, "the_channel");
   }
