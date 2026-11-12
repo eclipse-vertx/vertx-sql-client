@@ -101,7 +101,7 @@ public class MySQLCollationTest extends MySQLTestBase {
     MySQLConnectOptions connectOptions = options.setCollation("gbk_chinese_ci");
     MySQLConnection.connect(vertx, connectOptions).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn
-        .preparedQuery("SELECT JSON_UNQUOTE(JSON_EXTRACT(CAST(? AS JSON), '$.city')) AS city")
+        .preparedQuery("SELECT JSON_UNQUOTE(JSON_EXTRACT(?, '$.city')) AS city")
         .execute(Tuple.of(new JsonObject().put("city", "\u5317\u4EAC")))
         .onComplete(ctx.asyncAssertSuccess(res -> {
         ctx.assertEquals("\u5317\u4EAC", res.iterator().next().getString("city"));
