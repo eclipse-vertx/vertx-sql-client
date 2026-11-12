@@ -18,6 +18,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
+import io.vertx.core.json.EncodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -28,9 +29,11 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.Utils;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -469,15 +472,15 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeJson(Object value, ByteBuf buffer, Charset charset) {
-    if (!StandardCharsets.UTF_8.equals(charset)) {
-      BufferUtils.writeLengthEncodedString(buffer, Json.encode(value), charset);
-      return;
-    }
     ByteBuf tmp = buffer.alloc().buffer();
     try {
-      Json.encodeTo(value, new ByteBufOutputStream(tmp));
+      Writer writer = new OutputStreamWriter(new ByteBufOutputStream(tmp), charset);
+      Json.encodeTo(value, writer);
+      writer.flush();
       BufferUtils.writeLengthEncodedInteger(buffer, tmp.readableBytes());
       buffer.writeBytes(tmp);
+    } catch (IOException e) {
+      throw new EncodeException("Failed to encode as JSON: " + e.getMessage(), e);
     } finally {
       tmp.release();
     }
