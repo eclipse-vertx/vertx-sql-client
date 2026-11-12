@@ -319,7 +319,7 @@ public class MSSQLPreparedQueryNotNullableDataTypeTest extends MSSQLNotNullableD
   @Test
   public void testEncodeSmallMoney(TestContext ctx) {
     testPreparedQueryEncodeGeneric(ctx, "not_nullable_datatype", "test_smallmoney", "€12.12", row -> {
-      checkNumber(row, "test_smallmoney", new BigDecimal("12.12"));
+      checkNumber(row, "test_smallmoney", new BigDecimal("12.1200"));
     });
   }
 
