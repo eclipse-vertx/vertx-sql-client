@@ -22,6 +22,7 @@ import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgNotice;
 import io.vertx.pgclient.PgNotification;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.pgclient.impl.codec.NoticeResponse;
 import io.vertx.pgclient.impl.codec.TxStatusEvent;
 import io.vertx.pgclient.spi.PgDriver;
@@ -32,9 +33,13 @@ import io.vertx.sqlclient.spi.connection.Connection;
 public class PgConnectionImpl extends SqlConnectionBase<PgConnectionImpl> implements PgConnection  {
 
   public static Future<PgConnection> connect(ContextInternal context, PgConnectOptions options) {
+    return connect(context, options, new NetClientOptions());
+  }
+
+  public static Future<PgConnection> connect(ContextInternal context, PgConnectOptions options, NetClientOptions transportOptions) {
     PgConnectionFactory client;
     try {
-      client = new PgConnectionFactory(context.owner());
+      client = new PgConnectionFactory(context.owner(), transportOptions);
     } catch (Exception e) {
       return context.failedFuture(e);
     }
