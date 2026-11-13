@@ -19,6 +19,9 @@ package io.vertx.tests.pgclient;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.ContextInternal;
+import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.ProxyOptions;
+import io.vertx.core.net.ProxyType;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.pgclient.PgConnectOptions;
@@ -89,6 +92,36 @@ public class PubSubTest extends PgTestBase {
         }));
       }));
     }));
+  }
+
+  @Test
+  public void testSubscriberWithTransportOptions(TestContext ctx) {
+    subscriber = PgSubscriber.subscriber(vertx, options, new NetClientOptions().setTcpKeepAlive(true));
+    Async notified = ctx.async();
+    subscriber.channel("transport_channel").handler(payload -> {
+      ctx.assertEquals("the message", payload);
+      notified.complete();
+    });
+    subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> {
+      PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+        conn.query("NOTIFY transport_channel, 'the message'").execute().onComplete(ctx.asyncAssertSuccess());
+      }));
+    }));
+  }
+
+  @Test
+  public void testSubscriberTransportOptionsAreApplied(TestContext ctx) {
+    // The unreachable proxy proves that the transport options are used to connect
+    NetClientOptions transportOptions = new NetClientOptions()
+      .setProxyOptions(new ProxyOptions().setType(ProxyType.SOCKS5).setHost("localhost").setPort(1));
+    subscriber = PgSubscriber.subscriber(vertx, options, transportOptions);
+    subscriber.connect().onComplete(ctx.asyncAssertFailure());
+  }
+
+  @Test
+  public void testConnectWithTransportOptions(TestContext ctx) {
+    PgConnection.connect(vertx, options, new NetClientOptions().setTcpKeepAlive(true))
+      .onComplete(ctx.asyncAssertSuccess(conn -> conn.close().onComplete(ctx.asyncAssertSuccess())));
   }
 
   @Test

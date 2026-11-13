@@ -22,6 +22,7 @@ import io.vertx.pgclient.*;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.pgclient.pubsub.PgChannel;
 import io.vertx.core.*;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.streams.ReadStream;
 
 import java.util.*;
@@ -35,6 +36,7 @@ public class PgSubscriberImpl implements PgSubscriber {
 
   private final Vertx vertx;
   private final PgConnectOptions options;
+  private final NetClientOptions transportOptions;
   private Map<String, ChannelList> channels = new HashMap<>();
   private Function<Integer, Long> reconnectPolicy = DEFAULT_RECONNECT_POLICY;
 
@@ -43,9 +45,10 @@ public class PgSubscriberImpl implements PgSubscriber {
   private boolean closed = true;
   private Handler<Void> closeHandler;
 
-  public PgSubscriberImpl(Vertx vertx, PgConnectOptions options) {
+  public PgSubscriberImpl(Vertx vertx, PgConnectOptions options, NetClientOptions transportOptions) {
     this.vertx = vertx;
     this.options = new PgConnectOptions(options);
+    this.transportOptions = new NetClientOptions(transportOptions);
   }
 
   // Identifiers in PostgreSQL are currently limited to NAMEDATALEN-1 = 63
@@ -162,7 +165,7 @@ public class PgSubscriberImpl implements PgSubscriber {
   }
 
   private void doConnect(Completable<Void> completionHandler) {
-    PgConnection.connect(vertx, options).onComplete(ar -> handleConnectResult(completionHandler, ar));
+    PgConnection.connect(vertx, options, transportOptions).onComplete(ar -> handleConnectResult(completionHandler, ar));
   }
 
   private synchronized void handleConnectResult(Completable<Void> completionHandler, AsyncResult<PgConnection> ar1) {

@@ -20,6 +20,7 @@ package io.vertx.pgclient;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Future;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.internal.ContextInternal;
@@ -55,6 +56,13 @@ public interface PgConnection extends SqlConnection {
    */
   static Future<PgConnection> connect(Vertx vertx, PgConnectOptions options) {
     return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options);
+  }
+
+  /**
+   * Like {@link #connect(Vertx, PgConnectOptions)} with the specified transport {@code transportOptions}.
+   */
+  static Future<PgConnection> connect(Vertx vertx, PgConnectOptions options, NetClientOptions transportOptions) {
+    return PgConnectionImpl.connect((ContextInternal) vertx.getOrCreateContext(), options, transportOptions);
   }
 
   /**
