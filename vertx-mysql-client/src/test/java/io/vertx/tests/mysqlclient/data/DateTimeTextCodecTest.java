@@ -51,6 +51,21 @@ public class DateTimeTextCodecTest extends DateTimeCodecTest {
     testTextDecodeGenericWithTable(ctx, "test_timestamp", LocalDateTime.of(2000, 1, 1, 10, 20, 30));
   }
 
+  @Test
+  public void testDecodeDatetimeWithFractionalSecondsEmpty(TestContext ctx) {
+    MySQLConnection.connect(vertx, options).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .query("SET SESSION sql_mode = ''")
+        .execute()
+        .compose(v -> conn.query("SELECT CAST('0000-00-00 00:00:00' AS DATETIME(6)) test_datetime").execute())
+        .onComplete(ctx.asyncAssertSuccess(result -> {
+        ctx.assertEquals(1, result.size());
+        ctx.assertNull(result.iterator().next().getValue("test_datetime"));
+        conn.close();
+      }));
+    }));
+  }
+
   @Override
   protected <T> void testDecodeGeneric(TestContext ctx, String data, String dataType, String columnName, T expected) {
     testDecodeGeneric(ctx, data, dataType, row -> {
