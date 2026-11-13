@@ -18,6 +18,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
+import io.vertx.core.json.EncodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -28,6 +29,9 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.Utils;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.time.Duration;
@@ -179,7 +183,7 @@ public class DataTypeCodec {
       case VARSTRING:
       default:
         if (value instanceof JsonObject || value instanceof JsonArray) {
-          binaryEncodeJson(value, buffer);
+          binaryEncodeJson(value, buffer, charset);
           return;
         } else if (value == Tuple.JSON_NULL) {
           // we have to make JSON literal null send as a STRING data type
@@ -461,12 +465,16 @@ public class DataTypeCodec {
     }
   }
 
-  private static void binaryEncodeJson(Object value, ByteBuf buffer) {
+  private static void binaryEncodeJson(Object value, ByteBuf buffer, Charset charset) {
     ByteBuf tmp = buffer.alloc().buffer();
     try {
-      Json.encodeTo(value, new ByteBufOutputStream(tmp));
+      Writer writer = new OutputStreamWriter(new ByteBufOutputStream(tmp), charset);
+      Json.encodeTo(value, writer);
+      writer.flush();
       BufferUtils.writeLengthEncodedInteger(buffer, tmp.readableBytes());
       buffer.writeBytes(tmp);
+    } catch (IOException e) {
+      throw new EncodeException("Failed to encode as JSON: " + e.getMessage(), e);
     } finally {
       tmp.release();
     }
