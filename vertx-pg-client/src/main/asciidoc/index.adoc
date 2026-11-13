@@ -676,6 +676,13 @@ provides per channel subscription:
 {@link examples.PgClientExamples#pubsub02(io.vertx.core.Vertx)}
 ----
 
+You can also configure the transport of the subscriber connection, e.g. to enable TCP keep alive, with {@link io.vertx.core.net.NetClientOptions}:
+
+[source,$lang]
+----
+{@link examples.PgClientExamples#pubsub05(io.vertx.core.Vertx)}
+----
+
 The channel name that is given to the channel method will be the exact name of the channel as held by PostgreSQL for sending
 notifications.  Note this is different than the representation of the channel name in SQL, and
 internally {@link io.vertx.pgclient.pubsub.PgSubscriber} will prepare the submitted channel name as a quoted identifier:
