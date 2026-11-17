@@ -588,6 +588,17 @@ public abstract class PreparedStatementTestBase extends PgTestBase {
   }
 
   @Test
+  public void testCloseLazyPreparedStatementNotExecuted42P18(TestContext ctx) {
+    PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
+      conn
+        .prepare("SELECT CONCAT('HELLO', $1)")
+        .compose(PreparedStatement::close)
+        .eventually(() -> conn.close())
+        .onComplete(ctx.asyncAssertSuccess());
+    }));
+  }
+
+  @Test
   public void testInferDataTypeFailure42P18(TestContext ctx) {
     PgConnection.connect(vertx, options()).onComplete(ctx.asyncAssertSuccess(conn -> {
       conn.preparedQuery("SELECT CONCAT('HELLO', $1)")
