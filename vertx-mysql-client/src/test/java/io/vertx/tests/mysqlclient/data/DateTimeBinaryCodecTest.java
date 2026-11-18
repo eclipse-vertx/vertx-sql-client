@@ -83,6 +83,11 @@ public class DateTimeBinaryCodecTest extends DateTimeCodecTest {
   }
 
   @Test
+  public void testEncodeNegativeFractionalSecondsPart(TestContext ctx) {
+    testEncodeTime(ctx, Duration.ofSeconds(-59).minusMillis(500), Duration.ofSeconds(-59).minusMillis(500));
+  }
+
+  @Test
   public void testEncodeTimeFromLocalTimeWithFractionalSecondsPart(TestContext ctx) {
     testEncodeTime(ctx, LocalTime.of(11, 12, 0, 123456000), Duration.ofHours(11).plusMinutes(12).plusNanos(123456000), LocalTime.of(11, 12, 0, 123456000));
   }

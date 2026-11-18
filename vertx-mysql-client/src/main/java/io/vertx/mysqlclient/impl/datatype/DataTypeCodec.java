@@ -18,6 +18,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.DecoderException;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.buffer.BufferInternal;
+import io.vertx.core.json.EncodeException;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -28,6 +29,9 @@ import io.vertx.sqlclient.Tuple;
 import io.vertx.sqlclient.data.Numeric;
 import io.vertx.sqlclient.impl.Utils;
 
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.time.Duration;
@@ -179,7 +183,7 @@ public class DataTypeCodec {
       case VARSTRING:
       default:
         if (value instanceof JsonObject || value instanceof JsonArray) {
-          binaryEncodeJson(value, buffer);
+          binaryEncodeJson(value, buffer, charset);
           return;
         } else if (value == Tuple.JSON_NULL) {
           // we have to make JSON literal null send as a STRING data type
@@ -387,17 +391,17 @@ public class DataTypeCodec {
   }
 
   private static void binaryEncodeTime(Duration value, ByteBuf buffer) {
-    long secondsOfDuration = value.getSeconds();
-    int nanosOfDuration = value.getNano();
-    if (secondsOfDuration == 0 && nanosOfDuration == 0) {
+    if (value.isZero()) {
       buffer.writeByte(0);
       return;
     }
     byte isNegative = 0;
-    if (secondsOfDuration < 0) {
+    if (value.isNegative()) {
       isNegative = 1;
-      secondsOfDuration = -secondsOfDuration;
+      value = value.negated();
     }
+    long secondsOfDuration = value.getSeconds();
+    int nanosOfDuration = value.getNano();
 
     int days = (int) (secondsOfDuration / 86400);
     int secondsOfADay = (int) (secondsOfDuration % 86400);
@@ -415,13 +419,7 @@ public class DataTypeCodec {
       return;
     }
 
-    int microSecond;
-    if (isNegative == 1 && nanosOfDuration > 0) {
-      second = second - 1;
-      microSecond = (1000_000_000 - nanosOfDuration) / 1000;
-    } else {
-      microSecond = nanosOfDuration / 1000;
-    }
+    int microSecond = nanosOfDuration / 1000;
 
     buffer.writeByte(12);
     buffer.writeByte(isNegative);
@@ -467,12 +465,16 @@ public class DataTypeCodec {
     }
   }
 
-  private static void binaryEncodeJson(Object value, ByteBuf buffer) {
+  private static void binaryEncodeJson(Object value, ByteBuf buffer, Charset charset) {
     ByteBuf tmp = buffer.alloc().buffer();
     try {
-      Json.encodeTo(value, new ByteBufOutputStream(tmp));
+      Writer writer = new OutputStreamWriter(new ByteBufOutputStream(tmp), charset);
+      Json.encodeTo(value, writer);
+      writer.flush();
       BufferUtils.writeLengthEncodedInteger(buffer, tmp.readableBytes());
       buffer.writeBytes(tmp);
+    } catch (IOException e) {
+      throw new EncodeException("Failed to encode as JSON: " + e.getMessage(), e);
     } finally {
       tmp.release();
     }
@@ -704,7 +706,7 @@ public class DataTypeCodec {
 
   private static LocalDate textDecodeDate(int collationId, ByteBuf buffer, int index, int length) {
     Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
-    CharSequence cs = buffer.toString(index, length, charset);
+    String cs = buffer.toString(index, length, charset);
     if (cs.equals("0000-00-00")) {
       // Invalid date will be converted to zero
       return null;
@@ -731,8 +733,7 @@ public class DataTypeCodec {
     int second = Integer.parseInt(timeElements[2].substring(0, 2));
     long nanos = 0;
     if (timeElements[2].length() > 2) {
-      double fractionalSecondsPart = Double.parseDouble("0." + timeElements[2].substring(3));
-      nanos = (long) (1000000000 * fractionalSecondsPart);
+      nanos = Long.parseLong((timeElements[2].substring(3) + "00000000").substring(0, 9));
     }
     if (isNegative) {
       return Duration.ofHours(-hour).minusMinutes(minute).minusSeconds(second).minusNanos(nanos);
@@ -743,8 +744,8 @@ public class DataTypeCodec {
 
   private static LocalDateTime textDecodeDateTime(int collationId, ByteBuf buffer, int index, int length) {
     Charset charset = MySQLCollation.getJavaCharsetByCollationId(collationId);
-    CharSequence cs = buffer.toString(index, length, charset);
-    if (cs.equals("0000-00-00 00:00:00")) {
+    String cs = buffer.toString(index, length, charset);
+    if (cs.startsWith("0000-00-00 00:00:00")) {
       // Invalid datetime will be converted to zero
       return null;
     }

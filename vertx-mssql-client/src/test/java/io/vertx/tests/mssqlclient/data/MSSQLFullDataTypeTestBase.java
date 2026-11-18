@@ -53,7 +53,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
       ctx.assertEquals(Buffer.buffer("venice of the north"), row.getValue("test_varbinary_max"));
       ctx.assertEquals(Buffer.buffer("paris of the west"), row.getValue("test_image"));
       ctx.assertEquals(new BigDecimal("12.3456"), row.getValue("test_money"));
-      ctx.assertEquals(new BigDecimal("12.34"), row.getValue("test_smallmoney"));
+      ctx.assertEquals(new BigDecimal("12.3400"), row.getValue("test_smallmoney"));
     });
   }
 
@@ -266,7 +266,7 @@ public abstract class MSSQLFullDataTypeTestBase extends MSSQLDataTypeTestBase {
   @Test
   public void testDecodeSmallMoney(TestContext ctx) {
     testDecodeNotNullValue(ctx, "test_smallmoney", row -> {
-      checkNumber(row, "test_smallmoney", new BigDecimal("12.34"));
+      checkNumber(row, "test_smallmoney", new BigDecimal("12.3400"));
     });
   }
 
