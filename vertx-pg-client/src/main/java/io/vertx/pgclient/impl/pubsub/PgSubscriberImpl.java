@@ -162,11 +162,25 @@ public class PgSubscriberImpl implements PgSubscriber {
   }
 
   private void doConnect(Completable<Void> completionHandler) {
+    synchronized (this) {
+      if (closed) {
+        // Closed while a reconnect was scheduled
+        connecting = false;
+        completionHandler.complete(null, new IllegalStateException("Subscriber closed"));
+        return;
+      }
+    }
     PgConnection.connect(vertx, options).onComplete(ar -> handleConnectResult(completionHandler, ar));
   }
 
   private synchronized void handleConnectResult(Completable<Void> completionHandler, AsyncResult<PgConnection> ar1) {
     connecting = false;
+    if (ar1.succeeded() && closed) {
+      // Closed while connecting: do not keep the connection
+      ar1.result().close();
+      completionHandler.complete(null, new IllegalStateException("Subscriber closed"));
+      return;
+    }
     if (ar1.succeeded()) {
       conn = ar1.result();
       conn.notificationHandler(PgSubscriberImpl.this::handleNotification);
