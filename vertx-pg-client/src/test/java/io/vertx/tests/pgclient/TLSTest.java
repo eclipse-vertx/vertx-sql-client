@@ -28,8 +28,6 @@ import io.vertx.tests.sqlclient.ProxyServer;
 import org.junit.*;
 import org.junit.runner.RunWith;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 @RunWith(VertxUnitRunner.class)
 public class TLSTest {
 
@@ -158,25 +156,20 @@ public class TLSTest {
     PgConnectOptions options = ruleSllOff.options()
       .setSslMode(SslMode.REQUIRE)
       .setSslOptions(new ClientSSLOptions().setTrustAll(true));
-    AtomicInteger openSockets = new AtomicInteger();
+    // The server refused SSL: the client must close the socket it opened to ask for it
+    Async clientClosed = ctx.async();
     ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
     proxy.proxyHandler(conn -> {
-      openSockets.incrementAndGet();
-      conn.clientCloseHandler(v -> openSockets.decrementAndGet());
+      conn.clientCloseHandler(v -> clientClosed.countDown());
       conn.connect();
     });
     Async listen = ctx.async();
     proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v -> listen.complete()));
     listen.awaitSuccess(10000);
     options.setPort(8080).setHost("localhost");
-    Async async = ctx.async();
-    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertFailure(err -> {
-      // The server refused SSL: the client must not keep the socket it opened to ask for it
-      vertx.setTimer(2000, id -> {
-        ctx.assertEquals(0, openSockets.get());
-        async.complete();
-      });
-    }));
+    PgConnection.connect(vertx, options).onComplete(ctx.asyncAssertFailure());
+    // Otherwise the server closes the socket itself, once its authentication timeout of one minute has passed
+    clientClosed.awaitSuccess(10000);
   }
 
   @Test
