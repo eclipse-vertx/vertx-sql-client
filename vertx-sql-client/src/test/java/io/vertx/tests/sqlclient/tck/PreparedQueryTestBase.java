@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 public abstract class PreparedQueryTestBase {
@@ -381,6 +382,34 @@ public abstract class PreparedQueryTestBase {
         });
       }));
     });
+  }
+
+  @Test
+  public void testStreamQueryWithoutEndHandler(TestContext ctx) throws Exception {
+    vertx.exceptionHandler(ctx::fail);
+    Async rows = ctx.async(12);
+    AtomicReference<RowStreamInternal> streamRef = new AtomicReference<>();
+    AtomicReference<Cursor> cursorRef = new AtomicReference<>();
+    testCursor(ctx, conn -> {
+      conn.prepare("SELECT * FROM immutable").onComplete(ctx.asyncAssertSuccess(ps -> {
+        RowStreamInternal stream = (RowStreamInternal) ps.createStream(4, Tuple.tuple());
+        stream.exceptionHandler(ctx::fail);
+        stream.handler(row -> rows.countDown());
+        // The stream opens its cursor when it gets a row handler
+        cursorRef.set(stream.cursor());
+        streamRef.set(stream);
+      }));
+    });
+    rows.awaitSuccess(20_000);
+    // The stream ends after the last row, also without an end handler: it closes its cursor, then releases it
+    long start = System.currentTimeMillis();
+    while (streamRef.get().cursor() != null) {
+      if (System.currentTimeMillis() - start >= 20_000) {
+        ctx.fail("Timeout waiting for the stream to end");
+      }
+      Thread.sleep(10);
+    }
+    ctx.assertTrue(cursorRef.get().isClosed());
   }
 
   @Test
