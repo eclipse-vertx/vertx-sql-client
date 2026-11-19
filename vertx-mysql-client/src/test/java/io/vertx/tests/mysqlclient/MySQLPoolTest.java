@@ -22,6 +22,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.mysqlclient.MySQLBuilder;
 import io.vertx.mysqlclient.MySQLConnectOptions;
 import io.vertx.mysqlclient.MySQLConnection;
+import io.vertx.mysqlclient.MySQLException;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
@@ -143,6 +144,15 @@ public class MySQLPoolTest extends MySQLTestBase {
     pool
       .getConnection()
       .onComplete(ctx.asyncAssertSuccess(conn -> {
+      // MySQL sends an ERR packet before closing the connection, MariaDB closes it silently
+      if (!MySQLTestBase.rule.isUsingMariaDB()) {
+        Async exception = ctx.async();
+        conn.exceptionHandler(failure -> {
+          ctx.assertTrue(failure instanceof MySQLException);
+          ctx.assertEquals(4031, ((MySQLException) failure).getErrorCode());
+          exception.complete();
+        });
+      }
       conn
         .query("SET SESSION wait_timeout=3;")
         .execute()

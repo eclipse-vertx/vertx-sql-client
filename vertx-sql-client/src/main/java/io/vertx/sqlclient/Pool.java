@@ -185,7 +185,15 @@ public interface Pool extends SqlClient {
    * @return a future notified with the result
    */
   default <T> Future<@Nullable T> withConnection(Function<SqlConnection, Future<@Nullable T>> function) {
-    return getConnection().flatMap(conn -> function.apply(conn).onComplete(ar -> conn.close()));
+    return getConnection().flatMap(conn -> {
+      Future<@Nullable T> result;
+      try {
+        result = function.apply(conn);
+      } catch (Throwable t) {
+        result = Future.failedFuture(t);
+      }
+      return result.onComplete(ar -> conn.close());
+    });
   }
 
   /**

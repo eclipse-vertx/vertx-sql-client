@@ -76,6 +76,11 @@ public abstract class DateTimeCodecTest extends MySQLDataTypeTestBase {
   }
 
   @Test
+  public void testDecodeSmallFractionalSecondsPart(TestContext ctx) {
+    testDecodeGeneric(ctx, "11:12:00.000065", "TIME(6)", "test_time", Duration.ofHours(11).plusMinutes(12).plusNanos(65000));
+  }
+
+  @Test
   public void testDecodeTimeAsLocalTimeWithFractionalSecondsPart(TestContext ctx) {
     testDecodeGeneric(ctx, "11:12:00.123456", "TIME(6)", row -> {
       ctx.assertEquals(LocalTime.of(11, 12, 0,123456000), row.getLocalTime(0));

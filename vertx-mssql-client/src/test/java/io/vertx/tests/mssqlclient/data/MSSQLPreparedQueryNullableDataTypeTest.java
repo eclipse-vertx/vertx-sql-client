@@ -460,7 +460,7 @@ public class MSSQLPreparedQueryNullableDataTypeTest extends MSSQLNullableDataTyp
 
   @Test
   public void testEncodeNullSmallMoney(TestContext ctx) {
-    testEncodeNumber(ctx, "test_smallmoney", new BigDecimal("123.13"));
+    testEncodeNumber(ctx, "test_smallmoney", new BigDecimal("123.1313"));
   }
 
   private void testEncodeBufferValue(TestContext ctx, String columnName, Object value, Object expected) {

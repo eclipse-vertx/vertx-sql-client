@@ -23,31 +23,41 @@ public class MSSQLSmallMoneyDataTypeTest extends MSSQLDataTypeTestBase {
 
   @Test
   public void testQueryLargeMoney(TestContext ctx) {
-    testQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "214748.36", new BigDecimal("214748.36"));
+    testQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "214748.36", new BigDecimal("214748.3600"));
+  }
+
+  @Test
+  public void testQueryMaxMoney(TestContext ctx) {
+    testQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "214748.3647", new BigDecimal("214748.3647"));
   }
 
   @Test
   public void testQueryLargeNegativeMoney(TestContext ctx) {
-    testQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "-214748.36", new BigDecimal("-214748.36"));
+    testQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "-214748.36", new BigDecimal("-214748.3600"));
   }
 
   @Test
   public void testQueryMoneyWithCurrency(TestContext ctx) {
-    testQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "$12.34", new BigDecimal("12.34"));
+    testQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "$12.34", new BigDecimal("12.3400"));
   }
 
   @Test
   public void testPreparedQueryLargeMoney(TestContext ctx) {
-    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "214748.36", new BigDecimal("214748.36"));
+    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "214748.36", new BigDecimal("214748.3600"));
+  }
+
+  @Test
+  public void testPreparedQueryMaxMoney(TestContext ctx) {
+    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "214748.3647", new BigDecimal("214748.3647"));
   }
 
   @Test
   public void testPreparedQueryLargeNegativeMoney(TestContext ctx) {
-    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "-214748.36", new BigDecimal("-214748.36"));
+    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "-214748.36", new BigDecimal("-214748.3600"));
   }
 
   @Test
   public void testPreparedQueryMoneyWithCurrency(TestContext ctx) {
-    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "$12.34", new BigDecimal("12.34"));
+    testPreparedQueryDecodeGenericWithoutTable(ctx, "test_smallmoney", "SMALLMONEY", "$12.34", new BigDecimal("12.3400"));
   }
 }
