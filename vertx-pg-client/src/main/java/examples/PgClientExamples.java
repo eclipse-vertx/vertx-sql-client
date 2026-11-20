@@ -15,6 +15,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.ClientSSLOptions;
+import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.PemTrustOptions;
 import io.vertx.docgen.Source;
 import io.vertx.pgclient.*;
@@ -482,6 +483,22 @@ public class PgClientExamples {
         return -1L;
       }
     });
+  }
+
+  public void pubsub05(Vertx vertx) {
+
+    PgConnectOptions connectOptions = new PgConnectOptions()
+      .setPort(5432)
+      .setHost("the-host")
+      .setDatabase("the-db")
+      .setUser("user")
+      .setPassword("secret");
+
+    // Transport options configure the underlying TCP connection
+    NetClientOptions transportOptions = new NetClientOptions()
+      .setTcpKeepAlive(true);
+
+    PgSubscriber subscriber = PgSubscriber.subscriber(vertx, connectOptions, transportOptions);
   }
 
   public void noticeHandler(PgConnection connection) {

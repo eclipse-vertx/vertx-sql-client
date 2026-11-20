@@ -24,6 +24,7 @@ import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.net.NetClientOptions;
 
 import java.util.function.Function;
 
@@ -43,7 +44,19 @@ public interface PgSubscriber {
    * @return the subscriber
    */
   static PgSubscriber subscriber(Vertx vertx, PgConnectOptions options) {
-    return new PgSubscriberImpl(vertx, options);
+    return new PgSubscriberImpl(vertx, options, new NetClientOptions());
+  }
+
+  /**
+   * Create a subscriber.
+   *
+   * @param vertx the vertx instance
+   * @param options the connect options
+   * @param transportOptions the transport options, e.g. to enable TCP keep alive
+   * @return the subscriber
+   */
+  static PgSubscriber subscriber(Vertx vertx, PgConnectOptions options, NetClientOptions transportOptions) {
+    return new PgSubscriberImpl(vertx, options, transportOptions);
   }
 
   /**
