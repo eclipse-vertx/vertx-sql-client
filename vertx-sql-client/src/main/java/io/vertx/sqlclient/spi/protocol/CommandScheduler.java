@@ -24,12 +24,21 @@ import io.vertx.core.internal.ContextInternal;
 @FunctionalInterface
 public interface CommandScheduler {
 
+  /**
+   * Schedule {@code cmd} and complete the returned future on {@code context}.
+   */
   default <R> Future<R> schedule(ContextInternal context, CommandBase<R> cmd) {
     Promise<R> promise = context.promise();
     schedule(cmd, promise);
     return promise.future();
   }
 
+  /**
+   * Schedule {@code cmd} and complete {@code handler} with its outcome.
+   *
+   * <p>A scheduler is free to complete {@code handler} on any thread. Callers that need the outcome on a specific
+   * context shall pass a context aware promise, like {@link #schedule(ContextInternal, CommandBase)} does.
+   */
   <R> void schedule(CommandBase<R> cmd, Completable<R> handler);
 
 }
