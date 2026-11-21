@@ -9,6 +9,7 @@ import io.vertx.docgen.Source;
 import io.vertx.sqlclient.*;
 import io.vertx.sqlclient.templates.RowMapper;
 import io.vertx.sqlclient.templates.SqlTemplate;
+import io.vertx.sqlclient.templates.SqlTemplateStream;
 import io.vertx.sqlclient.templates.TupleMapper;
 import io.vertx.sqlclient.templates.annotations.Column;
 import io.vertx.sqlclient.templates.annotations.ParametersMapped;
@@ -422,6 +423,56 @@ public class TemplateExamples {
     public Tuple map(Function<Integer, String> mapping, int size, UserDataObject params) {
       throw new UnsupportedOperationException();
     }
+  }
+
+  public void streamExample(SqlConnection connection) {
+    SqlTemplateStream
+      .forStream(connection, "SELECT * FROM users WHERE age > #{age}", 50)
+      .execute(Collections.singletonMap("age", 18))
+      .onSuccess(stream -> {
+        stream.handler(row -> {
+          System.out.println(row.getString("first_name") + " " + row.getString("last_name"));
+        });
+        stream.endHandler(v -> {
+          System.out.println("End of stream");
+        });
+        stream.exceptionHandler(err -> {
+          System.out.println("Error: " + err.getMessage());
+        });
+      });
+  }
+
+  public void streamWithMapToExample(SqlConnection connection) {
+    SqlTemplateStream
+      .forStream(connection, "SELECT * FROM users WHERE age > #{age}", 50)
+      .mapTo(ROW_USER_MAPPER)
+      .execute(Collections.singletonMap("age", 18))
+      .onSuccess(stream -> {
+        stream.handler(user -> {
+          System.out.println(user.firstName + " " + user.lastName);
+        });
+        stream.endHandler(v -> {
+          System.out.println("End of stream");
+        });
+      });
+  }
+
+  public void cursorExample(SqlConnection connection) {
+    SqlTemplate
+      .forCursor(connection, "SELECT * FROM users WHERE age > #{age}")
+      .execute(Collections.singletonMap("age", 18))
+      .onSuccess(cursor -> {
+        cursor.read(100).onSuccess(rows -> {
+          rows.forEach(row -> {
+            System.out.println(row.getString("first_name") + " " + row.getString("last_name"));
+          });
+          if (cursor.hasMore()) {
+            // Read more
+          } else {
+            cursor.close();
+          }
+        });
+      });
   }
 
   public void templateInTransaction(Pool pool) {
