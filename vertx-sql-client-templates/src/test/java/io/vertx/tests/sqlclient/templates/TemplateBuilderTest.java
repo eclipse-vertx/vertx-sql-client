@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
@@ -67,6 +68,10 @@ public class TemplateBuilderTest {
     }
     @Override
     public Future<Void> close() {
+      throw new UnsupportedOperationException();
+    }
+    @Override
+    public <T> Future<T> withBatch(Function<SqlClient, Future<T>> function) {
       throw new UnsupportedOperationException();
     }
     @Override

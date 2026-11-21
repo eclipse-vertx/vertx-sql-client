@@ -198,5 +198,10 @@ public abstract class SqlClientBase implements SqlClientInternal, CommandSchedul
     public <R> void schedule(CommandBase<R> cmd, Completable<R> handler) {
       composite.add(cmd, handler);
     }
+
+    @Override
+    public <T> Future<T> withBatch(Function<SqlClient, Future<T>> function) {
+      return context().failedFuture(new UnsupportedOperationException("Not yet implemented"));
+    }
   }
 }
