@@ -87,6 +87,11 @@ public class MSSQLConnectOptions extends SqlConnectOptions {
   public MSSQLConnectOptions(JsonObject json) {
     super(json);
     MSSQLConnectOptionsConverter.fromJson(json, this);
+    // Set by the connection URI parameter 'trustServerCertificate'
+    if (Boolean.TRUE.equals(json.getValue("trustServerCertificate"))) {
+      ClientSSLOptions sslOptions = getSslOptions();
+      setSslOptions((sslOptions != null ? sslOptions : new ClientSSLOptions()).setTrustAll(true));
+    }
   }
 
   public MSSQLConnectOptions(SqlConnectOptions other) {
