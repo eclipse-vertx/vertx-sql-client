@@ -10,5 +10,6 @@ open module io.vertx.tests.sql.client.oracle {
   requires junit;
   requires testcontainers;
   requires com.oracle.database.jdbc;
+  requires hamcrest.core;
 
 }
