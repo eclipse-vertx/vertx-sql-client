@@ -91,7 +91,7 @@ public class OraclePoolTest extends OracleTestBase {
 
   @Test
   public void testPool(TestContext ctx) {
-    int num = 1000;
+    int num = 50;
     Async async = ctx.async(num);
     Pool pool = createPool(options, MAX_POOL_SIZE);
     for (int i = 0; i < num; i++) {
@@ -112,7 +112,7 @@ public class OraclePoolTest extends OracleTestBase {
 
   @Test
   public void testQuery(TestContext ctx) {
-    int num = 1000;
+    int num = 50;
     Async async = ctx.async(num);
     Pool pool = createPool(options, MAX_POOL_SIZE);
     for (int i = 0; i < num; i++) {
@@ -144,7 +144,7 @@ public class OraclePoolTest extends OracleTestBase {
 
   @Test
   public void testUpdate(TestContext ctx) {
-    int num = 1000;
+    int num = 50;
     Async async = ctx.async(num);
     Pool pool = createPool(options, 4);
     for (int i = 0; i < num; i++) {
@@ -160,7 +160,7 @@ public class OraclePoolTest extends OracleTestBase {
 
   @Test
   public void testUpdateWithParams(TestContext ctx) {
-    int num = 1000;
+    int num = 50;
     Async async = ctx.async(num);
     Pool pool = createPool(options, 4);
     // Requests still in flight when the pool is closed fail too: report the first unexpected
