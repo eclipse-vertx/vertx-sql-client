@@ -32,6 +32,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static org.junit.Assume.assumeTrue;
+
 @RunWith(VertxUnitRunner.class)
 public class MySQLQueryTest extends MySQLTestBase {
 
@@ -308,6 +310,9 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testLocalInfileRequest(TestContext ctx) {
+    String osName = System.getProperty("os.name");
+    assumeTrue(osName != null && (osName.startsWith("Linux") || osName.startsWith("LINUX")));
+
     FileSystem fileSystem = vertx.fileSystem();
     Buffer fileData = Buffer.buffer();
     for (int i = 0; i < 10000; i++) {
@@ -373,6 +378,9 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testLocalInfileRequestEmptyFile(TestContext ctx) {
+    String osName = System.getProperty("os.name");
+    assumeTrue(osName != null && (osName.startsWith("Linux") || osName.startsWith("LINUX")));
+
     FileSystem fileSystem = vertx.fileSystem();
     Buffer fileData = Buffer.buffer();
     fileSystem
@@ -406,6 +414,9 @@ public class MySQLQueryTest extends MySQLTestBase {
 
   @Test
   public void testLocalInfileRequestInPackets(TestContext ctx) {
+    String osName = System.getProperty("os.name");
+    assumeTrue(osName != null && (osName.startsWith("Linux") || osName.startsWith("LINUX")));
+
     FileSystem fileSystem = vertx.fileSystem();
     Buffer fileData = Buffer.buffer();
     for (int i = 0; i < 200000; i++) {

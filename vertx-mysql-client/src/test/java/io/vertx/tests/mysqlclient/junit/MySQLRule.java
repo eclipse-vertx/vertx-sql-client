@@ -96,13 +96,15 @@ public class MySQLRule extends ExternalResource {
       server.withExposedPorts(DEFAULT_PORT);
     }
 
-
-    mysqldDir = Files.createTempDirectory("mysqld").toFile();
-    mysqldDir.deleteOnExit();
-    mysqldDir.setReadable(true, false);
-    mysqldDir.setWritable(true, false);
-    mysqldDir.setExecutable(true, false);
-    server.withFileSystemBind(mysqldDir.getAbsolutePath(), "/var/run/mysqld");
+    String osName = System.getProperty("os.name");
+    if (osName != null && (osName.startsWith("Linux") || osName.startsWith("LINUX"))) {
+      mysqldDir = Files.createTempDirectory("mysqld").toFile();
+      mysqldDir.deleteOnExit();
+      mysqldDir.setReadable(true, false);
+      mysqldDir.setWritable(true, false);
+      mysqldDir.setExecutable(true, false);
+      server.withFileSystemBind(mysqldDir.getAbsolutePath(), "/var/run/mysqld");
+    }
 
     if (ssl) {
       server.withClasspathResourceMapping("tls/conf", "/etc/mysql/conf.d", BindMode.READ_ONLY);

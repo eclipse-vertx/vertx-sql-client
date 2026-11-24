@@ -15,6 +15,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -35,11 +36,9 @@ public class RsaPublicKeyEncryptor {
   }
 
   private static RSAPublicKey generateRsaPublicKey(String serverRsaPublicKey) throws InvalidKeySpecException, NoSuchAlgorithmException {
-    String content = serverRsaPublicKey.replace("-----BEGIN PUBLIC KEY-----", "")
-      .replace("-----END PUBLIC KEY-----", "")
-      .replaceAll("\\n", "");
+    String content = serverRsaPublicKey.substring(serverRsaPublicKey.indexOf("\n"), serverRsaPublicKey.indexOf("-----END PUBLIC KEY-----"));
 
-    byte[] key = Base64.getDecoder().decode(content.getBytes());
+    byte[] key = Base64.getMimeDecoder().decode(content.getBytes(StandardCharsets.US_ASCII));
     X509EncodedKeySpec keySpec = new X509EncodedKeySpec(key);
 
     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
