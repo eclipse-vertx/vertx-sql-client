@@ -190,26 +190,31 @@ public class PgSubscriberImpl implements PgSubscriber {
       conn.notificationHandler(PgSubscriberImpl.this::handleNotification);
       conn.closeHandler(PgSubscriberImpl.this::handleClose);
       if (channels.size() > 0) {
-        List<Handler<Void>> handlers = channels.values()
-          .stream()
-          .flatMap(channel -> channel.subs.stream())
-          .map(sub -> sub.subscribeHandler)
-          .filter(Objects::nonNull)
-          .collect(Collectors.toList());
-        String sql = channels.values()
+        // Capture the channel lists now, so that channels joining while the command is in flight
+        // are notified when it completes
+        List<ChannelList> lists = new ArrayList<>(channels.values());
+        String sql = lists
           .stream()
           .map(channel -> {
             channel.subscribed = true;
             return channel.quotedName;
           })
           .collect(Collectors.joining(";LISTEN ", "LISTEN ", ""));
-        conn.query(sql).execute().onComplete(ar2 -> {
+        PgConnection connection = conn;
+        connection.query(sql).execute().onComplete(ar2 -> {
           if (ar2.failed()) {
             log.error("Cannot LISTEN to channels", ar2.cause());
-            conn.close();
+            connection.close();
           } else {
+            List<Handler<Void>> handlers;
             synchronized (PgSubscriberImpl.this) {
-              channels.values().forEach(channel -> channel.listening = true);
+              lists.forEach(channel -> channel.listening = true);
+              handlers = lists
+                .stream()
+                .flatMap(channel -> channel.subs.stream())
+                .map(sub -> sub.subscribeHandler)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
             }
             handlers.forEach(vertx::runOnContext);
           }
@@ -292,8 +297,14 @@ public class PgSubscriberImpl implements PgSubscriber {
 
     @Override
     public PgChannel subscribeHandler(Handler<Void> handler) {
+      boolean notify;
       synchronized (PgSubscriberImpl.this) {
+        // The channel is already listening, notify the handler
+        notify = handler != null && subscribeHandler == null && channel != null && channel.listening;
         subscribeHandler = handler;
+      }
+      if (notify) {
+        vertx.runOnContext(handler);
       }
       return this;
     }
