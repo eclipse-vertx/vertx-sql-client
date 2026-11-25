@@ -191,6 +191,169 @@ public class PubSubTest extends PgTestBase {
   }
 
   @Test
+  public void testSecondChannelWithSameNameIsNotifiedOfSubscription(TestContext ctx) {
+    subscriber = PgSubscriber.subscriber(vertx, options);
+    Async connected = ctx.async();
+    subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connected.complete()));
+    connected.awaitSuccess(10000);
+    AtomicInteger firstCount = new AtomicInteger();
+    Async first = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> {
+      firstCount.incrementAndGet();
+      first.complete();
+    }).handler(notification -> { });
+    first.awaitSuccess(10000);
+    AtomicInteger secondCount = new AtomicInteger();
+    Async second = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> {
+      secondCount.incrementAndGet();
+      second.complete();
+    }).handler(notification -> { });
+    second.awaitSuccess(10000);
+    ctx.assertEquals(1, firstCount.get());
+    ctx.assertEquals(1, secondCount.get());
+  }
+
+  @Test
+  public void testSubscribeHandlerSetAfterHandlerIsNotified(TestContext ctx) {
+    subscriber = PgSubscriber.subscriber(vertx, options);
+    Async connected = ctx.async();
+    subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connected.complete()));
+    connected.awaitSuccess(10000);
+    Async first = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> first.complete()).handler(notification -> { });
+    first.awaitSuccess(10000);
+    // Set the subscribe handler after the channel is already subscribed
+    Async second = ctx.async();
+    subscriber.channel("the_channel").handler(notification -> { }).subscribeHandler(v -> second.complete());
+    second.awaitSuccess(10000);
+  }
+
+  @Test
+  public void testSecondChannelJoiningDuringConnectIsNotified(TestContext ctx) {
+    Async listenCommand = ctx.async();
+    AtomicReference<ProxyServer.Connection> proxyConnRef = proxyHoldingListen(ctx, listenCommand);
+    subscriber = PgSubscriber.subscriber(vertx, proxyOptions());
+    AtomicInteger firstCount = new AtomicInteger();
+    Async first = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> {
+      firstCount.incrementAndGet();
+      first.complete();
+    }).handler(notification -> { });
+    subscriber.connect();
+    // The LISTEN command has been sent and its acknowledgment is held by the proxy
+    listenCommand.awaitSuccess(10000);
+    AtomicInteger secondCount = new AtomicInteger();
+    Async second = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> {
+      secondCount.incrementAndGet();
+      second.complete();
+    }).handler(notification -> { });
+    proxyConnRef.get().serverSocket().resume();
+    first.awaitSuccess(10000);
+    second.awaitSuccess(10000);
+    ctx.assertEquals(1, firstCount.get());
+    ctx.assertEquals(1, secondCount.get());
+  }
+
+  @Test
+  public void testSecondChannelJoiningDuringListenIsNotified(TestContext ctx) {
+    Async listenCommand = ctx.async();
+    AtomicReference<ProxyServer.Connection> proxyConnRef = proxyHoldingListen(ctx, listenCommand);
+    subscriber = PgSubscriber.subscriber(vertx, proxyOptions());
+    Async connected = ctx.async();
+    subscriber.connect().onComplete(ctx.asyncAssertSuccess(v -> connected.complete()));
+    connected.awaitSuccess(10000);
+    AtomicInteger firstCount = new AtomicInteger();
+    Async first = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> {
+      firstCount.incrementAndGet();
+      first.complete();
+    }).handler(notification -> { });
+    // The LISTEN command has been sent and its acknowledgment is held by the proxy
+    listenCommand.awaitSuccess(10000);
+    AtomicInteger secondCount = new AtomicInteger();
+    Async second = ctx.async();
+    subscriber.channel("the_channel").subscribeHandler(v -> {
+      secondCount.incrementAndGet();
+      second.complete();
+    }).handler(notification -> { });
+    proxyConnRef.get().serverSocket().resume();
+    first.awaitSuccess(10000);
+    second.awaitSuccess(10000);
+    ctx.assertEquals(1, firstCount.get());
+    ctx.assertEquals(1, secondCount.get());
+  }
+
+  @Test
+  public void testReconnectNotifiesChannels(TestContext ctx) {
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> connRef = new AtomicReference<>();
+    proxy.proxyHandler(conn -> {
+      connRef.set(conn);
+      conn.connect();
+    });
+    Async listening = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v -> listening.complete()));
+    listening.awaitSuccess(10000);
+    subscriber = PgSubscriber.subscriber(vertx, proxyOptions());
+    subscriber.reconnectPolicy(retries -> 0L);
+    AtomicInteger firstCount = new AtomicInteger();
+    AtomicInteger secondCount = new AtomicInteger();
+    Async[] firstLatches = { ctx.async(), ctx.async() };
+    Async[] secondLatches = { ctx.async(), ctx.async() };
+    subscriber.channel("the_channel").subscribeHandler(v -> {
+      int count = firstCount.incrementAndGet();
+      if (count <= 2) {
+        firstLatches[count - 1].complete();
+      }
+    }).handler(notification -> { });
+    subscriber.channel("the_channel").subscribeHandler(v -> {
+      int count = secondCount.incrementAndGet();
+      if (count <= 2) {
+        secondLatches[count - 1].complete();
+      }
+    }).handler(notification -> { });
+    subscriber.connect();
+    firstLatches[0].awaitSuccess(10000);
+    secondLatches[0].awaitSuccess(10000);
+    // Close the connection, the subscriber reconnects and notifies the channels again
+    connRef.get().close();
+    firstLatches[1].awaitSuccess(10000);
+    secondLatches[1].awaitSuccess(10000);
+    ctx.assertEquals(2, firstCount.get());
+    ctx.assertEquals(2, secondCount.get());
+  }
+
+  private PgConnectOptions proxyOptions() {
+    return new PgConnectOptions(options).setPort(8080).setHost("localhost");
+  }
+
+  /**
+   * Creates a proxy listening on port 8080 that stops reading server responses when it sees a
+   * {@code LISTEN} command, the acknowledgment is held until the returned connection is resumed.
+   */
+  private AtomicReference<ProxyServer.Connection> proxyHoldingListen(TestContext ctx, Async listenCommand) {
+    ProxyServer proxy = ProxyServer.create(vertx, options.getPort(), options.getHost());
+    AtomicReference<ProxyServer.Connection> connectionRef = new AtomicReference<>();
+    proxy.proxyHandler(conn -> {
+      connectionRef.set(conn);
+      conn.clientHandler(buf -> {
+        if (buf.toString().contains("LISTEN")) {
+          conn.serverSocket().pause();
+          listenCommand.complete();
+        }
+        conn.serverSocket().write(buf);
+      });
+      conn.connect();
+    });
+    Async listening = ctx.async();
+    proxy.listen(8080, "localhost", ctx.asyncAssertSuccess(v -> listening.complete()));
+    listening.awaitSuccess(10000);
+    return connectionRef;
+  }
+
+  @Test
   public void testSubscribe(TestContext ctx) {
     testSubscribe(ctx, "the_channel");
   }
