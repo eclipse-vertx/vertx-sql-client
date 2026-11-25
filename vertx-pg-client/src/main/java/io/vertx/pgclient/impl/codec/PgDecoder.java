@@ -167,6 +167,8 @@ class PgDecoder extends ChannelInboundHandlerAdapter {
       case PgProtocolConstants.MESSAGE_TYPE_NOTICE_RESPONSE:
       case PgProtocolConstants.MESSAGE_TYPE_FUNCTION_RESULT:
       case PgProtocolConstants.MESSAGE_TYPE_PARAMETER_DESCRIPTION:
+        // COPY data messages carry bulk transfer payloads and may be large
+      case PgProtocolConstants.MESSAGE_TYPE_COPY_DATA:
         return MAX_MESSAGE_LENGTH;
       case PgProtocolConstants.MESSAGE_TYPE_AUTHENTICATION:
         return MAX_PRE_AUTH_MESSAGE_LENGTH;
