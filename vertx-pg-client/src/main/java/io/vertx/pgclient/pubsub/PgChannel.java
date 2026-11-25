@@ -30,7 +30,13 @@ import io.vertx.core.streams.ReadStream;
 public interface PgChannel extends ReadStream<String> {
 
   /**
-   * Set an handler called when the the channel get subscribed.
+   * Set a handler called when the channel is subscribed, that is when the {@code LISTEN} command
+   * has been acknowledged by Postgres.
+   * <p/>
+   * The channel subscribes when a notification handler is set, see {@link #handler(Handler)}. When
+   * the handler is set on a channel that is already subscribed, it is called as soon as possible.
+   * A handler is called once per subscription: setting another handler while the channel is already
+   * subscribed does not call it again.
    *
    * @param handler the handler
    * @return a reference to this, so the API can be used fluently
