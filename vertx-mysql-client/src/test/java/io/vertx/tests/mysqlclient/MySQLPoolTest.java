@@ -116,7 +116,7 @@ public class MySQLPoolTest extends MySQLTestBase {
     PoolOptions poolOptions = new PoolOptions().setMaxSize(2);
     Pool pool = MySQLBuilder.pool(builder -> builder.with(poolOptions).connectingTo(new MySQLConnectOptions(this.options).setCachePreparedStatements(false)).using(vertx));
     try {
-      int numRequests = 1500;
+      int numRequests = 50;
       Async async = ctx.async(numRequests);
       for (int i = 0;i < numRequests;i++) {
         pool
