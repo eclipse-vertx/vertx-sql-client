@@ -83,6 +83,7 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   public void init() {
     codec = new PgCodec(useLayer7Proxy);
+    codec.setConnection(this);
     ChannelPipeline pipeline = socket.channelHandlerContext().pipeline();
     pipeline.addBefore("handler", "codec", codec);
     super.init();
@@ -118,7 +119,9 @@ public class PgSocketConnection extends SocketConnectionBase {
   @Override
   protected void handleMessage(Object msg) {
     super.handleMessage(msg);
-    if (msg instanceof Notification || msg instanceof TxStatusEvent || msg instanceof NoticeResponse) {
+    if (msg instanceof CopyOutEvent) {
+      ((CopyOutEvent) msg).dispatch();
+    } else if (msg instanceof Notification || msg instanceof TxStatusEvent || msg instanceof NoticeResponse) {
       handleEvent(msg);
     }
   }
