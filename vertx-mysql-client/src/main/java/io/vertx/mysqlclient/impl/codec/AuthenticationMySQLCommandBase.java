@@ -39,6 +39,27 @@ abstract class AuthenticationMySQLCommandBase<R, C extends AuthenticationCommand
     super(cmd);
   }
 
+  /**
+   * Reads the nonce of an auth switch request into {@link #authPluginData}. Fails the command when the server sent
+   * less plugin data than a nonce.
+   *
+   * @return whether the nonce has been read
+   */
+  protected final boolean readAuthSwitchNonce(ByteBuf payload) {
+    if (payload.readableBytes() < NONCE_LENGTH) {
+      encoder.fireCommandResponse(CommandResponse.failure(new IllegalStateException("Invalid auth switch request: expected " + NONCE_LENGTH + " bytes of plugin data but received " + payload.readableBytes())));
+      return false;
+    }
+    authPluginData = new byte[NONCE_LENGTH];
+    payload.readBytes(authPluginData);
+    return true;
+  }
+
+  protected final void sendClearPassword(byte[] password) {
+    byte[] response = Arrays.copyOf(password, password.length + 1); // end with a 0x00
+    sendBytesAsPacket(response);
+  }
+
   protected final void handleAuthMoreData(byte[] password, ByteBuf payload) {
     payload.skipBytes(1); // skip the status flag
     if (isWaitingForRsaPublicKey){
