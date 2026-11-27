@@ -8,6 +8,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.SocketAddress;
 import io.vertx.core.spi.metrics.ClientMetrics;
+import io.vertx.core.spi.tracing.SpanKind;
+import io.vertx.core.spi.tracing.TagExtractor;
+import io.vertx.core.spi.tracing.VertxTracer;
 import io.vertx.core.tracing.TracingPolicy;
 import io.vertx.sqlclient.Pool;
 import io.vertx.sqlclient.PoolOptions;
@@ -78,11 +81,11 @@ public class DriverBaseTest {
     return new Connection() {
       @Override
       public TracingPolicy tracingPolicy() {
-        return null;
+        return TracingPolicy.ALWAYS;
       }
       @Override
       public SocketAddress server() {
-        return null;
+        return SocketAddress.inetSocketAddress(1234, "localhost");
       }
       @Override
       public String database() {
@@ -253,6 +256,46 @@ public class DriverBaseTest {
   }
 
   @Test
+  public void testAfterAcquireFailureReleasesConnectionOfPoolQuery() {
+    AtomicBoolean shouldFail = new AtomicBoolean(true);
+    AtomicInteger beforeRecycleCount = new AtomicInteger();
+    RuntimeException hookError = new RuntimeException("afterAcquire failed");
+
+    DriverBase<SqlConnectOptions> driver = createDriver(
+      conn -> {
+        if (shouldFail.get()) {
+          return Future.failedFuture(hookError);
+        }
+        return Future.succeededFuture();
+      },
+      conn -> {
+        beforeRecycleCount.incrementAndGet();
+        return Future.succeededFuture();
+      });
+
+    Vertx vertx = Vertx.vertx();
+
+    try {
+      Pool pool = driver.createPool(vertx, () -> Future.succeededFuture(new SqlConnectOptions()),
+        new PoolOptions().setMaxSize(1), new NetClientOptions(), null);
+
+      try {
+        pool.query("one").execute().await();
+        fail("Should have failed");
+      } catch (Exception e) {
+        assertEquals(hookError, e);
+      }
+      assertEquals(0, beforeRecycleCount.get());
+
+      shouldFail.set(false);
+      assertEquals("Hello two", pool.query("two").execute().await().iterator().next().getString(0));
+      assertEquals(1, beforeRecycleCount.get());
+    } finally {
+      vertx.close().await();
+    }
+  }
+
+  @Test
   public void testConnectFailureCancelsPoolConnectionTimeout() throws Exception {
     RuntimeException connectError = new RuntimeException("connect failed");
     DriverBase<SqlConnectOptions> driver = createDriver(context -> Future.failedFuture(connectError), null, null);
@@ -310,6 +353,77 @@ public class DriverBaseTest {
       connectContext.get().runOnContext(v -> connectPromise.fail(connectError));
       Thread.sleep(300);
       assertEquals(1, failures.size());
+    } finally {
+      vertx.close().await();
+    }
+  }
+
+  @Test
+  public void testPoolQueryTimeoutLeavesWaitQueue() throws Exception {
+    DriverBase<SqlConnectOptions> driver = createDriver(null, null);
+
+    Vertx vertx = Vertx.vertx();
+
+    try {
+      Pool pool = driver.createPool(vertx, () -> Future.succeededFuture(new SqlConnectOptions()),
+        new PoolOptions()
+          .setMaxSize(1)
+          .setMaxWaitQueueSize(1)
+          .setConnectionTimeout(500)
+          .setConnectionTimeoutUnit(MILLISECONDS), new NetClientOptions(), null);
+
+      SqlConnection conn = pool.getConnection().await();
+
+      try {
+        pool.query("one").execute().await();
+        fail("Should have timed out");
+      } catch (Exception e) {
+        assertEquals("Timeout waiting for connection", e.getMessage());
+      }
+
+      Future<RowSet<Row>> second = pool.query("two").execute();
+      Thread.sleep(100);
+      conn.close().await();
+      assertEquals("Hello two", second.await().iterator().next().getString(0));
+    } finally {
+      vertx.close().await();
+    }
+  }
+
+  @Test
+  public void testPoolQueryReportedOnCallerContext() throws Exception {
+    DriverBase<SqlConnectOptions> driver = createDriver(null, null);
+
+    AtomicReference<Context> requestContext = new AtomicReference<>();
+    AtomicReference<Context> responseContext = new AtomicReference<>();
+    Vertx vertx = Vertx.builder().withTracer(tracingOptions -> new VertxTracer<Object, Object>() {
+      @Override
+      public <R> Object sendRequest(Context context, SpanKind kind, TracingPolicy tracingPolicy, R request, String operation, BiConsumer<String, String> headers, TagExtractor<R> tagExtractor) {
+        requestContext.set(context);
+        return new Object();
+      }
+
+      @Override
+      public <R> void receiveResponse(Context context, R response, Object payload, Throwable failure, TagExtractor<R> tagExtractor) {
+        responseContext.set(context);
+      }
+    }).build();
+
+    try {
+      Pool pool = driver.createPool(vertx, () -> Future.succeededFuture(new SqlConnectOptions()),
+        new PoolOptions().setMaxSize(1), new NetClientOptions(), null);
+
+      AtomicReference<Context> callerContext = new AtomicReference<>();
+      CountDownLatch latch = new CountDownLatch(1);
+      vertx.runOnContext(v -> {
+        callerContext.set(Vertx.currentContext());
+        pool.query("one").execute().onComplete(ar -> latch.countDown());
+      });
+
+      assertTrue(latch.await(10, SECONDS));
+      assertNotNull(callerContext.get());
+      assertSame(callerContext.get(), requestContext.get());
+      assertSame(callerContext.get(), responseContext.get());
     } finally {
       vertx.close().await();
     }
