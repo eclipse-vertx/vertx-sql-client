@@ -68,6 +68,12 @@ public class NullValue {
   public static final NullValue ArrayOfBuffer = createAndCache(Buffer[].class);
   public static final NullValue ArrayOfUUID = createAndCache(UUID[].class);
   public static final NullValue ArrayOfBigDecimal = createAndCache(BigDecimal[].class);
+  public static final NullValue FloatVector = createAndCache(io.vertx.sqlclient.data.FloatVector.class);
+  public static final NullValue HalfFloatVector = createAndCache(io.vertx.sqlclient.data.HalfFloatVector.class);
+  public static final NullValue DoubleVector = createAndCache(io.vertx.sqlclient.data.DoubleVector.class);
+  public static final NullValue ByteVector = createAndCache(io.vertx.sqlclient.data.ByteVector.class);
+  public static final NullValue BitVector = createAndCache(io.vertx.sqlclient.data.BitVector.class);
+  public static final NullValue SparseFloatVector = createAndCache(io.vertx.sqlclient.data.SparseFloatVector.class);
 
   private static NullValue createAndCache(Class<?> type) {
     NullValue instance = new NullValue(type);
